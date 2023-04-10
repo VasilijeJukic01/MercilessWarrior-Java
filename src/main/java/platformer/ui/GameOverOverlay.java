@@ -32,7 +32,7 @@ public class GameOverOverlay {
 
     private final int retryX = (int)(340*Tiles.SCALE.getValue());
     private final int retryY = (int)(290*Tiles.SCALE.getValue());
-    private final int menuX = (int)(290*Tiles.SCALE.getValue());
+    private final int menuX = (int)(480*Tiles.SCALE.getValue());
     private final int menuY = (int)(290*Tiles.SCALE.getValue());
 
     // Size Variables [Render]
