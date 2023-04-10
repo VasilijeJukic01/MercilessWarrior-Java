@@ -111,36 +111,74 @@ public class ObjectManager {
         return false;
     }
 
-    public double getXObjectBound(Rectangle2D.Double hitBox, double dx, boolean inAir, double airSpeed) {
+    private boolean checkTouch(GameObject c, Rectangle2D.Double hitBox, String axis) {
+        int x = (int)hitBox.x, y = (int)hitBox.y;
+        int width = (int)hitBox.width, height = (int)hitBox.height;
+        if (c.isAlive() && c.getAnimIndex() < 1) {
+            if (axis.equals("X")) {
+                if (c.getHitBox().contains(x, y)) return true;
+                if (c.getHitBox().contains(x+width, y)) return true;
+                if (c.getHitBox().contains(x, y+height-5)) return true;
+                return c.getHitBox().contains(x+width, y + height - 5);
+            }
+            else if (axis.equals("Y")) {
+                if (c.getHitBox().contains(x, y+height+5)) return true;
+                return c.getHitBox().contains(x+width, y+height+5);
+            }
+        }
+        return false;
+    }
+
+    private GameObject canMove(Direction direction, Rectangle2D.Double hitBox) {
         for (Container c : containers) {
-            if (c.isAlive() && c.getHitBox().intersects(hitBox) && !inAir) {
-                if (c.getHitBox().x >= hitBox.x) {
-                    if (Utils.getInstance().canMoveHere(c.getHitBox().x-hitBox.width, hitBox.y, hitBox.width, hitBox.height, playingState.getLevelManager().getCurrentLevel().getLvlData()))
-                    return c.getHitBox().x-hitBox.width;
+            if (c.isAlive() && checkTouch(c, hitBox, "X")) {
+                if (c.getHitBox().x < hitBox.x && direction == Direction.LEFT) return c;
+                else if(c.getHitBox().x > hitBox.x && direction == Direction.RIGHT) return c;
+            }
+        }
+        return null;
+    }
+
+    public double getXObjectBound(Rectangle2D.Double hitBox, boolean inAir, double dx) {
+        for (Container c : containers) {
+            if (c.isAlive() && checkTouch(c, hitBox, "X")) {
+                if (c.getHitBox().x < hitBox.x && dx > 0) return hitBox.x+1;
+                else if(c.getHitBox().x > hitBox.x && dx < 0) return hitBox.x-1;
+                else return hitBox.x;
+
+            }
+            if (c.isAlive() && checkTouch(c, hitBox, "Y")) {
+                GameObject left = canMove(Direction.LEFT, hitBox);
+                GameObject right = canMove(Direction.RIGHT, hitBox);
+                if (dx < 0 && left == null) {
+                    if (Utils.getInstance().canMoveHere(hitBox.x-1, hitBox.y, hitBox.width, hitBox.height, playingState.getLevelManager().getCurrentLevel().getLvlData()))
+                        return hitBox.x-1;
                 }
-                else if (c.getHitBox().x <= hitBox.x) {
-                    if (Utils.getInstance().canMoveHere(c.getHitBox().x+hitBox.width, hitBox.y, hitBox.width, hitBox.height, playingState.getLevelManager().getCurrentLevel().getLvlData()))
-                    return c.getHitBox().x+c.getHitBox().width;
+                else if(dx > 0 && right == null) {
+                    if (Utils.getInstance().canMoveHere(hitBox.x+1, hitBox.y, hitBox.width, hitBox.height, playingState.getLevelManager().getCurrentLevel().getLvlData()))
+                        return hitBox.x+1;
+                }
+                else if (dx < 0 && left.isAlive()) {
+                    double x = left.getHitBox().x+left.getHitBox().width;
+                    if (Utils.getInstance().canMoveHere(x, hitBox.y, hitBox.width, hitBox.height, playingState.getLevelManager().getCurrentLevel().getLvlData()))
+                        return x;
+                }
+                else if (dx > 0 && right.isAlive()) {
+                    double x = right.getHitBox().x-hitBox.width;
+                    if (Utils.getInstance().canMoveHere(x, hitBox.y, hitBox.width, hitBox.height, playingState.getLevelManager().getCurrentLevel().getLvlData()))
+                            return x;
                 }
                 else return hitBox.x;
             }
         }
-        int xTile = (int)(hitBox.x/(int)(Tiles.TILES_SIZE.getValue()));
-        int tileAbove = (int)(hitBox.y/(int)(Tiles.TILES_SIZE.getValue()))-1;
-        if (getYObjectBound(hitBox, airSpeed) == hitBox.y && Utils.getInstance().isTileSolid(xTile, tileAbove, playingState.getLevelManager().getCurrentLevel().getLvlData())) return hitBox.x;
-        if (dx > 0 && Utils.getInstance().canMoveHere(hitBox.x+1, hitBox.y, hitBox.width, hitBox.height, playingState.getLevelManager().getCurrentLevel().getLvlData())) return hitBox.x+1;
-        else if (dx < 0 && Utils.getInstance().canMoveHere(hitBox.x-1, hitBox.y, hitBox.width, hitBox.height, playingState.getLevelManager().getCurrentLevel().getLvlData())) return hitBox.x-1;
-        else return hitBox.x;
+        return hitBox.x;
     }
 
     public double getYObjectBound(Rectangle2D.Double hitBox, double airSpeed) {
         for (Container c : containers) {
-            if (c.isAlive() && c.getHitBox().intersects(hitBox)) {
+            if (c.isAlive() && checkTouch(c, hitBox, "Y")) {
                 if (airSpeed > 0) {
-                    if (c.getHitBox().y > hitBox.y) {
-                        if (Utils.getInstance().canMoveHere(hitBox.x, c.getHitBox().y-hitBox.height-1, hitBox.width, hitBox.height, playingState.getLevelManager().getCurrentLevel().getLvlData()))
-                            return c.getHitBox().y-hitBox.height-1;
-                    }
+                    if (c.getHitBox().y > hitBox.y) return c.getHitBox().y-hitBox.height;
                     else return hitBox.y;
                 }
             }

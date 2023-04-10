@@ -132,7 +132,7 @@ public class Player extends Entity{
             }
             else if (airSpeed > 0) entityState = AnimType.FALL;
         }
-        if (onWall) entityState = AnimType.WALL;
+        if (onWall && !onObject) entityState = AnimType.WALL;
         if (dash) {
             entityState = AnimType.ATTACK_1;
             animIndex = 1;
@@ -225,7 +225,7 @@ public class Player extends Entity{
             this.hitBox.x += dx;
         }
         else {
-            if (onObject) this.hitBox.x = objectManager.getXObjectBound(hitBox, dx, inAir, airSpeed);
+            if (onObject) this.hitBox.x = objectManager.getXObjectBound(hitBox, inAir, dx);
             else if (!onWall) this.hitBox.x = Utils.getInstance().getXPosOnTheWall(hitBox, dx);
             if (dash) {
                 dash = false;
@@ -271,6 +271,7 @@ public class Player extends Entity{
         if (Utils.getInstance().isOnWall(hitBox, levelData, Direction.RIGHT) && right && !left) return;
         if (inAir && doubleJump && onWall) return;
         if (inAir && currentJumps != 1) return;
+        if (onObject && Utils.getInstance().isTileSolid((int)(hitBox.x/Tiles.TILES_SIZE.getValue()), (int)((hitBox.y-5)/Tiles.TILES_SIZE.getValue()), levelData)) return;
         if (currentJumps == 1) {
             doubleJump = true;
             animIndex = animTick = 0;
