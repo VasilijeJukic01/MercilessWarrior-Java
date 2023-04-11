@@ -41,6 +41,18 @@ public class Utils {
         return null;
     }
 
+    // Rotate image [Angle = {PI/2, PI, 3PI/2}]
+    public  BufferedImage rotateImage(BufferedImage src, double angle) {
+        int w = src.getWidth();
+        int h = src.getHeight();
+        BufferedImage dest = new BufferedImage(h, w, src.getType());
+        Graphics2D graphics2D = dest.createGraphics();
+        graphics2D.translate((h - w) / 2, (h - w) / 2);
+        graphics2D.rotate(angle, h / 2.0, w / 2.0);
+        graphics2D.drawRenderedImage(src, null);
+        return dest;
+    }
+
     // Data gatherer
     public BufferedImage[] getAllLevels() {
         BufferedImage[] levels = new BufferedImage[2];
