@@ -155,7 +155,7 @@ public class AnimationUtils {
     }
 
     public BufferedImage[][] loadEffects() {
-        BufferedImage[][] anim = new BufferedImage[6][6];
+        BufferedImage[][] anim = new BufferedImage[11][11];
         int index = 0;
 
         // Double Jump Effect
@@ -167,14 +167,17 @@ public class AnimationUtils {
         }
         anim[index++] = doubleJump;
 
-        // Dust Effect
-        BufferedImage[] dust = new BufferedImage[6];
-        int dustW = (int)(120*Tiles.SCALE.getValue());
-        int dustH = (int)(70*Tiles.SCALE.getValue());
-        for (int i = 0; i < 6; i++) {
-            dust[i] = Utils.getInstance().importImage("src/main/resources/images/particles/runningDust/runningDust"+i+".png", dustW, dustH);
+        // Wall Slide
+        BufferedImage sprite = Utils.getInstance().importImage("src/main/resources/images/particles/dustSprite.png", -1, -1);
+        BufferedImage[] wallSlide = new BufferedImage[8];
+        wallSlide[0] = sprite.getSubimage(0, 0, 1, 1);
+        wallSlide[1] = sprite.getSubimage(0, 0, 1, 1);
+        for (int i = 2; i < 8; i++) {
+            //wallSlide[i] = sprite.getSubimage(64*i+8960, 0, 64, 64);
+            wallSlide[i] = sprite.getSubimage(64*i+5120, 0, 64, 64);
+            wallSlide[i] = Utils.getInstance().rotateImage(wallSlide[i], Math.PI/2);
         }
-        anim[index] = dust;
+        anim[index] = wallSlide;
 
         return anim;
     }

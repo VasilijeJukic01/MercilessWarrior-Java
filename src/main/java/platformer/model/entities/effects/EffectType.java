@@ -2,7 +2,6 @@ package platformer.model.entities.effects;
 
 public enum EffectType {
     DOUBLE_JUMP,      // 0
-    DUST,             // 1
-    WALL_JUMP,        // 2
-    DASH              // 3
+    WALL_SLIDE,       // 1
+    DASH              // 2
 }

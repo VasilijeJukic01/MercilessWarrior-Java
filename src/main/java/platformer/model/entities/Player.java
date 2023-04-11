@@ -26,7 +26,7 @@ public class Player extends Entity{
     private final BufferedImage[][] effects;
     private final int animSpeed = 20;
     private int animTick = 0, animIndex = 0, effectIndex = 0;
-    private EffectType playerEffect = EffectType.DUST;
+    private EffectType playerEffect;
     private AttackState attackState;
     private final double playerSpeed = 0.5 * Tiles.SCALE.getValue();
     private final double playerBoostSpeed = 0.6 * Tiles.SCALE.getValue();
@@ -104,15 +104,15 @@ public class Player extends Entity{
     }
 
     private void updateEffectAnimation() {
-        if (playerEffect == EffectType.DUST) {
-            if (effectIndex >= effects[EffectType.DUST.ordinal()].length) {
-                effectIndex = 0;
-            }
-        }
-        else if (playerEffect == EffectType.DOUBLE_JUMP) {
+        if (playerEffect == EffectType.DOUBLE_JUMP) {
             if (effectIndex >= effects[EffectType.DOUBLE_JUMP.ordinal()].length) {
                 effectIndex = 0;
                 doubleJump = false;
+            }
+        }
+        else if (playerEffect == EffectType.WALL_SLIDE) {
+            if (effectIndex >= effects[EffectType.WALL_SLIDE.ordinal()].length) {
+                effectIndex = 2;
             }
         }
     }
@@ -121,18 +121,20 @@ public class Player extends Entity{
         AnimType previousAction = entityState;
         if (moving) {
             entityState = AnimType.RUN;
-            playerEffect = EffectType.DUST;
         }
         else entityState = AnimType.IDLE;
 
         if (inAir) {
             if (airSpeed < 0) {
                 entityState = AnimType.JUMP;
-                playerEffect = EffectType.DOUBLE_JUMP;
+                setPlayerEffect(EffectType.DOUBLE_JUMP);
             }
             else if (airSpeed > 0) entityState = AnimType.FALL;
         }
-        if (onWall && !onObject) entityState = AnimType.WALL;
+        if (onWall && !onObject) {
+            entityState = AnimType.WALL;
+            setPlayerEffect(EffectType.WALL_SLIDE);
+        }
         if (dash) {
             entityState = AnimType.ATTACK_1;
             animIndex = 1;
@@ -345,10 +347,13 @@ public class Player extends Entity{
             int effectYPos = (int)(hitBox.y-yHitBoxOffset-yLevelOffset)+(int)(55*Tiles.SCALE.getValue());
             g.drawImage(effects[0][effectIndex], effectXPos, effectYPos, effects[0][effectIndex].getWidth(), effects[0][effectIndex].getHeight(), null);
         }
-        else if (playerEffect == EffectType.DUST && entityState == AnimType.RUN) {
-            int effectXPos = (int)(hitBox.x-xHitBoxOffset-xLevelOffset)+(int)(2*Tiles.SCALE.getValue())+flipCoefficient;
-            int effectYPos = (int)(hitBox.y-yHitBoxOffset-yLevelOffset);
-            g.drawImage(effects[1][effectIndex], effectXPos, effectYPos, flipSign*effects[1][effectIndex].getWidth(), effects[1][effectIndex].getHeight(), null);
+        else if (playerEffect == EffectType.WALL_SLIDE && onWall) {
+            int newFlip = (flipCoefficient != 0) ? (0) : (width), newSign = (flipSign == 1) ? (-1) : (1);
+            int effectXPos = (int)(hitBox.x-xHitBoxOffset-xLevelOffset)+(int)(newSign*33*Tiles.SCALE.getValue())+newFlip;
+            int effectYPos = (int)(hitBox.y-yHitBoxOffset-yLevelOffset)-(int)(Tiles.SCALE.getValue());
+            int effectWid = newSign*(effects[1][effectIndex].getWidth()+(int)(10*Tiles.SCALE.getValue()));
+            int effectHei = effects[1][effectIndex].getHeight()+(int)(50*Tiles.SCALE.getValue());
+            g.drawImage(effects[1][effectIndex], effectXPos, effectYPos, effectWid, effectHei, null);
         }
     }
 
@@ -423,6 +428,11 @@ public class Player extends Entity{
     public void setPlayerStateSecondary(AttackState playerPlayerStateSecondary) {
         this.attackState = playerPlayerStateSecondary;
         this.setAttacking(true);
+    }
+
+    public void setPlayerEffect(EffectType playerEffect) {
+        if (playerEffect != this.playerEffect) effectIndex = 0;
+        this.playerEffect = playerEffect;
     }
 
     public void setJump(boolean jump) {
