@@ -49,10 +49,6 @@ public class PlayingState extends StateAbstraction implements State{
     private final int bottomBorder = (int)(0.6*Tiles.GAME_HEIGHT.getValue());
     private int yMaxLevelOffset;
 
-    // Effects/Particles
-    private Particle[] particles;
-
-
     public PlayingState(Game game) {
         super(game);
         init();
@@ -61,7 +57,6 @@ public class PlayingState extends StateAbstraction implements State{
 
     private void init() {
         this.background = Utils.getInstance().importImage("src/main/resources/images/background1.jpg", (int)Tiles.GAME_WIDTH.getValue(), (int)Tiles.GAME_HEIGHT.getValue());
-        this.particles = Utils.getInstance().loadParticles();
         this.levelManager = new LevelManager(game, this);
         this.objectManager = new ObjectManager(this);
         this.enemyManager = new EnemyManager();
@@ -129,7 +124,7 @@ public class PlayingState extends StateAbstraction implements State{
         else {
             if (Utils.getInstance().isOnExit(levelManager.getCurrentLevel(), player.getHitBox()) == 1) loadNextLevel();
             else if (Utils.getInstance().isOnExit(levelManager.getCurrentLevel(), player.getHitBox()) == -1) loadPrevLevel();
-            for (Particle particle : particles) {
+            for (Particle particle : levelManager.getParticles()) {
                 particle.update();
             }
             this.enemyManager.update(levelManager.getCurrentLevel().getLvlData(), player);
@@ -145,11 +140,8 @@ public class PlayingState extends StateAbstraction implements State{
         g.drawImage(background, 0, 0, null);
         this.levelManager.render(g, xLevelOffset, yLevelOffset);
         this.player.render(g, xLevelOffset, yLevelOffset);
-        this.enemyManager.render(g, xLevelOffset, yLevelOffset);
         this.objectManager.render(g, xLevelOffset, yLevelOffset);
-        for (Particle particle : particles) {
-            particle.render(g);
-        }
+        this.enemyManager.render(g, xLevelOffset, yLevelOffset);
         if (paused) {
             g.setColor(new Color(0, 0, 0, 150));
             g.fillRect(0, 0, (int)Tiles.GAME_WIDTH.getValue(), (int)Tiles.GAME_HEIGHT.getValue());

@@ -9,7 +9,7 @@ public class LevelObject {
     private int xOffset, yOffset;
     private final BufferedImage objectModel;
     private final int w, h;
-    private boolean anotherLayer;
+    private int layer;
 
     public LevelObject(int tilesetID, int objectID, BufferedImage objectModel, int w, int h) {
         this.tilesetID = tilesetID;
@@ -47,11 +47,11 @@ public class LevelObject {
         return h;
     }
 
-    public boolean isAnotherLayer() {
-        return anotherLayer;
+    public int getLayer() {
+        return layer;
     }
 
-    public void setAnotherLayer(boolean anotherLayer) {
-        this.anotherLayer = anotherLayer;
+    public void setLayer(int layer) {
+        this.layer = layer;
     }
 }

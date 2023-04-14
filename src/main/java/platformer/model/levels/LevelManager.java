@@ -2,6 +2,7 @@ package platformer.model.levels;
 
 import platformer.model.Tiles;
 import platformer.core.Game;
+import platformer.model.entities.effects.Particle;
 import platformer.state.PlayingState;
 import platformer.utils.Utils;
 
@@ -17,12 +18,14 @@ public class LevelManager {
     private BufferedImage[] levelSprite;
     private final ArrayList<Level> levels = new ArrayList<>();
     private int levelIndex = 0;
+    private Particle[] particles;
 
     private BufferedImage leftEnd, rightEnd;
 
     public LevelManager(Game game, PlayingState playingState) {
         this.game = game;
         this.playingState = playingState;
+        this.particles = Utils.getInstance().loadParticles();
         this.levelObjectManager = new LevelObjectManager();
         loadFirstLayerSprite();
         buildLevels();
@@ -69,25 +72,24 @@ public class LevelManager {
         loadLevel();
     }
 
-    private void renderDeco(Graphics g, int xLevelOffset, int yLevelOffset, boolean anotherLayer) {
+    private void renderDeco(Graphics g, int xLevelOffset, int yLevelOffset, int layer) {
         for (int i = 0; i < levels.get(levelIndex).getLvlData().length; i++) {
             for (int j = 0; j < levels.get(levelIndex).getLvlData()[0].length; j++) {
                 int index = levels.get(levelIndex).getDecoSpriteIndex(i, j);
-                if (index == -1 || index > 12) continue;
+                if (index == -1 || index > 42) continue;
                 int x = (int)(Tiles.TILES_SIZE.getValue()*i-xLevelOffset);
                 int y =  (int)(Tiles.TILES_SIZE.getValue()*j-yLevelOffset);
-                int w = (int)(1+Tiles.TILES_SIZE.getValue());
-                int h = (int)(1+Tiles.TILES_SIZE.getValue());
                 LevelObject levelObject = levelObjectManager.getLvlObjects()[index];
-                if (levelObject.isAnotherLayer() == anotherLayer)
+                if (levelObject.getLayer() == layer)
                     g.drawImage(levelObject.getObjectModel(), x, y+levelObject.getYOffset(), levelObject.getW(), levelObject.getH(), null);
             }
         }
     }
 
     public void render(Graphics g, int xLevelOffset, int yLevelOffset) {
-        renderDeco(g, xLevelOffset, yLevelOffset, false);
-        g.setColor(new Color(5, 75, 60, 110));
+        renderDeco(g, xLevelOffset, yLevelOffset, 0);
+        renderDeco(g, xLevelOffset, yLevelOffset, 1);
+        g.setColor(new Color(1, 130, 120, 110));
         g.fillRect(0, 0, (int)Tiles.GAME_WIDTH.getValue(), (int)Tiles.GAME_HEIGHT.getValue());
         for (int i = 0; i < levels.get(levelIndex).getLvlData().length; i++) {
             for (int j = 0; j < levels.get(levelIndex).getLvlData()[0].length; j++) {
@@ -104,7 +106,10 @@ public class LevelManager {
                 }
             }
         }
-        renderDeco(g, xLevelOffset, yLevelOffset, true);
+        for (Particle particle : particles) {
+            particle.render(g);
+        }
+        renderDeco(g, xLevelOffset, yLevelOffset, 2);
     }
 
     private void renderExit(Graphics g, int xLevelOffset, int yLevelOffset, BufferedImage object, int i, int j, boolean flag) {
@@ -118,4 +123,7 @@ public class LevelManager {
         return levels.get(levelIndex);
     }
 
+    public Particle[] getParticles() {
+        return particles;
+    }
 }
