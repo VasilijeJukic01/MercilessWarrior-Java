@@ -142,8 +142,14 @@ public class ObjectManager {
     public double getXObjectBound(Rectangle2D.Double hitBox, boolean inAir, double dx) {
         for (Container c : containers) {
             if (c.isAlive() && checkTouch(c, hitBox, "X")) {
-                if (c.getHitBox().x < hitBox.x && dx > 0) return hitBox.x+1;
-                else if(c.getHitBox().x > hitBox.x && dx < 0) return hitBox.x-1;
+                if (c.getHitBox().x < hitBox.x && dx > 0) {
+                    if (Utils.getInstance().canMoveHere(hitBox.x+1, hitBox.y, hitBox.width, hitBox.height, playingState.getLevelManager().getCurrentLevel().getLvlData()))
+                        return hitBox.x+1;
+                }
+                else if(c.getHitBox().x > hitBox.x && dx < 0) {
+                    if (Utils.getInstance().canMoveHere(hitBox.x-1, hitBox.y, hitBox.width, hitBox.height, playingState.getLevelManager().getCurrentLevel().getLvlData()))
+                        return hitBox.x-1;
+                }
                 else return hitBox.x;
 
             }
