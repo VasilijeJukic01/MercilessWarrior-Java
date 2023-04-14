@@ -15,8 +15,10 @@ import java.util.ArrayList;
 @SuppressWarnings("FieldCanBeLocal")
 public class Level {
 
-    private final BufferedImage data;
+    private final BufferedImage dataL1;
+    private final BufferedImage dataL2;
     private int[][] lvlData;
+    private int[][] decoData;
     private ArrayList<Skeleton> skeletons;
     private ArrayList<Potion> potions;
     private ArrayList<Container> containers;
@@ -30,37 +32,43 @@ public class Level {
     private int yMaxLevelOffset;
     private final Point playerSpawn;
 
-    public Level(BufferedImage data) {
-        this.data = data;
+    public Level(BufferedImage dataL1, BufferedImage dataL2) {
+        this.dataL1 = dataL1;
+        this.dataL2 = dataL2;
         init();
         setOffset();
-        this.playerSpawn = Utils.getInstance().getPlayerSpawn(data);
+        this.playerSpawn = Utils.getInstance().getPlayerSpawn(dataL1);
     }
 
     private void init() {
-        this.lvlData = Utils.getInstance().getLevelData(data);
-        this.skeletons = Utils.getInstance().getSkeletonData(data);
-        this.spikes = Utils.getInstance().getSpikeData(data);
-        this.arrowLaunchers = Utils.getInstance().getArrowLauncherData(data);
+        this.lvlData = Utils.getInstance().getLevelData(dataL1);
+        this.decoData = Utils.getInstance().getDecoData(dataL2);
+        this.skeletons = Utils.getInstance().getSkeletonData(dataL1);
+        this.spikes = Utils.getInstance().getSpikeData(dataL1);
+        this.arrowLaunchers = Utils.getInstance().getArrowLauncherData(dataL1);
         loadObjectData();
     }
 
     public void loadObjectData() {
-        this.potions = Utils.getInstance().getPotionData(data);
-        this.containers = Utils.getInstance().getContainerData(data);
+        this.potions = Utils.getInstance().getPotionData(dataL1);
+        this.containers = Utils.getInstance().getContainerData(dataL1);
     }
 
     public void setOffset() {
-        this.levelTilesWidth = data.getWidth();
+        this.levelTilesWidth = dataL1.getWidth();
         this.xMaxTilesOffset = levelTilesWidth - (int)(Tiles.TILES_WIDTH.getValue());
         this.xMaxLevelOffset = xMaxTilesOffset * (int)Tiles.TILES_SIZE.getValue();
-        this.levelTilesHeight = data.getHeight();
+        this.levelTilesHeight = dataL1.getHeight();
         this.yMaxTilesOffset = levelTilesHeight - (int)(Tiles.TILES_HEIGHT.getValue());
         this.yMaxLevelOffset = yMaxTilesOffset * (int)(Tiles.TILES_SIZE.getValue());
     }
 
     public int getSpriteIndex(int x, int y) {
         return lvlData[x][y];
+    }
+
+    public int getDecoSpriteIndex(int x, int y) {
+        return decoData[x][y];
     }
 
     public int[][] getLvlData() {

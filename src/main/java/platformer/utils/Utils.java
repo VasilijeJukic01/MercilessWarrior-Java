@@ -54,10 +54,18 @@ public class Utils {
     }
 
     // Data gatherer
-    public BufferedImage[] getAllLevels() {
+    public BufferedImage[] getAllLevelsL1() {
         BufferedImage[] levels = new BufferedImage[2];
         for (int i = 0; i < 2; i++) {
-            levels[i] = importImage("src/main/resources/images/levels/level"+(i+1)+".png", -1, -1);
+            levels[i] = importImage("src/main/resources/images/levels/level"+(i+1)+"_layer1.png", -1, -1);
+        }
+        return levels;
+    }
+
+    public BufferedImage[] getAllLevelsL2() {
+        BufferedImage[] levels = new BufferedImage[2];
+        for (int i = 0; i < 2; i++) {
+            levels[i] = importImage("src/main/resources/images/levels/level"+(i+1)+"_layer2.png", -1, -1);
         }
         return levels;
     }
@@ -75,6 +83,19 @@ public class Utils {
             }
         }
         return lvlData;
+    }
+
+    public int[][] getDecoData(BufferedImage level) {
+        int[][] decoData = new int[level.getWidth()][level.getHeight()];
+        for (int i = 0; i < level.getWidth(); i++) {
+            for (int j = 0; j < level.getHeight(); j++) {
+                Color color = new Color(level.getRGB(i, j));
+                int value = color.getBlue();
+                if (value >= 64) value = -1;
+                decoData[i][j] = value;
+            }
+        }
+        return decoData;
     }
 
     public ArrayList<Skeleton> getSkeletonData(BufferedImage level) {

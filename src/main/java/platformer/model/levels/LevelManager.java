@@ -13,6 +13,7 @@ public class LevelManager {
 
     private final Game game;
     private final PlayingState playingState;
+    private final LevelObjectManager levelObjectManager;
     private BufferedImage[] levelSprite;
     private final ArrayList<Level> levels = new ArrayList<>();
     private int levelIndex = 0;
@@ -22,11 +23,12 @@ public class LevelManager {
     public LevelManager(Game game, PlayingState playingState) {
         this.game = game;
         this.playingState = playingState;
-        loadLevelSprite();
+        this.levelObjectManager = new LevelObjectManager();
+        loadFirstLayerSprite();
         buildLevels();
     }
 
-    private void loadLevelSprite() {
+    private void loadFirstLayerSprite() {
         BufferedImage temp = Utils.getInstance().importImage("src/main/resources/images/levels/mossyTiles.png", 224, 224);
         levelSprite = new BufferedImage[49];
         for (int i = 0; i < 7; i++) {
@@ -40,9 +42,10 @@ public class LevelManager {
     }
 
     private void buildLevels() {
-        BufferedImage[] lvls = Utils.getInstance().getAllLevels();
-        for (BufferedImage lvl : lvls) {
-            levels.add(new Level(lvl));
+        BufferedImage[] lvlsL1 = Utils.getInstance().getAllLevelsL1();
+        BufferedImage[] lvlsL2 = Utils.getInstance().getAllLevelsL2();
+        for (int i = 0; i < lvlsL1.length; i++) {
+            levels.add(new Level(lvlsL1[i], lvlsL2[i]));
         }
     }
 
@@ -66,7 +69,26 @@ public class LevelManager {
         loadLevel();
     }
 
+    private void renderDeco(Graphics g, int xLevelOffset, int yLevelOffset, boolean anotherLayer) {
+        for (int i = 0; i < levels.get(levelIndex).getLvlData().length; i++) {
+            for (int j = 0; j < levels.get(levelIndex).getLvlData()[0].length; j++) {
+                int index = levels.get(levelIndex).getDecoSpriteIndex(i, j);
+                if (index == -1 || index > 12) continue;
+                int x = (int)(Tiles.TILES_SIZE.getValue()*i-xLevelOffset);
+                int y =  (int)(Tiles.TILES_SIZE.getValue()*j-yLevelOffset);
+                int w = (int)(1+Tiles.TILES_SIZE.getValue());
+                int h = (int)(1+Tiles.TILES_SIZE.getValue());
+                LevelObject levelObject = levelObjectManager.getLvlObjects()[index];
+                if (levelObject.isAnotherLayer() == anotherLayer)
+                    g.drawImage(levelObject.getObjectModel(), x, y+levelObject.getYOffset(), levelObject.getW(), levelObject.getH(), null);
+            }
+        }
+    }
+
     public void render(Graphics g, int xLevelOffset, int yLevelOffset) {
+        renderDeco(g, xLevelOffset, yLevelOffset, false);
+        g.setColor(new Color(5, 75, 60, 110));
+        g.fillRect(0, 0, (int)Tiles.GAME_WIDTH.getValue(), (int)Tiles.GAME_HEIGHT.getValue());
         for (int i = 0; i < levels.get(levelIndex).getLvlData().length; i++) {
             for (int j = 0; j < levels.get(levelIndex).getLvlData()[0].length; j++) {
                 int index = levels.get(levelIndex).getSpriteIndex(i, j);
@@ -82,6 +104,7 @@ public class LevelManager {
                 }
             }
         }
+        renderDeco(g, xLevelOffset, yLevelOffset, true);
     }
 
     private void renderExit(Graphics g, int xLevelOffset, int yLevelOffset, BufferedImage object, int i, int j, boolean flag) {
