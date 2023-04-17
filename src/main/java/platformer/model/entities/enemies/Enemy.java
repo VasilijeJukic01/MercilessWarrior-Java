@@ -80,7 +80,7 @@ public abstract class Enemy extends Entity implements Debug {
     // Attack
     protected void checkPlayerHit(Rectangle2D.Double attackBox, Player player) {
         if (attackBox.intersects(player.getHitBox()))
-            player.changeHealth(-ModelUtils.getInstance().getDamage(enemyType));
+            player.changeHealth(-ModelUtils.getInstance().getDamage(enemyType), this);
         attackCheck = true;
     }
 

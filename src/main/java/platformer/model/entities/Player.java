@@ -7,6 +7,7 @@ import platformer.audio.Sounds;
 import platformer.core.Game;
 import platformer.model.entities.effects.EffectType;
 import platformer.model.Tiles;
+import platformer.model.entities.enemies.Enemy;
 import platformer.model.entities.enemies.EnemyManager;
 import platformer.model.objects.ObjectManager;
 import platformer.utils.Utils;
@@ -16,12 +17,13 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 
 @SuppressWarnings("FieldCanBeLocal")
-public class Player extends Entity{
+public class Player extends Entity {
 
     private final Game game;
     private final EnemyManager enemyManager;
     private final ObjectManager objectManager;
-    // Anim &
+    private int[][] levelData;
+    // Core Variables
     private final BufferedImage[][] animations;
     private final BufferedImage[][] effects;
     private final int animSpeed = 20;
@@ -30,7 +32,6 @@ public class Player extends Entity{
     private AttackState attackState;
     private final double playerSpeed = 0.5 * Tiles.SCALE.getValue();
     private final double playerBoostSpeed = 0.6 * Tiles.SCALE.getValue();
-    private int[][] levelData;
     private final double xHitBoxOffset = 36 * Tiles.SCALE.getValue(), yHitBoxOffset = 16 * Tiles.SCALE.getValue();
     // Physics
     private double airSpeed = 0;
@@ -39,7 +40,7 @@ public class Player extends Entity{
     private final double jumpSpeed = -2.25 * Tiles.SCALE.getValue();
     private final double collisionFallSpeed = 0.5 * Tiles.SCALE.getValue();
     // Flags
-    private boolean left, right, jump, moving, attacking;
+    private boolean left, right, jump, moving, attacking, hit;
     private boolean doubleJump, onWall, onObject, wallPush, dash, canDash = true;
     // Status
     private final BufferedImage statusBar;
@@ -49,11 +50,12 @@ public class Player extends Entity{
     private int currentJumps = 0, dashCount = 0;
     private int dashTick = 0;
 
+    // Init
     public Player(int xPos, int yPos, int width, int height, EnemyManager enemyManager, ObjectManager objectManager, Game game) {
         super(xPos, yPos, width, height, 100);
+        this.game = game;
         this.enemyManager = enemyManager;
         this.objectManager = objectManager;
-        this.game = game;
         this.animations = AnimationUtils.getInstance().loadPlayerAnimations(width, height);
         this.effects = AnimationUtils.getInstance().loadEffects();
         initHitBox((int)(19*Tiles.SCALE.getValue()), (int)(44*Tiles.SCALE.getValue()));
@@ -90,6 +92,11 @@ public class Player extends Entity{
                 animIndex = 0;
                 attacking = false;
                 attackCheck = false;
+                if (hit) {
+                    hit = false;
+                    airSpeed = 0;
+                    if (!Utils.getInstance().isEntityOnFloor(hitBox, levelData)) inAir = true;
+                }
             }
         }
         // Wall flip lock
@@ -119,9 +126,8 @@ public class Player extends Entity{
 
     private void setAnimation() {
         AnimType previousAction = entityState;
-        if (moving) {
-            entityState = AnimType.RUN;
-        }
+
+        if (moving) entityState = AnimType.RUN;
         else entityState = AnimType.IDLE;
 
         if (inAir) {
@@ -141,6 +147,7 @@ public class Player extends Entity{
             animTick = 0;
             return;
         }
+        if (hit) entityState = AnimType.HIT;
         if (attacking && !onWall) {
             if (attackState == AttackState.ATTACK_1) entityState = AnimType.ATTACK_1;
             else if (attackState == AttackState.ATTACK_2) entityState = AnimType.ATTACK_2;
@@ -168,8 +175,8 @@ public class Player extends Entity{
         if (left && inAir && wallPush && !dash) dx -= playerBoostSpeed;
 
         if (dash) {
-            if (!left && !right && flipSign == -1) dx = -playerSpeed;
-            else if (!left && !right && flipSign == 1) dx = playerSpeed;
+            if (((!left && !right) || (right && left)) && flipSign == -1) dx = -playerSpeed;
+            else if (((!left && !right) || (right && left)) && flipSign == 1) dx = playerSpeed;
             dx *= 6;
         }
 
@@ -177,12 +184,8 @@ public class Player extends Entity{
 
         if (inAir && !dash) {
             if (Utils.getInstance().canMoveHere(hitBox.x, hitBox.y + airSpeed, hitBox.width, hitBox.height, levelData)) {
-                if (onWall && airSpeed > 0) {
-                    airSpeed += wallGravity;
-                }
-                else {
-                    airSpeed += gravity;
-                }
+                if (onWall && airSpeed > 0) airSpeed += wallGravity;
+                else airSpeed += gravity;
                 hitBox.y += airSpeed;
             }
             else {
@@ -242,6 +245,10 @@ public class Player extends Entity{
     }
 
     private void updateAttackBox() {
+        if ((right && left) || (!right && !left)) {
+            if (flipSign == 1) attackBox.x = hitBox.x + hitBox.width + (int)(10*Tiles.SCALE.getValue());
+            else attackBox.x = hitBox.x - hitBox.width - (int)(10*Tiles.SCALE.getValue());
+        }
         if (right || (dash && flipSign == 1)) attackBox.x = hitBox.x + hitBox.width + (int)(10*Tiles.SCALE.getValue());
         else if (left || (dash && flipSign == -1)) attackBox.x = hitBox.x - hitBox.width - (int)(10*Tiles.SCALE.getValue());
         attackBox.y = hitBox.y + (int)(10*Tiles.SCALE.getValue());
@@ -251,6 +258,7 @@ public class Player extends Entity{
         if (attacking || dash) checkAttack();
     }
 
+    // Checks
     private void checkAttack() {
         if (attackCheck || animIndex != 1) return;
         attackCheck = true;
@@ -260,14 +268,19 @@ public class Player extends Entity{
     }
 
     private void checkOnObject() {
-        if (objectManager.isPlayerTouchingObject() && !onObject) {
-            onObject = true;
-        }
-        else if (onObject && !objectManager.isPlayerTouchingObject()) {
-            onObject = false;
-        }
+        if (objectManager.isPlayerTouchingObject() && !onObject) onObject = true;
+        else if (onObject && !objectManager.isPlayerTouchingObject()) onObject = false;
     }
 
+    private void checkPotionCollide() {
+        objectManager.checkObjectPick(hitBox);
+    }
+
+    private void checkTrapCollide() {
+        objectManager.checkSpikeHit(this);
+    }
+
+    // Actions
     public void doJump() {
         if (Utils.getInstance().isOnWall(hitBox, levelData, Direction.LEFT) && left && !right) return;
         if (Utils.getInstance().isOnWall(hitBox, levelData, Direction.RIGHT) && right && !left) return;
@@ -288,21 +301,40 @@ public class Player extends Entity{
         if (Utils.getInstance().isTouchingWall(hitBox,Direction.LEFT) || Utils.getInstance().isTouchingWall(hitBox,Direction.RIGHT)) return;
         if (dashCount > 0) return;
         if (dash || !canDash) return;
-        if (currentStamina >= 2) {
+        if (currentStamina >= 3) {
             dash = true;
             dashCount++;
             canDash = false;
             Audio.getInstance().getAudioPlayer().playSound(Sounds.DASH.ordinal());
-            changeStamina(-2);
+            changeStamina(-3);
         }
     }
 
-    private void checkPotionCollide() {
-        objectManager.checkObjectPick(hitBox);
+    public void changeHealth(int value) {
+        if (value < 0) {
+            if (hit) return;
+            else hit = true;
+        }
+        currentHealth += value;
+        currentHealth = Math.max(Math.min(currentHealth, maxHealth), 0);
     }
 
-    private void checkTrapCollide() {
-        objectManager.checkSpikeHit(this);
+    public void changeHealth(int value, Enemy e) {
+        if (hit) return;
+        changeHealth(value);
+        pushOffsetDirection = Direction.UP;
+        pushOffset = 0;
+        if (e.getHitBox().x < hitBox.x) pushDirection = Direction.RIGHT;
+        else pushDirection = Direction.LEFT;
+    }
+
+    public void changeStamina(int value) {
+        currentStamina += value;
+        currentStamina = Math.max(Math.min(currentStamina, maxStamina), 0);
+    }
+
+    public void kill() {
+        currentHealth = 0;
     }
 
     // Core
@@ -324,7 +356,12 @@ public class Player extends Entity{
         }
         updateAttackBox();
         setAnimation();
-        updatePosition();
+        if (hit) {
+            if (animIndex <= animations[entityState.ordinal()].length - 2)
+                pushBack(pushDirection, levelData, 1.2, playerSpeed);
+            updatePushOffset();
+        }
+        else updatePosition();
         if (moving) {
             checkPotionCollide();
             checkTrapCollide();
@@ -357,51 +394,32 @@ public class Player extends Entity{
         }
     }
 
-    public void render(Graphics g, int xLevelOffset, int yLevelOffset) {
-        renderEffects(g, xLevelOffset, yLevelOffset);
-        int playerXPos = (int)(hitBox.x-xHitBoxOffset-xLevelOffset+flipCoefficient);
-        int playerYPos = (int)(hitBox.y-yHitBoxOffset-yLevelOffset);
-        g.drawImage(animations[entityState.ordinal()][animIndex], playerXPos, playerYPos, flipSign*width, height, null);
-        g.drawImage(statusBar,(int)(10*Tiles.SCALE.getValue()), (int)(15*Tiles.SCALE.getValue()), (int)(192*Tiles.SCALE.getValue()), (int)(58*Tiles.SCALE.getValue()), null);
+    private void renderStatusBar(Graphics g) {
         g.setColor(Color.RED);
         g.fillRect((int)(44*Tiles.SCALE.getValue()), (int)(29*Tiles.SCALE.getValue()), healthWidth, (int)(4*Tiles.SCALE.getValue()));
         g.setColor(Color.BLUE);
         g.fillRect((int)(44*Tiles.SCALE.getValue()), (int)(48*Tiles.SCALE.getValue()), staminaWidth, (int)(4*Tiles.SCALE.getValue()));
+    }
+
+    public void render(Graphics g, int xLevelOffset, int yLevelOffset) {
+        renderEffects(g, xLevelOffset, yLevelOffset);
+        int playerXPos = (int)(hitBox.x-xHitBoxOffset-xLevelOffset+flipCoefficient);
+        int playerYPos = (int)(hitBox.y-yHitBoxOffset-yLevelOffset)+(int)pushOffset;
+        g.drawImage(animations[entityState.ordinal()][animIndex], playerXPos, playerYPos, flipSign*width, height, null);
+        g.drawImage(statusBar,(int)(10*Tiles.SCALE.getValue()), (int)(15*Tiles.SCALE.getValue()), (int)(192*Tiles.SCALE.getValue()), (int)(58*Tiles.SCALE.getValue()), null);
         hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.GREEN);
         attackBoxRenderer(g, xLevelOffset, yLevelOffset);
+        renderStatusBar(g);
     }
 
-    public void changeHealth(int value) {
-        this.currentHealth += value;
-        if (currentHealth <= 0) {
-            currentHealth = 0;
-        }
-        else if (currentHealth >= maxHealth) {
-            currentHealth = maxHealth;
-        }
-    }
-
-    public void changeStamina(int value) {
-        this.currentStamina += value;
-        if (currentStamina <= 0) {
-            currentStamina = 0;
-        }
-        else if (currentStamina >= maxStamina) {
-            currentStamina = maxStamina;
-        }
-    }
-
+    // Getters & Setters
     public void resetDirections() {
         left = right = false;
         animIndex = animTick = 0;
     }
 
-    public void kill() {
-        currentHealth = 0;
-    }
-
     public void reset() {
-        moving = attacking = inAir = false;
+        moving = attacking = inAir = hit = false;
         left = right = jump = false;
         animIndex = animTick = 0;
         entityState = AnimType.IDLE;
