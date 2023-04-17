@@ -42,7 +42,7 @@ public class Utils {
     }
 
     // Rotate image [Angle = {PI/2, PI, 3PI/2}]
-    public  BufferedImage rotateImage(BufferedImage src, double angle) {
+    public BufferedImage rotateImage(BufferedImage src, double angle) {
         int w = src.getWidth();
         int h = src.getHeight();
         BufferedImage dest = new BufferedImage(h, w, src.getType());
@@ -53,11 +53,28 @@ public class Utils {
         return dest;
     }
 
+    public BufferedImage resize(BufferedImage img, int newW, int newH) {
+        Image tmp = img.getScaledInstance(newW, newH, Image.SCALE_SMOOTH);
+        BufferedImage newImg = new BufferedImage(newW, newH, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2d = newImg.createGraphics();
+        g2d.drawImage(tmp, 0, 0, null);
+        g2d.dispose();
+        return newImg;
+    }
+
     // Data gatherer
-    public BufferedImage[] getAllLevels() {
+    public BufferedImage[] getAllLevelsL1() {
         BufferedImage[] levels = new BufferedImage[2];
         for (int i = 0; i < 2; i++) {
-            levels[i] = importImage("src/main/resources/images/levels/level"+(i+1)+".png", -1, -1);
+            levels[i] = importImage("src/main/resources/images/levels/level"+(i+1)+"_layer1.png", -1, -1);
+        }
+        return levels;
+    }
+
+    public BufferedImage[] getAllLevelsL2() {
+        BufferedImage[] levels = new BufferedImage[2];
+        for (int i = 0; i < 2; i++) {
+            levels[i] = importImage("src/main/resources/images/levels/level"+(i+1)+"_layer2.png", -1, -1);
         }
         return levels;
     }
@@ -68,13 +85,27 @@ public class Utils {
             for (int j = 0; j < level.getHeight(); j++) {
                 Color color = new Color(level.getRGB(i, j));
                 int value = color.getRed();
-                if (value == 50) value = -2;
-                else if (value == 51) value = -3;
-                else if (value >= 49) value = -1;
+                if (value >= 49) value = -1;
+                if (color.getBlue() == 255 && color.getGreen() == 255) value += 255;
                 lvlData[i][j] = value;
             }
         }
         return lvlData;
+    }
+
+    public int[][] getDecoData(BufferedImage level, boolean layer) {
+        int[][] data = new int[level.getWidth()][level.getHeight()];
+        for (int i = 0; i < level.getWidth(); i++) {
+            for (int j = 0; j < level.getHeight(); j++) {
+                Color color = new Color(level.getRGB(i, j));
+                int value;
+                if (layer) value = color.getGreen();
+                else value = color.getBlue();
+                if ((value >= 40 && !layer) || (value >= 4 && layer)) value = -1;
+                data[i][j] = value;
+            }
+        }
+        return data;
     }
 
     public ArrayList<Skeleton> getSkeletonData(BufferedImage level) {
@@ -282,8 +313,8 @@ public class Utils {
         int xTile = (int)(hitBox.x/ Tiles.TILES_SIZE.getValue());
         int yTile = (int)(hitBox.y / Tiles.TILES_SIZE.getValue());
         int xTileRight = (int)((hitBox.x+ hitBox.width)/ Tiles.TILES_SIZE.getValue());
-        if (level.getSpriteIndex(xTile, yTile) == -2 || level.getSpriteIndex(xTileRight, yTile) == -2) return 1;
-        if (level.getSpriteIndex(xTile, yTile) == -3) return -1;
+        if (level.getDecoSpriteIndex(xTile, yTile) == 36 || level.getDecoSpriteIndex(xTileRight, yTile) == 36) return 1;
+        if (level.getDecoSpriteIndex(xTile, yTile) == 35) return -1;
         return 0;
     }
 
