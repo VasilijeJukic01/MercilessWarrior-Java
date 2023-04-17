@@ -31,7 +31,7 @@ public class Player extends Entity{
     private final double playerSpeed = 0.5 * Tiles.SCALE.getValue();
     private final double playerBoostSpeed = 0.6 * Tiles.SCALE.getValue();
     private int[][] levelData;
-    private final double xHitBoxOffset = 48 * Tiles.SCALE.getValue(), yHitBoxOffset = 16 * Tiles.SCALE.getValue();
+    private final double xHitBoxOffset = 36 * Tiles.SCALE.getValue(), yHitBoxOffset = 16 * Tiles.SCALE.getValue();
     // Physics
     private double airSpeed = 0;
     private final double gravity = 0.035 * Tiles.SCALE.getValue();
@@ -56,7 +56,7 @@ public class Player extends Entity{
         this.game = game;
         this.animations = AnimationUtils.getInstance().loadPlayerAnimations(width, height);
         this.effects = AnimationUtils.getInstance().loadEffects();
-        initHitBox((int)(21*Tiles.SCALE.getValue()), (int)(44*Tiles.SCALE.getValue()));
+        initHitBox((int)(19*Tiles.SCALE.getValue()), (int)(44*Tiles.SCALE.getValue()));
         initAttackBox();
         this.statusBar = Utils.getInstance().importImage("src/main/resources/images/health_power_bar.png",-1,-1);
     }
@@ -94,7 +94,7 @@ public class Player extends Entity{
         }
         // Wall flip lock
         if (moving && left && !onWall) {
-            this.flipCoefficient = width;
+            this.flipCoefficient = (int)(width-hitBox.width-13*Tiles.SCALE.getValue());
             this.flipSign = -1;
         }
         else if (moving && right && !onWall) {
@@ -343,13 +343,13 @@ public class Player extends Entity{
 
     private void renderEffects(Graphics g, int xLevelOffset, int yLevelOffset) {
         if (playerEffect == EffectType.DOUBLE_JUMP && doubleJump) {
-            int effectXPos = (int)(hitBox.x-xHitBoxOffset-xLevelOffset)+(int)(30*Tiles.SCALE.getValue());
+            int effectXPos = (int)(hitBox.x-xHitBoxOffset-xLevelOffset)+(int)(20*Tiles.SCALE.getValue());
             int effectYPos = (int)(hitBox.y-yHitBoxOffset-yLevelOffset)+(int)(55*Tiles.SCALE.getValue());
             g.drawImage(effects[0][effectIndex], effectXPos, effectYPos, effects[0][effectIndex].getWidth(), effects[0][effectIndex].getHeight(), null);
         }
         else if (playerEffect == EffectType.WALL_SLIDE && onWall) {
-            int newFlip = (flipCoefficient != 0) ? (0) : (width), newSign = (flipSign == 1) ? (-1) : (1);
-            int effectXPos = (int)(hitBox.x-xHitBoxOffset-xLevelOffset)+(int)(newSign*33*Tiles.SCALE.getValue())+newFlip;
+            int newFlip = (flipCoefficient != 0) ? (0) : (int)(width-hitBox.width-10*Tiles.SCALE.getValue()), newSign = (flipSign == 1) ? (-1) : (1);
+            int effectXPos = (int)(hitBox.x-xHitBoxOffset-xLevelOffset)+(int)(newSign*22*Tiles.SCALE.getValue())+newFlip;
             int effectYPos = (int)(hitBox.y-yHitBoxOffset-yLevelOffset)-(int)(Tiles.SCALE.getValue());
             int effectWid = newSign*(effects[1][effectIndex].getWidth()+(int)(10*Tiles.SCALE.getValue()));
             int effectHei = effects[1][effectIndex].getHeight()+(int)(50*Tiles.SCALE.getValue());
@@ -359,7 +359,7 @@ public class Player extends Entity{
 
     public void render(Graphics g, int xLevelOffset, int yLevelOffset) {
         renderEffects(g, xLevelOffset, yLevelOffset);
-        int playerXPos = (int)(hitBox.x-xHitBoxOffset-xLevelOffset)+flipCoefficient;
+        int playerXPos = (int)(hitBox.x-xHitBoxOffset-xLevelOffset+flipCoefficient);
         int playerYPos = (int)(hitBox.y-yHitBoxOffset-yLevelOffset);
         g.drawImage(animations[entityState.ordinal()][animIndex], playerXPos, playerYPos, flipSign*width, height, null);
         g.drawImage(statusBar,(int)(10*Tiles.SCALE.getValue()), (int)(15*Tiles.SCALE.getValue()), (int)(192*Tiles.SCALE.getValue()), (int)(58*Tiles.SCALE.getValue()), null);

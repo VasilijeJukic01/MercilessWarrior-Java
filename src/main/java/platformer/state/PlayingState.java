@@ -60,7 +60,7 @@ public class PlayingState extends StateAbstraction implements State{
         this.levelManager = new LevelManager(game, this);
         this.objectManager = new ObjectManager(this);
         this.enemyManager = new EnemyManager();
-        this.player = new Player((int)(300 * Tiles.SCALE.getValue()), (int)(250 * Tiles.SCALE.getValue()), (int)(115 * Tiles.SCALE.getValue()),
+        this.player = new Player((int)(300 * Tiles.SCALE.getValue()), (int)(250 * Tiles.SCALE.getValue()), (int)(125 * Tiles.SCALE.getValue()),
                 (int)(80 * Tiles.SCALE.getValue()), enemyManager, objectManager, game);
         player.loadLvlData(levelManager.getCurrentLevel().getLvlData());
         player.setSpawn(levelManager.getCurrentLevel().getPlayerSpawn());

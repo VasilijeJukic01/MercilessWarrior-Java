@@ -42,7 +42,7 @@ public class Utils {
     }
 
     // Rotate image [Angle = {PI/2, PI, 3PI/2}]
-    public  BufferedImage rotateImage(BufferedImage src, double angle) {
+    public BufferedImage rotateImage(BufferedImage src, double angle) {
         int w = src.getWidth();
         int h = src.getHeight();
         BufferedImage dest = new BufferedImage(h, w, src.getType());
@@ -51,6 +51,15 @@ public class Utils {
         graphics2D.rotate(angle, h / 2.0, w / 2.0);
         graphics2D.drawRenderedImage(src, null);
         return dest;
+    }
+
+    public BufferedImage resize(BufferedImage img, int newW, int newH) {
+        Image tmp = img.getScaledInstance(newW, newH, Image.SCALE_SMOOTH);
+        BufferedImage newImg = new BufferedImage(newW, newH, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2d = newImg.createGraphics();
+        g2d.drawImage(tmp, 0, 0, null);
+        g2d.dispose();
+        return newImg;
     }
 
     // Data gatherer

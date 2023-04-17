@@ -13,75 +13,76 @@ public class AnimationUtils {
     private AnimationUtils() {}
 
     public BufferedImage[][] loadPlayerAnimations(int w, int h) {
+        BufferedImage sprite = Utils.getInstance().importImage("src/main/resources/images/player/playerSheet.png", -1, -1);
         BufferedImage[][] anim = new BufferedImage[13][13];
 
         // 0 Idle anim
         BufferedImage[] idleAnim = new BufferedImage[8];
         for (int i = 0; i < idleAnim.length; i++) {
-            idleAnim[i] = Utils.getInstance().importImage("src/main/resources/images/player/Idle/Fire_Warrior_Idle"+(i+1)+".png", w, h);
+            idleAnim[i] = Utils.getInstance().resize(sprite.getSubimage(i*144, 0, 144, 80), w, h);
         }
         anim[0] = idleAnim;
 
         // 1 Run anim
         BufferedImage[] runAnim = new BufferedImage[8];
         for (int i = 0; i < runAnim.length; i++) {
-            runAnim[i] = Utils.getInstance().importImage("src/main/resources/images/player/Run/Fire_Warrior_Run"+(i+1)+".png", w, h);
+            runAnim[i] = Utils.getInstance().resize(sprite.getSubimage(i*144, 80, 144, 80), w, h);
         }
         anim[1] = runAnim;
 
         // 2 Jump anim
         BufferedImage[] jumpAnim = new BufferedImage[3];
         for (int i = 0; i < jumpAnim.length; i++) {
-            jumpAnim[i] = Utils.getInstance().importImage("src/main/resources/images/player/Jump/Fire_Warrior_Jump"+(i+1)+".png", w, h);
+            jumpAnim[i] = Utils.getInstance().resize(sprite.getSubimage(i*144, 6*80, 144, 80), w, h);
         }
         anim[2] = jumpAnim;
 
         // 3 Fall anim
         BufferedImage[] fallAnim = new BufferedImage[3];
         for (int i = 0; i < fallAnim.length; i++) {
-            fallAnim[i] = Utils.getInstance().importImage("src/main/resources/images/player/Jump/Fire_Warrior_Fall"+(i+1)+".png", w, h);
+            fallAnim[i] = Utils.getInstance().resize(sprite.getSubimage(i*144, 8*80, 144, 80), w, h);
         }
         anim[3] = fallAnim;
 
         // 4 Attack 1 anim
         BufferedImage[] attack1 = new BufferedImage[4];
         for (int i = 0; i < attack1.length; i++) {
-            attack1[i] = Utils.getInstance().importImage("src/main/resources/images/player/Attack_1/Fire_Warrior_Attack1_"+(i+1)+".png", w, h);
+            attack1[i] = Utils.getInstance().resize(sprite.getSubimage(i*144, 10*80, 144, 80), w, h);
         }
         anim[4] = attack1;
 
         // 5 Attack 2 anim
         BufferedImage[] attack2 = new BufferedImage[4];
         for (int i = 0; i < attack2.length; i++) {
-            attack2[i] = Utils.getInstance().importImage("src/main/resources/images/player/Attack_2/Fire_Warrior_Attack2_"+(i+1)+".png", w, h);
+            attack2[i] = Utils.getInstance().resize(sprite.getSubimage(i*144, 11*80, 144, 80), w, h);
         }
         anim[5] = attack2;
 
         // 6 Attack 3 anim
         BufferedImage[]  attack3 = new BufferedImage[5];
         for (int i = 0; i < attack3.length; i++) {
-            attack3[i] = Utils.getInstance().importImage("src/main/resources/images/player/Attack_3/Fire_Warrior_Attack3_"+(i+1)+".png", w, h);
+            attack3[i] = Utils.getInstance().resize(sprite.getSubimage(i*144, 12*80, 144, 80), w, h);
         }
         anim[6] = attack3;
 
         // 8 Hit anim
         BufferedImage[] hitAnim = new BufferedImage[4];
         for (int i = 0; i < hitAnim.length; i++) {
-            hitAnim[i] = Utils.getInstance().importImage("src/main/resources/images/player/Hit/Fire_Warrior_Hit"+(i+1)+".png", w, h);
+            hitAnim[i] = Utils.getInstance().resize(sprite.getSubimage(i*144, 23*80, 144, 80), w, h);
         }
         anim[8] = hitAnim;
 
         // 9 Death anim
         BufferedImage[] deathAnim = new BufferedImage[11];
         for (int i = 0; i < deathAnim.length; i++) {
-            deathAnim[i] = Utils.getInstance().importImage("src/main/resources/images/player/Death/Fire_Warrior_Death"+(i+1)+".png", w, h);
+            deathAnim[i] = Utils.getInstance().resize(sprite.getSubimage(i*144, 24*80, 144, 80), w, h);
         }
         anim[9] = deathAnim;
 
         // 12 Wall anim
         BufferedImage[] wallAnim = new BufferedImage[4];
         for (int i = 0; i < wallAnim.length; i++) {
-            wallAnim[i] = Utils.getInstance().importImage("src/main/resources/images/player/WallHang/Fire_Warrior_WallHang"+(i+1)+".png", w, h);
+            wallAnim[i] = Utils.getInstance().resize(sprite.getSubimage(i*144, 21*80, 144, 80), w, h);
         }
         anim[12] = wallAnim;
 
