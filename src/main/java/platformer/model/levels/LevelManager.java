@@ -18,9 +18,7 @@ public class LevelManager {
     private BufferedImage[] levelSprite;
     private final ArrayList<Level> levels = new ArrayList<>();
     private int levelIndex = 0;
-    private Particle[] particles;
-
-    private BufferedImage leftEnd, rightEnd;
+    private final Particle[] particles;
 
     public LevelManager(Game game, PlayingState playingState) {
         this.game = game;
@@ -40,8 +38,6 @@ public class LevelManager {
                 levelSprite[index] = temp.getSubimage(i*32, j*32, 32, 32);
             }
         }
-        leftEnd = Utils.getInstance().importImage("src/main/resources/images/levels/leftEnd.png", 32, 32);
-        rightEnd = Utils.getInstance().importImage("src/main/resources/images/levels/rightEnd.png", 32, 32);
     }
 
     private void buildLevels() {
@@ -72,16 +68,32 @@ public class LevelManager {
         loadLevel();
     }
 
-    private void renderDeco(Graphics g, int xLevelOffset, int yLevelOffset, int layer) {
+    private void renderDeco(Graphics g, int xLevelOffset, int yLevelOffset, int lay) {
         for (int i = 0; i < levels.get(levelIndex).getLvlData().length; i++) {
             for (int j = 0; j < levels.get(levelIndex).getLvlData()[0].length; j++) {
                 int index = levels.get(levelIndex).getDecoSpriteIndex(i, j);
-                if (index == -1 || index > 42) continue;
+                int layer = levels.get(levelIndex).getLayerSpriteIndex(i, j);
+                if (index == -1) continue;
                 int x = (int)(Tiles.TILES_SIZE.getValue()*i-xLevelOffset);
                 int y =  (int)(Tiles.TILES_SIZE.getValue()*j-yLevelOffset);
                 LevelObject levelObject = levelObjectManager.getLvlObjects()[index];
-                if (levelObject.getLayer() == layer)
-                    g.drawImage(levelObject.getObjectModel(), x, y+levelObject.getYOffset(), levelObject.getW(), levelObject.getH(), null);
+                if (layer == lay) g.drawImage(levelObject.getObjectModel(), x+levelObject.getXOffset(), y+levelObject.getYOffset(), levelObject.getW(), levelObject.getH(), null);
+            }
+        }
+    }
+
+    private void renderTerrain(Graphics g, int xLevelOffset, int yLevelOffset, boolean behind) {
+        for (int i = 0; i < levels.get(levelIndex).getLvlData().length; i++) {
+            for (int j = 0; j < levels.get(levelIndex).getLvlData()[0].length; j++) {
+                int index = levels.get(levelIndex).getSpriteIndex(i, j);
+                if ((!behind && index < 255) || index == -1) continue;
+                if (behind && index >= 255) continue;
+                if (!behind) index -= 255;
+                int x = (int)(Tiles.TILES_SIZE.getValue()*i-xLevelOffset);
+                int y =  (int)(Tiles.TILES_SIZE.getValue()*j-yLevelOffset);
+                int w = (int)Tiles.TILES_SIZE.getValue()+1;
+                int h = (int)Tiles.TILES_SIZE.getValue()+1;
+                g.drawImage(levelSprite[index], x, y, w, h, null);
             }
         }
     }
@@ -91,32 +103,13 @@ public class LevelManager {
         renderDeco(g, xLevelOffset, yLevelOffset, 1);
         g.setColor(new Color(1, 130, 120, 110));
         g.fillRect(0, 0, (int)Tiles.GAME_WIDTH.getValue(), (int)Tiles.GAME_HEIGHT.getValue());
-        for (int i = 0; i < levels.get(levelIndex).getLvlData().length; i++) {
-            for (int j = 0; j < levels.get(levelIndex).getLvlData()[0].length; j++) {
-                int index = levels.get(levelIndex).getSpriteIndex(i, j);
-                if (index == -1) continue;
-                if (index == -2) renderExit(g, xLevelOffset, yLevelOffset, rightEnd, i, j, true);
-                else if (index == -3) renderExit(g, xLevelOffset, yLevelOffset, leftEnd, i, j, false);
-                else {
-                    int x = (int)(Tiles.TILES_SIZE.getValue()*i-xLevelOffset);
-                    int y =  (int)(Tiles.TILES_SIZE.getValue()*j-yLevelOffset);
-                    int w = (int)Tiles.TILES_SIZE.getValue()+1;
-                    int h = (int)Tiles.TILES_SIZE.getValue()+1;
-                    g.drawImage(levelSprite[index], x, y, w, h, null);
-                }
-            }
-        }
+        renderDeco(g, xLevelOffset, yLevelOffset, 2);
+        renderTerrain(g, xLevelOffset, yLevelOffset, true);
+        renderDeco(g, xLevelOffset, yLevelOffset, 3);
+        renderTerrain(g, xLevelOffset, yLevelOffset, false);
         for (Particle particle : particles) {
             particle.render(g);
         }
-        renderDeco(g, xLevelOffset, yLevelOffset, 2);
-    }
-
-    private void renderExit(Graphics g, int xLevelOffset, int yLevelOffset, BufferedImage object, int i, int j, boolean flag) {
-        int k = flag ? (int)Tiles.SCALE.getValue()*10 : -(int)Tiles.SCALE.getValue()*10;
-        int x =  (int)(Tiles.TILES_SIZE.getValue()*i-xLevelOffset), y = (int)(Tiles.TILES_SIZE.getValue()*j-yLevelOffset);
-        int w = (int)Tiles.TILES_SIZE.getValue()+k, h = (int)Tiles.TILES_SIZE.getValue();
-        g.drawImage(object, x, y, w, h, null);
     }
 
     public Level getCurrentLevel() {

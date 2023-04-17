@@ -19,6 +19,7 @@ public class Level {
     private final BufferedImage dataL2;
     private int[][] lvlData;
     private int[][] decoData;
+    private int[][] layerData;
     private ArrayList<Skeleton> skeletons;
     private ArrayList<Potion> potions;
     private ArrayList<Container> containers;
@@ -42,7 +43,8 @@ public class Level {
 
     private void init() {
         this.lvlData = Utils.getInstance().getLevelData(dataL1);
-        this.decoData = Utils.getInstance().getDecoData(dataL2);
+        this.decoData = Utils.getInstance().getDecoData(dataL2, false);
+        this.layerData = Utils.getInstance().getDecoData(dataL2, true);
         this.skeletons = Utils.getInstance().getSkeletonData(dataL1);
         this.spikes = Utils.getInstance().getSpikeData(dataL1);
         this.arrowLaunchers = Utils.getInstance().getArrowLauncherData(dataL1);
@@ -69,6 +71,10 @@ public class Level {
 
     public int getDecoSpriteIndex(int x, int y) {
         return decoData[x][y];
+    }
+
+    public int getLayerSpriteIndex(int x, int y) {
+        return layerData[x][y];
     }
 
     public int[][] getLvlData() {

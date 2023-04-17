@@ -76,26 +76,27 @@ public class Utils {
             for (int j = 0; j < level.getHeight(); j++) {
                 Color color = new Color(level.getRGB(i, j));
                 int value = color.getRed();
-                if (value == 50) value = -2;
-                else if (value == 51) value = -3;
-                else if (value >= 49) value = -1;
+                if (value >= 49) value = -1;
+                if (color.getBlue() == 255 && color.getGreen() == 255) value += 255;
                 lvlData[i][j] = value;
             }
         }
         return lvlData;
     }
 
-    public int[][] getDecoData(BufferedImage level) {
-        int[][] decoData = new int[level.getWidth()][level.getHeight()];
+    public int[][] getDecoData(BufferedImage level, boolean layer) {
+        int[][] data = new int[level.getWidth()][level.getHeight()];
         for (int i = 0; i < level.getWidth(); i++) {
             for (int j = 0; j < level.getHeight(); j++) {
                 Color color = new Color(level.getRGB(i, j));
-                int value = color.getBlue();
-                if (value >= 64) value = -1;
-                decoData[i][j] = value;
+                int value;
+                if (layer) value = color.getGreen();
+                else value = color.getBlue();
+                if ((value >= 40 && !layer) || (value >= 4 && layer)) value = -1;
+                data[i][j] = value;
             }
         }
-        return decoData;
+        return data;
     }
 
     public ArrayList<Skeleton> getSkeletonData(BufferedImage level) {
@@ -303,8 +304,8 @@ public class Utils {
         int xTile = (int)(hitBox.x/ Tiles.TILES_SIZE.getValue());
         int yTile = (int)(hitBox.y / Tiles.TILES_SIZE.getValue());
         int xTileRight = (int)((hitBox.x+ hitBox.width)/ Tiles.TILES_SIZE.getValue());
-        if (level.getSpriteIndex(xTile, yTile) == -2 || level.getSpriteIndex(xTileRight, yTile) == -2) return 1;
-        if (level.getSpriteIndex(xTile, yTile) == -3) return -1;
+        if (level.getDecoSpriteIndex(xTile, yTile) == 36 || level.getDecoSpriteIndex(xTileRight, yTile) == 36) return 1;
+        if (level.getDecoSpriteIndex(xTile, yTile) == 35) return -1;
         return 0;
     }
 
