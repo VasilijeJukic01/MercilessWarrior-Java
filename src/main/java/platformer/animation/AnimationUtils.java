@@ -14,7 +14,7 @@ public class AnimationUtils {
 
     public BufferedImage[][] loadPlayerAnimations(int w, int h) {
         BufferedImage sprite = Utils.getInstance().importImage("src/main/resources/images/player/playerSheet.png", -1, -1);
-        BufferedImage[][] anim = new BufferedImage[13][13];
+        BufferedImage[][] anim = new BufferedImage[16][16];
 
         // 0 Idle anim
         BufferedImage[] idleAnim = new BufferedImage[8];
@@ -85,6 +85,13 @@ public class AnimationUtils {
             wallAnim[i] = Utils.getInstance().resize(sprite.getSubimage(i*144, 21*80, 144, 80), w, h);
         }
         anim[12] = wallAnim;
+
+        // 14 Spell 1 anim
+        BufferedImage[] spell1Anim = new BufferedImage[16];
+        for (int i = 0; i < spell1Anim.length; i++) {
+            spell1Anim[i] = Utils.getInstance().resize(sprite.getSubimage(i*144, 19*80, 144, 80), w, h);
+        }
+        anim[14] = spell1Anim;
 
         return anim;
     }
@@ -174,7 +181,6 @@ public class AnimationUtils {
         wallSlide[0] = sprite.getSubimage(0, 0, 1, 1);
         wallSlide[1] = sprite.getSubimage(0, 0, 1, 1);
         for (int i = 2; i < 8; i++) {
-            //wallSlide[i] = sprite.getSubimage(64*i+8960, 0, 64, 64);
             wallSlide[i] = sprite.getSubimage(64*i+5120, 0, 64, 64);
             wallSlide[i] = Utils.getInstance().rotateImage(wallSlide[i], Math.PI/2);
         }

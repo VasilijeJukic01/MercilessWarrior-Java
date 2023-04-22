@@ -10,6 +10,7 @@ import platformer.model.Tiles;
 import platformer.model.entities.enemies.Enemy;
 import platformer.model.entities.enemies.EnemyManager;
 import platformer.model.objects.ObjectManager;
+import platformer.model.objects.Projectile;
 import platformer.utils.Utils;
 
 import java.awt.*;
@@ -40,7 +41,7 @@ public class Player extends Entity {
     private final double jumpSpeed = -2.25 * Tiles.SCALE.getValue();
     private final double collisionFallSpeed = 0.5 * Tiles.SCALE.getValue();
     // Flags
-    private boolean left, right, jump, moving, attacking, hit;
+    private boolean left, right, jump, moving, attacking, hit, spell;
     private boolean doubleJump, onWall, onObject, wallPush, dash, canDash = true;
     // Status
     private final BufferedImage statusBar;
@@ -92,6 +93,7 @@ public class Player extends Entity {
                 animIndex = 0;
                 attacking = false;
                 attackCheck = false;
+                spell = false;
                 if (hit) {
                     hit = false;
                     airSpeed = 0;
@@ -147,6 +149,9 @@ public class Player extends Entity {
             animTick = 0;
             return;
         }
+        if (spell) {
+            entityState = AnimType.SPELL_1;
+        }
         if (hit) entityState = AnimType.HIT;
         if (attacking && !onWall) {
             if (attackState == AttackState.ATTACK_1) entityState = AnimType.ATTACK_1;
@@ -159,6 +164,7 @@ public class Player extends Entity {
     // Positioning
     private void updatePosition() {
         moving = false;
+        if (spell) return;
         if (jump) doJump();
         if (!inAir || onWall) dashCount = 0;
         if (!left && !right && !inAir && !dash) return;
@@ -209,6 +215,7 @@ public class Player extends Entity {
     }
 
     private void updateWallPosition() {
+        if (onWall) attacking = false;
         if (!onWall && ((left && Utils.getInstance().isOnWall(hitBox, levelData, Direction.LEFT)) || (right && Utils.getInstance().isOnWall(hitBox, levelData, Direction.RIGHT))) &&
                 !Utils.getInstance().isEntityOnFloor(hitBox, levelData)) {
             onWall = true;
@@ -245,6 +252,7 @@ public class Player extends Entity {
     }
 
     private void updateAttackBox() {
+        if (spell) return;
         if ((right && left) || (!right && !left)) {
             if (flipSign == 1) attackBox.x = hitBox.x + hitBox.width + (int)(10*Tiles.SCALE.getValue());
             else attackBox.x = hitBox.x - hitBox.width - (int)(10*Tiles.SCALE.getValue());
@@ -310,6 +318,14 @@ public class Player extends Entity {
         }
     }
 
+    public void doSpell() {
+        if (inAir) return;
+        if (currentStamina >= 20) {
+            spell = true;
+            changeStamina(-20);
+        }
+    }
+
     public void changeHealth(int value) {
         if (value < 0) {
             if (hit) return;
@@ -325,6 +341,15 @@ public class Player extends Entity {
         pushOffsetDirection = Direction.UP;
         pushOffset = 0;
         if (e.getHitBox().x < hitBox.x) pushDirection = Direction.RIGHT;
+        else pushDirection = Direction.LEFT;
+    }
+
+    public void changeHealth(int value, Projectile p) {
+        if (hit) return;
+        changeHealth(value);
+        pushOffsetDirection = Direction.UP;
+        pushOffset = 0;
+        if (p.getHitBox().x < hitBox.x) pushDirection = Direction.RIGHT;
         else pushDirection = Direction.LEFT;
     }
 
@@ -373,6 +398,10 @@ public class Player extends Entity {
                 }
             }
         }
+        if (spell) {
+            enemyManager.checkEnemySpellHit();
+            objectManager.checkObjectBreak(attackBox);
+        }
         updateAttack();
         updateAnimation();
         updateEffectAnimation();
@@ -419,7 +448,7 @@ public class Player extends Entity {
     }
 
     public void reset() {
-        moving = attacking = inAir = hit = false;
+        moving = attacking = inAir = hit = spell = false;
         left = right = jump = false;
         animIndex = animTick = 0;
         entityState = AnimType.IDLE;
@@ -433,6 +462,7 @@ public class Player extends Entity {
 
     public void setAttacking(boolean attacking) {
         this.attacking = attacking;
+        this.spell = false;
     }
 
     public void setLeft(boolean left) {
@@ -483,6 +513,10 @@ public class Player extends Entity {
 
     public boolean isDash() {
         return dash;
+    }
+
+    public boolean isSpell() {
+        return spell;
     }
 
     @Override

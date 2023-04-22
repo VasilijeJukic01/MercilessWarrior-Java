@@ -2,6 +2,7 @@ package platformer.model;
 
 import platformer.model.entities.enemies.EnemyType;
 import platformer.model.objects.ObjType;
+import platformer.model.spells.SpellType;
 
 public class ModelUtils {
 
@@ -37,6 +38,11 @@ public class ModelUtils {
             case ARROW_LAUNCHER_LEFT:
                 return 16;
         }
+        return 1;
+    }
+
+    public int getSpellSprite(SpellType spell) {
+        if (spell == SpellType.FLAME_1) return 16;
         return 1;
     }
 

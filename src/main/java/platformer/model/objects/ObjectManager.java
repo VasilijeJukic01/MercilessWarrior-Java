@@ -7,6 +7,7 @@ import platformer.model.Tiles;
 import platformer.model.entities.Direction;
 import platformer.model.entities.Player;
 import platformer.model.levels.Level;
+import platformer.model.spells.Flames;
 import platformer.state.PlayingState;
 import platformer.utils.Utils;
 
@@ -79,8 +80,10 @@ public class ObjectManager {
 
     // Object Break
     public void checkObjectBreak(Rectangle2D.Double attackBox) {
+        Flames flames = playingState.getSpellManager().getFlames();
         for (Container container : containers) {
-            if (container.isAlive() && !container.animate && attackBox.intersects(container.getHitBox())) {
+            boolean isFlame = flames.getHitBox().intersects(container.getHitBox()) && flames.isAlive();
+            if (container.isAlive() && !container.animate && (attackBox.intersects(container.getHitBox()) || isFlame)) {
                 container.setAnimate(true);
                 Audio.getInstance().getAudioPlayer().playCrateSound();
                 Random rand = new Random();
@@ -272,7 +275,7 @@ public class ObjectManager {
             if (projectile.isAlive()) {
                 projectile.updatePosition();
                 if (projectile.getHitBox().intersects(player.getHitBox())) {
-                    player.changeHealth(-10);
+                    player.changeHealth(-10, projectile);
                     projectile.setAlive(false);
                 }
                 else if (Utils.getInstance().isProjectileHitLevel(lvlData, projectile)) {

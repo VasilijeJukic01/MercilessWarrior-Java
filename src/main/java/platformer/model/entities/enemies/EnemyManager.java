@@ -9,6 +9,8 @@ import platformer.model.levels.Level;
 import platformer.model.objects.GameObject;
 import platformer.model.objects.Projectile;
 import platformer.model.objects.Spike;
+import platformer.model.spells.Flames;
+import platformer.state.PlayingState;
 
 
 import java.awt.*;
@@ -20,10 +22,12 @@ import java.util.List;
 @SuppressWarnings("FieldCanBeLocal")
 public class EnemyManager {
 
+    private final PlayingState playingState;
     private BufferedImage[][] skeletonAnimations;
     private List<Skeleton> skeletons = new ArrayList<>();
 
-    public EnemyManager() {
+    public EnemyManager(PlayingState playingState) {
+        this.playingState = playingState;
         init();
     }
 
@@ -61,6 +65,18 @@ public class EnemyManager {
                     return;
                 }
                 if (!player.isDash() && !player.isOnWall()) Audio.getInstance().getAudioPlayer().playSlashSound();
+            }
+        }
+    }
+
+    public void checkEnemySpellHit() {
+        Flames flames = playingState.getSpellManager().getFlames();
+        for (Skeleton skeleton : skeletons) {
+            if (skeleton.isAlive() && skeleton.getEnemyAction() != AnimType.DEATH) {
+                if (flames.isAlive() && flames.getHitBox().intersects(skeleton.getHitBox())) {
+                    skeleton.hit(1);
+                    return;
+                }
             }
         }
     }
