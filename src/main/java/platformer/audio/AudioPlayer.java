@@ -8,6 +8,8 @@ public interface AudioPlayer {
 
     void playSound(int sound);
 
+    void stopSound(int sound);
+
     void pauseSong();
 
     void unpauseSong();
@@ -17,6 +19,8 @@ public interface AudioPlayer {
     void playSlashSound();
 
     void playHitSound();
+
+    void playBlockSound(String type);
 
     void playCrateSound();
 
