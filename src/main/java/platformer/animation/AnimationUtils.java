@@ -65,6 +65,13 @@ public class AnimationUtils {
         }
         anim[6] = attack3;
 
+        // 7 Block anim
+        BufferedImage[]  block = new BufferedImage[6];
+        for (int i = 0; i < block.length; i++) {
+            block[i] = Utils.getInstance().resize(sprite.getSubimage(i*144, 14*80, 144, 80), w, h);
+        }
+        anim[7] = block;
+
         // 8 Hit anim
         BufferedImage[] hitAnim = new BufferedImage[4];
         for (int i = 0; i < hitAnim.length; i++) {
@@ -138,6 +145,13 @@ public class AnimationUtils {
         }
         anim[4] = attack;
 
+        // 7 Block anim
+        BufferedImage[] block = new BufferedImage[6];
+        for (int i = 0; i < block.length; i++) {
+            block[i] = Utils.getInstance().importImage("src/main/resources/images/enemies/Skeleton/Block/Skeleton_Block"+i+".png", w, h);
+        }
+        anim[7] = block;
+
         // 8 Hit anim
         BufferedImage[] hit = new BufferedImage[4];
         for (int i = 0; i < hit.length; i++) {
@@ -195,7 +209,6 @@ public class AnimationUtils {
 
         // Potions
         BufferedImage potionSprite = Utils.getInstance().importImage("src/main/resources/images/objs/potions_sprites.png", -1, -1);
-
         for (int i = 0; i < 2; i++, index++) {
             for (int j = 0; j < 7; j++) {
                 anim[index][j] = potionSprite.getSubimage(12*j, 16*i, 12, 16);
@@ -204,7 +217,6 @@ public class AnimationUtils {
 
         // Containers
         BufferedImage containerSprite = Utils.getInstance().importImage("src/main/resources/images/objs/objects_sprites.png", -1, -1);
-
         for (int i = 0; i < 2; i++, index++) {
             for (int j = 0; j < 8; j++) {
                 anim[index][j] = containerSprite.getSubimage(40*j, 30*i, 40, 30);
@@ -213,7 +225,6 @@ public class AnimationUtils {
 
         // Spikes
         BufferedImage spikeSprite = Utils.getInstance().importImage("src/main/resources/images/objs/spikes.png", -1, -1);
-
         for (int i = 0; i < 1; i++, index++) {
             for (int j = 0; j < 10; j++) {
                 anim[index][j] = spikeSprite.getSubimage(32*j, 32*i, 32, 32);
@@ -222,7 +233,6 @@ public class AnimationUtils {
 
         // Arrow Launchers
         BufferedImage arrowLauncherSprite = Utils.getInstance().importImage("src/main/resources/images/objs/arrowTrap.png", -1, -1);
-
         for (int i = 0; i < 1; i++, index++) {
             for (int j = 0; j < 16; j++) {
                 anim[index][j] = arrowLauncherSprite.getSubimage((96*j)+27, 32*i, 32, 32);

@@ -10,10 +10,8 @@ import java.awt.geom.Rectangle2D;
 
 public abstract class Entity implements Debug {
 
-    protected int xPos;
-    protected int yPos;
-    protected int width;
-    protected int height;
+    protected int xPos, yPos;
+    protected int width, height;
     protected Rectangle2D.Double hitBox;
 
     protected AnimType entityState = AnimType.IDLE;

@@ -188,6 +188,7 @@ public class PlayingState extends StateAbstraction implements State {
             return;
         }
         int key = e.getKeyCode();
+        if (pressedKeys.contains(key)) return;
         pressedKeys.add(key);
         switch (key) {
             case KeyEvent.VK_UP:
@@ -215,6 +216,10 @@ public class PlayingState extends StateAbstraction implements State {
                 break;
             case KeyEvent.VK_V:
                 if (player.canDash()) player.doDash();
+                break;
+            case KeyEvent.VK_S:
+                if (player.isBlock()) return;
+                player.setBlock(true);
                 break;
             case KeyEvent.VK_ESCAPE:
                 paused = !paused;
@@ -244,7 +249,7 @@ public class PlayingState extends StateAbstraction implements State {
                 player.setCanDash(true);
                 break;
             case KeyEvent.VK_C:
-                player.setSpellState(2);
+                if (player.getSpellState() == 1) player.setSpellState(2);
                 break;
             case KeyEvent.VK_F1: // Show HitBox
                 DebugSettings.getInstance().setDebugMode(!DebugSettings.getInstance().isDebugMode());

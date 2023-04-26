@@ -11,6 +11,7 @@ import platformer.utils.Utils;
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+import java.util.Random;
 
 public class Skeleton extends Enemy {
 
@@ -30,10 +31,10 @@ public class Skeleton extends Enemy {
     }
 
     private void initAttackBox() {
-        int w = (int)(80 * Tiles.SCALE.getValue());
+        int w = (int)(60 * Tiles.SCALE.getValue());
         int h = (int)(45 * Tiles.SCALE.getValue());
         this.attackBox = new Rectangle2D.Double(xPos, yPos-1, w, h);
-        this.attackOffset =  (int)(30*Tiles.SCALE.getValue());
+        this.attackOffset =  (int)(20*Tiles.SCALE.getValue());
     }
 
     public void updateMove(int[][] levelData, Player player) {
@@ -58,8 +59,18 @@ public class Skeleton extends Enemy {
     }
 
     // Attack
-    public void hit(double damage) {
+    public void hit(double damage, boolean enableBlock, boolean hitSound) {
+        if (enableBlock) {
+            Random rand = new Random();
+            double x = rand.nextDouble();
+            if (x < 0.3) {
+                entityState = AnimType.BLOCK;
+                Audio.getInstance().getAudioPlayer().playBlockSound("Enemy");
+                return;
+            }
+        }
         currentHealth -= damage;
+        if (hitSound) Audio.getInstance().getAudioPlayer().playHitSound();
         if (currentHealth <= 0) {
             Audio.getInstance().getAudioPlayer().playSound(Sounds.SKELETON_DEATH_1.ordinal());
             setEnemyAction(AnimType.DEATH);
@@ -114,8 +125,18 @@ public class Skeleton extends Enemy {
                 changeDirection();
                 break;
             case ATTACK_1:
-                if (animIndex == 0) attackCheck = false;
+                if (animIndex == 0) {
+                    player.setCanBlock(false);
+                    attackCheck = false;
+                }
+                if ((animIndex == 1 || animIndex == 2) && player.isBlock()) {
+                    if ((player.getHitBox().x < this.hitBox.x && player.getFlipSign() == 1) || (player.getHitBox().x > this.hitBox.x && player.getFlipSign() == -1)) {
+                        player.setCanBlock(true);
+                        Audio.getInstance().getAudioPlayer().playBlockSound("Player");
+                    }
+                }
                 if (animIndex == 3 && !attackCheck) checkPlayerHit(attackBox, player);
+                player.setBlock(false);
                 break;
             case HIT:
                 pushBack(pushDirection, levelData, 1.5, enemySpeed);

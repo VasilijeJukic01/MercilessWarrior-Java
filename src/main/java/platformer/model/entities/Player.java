@@ -41,9 +41,9 @@ public class Player extends Entity {
     private final double jumpSpeed = -2.25 * Tiles.SCALE.getValue();
     private final double collisionFallSpeed = 0.5 * Tiles.SCALE.getValue();
     // Flags
-    private boolean left, right, jump, moving, attacking, hit;
+    private boolean left, right, jump, moving, attacking, dash, hit, block;
     private int spellState = 0;
-    private boolean doubleJump, onWall, onObject, wallPush, dash, canDash = true;
+    private boolean doubleJump, onWall, onObject, wallPush, canDash = true, canBlock;
     // Status
     private final BufferedImage statusBar;
     private int healthWidth = (int)(150*Tiles.SCALE.getValue()), staminaWidth = (int)(115*Tiles.SCALE.getValue());
@@ -97,7 +97,8 @@ public class Player extends Entity {
                 animIndex = 0;
                 attacking = false;
                 attackCheck = false;
-                spellState = 0;
+                block = canBlock = false;
+                setSpellState(0);
                 if (hit) {
                     hit = false;
                     airSpeed = 0;
@@ -158,6 +159,7 @@ public class Player extends Entity {
         if (spellState == 1) {
             entityState = AnimType.SPELL_1;
         }
+        if (canBlock) entityState = AnimType.BLOCK;
         if (hit) entityState = AnimType.HIT;
         if (attacking && !onWall) {
             if (attackState == AttackState.ATTACK_1) entityState = AnimType.ATTACK_1;
@@ -170,7 +172,7 @@ public class Player extends Entity {
     // Positioning
     private void updatePosition() {
         moving = false;
-        if (spellState != 0) return;
+        if (spellState != 0 || canBlock) return;
         if (jump) doJump();
         if (!inAir || onWall) dashCount = 0;
         if (!left && !right && !inAir && !dash) return;
@@ -327,7 +329,7 @@ public class Player extends Entity {
     public void doSpell() {
         if (inAir) return;
         if (currentStamina >= 5) {
-            spellState = 1;
+            setSpellState(1);
         }
     }
 
@@ -361,6 +363,7 @@ public class Player extends Entity {
     public void changeStamina(double value) {
         currentStamina += value;
         currentStamina = Math.max(Math.min(currentStamina, maxStamina), 0);
+        if (currentStamina == 0) spellState = 2;
     }
 
     public void kill() {
@@ -387,8 +390,16 @@ public class Player extends Entity {
         updateAttackBox();
         setAnimation();
         if (hit) {
+            setSpellState(0);
             if (animIndex <= animations[entityState.ordinal()].length - 2)
                 pushBack(pushDirection, levelData, 1.2, playerSpeed);
+            updatePushOffset();
+        }
+        else if (canBlock) {
+            pushOffsetDirection = Direction.DOWN;
+            pushDirection = (flipSign == 1) ? Direction.LEFT : Direction.RIGHT;
+            if (animIndex <= animations[entityState.ordinal()].length )
+                pushBack(pushDirection, levelData, 0.1, playerSpeed);
             updatePushOffset();
         }
         else updatePosition();
@@ -460,8 +471,8 @@ public class Player extends Entity {
     }
 
     public void reset() {
-        moving = attacking = inAir = hit = false;
-        spellState = 0;
+        moving = attacking = inAir = hit = block = false;
+        setSpellState(0);
         left = right = jump = false;
         animIndex = animTick = 0;
         entityState = AnimType.IDLE;
@@ -475,7 +486,7 @@ public class Player extends Entity {
 
     public void setAttacking(boolean attacking) {
         this.attacking = attacking;
-        this.spellState = 0;
+        setSpellState(0);
     }
 
     public void setLeft(boolean left) {
@@ -534,7 +545,25 @@ public class Player extends Entity {
 
     public void setSpellState(int spellState) {
         if (spellState == 2 && this.spellState == 1) animIndex = 10;
+        if (spellState == 0) Audio.getInstance().getAudioPlayer().stopSound(Sounds.FIRE_SPELL_1.ordinal());
+        else if (spellState == 1) Audio.getInstance().getAudioPlayer().playSound(Sounds.FIRE_SPELL_1.ordinal());
         this.spellState = spellState;
+    }
+
+    public void setBlock(boolean block) {
+        this.block = block;
+    }
+
+    public boolean isBlock() {
+        return block;
+    }
+
+    public void setCanBlock(boolean canBlock) {
+        this.canBlock = canBlock;
+    }
+
+    public boolean canBlock() {
+        return canBlock;
     }
 
     @Override

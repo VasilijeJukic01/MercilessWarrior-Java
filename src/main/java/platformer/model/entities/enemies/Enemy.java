@@ -19,7 +19,7 @@ public abstract class Enemy extends Entity implements Debug {
     protected double enemySpeed = 0.2*Tiles.SCALE.getValue();
     protected int animSpeed, animIndex, animTick = 0;
     protected Direction direction = Direction.RIGHT;
-    protected double attackRange = 1.5*Tiles.TILES_SIZE.getValue();
+    protected double attackRange = 1.15*Tiles.TILES_SIZE.getValue();
     protected boolean alive = true;
 
     public Enemy(int xPos, int yPos, int width, int height, EnemyType enemyType, int animSpeed) {
@@ -37,8 +37,7 @@ public abstract class Enemy extends Entity implements Debug {
             animIndex++;
             if (animIndex >= animations[entityState.ordinal()].length) {
                 animIndex = 0;
-                if (entityState == AnimType.ATTACK_1) entityState = AnimType.IDLE;
-                else if (entityState == AnimType.HIT) entityState = AnimType.IDLE;
+                if (entityState == AnimType.ATTACK_1 || entityState == AnimType.HIT || entityState == AnimType.BLOCK) entityState = AnimType.IDLE;
                 else if (entityState == AnimType.DEATH) alive = false;
             }
         }
@@ -79,8 +78,9 @@ public abstract class Enemy extends Entity implements Debug {
 
     // Attack
     protected void checkPlayerHit(Rectangle2D.Double attackBox, Player player) {
-        if (attackBox.intersects(player.getHitBox()))
-            player.changeHealth(-ModelUtils.getInstance().getDamage(enemyType), this);
+        if (attackBox.intersects(player.getHitBox())) {
+            if (!player.canBlock()) player.changeHealth(-ModelUtils.getInstance().getDamage(enemyType), this);
+        }
         attackCheck = true;
     }
 
