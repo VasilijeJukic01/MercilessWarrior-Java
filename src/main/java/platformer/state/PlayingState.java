@@ -207,7 +207,7 @@ public class PlayingState extends StateAbstraction implements State {
                 player.setPlayerStateSecondary(AttackState.ATTACK_1);
                 break;
             case KeyEvent.VK_C:
-                if (pressedKeys.contains(key) && player.isSpell()) return;
+                if (pressedKeys.contains(key) && player.getSpellState() != 0) return;
                 player.doSpell();
                 break;
             case KeyEvent.VK_Z:
@@ -242,6 +242,9 @@ public class PlayingState extends StateAbstraction implements State {
                 break;
             case KeyEvent.VK_V:
                 player.setCanDash(true);
+                break;
+            case KeyEvent.VK_C:
+                player.setSpellState(2);
                 break;
             case KeyEvent.VK_F1: // Show HitBox
                 DebugSettings.getInstance().setDebugMode(!DebugSettings.getInstance().isDebugMode());

@@ -58,7 +58,7 @@ public class Skeleton extends Enemy {
     }
 
     // Attack
-    public void hit(int damage) {
+    public void hit(double damage) {
         currentHealth -= damage;
         if (currentHealth <= 0) {
             Audio.getInstance().getAudioPlayer().playSound(Sounds.SKELETON_DEATH_1.ordinal());
@@ -68,6 +68,21 @@ public class Skeleton extends Enemy {
         pushOffsetDirection = Direction.UP;
         pushOffset = 0;
         enemySpeed = 0.2*Tiles.SCALE.getValue();
+    }
+
+    public void spellHit(double damage) {
+        currentHealth -= damage;
+        if (currentHealth <= 0) {
+            Audio.getInstance().getAudioPlayer().playSound(Sounds.SKELETON_DEATH_1.ordinal());
+            setEnemyAction(AnimType.DEATH);
+        }
+        else {
+            if (entityState == AnimType.HIT) setEnemyActionNoReset(AnimType.HIT);
+            else setEnemyAction(AnimType.HIT);
+        }
+        pushOffsetDirection = Direction.DOWN;
+        pushOffset = 0;
+        enemySpeed = 0;
     }
 
     // Skeleton Core

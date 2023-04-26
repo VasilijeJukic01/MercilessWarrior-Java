@@ -42,7 +42,7 @@ public class ModelUtils {
     }
 
     public int getSpellSprite(SpellType spell) {
-        if (spell == SpellType.FLAME_1) return 16;
+        if (spell == SpellType.FLAME_1) return 14;
         return 1;
     }
 

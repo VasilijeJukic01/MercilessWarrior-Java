@@ -116,6 +116,10 @@ public abstract class Enemy extends Entity implements Debug {
         this.animTick = 0;
     }
 
+    public void setEnemyActionNoReset(AnimType enemyAction) {
+        this.entityState = enemyAction;
+    }
+
     public void setDirection(Direction direction) {
         if (direction == Direction.RIGHT) {
             this.flipCoefficient = 0;

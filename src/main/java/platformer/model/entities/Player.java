@@ -41,13 +41,14 @@ public class Player extends Entity {
     private final double jumpSpeed = -2.25 * Tiles.SCALE.getValue();
     private final double collisionFallSpeed = 0.5 * Tiles.SCALE.getValue();
     // Flags
-    private boolean left, right, jump, moving, attacking, hit, spell;
+    private boolean left, right, jump, moving, attacking, hit;
+    private int spellState = 0;
     private boolean doubleJump, onWall, onObject, wallPush, dash, canDash = true;
     // Status
     private final BufferedImage statusBar;
     private int healthWidth = (int)(150*Tiles.SCALE.getValue()), staminaWidth = (int)(115*Tiles.SCALE.getValue());
     private final int maxStamina = 100;
-    protected int currentStamina = 15;
+    private double currentStamina = 15;
     private int currentJumps = 0, dashCount = 0;
     private int dashTick = 0;
 
@@ -89,11 +90,14 @@ public class Player extends Entity {
             animTick = 0;
             animIndex++;
             effectIndex++;
+            if (spellState == 1 && animIndex >= animations[entityState.ordinal()].length-5) {
+                animIndex = 2;
+            }
             if (animIndex >= animations[entityState.ordinal()].length) {
                 animIndex = 0;
                 attacking = false;
                 attackCheck = false;
-                spell = false;
+                spellState = 0;
                 if (hit) {
                     hit = false;
                     airSpeed = 0;
@@ -129,6 +133,8 @@ public class Player extends Entity {
     private void setAnimation() {
         AnimType previousAction = entityState;
 
+        if (spellState == 2) return;
+
         if (moving) entityState = AnimType.RUN;
         else entityState = AnimType.IDLE;
 
@@ -149,7 +155,7 @@ public class Player extends Entity {
             animTick = 0;
             return;
         }
-        if (spell) {
+        if (spellState == 1) {
             entityState = AnimType.SPELL_1;
         }
         if (hit) entityState = AnimType.HIT;
@@ -164,7 +170,7 @@ public class Player extends Entity {
     // Positioning
     private void updatePosition() {
         moving = false;
-        if (spell) return;
+        if (spellState != 0) return;
         if (jump) doJump();
         if (!inAir || onWall) dashCount = 0;
         if (!left && !right && !inAir && !dash) return;
@@ -252,7 +258,7 @@ public class Player extends Entity {
     }
 
     private void updateAttackBox() {
-        if (spell) return;
+        if (spellState != 0) return;
         if ((right && left) || (!right && !left)) {
             if (flipSign == 1) attackBox.x = hitBox.x + hitBox.width + (int)(10*Tiles.SCALE.getValue());
             else attackBox.x = hitBox.x - hitBox.width - (int)(10*Tiles.SCALE.getValue());
@@ -320,9 +326,8 @@ public class Player extends Entity {
 
     public void doSpell() {
         if (inAir) return;
-        if (currentStamina >= 20) {
-            spell = true;
-            changeStamina(-20);
+        if (currentStamina >= 5) {
+            spellState = 1;
         }
     }
 
@@ -353,7 +358,7 @@ public class Player extends Entity {
         else pushDirection = Direction.LEFT;
     }
 
-    public void changeStamina(int value) {
+    public void changeStamina(double value) {
         currentStamina += value;
         currentStamina = Math.max(Math.min(currentStamina, maxStamina), 0);
     }
@@ -398,7 +403,8 @@ public class Player extends Entity {
                 }
             }
         }
-        if (spell) {
+        if (spellState == 1) {
+            changeStamina(-0.20);
             enemyManager.checkEnemySpellHit();
             objectManager.checkObjectBreak(attackBox);
         }
@@ -408,19 +414,22 @@ public class Player extends Entity {
     }
 
     private void renderEffects(Graphics g, int xLevelOffset, int yLevelOffset) {
-        if (playerEffect == EffectType.DOUBLE_JUMP && doubleJump) {
-            int effectXPos = (int)(hitBox.x-xHitBoxOffset-xLevelOffset)+(int)(20*Tiles.SCALE.getValue());
-            int effectYPos = (int)(hitBox.y-yHitBoxOffset-yLevelOffset)+(int)(55*Tiles.SCALE.getValue());
-            g.drawImage(effects[0][effectIndex], effectXPos, effectYPos, effects[0][effectIndex].getWidth(), effects[0][effectIndex].getHeight(), null);
+        try {
+            if (playerEffect == EffectType.DOUBLE_JUMP && doubleJump) {
+                int effectXPos = (int)(hitBox.x-xHitBoxOffset-xLevelOffset)+(int)(20*Tiles.SCALE.getValue());
+                int effectYPos = (int)(hitBox.y-yHitBoxOffset-yLevelOffset)+(int)(55*Tiles.SCALE.getValue());
+                g.drawImage(effects[0][effectIndex], effectXPos, effectYPos, effects[0][effectIndex].getWidth(), effects[0][effectIndex].getHeight(), null);
+            }
+            else if (playerEffect == EffectType.WALL_SLIDE && onWall) {
+                int newFlip = (flipCoefficient != 0) ? (0) : (int)(width-hitBox.width-10*Tiles.SCALE.getValue()), newSign = (flipSign == 1) ? (-1) : (1);
+                int effectXPos = (int)(hitBox.x-xHitBoxOffset-xLevelOffset)+(int)(newSign*22*Tiles.SCALE.getValue())+newFlip;
+                int effectYPos = (int)(hitBox.y-yHitBoxOffset-yLevelOffset)-(int)(Tiles.SCALE.getValue());
+                int effectWid = newSign*(effects[1][effectIndex].getWidth()+(int)(10*Tiles.SCALE.getValue()));
+                int effectHei = effects[1][effectIndex].getHeight()+(int)(50*Tiles.SCALE.getValue());
+                g.drawImage(effects[1][effectIndex], effectXPos, effectYPos, effectWid, effectHei, null);
+            }
         }
-        else if (playerEffect == EffectType.WALL_SLIDE && onWall) {
-            int newFlip = (flipCoefficient != 0) ? (0) : (int)(width-hitBox.width-10*Tiles.SCALE.getValue()), newSign = (flipSign == 1) ? (-1) : (1);
-            int effectXPos = (int)(hitBox.x-xHitBoxOffset-xLevelOffset)+(int)(newSign*22*Tiles.SCALE.getValue())+newFlip;
-            int effectYPos = (int)(hitBox.y-yHitBoxOffset-yLevelOffset)-(int)(Tiles.SCALE.getValue());
-            int effectWid = newSign*(effects[1][effectIndex].getWidth()+(int)(10*Tiles.SCALE.getValue()));
-            int effectHei = effects[1][effectIndex].getHeight()+(int)(50*Tiles.SCALE.getValue());
-            g.drawImage(effects[1][effectIndex], effectXPos, effectYPos, effectWid, effectHei, null);
-        }
+        catch (Exception ignored) {}
     }
 
     private void renderStatusBar(Graphics g) {
@@ -432,9 +441,12 @@ public class Player extends Entity {
 
     public void render(Graphics g, int xLevelOffset, int yLevelOffset) {
         renderEffects(g, xLevelOffset, yLevelOffset);
-        int playerXPos = (int)(hitBox.x-xHitBoxOffset-xLevelOffset+flipCoefficient);
-        int playerYPos = (int)(hitBox.y-yHitBoxOffset-yLevelOffset)+(int)pushOffset;
-        g.drawImage(animations[entityState.ordinal()][animIndex], playerXPos, playerYPos, flipSign*width, height, null);
+        try {
+            int playerXPos = (int)(hitBox.x-xHitBoxOffset-xLevelOffset+flipCoefficient);
+            int playerYPos = (int)(hitBox.y-yHitBoxOffset-yLevelOffset)+(int)pushOffset;
+            g.drawImage(animations[entityState.ordinal()][animIndex], playerXPos, playerYPos, flipSign*width, height, null);
+        }
+        catch (Exception ignored) {}
         g.drawImage(statusBar,(int)(10*Tiles.SCALE.getValue()), (int)(15*Tiles.SCALE.getValue()), (int)(192*Tiles.SCALE.getValue()), (int)(58*Tiles.SCALE.getValue()), null);
         hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.GREEN);
         attackBoxRenderer(g, xLevelOffset, yLevelOffset);
@@ -448,7 +460,8 @@ public class Player extends Entity {
     }
 
     public void reset() {
-        moving = attacking = inAir = hit = spell = false;
+        moving = attacking = inAir = hit = false;
+        spellState = 0;
         left = right = jump = false;
         animIndex = animTick = 0;
         entityState = AnimType.IDLE;
@@ -462,7 +475,7 @@ public class Player extends Entity {
 
     public void setAttacking(boolean attacking) {
         this.attacking = attacking;
-        this.spell = false;
+        this.spellState = 0;
     }
 
     public void setLeft(boolean left) {
@@ -515,8 +528,13 @@ public class Player extends Entity {
         return dash;
     }
 
-    public boolean isSpell() {
-        return spell;
+    public int getSpellState() {
+        return spellState;
+    }
+
+    public void setSpellState(int spellState) {
+        if (spellState == 2 && this.spellState == 1) animIndex = 10;
+        this.spellState = spellState;
     }
 
     @Override

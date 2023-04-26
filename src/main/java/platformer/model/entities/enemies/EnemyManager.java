@@ -74,7 +74,7 @@ public class EnemyManager {
         for (Skeleton skeleton : skeletons) {
             if (skeleton.isAlive() && skeleton.getEnemyAction() != AnimType.DEATH) {
                 if (flames.isAlive() && flames.getHitBox().intersects(skeleton.getHitBox())) {
-                    skeleton.hit(1);
+                    skeleton.spellHit(0.15);
                     return;
                 }
             }

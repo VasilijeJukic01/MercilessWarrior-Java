@@ -23,7 +23,7 @@ public class SpellManager {
         flames.getHitBox().x = playingState.getPlayer().getHitBox().x - flames.getXOffset();
         flames.getHitBox().y = playingState.getPlayer().getHitBox().y - flames.getYOffset();
         if (player.getFlipSign() == 1) flames.getHitBox().x = flames.getHitBox().x + flames.getHitBox().width + (int)(38*Tiles.SCALE.getValue());
-        flames.setAlive(playingState.getPlayer().isSpell());
+        flames.setAlive(playingState.getPlayer().getSpellState() != 0);
     }
 
     // Core

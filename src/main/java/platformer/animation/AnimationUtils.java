@@ -87,9 +87,9 @@ public class AnimationUtils {
         anim[12] = wallAnim;
 
         // 14 Spell 1 anim
-        BufferedImage[] spell1Anim = new BufferedImage[16];
-        for (int i = 0; i < spell1Anim.length; i++) {
-            spell1Anim[i] = Utils.getInstance().resize(sprite.getSubimage(i*144, 19*80, 144, 80), w, h);
+        BufferedImage[] spell1Anim = new BufferedImage[13];
+        for (int i = 1; i < spell1Anim.length+1; i++) {
+            spell1Anim[i-1] = Utils.getInstance().resize(sprite.getSubimage(i*144, 19*80, 144, 80), w, h);
         }
         anim[14] = spell1Anim;
 

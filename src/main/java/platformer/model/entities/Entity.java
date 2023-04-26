@@ -21,7 +21,7 @@ public abstract class Entity implements Debug {
     protected boolean inAir;
 
     protected int maxHealth;
-    protected int currentHealth;
+    protected double currentHealth;
     protected boolean attackCheck;
     protected Rectangle2D.Double attackBox;
 
