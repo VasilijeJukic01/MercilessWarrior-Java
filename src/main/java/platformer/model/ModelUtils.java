@@ -20,8 +20,8 @@ public class ModelUtils {
 
     public int getDamage(EnemyType enemyType) {
         switch (enemyType) {
-            case SKELETON: return 25;
-            case GHOUL: return 35;
+            case SKELETON: return 35;
+            case GHOUL: return 50;
             default: return 0;
         }
     }
