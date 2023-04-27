@@ -10,10 +10,8 @@ import java.awt.geom.Rectangle2D;
 
 public abstract class Entity implements Debug {
 
-    protected int xPos;
-    protected int yPos;
-    protected int width;
-    protected int height;
+    protected int xPos, yPos;
+    protected int width, height;
     protected Rectangle2D.Double hitBox;
 
     protected AnimType entityState = AnimType.IDLE;
@@ -21,7 +19,7 @@ public abstract class Entity implements Debug {
     protected boolean inAir;
 
     protected int maxHealth;
-    protected int currentHealth;
+    protected double currentHealth;
     protected boolean attackCheck;
     protected Rectangle2D.Double attackBox;
 

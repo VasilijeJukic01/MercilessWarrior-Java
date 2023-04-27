@@ -48,7 +48,8 @@ public class OpenAL implements AudioPlayer {
     }
 
     private void loadSounds() {
-        String[] ids = {"airSlash1", "airSlash2", "airSlash3", "attackSlash1", "attackSlash2", "gameOver", "crateBreak1", "crateBreak2", "skeletonD1", "playerDash", "arrowSound"};
+        String[] ids = {"airSlash1", "airSlash2", "airSlash3", "attackSlash1", "attackSlash2", "gameOver", "crateBreak1", "crateBreak2", "skeletonD1", "playerDash", "arrowSound",
+                        "block1", "block2", "swordBlock1", "swordBlock2", "swordBlock3", "fireSound1"};
         for (String id : ids) {
             sounds.add(loadBuffers("audio/" + id + ".wav"));
             soundSources.add(new OpenALSource());
@@ -101,6 +102,11 @@ public class OpenAL implements AudioPlayer {
     }
 
     @Override
+    public void stopSound(int sound) {
+        soundSources.get(sound).stop();
+    }
+
+    @Override
     public void setLevelSong() {
         playSong(Songs.FOREST_1.ordinal());
     }
@@ -116,6 +122,20 @@ public class OpenAL implements AudioPlayer {
     public void playHitSound() {
         int start = 3;
         start += rand.nextInt(2);
+        playSound(start);
+    }
+
+    @Override
+    public void playBlockSound(String type) {
+        int start = 0;
+        if (type.equals("Enemy")) {
+            start = 11;
+            start += rand.nextInt(2);
+        }
+        else if (type.equals("Player")) {
+            start = 13;
+            start += rand.nextInt(3);
+        }
         playSound(start);
     }
 

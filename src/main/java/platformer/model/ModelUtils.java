@@ -2,6 +2,7 @@ package platformer.model;
 
 import platformer.model.entities.enemies.EnemyType;
 import platformer.model.objects.ObjType;
+import platformer.model.spells.SpellType;
 
 public class ModelUtils {
 
@@ -19,8 +20,8 @@ public class ModelUtils {
 
     public int getDamage(EnemyType enemyType) {
         switch (enemyType) {
-            case SKELETON: return 25;
-            case GHOUL: return 35;
+            case SKELETON: return 35;
+            case GHOUL: return 50;
             default: return 0;
         }
     }
@@ -37,6 +38,11 @@ public class ModelUtils {
             case ARROW_LAUNCHER_LEFT:
                 return 16;
         }
+        return 1;
+    }
+
+    public int getSpellSprite(SpellType spell) {
+        if (spell == SpellType.FLAME_1) return 14;
         return 1;
     }
 

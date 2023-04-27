@@ -11,5 +11,11 @@ public enum Sounds {
     CRATE_BREAK_2,     // 7
     SKELETON_DEATH_1,  // 8
     DASH,              // 9
-    ARROW_SOUND        // 10
+    ARROW_SOUND,       // 10
+    BLOCK_1,           // 11
+    BLOCK_2,           // 12
+    SWORD_BLOCK_1,     // 13
+    SWORD_BLOCK_2,     // 14
+    SWORD_BLOCK_3,     // 15
+    FIRE_SPELL_1       // 16
 }

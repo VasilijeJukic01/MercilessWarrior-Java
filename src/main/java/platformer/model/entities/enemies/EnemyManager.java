@@ -9,6 +9,8 @@ import platformer.model.levels.Level;
 import platformer.model.objects.GameObject;
 import platformer.model.objects.Projectile;
 import platformer.model.objects.Spike;
+import platformer.model.spells.Flames;
+import platformer.state.PlayingState;
 
 
 import java.awt.*;
@@ -20,10 +22,12 @@ import java.util.List;
 @SuppressWarnings("FieldCanBeLocal")
 public class EnemyManager {
 
+    private final PlayingState playingState;
     private BufferedImage[][] skeletonAnimations;
     private List<Skeleton> skeletons = new ArrayList<>();
 
-    public EnemyManager() {
+    public EnemyManager(PlayingState playingState) {
+        this.playingState = playingState;
         init();
     }
 
@@ -37,8 +41,8 @@ public class EnemyManager {
 
     private void renderSkeletons(Graphics g, int xLevelOffset, int yLevelOffset) {
         for (Skeleton s : skeletons) {
-            int fC = s.getFlipCoefficient(), fS = s.getFlipSign();
             if (s.isAlive()) {
+                int fC = s.getFlipCoefficient(), fS = s.getFlipSign();
                 int x = (int) s.getHitBox().x - EnemySize.SKELETON_X_OFFSET.getValue() - xLevelOffset + fC;
                 int y = (int) s.getHitBox().y - EnemySize.SKELETON_Y_OFFSET.getValue() - yLevelOffset+1 + (int)s.getPushOffset();
                 int w = EnemySize.SKELETON_WIDTH.getValue() * fS;
@@ -55,12 +59,23 @@ public class EnemyManager {
         for (Skeleton skeleton : skeletons) {
             if (skeleton.isAlive() && skeleton.getEnemyAction() != AnimType.DEATH) {
                 if (attackBox.intersects(skeleton.getHitBox())) {
-                    skeleton.hit(5);
+                    skeleton.hit(5, true, true);
                     player.changeStamina(2);
-                    Audio.getInstance().getAudioPlayer().playHitSound();
                     return;
                 }
                 if (!player.isDash() && !player.isOnWall()) Audio.getInstance().getAudioPlayer().playSlashSound();
+            }
+        }
+    }
+
+    public void checkEnemySpellHit() {
+        Flames flames = playingState.getSpellManager().getFlames();
+        for (Skeleton skeleton : skeletons) {
+            if (skeleton.isAlive() && skeleton.getEnemyAction() != AnimType.DEATH) {
+                if (flames.isAlive() && flames.getHitBox().intersects(skeleton.getHitBox())) {
+                    skeleton.spellHit(0.15);
+                    return;
+                }
             }
         }
     }
@@ -69,7 +84,7 @@ public class EnemyManager {
         if (!(object instanceof Spike)) return;
         for (Skeleton skeleton : skeletons) {
             if (skeleton.isAlive() && skeleton.getEnemyAction() != AnimType.DEATH && object.getHitBox().intersects(skeleton.getHitBox())) {
-                skeleton.hit(500);
+                skeleton.hit(500, false, false);
                 return;
             }
         }
@@ -78,7 +93,7 @@ public class EnemyManager {
     public void checkEnemyProjectileHit(Projectile projectile) {
         for (Skeleton skeleton : skeletons) {
             if (skeleton.isAlive() && skeleton.getEnemyAction() != AnimType.DEATH && projectile.getHitBox().intersects(skeleton.getHitBox())) {
-                skeleton.hit(5);
+                skeleton.hit(5, false, false);
                 Direction projectileDirection = projectile.getDirection();
                 Direction skeletonDirection = skeleton.getDirection();
                 if (projectileDirection == Direction.LEFT && skeletonDirection == Direction.LEFT) skeleton.setPushDirection(Direction.RIGHT);

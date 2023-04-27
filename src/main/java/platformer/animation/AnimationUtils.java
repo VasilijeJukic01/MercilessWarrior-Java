@@ -14,7 +14,7 @@ public class AnimationUtils {
 
     public BufferedImage[][] loadPlayerAnimations(int w, int h) {
         BufferedImage sprite = Utils.getInstance().importImage("src/main/resources/images/player/playerSheet.png", -1, -1);
-        BufferedImage[][] anim = new BufferedImage[13][13];
+        BufferedImage[][] anim = new BufferedImage[16][16];
 
         // 0 Idle anim
         BufferedImage[] idleAnim = new BufferedImage[8];
@@ -65,6 +65,13 @@ public class AnimationUtils {
         }
         anim[6] = attack3;
 
+        // 7 Block anim
+        BufferedImage[]  block = new BufferedImage[6];
+        for (int i = 0; i < block.length; i++) {
+            block[i] = Utils.getInstance().resize(sprite.getSubimage(i*144, 14*80, 144, 80), w, h);
+        }
+        anim[7] = block;
+
         // 8 Hit anim
         BufferedImage[] hitAnim = new BufferedImage[4];
         for (int i = 0; i < hitAnim.length; i++) {
@@ -85,6 +92,13 @@ public class AnimationUtils {
             wallAnim[i] = Utils.getInstance().resize(sprite.getSubimage(i*144, 21*80, 144, 80), w, h);
         }
         anim[12] = wallAnim;
+
+        // 14 Spell 1 anim
+        BufferedImage[] spell1Anim = new BufferedImage[13];
+        for (int i = 1; i < spell1Anim.length+1; i++) {
+            spell1Anim[i-1] = Utils.getInstance().resize(sprite.getSubimage(i*144, 19*80, 144, 80), w, h);
+        }
+        anim[14] = spell1Anim;
 
         return anim;
     }
@@ -131,6 +145,13 @@ public class AnimationUtils {
         }
         anim[4] = attack;
 
+        // 7 Block anim
+        BufferedImage[] block = new BufferedImage[6];
+        for (int i = 0; i < block.length; i++) {
+            block[i] = Utils.getInstance().importImage("src/main/resources/images/enemies/Skeleton/Block/Skeleton_Block"+i+".png", w, h);
+        }
+        anim[7] = block;
+
         // 8 Hit anim
         BufferedImage[] hit = new BufferedImage[4];
         for (int i = 0; i < hit.length; i++) {
@@ -174,7 +195,6 @@ public class AnimationUtils {
         wallSlide[0] = sprite.getSubimage(0, 0, 1, 1);
         wallSlide[1] = sprite.getSubimage(0, 0, 1, 1);
         for (int i = 2; i < 8; i++) {
-            //wallSlide[i] = sprite.getSubimage(64*i+8960, 0, 64, 64);
             wallSlide[i] = sprite.getSubimage(64*i+5120, 0, 64, 64);
             wallSlide[i] = Utils.getInstance().rotateImage(wallSlide[i], Math.PI/2);
         }
@@ -189,7 +209,6 @@ public class AnimationUtils {
 
         // Potions
         BufferedImage potionSprite = Utils.getInstance().importImage("src/main/resources/images/objs/potions_sprites.png", -1, -1);
-
         for (int i = 0; i < 2; i++, index++) {
             for (int j = 0; j < 7; j++) {
                 anim[index][j] = potionSprite.getSubimage(12*j, 16*i, 12, 16);
@@ -198,7 +217,6 @@ public class AnimationUtils {
 
         // Containers
         BufferedImage containerSprite = Utils.getInstance().importImage("src/main/resources/images/objs/objects_sprites.png", -1, -1);
-
         for (int i = 0; i < 2; i++, index++) {
             for (int j = 0; j < 8; j++) {
                 anim[index][j] = containerSprite.getSubimage(40*j, 30*i, 40, 30);
@@ -207,7 +225,6 @@ public class AnimationUtils {
 
         // Spikes
         BufferedImage spikeSprite = Utils.getInstance().importImage("src/main/resources/images/objs/spikes.png", -1, -1);
-
         for (int i = 0; i < 1; i++, index++) {
             for (int j = 0; j < 10; j++) {
                 anim[index][j] = spikeSprite.getSubimage(32*j, 32*i, 32, 32);
@@ -216,7 +233,6 @@ public class AnimationUtils {
 
         // Arrow Launchers
         BufferedImage arrowLauncherSprite = Utils.getInstance().importImage("src/main/resources/images/objs/arrowTrap.png", -1, -1);
-
         for (int i = 0; i < 1; i++, index++) {
             for (int j = 0; j < 16; j++) {
                 anim[index][j] = arrowLauncherSprite.getSubimage((96*j)+27, 32*i, 32, 32);

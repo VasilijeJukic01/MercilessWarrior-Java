@@ -9,6 +9,7 @@ import platformer.core.Game;
 import platformer.model.entities.Player;
 import platformer.model.levels.LevelManager;
 import platformer.model.objects.ObjectManager;
+import platformer.model.spells.SpellManager;
 import platformer.ui.GameOverOverlay;
 import platformer.ui.PauseOverlay;
 import platformer.utils.Utils;
@@ -21,7 +22,7 @@ import java.awt.image.BufferedImage;
 import java.util.Set;
 import java.util.TreeSet;
 
-public class PlayingState extends StateAbstraction implements State{
+public class PlayingState extends StateAbstraction implements State {
 
     private final Set<Integer> pressedKeys = new TreeSet<>();
 
@@ -30,6 +31,7 @@ public class PlayingState extends StateAbstraction implements State{
     private LevelManager levelManager;
     private ObjectManager objectManager;
     private EnemyManager enemyManager;
+    private SpellManager spellManager;
 
     // Overlays
     private PauseOverlay pauseOverlay;
@@ -59,13 +61,15 @@ public class PlayingState extends StateAbstraction implements State{
         this.background = Utils.getInstance().importImage("src/main/resources/images/background1.jpg", (int)Tiles.GAME_WIDTH.getValue(), (int)Tiles.GAME_HEIGHT.getValue());
         this.levelManager = new LevelManager(game, this);
         this.objectManager = new ObjectManager(this);
-        this.enemyManager = new EnemyManager();
-        this.player = new Player((int)(300 * Tiles.SCALE.getValue()), (int)(250 * Tiles.SCALE.getValue()), (int)(125 * Tiles.SCALE.getValue()),
-                (int)(80 * Tiles.SCALE.getValue()), enemyManager, objectManager, game);
+        this.enemyManager = new EnemyManager(this);
+        int playerX = (int)(300 * Tiles.SCALE.getValue()), playerY = (int)(250 * Tiles.SCALE.getValue());
+        int playerWid = (int)(125 * Tiles.SCALE.getValue()), playerHei = (int)(80 * Tiles.SCALE.getValue());
+        this.player = new Player(playerX, playerY, playerWid, playerHei, enemyManager, objectManager, game);
         player.loadLvlData(levelManager.getCurrentLevel().getLvlData());
         player.setSpawn(levelManager.getCurrentLevel().getPlayerSpawn());
         this.pauseOverlay = new PauseOverlay(game);
         this.gameOverOverlay = new GameOverOverlay(game);
+        this.spellManager = new SpellManager(this);
         loadStartLevel();
     }
 
@@ -101,8 +105,7 @@ public class PlayingState extends StateAbstraction implements State{
         if (dx > rightBorder) xLevelOffset += dx-rightBorder;
         else if (dx < leftBorder) xLevelOffset += dx-leftBorder;
 
-        if (xLevelOffset > xMaxLevelOffset) xLevelOffset = xMaxLevelOffset;
-        else if (xLevelOffset < 0) xLevelOffset = 0;
+        xLevelOffset = Math.max(Math.min(xLevelOffset, xMaxLevelOffset), 0);
     }
 
     private void yBorderUpdate() {
@@ -111,8 +114,7 @@ public class PlayingState extends StateAbstraction implements State{
         if (dy < topBorder) yLevelOffset += dy-topBorder;
         else if (dy > bottomBorder) yLevelOffset += dy-bottomBorder;
 
-        if (yLevelOffset > yMaxLevelOffset) yLevelOffset = yMaxLevelOffset;
-        else if (yLevelOffset < 0) yLevelOffset = 0;
+        yLevelOffset = Math.max(Math.min(yLevelOffset, yMaxLevelOffset), 0);
     }
 
     // Core
@@ -129,6 +131,7 @@ public class PlayingState extends StateAbstraction implements State{
             }
             this.enemyManager.update(levelManager.getCurrentLevel().getLvlData(), player);
             this.objectManager.update(levelManager.getCurrentLevel().getLvlData(), player);
+            this.spellManager.update();
             xBorderUpdate();
             yBorderUpdate();
             this.player.update();
@@ -142,14 +145,9 @@ public class PlayingState extends StateAbstraction implements State{
         this.player.render(g, xLevelOffset, yLevelOffset);
         this.objectManager.render(g, xLevelOffset, yLevelOffset);
         this.enemyManager.render(g, xLevelOffset, yLevelOffset);
-        if (paused) {
-            g.setColor(new Color(0, 0, 0, 150));
-            g.fillRect(0, 0, (int)Tiles.GAME_WIDTH.getValue(), (int)Tiles.GAME_HEIGHT.getValue());
-            this.pauseOverlay.render(g);
-        }
-        if (gameOver) {
-            this.gameOverOverlay.render(g);
-        }
+        this.spellManager.render(g, xLevelOffset, yLevelOffset);
+        if (paused) this.pauseOverlay.render(g);
+        if (gameOver) this.gameOverOverlay.render(g);
     }
 
     @Override
@@ -190,6 +188,7 @@ public class PlayingState extends StateAbstraction implements State{
             return;
         }
         int key = e.getKeyCode();
+        if (pressedKeys.contains(key)) return;
         pressedKeys.add(key);
         switch (key) {
             case KeyEvent.VK_UP:
@@ -206,16 +205,21 @@ public class PlayingState extends StateAbstraction implements State{
                 player.setRight(true);
                 break;
             case KeyEvent.VK_X:
-                player.setPlayerStateSecondary(AttackState.ATTACK_1);
+                player.setPlayerAttackState(AttackState.ATTACK_1);
                 break;
             case KeyEvent.VK_C:
-                player.setPlayerStateSecondary(AttackState.ATTACK_3);
+                if (pressedKeys.contains(key) && player.getSpellState() != 0) return;
+                player.doSpell();
                 break;
             case KeyEvent.VK_Z:
-                player.setPlayerStateSecondary(AttackState.ATTACK_2);
+                player.setPlayerAttackState(AttackState.ATTACK_2);
                 break;
             case KeyEvent.VK_V:
                 if (player.canDash()) player.doDash();
+                break;
+            case KeyEvent.VK_S:
+                if (player.isBlock()) return;
+                player.setBlock(true);
                 break;
             case KeyEvent.VK_ESCAPE:
                 paused = !paused;
@@ -243,6 +247,9 @@ public class PlayingState extends StateAbstraction implements State{
                 break;
             case KeyEvent.VK_V:
                 player.setCanDash(true);
+                break;
+            case KeyEvent.VK_C:
+                if (player.getSpellState() == 1) player.setSpellState(2);
                 break;
             case KeyEvent.VK_F1: // Show HitBox
                 DebugSettings.getInstance().setDebugMode(!DebugSettings.getInstance().isDebugMode());
@@ -310,5 +317,9 @@ public class PlayingState extends StateAbstraction implements State{
 
     public LevelManager getLevelManager() {
         return levelManager;
+    }
+
+    public SpellManager getSpellManager() {
+        return spellManager;
     }
 }

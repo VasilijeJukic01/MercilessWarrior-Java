@@ -261,7 +261,8 @@ public class Utils {
     public boolean isSightClear(int[][] levelData, Rectangle2D.Double enemyHitBox, Rectangle2D.Double playerHitBox, int yTileEnemy) {
         int xTileEnemy = (int)(enemyHitBox.x / Tiles.TILES_SIZE.getValue());
         int xTilePlayer = (int)(playerHitBox.x / Tiles.TILES_SIZE.getValue());
-        if (xTileEnemy > xTilePlayer) return areAllTilesWalkable(xTilePlayer, xTileEnemy, yTileEnemy, levelData);
+        int xTilePlayerRight = xTilePlayer+1;
+        if (xTileEnemy > xTilePlayer) return areAllTilesWalkable(xTilePlayerRight, xTileEnemy, yTileEnemy, levelData);
         else return areAllTilesWalkable(xTileEnemy, xTilePlayer, yTileEnemy, levelData);
     }
 
