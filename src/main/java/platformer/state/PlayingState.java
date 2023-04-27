@@ -205,14 +205,14 @@ public class PlayingState extends StateAbstraction implements State {
                 player.setRight(true);
                 break;
             case KeyEvent.VK_X:
-                player.setPlayerStateSecondary(AttackState.ATTACK_1);
+                player.setPlayerAttackState(AttackState.ATTACK_1);
                 break;
             case KeyEvent.VK_C:
                 if (pressedKeys.contains(key) && player.getSpellState() != 0) return;
                 player.doSpell();
                 break;
             case KeyEvent.VK_Z:
-                player.setPlayerStateSecondary(AttackState.ATTACK_2);
+                player.setPlayerAttackState(AttackState.ATTACK_2);
                 break;
             case KeyEvent.VK_V:
                 if (player.canDash()) player.doDash();

@@ -19,7 +19,7 @@ public abstract class Enemy extends Entity implements Debug {
     protected double enemySpeed = 0.2*Tiles.SCALE.getValue();
     protected int animSpeed, animIndex, animTick = 0;
     protected Direction direction = Direction.RIGHT;
-    protected double attackRange = 1.15*Tiles.TILES_SIZE.getValue();
+    protected double attackRange = 1.25*Tiles.TILES_SIZE.getValue();
     protected boolean alive = true;
 
     public Enemy(int xPos, int yPos, int width, int height, EnemyType enemyType, int animSpeed) {
@@ -61,7 +61,7 @@ public abstract class Enemy extends Entity implements Debug {
 
     protected boolean isPlayerCloseForAttack(Player player) {
         int distance = (int)Math.abs(player.getHitBox().x-hitBox.x);
-        return distance <= attackRange;
+        return distance <= attackRange/1.25;
     }
 
     protected boolean isPlayerInSight(Player player) {

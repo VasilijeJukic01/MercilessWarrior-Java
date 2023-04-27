@@ -142,7 +142,7 @@ public class ObjectManager {
         return null;
     }
 
-    public double getXObjectBound(Rectangle2D.Double hitBox, boolean inAir, double dx) {
+    public double getXObjectBound(Rectangle2D.Double hitBox, double dx) {
         for (Container c : containers) {
             if (c.isAlive() && checkTouch(c, hitBox, "X")) {
                 if (c.getHitBox().x < hitBox.x && dx > 0) {
