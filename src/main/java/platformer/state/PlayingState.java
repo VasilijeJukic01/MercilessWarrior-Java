@@ -2,6 +2,7 @@ package platformer.state;
 
 import platformer.debug.DebugSettings;
 import platformer.debug.Message;
+import platformer.model.entities.Cooldown;
 import platformer.model.entities.effects.Particle;
 import platformer.model.entities.enemies.EnemyManager;
 import platformer.model.entities.AttackState;
@@ -209,7 +210,9 @@ public class PlayingState extends StateAbstraction implements State {
                 player.setRight(true);
                 break;
             case KeyEvent.VK_X:
+                if (player.getCooldown()[Cooldown.ATTACK.ordinal()] != 0) return;
                 player.setPlayerAttackState(AttackState.ATTACK_1);
+                player.getCooldown()[Cooldown.ATTACK.ordinal()] = 1.2;
                 break;
             case KeyEvent.VK_C:
                 if (pressedKeys.contains(key) && player.getSpellState() != 0) return;
@@ -219,9 +222,11 @@ public class PlayingState extends StateAbstraction implements State {
                 player.setPlayerAttackState(AttackState.ATTACK_2);
                 break;
             case KeyEvent.VK_V:
+                if (player.getCooldown()[Cooldown.DASH.ordinal()] != 0) return;
                 if (player.canDash()) player.doDash();
                 break;
             case KeyEvent.VK_S:
+                if (player.getCooldown()[Cooldown.BLOCK.ordinal()] != 0) return;
                 if (player.isBlock()) return;
                 player.setBlock(true);
                 break;

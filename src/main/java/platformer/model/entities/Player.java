@@ -54,6 +54,8 @@ public class Player extends Entity {
     private int dashTick = 0;
     private int coins = 0, exp = 0, level = 1;
     private final int maxExp = 10000;
+    // Cooldowns
+    private final double[] cooldown;
 
     // Init
     public Player(int xPos, int yPos, int width, int height, EnemyManager enemyManager, ObjectManager objectManager, Game game) {
@@ -66,6 +68,7 @@ public class Player extends Entity {
         this.userInterface = new UserInterface(this);
         initHitBox((int)(15*Tiles.SCALE.getValue()), (int)(44*Tiles.SCALE.getValue()));
         initAttackBox();
+        this.cooldown = new double[3];
     }
 
     private void initAttackBox() {
@@ -108,6 +111,7 @@ public class Player extends Entity {
                     if (!Utils.getInstance().isEntityOnFloor(hitBox, levelData)) inAir = true;
                 }
             }
+            coolDownTickUpdate();
         }
         // Wall flip lock
         if (moving && left && !onWall) {
@@ -167,6 +171,15 @@ public class Player extends Entity {
             else if (attackState == AttackState.ATTACK_3) entityState = AnimType.ATTACK_3;
         }
         if (previousAction != entityState) animIndex = animTick = 0;
+    }
+
+    private void coolDownTickUpdate() {
+        for (int i = 0; i < cooldown.length; i++) {
+            if (cooldown[i] > 0) {
+                cooldown[i] -= 0.1;
+                if (cooldown[i] < 0) cooldown[i] = 0;
+            }
+        }
     }
 
     // Positioning
@@ -315,6 +328,7 @@ public class Player extends Entity {
             canDash = false;
             Audio.getInstance().getAudioPlayer().playSound(Sounds.DASH.ordinal());
             changeStamina(-3);
+            cooldown[Cooldown.DASH.ordinal()] = 2;
         }
     }
 
@@ -570,7 +584,10 @@ public class Player extends Entity {
 
     public void setCanBlock(boolean canBlock) {
         this.canBlock = canBlock;
-        if (canBlock) game.notifyLogger("Damage blocked successfully!", Message.INFORMATION);
+        if (canBlock) {
+            game.notifyLogger("Damage blocked successfully!", Message.INFORMATION);
+            cooldown[Cooldown.BLOCK.ordinal()] = 1.5;
+        }
     }
 
     public boolean canBlock() {
@@ -591,6 +608,10 @@ public class Player extends Entity {
 
     public UserInterface getUserInterface() {
         return userInterface;
+    }
+
+    public double[] getCooldown() {
+        return cooldown;
     }
 
     @Override

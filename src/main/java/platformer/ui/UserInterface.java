@@ -1,6 +1,7 @@
 package platformer.ui;
 
 import platformer.model.Tiles;
+import platformer.model.entities.Cooldown;
 import platformer.model.entities.Player;
 import platformer.utils.Utils;
 
@@ -35,9 +36,9 @@ public class UserInterface {
         g.setFont(new Font("Arial", Font.BOLD, 20));
         g.drawString("Coins: "+player.getCoins(), (int)Tiles.GAME_WIDTH.getValue()-250, 20);
         g.drawString("Level: "+player.getLevel()+" | EXP: "+player.getExp(), (int)Tiles.GAME_WIDTH.getValue()-250, 40);
-        g.drawString("Attack Cooldown: 0", (int)Tiles.GAME_WIDTH.getValue()-250, 60);
-        g.drawString("Block Cooldown:  0", (int)Tiles.GAME_WIDTH.getValue()-250, 80);
-        g.drawString("Dash Cooldown:   0", (int)Tiles.GAME_WIDTH.getValue()-250, 100);
+        g.drawString("Attack Cooldown: "+Math.round(player.getCooldown()[Cooldown.ATTACK.ordinal()]*100.0)/100.0, (int)Tiles.GAME_WIDTH.getValue()-250, 60);
+        g.drawString("Block Cooldown:  "+Math.round(player.getCooldown()[Cooldown.BLOCK.ordinal()]*100.0)/100.0, (int)Tiles.GAME_WIDTH.getValue()-250, 80);
+        g.drawString("Dash Cooldown:   "+Math.round(player.getCooldown()[Cooldown.DASH.ordinal()]*100.0)/100.0, (int)Tiles.GAME_WIDTH.getValue()-250, 100);
     }
 
     private void renderStatusBar(Graphics g) {
