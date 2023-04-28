@@ -149,6 +149,7 @@ public class PlayingState extends StateAbstraction implements State {
         this.objectManager.render(g, xLevelOffset, yLevelOffset);
         this.enemyManager.render(g, xLevelOffset, yLevelOffset);
         this.spellManager.render(g, xLevelOffset, yLevelOffset);
+        this.player.getUserInterface().render(g);
         if (paused) this.pauseOverlay.render(g);
         if (gameOver) this.gameOverOverlay.render(g);
     }
