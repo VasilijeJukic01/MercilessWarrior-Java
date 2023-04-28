@@ -28,11 +28,13 @@ public class ObjectManager {
     private ArrayList<Spike> spikes;
     private ArrayList<ArrowLauncher> arrowLaunchers;
     private final ArrayList<Projectile> projectiles;
+    private final ArrayList<Coin> coins;
 
     public ObjectManager(PlayingState playingState) {
         this.playingState = playingState;
         this.objects = AnimationUtils.getInstance().loadObjects();
         this.projectiles = new ArrayList<>();
+        this.coins = new ArrayList<>();
         this.projectileObject = Utils.getInstance().importImage("src/main/resources/images/objs/arrow.png", (int)PRSet.ARROW_WID.getValue(), (int)PRSet.ARROW_HEI.getValue());
     }
 
@@ -67,6 +69,13 @@ public class ObjectManager {
             if (potion.isAlive() && hitBox.intersects(potion.getHitBox())) {
                 potion.setAlive(false);
                 applyPotionEffect(potion);
+            }
+        }
+        ArrayList<Coin> copy = new ArrayList<>(coins);
+        for (Coin coin : copy) {
+            if (coin.isAlive() && hitBox.intersects(coin.getHitBox())) {
+                coins.remove(coin);
+                playingState.getPlayer().changeCoins(1);
             }
         }
     }
@@ -287,6 +296,12 @@ public class ObjectManager {
         }
     }
 
+    private void updateCoins() {
+        for (Coin coin : coins) {
+            if (coin.isAlive()) coin.update();
+        }
+    }
+
     // Core
     public void update(int[][] lvlData, Player player) {
         for (Potion potion : potions) if (potion.isAlive()) potion.update();
@@ -294,6 +309,7 @@ public class ObjectManager {
         updateObjectInAir();
         updateArrowLaunchers(lvlData, player);
         updateProjectiles(lvlData, player);
+        updateCoins();
         checkEnemyIntersection();
     }
 
@@ -303,9 +319,33 @@ public class ObjectManager {
         renderTraps(g, xLevelOffset, yLevelOffset);
         renderArrowLaunchers(g, xLevelOffset, yLevelOffset);
         renderProjectiles(g, xLevelOffset, yLevelOffset);
+        renderCoins(g, xLevelOffset, yLevelOffset);
     }
 
     // Render
+
+    public void generateCoins(Rectangle2D.Double location) {
+        Random rand = new Random();
+        int n = rand.nextInt(5);
+        for (int i = 0; i < n; i++) {
+            int x = rand.nextInt((int)location.width)+(int)location.x;
+            int y = rand.nextInt((int)(location.height/3)) + (int)location.y + 2*(int)location.height/3;
+            Coin coin = new Coin(ObjType.COIN, x, y);
+            coins.add(coin);
+        }
+    }
+
+    private void renderCoins(Graphics g, int xLevelOffset, int yLevelOffset) {
+        for (Coin c : coins) {
+            if (c.isAlive()) {
+                int x = (int)c.getHitBox().x-c.getXOffset()-xLevelOffset;
+                int y = (int)c.getHitBox().y-c.getYOffset()-yLevelOffset;
+                g.drawImage(objects[c.getObjType().ordinal()][c.getAnimIndex()], x, y, ObjValue.COIN_WID.getValue(), ObjValue.COIN_HEI.getValue(), null);
+                c.hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.ORANGE);
+            }
+        }
+    }
+
     private void renderContainers(Graphics g, int xLevelOffset, int yLevelOffset) {
         for (Container c : containers) {
             if (c.isAlive()) {
@@ -376,6 +416,7 @@ public class ObjectManager {
         for (Potion potion : potions) potion.reset();
         for (Container container : containers) container.reset();
         for (ArrowLauncher arrowLauncher : arrowLaunchers) arrowLauncher.reset();
+        coins.clear();
     }
 
 }

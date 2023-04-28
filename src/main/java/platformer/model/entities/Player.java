@@ -12,6 +12,7 @@ import platformer.model.entities.enemies.Enemy;
 import platformer.model.entities.enemies.EnemyManager;
 import platformer.model.objects.ObjectManager;
 import platformer.model.objects.Projectile;
+import platformer.ui.UserInterface;
 import platformer.utils.Utils;
 
 import java.awt.*;
@@ -46,12 +47,13 @@ public class Player extends Entity {
     private int spellState = 0;
     private boolean doubleJump, onWall, onObject, wallPush, canDash = true, canBlock;
     // Status
-    private final BufferedImage statusBar;
-    private int healthWidth = (int)(150*Tiles.SCALE.getValue()), staminaWidth = (int)(115*Tiles.SCALE.getValue());
+    private final UserInterface userInterface;
     private final int maxStamina = 100;
     private double currentStamina = 15;
     private int currentJumps = 0, dashCount = 0;
     private int dashTick = 0;
+    private int coins = 0, exp = 0, level = 1;
+    private final int maxExp = 10000;
 
     // Init
     public Player(int xPos, int yPos, int width, int height, EnemyManager enemyManager, ObjectManager objectManager, Game game) {
@@ -61,9 +63,9 @@ public class Player extends Entity {
         this.objectManager = objectManager;
         this.animations = AnimationUtils.getInstance().loadPlayerAnimations(width, height);
         this.effects = AnimationUtils.getInstance().loadEffects();
+        this.userInterface = new UserInterface(this);
         initHitBox((int)(15*Tiles.SCALE.getValue()), (int)(44*Tiles.SCALE.getValue()));
         initAttackBox();
-        this.statusBar = Utils.getInstance().importImage("src/main/resources/images/health_power_bar.png",-1,-1);
     }
 
     private void initAttackBox() {
@@ -249,11 +251,6 @@ public class Player extends Entity {
         }
     }
 
-    private void updateBars() {
-        this.healthWidth = (int)((currentHealth / (double)maxHealth) * (int)(150*Tiles.SCALE.getValue()));
-        this.staminaWidth = (int)((currentStamina / (double)maxStamina) * (int)(115*Tiles.SCALE.getValue()));
-    }
-
     private void updateAttackBox() {
         if (spellState != 0) return;
         if ((right && left) || (!right && !left)) {
@@ -356,6 +353,20 @@ public class Player extends Entity {
         if (currentStamina == 0) spellState = 2;
     }
 
+    public void changeExp(double value) {
+        exp += value;
+        exp = Math.max(Math.min(exp, maxExp), 0);
+        if (exp > 1000*level) {
+            exp = exp % (1000*level);
+            level++;
+        }
+    }
+
+    public void changeCoins(int value) {
+        coins += value;
+        coins = Math.max(coins, 0);
+    }
+
     public void kill() {
         currentHealth = 0;
     }
@@ -417,7 +428,7 @@ public class Player extends Entity {
 
     // Core
     public void update() {
-        updateBars();
+        userInterface.update(currentHealth, maxHealth, currentStamina, maxStamina);
         if (currentHealth <= 0) {
             updateDeath();
             return;
@@ -451,13 +462,6 @@ public class Player extends Entity {
         catch (Exception ignored) {}
     }
 
-    private void renderStatusBar(Graphics g) {
-        g.setColor(Color.RED);
-        g.fillRect((int)(44*Tiles.SCALE.getValue()), (int)(29*Tiles.SCALE.getValue()), healthWidth, (int)(4*Tiles.SCALE.getValue()));
-        g.setColor(Color.BLUE);
-        g.fillRect((int)(44*Tiles.SCALE.getValue()), (int)(48*Tiles.SCALE.getValue()), staminaWidth, (int)(4*Tiles.SCALE.getValue()));
-    }
-
     public void render(Graphics g, int xLevelOffset, int yLevelOffset) {
         renderEffects(g, xLevelOffset, yLevelOffset);
         try {
@@ -466,10 +470,8 @@ public class Player extends Entity {
             g.drawImage(animations[entityState.ordinal()][animIndex], playerXPos, playerYPos, flipSign*width, height, null);
         }
         catch (Exception ignored) {}
-        g.drawImage(statusBar,(int)(10*Tiles.SCALE.getValue()), (int)(15*Tiles.SCALE.getValue()), (int)(192*Tiles.SCALE.getValue()), (int)(58*Tiles.SCALE.getValue()), null);
         hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.GREEN);
         attackBoxRenderer(g, xLevelOffset, yLevelOffset);
-        renderStatusBar(g);
     }
 
     // Getters & Setters & Reset
@@ -573,6 +575,22 @@ public class Player extends Entity {
 
     public boolean canBlock() {
         return canBlock;
+    }
+
+    public int getCoins() {
+        return coins;
+    }
+
+    public int getExp() {
+        return exp;
+    }
+
+    public int getLevel() {
+        return level;
+    }
+
+    public UserInterface getUserInterface() {
+        return userInterface;
     }
 
     @Override

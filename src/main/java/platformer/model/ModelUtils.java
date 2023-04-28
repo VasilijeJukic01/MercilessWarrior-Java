@@ -37,6 +37,8 @@ public class ModelUtils {
             case ARROW_LAUNCHER_RIGHT:
             case ARROW_LAUNCHER_LEFT:
                 return 16;
+            case COIN:
+                return 4;
         }
         return 1;
     }

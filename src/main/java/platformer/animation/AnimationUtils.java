@@ -207,7 +207,7 @@ public class AnimationUtils {
         BufferedImage[][] anim = new BufferedImage[17][17];
         int index = 0;
 
-        // Potions
+        // Potions 0, 1
         BufferedImage potionSprite = Utils.getInstance().importImage("src/main/resources/images/objs/potions_sprites.png", -1, -1);
         for (int i = 0; i < 2; i++, index++) {
             for (int j = 0; j < 7; j++) {
@@ -215,7 +215,7 @@ public class AnimationUtils {
             }
         }
 
-        // Containers
+        // Containers 2, 3
         BufferedImage containerSprite = Utils.getInstance().importImage("src/main/resources/images/objs/objects_sprites.png", -1, -1);
         for (int i = 0; i < 2; i++, index++) {
             for (int j = 0; j < 8; j++) {
@@ -223,7 +223,7 @@ public class AnimationUtils {
             }
         }
 
-        // Spikes
+        // Spikes 4
         BufferedImage spikeSprite = Utils.getInstance().importImage("src/main/resources/images/objs/spikes.png", -1, -1);
         for (int i = 0; i < 1; i++, index++) {
             for (int j = 0; j < 10; j++) {
@@ -231,11 +231,18 @@ public class AnimationUtils {
             }
         }
 
-        // Arrow Launchers
+        // Arrow Launchers 5
         BufferedImage arrowLauncherSprite = Utils.getInstance().importImage("src/main/resources/images/objs/arrowTrap.png", -1, -1);
-        for (int i = 0; i < 1; i++, index++) {
+        for (int i = 0; i < 1; i++, index+=2) {
             for (int j = 0; j < 16; j++) {
                 anim[index][j] = arrowLauncherSprite.getSubimage((96*j)+27, 32*i, 32, 32);
+            }
+        }
+
+        // Coins 7
+        for (int i = 0; i < 1; i++, index++) {
+            for (int j = 0; j < 4; j++) {
+                anim[index][j] = Utils.getInstance().importImage("src/main/resources/images/objs/coin/Coin"+j+".png", -1, -1);
             }
         }
 

@@ -19,6 +19,7 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 @SuppressWarnings("FieldCanBeLocal")
 public class EnemyManager {
@@ -56,12 +57,22 @@ public class EnemyManager {
     }
 
     // Enemy hit
+
+    private void checkEnemyDying(Enemy e, Player player) {
+        Random rand = new Random();
+        if (e.getEnemyAction() == AnimType.DEATH) {
+            playingState.getObjectManager().generateCoins(e.getHitBox());
+            player.changeStamina(rand.nextInt(5));
+            player.changeExp(rand.nextInt(50)+100);
+        }
+    }
+
     public void checkEnemyHit(Rectangle2D.Double attackBox, Player player) {
         for (Skeleton skeleton : skeletons) {
             if (skeleton.isAlive() && skeleton.getEnemyAction() != AnimType.DEATH) {
                 if (attackBox.intersects(skeleton.getHitBox())) {
                     skeleton.hit(5, true, true);
-                    player.changeStamina(2);
+                    checkEnemyDying(skeleton, player);
                     if (skeleton.getEnemyAction() == AnimType.BLOCK) playingState.getGame().notifyLogger("Enemy blocks player's attack.", Message.NOTIFICATION);
                     else playingState.getGame().notifyLogger("Player gives damage to enemy: 5", Message.NOTIFICATION);
                     return;
@@ -77,6 +88,7 @@ public class EnemyManager {
             if (skeleton.isAlive() && skeleton.getEnemyAction() != AnimType.DEATH) {
                 if (flames.isAlive() && flames.getHitBox().intersects(skeleton.getHitBox())) {
                     skeleton.spellHit(0.15);
+                    checkEnemyDying(skeleton, playingState.getPlayer());
                     return;
                 }
             }
