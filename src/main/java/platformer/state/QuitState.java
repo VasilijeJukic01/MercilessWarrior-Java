@@ -2,6 +2,7 @@ package platformer.state;
 
 import platformer.audio.Audio;
 import platformer.core.Game;
+import platformer.debug.Message;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
@@ -17,6 +18,7 @@ public class QuitState extends StateAbstraction implements State{
     @Override
     public void update() {
         Audio.getInstance().getAudioPlayer().destroy();
+        game.notifyLogger("Destroying.", Message.WARNING);
         System.exit(0);
     }
 

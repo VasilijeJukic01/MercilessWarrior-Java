@@ -17,4 +17,7 @@ public abstract class StateAbstraction {
         return menuButton.getButtonHitBox().contains(e.getX(), e.getY());
     }
 
+    public Game getGame() {
+        return game;
+    }
 }

@@ -3,6 +3,7 @@ package platformer.model.objects;
 import platformer.animation.AnimationUtils;
 import platformer.audio.Audio;
 import platformer.audio.Sounds;
+import platformer.debug.Message;
 import platformer.model.Tiles;
 import platformer.model.entities.Direction;
 import platformer.model.entities.Player;
@@ -84,6 +85,7 @@ public class ObjectManager {
         for (Container container : containers) {
             boolean isFlame = flames.getHitBox().intersects(container.getHitBox()) && flames.isAlive();
             if (container.isAlive() && !container.animate && (attackBox.intersects(container.getHitBox()) || isFlame)) {
+                playingState.getGame().notifyLogger("Player breaks container.", Message.NOTIFICATION);
                 container.setAnimate(true);
                 Audio.getInstance().getAudioPlayer().playCrateSound();
                 Random rand = new Random();

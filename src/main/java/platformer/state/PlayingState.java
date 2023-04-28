@@ -1,6 +1,7 @@
 package platformer.state;
 
 import platformer.debug.DebugSettings;
+import platformer.debug.Message;
 import platformer.model.entities.effects.Particle;
 import platformer.model.entities.enemies.EnemyManager;
 import platformer.model.entities.AttackState;
@@ -89,6 +90,7 @@ public class PlayingState extends StateAbstraction implements State {
         levelManager.loadNextLevel();
         player.setSpawn(levelManager.getCurrentLevel().getPlayerSpawn());
         calculateOffset();
+        game.notifyLogger("Next level loaded.", Message.NOTIFICATION);
     }
 
     public void loadPrevLevel() {
@@ -96,6 +98,7 @@ public class PlayingState extends StateAbstraction implements State {
         levelManager.loadPrevLevel();
         player.setSpawn(levelManager.getCurrentLevel().getPlayerSpawn());
         calculateOffset();
+        game.notifyLogger("Previous level loaded.", Message.NOTIFICATION);
     }
 
     // Level Borders
@@ -253,9 +256,11 @@ public class PlayingState extends StateAbstraction implements State {
                 break;
             case KeyEvent.VK_F1: // Show HitBox
                 DebugSettings.getInstance().setDebugMode(!DebugSettings.getInstance().isDebugMode());
+                game.notifyLogger("HitBox functionality changed.", Message.WARNING);
                 break;
             case KeyEvent.VK_F2: // Stamina Cheat
                 player.changeStamina(100);
+                game.notifyLogger("Stamina cheat activated.", Message.WARNING);
                 break;
             default: break;
         }

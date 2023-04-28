@@ -5,6 +5,7 @@ import platformer.animation.AnimationUtils;
 import platformer.audio.Audio;
 import platformer.audio.Sounds;
 import platformer.core.Game;
+import platformer.debug.Message;
 import platformer.model.entities.effects.EffectType;
 import platformer.model.Tiles;
 import platformer.model.entities.enemies.Enemy;
@@ -322,7 +323,10 @@ public class Player extends Entity {
 
     public void doSpell() {
         if (inAir) return;
-        if (currentStamina >= 5) setSpellState(1);
+        if (currentStamina >= 5) {
+            setSpellState(1);
+            game.notifyLogger("Player has used FLAME spell!", Message.INFORMATION);
+        }
     }
 
     public void changeHealth(int value) {
@@ -341,6 +345,7 @@ public class Player extends Entity {
         pushOffsetDirection = Direction.UP;
         pushOffset = 0;
         Rectangle2D.Double hBox =  (o instanceof Enemy) ? (((Enemy) o).getHitBox()) : (((Projectile) o).getHitBox());
+        game.notifyLogger("Damage received: "+value, Message.INFORMATION);
         if (hBox.x < hitBox.x) pushDirection = Direction.RIGHT;
         else pushDirection = Direction.LEFT;
     }
@@ -361,6 +366,7 @@ public class Player extends Entity {
             entityState = AnimType.DEATH;
             animIndex = animTick = 0;
             game.setDying(true);
+            game.notifyLogger("Player is dead.", Message.NOTIFICATION);
         }
         else if (animIndex == animations[entityState.ordinal()].length-1 && animTick >= animSpeed-1) {
             game.setGameOver(true);
@@ -562,6 +568,7 @@ public class Player extends Entity {
 
     public void setCanBlock(boolean canBlock) {
         this.canBlock = canBlock;
+        if (canBlock) game.notifyLogger("Damage blocked successfully!", Message.INFORMATION);
     }
 
     public boolean canBlock() {

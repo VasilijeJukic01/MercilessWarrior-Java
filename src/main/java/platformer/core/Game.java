@@ -2,6 +2,7 @@ package platformer.core;
 
 import platformer.audio.Audio;
 import platformer.audio.Songs;
+import platformer.debug.*;
 import platformer.state.OptionsState;
 import platformer.state.StateManager;
 import platformer.ui.AudioOptions;
@@ -11,9 +12,10 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
+import java.util.ArrayList;
 
 @SuppressWarnings({"InfiniteLoopStatement", "FieldCanBeLocal"})
-public class Game implements Runnable{
+public class Game implements Runnable, Publisher {
 
     private GameFrame gameFrame;
     private final Thread gameThread;
@@ -26,11 +28,16 @@ public class Game implements Runnable{
     private int currentFps = 0;
     private int currentUpdates = 0;
 
+    private ArrayList<Subscriber> subscribers;
+    private final Logger consoleLogger, fileLogger;
+
     public Game() {
         init();
         this.gameThread = new Thread(this);
         this.gameThread.start();
         Audio.getInstance().getAudioPlayer().playSong(Songs.MENU.ordinal());
+        this.consoleLogger = new ConsoleLogger(this);
+        this.fileLogger = new FileLogger(this);
     }
 
     private void init() {
@@ -167,4 +174,25 @@ public class Game implements Runnable{
         return audioOptions;
     }
 
+    @Override
+    public void addSubscriber(Subscriber s) {
+        if(s == null) return;
+        if(this.subscribers == null) this.subscribers = new ArrayList<>();
+        if(this.subscribers.contains(s)) return;
+        this.subscribers.add(s);
+    }
+
+    @Override
+    public void removeSubscriber(Subscriber s) {
+        if(s == null ||  this.subscribers == null || !this.subscribers.contains(s)) return;
+        this.subscribers.remove(s);
+    }
+
+    @Override
+    public void notifyLogger(Object ... o) {
+        if (o == null || this.subscribers == null || this.subscribers.isEmpty()) return;
+        for (Subscriber subscriber : subscribers) {
+            subscriber.update(o);
+        }
+    }
 }

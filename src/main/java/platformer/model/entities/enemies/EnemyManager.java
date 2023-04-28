@@ -3,6 +3,7 @@ package platformer.model.entities.enemies;
 import platformer.animation.AnimType;
 import platformer.animation.AnimationUtils;
 import platformer.audio.Audio;
+import platformer.debug.Message;
 import platformer.model.entities.Direction;
 import platformer.model.entities.Player;
 import platformer.model.levels.Level;
@@ -61,6 +62,8 @@ public class EnemyManager {
                 if (attackBox.intersects(skeleton.getHitBox())) {
                     skeleton.hit(5, true, true);
                     player.changeStamina(2);
+                    if (skeleton.getEnemyAction() == AnimType.BLOCK) playingState.getGame().notifyLogger("Enemy blocks player's attack.", Message.NOTIFICATION);
+                    else playingState.getGame().notifyLogger("Player gives damage to enemy: 5", Message.NOTIFICATION);
                     return;
                 }
                 if (!player.isDash() && !player.isOnWall()) Audio.getInstance().getAudioPlayer().playSlashSound();
