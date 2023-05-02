@@ -49,7 +49,7 @@ public class OpenAL implements AudioPlayer {
 
     private void loadSounds() {
         String[] ids = {"airSlash1", "airSlash2", "airSlash3", "attackSlash1", "attackSlash2", "gameOver", "crateBreak1", "crateBreak2", "skeletonD1", "playerDash", "arrowSound",
-                        "block1", "block2", "swordBlock1", "swordBlock2", "swordBlock3", "fireSound1"};
+                        "block1", "block2", "swordBlock1", "swordBlock2", "swordBlock3", "fireSound1", "ghoulHide", "ghoulReveal", "ghoulDeath"};
         for (String id : ids) {
             sounds.add(loadBuffers("audio/" + id + ".wav"));
             soundSources.add(new OpenALSource());

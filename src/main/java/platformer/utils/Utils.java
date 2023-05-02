@@ -3,6 +3,7 @@ package platformer.utils;
 import platformer.model.entities.Direction;
 import platformer.model.entities.effects.Particle;
 import platformer.model.Tiles;
+import platformer.model.entities.enemies.Ghoul;
 import platformer.model.entities.enemies.Skeleton;
 import platformer.model.levels.Level;
 import platformer.model.objects.*;
@@ -108,6 +109,8 @@ public class Utils {
         return data;
     }
 
+    // TODO: Optimize
+
     public ArrayList<Skeleton> getSkeletonData(BufferedImage level) {
         ArrayList<Skeleton> skeletons = new ArrayList<>();
         for (int i = 0; i < level.getWidth(); i++) {
@@ -118,6 +121,18 @@ public class Utils {
             }
         }
         return skeletons;
+    }
+
+    public ArrayList<Ghoul> getGhoulData(BufferedImage level) {
+        ArrayList<Ghoul> ghouls = new ArrayList<>();
+        for (int i = 0; i < level.getWidth(); i++) {
+            for (int j = 0; j < level.getHeight(); j++) {
+                Color color = new Color(level.getRGB(i, j));
+                int value = color.getGreen();
+                if (value == 1) ghouls.add(new Ghoul((int)(i*Tiles.TILES_SIZE.getValue()), (int)((j-1)*Tiles.TILES_SIZE.getValue())));
+            }
+        }
+        return ghouls;
     }
 
     public ArrayList<Potion> getPotionData(BufferedImage level) {

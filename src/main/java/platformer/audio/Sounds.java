@@ -17,5 +17,8 @@ public enum Sounds {
     SWORD_BLOCK_1,     // 13
     SWORD_BLOCK_2,     // 14
     SWORD_BLOCK_3,     // 15
-    FIRE_SPELL_1       // 16
+    FIRE_SPELL_1,      // 16
+    GHOUL_HIDE,        // 17
+    GHOUL_REVEAL,      // 18
+    GHOUL_DEATH        // 19
 }

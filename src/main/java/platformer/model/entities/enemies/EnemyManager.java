@@ -4,6 +4,7 @@ import platformer.animation.AnimType;
 import platformer.animation.AnimationUtils;
 import platformer.audio.Audio;
 import platformer.debug.Message;
+import platformer.model.Tiles;
 import platformer.model.entities.Direction;
 import platformer.model.entities.Player;
 import platformer.model.levels.Level;
@@ -26,7 +27,9 @@ public class EnemyManager {
 
     private final PlayingState playingState;
     private BufferedImage[][] skeletonAnimations;
+    private BufferedImage[][] ghoulAnimations;
     private List<Skeleton> skeletons = new ArrayList<>();
+    private List<Ghoul> ghouls = new ArrayList<>();
 
     public EnemyManager(PlayingState playingState) {
         this.playingState = playingState;
@@ -35,10 +38,12 @@ public class EnemyManager {
 
     private void init() {
         this.skeletonAnimations = AnimationUtils.getInstance().loadSkeletonAnimations();
+        this.ghoulAnimations = AnimationUtils.getInstance().loadGhoulAnimation();
     }
 
     public void loadEnemies(Level level) {
         this.skeletons = level.getSkeletons();
+        this.ghouls = level.getGhouls();
     }
 
     private void renderSkeletons(Graphics g, int xLevelOffset, int yLevelOffset) {
@@ -52,6 +57,26 @@ public class EnemyManager {
                 g.drawImage(skeletonAnimations[s.getEnemyAction().ordinal()][s.getAnimIndex()], x, y, w, h, null);
                 s.hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.BLUE);
                 s.attackBoxRenderer(g, xLevelOffset, yLevelOffset);
+            }
+        }
+    }
+
+    private void renderGhouls(Graphics g, int xLevelOffset, int yLevelOffset) {
+        for (Ghoul gh : ghouls) {
+            if (gh.isAlive()) {
+                int fC = gh.getFlipCoefficient(), fS = gh.getFlipSign();
+                int x = (int) gh.getHitBox().x - EnemySize.GHOUL_X_OFFSET.getValue() - xLevelOffset + fC;
+                int y = (int) gh.getHitBox().y - EnemySize.GHOUL_Y_OFFSET.getValue() - yLevelOffset+1 + (int)gh.getPushOffset();
+                int w = EnemySize.GHOUL_WIDTH.getValue() * fS;
+                int h = EnemySize.GHOUL_HEIGHT.getValue();
+                g.drawImage(ghoulAnimations[gh.getEnemyAction().ordinal()][gh.getAnimIndex()], x, y, w, h, null);
+                gh.hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.BLUE);
+                gh.attackBoxRenderer(g, xLevelOffset, yLevelOffset);
+                if (gh.getEnemyAction() == AnimType.HIDE || gh.getEnemyAction() == AnimType.REVEAL) {
+                    int r = (gh.getAnimIndex() > 15 && gh.getEnemyAction() == AnimType.REVEAL) ? (255) : (0);
+                    g.setColor(new Color(r, 0, 0, gh.getFadeCoefficient()));
+                    g.fillRect(0, 0, (int)Tiles.GAME_WIDTH.getValue(), (int)Tiles.GAME_HEIGHT.getValue());
+                }
             }
         }
     }
@@ -77,9 +102,20 @@ public class EnemyManager {
                     else playingState.getGame().notifyLogger("Player gives damage to enemy: 5", Message.NOTIFICATION);
                     return;
                 }
-                if (!player.isDash() && !player.isOnWall()) Audio.getInstance().getAudioPlayer().playSlashSound();
             }
         }
+        for (Ghoul ghoul : ghouls) {
+            if (ghoul.isAlive() && ghoul.getEnemyAction() != AnimType.DEATH) {
+                if (attackBox.intersects(ghoul.getHitBox())) {
+                    if (ghoul.getEnemyAction() == AnimType.HIDE || ghoul.getEnemyAction() == AnimType.REVEAL) return;
+                    ghoul.hit(5, true, true);
+                    checkEnemyDying(ghoul, player);
+                    playingState.getGame().notifyLogger("Player gives damage to enemy: 5", Message.NOTIFICATION);
+                    return;
+                }
+            }
+        }
+        if (!player.isDash() && !player.isOnWall()) Audio.getInstance().getAudioPlayer().playSlashSound();
     }
 
     public void checkEnemySpellHit() {
@@ -87,8 +123,17 @@ public class EnemyManager {
         for (Skeleton skeleton : skeletons) {
             if (skeleton.isAlive() && skeleton.getEnemyAction() != AnimType.DEATH) {
                 if (flames.isAlive() && flames.getHitBox().intersects(skeleton.getHitBox())) {
-                    skeleton.spellHit(0.15);
+                    skeleton.spellHit(0.08);
                     checkEnemyDying(skeleton, playingState.getPlayer());
+                    return;
+                }
+            }
+        }
+        for (Ghoul ghoul : ghouls) {
+            if (ghoul.isAlive() && ghoul.getEnemyAction() != AnimType.DEATH) {
+                if (flames.isAlive() && flames.getHitBox().intersects(ghoul.getHitBox())) {
+                    ghoul.spellHit(0.16);
+                    checkEnemyDying(ghoul, playingState.getPlayer());
                     return;
                 }
             }
@@ -100,6 +145,12 @@ public class EnemyManager {
         for (Skeleton skeleton : skeletons) {
             if (skeleton.isAlive() && skeleton.getEnemyAction() != AnimType.DEATH && object.getHitBox().intersects(skeleton.getHitBox())) {
                 skeleton.hit(500, false, false);
+                return;
+            }
+        }
+        for (Ghoul ghoul : ghouls) {
+            if (ghoul.isAlive() && ghoul.getEnemyAction() != AnimType.DEATH && object.getHitBox().intersects(ghoul.getHitBox())) {
+                ghoul.hit(500, false, false);
                 return;
             }
         }
@@ -124,15 +175,22 @@ public class EnemyManager {
         for (Skeleton skeleton : skeletons) {
             if (skeleton.isAlive()) skeleton.update(skeletonAnimations, levelData, player);
         }
+        for (Ghoul ghoul : ghouls) {
+            if (ghoul.isAlive()) ghoul.update(ghoulAnimations, levelData, player);
+        }
     }
 
     public void render(Graphics g, int xLevelOffset, int yLevelOffset) {
         renderSkeletons(g, xLevelOffset, yLevelOffset);
+        renderGhouls(g, xLevelOffset, yLevelOffset);
     }
 
     public void reset() {
         for (Skeleton skeleton : skeletons) {
             skeleton.reset();
+        }
+        for (Ghoul ghoul : ghouls) {
+            ghoul.reset();
         }
     }
 

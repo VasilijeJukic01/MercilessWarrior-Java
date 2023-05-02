@@ -1,6 +1,7 @@
 package platformer.model.levels;
 
 import platformer.model.Tiles;
+import platformer.model.entities.enemies.Ghoul;
 import platformer.model.entities.enemies.Skeleton;
 import platformer.model.objects.ArrowLauncher;
 import platformer.model.objects.Container;
@@ -15,16 +16,21 @@ import java.util.ArrayList;
 @SuppressWarnings("FieldCanBeLocal")
 public class Level {
 
+    // Data
     private final BufferedImage dataL1;
     private final BufferedImage dataL2;
     private int[][] lvlData;
     private int[][] decoData;
     private int[][] layerData;
+    // Enemies
     private ArrayList<Skeleton> skeletons;
+    private ArrayList<Ghoul> ghouls;
+    // Objects
     private ArrayList<Potion> potions;
     private ArrayList<Container> containers;
     private ArrayList<Spike> spikes;
     private ArrayList<ArrowLauncher> arrowLaunchers;
+    // Other
     private int levelTilesWidth;
     private int xMaxTilesOffset;
     private int xMaxLevelOffset;
@@ -46,6 +52,7 @@ public class Level {
         this.decoData = Utils.getInstance().getDecoData(dataL2, false);
         this.layerData = Utils.getInstance().getDecoData(dataL2, true);
         this.skeletons = Utils.getInstance().getSkeletonData(dataL1);
+        this.ghouls = Utils.getInstance().getGhoulData(dataL1);
         this.spikes = Utils.getInstance().getSpikeData(dataL1);
         this.arrowLaunchers = Utils.getInstance().getArrowLauncherData(dataL1);
         loadObjectData();
@@ -91,6 +98,10 @@ public class Level {
 
     public ArrayList<Skeleton> getSkeletons() {
         return skeletons;
+    }
+
+    public ArrayList<Ghoul> getGhouls() {
+        return ghouls;
     }
 
     public Point getPlayerSpawn() {

@@ -108,7 +108,6 @@ public class Player extends Entity {
                 if (hit) {
                     hit = false;
                     airSpeed = 0;
-                    if (!Utils.getInstance().isEntityOnFloor(hitBox, levelData)) inAir = true;
                 }
             }
             coolDownTickUpdate();
@@ -209,28 +208,32 @@ public class Player extends Entity {
         }
 
         if (inAir && !dash) {
-            if (Utils.getInstance().canMoveHere(hitBox.x, hitBox.y + airSpeed, hitBox.width, hitBox.height, levelData)) {
-                if (onWall && airSpeed > 0) airSpeed += wallGravity;
-                else airSpeed += gravity;
-                hitBox.y += airSpeed;
-            }
-            else {
-                if (onObject) hitBox.y = objectManager.getYObjectBound(hitBox, airSpeed);
-                else hitBox.y = Utils.getInstance().getYPosOnTheCeil(hitBox, airSpeed);
-                if (airSpeed > 0) {
-                    inAir = wallPush = false;
-                    airSpeed = 0;
-                    currentJumps = 0;
-                }
-                else {
-                    if (onWall) airSpeed = wallGravity;
-                    else airSpeed = collisionFallSpeed;
-                    doubleJump = false;
-                }
-            }
+            inAirUpdate();
         }
         updateX(dx);
         moving = true;
+    }
+
+    private void inAirUpdate() {
+        if (Utils.getInstance().canMoveHere(hitBox.x, hitBox.y + airSpeed, hitBox.width, hitBox.height, levelData)) {
+            if (onWall && airSpeed > 0) airSpeed += wallGravity;
+            else airSpeed += gravity;
+            hitBox.y += airSpeed;
+        }
+        else {
+            if (onObject) hitBox.y = objectManager.getYObjectBound(hitBox, airSpeed);
+            else hitBox.y = Utils.getInstance().getYPosOnTheCeil(hitBox, airSpeed);
+            if (airSpeed > 0) {
+                inAir = wallPush = false;
+                airSpeed = 0;
+                currentJumps = 0;
+            }
+            else {
+                if (onWall) airSpeed = wallGravity;
+                else airSpeed = collisionFallSpeed;
+                doubleJump = false;
+            }
+        }
     }
 
     private void updateWallPosition() {
@@ -407,6 +410,7 @@ public class Player extends Entity {
             if (animIndex <= animations[entityState.ordinal()].length - 2)
                 pushBack(pushDirection, levelData, 1.2, playerSpeed);
             updatePushOffset();
+            inAirUpdate();
         }
         else if (canBlock) {
             pushOffsetDirection = Direction.DOWN;
