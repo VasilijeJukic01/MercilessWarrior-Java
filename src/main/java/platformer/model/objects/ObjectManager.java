@@ -110,16 +110,8 @@ public class ObjectManager {
     // Object Touch & Bounds
     public boolean isPlayerTouchingObject() {
         for (Container c : containers) {
-            int x = (int)playingState.getPlayer().getHitBox().x, y = (int)playingState.getPlayer().getHitBox().y;
-            int width = (int)playingState.getPlayer().getHitBox().width, height = (int)playingState.getPlayer().getHitBox().height;
             if (c.isAlive() && c.getAnimIndex() < 1) {
-                if (c.getHitBox().contains(x, y)) return true;
-                if (c.getHitBox().contains(x+width, y)) return true;
-                if (c.getHitBox().contains(x, y+height)) return true;
-                if (c.getHitBox().contains(x+width, y+height)) return true;
-
-                if (c.getHitBox().contains(x, y+height+1)) return true;
-                if (c.getHitBox().contains(x+width, y+height+1)) return true;
+                if (c.getHitBox().intersects(playingState.getPlayer().getHitBox())) return true;
             }
         }
         return false;
@@ -133,11 +125,11 @@ public class ObjectManager {
                 if (c.getHitBox().contains(x, y)) return true;
                 if (c.getHitBox().contains(x+width, y)) return true;
                 if (c.getHitBox().contains(x, y+height-5)) return true;
-                return c.getHitBox().contains(x+width, y + height - 5);
+                return c.getHitBox().contains(x+width, y+height-5);
             }
             else if (axis.equals("Y")) {
-                if (c.getHitBox().contains(x, y+height+5)) return true;
-                return c.getHitBox().contains(x+width, y+height+5);
+                if (c.getHitBox().contains(x, y+height)) return true;
+                return c.getHitBox().contains(x+width, y+height);
             }
         }
         return false;
@@ -192,18 +184,6 @@ public class ObjectManager {
             }
         }
         return hitBox.x;
-    }
-
-    public double getYObjectBound(Rectangle2D.Double hitBox, double airSpeed) {
-        for (Container c : containers) {
-            if (c.isAlive() && checkTouch(c, hitBox, "Y")) {
-                if (airSpeed > 0) {
-                    if (c.getHitBox().y > hitBox.y) return c.getHitBox().y-hitBox.height;
-                    else return hitBox.y;
-                }
-            }
-        }
-        return hitBox.y;
     }
 
     // Physics Checks

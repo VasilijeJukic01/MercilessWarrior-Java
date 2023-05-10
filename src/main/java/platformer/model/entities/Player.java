@@ -221,8 +221,7 @@ public class Player extends Entity {
             hitBox.y += airSpeed;
         }
         else {
-            if (onObject) hitBox.y = objectManager.getYObjectBound(hitBox, airSpeed);
-            else hitBox.y = Utils.getInstance().getYPosOnTheCeil(hitBox, airSpeed);
+            hitBox.y = Utils.getInstance().getYPosOnTheCeil(hitBox, airSpeed);
             if (airSpeed > 0) {
                 inAir = wallPush = false;
                 airSpeed = 0;
@@ -291,7 +290,13 @@ public class Player extends Entity {
     }
 
     private void checkOnObject() {
-        if (objectManager.isPlayerTouchingObject() && !onObject) onObject = true;
+        if (objectManager.isPlayerTouchingObject() && !onObject) {
+            inAir = wallPush = false;
+            playerEffect = null;
+            airSpeed = 0;
+            currentJumps = 0;
+            onObject = true;
+        }
         else if (onObject && !objectManager.isPlayerTouchingObject()) onObject = false;
     }
 
