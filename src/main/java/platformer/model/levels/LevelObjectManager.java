@@ -19,7 +19,7 @@ public class LevelObjectManager {
             "PLANT3", "PLANT4", "PLANT5", "PLANT6", "PLANT7", "PLANT8", "PLANT9", "PLANT10",
             "PLANT11", "VINES1", "VINES1_BIG", "VINES2", "VINES3", "VINES4", "MOSS1", "MOSS2",
             "LEAF1", "BUSH1", "THORNS1_BIG", "VINES2_BIG", "MOSS1_BIG", "VINES5", "STONE_MOSS1", "MOSS3",
-            "MOSS4", "STONE_MOSS2", "BLACK", "LEFT_END", "RIGHT_END"
+            "MOSS4", "STONE_MOSS2", "BLACK", "LEFT_END", "RIGHT_END", "LEAF1_REVERSE"
     };
 
     private final Map<String, Point> size = new HashMap<>() {{
@@ -53,13 +53,14 @@ public class LevelObjectManager {
         put("VINES2_BIG",           new Point((int)(32*3*Tiles.SCALE.getValue()), (int)(32*5*Tiles.SCALE.getValue())));         //27
         put("MOSS1_BIG",            new Point((int)(32*3*Tiles.SCALE.getValue()), (int)(32*8*Tiles.SCALE.getValue())));         //28
         put("VINES5",               new Point((int)(32*2*Tiles.SCALE.getValue()), (int)(32*4.2*Tiles.SCALE.getValue())));       //29
-        put("STONE_MOSS1",          new Point((int)(32*3*Tiles.SCALE.getValue()), (int)(32*3*Tiles.SCALE.getValue())));         //30
+        put("STONE_MOSS1",          new Point((int)(32*2*Tiles.SCALE.getValue()), (int)(32*Tiles.SCALE.getValue())));           //30
         put("MOSS3",                new Point((int)(32*6.1*Tiles.SCALE.getValue()), (int)(32*2*Tiles.SCALE.getValue())));       //31
         put("MOSS4",                new Point((int)(32*9*Tiles.SCALE.getValue()), (int)(32*2*Tiles.SCALE.getValue())));         //32
-        put("STONE_MOSS2",          new Point((int)(32*4*Tiles.SCALE.getValue()), (int)(32*2*Tiles.SCALE.getValue())));         //33
+        put("STONE_MOSS2",          new Point((int)(32*2*Tiles.SCALE.getValue()), (int)(32*Tiles.SCALE.getValue())));           //33
         put("BLACK",                new Point((int)(32*Tiles.SCALE.getValue()), (int)(32*Tiles.SCALE.getValue())));             //34
         put("LEFT_END",             new Point((int)(32*Tiles.SCALE.getValue()), (int)(32*Tiles.SCALE.getValue())));             //35
         put("RIGHT_END",            new Point((int)(32*Tiles.SCALE.getValue()), (int)(32*Tiles.SCALE.getValue())));             //36
+        put("LEAF1_REVERSE",        new Point((int)(40*Tiles.SCALE.getValue()), (int)(32*Tiles.SCALE.getValue())));             //37
     }};
 
     private final Map<String, Point> objectData = new HashMap<>() {{
@@ -101,6 +102,7 @@ public class LevelObjectManager {
         put("BLACK",                new Point(0, 0));
         put("LEFT_END",             new Point(0, 0));
         put("RIGHT_END",            new Point(0, 0));
+        put("LEAF1_REVERSE",        new Point(0, -5));
     }};
 
     public LevelObjectManager() {
@@ -111,10 +113,12 @@ public class LevelObjectManager {
     private void loadImages() {
         this.models = new BufferedImage[id.length];
         for (int i = 0; i < models.length; i++) {
-            int bigFlag = 0;
+            int bigFlag = 0, reverseFlag = 0;
             if (id[i].contains("_BIG")) bigFlag = 4;
-            String name = id[i].substring(0, id[i].length() - bigFlag);
+            if (id[i].contains("_REVERSE")) reverseFlag = 8;
+            String name = id[i].substring(0, id[i].length() - bigFlag - reverseFlag);
             models[i] = Utils.getInstance().importImage("src/main/resources/images/levels/levelObjects/"+name+".png", size.get(id[i]).x, size.get(id[i]).y);
+            if (reverseFlag != 0) models[i] = Utils.getInstance().flipImage(models[i]);
         }
     }
 
