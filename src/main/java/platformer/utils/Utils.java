@@ -54,6 +54,16 @@ public class Utils {
         return dest;
     }
 
+    public BufferedImage flipImage(BufferedImage src) {
+        int w = src.getWidth();
+        int h = src.getHeight();
+        BufferedImage dest = new BufferedImage(w, h, src.getType());
+        Graphics2D graphics2D = dest.createGraphics();
+        graphics2D.drawImage(src, w, 0, -w, h, null);
+        graphics2D.dispose();
+        return dest;
+    }
+
     public BufferedImage resize(BufferedImage img, int newW, int newH) {
         Image tmp = img.getScaledInstance(newW, newH, Image.SCALE_SMOOTH);
         BufferedImage newImg = new BufferedImage(newW, newH, BufferedImage.TYPE_INT_ARGB);
