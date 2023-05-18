@@ -41,10 +41,10 @@ public class LevelObjectManager {
         put("PLANT10",              new Point((int)(32*Tiles.SCALE.getValue()), (int)(32*Tiles.SCALE.getValue())));             //15
         put("PLANT11",              new Point((int)(32*Tiles.SCALE.getValue()), (int)(32*Tiles.SCALE.getValue())));             //16
         put("VINES1",               new Point((int)(32*Tiles.SCALE.getValue()), (int)(32*3*Tiles.SCALE.getValue())));           //17
-        put("VINES1_BIG",           new Point((int)(32*4*Tiles.SCALE.getValue()), (int)(32*8*Tiles.SCALE.getValue())));         //18
+        put("VINES1_BIG",           new Point((int)(32*4*Tiles.SCALE.getValue()), (int)(32*8.2*Tiles.SCALE.getValue())));       //18
         put("VINES2",               new Point((int)(32*1.5*Tiles.SCALE.getValue()), (int)(32*3*Tiles.SCALE.getValue())));       //19
         put("VINES3",               new Point((int)(32*Tiles.SCALE.getValue()), (int)(32*3*Tiles.SCALE.getValue())));           //20
-        put("VINES4",               new Point((int)(32*Tiles.SCALE.getValue()), (int)(32*3*Tiles.SCALE.getValue())));           //21
+        put("VINES4",               new Point((int)(32*Tiles.SCALE.getValue()), (int)(32*4*Tiles.SCALE.getValue())));           //21
         put("MOSS1",                new Point((int)(32*Tiles.SCALE.getValue()), (int)(32*3*Tiles.SCALE.getValue())));           //22
         put("MOSS2",                new Point((int)(32*Tiles.SCALE.getValue()), (int)(32*3*Tiles.SCALE.getValue())));           //23
         put("LEAF1",                new Point((int)(40*Tiles.SCALE.getValue()), (int)(32*Tiles.SCALE.getValue())));             //24
