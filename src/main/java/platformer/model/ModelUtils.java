@@ -39,6 +39,8 @@ public class ModelUtils {
                 return 16;
             case COIN:
                 return 4;
+            case SHOP:
+                return 6;
         }
         return 1;
     }

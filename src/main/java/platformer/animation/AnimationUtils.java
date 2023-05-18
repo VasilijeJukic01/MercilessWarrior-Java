@@ -305,6 +305,14 @@ public class AnimationUtils {
             }
         }
 
+        // Shop 8
+        BufferedImage shopSprite = Utils.getInstance().importImage("src/main/resources/images/objs/shop.png", -1, -1);
+        for (int i = 0; i < 1; i++, index++) {
+            for (int j = 0; j < 6; j++) {
+                anim[index][j] = shopSprite.getSubimage((118*j), 128*i, 118, 128);
+            }
+        }
+
         return anim;
     }
 

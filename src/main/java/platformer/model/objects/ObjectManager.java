@@ -29,12 +29,17 @@ public class ObjectManager {
     private ArrayList<ArrowLauncher> arrowLaunchers;
     private final ArrayList<Projectile> projectiles;
     private final ArrayList<Coin> coins;
+    private ArrayList<Shop> shops;
+
+    // Flags
+    private boolean shopVisible;
 
     public ObjectManager(PlayingState playingState) {
         this.playingState = playingState;
         this.objects = AnimationUtils.getInstance().loadObjects();
         this.projectiles = new ArrayList<>();
         this.coins = new ArrayList<>();
+        this.shops = new ArrayList<>();
         this.projectileObject = Utils.getInstance().importImage("src/main/resources/images/objs/arrow.png", (int)PRSet.ARROW_WID.getValue(), (int)PRSet.ARROW_HEI.getValue());
     }
 
@@ -44,6 +49,7 @@ public class ObjectManager {
         this.containers = new ArrayList<>(level.getContainers());
         this.spikes = level.getSpikes();
         this.arrowLaunchers = level.getArrowLaunchers();
+        this.shops = level.getShops();
         projectiles.clear();
     }
 
@@ -57,10 +63,14 @@ public class ObjectManager {
         }
     }
 
-    public void checkSpikeHit(Player p) {
+    public void checkPlayerIntersection(Player p) {
         for (Spike spike : spikes) {
             if (p.getHitBox().intersects(spike.getHitBox()))
                 p.kill();
+        }
+        for (Shop shop : shops) {
+            shop.setShowText(p.getHitBox().intersects(shop.getHitBox()));
+            shopVisible = p.getHitBox().intersects(shop.getHitBox());
         }
     }
 
@@ -282,6 +292,12 @@ public class ObjectManager {
         }
     }
 
+    private void updateShops() {
+        for (Shop shop : shops) {
+            shop.update();
+        }
+    }
+
     // Core
     public void update(int[][] lvlData, Player player) {
         for (Potion potion : potions) if (potion.isAlive()) potion.update();
@@ -290,6 +306,7 @@ public class ObjectManager {
         updateArrowLaunchers(lvlData, player);
         updateProjectiles(lvlData, player);
         updateCoins();
+        updateShops();
         checkEnemyIntersection();
     }
 
@@ -300,10 +317,10 @@ public class ObjectManager {
         renderArrowLaunchers(g, xLevelOffset, yLevelOffset);
         renderProjectiles(g, xLevelOffset, yLevelOffset);
         renderCoins(g, xLevelOffset, yLevelOffset);
+        renderShops(g, xLevelOffset, yLevelOffset);
     }
 
     // Render
-
     public void generateCoins(Rectangle2D.Double location) {
         Random rand = new Random();
         int n = rand.nextInt(5);
@@ -390,6 +407,16 @@ public class ObjectManager {
         }
     }
 
+    private void renderShops(Graphics g, int xLevelOffset, int yLevelOffset) {
+        for (Shop s : shops) {
+            int x = (int)s.getHitBox().x-s.getXOffset()-xLevelOffset;
+            int y = (int)s.getHitBox().y-s.getYOffset()-yLevelOffset+(int)(1*Tiles.SCALE.getValue());
+            g.drawImage(objects[s.getObjType().ordinal()][s.getAnimIndex()], x, y, ObjValue.SHOP_WID.getValue(), ObjValue.SHOP_HEI.getValue(), null);
+            s.hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.ORANGE);
+            s.render(g, xLevelOffset, yLevelOffset);
+        }
+    }
+
     // Reset
     public void reset() {
         loadObjects(playingState.getLevelManager().getCurrentLevel());
@@ -399,4 +426,7 @@ public class ObjectManager {
         coins.clear();
     }
 
+    public boolean isShopVisible() {
+        return shopVisible;
+    }
 }

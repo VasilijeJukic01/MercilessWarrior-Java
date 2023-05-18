@@ -3,10 +3,8 @@ package platformer.model.levels;
 import platformer.model.Tiles;
 import platformer.model.entities.enemies.Ghoul;
 import platformer.model.entities.enemies.Skeleton;
-import platformer.model.objects.ArrowLauncher;
+import platformer.model.objects.*;
 import platformer.model.objects.Container;
-import platformer.model.objects.Potion;
-import platformer.model.objects.Spike;
 import platformer.utils.Utils;
 
 import java.awt.*;
@@ -30,6 +28,7 @@ public class Level {
     private ArrayList<Container> containers;
     private ArrayList<Spike> spikes;
     private ArrayList<ArrowLauncher> arrowLaunchers;
+    private ArrayList<Shop> shops;
     // Other
     private int levelTilesWidth;
     private int xMaxTilesOffset;
@@ -53,14 +52,15 @@ public class Level {
         this.layerData = Utils.getInstance().getDecoData(dataL2, true);
         this.skeletons = Utils.getInstance().getSkeletonData(dataL1);
         this.ghouls = Utils.getInstance().getGhoulData(dataL1);
-        this.spikes = Utils.getInstance().getSpikeData(dataL1);
-        this.arrowLaunchers = Utils.getInstance().getArrowLauncherData(dataL1);
         loadObjectData();
     }
 
     public void loadObjectData() {
         this.potions = Utils.getInstance().getPotionData(dataL1);
         this.containers = Utils.getInstance().getContainerData(dataL1);
+        this.spikes = Utils.getInstance().getSpikeData(dataL1);
+        this.arrowLaunchers = Utils.getInstance().getArrowLauncherData(dataL1);
+        this.shops = Utils.getInstance().getShopData(dataL1);
     }
 
     public void setOffset() {
@@ -122,5 +122,9 @@ public class Level {
 
     public ArrayList<ArrowLauncher> getArrowLaunchers() {
         return arrowLaunchers;
+    }
+
+    public ArrayList<Shop> getShops() {
+        return shops;
     }
 }

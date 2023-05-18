@@ -29,7 +29,12 @@ public enum ObjValue {
     COIN_WID_DEF(15),
     COIN_HEI_DEF(15),
     COIN_WID((int)(COIN_WID_DEF.getValue()*Tiles.SCALE.getValue())),
-    COIN_HEI((int)(COIN_HEI_DEF.getValue()*Tiles.SCALE.getValue()));
+    COIN_HEI((int)(COIN_HEI_DEF.getValue()*Tiles.SCALE.getValue())),
+
+    SHOP_WID_DEF(154),
+    SHOP_HEI_DEF(132),
+    SHOP_WID((int)(SHOP_WID_DEF.getValue()*Tiles.SCALE.getValue())),
+    SHOP_HEI((int)(SHOP_HEI_DEF.getValue()*Tiles.SCALE.getValue()));
 
     private final int value;
 

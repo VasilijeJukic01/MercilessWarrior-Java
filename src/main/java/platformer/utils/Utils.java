@@ -198,6 +198,19 @@ public class Utils {
         return arrowLaunchers;
     }
 
+    public ArrayList<Shop> getShopData(BufferedImage level) {
+        ArrayList<Shop> shops = new ArrayList<>();
+        for (int i = 0; i < level.getWidth(); i++) {
+            for (int j = 0; j < level.getHeight(); j++) {
+                Color color = new Color(level.getRGB(i, j));
+                int value = color.getBlue();
+                if (value == ObjType.SHOP.ordinal())
+                    shops.add(new Shop(ObjType.SHOP, (int)(i*Tiles.TILES_SIZE.getValue()), (int)(j*Tiles.TILES_SIZE.getValue())));
+            }
+        }
+        return shops;
+    }
+
     // Checkers
     public boolean canMoveHere(double x, double y, double width, double height, int[][] levelData) {
         if (isSolid(x, y, levelData)) return false;

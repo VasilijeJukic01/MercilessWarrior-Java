@@ -305,7 +305,7 @@ public class Player extends Entity {
     }
 
     private void checkTrapCollide() {
-        objectManager.checkSpikeHit(this);
+        objectManager.checkPlayerIntersection(this);
     }
 
     // Actions

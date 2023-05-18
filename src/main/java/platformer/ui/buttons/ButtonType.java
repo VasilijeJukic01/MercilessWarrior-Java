@@ -6,5 +6,7 @@ public enum ButtonType {
     QUIT,       // 2
     CONTINUE,   // 3
     RETRY,      // 4
-    EXIT        // 5
+    EXIT,       // 5
+    BUY,        // 6
+    LEAVE,      // 7
 }
