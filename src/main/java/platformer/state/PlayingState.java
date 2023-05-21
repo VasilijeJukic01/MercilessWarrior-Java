@@ -73,7 +73,7 @@ public class PlayingState extends StateAbstraction implements State {
         player.setSpawn(levelManager.getCurrentLevel().getPlayerSpawn());
         this.pauseOverlay = new PauseOverlay(game);
         this.gameOverOverlay = new GameOverOverlay(game);
-        this.shopOverlay = new ShopOverlay(player);
+        this.shopOverlay = new ShopOverlay(this);
         this.spellManager = new SpellManager(this);
         loadStartLevel();
     }
@@ -94,6 +94,7 @@ public class PlayingState extends StateAbstraction implements State {
         levelManager.loadNextLevel();
         player.setSpawn(levelManager.getCurrentLevel().getPlayerSpawn());
         calculateOffset();
+        shopOverlay.reset();
         game.notifyLogger("Next level loaded.", Message.NOTIFICATION);
     }
 
@@ -102,6 +103,7 @@ public class PlayingState extends StateAbstraction implements State {
         levelManager.loadPrevLevel();
         player.setSpawn(levelManager.getCurrentLevel().getPlayerSpawn());
         calculateOffset();
+        shopOverlay.reset();
         game.notifyLogger("Previous level loaded.", Message.NOTIFICATION);
     }
 
@@ -345,5 +347,9 @@ public class PlayingState extends StateAbstraction implements State {
 
     public SpellManager getSpellManager() {
         return spellManager;
+    }
+
+    public void setShopVisible(boolean shopVisible) {
+        this.shopVisible = shopVisible;
     }
 }

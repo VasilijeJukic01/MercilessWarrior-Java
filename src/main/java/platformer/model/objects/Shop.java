@@ -1,16 +1,27 @@
 package platformer.model.objects;
 
 import platformer.model.Tiles;
+import platformer.model.entities.Player;
+import platformer.ui.ItemType;
+import platformer.ui.ShopItem;
+import platformer.utils.Utils;
 
 import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+import java.util.Random;
 
 public class Shop extends GameObject {
 
-    private boolean showText;
+    private boolean active;
+    private ArrayList<ShopItem> shopItems;
+    private final Random rand;
 
     public Shop(ObjType objType, int xPos, int yPos) {
         super(objType, xPos, yPos);
+        this.rand = new Random();
         generateHitBox();
+        getItems();
     }
 
     private void generateHitBox() {
@@ -22,12 +33,37 @@ public class Shop extends GameObject {
         super.yOffset = (int)(1 * Tiles.SCALE.getValue());
     }
 
+    private void getItems() {
+        this.shopItems = new ArrayList<>();
+        int slot = 0;
+        BufferedImage healthItemImg = Utils.getInstance().importImage("src/main/resources/images/shop/HealthItem.png", -1, -1);
+        shopItems.add(new ShopItem(ItemType.HEALTH, healthItemImg, slot++, rand.nextInt(10)+1, 15));
+        BufferedImage staminaItemImg = Utils.getInstance().importImage("src/main/resources/images/shop/StaminaItem.png", -1, -1);
+        shopItems.add(new ShopItem(ItemType.STAMINA, staminaItemImg, slot, rand.nextInt(6)+1, 20));
+    }
+
+    public void buyItem(Player player, int slot) {
+        for (ShopItem item : shopItems) {
+            if (item.getAmount() > 0 && item.getSlot() == slot) {
+                if (player.getCoins() >= item.getCost()) {
+                    player.changeCoins(-item.getCost());
+                    item.setAmount(item.getAmount()-1);
+                    switch(item.getItemType()) {
+                        case HEALTH: player.changeHealth(30); break;
+                        case STAMINA: player.changeStamina(30); break;
+                        default: break;
+                    }
+                }
+            }
+        }
+    }
+
     public void update() {
         if (animate) updateAnimation();
     }
 
     public void render(Graphics g, int xLevelOffset, int yLevelOffset) {
-        if (showText) {
+        if (active) {
             g.setColor(Color.WHITE);
             g.setFont(new Font("Arial", Font.BOLD, 40));
             int infoX = (int)(hitBox.x+hitBox.width/3-xLevelOffset);
@@ -46,11 +82,16 @@ public class Shop extends GameObject {
 
     }
 
-    public boolean isShowText() {
-        return showText;
+    public boolean isActive() {
+        return active;
     }
 
-    public void setShowText(boolean showText) {
-        this.showText = showText;
+    public void setActive(boolean active) {
+        this.active = active;
     }
+
+    public ArrayList<ShopItem> getShopItems() {
+        return shopItems;
+    }
+
 }

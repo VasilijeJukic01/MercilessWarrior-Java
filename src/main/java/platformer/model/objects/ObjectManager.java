@@ -69,7 +69,7 @@ public class ObjectManager {
                 p.kill();
         }
         for (Shop shop : shops) {
-            shop.setShowText(p.getHitBox().intersects(shop.getHitBox()));
+            shop.setActive(p.getHitBox().intersects(shop.getHitBox()));
             shopVisible = p.getHitBox().intersects(shop.getHitBox());
         }
     }
