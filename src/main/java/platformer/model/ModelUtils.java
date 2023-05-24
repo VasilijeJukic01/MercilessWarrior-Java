@@ -12,16 +12,16 @@ public class ModelUtils {
 
     public int getHealth(EnemyType enemyType) {
         switch (enemyType) {
-            case SKELETON: return 20;
-            case GHOUL: return 30;
+            case SKELETON: return 25;
+            case GHOUL: return 40;
             default: return 5;
         }
     }
 
     public int getDamage(EnemyType enemyType) {
         switch (enemyType) {
-            case SKELETON: return 35;
-            case GHOUL: return 50;
+            case SKELETON: return 15;
+            case GHOUL: return 20;
             default: return 0;
         }
     }
@@ -37,6 +37,10 @@ public class ModelUtils {
             case ARROW_LAUNCHER_RIGHT:
             case ARROW_LAUNCHER_LEFT:
                 return 16;
+            case COIN:
+                return 4;
+            case SHOP:
+                return 6;
         }
         return 1;
     }

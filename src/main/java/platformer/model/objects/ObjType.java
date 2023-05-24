@@ -7,5 +7,7 @@ public enum ObjType {
     BARREL,                   // 3
     SPIKE,                    // 4
     ARROW_LAUNCHER_LEFT,      // 5
-    ARROW_LAUNCHER_RIGHT      // 6
+    ARROW_LAUNCHER_RIGHT,     // 6
+    COIN,                     // 7
+    SHOP                      // 8
 }

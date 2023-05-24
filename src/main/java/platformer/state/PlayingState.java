@@ -2,6 +2,7 @@ package platformer.state;
 
 import platformer.debug.DebugSettings;
 import platformer.debug.Message;
+import platformer.model.entities.Cooldown;
 import platformer.model.entities.effects.Particle;
 import platformer.model.entities.enemies.EnemyManager;
 import platformer.model.entities.AttackState;
@@ -13,6 +14,7 @@ import platformer.model.objects.ObjectManager;
 import platformer.model.spells.SpellManager;
 import platformer.ui.GameOverOverlay;
 import platformer.ui.PauseOverlay;
+import platformer.ui.ShopOverlay;
 import platformer.utils.Utils;
 
 import java.awt.*;
@@ -37,9 +39,10 @@ public class PlayingState extends StateAbstraction implements State {
     // Overlays
     private PauseOverlay pauseOverlay;
     private GameOverOverlay gameOverOverlay;
+    private ShopOverlay shopOverlay;
 
     // Flags
-    private boolean paused, gameOver, dying;
+    private boolean paused, gameOver, dying, shopVisible;
 
     // Borders
     private int xLevelOffset;
@@ -70,6 +73,7 @@ public class PlayingState extends StateAbstraction implements State {
         player.setSpawn(levelManager.getCurrentLevel().getPlayerSpawn());
         this.pauseOverlay = new PauseOverlay(game);
         this.gameOverOverlay = new GameOverOverlay(game);
+        this.shopOverlay = new ShopOverlay(this);
         this.spellManager = new SpellManager(this);
         loadStartLevel();
     }
@@ -90,6 +94,7 @@ public class PlayingState extends StateAbstraction implements State {
         levelManager.loadNextLevel();
         player.setSpawn(levelManager.getCurrentLevel().getPlayerSpawn());
         calculateOffset();
+        shopOverlay.reset();
         game.notifyLogger("Next level loaded.", Message.NOTIFICATION);
     }
 
@@ -98,6 +103,7 @@ public class PlayingState extends StateAbstraction implements State {
         levelManager.loadPrevLevel();
         player.setSpawn(levelManager.getCurrentLevel().getPlayerSpawn());
         calculateOffset();
+        shopOverlay.reset();
         game.notifyLogger("Previous level loaded.", Message.NOTIFICATION);
     }
 
@@ -138,6 +144,7 @@ public class PlayingState extends StateAbstraction implements State {
             xBorderUpdate();
             yBorderUpdate();
             this.player.update();
+            if (shopVisible) this.shopOverlay.update();
         }
     }
 
@@ -145,12 +152,14 @@ public class PlayingState extends StateAbstraction implements State {
     public void render(Graphics g) {
         g.drawImage(background, 0, 0, null);
         this.levelManager.render(g, xLevelOffset, yLevelOffset);
-        this.player.render(g, xLevelOffset, yLevelOffset);
         this.objectManager.render(g, xLevelOffset, yLevelOffset);
+        this.player.render(g, xLevelOffset, yLevelOffset);
         this.enemyManager.render(g, xLevelOffset, yLevelOffset);
         this.spellManager.render(g, xLevelOffset, yLevelOffset);
+        this.player.getUserInterface().render(g);
         if (paused) this.pauseOverlay.render(g);
         if (gameOver) this.gameOverOverlay.render(g);
+        if (shopVisible) this.shopOverlay.render(g);
     }
 
     @Override
@@ -162,18 +171,21 @@ public class PlayingState extends StateAbstraction implements State {
     public void mousePressed(MouseEvent e) {
         if (paused) pauseOverlay.mousePressed(e);
         else if (gameOver) gameOverOverlay.mousePressed(e);
+        else if (shopVisible) shopOverlay.mousePressed(e);
     }
 
     @Override
     public void mouseReleased(MouseEvent e) {
         if (paused) pauseOverlay.mouseReleased(e);
         else if (gameOver) gameOverOverlay.mouseReleased(e);
+        else if (shopVisible) shopOverlay.mouseReleased(e);
     }
 
     @Override
     public void mouseMoved(MouseEvent e) {
         if (paused) pauseOverlay.mouseMoved(e);
         else if (gameOver) gameOverOverlay.mouseMoved(e);
+        else if (shopVisible) shopOverlay.mouseMoved(e);
     }
 
     @Override
@@ -184,6 +196,7 @@ public class PlayingState extends StateAbstraction implements State {
     // Input
     @Override
     public void keyPressed(KeyEvent e) {
+        if (shopVisible && e.getKeyCode() != KeyEvent.VK_ESCAPE) return;
         if (gameOver && e.getKeyCode() != KeyEvent.VK_ESCAPE) return;
         if (gameOver && e.getKeyCode() == KeyEvent.VK_ESCAPE) {
             reset();
@@ -208,7 +221,9 @@ public class PlayingState extends StateAbstraction implements State {
                 player.setRight(true);
                 break;
             case KeyEvent.VK_X:
+                if (player.getCooldown()[Cooldown.ATTACK.ordinal()] != 0) return;
                 player.setPlayerAttackState(AttackState.ATTACK_1);
+                player.getCooldown()[Cooldown.ATTACK.ordinal()] = 1.2;
                 break;
             case KeyEvent.VK_C:
                 if (pressedKeys.contains(key) && player.getSpellState() != 0) return;
@@ -218,14 +233,17 @@ public class PlayingState extends StateAbstraction implements State {
                 player.setPlayerAttackState(AttackState.ATTACK_2);
                 break;
             case KeyEvent.VK_V:
+                if (player.getCooldown()[Cooldown.DASH.ordinal()] != 0) return;
                 if (player.canDash()) player.doDash();
                 break;
             case KeyEvent.VK_S:
+                if (player.getCooldown()[Cooldown.BLOCK.ordinal()] != 0) return;
                 if (player.isBlock()) return;
                 player.setBlock(true);
                 break;
             case KeyEvent.VK_ESCAPE:
-                paused = !paused;
+                if (shopVisible) shopVisible = false;
+                else paused = !paused;
                 break;
             default: break;
         }
@@ -253,6 +271,9 @@ public class PlayingState extends StateAbstraction implements State {
                 break;
             case KeyEvent.VK_C:
                 if (player.getSpellState() == 1) player.setSpellState(2);
+                break;
+            case KeyEvent.VK_F:
+                if (objectManager.isShopVisible() && !shopVisible) shopVisible = true;
                 break;
             case KeyEvent.VK_F1: // Show HitBox
                 DebugSettings.getInstance().setDebugMode(!DebugSettings.getInstance().isDebugMode());
@@ -326,5 +347,9 @@ public class PlayingState extends StateAbstraction implements State {
 
     public SpellManager getSpellManager() {
         return spellManager;
+    }
+
+    public void setShopVisible(boolean shopVisible) {
+        this.shopVisible = shopVisible;
     }
 }

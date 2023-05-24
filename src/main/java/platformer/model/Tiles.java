@@ -9,7 +9,7 @@ public enum Tiles {
     GAME_WIDTH(Tiles.TILES_SIZE.getValue()*Tiles.TILES_WIDTH.getValue()),
     GAME_HEIGHT(Tiles.TILES_SIZE.getValue()*Tiles.TILES_HEIGHT.getValue());
 
-    private final float value;
+    private float value;
 
     Tiles(float value) {
         this.value = value;
@@ -17,5 +17,9 @@ public enum Tiles {
 
     public float getValue() {
         return value;
+    }
+
+    public void setValue(float value) {
+        this.value = value;
     }
 }

@@ -7,8 +7,14 @@ public enum UI {
     B_WIDTH_DEFAULT(140),
     B_HEIGHT_DEFAULT(50),
 
+    SB_WIDTH_DEFAULT(94),
+    SB_HEIGHT_DEFAULT(34),
+
     B_WIDTH((int)(B_WIDTH_DEFAULT.getValue() * Tiles.SCALE.getValue())),
     B_HEIGHT((int)(B_HEIGHT_DEFAULT.getValue() * Tiles.SCALE.getValue())),
+
+    SB_WIDTH((int)(SB_WIDTH_DEFAULT.getValue() * Tiles.SCALE.getValue())),
+    SB_HEIGHT((int)(SB_HEIGHT_DEFAULT.getValue() * Tiles.SCALE.getValue())),
 
     SOUND_B_DEFAULT(30),
     SOUND_B_SIZE((int)(UI.SOUND_B_DEFAULT.getValue()*Tiles.SCALE.getValue())),

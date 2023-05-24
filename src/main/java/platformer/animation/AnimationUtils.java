@@ -124,13 +124,6 @@ public class AnimationUtils {
         }
         anim[1] = runAnim;
 
-        // 2 Jump anim
-        BufferedImage[] jumpAnim = new BufferedImage[3];
-        for (int i = 0; i < jumpAnim.length; i++) {
-            jumpAnim[i] = Utils.getInstance().importImage("src/main/resources/images/enemies/Skeleton/JumpFall/Skeleton_Jump"+i+".png", w, h);
-        }
-        anim[2] = jumpAnim;
-
         // 3 Fall anim
         BufferedImage[] fallAnim = new BufferedImage[2];
         for (int i = 0; i < fallAnim.length; i++) {
@@ -176,6 +169,72 @@ public class AnimationUtils {
         return anim;
     }
 
+    public BufferedImage[][] loadGhoulAnimation() {
+        BufferedImage[][] anim = new BufferedImage[17][20];
+
+        // Size
+        int w = EnemySize.GHOUL_WIDTH.getValue();
+        int h = EnemySize.GHOUL_HEIGHT.getValue();
+
+        // 0 Idle anim
+        BufferedImage[] idleAnim = new BufferedImage[8];
+        for (int i = 0; i < idleAnim.length; i++) {
+            idleAnim[i] = Utils.getInstance().importImage("src/main/resources/images/enemies/Ghoul/Idle/Ghoul_Idle"+i+".png", w, h);
+        }
+        anim[0] = idleAnim;
+
+        // 1 Chase anim
+        BufferedImage[] chaseAnim = new BufferedImage[6];
+        for (int i = 0; i < chaseAnim.length; i++) {
+            chaseAnim[i] = Utils.getInstance().importImage("src/main/resources/images/enemies/Ghoul/Chase/Ghoul_Chase"+i+".png", w, h);
+        }
+        anim[1] = chaseAnim;
+
+        // 4 Attack anim
+        BufferedImage[] attackAnim = new BufferedImage[8];
+        for (int i = 0; i < attackAnim.length; i++) {
+            attackAnim[i] = Utils.getInstance().importImage("src/main/resources/images/enemies/Ghoul/Attack/Ghoul_Attack"+i+".png", w, h);
+        }
+        anim[4] = attackAnim;
+
+        // 8 Hit anim
+        BufferedImage[] hitAnim = new BufferedImage[4];
+        for (int i = 0; i < hitAnim.length; i++) {
+            hitAnim[i] = Utils.getInstance().importImage("src/main/resources/images/enemies/Ghoul/Hit/Ghoul_Hit"+i+".png", w, h);
+        }
+        anim[8] = hitAnim;
+
+        // 9 Death anim
+        BufferedImage[] deathAnim = new BufferedImage[8];
+        for (int i = 0; i < deathAnim.length; i++) {
+            deathAnim[i] = Utils.getInstance().importImage("src/main/resources/images/enemies/Ghoul/Death/Ghoul_Death"+i+".png", w, h);
+        }
+        anim[9] = deathAnim;
+
+        // 11 Move anim
+        BufferedImage[] moveAnim = new BufferedImage[6];
+        for (int i = 0; i < moveAnim.length; i++) {
+            moveAnim[i] = Utils.getInstance().importImage("src/main/resources/images/enemies/Ghoul/Move/Ghoul_Move"+i+".png", w, h);
+        }
+        anim[11] = moveAnim;
+
+        // 15 Hide anim
+        BufferedImage[] hideAnim = new BufferedImage[19];
+        for (int i = 0; i < hideAnim.length; i++) {
+            hideAnim[i] = Utils.getInstance().importImage("src/main/resources/images/enemies/Ghoul/Exile/Ghoul_Exile"+i+".png", w, h);
+        }
+        anim[15] = hideAnim;
+
+        // 16 Reveal anim
+        BufferedImage[] revelAnim = new BufferedImage[19];
+        for (int i = revelAnim.length-1; i >= 0; i--) {
+            revelAnim[revelAnim.length-1-i] = Utils.getInstance().importImage("src/main/resources/images/enemies/Ghoul/Exile/Ghoul_Exile"+i+".png", w, h);
+        }
+        anim[16] = revelAnim;
+
+        return anim;
+    }
+
     public BufferedImage[][] loadEffects() {
         BufferedImage[][] anim = new BufferedImage[11][11];
         int index = 0;
@@ -207,7 +266,7 @@ public class AnimationUtils {
         BufferedImage[][] anim = new BufferedImage[17][17];
         int index = 0;
 
-        // Potions
+        // Potions 0, 1
         BufferedImage potionSprite = Utils.getInstance().importImage("src/main/resources/images/objs/potions_sprites.png", -1, -1);
         for (int i = 0; i < 2; i++, index++) {
             for (int j = 0; j < 7; j++) {
@@ -215,7 +274,7 @@ public class AnimationUtils {
             }
         }
 
-        // Containers
+        // Containers 2, 3
         BufferedImage containerSprite = Utils.getInstance().importImage("src/main/resources/images/objs/objects_sprites.png", -1, -1);
         for (int i = 0; i < 2; i++, index++) {
             for (int j = 0; j < 8; j++) {
@@ -223,7 +282,7 @@ public class AnimationUtils {
             }
         }
 
-        // Spikes
+        // Spikes 4
         BufferedImage spikeSprite = Utils.getInstance().importImage("src/main/resources/images/objs/spikes.png", -1, -1);
         for (int i = 0; i < 1; i++, index++) {
             for (int j = 0; j < 10; j++) {
@@ -231,11 +290,26 @@ public class AnimationUtils {
             }
         }
 
-        // Arrow Launchers
+        // Arrow Launchers 5
         BufferedImage arrowLauncherSprite = Utils.getInstance().importImage("src/main/resources/images/objs/arrowTrap.png", -1, -1);
-        for (int i = 0; i < 1; i++, index++) {
+        for (int i = 0; i < 1; i++, index+=2) {
             for (int j = 0; j < 16; j++) {
                 anim[index][j] = arrowLauncherSprite.getSubimage((96*j)+27, 32*i, 32, 32);
+            }
+        }
+
+        // Coins 7
+        for (int i = 0; i < 1; i++, index++) {
+            for (int j = 0; j < 4; j++) {
+                anim[index][j] = Utils.getInstance().importImage("src/main/resources/images/objs/coin/Coin"+j+".png", -1, -1);
+            }
+        }
+
+        // Shop 8
+        BufferedImage shopSprite = Utils.getInstance().importImage("src/main/resources/images/objs/shop.png", -1, -1);
+        for (int i = 0; i < 1; i++, index++) {
+            for (int j = 0; j < 6; j++) {
+                anim[index][j] = shopSprite.getSubimage((118*j), 128*i, 118, 128);
             }
         }
 

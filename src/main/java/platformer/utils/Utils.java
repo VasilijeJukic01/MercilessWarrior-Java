@@ -3,17 +3,14 @@ package platformer.utils;
 import platformer.model.entities.Direction;
 import platformer.model.entities.effects.Particle;
 import platformer.model.Tiles;
-import platformer.model.entities.enemies.Skeleton;
 import platformer.model.levels.Level;
 import platformer.model.objects.*;
-import platformer.model.objects.Container;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Random;
 
 public class Utils {
@@ -53,6 +50,16 @@ public class Utils {
         return dest;
     }
 
+    public BufferedImage flipImage(BufferedImage src) {
+        int w = src.getWidth();
+        int h = src.getHeight();
+        BufferedImage dest = new BufferedImage(w, h, src.getType());
+        Graphics2D graphics2D = dest.createGraphics();
+        graphics2D.drawImage(src, w, 0, -w, h, null);
+        graphics2D.dispose();
+        return dest;
+    }
+
     public BufferedImage resize(BufferedImage img, int newW, int newH) {
         Image tmp = img.getScaledInstance(newW, newH, Image.SCALE_SMOOTH);
         BufferedImage newImg = new BufferedImage(newW, newH, BufferedImage.TYPE_INT_ARGB);
@@ -63,18 +70,10 @@ public class Utils {
     }
 
     // Data gatherer
-    public BufferedImage[] getAllLevelsL1() {
+    public BufferedImage[] getAllLevels(String layer) {
         BufferedImage[] levels = new BufferedImage[2];
         for (int i = 0; i < 2; i++) {
-            levels[i] = importImage("src/main/resources/images/levels/level"+(i+1)+"_layer1.png", -1, -1);
-        }
-        return levels;
-    }
-
-    public BufferedImage[] getAllLevelsL2() {
-        BufferedImage[] levels = new BufferedImage[2];
-        for (int i = 0; i < 2; i++) {
-            levels[i] = importImage("src/main/resources/images/levels/level"+(i+1)+"_layer2.png", -1, -1);
+            levels[i] = importImage("src/main/resources/images/levels/level"+(i+1)+"_layer"+layer+".png", -1, -1);
         }
         return levels;
     }
@@ -86,91 +85,25 @@ public class Utils {
                 Color color = new Color(level.getRGB(i, j));
                 int value = color.getRed();
                 if (value >= 49) value = -1;
-                if (color.getBlue() == 255 && color.getGreen() == 255) value += 255;
+                if (color.getBlue() == 255 && color.getGreen() == 255) value += 255;   // Value > 255  ->  Different layer
                 lvlData[i][j] = value;
             }
         }
         return lvlData;
     }
 
+    // layer = true -> Layer data;  layer = false -> Object data
     public int[][] getDecoData(BufferedImage level, boolean layer) {
         int[][] data = new int[level.getWidth()][level.getHeight()];
         for (int i = 0; i < level.getWidth(); i++) {
             for (int j = 0; j < level.getHeight(); j++) {
                 Color color = new Color(level.getRGB(i, j));
-                int value;
-                if (layer) value = color.getGreen();
-                else value = color.getBlue();
+                int value = layer ? color.getGreen() : color.getBlue();
                 if ((value >= 40 && !layer) || (value >= 4 && layer)) value = -1;
                 data[i][j] = value;
             }
         }
         return data;
-    }
-
-    public ArrayList<Skeleton> getSkeletonData(BufferedImage level) {
-        ArrayList<Skeleton> skeletons = new ArrayList<>();
-        for (int i = 0; i < level.getWidth(); i++) {
-            for (int j = 0; j < level.getHeight(); j++) {
-                Color color = new Color(level.getRGB(i, j));
-                int value = color.getGreen();
-                if (value == 0) skeletons.add(new Skeleton((int)(i*Tiles.TILES_SIZE.getValue()), (int)((j-1)*Tiles.TILES_SIZE.getValue())));
-            }
-        }
-        return skeletons;
-    }
-
-    public ArrayList<Potion> getPotionData(BufferedImage level) {
-        ArrayList<Potion> potions = new ArrayList<>();
-        for (int i = 0; i < level.getWidth(); i++) {
-            for (int j = 0; j < level.getHeight(); j++) {
-                Color color = new Color(level.getRGB(i, j));
-                int value = color.getBlue();
-                if (value == ObjType.HEAL_POTION.ordinal()) potions.add(new Potion(ObjType.HEAL_POTION, (int)((i+0.5)*Tiles.TILES_SIZE.getValue()), (int)(j*Tiles.TILES_SIZE.getValue())));
-                else if (value == ObjType.STAMINA_POTION.ordinal()) potions.add(new Potion(ObjType.STAMINA_POTION, (int)((i+0.5)*Tiles.TILES_SIZE.getValue()), (int)(j*Tiles.TILES_SIZE.getValue())));
-            }
-        }
-        return potions;
-    }
-
-    public ArrayList<Container> getContainerData(BufferedImage level) {
-        ArrayList<Container> containers = new ArrayList<>();
-        for (int i = 0; i < level.getWidth(); i++) {
-            for (int j = 0; j < level.getHeight(); j++) {
-                Color color = new Color(level.getRGB(i, j));
-                int value = color.getBlue();
-                if (value == ObjType.BOX.ordinal()) containers.add(new Container(ObjType.BOX, (int)(i*Tiles.TILES_SIZE.getValue()), (int)(j*Tiles.TILES_SIZE.getValue())));
-                else if (value == ObjType.BARREL.ordinal()) containers.add(new Container(ObjType.BARREL, (int)(i*Tiles.TILES_SIZE.getValue()), (int)(j*Tiles.TILES_SIZE.getValue())));
-            }
-        }
-        return containers;
-    }
-
-    public ArrayList<Spike> getSpikeData(BufferedImage level) {
-        ArrayList<Spike> spikes = new ArrayList<>();
-        for (int i = 0; i < level.getWidth(); i++) {
-            for (int j = 0; j < level.getHeight(); j++) {
-                Color color = new Color(level.getRGB(i, j));
-                int value = color.getBlue();
-                if (value == ObjType.SPIKE.ordinal()) spikes.add(new Spike(ObjType.SPIKE, (int)(i*Tiles.TILES_SIZE.getValue()), (int)(j*Tiles.TILES_SIZE.getValue())));
-            }
-        }
-        return spikes;
-    }
-
-    public ArrayList<ArrowLauncher> getArrowLauncherData(BufferedImage level) {
-        ArrayList<ArrowLauncher> arrowLaunchers = new ArrayList<>();
-        for (int i = 0; i < level.getWidth(); i++) {
-            for (int j = 0; j < level.getHeight(); j++) {
-                Color color = new Color(level.getRGB(i, j));
-                int value = color.getBlue();
-                if (value == ObjType.ARROW_LAUNCHER_LEFT.ordinal())
-                    arrowLaunchers.add(new ArrowLauncher(ObjType.ARROW_LAUNCHER_LEFT, (int)(i*Tiles.TILES_SIZE.getValue()), (int)(j*Tiles.TILES_SIZE.getValue())));
-                else if (value == ObjType.ARROW_LAUNCHER_RIGHT.ordinal())
-                    arrowLaunchers.add(new ArrowLauncher(ObjType.ARROW_LAUNCHER_RIGHT, (int)(i*Tiles.TILES_SIZE.getValue()), (int)(j*Tiles.TILES_SIZE.getValue())));
-            }
-        }
-        return arrowLaunchers;
     }
 
     // Checkers

@@ -28,20 +28,28 @@ public class ObjectManager {
     private ArrayList<Spike> spikes;
     private ArrayList<ArrowLauncher> arrowLaunchers;
     private final ArrayList<Projectile> projectiles;
+    private final ArrayList<Coin> coins;
+    private ArrayList<Shop> shops;
+
+    // Flags
+    private boolean shopVisible;
 
     public ObjectManager(PlayingState playingState) {
         this.playingState = playingState;
         this.objects = AnimationUtils.getInstance().loadObjects();
         this.projectiles = new ArrayList<>();
+        this.coins = new ArrayList<>();
+        this.shops = new ArrayList<>();
         this.projectileObject = Utils.getInstance().importImage("src/main/resources/images/objs/arrow.png", (int)PRSet.ARROW_WID.getValue(), (int)PRSet.ARROW_HEI.getValue());
     }
 
     public void loadObjects(Level level) {
-        level.loadObjectData();
+        level.getObjectData();
         this.potions = new ArrayList<>(level.getPotions());
         this.containers = new ArrayList<>(level.getContainers());
         this.spikes = level.getSpikes();
         this.arrowLaunchers = level.getArrowLaunchers();
+        this.shops = level.getShops();
         projectiles.clear();
     }
 
@@ -55,10 +63,14 @@ public class ObjectManager {
         }
     }
 
-    public void checkSpikeHit(Player p) {
+    public void checkPlayerIntersection(Player p) {
         for (Spike spike : spikes) {
             if (p.getHitBox().intersects(spike.getHitBox()))
                 p.kill();
+        }
+        for (Shop shop : shops) {
+            shop.setActive(p.getHitBox().intersects(shop.getHitBox()));
+            shopVisible = p.getHitBox().intersects(shop.getHitBox());
         }
     }
 
@@ -67,6 +79,14 @@ public class ObjectManager {
             if (potion.isAlive() && hitBox.intersects(potion.getHitBox())) {
                 potion.setAlive(false);
                 applyPotionEffect(potion);
+            }
+        }
+        ArrayList<Coin> copy = new ArrayList<>(coins);
+        for (Coin coin : copy) {
+            if (coin.isAlive() && hitBox.intersects(coin.getHitBox())) {
+                coins.remove(coin);
+                Audio.getInstance().getAudioPlayer().playSound(Sounds.COIN_PICK.ordinal());
+                playingState.getPlayer().changeCoins(1);
             }
         }
     }
@@ -101,16 +121,8 @@ public class ObjectManager {
     // Object Touch & Bounds
     public boolean isPlayerTouchingObject() {
         for (Container c : containers) {
-            int x = (int)playingState.getPlayer().getHitBox().x, y = (int)playingState.getPlayer().getHitBox().y;
-            int width = (int)playingState.getPlayer().getHitBox().width, height = (int)playingState.getPlayer().getHitBox().height;
             if (c.isAlive() && c.getAnimIndex() < 1) {
-                if (c.getHitBox().contains(x, y)) return true;
-                if (c.getHitBox().contains(x+width, y)) return true;
-                if (c.getHitBox().contains(x, y+height)) return true;
-                if (c.getHitBox().contains(x+width, y+height)) return true;
-
-                if (c.getHitBox().contains(x, y+height+1)) return true;
-                if (c.getHitBox().contains(x+width, y+height+1)) return true;
+                if (c.getHitBox().intersects(playingState.getPlayer().getHitBox())) return true;
             }
         }
         return false;
@@ -124,11 +136,11 @@ public class ObjectManager {
                 if (c.getHitBox().contains(x, y)) return true;
                 if (c.getHitBox().contains(x+width, y)) return true;
                 if (c.getHitBox().contains(x, y+height-5)) return true;
-                return c.getHitBox().contains(x+width, y + height - 5);
+                return c.getHitBox().contains(x+width, y+height-5);
             }
             else if (axis.equals("Y")) {
-                if (c.getHitBox().contains(x, y+height+5)) return true;
-                return c.getHitBox().contains(x+width, y+height+5);
+                if (c.getHitBox().contains(x, y+height)) return true;
+                return c.getHitBox().contains(x+width, y+height);
             }
         }
         return false;
@@ -183,18 +195,6 @@ public class ObjectManager {
             }
         }
         return hitBox.x;
-    }
-
-    public double getYObjectBound(Rectangle2D.Double hitBox, double airSpeed) {
-        for (Container c : containers) {
-            if (c.isAlive() && checkTouch(c, hitBox, "Y")) {
-                if (airSpeed > 0) {
-                    if (c.getHitBox().y > hitBox.y) return c.getHitBox().y-hitBox.height;
-                    else return hitBox.y;
-                }
-            }
-        }
-        return hitBox.y;
     }
 
     // Physics Checks
@@ -287,6 +287,18 @@ public class ObjectManager {
         }
     }
 
+    private void updateCoins() {
+        for (Coin coin : coins) {
+            if (coin.isAlive()) coin.update();
+        }
+    }
+
+    private void updateShops() {
+        for (Shop shop : shops) {
+            shop.update();
+        }
+    }
+
     // Core
     public void update(int[][] lvlData, Player player) {
         for (Potion potion : potions) if (potion.isAlive()) potion.update();
@@ -294,6 +306,8 @@ public class ObjectManager {
         updateObjectInAir();
         updateArrowLaunchers(lvlData, player);
         updateProjectiles(lvlData, player);
+        updateCoins();
+        updateShops();
         checkEnemyIntersection();
     }
 
@@ -303,9 +317,33 @@ public class ObjectManager {
         renderTraps(g, xLevelOffset, yLevelOffset);
         renderArrowLaunchers(g, xLevelOffset, yLevelOffset);
         renderProjectiles(g, xLevelOffset, yLevelOffset);
+        renderCoins(g, xLevelOffset, yLevelOffset);
+        renderShops(g, xLevelOffset, yLevelOffset);
     }
 
     // Render
+    public void generateCoins(Rectangle2D.Double location) {
+        Random rand = new Random();
+        int n = rand.nextInt(7);
+        for (int i = 0; i < n; i++) {
+            int x = rand.nextInt((int)location.width)+(int)location.x;
+            int y = rand.nextInt((int)(location.height/3)) + (int)location.y + 2*(int)location.height/3;
+            Coin coin = new Coin(ObjType.COIN, x, y);
+            coins.add(coin);
+        }
+    }
+
+    private void renderCoins(Graphics g, int xLevelOffset, int yLevelOffset) {
+        for (Coin c : coins) {
+            if (c.isAlive()) {
+                int x = (int)c.getHitBox().x-c.getXOffset()-xLevelOffset;
+                int y = (int)c.getHitBox().y-c.getYOffset()-yLevelOffset;
+                g.drawImage(objects[c.getObjType().ordinal()][c.getAnimIndex()], x, y, ObjValue.COIN_WID.getValue(), ObjValue.COIN_HEI.getValue(), null);
+                c.hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.ORANGE);
+            }
+        }
+    }
+
     private void renderContainers(Graphics g, int xLevelOffset, int yLevelOffset) {
         for (Container c : containers) {
             if (c.isAlive()) {
@@ -370,12 +408,26 @@ public class ObjectManager {
         }
     }
 
+    private void renderShops(Graphics g, int xLevelOffset, int yLevelOffset) {
+        for (Shop s : shops) {
+            int x = (int)s.getHitBox().x-s.getXOffset()-xLevelOffset;
+            int y = (int)s.getHitBox().y-s.getYOffset()-yLevelOffset+(int)(1*Tiles.SCALE.getValue());
+            g.drawImage(objects[s.getObjType().ordinal()][s.getAnimIndex()], x, y, ObjValue.SHOP_WID.getValue(), ObjValue.SHOP_HEI.getValue(), null);
+            s.hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.ORANGE);
+            s.render(g, xLevelOffset, yLevelOffset);
+        }
+    }
+
     // Reset
     public void reset() {
         loadObjects(playingState.getLevelManager().getCurrentLevel());
         for (Potion potion : potions) potion.reset();
         for (Container container : containers) container.reset();
         for (ArrowLauncher arrowLauncher : arrowLaunchers) arrowLauncher.reset();
+        coins.clear();
     }
 
+    public boolean isShopVisible() {
+        return shopVisible;
+    }
 }

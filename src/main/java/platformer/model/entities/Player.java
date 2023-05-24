@@ -12,6 +12,7 @@ import platformer.model.entities.enemies.Enemy;
 import platformer.model.entities.enemies.EnemyManager;
 import platformer.model.objects.ObjectManager;
 import platformer.model.objects.Projectile;
+import platformer.ui.UserInterface;
 import platformer.utils.Utils;
 
 import java.awt.*;
@@ -46,12 +47,15 @@ public class Player extends Entity {
     private int spellState = 0;
     private boolean doubleJump, onWall, onObject, wallPush, canDash = true, canBlock;
     // Status
-    private final BufferedImage statusBar;
-    private int healthWidth = (int)(150*Tiles.SCALE.getValue()), staminaWidth = (int)(115*Tiles.SCALE.getValue());
+    private final UserInterface userInterface;
     private final int maxStamina = 100;
     private double currentStamina = 15;
     private int currentJumps = 0, dashCount = 0;
     private int dashTick = 0;
+    private int coins = 0, exp = 0, level = 1;
+    private final int maxExp = 10000;
+    // Cooldowns
+    private final double[] cooldown;
 
     // Init
     public Player(int xPos, int yPos, int width, int height, EnemyManager enemyManager, ObjectManager objectManager, Game game) {
@@ -61,9 +65,10 @@ public class Player extends Entity {
         this.objectManager = objectManager;
         this.animations = AnimationUtils.getInstance().loadPlayerAnimations(width, height);
         this.effects = AnimationUtils.getInstance().loadEffects();
+        this.userInterface = new UserInterface(this);
         initHitBox((int)(15*Tiles.SCALE.getValue()), (int)(44*Tiles.SCALE.getValue()));
         initAttackBox();
-        this.statusBar = Utils.getInstance().importImage("src/main/resources/images/health_power_bar.png",-1,-1);
+        this.cooldown = new double[3];
     }
 
     private void initAttackBox() {
@@ -103,9 +108,9 @@ public class Player extends Entity {
                 if (hit) {
                     hit = false;
                     airSpeed = 0;
-                    if (!Utils.getInstance().isEntityOnFloor(hitBox, levelData)) inAir = true;
                 }
             }
+            coolDownTickUpdate();
         }
         // Wall flip lock
         if (moving && left && !onWall) {
@@ -167,6 +172,15 @@ public class Player extends Entity {
         if (previousAction != entityState) animIndex = animTick = 0;
     }
 
+    private void coolDownTickUpdate() {
+        for (int i = 0; i < cooldown.length; i++) {
+            if (cooldown[i] > 0) {
+                cooldown[i] -= 0.1;
+                if (cooldown[i] < 0) cooldown[i] = 0;
+            }
+        }
+    }
+
     // Positioning
     private void updatePosition() {
         moving = false;
@@ -194,28 +208,31 @@ public class Player extends Entity {
         }
 
         if (inAir && !dash) {
-            if (Utils.getInstance().canMoveHere(hitBox.x, hitBox.y + airSpeed, hitBox.width, hitBox.height, levelData)) {
-                if (onWall && airSpeed > 0) airSpeed += wallGravity;
-                else airSpeed += gravity;
-                hitBox.y += airSpeed;
-            }
-            else {
-                if (onObject) hitBox.y = objectManager.getYObjectBound(hitBox, airSpeed);
-                else hitBox.y = Utils.getInstance().getYPosOnTheCeil(hitBox, airSpeed);
-                if (airSpeed > 0) {
-                    inAir = wallPush = false;
-                    airSpeed = 0;
-                    currentJumps = 0;
-                }
-                else {
-                    if (onWall) airSpeed = wallGravity;
-                    else airSpeed = collisionFallSpeed;
-                    doubleJump = false;
-                }
-            }
+            inAirUpdate();
         }
         updateX(dx);
         moving = true;
+    }
+
+    private void inAirUpdate() {
+        if (Utils.getInstance().canMoveHere(hitBox.x, hitBox.y + airSpeed, hitBox.width, hitBox.height, levelData)) {
+            if (onWall && airSpeed > 0) airSpeed += wallGravity;
+            else airSpeed += gravity;
+            hitBox.y += airSpeed;
+        }
+        else {
+            hitBox.y = Utils.getInstance().getYPosOnTheCeil(hitBox, airSpeed);
+            if (airSpeed > 0) {
+                inAir = wallPush = false;
+                airSpeed = 0;
+                currentJumps = 0;
+            }
+            else {
+                if (onWall) airSpeed = wallGravity;
+                else airSpeed = collisionFallSpeed;
+                doubleJump = false;
+            }
+        }
     }
 
     private void updateWallPosition() {
@@ -249,11 +266,6 @@ public class Player extends Entity {
         }
     }
 
-    private void updateBars() {
-        this.healthWidth = (int)((currentHealth / (double)maxHealth) * (int)(150*Tiles.SCALE.getValue()));
-        this.staminaWidth = (int)((currentStamina / (double)maxStamina) * (int)(115*Tiles.SCALE.getValue()));
-    }
-
     private void updateAttackBox() {
         if (spellState != 0) return;
         if ((right && left) || (!right && !left)) {
@@ -278,7 +290,13 @@ public class Player extends Entity {
     }
 
     private void checkOnObject() {
-        if (objectManager.isPlayerTouchingObject() && !onObject) onObject = true;
+        if (objectManager.isPlayerTouchingObject() && !onObject) {
+            inAir = wallPush = false;
+            playerEffect = null;
+            airSpeed = 0;
+            currentJumps = 0;
+            onObject = true;
+        }
         else if (onObject && !objectManager.isPlayerTouchingObject()) onObject = false;
     }
 
@@ -287,7 +305,7 @@ public class Player extends Entity {
     }
 
     private void checkTrapCollide() {
-        objectManager.checkSpikeHit(this);
+        objectManager.checkPlayerIntersection(this);
     }
 
     // Actions
@@ -318,6 +336,7 @@ public class Player extends Entity {
             canDash = false;
             Audio.getInstance().getAudioPlayer().playSound(Sounds.DASH.ordinal());
             changeStamina(-3);
+            cooldown[Cooldown.DASH.ordinal()] = 2;
         }
     }
 
@@ -356,6 +375,20 @@ public class Player extends Entity {
         if (currentStamina == 0) spellState = 2;
     }
 
+    public void changeExp(double value) {
+        exp += value;
+        exp = Math.max(Math.min(exp, maxExp), 0);
+        if (exp > 1000*level) {
+            exp = exp % (1000*level);
+            level++;
+        }
+    }
+
+    public void changeCoins(int value) {
+        coins += value;
+        coins = Math.max(coins, 0);
+    }
+
     public void kill() {
         currentHealth = 0;
     }
@@ -379,9 +412,11 @@ public class Player extends Entity {
     private void updateHitBlockMove() {
         if (hit) {
             setSpellState(0);
+            dash = false;
             if (animIndex <= animations[entityState.ordinal()].length - 2)
                 pushBack(pushDirection, levelData, 1.2, playerSpeed);
             updatePushOffset();
+            inAirUpdate();
         }
         else if (canBlock) {
             pushOffsetDirection = Direction.DOWN;
@@ -417,7 +452,7 @@ public class Player extends Entity {
 
     // Core
     public void update() {
-        updateBars();
+        userInterface.update(currentHealth, maxHealth, currentStamina, maxStamina);
         if (currentHealth <= 0) {
             updateDeath();
             return;
@@ -451,13 +486,6 @@ public class Player extends Entity {
         catch (Exception ignored) {}
     }
 
-    private void renderStatusBar(Graphics g) {
-        g.setColor(Color.RED);
-        g.fillRect((int)(44*Tiles.SCALE.getValue()), (int)(29*Tiles.SCALE.getValue()), healthWidth, (int)(4*Tiles.SCALE.getValue()));
-        g.setColor(Color.BLUE);
-        g.fillRect((int)(44*Tiles.SCALE.getValue()), (int)(48*Tiles.SCALE.getValue()), staminaWidth, (int)(4*Tiles.SCALE.getValue()));
-    }
-
     public void render(Graphics g, int xLevelOffset, int yLevelOffset) {
         renderEffects(g, xLevelOffset, yLevelOffset);
         try {
@@ -466,10 +494,8 @@ public class Player extends Entity {
             g.drawImage(animations[entityState.ordinal()][animIndex], playerXPos, playerYPos, flipSign*width, height, null);
         }
         catch (Exception ignored) {}
-        g.drawImage(statusBar,(int)(10*Tiles.SCALE.getValue()), (int)(15*Tiles.SCALE.getValue()), (int)(192*Tiles.SCALE.getValue()), (int)(58*Tiles.SCALE.getValue()), null);
         hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.GREEN);
         attackBoxRenderer(g, xLevelOffset, yLevelOffset);
-        renderStatusBar(g);
     }
 
     // Getters & Setters & Reset
@@ -568,11 +594,34 @@ public class Player extends Entity {
 
     public void setCanBlock(boolean canBlock) {
         this.canBlock = canBlock;
-        if (canBlock) game.notifyLogger("Damage blocked successfully!", Message.INFORMATION);
+        if (canBlock) {
+            game.notifyLogger("Damage blocked successfully!", Message.INFORMATION);
+            cooldown[Cooldown.BLOCK.ordinal()] = 1.5;
+        }
     }
 
     public boolean canBlock() {
         return canBlock;
+    }
+
+    public int getCoins() {
+        return coins;
+    }
+
+    public int getExp() {
+        return exp;
+    }
+
+    public int getLevel() {
+        return level;
+    }
+
+    public UserInterface getUserInterface() {
+        return userInterface;
+    }
+
+    public double[] getCooldown() {
+        return cooldown;
     }
 
     @Override
