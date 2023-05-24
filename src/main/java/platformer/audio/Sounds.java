@@ -20,5 +20,7 @@ public enum Sounds {
     FIRE_SPELL_1,      // 16
     GHOUL_HIDE,        // 17
     GHOUL_REVEAL,      // 18
-    GHOUL_DEATH        // 19
+    GHOUL_DEATH,       // 19
+    COIN_PICK,         // 20
+    SHOP_BUY           // 21
 }
