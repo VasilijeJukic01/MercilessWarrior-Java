@@ -1,6 +1,7 @@
 package platformer.model.levels;
 
 import platformer.model.Tiles;
+import platformer.model.entities.enemies.EnemyType;
 import platformer.model.entities.enemies.Ghoul;
 import platformer.model.entities.enemies.Skeleton;
 import platformer.model.objects.*;
@@ -21,14 +22,14 @@ public class Level {
     private int[][] decoData;
     private int[][] layerData;
     // Enemies
-    private ArrayList<Skeleton> skeletons;
-    private ArrayList<Ghoul> ghouls;
+    private final ArrayList<Skeleton> skeletons = new ArrayList<>();
+    private final ArrayList<Ghoul> ghouls = new ArrayList<>();
     // Objects
-    private ArrayList<Potion> potions;
-    private ArrayList<Container> containers;
-    private ArrayList<Spike> spikes;
-    private ArrayList<ArrowLauncher> arrowLaunchers;
-    private ArrayList<Shop> shops;
+    private final ArrayList<Potion> potions = new ArrayList<>();
+    private final ArrayList<Container> containers = new ArrayList<>();
+    private final ArrayList<Spike> spikes = new ArrayList<>();
+    private final ArrayList<ArrowLauncher> arrowLaunchers = new ArrayList<>();
+    private final ArrayList<Shop> shops = new ArrayList<>();
     // Other
     private int levelTilesWidth;
     private int xMaxTilesOffset;
@@ -46,21 +47,51 @@ public class Level {
         this.playerSpawn = Utils.getInstance().getPlayerSpawn(dataL1);
     }
 
+    private void getEnemyData() {
+        for (int i = 0; i < dataL1.getWidth(); i++) {
+            for (int j = 0; j < dataL1.getHeight(); j++) {
+                Color color = new Color(dataL1.getRGB(i, j));
+                int value = color.getGreen();
+                if (value == EnemyType.SKELETON.ordinal())
+                    skeletons.add(new Skeleton((int)(i*Tiles.TILES_SIZE.getValue()), (int)((j-1)*Tiles.TILES_SIZE.getValue())));
+                else if (value == EnemyType.GHOUL.ordinal())
+                    ghouls.add(new Ghoul((int)(i*Tiles.TILES_SIZE.getValue()), (int)((j-1)*Tiles.TILES_SIZE.getValue())));
+            }
+        }
+    }
+
+    public void getObjectData() {
+        clear();
+        for (int i = 0; i < dataL1.getWidth(); i++) {
+            for (int j = 0; j < dataL1.getHeight(); j++) {
+                Color color = new Color(dataL1.getRGB(i, j));
+                int value = color.getBlue();
+                if (value == ObjType.HEAL_POTION.ordinal())
+                    potions.add(new Potion(ObjType.HEAL_POTION, (int)((i+0.5)*Tiles.TILES_SIZE.getValue()), (int)(j*Tiles.TILES_SIZE.getValue())));
+                else if (value == ObjType.STAMINA_POTION.ordinal())
+                    potions.add(new Potion(ObjType.STAMINA_POTION, (int)((i+0.5)*Tiles.TILES_SIZE.getValue()), (int)(j*Tiles.TILES_SIZE.getValue())));
+                else if (value == ObjType.BOX.ordinal())
+                    containers.add(new Container(ObjType.BOX, (int)(i*Tiles.TILES_SIZE.getValue()), (int)(j*Tiles.TILES_SIZE.getValue())));
+                else if (value == ObjType.BARREL.ordinal())
+                    containers.add(new Container(ObjType.BARREL, (int)(i*Tiles.TILES_SIZE.getValue()), (int)(j*Tiles.TILES_SIZE.getValue())));
+                else if (value == ObjType.SPIKE.ordinal())
+                    spikes.add(new Spike(ObjType.SPIKE, (int)(i*Tiles.TILES_SIZE.getValue()), (int)(j*Tiles.TILES_SIZE.getValue())));
+                else if (value == ObjType.ARROW_LAUNCHER_LEFT.ordinal())
+                    arrowLaunchers.add(new ArrowLauncher(ObjType.ARROW_LAUNCHER_LEFT, (int)(i*Tiles.TILES_SIZE.getValue()), (int)(j*Tiles.TILES_SIZE.getValue())));
+                else if (value == ObjType.ARROW_LAUNCHER_RIGHT.ordinal())
+                    arrowLaunchers.add(new ArrowLauncher(ObjType.ARROW_LAUNCHER_RIGHT, (int)(i*Tiles.TILES_SIZE.getValue()), (int)(j*Tiles.TILES_SIZE.getValue())));
+                else if (value == ObjType.SHOP.ordinal())
+                    shops.add(new Shop(ObjType.SHOP, (int)(i*Tiles.TILES_SIZE.getValue()), (int)(j*Tiles.TILES_SIZE.getValue())));
+            }
+        }
+    }
+
     private void init() {
         this.lvlData = Utils.getInstance().getLevelData(dataL1);
         this.decoData = Utils.getInstance().getDecoData(dataL2, false);
         this.layerData = Utils.getInstance().getDecoData(dataL2, true);
-        this.skeletons = Utils.getInstance().getSkeletonData(dataL1);
-        this.ghouls = Utils.getInstance().getGhoulData(dataL1);
-        loadObjectData();
-    }
-
-    public void loadObjectData() {
-        this.potions = Utils.getInstance().getPotionData(dataL1);
-        this.containers = Utils.getInstance().getContainerData(dataL1);
-        this.spikes = Utils.getInstance().getSpikeData(dataL1);
-        this.arrowLaunchers = Utils.getInstance().getArrowLauncherData(dataL1);
-        this.shops = Utils.getInstance().getShopData(dataL1);
+        getEnemyData();
+        getObjectData();
     }
 
     public void setOffset() {
@@ -70,6 +101,14 @@ public class Level {
         this.levelTilesHeight = dataL1.getHeight();
         this.yMaxTilesOffset = levelTilesHeight - (int)(Tiles.TILES_HEIGHT.getValue());
         this.yMaxLevelOffset = yMaxTilesOffset * (int)(Tiles.TILES_SIZE.getValue());
+    }
+
+    private void clear() {
+        potions.clear();
+        containers.clear();
+        spikes.clear();
+        shops.clear();
+        arrowLaunchers.clear();
     }
 
     public int getSpriteIndex(int x, int y) {

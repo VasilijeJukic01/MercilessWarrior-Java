@@ -1,5 +1,7 @@
 package platformer.model.objects;
 
+import platformer.audio.Audio;
+import platformer.audio.Sounds;
 import platformer.model.Tiles;
 import platformer.model.entities.Player;
 import platformer.ui.ItemType;
@@ -48,6 +50,7 @@ public class Shop extends GameObject {
                 if (player.getCoins() >= item.getCost()) {
                     player.changeCoins(-item.getCost());
                     item.setAmount(item.getAmount()-1);
+                    Audio.getInstance().getAudioPlayer().playSound(Sounds.SHOP_BUY.ordinal());
                     switch(item.getItemType()) {
                         case HEALTH: player.changeHealth(30); break;
                         case STAMINA: player.changeStamina(30); break;

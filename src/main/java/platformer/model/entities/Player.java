@@ -412,6 +412,7 @@ public class Player extends Entity {
     private void updateHitBlockMove() {
         if (hit) {
             setSpellState(0);
+            dash = false;
             if (animIndex <= animations[entityState.ordinal()].length - 2)
                 pushBack(pushDirection, levelData, 1.2, playerSpeed);
             updatePushOffset();

@@ -57,7 +57,7 @@ public class LevelObjectManager {
         put("MOSS3",                new Point((int)(32*6.1*Tiles.SCALE.getValue()), (int)(32*2*Tiles.SCALE.getValue())));       //31
         put("MOSS4",                new Point((int)(32*9*Tiles.SCALE.getValue()), (int)(32*2*Tiles.SCALE.getValue())));         //32
         put("STONE_MOSS2",          new Point((int)(32*2*Tiles.SCALE.getValue()), (int)(32*Tiles.SCALE.getValue())));           //33
-        put("BLACK",                new Point((int)(32*Tiles.SCALE.getValue()), (int)(32*Tiles.SCALE.getValue())));             //34
+        put("BLACK",                new Point((int)(33*Tiles.SCALE.getValue()), (int)(33*Tiles.SCALE.getValue())));             //34
         put("LEFT_END",             new Point((int)(32*Tiles.SCALE.getValue()), (int)(32*Tiles.SCALE.getValue())));             //35
         put("RIGHT_END",            new Point((int)(32*Tiles.SCALE.getValue()), (int)(32*Tiles.SCALE.getValue())));             //36
         put("LEAF1_REVERSE",        new Point((int)(40*Tiles.SCALE.getValue()), (int)(32*Tiles.SCALE.getValue())));             //37

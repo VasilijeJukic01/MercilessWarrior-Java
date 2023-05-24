@@ -44,7 +44,7 @@ public class ObjectManager {
     }
 
     public void loadObjects(Level level) {
-        level.loadObjectData();
+        level.getObjectData();
         this.potions = new ArrayList<>(level.getPotions());
         this.containers = new ArrayList<>(level.getContainers());
         this.spikes = level.getSpikes();
@@ -85,6 +85,7 @@ public class ObjectManager {
         for (Coin coin : copy) {
             if (coin.isAlive() && hitBox.intersects(coin.getHitBox())) {
                 coins.remove(coin);
+                Audio.getInstance().getAudioPlayer().playSound(Sounds.COIN_PICK.ordinal());
                 playingState.getPlayer().changeCoins(1);
             }
         }
@@ -323,7 +324,7 @@ public class ObjectManager {
     // Render
     public void generateCoins(Rectangle2D.Double location) {
         Random rand = new Random();
-        int n = rand.nextInt(5);
+        int n = rand.nextInt(7);
         for (int i = 0; i < n; i++) {
             int x = rand.nextInt((int)location.width)+(int)location.x;
             int y = rand.nextInt((int)(location.height/3)) + (int)location.y + 2*(int)location.height/3;
