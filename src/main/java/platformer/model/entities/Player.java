@@ -28,6 +28,7 @@ public class Player extends Entity {
     private int[][] levelData;
     // Core Variables
     private final BufferedImage[][] animations;
+    private final BufferedImage[][] transformAnimations;
     private final BufferedImage[][] effects;
     private final int animSpeed = 20;
     private int animTick = 0, animIndex = 0, effectIndex = 0;
@@ -43,9 +44,9 @@ public class Player extends Entity {
     private final double jumpSpeed = -2.25 * Tiles.SCALE.getValue();
     private final double collisionFallSpeed = 0.5 * Tiles.SCALE.getValue();
     // Flags
-    private boolean left, right, jump, moving, attacking, dash, hit, block;
+    private boolean left, right, jump, moving, attacking, dash, hit, block, transform;
     private int spellState = 0;
-    private boolean doubleJump, onWall, onObject, wallPush, canDash = true, canBlock;
+    private boolean doubleJump, onWall, onObject, wallPush, canDash = true, canBlock, canTransform;
     // Status
     private final UserInterface userInterface;
     private final int maxStamina = 100;
@@ -63,7 +64,8 @@ public class Player extends Entity {
         this.game = game;
         this.enemyManager = enemyManager;
         this.objectManager = objectManager;
-        this.animations = AnimationUtils.getInstance().loadPlayerAnimations(width, height);
+        this.animations = AnimationUtils.getInstance().loadPlayerAnimations(width, height, "player");
+        this.transformAnimations = AnimationUtils.getInstance().loadPlayerAnimations(width, height, "transform");
         this.effects = AnimationUtils.getInstance().loadEffects();
         this.userInterface = new UserInterface(this);
         initHitBox((int)(15*Tiles.SCALE.getValue()), (int)(44*Tiles.SCALE.getValue()));
@@ -104,6 +106,10 @@ public class Player extends Entity {
                 attacking = false;
                 attackCheck = false;
                 block = canBlock = false;
+                if (canTransform) {
+                    canTransform = false;
+                    transform = true;
+                }
                 setSpellState(0);
                 if (hit) {
                     hit = false;
@@ -169,6 +175,7 @@ public class Player extends Entity {
             else if (attackState == AttackState.ATTACK_2) entityState = AnimType.ATTACK_2;
             else if (attackState == AttackState.ATTACK_3) entityState = AnimType.ATTACK_3;
         }
+        else if (canTransform) entityState = AnimType.TRANSFORM;
         if (previousAction != entityState) animIndex = animTick = 0;
     }
 
@@ -187,7 +194,7 @@ public class Player extends Entity {
         checkOnObject();
         if (!inAir && !Utils.getInstance().isEntityOnFloor(hitBox, levelData) && !onObject) inAir = true;
 
-        if (spellState != 0 || canBlock) return;
+        if (spellState != 0 || canBlock || canTransform) return;
         if (jump) doJump();
         if (!inAir || onWall) dashCount = 0;
         if (((!left && !right) || (left && right)) && !inAir && !dash) return;
@@ -372,7 +379,10 @@ public class Player extends Entity {
     public void changeStamina(double value) {
         currentStamina += value;
         currentStamina = Math.max(Math.min(currentStamina, maxStamina), 0);
-        if (currentStamina == 0) spellState = 2;
+        if (currentStamina == 0) {
+            transform = false;
+            if (spellState == 1) spellState = 2;
+        }
     }
 
     public void changeExp(double value) {
@@ -448,6 +458,9 @@ public class Player extends Entity {
             enemyManager.checkEnemySpellHit();
             objectManager.checkObjectBreak(attackBox);
         }
+        if (transform) {
+            changeStamina(-0.025);
+        }
     }
 
     // Core
@@ -491,7 +504,9 @@ public class Player extends Entity {
         try {
             int playerXPos = (int)(hitBox.x-xHitBoxOffset-xLevelOffset+flipCoefficient);
             int playerYPos = (int)(hitBox.y-yHitBoxOffset-yLevelOffset)+(int)pushOffset;
-            g.drawImage(animations[entityState.ordinal()][animIndex], playerXPos, playerYPos, flipSign*width, height, null);
+
+            if (!transform) g.drawImage(animations[entityState.ordinal()][animIndex], playerXPos, playerYPos, flipSign*width, height, null);
+            else g.drawImage(transformAnimations[entityState.ordinal()][animIndex], playerXPos, playerYPos, flipSign*width, height, null);
         }
         catch (Exception ignored) {}
         hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.GREEN);
@@ -622,6 +637,18 @@ public class Player extends Entity {
 
     public double[] getCooldown() {
         return cooldown;
+    }
+
+    public void setCanTransform(boolean canTransform) {
+        if (transform) transform = false;
+        else {
+            this.canTransform = canTransform;
+            dash = false;
+        }
+    }
+
+    public boolean isTransform() {
+        return transform;
     }
 
     @Override

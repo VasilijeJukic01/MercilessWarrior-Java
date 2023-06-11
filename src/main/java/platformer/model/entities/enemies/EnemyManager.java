@@ -96,10 +96,11 @@ public class EnemyManager {
         for (Skeleton skeleton : skeletons) {
             if (skeleton.isAlive() && skeleton.getEnemyAction() != AnimType.DEATH) {
                 if (attackBox.intersects(skeleton.getHitBox())) {
-                    skeleton.hit(5, true, true);
+                    int dmg = player.isTransform() ? 8 : 5;
+                    skeleton.hit(dmg, true, true);
                     checkEnemyDying(skeleton, player);
                     if (skeleton.getEnemyAction() == AnimType.BLOCK) playingState.getGame().notifyLogger("Enemy blocks player's attack.", Message.NOTIFICATION);
-                    else playingState.getGame().notifyLogger("Player gives damage to enemy: 5", Message.NOTIFICATION);
+                    else playingState.getGame().notifyLogger("Player gives damage to enemy: "+dmg, Message.NOTIFICATION);
                     return;
                 }
             }
@@ -108,9 +109,10 @@ public class EnemyManager {
             if (ghoul.isAlive() && ghoul.getEnemyAction() != AnimType.DEATH) {
                 if (attackBox.intersects(ghoul.getHitBox())) {
                     if (ghoul.getEnemyAction() == AnimType.HIDE || ghoul.getEnemyAction() == AnimType.REVEAL) return;
-                    ghoul.hit(5, true, true);
+                    int dmg = player.isTransform() ? 12 : 5;
+                    ghoul.hit(dmg, true, true);
                     checkEnemyDying(ghoul, player);
-                    playingState.getGame().notifyLogger("Player gives damage to enemy: 5", Message.NOTIFICATION);
+                    playingState.getGame().notifyLogger("Player gives damage to enemy: "+dmg, Message.NOTIFICATION);
                     return;
                 }
             }

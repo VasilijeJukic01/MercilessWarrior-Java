@@ -266,6 +266,9 @@ public class PlayingState extends StateAbstraction implements State {
                 player.setLeft(false);
                 player.setOnWall(false);
                 break;
+            case KeyEvent.VK_Q:
+                player.setCanTransform(true);
+                break;
             case KeyEvent.VK_V:
                 player.setCanDash(true);
                 break;

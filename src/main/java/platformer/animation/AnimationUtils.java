@@ -12,8 +12,8 @@ public class AnimationUtils {
 
     private AnimationUtils() {}
 
-    public BufferedImage[][] loadPlayerAnimations(int w, int h) {
-        BufferedImage sprite = Utils.getInstance().importImage("src/main/resources/images/player/playerSheet.png", -1, -1);
+    public BufferedImage[][] loadPlayerAnimations(int w, int h, String sheet) {
+        BufferedImage sprite = Utils.getInstance().importImage("src/main/resources/images/player/"+sheet+"Sheet.png", -1, -1);
         BufferedImage[][] anim = new BufferedImage[16][16];
 
         // 0 Idle anim
@@ -92,6 +92,13 @@ public class AnimationUtils {
             wallAnim[i] = Utils.getInstance().resize(sprite.getSubimage(i*144, 21*80, 144, 80), w, h);
         }
         anim[12] = wallAnim;
+
+        // 13 Transform anim
+        BufferedImage[] transformAnim = new BufferedImage[12];
+        for (int i = 0; i < transformAnim.length; i++) {
+            transformAnim[i] = Utils.getInstance().resize(sprite.getSubimage(i*144, 20*80, 144, 80), w, h);
+        }
+        anim[13] = transformAnim;
 
         // 14 Spell 1 anim
         BufferedImage[] spell1Anim = new BufferedImage[13];
