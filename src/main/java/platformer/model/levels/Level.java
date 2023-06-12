@@ -4,6 +4,7 @@ import platformer.model.Tiles;
 import platformer.model.entities.enemies.EnemyType;
 import platformer.model.entities.enemies.Ghoul;
 import platformer.model.entities.enemies.Skeleton;
+import platformer.model.entities.enemies.boss.SpearWoman;
 import platformer.model.objects.*;
 import platformer.model.objects.Container;
 import platformer.utils.Utils;
@@ -24,6 +25,7 @@ public class Level {
     // Enemies
     private final ArrayList<Skeleton> skeletons = new ArrayList<>();
     private final ArrayList<Ghoul> ghouls = new ArrayList<>();
+    private SpearWoman spearWoman;
     // Objects
     private final ArrayList<Potion> potions = new ArrayList<>();
     private final ArrayList<Container> containers = new ArrayList<>();
@@ -56,6 +58,8 @@ public class Level {
                     skeletons.add(new Skeleton((int)(i*Tiles.TILES_SIZE.getValue()), (int)((j-1)*Tiles.TILES_SIZE.getValue())));
                 else if (value == EnemyType.GHOUL.ordinal())
                     ghouls.add(new Ghoul((int)(i*Tiles.TILES_SIZE.getValue()), (int)((j-1)*Tiles.TILES_SIZE.getValue())));
+                else if (value == EnemyType.SPEAR_WOMAN.ordinal())
+                    spearWoman = new SpearWoman((int)(i*Tiles.TILES_SIZE.getValue()), (int)((j-1)*Tiles.TILES_SIZE.getValue()));
             }
         }
     }
@@ -141,6 +145,10 @@ public class Level {
 
     public ArrayList<Ghoul> getGhouls() {
         return ghouls;
+    }
+
+    public SpearWoman getSpearWoman() {
+        return spearWoman;
     }
 
     public Point getPlayerSpawn() {

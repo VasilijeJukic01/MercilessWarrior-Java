@@ -16,7 +16,14 @@ public enum EnemySize {
     GHOUL_WIDTH((int)(GHOUL_DEFAULT_WIDTH.getValue() * Tiles.SCALE.getValue())),
     GHOUL_HEIGHT((int)(GHOUL_DEFAULT_HEIGHT.getValue() * Tiles.SCALE.getValue())),
     GHOUL_X_OFFSET((int)(50*Tiles.SCALE.getValue())),
-    GHOUL_Y_OFFSET((int)(18*Tiles.SCALE.getValue()));
+    GHOUL_Y_OFFSET((int)(18*Tiles.SCALE.getValue())),
+
+    SW_DEFAULT_WIDTH(153),
+    SW_DEFAULT_HEIGHT(138),
+    SW_WIDTH((int)(SW_DEFAULT_WIDTH.getValue() * Tiles.SCALE.getValue())),
+    SW_HEIGHT((int)(SW_DEFAULT_HEIGHT.getValue() * Tiles.SCALE.getValue())),
+    SW_X_OFFSET((int)(54*Tiles.SCALE.getValue())),
+    SW_Y_OFFSET((int)(59*Tiles.SCALE.getValue()));
 
     private final int value;
 

@@ -17,5 +17,8 @@ public enum AnimType {
     TRANSFORM,  // 13
     SPELL_1,    // 14
     HIDE,       // 15
-    REVEAL      // 16
+    REVEAL,     // 16
+    SPELL_2,    // 17
+    SPELL_3,    // 18
+    SLIDE       // 19
 }

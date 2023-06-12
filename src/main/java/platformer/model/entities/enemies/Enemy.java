@@ -12,10 +12,12 @@ import platformer.utils.Utils;
 
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+import java.util.Random;
 
 @SuppressWarnings("FieldCanBeLocal")
 public abstract class Enemy extends Entity implements Debug {
 
+    protected final Random rand;
     private final EnemyType enemyType;
     protected double enemySpeed = 0.2*Tiles.SCALE.getValue();
     protected int animSpeed, animIndex, animTick = 0;
@@ -31,6 +33,7 @@ public abstract class Enemy extends Entity implements Debug {
         this.animSpeed = animSpeed;
         this.maxHealth = ModelUtils.getInstance().getHealth(enemyType);
         this.currentHealth = maxHealth;
+        this.rand = new Random();
     }
 
     protected void updateAnimation(BufferedImage[][] animations) {
@@ -38,6 +41,7 @@ public abstract class Enemy extends Entity implements Debug {
         if (animTick >= animSpeed) {
             animTick = 0;
             animIndex++;
+            // Ghoul Only
             if ((entityState == AnimType.HIDE || entityState == AnimType.REVEAL) && fadeCoefficient < 255) {
                 fadeCoefficient += 12;
                 fadeCoefficient = Math.min(fadeCoefficient, 255);
@@ -60,7 +64,7 @@ public abstract class Enemy extends Entity implements Debug {
         if (cooldown != null) coolDownTickUpdate();
     }
 
-    private void coolDownTickUpdate() {
+    protected void coolDownTickUpdate() {
         for (int i = 0; i < cooldown.length; i++) {
             if (cooldown[i] > 0) {
                 cooldown[i] -= 0.1;
@@ -82,6 +86,7 @@ public abstract class Enemy extends Entity implements Debug {
         entityState = AnimType.RUN;
         if (enemyType == EnemyType.GHOUL) enemySpeed = 0.45*Tiles.SCALE.getValue();
         else if (enemyType == EnemyType.SKELETON) enemySpeed = 0.35*Tiles.SCALE.getValue();
+        else if (enemyType == EnemyType.SPEAR_WOMAN) enemySpeed = 0.5*Tiles.SCALE.getValue();
         if (player.getHitBox().x > hitBox.x) setDirection(Direction.RIGHT);
         else setDirection(Direction.LEFT);
     }
@@ -90,6 +95,7 @@ public abstract class Enemy extends Entity implements Debug {
         int distance = (int)Math.abs(player.getHitBox().x-hitBox.x);
         if (enemyType == EnemyType.SKELETON) return distance <= attackRange/1.25;
         else if (enemyType == EnemyType.GHOUL) return distance <= attackRange * 2;
+        else if (enemyType == EnemyType.SPEAR_WOMAN) return distance <= attackRange;
         return false;
     }
 
@@ -102,7 +108,8 @@ public abstract class Enemy extends Entity implements Debug {
         if (direction == Direction.LEFT) setDirection(Direction.RIGHT);
         else if (direction == Direction.RIGHT) setDirection(Direction.LEFT);
         entityState = AnimType.WALK;
-        enemySpeed = 0.2*Tiles.SCALE.getValue();
+        if (enemyType == EnemyType.SPEAR_WOMAN) enemySpeed = 0.5*Tiles.SCALE.getValue();
+        else enemySpeed = 0.2*Tiles.SCALE.getValue();
     }
 
     // Attack

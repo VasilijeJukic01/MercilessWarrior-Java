@@ -7,6 +7,7 @@ import platformer.debug.Message;
 import platformer.model.Tiles;
 import platformer.model.entities.Direction;
 import platformer.model.entities.Player;
+import platformer.model.entities.enemies.boss.SpearWoman;
 import platformer.model.levels.Level;
 import platformer.model.objects.GameObject;
 import platformer.model.objects.Projectile;
@@ -28,8 +29,10 @@ public class EnemyManager {
     private final PlayingState playingState;
     private BufferedImage[][] skeletonAnimations;
     private BufferedImage[][] ghoulAnimations;
+    private BufferedImage[][] spearWomanAnimations;
     private List<Skeleton> skeletons = new ArrayList<>();
     private List<Ghoul> ghouls = new ArrayList<>();
+    private SpearWoman spearWoman;
 
     public EnemyManager(PlayingState playingState) {
         this.playingState = playingState;
@@ -39,11 +42,13 @@ public class EnemyManager {
     private void init() {
         this.skeletonAnimations = AnimationUtils.getInstance().loadSkeletonAnimations();
         this.ghoulAnimations = AnimationUtils.getInstance().loadGhoulAnimation();
+        this.spearWomanAnimations = AnimationUtils.getInstance().loadSpearWomanAnimations();
     }
 
     public void loadEnemies(Level level) {
         this.skeletons = level.getSkeletons();
         this.ghouls = level.getGhouls();
+        this.spearWoman = level.getSpearWoman();
     }
 
     private void renderSkeletons(Graphics g, int xLevelOffset, int yLevelOffset) {
@@ -78,6 +83,21 @@ public class EnemyManager {
                     g.fillRect(0, 0, (int)Tiles.GAME_WIDTH.getValue(), (int)Tiles.GAME_HEIGHT.getValue());
                 }
             }
+        }
+    }
+
+    private void renderSpearWoman(Graphics g, int xLevelOffset, int yLevelOffset) {
+        if (spearWoman.isAlive()) {
+            int fC = spearWoman.getFlipCoefficient(), fS = spearWoman.getFlipSign();
+            int x = (int) spearWoman.getHitBox().x - EnemySize.SW_X_OFFSET.getValue() - xLevelOffset + fC;
+            int y = (int) spearWoman.getHitBox().y - EnemySize.SW_Y_OFFSET.getValue() - yLevelOffset+1 + (int)spearWoman.getPushOffset();
+            int w = EnemySize.SW_WIDTH.getValue() * fS;
+            int h = EnemySize.SW_HEIGHT.getValue();
+            if (fS == -1) x -= 21*Tiles.SCALE.getValue();
+            g.drawImage(spearWomanAnimations[spearWoman.getEnemyAction().ordinal()][spearWoman.getAnimIndex()], x, y, w, h, null);
+            if (spearWoman == null) return;
+            spearWoman.hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.BLUE);
+            spearWoman.attackBoxRenderer(g, xLevelOffset, yLevelOffset);
         }
     }
 
@@ -180,11 +200,15 @@ public class EnemyManager {
         for (Ghoul ghoul : ghouls) {
             if (ghoul.isAlive()) ghoul.update(ghoulAnimations, levelData, player);
         }
+        if (spearWoman == null) return;
+        spearWoman.update(spearWomanAnimations, levelData, player);
     }
 
     public void render(Graphics g, int xLevelOffset, int yLevelOffset) {
         renderSkeletons(g, xLevelOffset, yLevelOffset);
         renderGhouls(g, xLevelOffset, yLevelOffset);
+        if (spearWoman == null) return;
+        renderSpearWoman(g, xLevelOffset, yLevelOffset);
     }
 
     public void reset() {
@@ -194,6 +218,8 @@ public class EnemyManager {
         for (Ghoul ghoul : ghouls) {
             ghoul.reset();
         }
+        if (spearWoman == null) return;
+        spearWoman.reset();
     }
 
 }

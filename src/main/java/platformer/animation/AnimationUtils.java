@@ -12,6 +12,7 @@ public class AnimationUtils {
 
     private AnimationUtils() {}
 
+    // Player
     public BufferedImage[][] loadPlayerAnimations(int w, int h, String sheet) {
         BufferedImage sprite = Utils.getInstance().importImage("src/main/resources/images/player/"+sheet+"Sheet.png", -1, -1);
         BufferedImage[][] anim = new BufferedImage[16][16];
@@ -110,6 +111,7 @@ public class AnimationUtils {
         return anim;
     }
 
+    // Enemy
     public BufferedImage[][] loadSkeletonAnimations() {
         BufferedImage[][] anim = new BufferedImage[13][13];
 
@@ -242,6 +244,103 @@ public class AnimationUtils {
         return anim;
     }
 
+    // Boss
+    public BufferedImage[][] loadSpearWomanAnimations() {
+        BufferedImage sprite = Utils.getInstance().importImage("src/main/resources/images/enemies/Bosses/SpearWoman.png", -1, -1);
+        BufferedImage[][] anim = new BufferedImage[20][25];
+
+        // Size
+        int w = EnemySize.SW_WIDTH.getValue();
+        int h = EnemySize.SW_HEIGHT.getValue();
+
+        // 0 Idle anim
+        BufferedImage[] idleAnim = new BufferedImage[8];
+        for (int i = 0; i < idleAnim.length; i++) {
+            idleAnim[i] = Utils.getInstance().resize(sprite.getSubimage(i*128, 0, 128, 115), w, h);
+        }
+        anim[0] = idleAnim;
+
+        // 1 Run anim
+        BufferedImage[] runAnim = new BufferedImage[8];
+        for (int i = 0; i < runAnim.length; i++) {
+            runAnim[i] = Utils.getInstance().resize(sprite.getSubimage(i*128, 115*2, 128, 115), w, h);
+        }
+        anim[1] = runAnim;
+
+        // 4 Attack 1 anim
+        BufferedImage[] attack1Anim = new BufferedImage[5];
+        for (int i = 0; i < attack1Anim.length; i++) {
+            attack1Anim[i] = Utils.getInstance().resize(sprite.getSubimage(i*128, 115*10, 128, 115), w, h);
+        }
+        anim[4] = attack1Anim;
+
+        // 5 Attack 2 anim
+        BufferedImage[] attack2Anim = new BufferedImage[5];
+        for (int i = 0; i < attack2Anim.length; i++) {
+            attack2Anim[i] = Utils.getInstance().resize(sprite.getSubimage(i*128, 115*11, 128, 115), w, h);
+        }
+        anim[5] = attack2Anim;
+
+        // 6 Attack 3 anim
+        BufferedImage[] attack3Anim = new BufferedImage[6];
+        for (int i = 0; i < attack3Anim.length; i++) {
+            attack3Anim[i] = Utils.getInstance().resize(sprite.getSubimage(i*128, 115*12, 128, 115), w, h);
+        }
+        anim[6] = attack3Anim;
+
+        // 7 Block anim
+        BufferedImage[] blockAnim = new BufferedImage[16];
+        for (int i = 0; i < blockAnim.length; i++) {
+            blockAnim[i] = Utils.getInstance().resize(sprite.getSubimage(i*128, 115*16, 128, 115), w, h);
+        }
+        anim[7] = blockAnim;
+
+        // 8 Hit anim
+        BufferedImage[] hitAnim = new BufferedImage[4];
+        for (int i = 0; i < hitAnim.length; i++) {
+            hitAnim[i] = Utils.getInstance().resize(sprite.getSubimage(i*128, 115*23, 128, 115), w, h);
+        }
+        anim[8] = hitAnim;
+
+        // 9 Death anim
+        BufferedImage[] deathAnim = new BufferedImage[9];
+        for (int i = 0; i < deathAnim.length; i++) {
+            deathAnim[i] = Utils.getInstance().resize(sprite.getSubimage(i*128, 115*24, 128, 115), w, h);
+        }
+        anim[9] = deathAnim;
+
+        // 14 Spell 1 anim
+        BufferedImage[] spell1Anim = new BufferedImage[14];
+        for (int i = 0; i < spell1Anim.length; i++) {
+            spell1Anim[i] = Utils.getInstance().resize(sprite.getSubimage(i*128, 115*13, 128, 115), w, h);
+        }
+        anim[14] = spell1Anim;
+
+        // 17 Spell 2 anim
+        BufferedImage[] spell2Anim = new BufferedImage[11];
+        for (int i = 0; i < spell2Anim.length; i++) {
+            spell2Anim[i] = Utils.getInstance().resize(sprite.getSubimage(i*128, 115*14, 128, 115), w, h);
+        }
+        anim[17] = spell2Anim;
+
+        // 18 Spell 3 anim
+        BufferedImage[] spell3Anim = new BufferedImage[22];
+        for (int i = 0; i < spell3Anim.length; i++) {
+            spell3Anim[i] = Utils.getInstance().resize(sprite.getSubimage(i*128, 115*15, 128, 115), w, h);
+        }
+        anim[18] = spell3Anim;
+
+        // 19 Slide anim
+        BufferedImage[] slideAnim = new BufferedImage[8];
+        for (int i = 0; i < slideAnim.length; i++) {
+            slideAnim[i] = Utils.getInstance().resize(sprite.getSubimage(i*128, 115*3, 128, 115), w, h);
+        }
+        anim[19] = slideAnim;
+
+        return anim;
+    }
+
+    // Effects
     public BufferedImage[][] loadEffects() {
         BufferedImage[][] anim = new BufferedImage[11][11];
         int index = 0;

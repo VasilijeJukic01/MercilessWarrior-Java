@@ -71,8 +71,8 @@ public class Utils {
 
     // Data gatherer
     public BufferedImage[] getAllLevels(String layer) {
-        BufferedImage[] levels = new BufferedImage[2];
-        for (int i = 0; i < 2; i++) {
+        BufferedImage[] levels = new BufferedImage[3];
+        for (int i = 0; i < 3; i++) {
             levels[i] = importImage("src/main/resources/images/levels/level"+(i+1)+"_layer"+layer+".png", -1, -1);
         }
         return levels;
