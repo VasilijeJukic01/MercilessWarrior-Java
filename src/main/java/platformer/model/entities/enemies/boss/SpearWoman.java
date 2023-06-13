@@ -9,6 +9,7 @@ import platformer.model.entities.Player;
 import platformer.model.entities.enemies.Enemy;
 import platformer.model.entities.enemies.EnemySize;
 import platformer.model.entities.enemies.EnemyType;
+import platformer.model.spells.SpellManager;
 import platformer.utils.Utils;
 
 import java.awt.*;
@@ -51,7 +52,7 @@ public class SpearWoman extends Enemy {
         return false;
     }
 
-    public void updateMove(int[][] levelData, Player player) {
+    public void updateMove(int[][] levelData, Player player, SpellManager spellManager) {
         if (!Utils.getInstance().isEntityOnFloor(hitBox, levelData) && !isAirFreeze()) inAir = true;
         if (inAir) {
             if (Utils.getInstance().canMoveHere(hitBox.x, hitBox.y + airSpeed, hitBox.width, hitBox.height, levelData)) {
@@ -69,7 +70,7 @@ public class SpearWoman extends Enemy {
                 }
             }
         }
-        else updateBehavior(levelData, player);
+        else updateBehavior(levelData, player, spellManager);
     }
 
     // Attack
@@ -96,7 +97,7 @@ public class SpearWoman extends Enemy {
     }
 
     // Core
-    private void updateBehavior(int[][] levelData, Player player) {
+    private void updateBehavior(int[][] levelData, Player player, SpellManager spellManager) {
         switch (entityState) {
             case IDLE:
                 if (canSeePlayer(levelData, player)) directToPlayer(player);
@@ -134,6 +135,8 @@ public class SpearWoman extends Enemy {
                 }
                 if (animIndex == 3 && !attackCheck) checkPlayerHit(attackBox, player);
                 player.setBlock(false);
+            case SPELL_3:
+                if (animIndex == 13) spellManager.activateLightnings();
             default: break;
         }
     }
@@ -151,7 +154,8 @@ public class SpearWoman extends Enemy {
             if (animIndex >= animations[entityState.ordinal()].length) {
                 animIndex = 0;
                 if (attackAnimations.contains(entityState) || entityState == AnimType.HIT) {
-                    entityState = attackAnimations.get(rand.nextInt(7));
+                    //entityState = attackAnimations.get(rand.nextInt(7));
+                    entityState = AnimType.SPELL_3;
                     if (entityState == AnimType.SPELL_3) {
                         hitBox.x = 13*Tiles.TILES_SIZE.getValue();
                         hitBox.y = 4*Tiles.TILES_SIZE.getValue();
@@ -163,8 +167,8 @@ public class SpearWoman extends Enemy {
         if (cooldown != null) coolDownTickUpdate();
     }
 
-    public void update(BufferedImage[][] animations, int[][] levelData, Player player) {
-        updateMove(levelData, player);
+    public void update(BufferedImage[][] animations, int[][] levelData, Player player, SpellManager spellManager) {
+        updateMove(levelData, player, spellManager);
         updateBoss(animations);
         updateAttackBox();
     }

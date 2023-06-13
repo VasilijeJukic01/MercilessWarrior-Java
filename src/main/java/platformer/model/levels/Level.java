@@ -7,6 +7,8 @@ import platformer.model.entities.enemies.Skeleton;
 import platformer.model.entities.enemies.boss.SpearWoman;
 import platformer.model.objects.*;
 import platformer.model.objects.Container;
+import platformer.model.spells.Lightning;
+import platformer.model.spells.SpellType;
 import platformer.utils.Utils;
 
 import java.awt.*;
@@ -32,6 +34,8 @@ public class Level {
     private final ArrayList<Spike> spikes = new ArrayList<>();
     private final ArrayList<ArrowLauncher> arrowLaunchers = new ArrayList<>();
     private final ArrayList<Shop> shops = new ArrayList<>();
+    // Spells
+    private final ArrayList<Lightning> lightnings = new ArrayList<>();
     // Other
     private int levelTilesWidth;
     private int xMaxTilesOffset;
@@ -90,12 +94,28 @@ public class Level {
         }
     }
 
+    private void getLightningPos() {
+        lightnings.clear();
+        for (int i = 0; i < dataL1.getWidth(); i++) {
+            for (int j = 0; j < dataL1.getHeight(); j++) {
+                Color color = new Color(dataL1.getRGB(i, j));
+                int valueG = color.getGreen();
+                int valueB = color.getBlue();
+                if (valueG == 100 && valueB == 101) {
+                    Lightning l = new Lightning(SpellType.LIGHTNING, (int)(i*Tiles.TILES_SIZE.getValue()), (int)(j*Tiles.TILES_SIZE.getValue()));
+                    lightnings.add(l);
+                }
+            }
+        }
+    }
+
     private void init() {
         this.lvlData = Utils.getInstance().getLevelData(dataL1);
         this.decoData = Utils.getInstance().getDecoData(dataL2, false);
         this.layerData = Utils.getInstance().getDecoData(dataL2, true);
         getEnemyData();
         getObjectData();
+        getLightningPos();
     }
 
     public void setOffset() {
@@ -173,5 +193,9 @@ public class Level {
 
     public ArrayList<Shop> getShops() {
         return shops;
+    }
+
+    public ArrayList<Lightning> getLightnings() {
+        return lightnings;
     }
 }

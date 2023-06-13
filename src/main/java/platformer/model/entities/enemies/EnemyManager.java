@@ -13,6 +13,7 @@ import platformer.model.objects.GameObject;
 import platformer.model.objects.Projectile;
 import platformer.model.objects.Spike;
 import platformer.model.spells.Flames;
+import platformer.model.spells.SpellManager;
 import platformer.state.PlayingState;
 
 
@@ -193,7 +194,7 @@ public class EnemyManager {
         }
     }
 
-    public void update(int[][] levelData, Player player) {
+    public void update(int[][] levelData, Player player, SpellManager spellManager) {
         for (Skeleton skeleton : skeletons) {
             if (skeleton.isAlive()) skeleton.update(skeletonAnimations, levelData, player);
         }
@@ -201,7 +202,7 @@ public class EnemyManager {
             if (ghoul.isAlive()) ghoul.update(ghoulAnimations, levelData, player);
         }
         if (spearWoman == null) return;
-        spearWoman.update(spearWomanAnimations, levelData, player);
+        spearWoman.update(spearWomanAnimations, levelData, player, spellManager);
     }
 
     public void render(Graphics g, int xLevelOffset, int yLevelOffset) {

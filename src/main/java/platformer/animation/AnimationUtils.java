@@ -422,6 +422,15 @@ public class AnimationUtils {
         return anim;
     }
 
+    // Spell
+    public BufferedImage[] loadLightningAnimations() {
+        BufferedImage[] anim = new BufferedImage[8];
+        for (int i = 0; i < anim.length; i++) {
+            anim[i] = Utils.getInstance().importImage("src/main/resources/images/spells/Lightning"+(i+1)+".png", -1, -1);
+        }
+        return anim;
+    }
+
     public BufferedImage[] loadMenuAnimation() {
         BufferedImage[] anim = new BufferedImage[24];
         for (int i = 0; i < 24; i++) {

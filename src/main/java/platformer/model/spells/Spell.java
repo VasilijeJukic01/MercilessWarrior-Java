@@ -37,7 +37,7 @@ public abstract class Spell implements Debug {
             animIndex++;
             if (animIndex >= ModelUtils.getInstance().getSpellSprite(spellType)) {
                 animIndex = 0;
-                if (spellType == SpellType.FLAME_1) {
+                if (spellType == SpellType.FLAME_1 || spellType == SpellType.LIGHTNING) {
                     alive = false;
                 }
             }
@@ -60,5 +60,21 @@ public abstract class Spell implements Debug {
 
     public void setAlive(boolean alive) {
         this.alive = alive;
+    }
+
+    public int getWidth() {
+        return width;
+    }
+
+    public int getHeight() {
+        return height;
+    }
+
+    public int getAnimIndex() {
+        return animIndex;
+    }
+
+    public void setAnimIndex(int animIndex) {
+        this.animIndex = animIndex;
     }
 }

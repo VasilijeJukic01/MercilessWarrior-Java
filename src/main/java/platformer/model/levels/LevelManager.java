@@ -56,6 +56,8 @@ public class LevelManager {
         playingState.getEnemyManager().reset();
         playingState.getPlayer().loadLvlData(newLevel.getLvlData());
         playingState.getObjectManager().loadObjects(newLevel);
+        playingState.getSpellManager().gatherLightnings();
+        System.out.println(newLevel.getLightnings());
     }
 
     public void loadNextLevel() {
