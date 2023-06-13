@@ -4,7 +4,8 @@ import platformer.model.entities.Direction;
 import platformer.model.entities.effects.Particle;
 import platformer.model.Tiles;
 import platformer.model.levels.Level;
-import platformer.model.objects.*;
+import platformer.model.objects.projectiles.PRSet;
+import platformer.model.objects.projectiles.Projectile;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -253,7 +254,7 @@ public class Utils {
     }
 
     public boolean isProjectileHitLevel(int[][] lvlData, Projectile projectile) {
-        return isSolid(projectile.getHitBox().x+PRSet.ARROW_DEF_WID.getValue()/2, projectile.getHitBox().y+PRSet.ARROW_DEF_HEI.getValue()/2, lvlData);
+        return isSolid(projectile.getHitBox().x+ PRSet.ARROW_DEF_WID.getValue()/2, projectile.getHitBox().y+PRSet.ARROW_DEF_HEI.getValue()/2, lvlData);
     }
 
     // Other

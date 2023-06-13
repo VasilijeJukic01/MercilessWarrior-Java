@@ -431,6 +431,16 @@ public class AnimationUtils {
         return anim;
     }
 
+    public BufferedImage[] loadLightningBall() {
+        BufferedImage sprite = Utils.getInstance().importImage("src/main/resources/images/objs/lightningBall.png", -1, -1);
+        BufferedImage[] anim = new BufferedImage[9];
+        for (int i = 0; i < anim.length; i++) {
+            anim[i] = sprite.getSubimage(i*50, 0, 50, 50);
+        }
+        return anim;
+    }
+
+    // Other
     public BufferedImage[] loadMenuAnimation() {
         BufferedImage[] anim = new BufferedImage[24];
         for (int i = 0; i < 24; i++) {

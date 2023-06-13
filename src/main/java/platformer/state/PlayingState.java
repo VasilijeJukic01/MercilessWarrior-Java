@@ -138,7 +138,7 @@ public class PlayingState extends StateAbstraction implements State {
             for (Particle particle : levelManager.getParticles()) {
                 particle.update();
             }
-            this.enemyManager.update(levelManager.getCurrentLevel().getLvlData(), player, spellManager);
+            this.enemyManager.update(levelManager.getCurrentLevel().getLvlData(), player);
             this.objectManager.update(levelManager.getCurrentLevel().getLvlData(), player);
             this.spellManager.update();
             xBorderUpdate();

@@ -9,6 +9,7 @@ import platformer.model.entities.Player;
 import platformer.model.entities.enemies.Enemy;
 import platformer.model.entities.enemies.EnemySize;
 import platformer.model.entities.enemies.EnemyType;
+import platformer.model.objects.ObjectManager;
 import platformer.model.spells.SpellManager;
 import platformer.utils.Utils;
 
@@ -19,6 +20,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SpearWoman extends Enemy {
+
+    private boolean shooting;
+    private int shootCount = 0;
 
     private int attackOffset;
     private final List<AnimType> attackAnimations =
@@ -52,7 +56,7 @@ public class SpearWoman extends Enemy {
         return false;
     }
 
-    public void updateMove(int[][] levelData, Player player, SpellManager spellManager) {
+    public void updateMove(int[][] levelData, Player player, SpellManager spellManager, ObjectManager objectManager) {
         if (!Utils.getInstance().isEntityOnFloor(hitBox, levelData) && !isAirFreeze()) inAir = true;
         if (inAir) {
             if (Utils.getInstance().canMoveHere(hitBox.x, hitBox.y + airSpeed, hitBox.width, hitBox.height, levelData)) {
@@ -70,7 +74,7 @@ public class SpearWoman extends Enemy {
                 }
             }
         }
-        else updateBehavior(levelData, player, spellManager);
+        else updateBehavior(levelData, player, spellManager, objectManager);
     }
 
     // Attack
@@ -97,7 +101,7 @@ public class SpearWoman extends Enemy {
     }
 
     // Core
-    private void updateBehavior(int[][] levelData, Player player, SpellManager spellManager) {
+    private void updateBehavior(int[][] levelData, Player player, SpellManager spellManager, ObjectManager objectManager) {
         switch (entityState) {
             case IDLE:
                 if (canSeePlayer(levelData, player)) directToPlayer(player);
@@ -105,8 +109,24 @@ public class SpearWoman extends Enemy {
             case RUN:
                 if (canSeePlayer(levelData, player)) directToPlayer(player);
                 if (canSeePlayer(levelData, player) && isPlayerCloseForAttack(player) && cooldown[Cooldown.ATTACK.ordinal()] == 0) {
-                    setEnemyAction(AnimType.ATTACK_1);
-                    animSpeed = 20;
+                    setEnemyAction(AnimType.ATTACK_3);
+                    //setEnemyAction(attackAnimations.get(rand.nextInt(7)));
+                    if (entityState == AnimType.SPELL_3) {
+                        hitBox.x = 13*Tiles.TILES_SIZE.getValue();
+                        hitBox.y = 4*Tiles.TILES_SIZE.getValue();
+                        break;
+                    }
+                    else if (entityState == AnimType.SPELL_2) {
+                        int dir = rand.nextInt(2);
+                        if (dir == 0) {
+                            setDirection(Direction.LEFT);
+                            hitBox.x = 23*Tiles.TILES_SIZE.getValue();
+                        }
+                        else {
+                            setDirection(Direction.RIGHT);
+                            hitBox.x = 3*Tiles.TILES_SIZE.getValue();
+                        }
+                    }
                 }
                 double enemyXSpeed = 0;
 
@@ -135,6 +155,17 @@ public class SpearWoman extends Enemy {
                 }
                 if (animIndex == 3 && !attackCheck) checkPlayerHit(attackBox, player);
                 player.setBlock(false);
+            case SPELL_2:
+                if (animIndex == 7 && !shooting) {
+                    objectManager.shootLightningBall(this);
+                    shooting = true;
+                }
+                else if (animIndex == 9 && shootCount < 2) {
+                    animIndex = 2;
+                    shootCount++;
+                    shooting = false;
+                }
+                break;
             case SPELL_3:
                 if (animIndex == 13) spellManager.activateLightnings();
             default: break;
@@ -154,21 +185,20 @@ public class SpearWoman extends Enemy {
             if (animIndex >= animations[entityState.ordinal()].length) {
                 animIndex = 0;
                 if (attackAnimations.contains(entityState) || entityState == AnimType.HIT) {
-                    //entityState = attackAnimations.get(rand.nextInt(7));
-                    entityState = AnimType.SPELL_3;
-                    if (entityState == AnimType.SPELL_3) {
-                        hitBox.x = 13*Tiles.TILES_SIZE.getValue();
-                        hitBox.y = 4*Tiles.TILES_SIZE.getValue();
+                    if (shootCount >= 2) {
+                        shootCount = 0;
                     }
+                    entityState = AnimType.IDLE;
                 }
                 else if (entityState == AnimType.DEATH) alive = false;
+                shooting = false;
             }
         }
         if (cooldown != null) coolDownTickUpdate();
     }
 
-    public void update(BufferedImage[][] animations, int[][] levelData, Player player, SpellManager spellManager) {
-        updateMove(levelData, player, spellManager);
+    public void update(BufferedImage[][] animations, int[][] levelData, Player player, SpellManager spellManager, ObjectManager objectManager) {
+        updateMove(levelData, player, spellManager, objectManager);
         updateBoss(animations);
         updateAttackBox();
     }

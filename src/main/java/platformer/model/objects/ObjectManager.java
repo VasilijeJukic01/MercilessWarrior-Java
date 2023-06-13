@@ -7,7 +7,9 @@ import platformer.debug.Message;
 import platformer.model.Tiles;
 import platformer.model.entities.Direction;
 import platformer.model.entities.Player;
+import platformer.model.entities.enemies.boss.SpearWoman;
 import platformer.model.levels.Level;
+import platformer.model.objects.projectiles.*;
 import platformer.model.spells.Flames;
 import platformer.state.PlayingState;
 import platformer.utils.Utils;
@@ -22,12 +24,14 @@ public class ObjectManager {
 
     private final PlayingState playingState;
     private final BufferedImage[][] objects; // ObjType Dependency
-    private final BufferedImage projectileObject;
+    // Projectiles
+    private final BufferedImage projectileArrow;
+    private final BufferedImage[] projectileLightningBall;
+    private final ArrayList<Projectile> projectiles;
     private ArrayList<Potion> potions;
     private ArrayList<Container> containers;
     private ArrayList<Spike> spikes;
     private ArrayList<ArrowLauncher> arrowLaunchers;
-    private final ArrayList<Projectile> projectiles;
     private final ArrayList<Coin> coins;
     private ArrayList<Shop> shops;
 
@@ -40,7 +44,8 @@ public class ObjectManager {
         this.projectiles = new ArrayList<>();
         this.coins = new ArrayList<>();
         this.shops = new ArrayList<>();
-        this.projectileObject = Utils.getInstance().importImage("src/main/resources/images/objs/arrow.png", (int)PRSet.ARROW_WID.getValue(), (int)PRSet.ARROW_HEI.getValue());
+        this.projectileArrow = Utils.getInstance().importImage("src/main/resources/images/objs/arrow.png", (int) PRSet.ARROW_WID.getValue(), (int)PRSet.ARROW_HEI.getValue());
+        this.projectileLightningBall = AnimationUtils.instance.loadLightningBall();
     }
 
     public void loadObjects(Level level) {
@@ -247,10 +252,15 @@ public class ObjectManager {
         return false;
     }
 
-    private void shoot(ArrowLauncher arrowLauncher) {
+    private void shootArrow(ArrowLauncher arrowLauncher) {
         Audio.getInstance().getAudioPlayer().playSound(Sounds.ARROW_SOUND.ordinal());
         Direction direction = (arrowLauncher.getObjType() == ObjType.ARROW_LAUNCHER_RIGHT) ? Direction.LEFT : Direction.RIGHT;
-        projectiles.add(new Projectile((int)arrowLauncher.getHitBox().x, (int)arrowLauncher.getHitBox().y, direction));
+        projectiles.add(new Arrow((int)arrowLauncher.getHitBox().x, (int)arrowLauncher.getHitBox().y, direction));
+    }
+
+    public void shootLightningBall(SpearWoman spearWoman) {
+        Direction direction = (spearWoman.getFlipSign() == 1) ? Direction.LEFT : Direction.RIGHT;
+        projectiles.add(new LightningBall((int)spearWoman.getHitBox().x, (int)spearWoman.getHitBox().y, direction));
     }
 
     private void updateArrowLaunchers(int[][] lvlData, Player player) {
@@ -267,7 +277,7 @@ public class ObjectManager {
             if (flag) arrowLauncher.setAnimate(true);
             arrowLauncher.update();
             if (arrowLauncher.getAnimIndex() == 9 && arrowLauncher.getAnimTick() == 0) {
-                shoot(arrowLauncher);
+                shootArrow(arrowLauncher);
             }
         }
     }
@@ -397,13 +407,25 @@ public class ObjectManager {
         for (Projectile p : projectiles) {
             if (!p.isAlive()) continue;
             int fS = 1, fC = 0;
-            if (p.getDirection() == Direction.LEFT) {
-                fS = -1;
-                fC = ObjValue.ARROW_LAUNCHER_WID.getValue();
+
+            if (p instanceof Arrow) {
+                if (p.getDirection() == Direction.LEFT) {
+                    fS = -1;
+                    fC = ObjValue.ARROW_LAUNCHER_WID.getValue();
+                }
+                int x = (int)p.getHitBox().x-xLevelOffset+fC;
+                int y = (int)p.getHitBox().y-yLevelOffset;
+                g.drawImage(projectileArrow, x, y, fS*(int)PRSet.ARROW_WID.getValue(), (int)PRSet.ARROW_HEI.getValue(), null);
             }
-            int x = (int)p.getHitBox().x-xLevelOffset+fC;
-            int y = (int)p.getHitBox().y-yLevelOffset;
-            g.drawImage(projectileObject, x, y, fS*(int)PRSet.ARROW_WID.getValue(), (int)PRSet.ARROW_HEI.getValue(), null);
+            else {
+                if (p.getDirection() == Direction.RIGHT) {
+                    fS = -1;
+                    fC = (int)PRSet.LB_WID.getValue();
+                }
+                int x = (int)(p.getHitBox().x-xLevelOffset+fC-22*Tiles.SCALE.getValue());
+                int y = (int)(p.getHitBox().y-yLevelOffset-20*Tiles.SCALE.getValue());
+                g.drawImage(projectileLightningBall[p.getAnimIndex()], x, y, fS*(int)PRSet.LB_WID.getValue(), (int)PRSet.LB_HEI.getValue(), null);
+            }
             p.renderHitBox(g, xLevelOffset, yLevelOffset, Color.BLUE);
         }
     }

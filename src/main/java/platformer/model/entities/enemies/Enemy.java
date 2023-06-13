@@ -101,6 +101,7 @@ public abstract class Enemy extends Entity implements Debug {
 
     protected boolean isPlayerInSight(Player player) {
         int distance = (int)Math.abs(player.getHitBox().x - hitBox.x);
+        if (enemyType == EnemyType.SPEAR_WOMAN) return distance <= attackRange * 20;
         return distance <= attackRange * 5;
     }
 

@@ -2,6 +2,7 @@ package platformer.model;
 
 import platformer.model.entities.enemies.EnemyType;
 import platformer.model.objects.ObjType;
+import platformer.model.objects.projectiles.PRType;
 import platformer.model.spells.SpellType;
 
 public class ModelUtils {
@@ -42,6 +43,11 @@ public class ModelUtils {
             case SHOP:
                 return 6;
         }
+        return 1;
+    }
+
+    public int getProjectileSprite(PRType prType) {
+        if (prType == PRType.LIGHTNING_BALL) return 4;
         return 1;
     }
 
