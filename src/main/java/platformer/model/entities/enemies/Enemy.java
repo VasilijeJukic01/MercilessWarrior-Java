@@ -118,7 +118,7 @@ public abstract class Enemy extends Entity implements Debug {
         if (attackBox.intersects(player.getHitBox())) {
             if (!player.canBlock()) player.changeHealth(-ModelUtils.getInstance().getDamage(enemyType), this);
         }
-        else if (enemyType == EnemyType.GHOUL) return;
+        else if (enemyType == EnemyType.GHOUL || enemyType == EnemyType.SPEAR_WOMAN) return;
         attackCheck = true;
     }
 

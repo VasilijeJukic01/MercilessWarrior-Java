@@ -34,9 +34,31 @@ public abstract class Projectile {
     }
 
     public void updatePosition() {
-        int k = (direction == Direction.LEFT) ? 1 : -1;
-        if (prType == PRType.ARROW) hitBox.x += k * PRSet.ARROW_SPEED.getValue();
-        else if (prType == PRType.LIGHTNING_BALL) hitBox.x += k * PRSet.LB_SPEED.getValue();
+        double X = 0, Y = 0;
+        switch (direction) {
+            case LEFT: X = 1; Y = 0; break;
+            case RIGHT: X = -1; Y = 0; break;
+            case UP: X = 0;  Y = -1; break;
+            case DOWN: X = 0;  Y = 1; break;
+            case DEGREE_60: X = 0.5; Y = 1; break;
+            case DEGREE_45: X = 1; Y = 1; break;
+            case DEGREE_30: X = 1.6; Y = 1; break;
+            case N_DEGREE_45: X = -1; Y = 1; break;
+            case N_DEGREE_30: X = -1.6; Y = 1; break;
+            case N_DEGREE_60: X = -0.5; Y = 1; break;
+        }
+
+        if (prType == PRType.ARROW) {
+            hitBox.x += X * PRSet.ARROW_SPEED.getValue();
+            hitBox.y += Y * PRSet.ARROW_SPEED.getValue();
+        }
+        else if (prType == PRType.LIGHTNING_BALL) {
+            int speed = (int)PRSet.LB_SPEED_MEDIUM.getValue();
+            if (direction == Direction.LEFT || direction == Direction.RIGHT)
+                speed = (int)PRSet.LB_SPEED_FAST.getValue();
+            hitBox.x += X * speed;
+            hitBox.y += Y * speed;
+        }
         if (animate) updateAnimation();
     }
 

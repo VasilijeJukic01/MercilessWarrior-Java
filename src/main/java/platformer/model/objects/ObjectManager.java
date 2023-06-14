@@ -26,7 +26,7 @@ public class ObjectManager {
     private final BufferedImage[][] objects; // ObjType Dependency
     // Projectiles
     private final BufferedImage projectileArrow;
-    private final BufferedImage[] projectileLightningBall;
+    private BufferedImage[][] projectileLightningBall;
     private final ArrayList<Projectile> projectiles;
     private ArrayList<Potion> potions;
     private ArrayList<Container> containers;
@@ -45,7 +45,19 @@ public class ObjectManager {
         this.coins = new ArrayList<>();
         this.shops = new ArrayList<>();
         this.projectileArrow = Utils.getInstance().importImage("src/main/resources/images/objs/arrow.png", (int) PRSet.ARROW_WID.getValue(), (int)PRSet.ARROW_HEI.getValue());
-        this.projectileLightningBall = AnimationUtils.instance.loadLightningBall();
+        this.projectileLightningBall = new BufferedImage[6][4];
+        generateLB();
+    }
+
+    private void generateLB() {
+        this.projectileLightningBall[0] = AnimationUtils.instance.loadLightningBall();
+        for (int i = 0; i < 4; i++) {
+            projectileLightningBall[1][i] = Utils.getInstance().rotateImage(projectileLightningBall[0][i], Math.PI/2);
+            projectileLightningBall[2][i] =  Utils.getInstance().rotateImage(projectileLightningBall[0][i], Math.PI/4);
+            projectileLightningBall[3][i] =  Utils.getInstance().rotateImage(projectileLightningBall[0][i], Math.PI/6);
+            projectileLightningBall[4][i] =  Utils.getInstance().flipImage( projectileLightningBall[2][i]);
+            projectileLightningBall[5][i] =  Utils.getInstance().flipImage( projectileLightningBall[3][i]);
+        }
     }
 
     public void loadObjects(Level level) {
@@ -263,6 +275,19 @@ public class ObjectManager {
         projectiles.add(new LightningBall((int)spearWoman.getHitBox().x, (int)spearWoman.getHitBox().y, direction));
     }
 
+    public void multiLightningBallShoot(SpearWoman spearWoman) {
+        projectiles.add(new LightningBall((int)(spearWoman.getHitBox().x/1.1), (int)(spearWoman.getHitBox().y*1.3), Direction.DOWN));
+        projectiles.add(new LightningBall((int)spearWoman.getHitBox().x, (int)(spearWoman.getHitBox().y*1.3), Direction.DEGREE_45));
+        projectiles.add(new LightningBall((int)(spearWoman.getHitBox().x*1.1), (int)(spearWoman.getHitBox().y*1.2), Direction.DEGREE_30));
+        projectiles.add(new LightningBall((int)(spearWoman.getHitBox().x/1.23), (int)(spearWoman.getHitBox().y*1.3), Direction.N_DEGREE_45));
+        projectiles.add(new LightningBall((int)(spearWoman.getHitBox().x/1.38), (int)(spearWoman.getHitBox().y*1.2), Direction.N_DEGREE_30));
+    }
+
+    public void multiLightningBallShot2(SpearWoman spearWoman) {
+        projectiles.add(new LightningBall((int)spearWoman.getHitBox().x, (int)(spearWoman.getHitBox().y*1.3), Direction.DEGREE_60));
+        projectiles.add(new LightningBall((int)(spearWoman.getHitBox().x/1.15), (int)(spearWoman.getHitBox().y*1.3), Direction.N_DEGREE_60));
+    }
+
     private void updateArrowLaunchers(int[][] lvlData, Player player) {
         for (ArrowLauncher arrowLauncher : arrowLaunchers) {
             boolean flag = true;
@@ -418,13 +443,35 @@ public class ObjectManager {
                 g.drawImage(projectileArrow, x, y, fS*(int)PRSet.ARROW_WID.getValue(), (int)PRSet.ARROW_HEI.getValue(), null);
             }
             else {
+                BufferedImage object = projectileLightningBall[0][p.getAnimIndex()];
                 if (p.getDirection() == Direction.RIGHT) {
                     fS = -1;
                     fC = (int)PRSet.LB_WID.getValue();
                 }
+                if (p.getDirection() == Direction.DOWN) {
+                    object = projectileLightningBall[1][p.getAnimIndex()];
+                }
+                else if (p.getDirection() == Direction.DEGREE_45) {
+                    object = projectileLightningBall[2][p.getAnimIndex()];
+                }
+                else if (p.getDirection() == Direction.DEGREE_30) {
+                    object = projectileLightningBall[3][p.getAnimIndex()];
+                }
+                else if (p.getDirection() == Direction.N_DEGREE_45) {
+                    object = projectileLightningBall[4][p.getAnimIndex()];
+                }
+                else if (p.getDirection() == Direction.N_DEGREE_30) {
+                    object = projectileLightningBall[5][p.getAnimIndex()];
+                }
+                else if (p.getDirection() == Direction.DEGREE_60) {
+                    object = projectileLightningBall[2][p.getAnimIndex()];
+                }
+                else if (p.getDirection() == Direction.N_DEGREE_60) {
+                    object = projectileLightningBall[4][p.getAnimIndex()];
+                }
                 int x = (int)(p.getHitBox().x-xLevelOffset+fC-22*Tiles.SCALE.getValue());
                 int y = (int)(p.getHitBox().y-yLevelOffset-20*Tiles.SCALE.getValue());
-                g.drawImage(projectileLightningBall[p.getAnimIndex()], x, y, fS*(int)PRSet.LB_WID.getValue(), (int)PRSet.LB_HEI.getValue(), null);
+                g.drawImage(object, x, y, fS*(int)PRSet.LB_WID.getValue(), (int)PRSet.LB_HEI.getValue(), null);
             }
             p.renderHitBox(g, xLevelOffset, yLevelOffset, Color.BLUE);
         }
