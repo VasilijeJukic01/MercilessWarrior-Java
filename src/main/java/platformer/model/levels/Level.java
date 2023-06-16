@@ -7,6 +7,7 @@ import platformer.model.entities.enemies.Skeleton;
 import platformer.model.entities.enemies.boss.SpearWoman;
 import platformer.model.objects.*;
 import platformer.model.objects.Container;
+import platformer.model.spells.Flash;
 import platformer.model.spells.Lightning;
 import platformer.model.spells.SpellType;
 import platformer.utils.Utils;
@@ -36,6 +37,7 @@ public class Level {
     private final ArrayList<Shop> shops = new ArrayList<>();
     // Spells
     private final ArrayList<Lightning> lightnings = new ArrayList<>();
+    private final ArrayList<Flash> flashes = new ArrayList<>();
     // Other
     private int levelTilesWidth;
     private int xMaxTilesOffset;
@@ -104,6 +106,10 @@ public class Level {
                 if (valueG == 100 && valueB == 101) {
                     Lightning l = new Lightning(SpellType.LIGHTNING, (int)(i*Tiles.TILES_SIZE.getValue()), (int)(j*Tiles.TILES_SIZE.getValue()));
                     lightnings.add(l);
+                }
+                else if (valueG == 100 && valueB == 102) {
+                    Flash f = new Flash(SpellType.FLASH, (int)(i*Tiles.TILES_SIZE.getValue()), (int)((j+1)*Tiles.TILES_SIZE.getValue()));
+                    flashes.add(f);
                 }
             }
         }
@@ -197,5 +203,9 @@ public class Level {
 
     public ArrayList<Lightning> getLightnings() {
         return lightnings;
+    }
+
+    public ArrayList<Flash> getFlashes() {
+        return flashes;
     }
 }

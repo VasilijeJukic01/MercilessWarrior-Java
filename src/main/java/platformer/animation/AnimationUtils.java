@@ -438,6 +438,15 @@ public class AnimationUtils {
         return anim;
     }
 
+    public BufferedImage[] loadFlashAnimations() {
+        BufferedImage[] anim = new BufferedImage[17];
+        for (int i = 0; i < anim.length; i++) {
+            anim[i] = Utils.getInstance().importImage("src/main/resources/images/spells/flash/Flash"+i+".png", -1, -1);
+            anim[i] = Utils.getInstance().rotateImage(anim[i], Math.PI/2);
+        }
+        return anim;
+    }
+
     public BufferedImage[] loadLightningBall() {
         BufferedImage sprite = Utils.getInstance().importImage("src/main/resources/images/objs/lightningBall.png", -1, -1);
         BufferedImage[] anim = new BufferedImage[9];

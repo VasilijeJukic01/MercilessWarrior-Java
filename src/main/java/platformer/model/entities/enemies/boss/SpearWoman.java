@@ -109,8 +109,14 @@ public class SpearWoman extends Enemy {
         if (k == 0 && Utils.getInstance().canMoveHere(playerX+8*Tiles.TILES_SIZE.getValue(), hitBox.y, hitBox.width, hitBox.height, levelData)) {
             hitBox.x = playerX+8*Tiles.TILES_SIZE.getValue();
         }
+        else if (k == 0 && Utils.getInstance().canMoveHere(playerX-8*Tiles.TILES_SIZE.getValue(), hitBox.y, hitBox.width, hitBox.height, levelData)) {
+            hitBox.x = playerX-8*Tiles.TILES_SIZE.getValue();
+        }
         if (k == 1 && Utils.getInstance().canMoveHere(playerX-8*Tiles.TILES_SIZE.getValue(), hitBox.y, hitBox.width, hitBox.height, levelData)) {
             hitBox.x = playerX-8*Tiles.TILES_SIZE.getValue();
+        }
+        else if (k == 1 && Utils.getInstance().canMoveHere(playerX+8*Tiles.TILES_SIZE.getValue(), hitBox.y, hitBox.width, hitBox.height, levelData)) {
+            hitBox.x = playerX+8*Tiles.TILES_SIZE.getValue();
         }
         if (playerX < hitBox.x) setDirection(Direction.LEFT);
         else setDirection(Direction.RIGHT);
@@ -135,10 +141,15 @@ public class SpearWoman extends Enemy {
     // Core
 
     private void attack(int[][] levelData, Player player) {
-        setEnemyAction(attackAnimations.get(rand.nextInt(4)));
+        AnimType next;
+        do {
+            next = attackAnimations.get(rand.nextInt(4));
+        } while (next == entityState);
+        setEnemyAction(next);
+        setEnemyAction(AnimType.SPELL_4);
         // Thunder slam
         if (entityState == AnimType.SPELL_3) {
-            hitBox.x = 13*Tiles.TILES_SIZE.getValue();
+            hitBox.x = 12.5*Tiles.TILES_SIZE.getValue();
             hitBox.y = 4*Tiles.TILES_SIZE.getValue();
         }
         // Lightning ball
@@ -152,13 +163,15 @@ public class SpearWoman extends Enemy {
                 setDirection(Direction.RIGHT);
                 hitBox.x = 3*Tiles.TILES_SIZE.getValue();
             }
+            hitBox.y = player.getHitBox().y-Tiles.TILES_SIZE.getValue();
         }
         // Dash-slash
         else if (entityState == AnimType.ATTACK_3) {
             teleport(levelData, player);
         }
+        // Multi Lightning ball
         else if (entityState == AnimType.SPELL_4) {
-            hitBox.x = 13*Tiles.TILES_SIZE.getValue();
+            hitBox.x = 12.5*Tiles.TILES_SIZE.getValue();
             hitBox.y = 4*Tiles.TILES_SIZE.getValue();
         }
     }
@@ -222,6 +235,7 @@ public class SpearWoman extends Enemy {
             case SPELL_4:
                 if (animIndex == 1 && !shooting) {
                     if (multiShootFlag == 1) objectManager.multiLightningBallShoot(this);
+                    if (multiShootFlag == 2) spellManager.activateFlashes();
                     if (multiShootFlag == 3) objectManager.multiLightningBallShot2(this);
                     multiShootFlag = (multiShootFlag + 1) % 4;
                     shooting = true;
@@ -250,7 +264,7 @@ public class SpearWoman extends Enemy {
                         multiShootCount++;
                         if (multiShootCount == 16) {
                             multiShootCount = 0;
-                            inAir = true;
+                            //inAir = true;
                         }
                     }
                     if (multiShootCount == 0) attack(levelData, player);

@@ -54,6 +54,7 @@ public class ModelUtils {
     public int getSpellSprite(SpellType spell) {
         if (spell == SpellType.FLAME_1) return 14;
         else if (spell == SpellType.LIGHTNING) return 8;
+        else if (spell == SpellType.FLASH) return 17;
         return 1;
     }
 

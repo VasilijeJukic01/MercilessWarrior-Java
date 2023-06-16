@@ -9,20 +9,27 @@ import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.List;
+import java.util.Random;
 
 public class SpellManager {
 
     private final PlayingState playingState;
     private final Flames flames;
     private final BufferedImage[] lightningAnimations;
+    private final BufferedImage[] flashAnimations;
     private List<Lightning> bossLightnings;
+    private List<Flash> bossFlashes;
+    private int[] flashFlags;
+
+    private final Random rand = new Random();
 
     public SpellManager(PlayingState playingState) {
         this.playingState = playingState;
         Rectangle2D.Double hitBox = playingState.getPlayer().getHitBox();
         this.flames = new Flames(SpellType.FLAME_1, (int)hitBox.x, (int)hitBox.x,  (int)(hitBox.width*2.5),  (int)(hitBox.height-8.5*Tiles.SCALE.getValue()));
         this.lightningAnimations = AnimationUtils.getInstance().loadLightningAnimations();
-        gatherLightnings();
+        this.flashAnimations = AnimationUtils.getInstance().loadFlashAnimations();
+        gatherSpellPlacements();
     }
 
     private void updateFlames() {
@@ -36,6 +43,9 @@ public class SpellManager {
     private void updateLightnings() {
         for (Lightning bossLightning : bossLightnings) {
             bossLightning.updateAnimation();
+        }
+        for (Flash bossFlash : bossFlashes) {
+            bossFlash.updateAnimation();
         }
     }
 
@@ -60,6 +70,14 @@ public class SpellManager {
                 g.drawImage(lightningAnimations[bossLightning.getAnimIndex()], x, y, bossLightning.getWidth(), bossLightning.getHeight(), null);
             }
         }
+        for (Flash bossFlash : bossFlashes) {
+            if (bossFlash.isAlive()) {
+                bossFlash.render(g, xLevelOffset, yLevelOffset);
+                int x = (int) bossFlash.getHitBox().x - xLevelOffset - (int)(bossFlash.getWidth()/2.4);
+                int y = (int) bossFlash.getHitBox().y - yLevelOffset+1;
+                g.drawImage(flashAnimations[bossFlash.getAnimIndex()], x, y, bossFlash.getWidth(), bossFlash.getHeight(), null);
+            }
+        }
     }
 
     public void activateLightnings() {
@@ -69,8 +87,20 @@ public class SpellManager {
         }
     }
 
-    public void gatherLightnings() {
+    public void activateFlashes() {
+        int n = bossFlashes.size();
+        int k = rand.nextInt(n);
+        bossFlashes.get(k).setAnimIndex(0);
+        bossFlashes.get(k).setAlive(true);
+        bossFlashes.get(n-k-1).setAnimIndex(0);
+        bossFlashes.get(n-k-1).setAlive(true);
+
+    }
+
+    public void gatherSpellPlacements() {
         this.bossLightnings = playingState.getLevelManager().getCurrentLevel().getLightnings();
+        this.bossFlashes = playingState.getLevelManager().getCurrentLevel().getFlashes();
+        this.flashFlags = new int[bossFlashes.size()];
     }
 
     public Flames getFlames() {
