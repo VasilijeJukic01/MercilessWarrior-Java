@@ -95,7 +95,7 @@ public abstract class Enemy extends Entity implements Debug {
         int distance = (int)Math.abs(player.getHitBox().x-hitBox.x);
         if (enemyType == EnemyType.SKELETON) return distance <= attackRange/1.25;
         else if (enemyType == EnemyType.GHOUL) return distance <= attackRange * 2;
-        else if (enemyType == EnemyType.SPEAR_WOMAN) return distance <= attackRange;
+        else if (enemyType == EnemyType.SPEAR_WOMAN) return distance <= attackRange * 1.8;
         return false;
     }
 

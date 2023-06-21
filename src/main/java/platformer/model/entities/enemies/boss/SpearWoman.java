@@ -1,7 +1,6 @@
 package platformer.model.entities.enemies.boss;
 
 import platformer.animation.AnimType;
-import platformer.audio.Audio;
 import platformer.model.Tiles;
 import platformer.model.entities.Cooldown;
 import platformer.model.entities.Direction;
@@ -21,14 +20,17 @@ import java.util.List;
 
 public class SpearWoman extends Enemy {
 
+    private AnimType prevAnim = AnimType.IDLE;
+
     private boolean shooting;
     private int shootCount = 0;
     private int multiShootCount = 0;
     private int multiShootFlag = 0;
+    private int slashCount = 0;
 
     private int attackOffset;
-    private final List<AnimType> attackAnimations =
-            new ArrayList<>(java.util.List.of(AnimType.ATTACK_3, AnimType.SPELL_2, AnimType.SPELL_3, AnimType.SPELL_4));
+    private final List<AnimType> spellAnimations =
+            new ArrayList<>(List.of(AnimType.ATTACK_3, AnimType.SPELL_2, AnimType.SPELL_3, AnimType.SPELL_4, AnimType.ATTACK_1, AnimType.ATTACK_2, AnimType.SPELL_1));
 
     // Physics
     private double airSpeed = 0;
@@ -87,7 +89,6 @@ public class SpearWoman extends Enemy {
             setEnemyAction(AnimType.DEATH);
         }
         else {
-            // TODO: Change action after
             setEnemyAction(AnimType.HIT);
         }
     }
@@ -103,20 +104,20 @@ public class SpearWoman extends Enemy {
         }
     }
 
-    private void teleport(int[][] levelData, Player player) {
+    private void teleport(int[][] levelData, Player player, int tiles) {
         double playerX = player.getHitBox().x;
         int k = rand.nextInt(2);
-        if (k == 0 && Utils.getInstance().canMoveHere(playerX+8*Tiles.TILES_SIZE.getValue(), hitBox.y, hitBox.width, hitBox.height, levelData)) {
-            hitBox.x = playerX+8*Tiles.TILES_SIZE.getValue();
+        if (k == 0 && Utils.getInstance().canMoveHere(playerX+tiles*Tiles.TILES_SIZE.getValue(), hitBox.y, hitBox.width, hitBox.height, levelData)) {
+            hitBox.x = playerX+tiles*Tiles.TILES_SIZE.getValue();
         }
-        else if (k == 0 && Utils.getInstance().canMoveHere(playerX-8*Tiles.TILES_SIZE.getValue(), hitBox.y, hitBox.width, hitBox.height, levelData)) {
-            hitBox.x = playerX-8*Tiles.TILES_SIZE.getValue();
+        else if (k == 0 && Utils.getInstance().canMoveHere(playerX-tiles*Tiles.TILES_SIZE.getValue(), hitBox.y, hitBox.width, hitBox.height, levelData)) {
+            hitBox.x = playerX-tiles*Tiles.TILES_SIZE.getValue();
         }
-        if (k == 1 && Utils.getInstance().canMoveHere(playerX-8*Tiles.TILES_SIZE.getValue(), hitBox.y, hitBox.width, hitBox.height, levelData)) {
-            hitBox.x = playerX-8*Tiles.TILES_SIZE.getValue();
+        if (k == 1 && Utils.getInstance().canMoveHere(playerX-tiles*Tiles.TILES_SIZE.getValue(), hitBox.y, hitBox.width, hitBox.height, levelData)) {
+            hitBox.x = playerX-tiles*Tiles.TILES_SIZE.getValue();
         }
-        else if (k == 1 && Utils.getInstance().canMoveHere(playerX+8*Tiles.TILES_SIZE.getValue(), hitBox.y, hitBox.width, hitBox.height, levelData)) {
-            hitBox.x = playerX+8*Tiles.TILES_SIZE.getValue();
+        else if (k == 1 && Utils.getInstance().canMoveHere(playerX+tiles*Tiles.TILES_SIZE.getValue(), hitBox.y, hitBox.width, hitBox.height, levelData)) {
+            hitBox.x = playerX+tiles*Tiles.TILES_SIZE.getValue();
         }
         if (playerX < hitBox.x) setDirection(Direction.LEFT);
         else setDirection(Direction.RIGHT);
@@ -131,22 +132,32 @@ public class SpearWoman extends Enemy {
             if (direction == Direction.LEFT) xSpeed = -enemySpeed;
             else xSpeed = enemySpeed;
 
-            if (Utils.getInstance().canMoveHere(hitBox.x + xSpeed * 25, hitBox.y, hitBox.width, hitBox.height, levelData))
-                if (Utils.getInstance().isFloor(hitBox, xSpeed * 25, levelData, direction)) {
-                    hitBox.x += xSpeed * 25;
+            if (Utils.getInstance().canMoveHere(hitBox.x + xSpeed * 60, hitBox.y, hitBox.width, hitBox.height, levelData))
+                if (Utils.getInstance().isFloor(hitBox, xSpeed * 60, levelData, direction)) {
+                    hitBox.x += xSpeed * 60;
                 }
         }
     }
 
-    // Core
+    private void movingAttack(int[][] levelData, Player player, int speed) {
+        double xSpeed;
 
+        if (direction == Direction.LEFT) xSpeed = -enemySpeed;
+        else xSpeed = enemySpeed;
+
+        if (Utils.getInstance().canMoveHere(hitBox.x + xSpeed * speed, hitBox.y, hitBox.width, hitBox.height, levelData))
+            if (Utils.getInstance().isFloor(hitBox, xSpeed * speed, levelData, direction)) {
+                hitBox.x += xSpeed * speed;
+            }
+    }
+
+    // Core
     private void attack(int[][] levelData, Player player) {
         AnimType next;
         do {
-            next = attackAnimations.get(rand.nextInt(4));
-        } while (next == entityState);
+            next = spellAnimations.get(rand.nextInt(7));
+        } while (next == prevAnim);
         setEnemyAction(next);
-        setEnemyAction(AnimType.SPELL_4);
         // Thunder slam
         if (entityState == AnimType.SPELL_3) {
             hitBox.x = 12.5*Tiles.TILES_SIZE.getValue();
@@ -167,19 +178,24 @@ public class SpearWoman extends Enemy {
         }
         // Dash-slash
         else if (entityState == AnimType.ATTACK_3) {
-            teleport(levelData, player);
+            teleport(levelData, player, 8);
         }
         // Multi Lightning ball
         else if (entityState == AnimType.SPELL_4) {
             hitBox.x = 12.5*Tiles.TILES_SIZE.getValue();
             hitBox.y = 4*Tiles.TILES_SIZE.getValue();
         }
+        else if (entityState == AnimType.ATTACK_1 || entityState == AnimType.SPELL_1) {
+            teleport(levelData, player, 3);
+        }
     }
 
     private void updateBehavior(int[][] levelData, Player player, SpellManager spellManager, ObjectManager objectManager) {
         switch (entityState) {
             case IDLE:
-                if (canSeePlayer(levelData, player)) directToPlayer(player);
+                if (cooldown[Cooldown.ATTACK.ordinal()] == 0)
+                    attack(levelData, player);
+                //if (canSeePlayer(levelData, player)) directToPlayer(player);
                 break;
             case RUN:
                 if (canSeePlayer(levelData, player)) directToPlayer(player);
@@ -202,21 +218,20 @@ public class SpearWoman extends Enemy {
                 changeDirection();
                 break;
             case ATTACK_1:
+            case ATTACK_2:
+                if (animIndex == 3) movingAttack(levelData, player, 15);
                 if (animIndex == 0) {
-                    player.setCanBlock(false);
                     attackCheck = false;
                 }
-                if ((animIndex == 1 || animIndex == 2) && player.isBlock()) {
-                    if ((player.getHitBox().x < this.hitBox.x && player.getFlipSign() == 1) || (player.getHitBox().x > this.hitBox.x && player.getFlipSign() == -1)) {
-                        player.setCanBlock(true);
-                        Audio.getInstance().getAudioPlayer().playBlockSound("Player");
-                    }
-                }
-                if (animIndex == 3 && !attackCheck) checkPlayerHit(attackBox, player);
-                player.setBlock(false);
+                //if (animIndex == 3 && !attackCheck) checkPlayerHit(attackBox, player);
                 break;
             case ATTACK_3:
                 dashSlash(levelData, player);
+                break;
+            case SPELL_1:
+                movingAttack(levelData, player, 4);
+                if (animIndex % 2 == 0) setDirection(Direction.LEFT);
+                else setDirection(Direction.RIGHT);
                 break;
             case SPELL_2:
                 if (animIndex == 7 && !shooting) {
@@ -249,14 +264,19 @@ public class SpearWoman extends Enemy {
         this.attackBox.y = hitBox.y;
     }
 
-    private void updateBoss(BufferedImage[][] animations, int[][] levelData, Player player) {
+    private void updateBoss(BufferedImage[][] animations) {
         animTick++;
         if (animTick >= animSpeed) {
             animTick = 0;
             animIndex++;
             if (animIndex >= animations[entityState.ordinal()].length) {
                 animIndex = 0;
-                if (attackAnimations.contains(entityState) || entityState == AnimType.HIT) {
+                if (spellAnimations.contains(entityState) || entityState == AnimType.HIT) {
+                    if (entityState == AnimType.HIT) {
+                        prevAnim = entityState;
+                        setEnemyAction(AnimType.IDLE);
+                        return;
+                    }
                     if (shootCount >= 2) {
                         shootCount = 0;
                     }
@@ -264,10 +284,25 @@ public class SpearWoman extends Enemy {
                         multiShootCount++;
                         if (multiShootCount == 16) {
                             multiShootCount = 0;
-                            //inAir = true;
                         }
                     }
-                    if (multiShootCount == 0) attack(levelData, player);
+                    else if (entityState == AnimType.ATTACK_1 || entityState == AnimType.ATTACK_2) {
+                        if (slashCount == 2) {
+                            slashCount = 0;
+                            prevAnim = AnimType.ATTACK_1;
+                            setEnemyAction(AnimType.IDLE);
+                            return;
+                        }
+                        if (entityState == AnimType.ATTACK_1) setEnemyAction(AnimType.ATTACK_2);
+                        else setEnemyAction(AnimType.ATTACK_1);
+                        slashCount++;
+                        return;
+                    }
+                    if (multiShootCount == 0 && entityState != AnimType.IDLE) {
+                        cooldown[Cooldown.ATTACK.ordinal()] = 14;
+                        prevAnim = entityState;
+                        setEnemyAction(AnimType.IDLE);
+                    }
                 }
                 else if (entityState == AnimType.DEATH) alive = false;
                 shooting = false;
@@ -278,7 +313,7 @@ public class SpearWoman extends Enemy {
 
     public void update(BufferedImage[][] animations, int[][] levelData, Player player, SpellManager spellManager, ObjectManager objectManager) {
         updateMove(levelData, player, spellManager, objectManager);
-        updateBoss(animations, levelData, player);
+        updateBoss(animations);
         updateAttackBox();
     }
 

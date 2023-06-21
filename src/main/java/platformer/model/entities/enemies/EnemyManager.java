@@ -139,6 +139,15 @@ public class EnemyManager {
             }
         }
         if (!player.isDash() && !player.isOnWall()) Audio.getInstance().getAudioPlayer().playSlashSound();
+        if (spearWoman == null) return;
+        if (spearWoman.isAlive() && spearWoman.getEnemyAction() != AnimType.DEATH) {
+            if (attackBox.intersects(spearWoman.getHitBox())) {
+                int dmg = player.isTransform() ? 12 : 5;
+                spearWoman.hit(dmg);
+                checkEnemyDying(spearWoman, player);
+                playingState.getGame().notifyLogger("Player gives damage to enemy: "+dmg, Message.NOTIFICATION);
+            }
+        }
     }
 
     public void checkEnemySpellHit() {

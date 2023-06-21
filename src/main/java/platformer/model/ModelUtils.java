@@ -15,6 +15,7 @@ public class ModelUtils {
         switch (enemyType) {
             case SKELETON: return 25;
             case GHOUL: return 40;
+            case SPEAR_WOMAN: return 150;
             default: return 5;
         }
     }
@@ -23,6 +24,7 @@ public class ModelUtils {
         switch (enemyType) {
             case SKELETON: return 15;
             case GHOUL: return 20;
+            case SPEAR_WOMAN: return 25;
             default: return 0;
         }
     }
