@@ -11,7 +11,7 @@ import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 
-public class PauseOverlay {
+public class PauseOverlay implements MouseControls{
 
     private final Game game;
     private final AudioOptions audioOptions;
@@ -91,10 +91,12 @@ public class PauseOverlay {
         audioOptions.render(g);
     }
 
+    @Override
     public void mouseDragged(MouseEvent e) {
         audioOptions.mouseDragged(e);
     }
 
+    @Override
     public void mousePressed(MouseEvent e) {
         if (isMouseInButton(e, continueBtn)) continueBtn.setMousePressed(true);
         else if (isMouseInButton(e, retryBtn)) retryBtn.setMousePressed(true);
@@ -102,6 +104,7 @@ public class PauseOverlay {
         else audioOptions.mousePressed(e);
     }
 
+    @Override
     public void mouseReleased(MouseEvent e) {
         if(isMouseInButton(e, continueBtn) && continueBtn.isMousePressed()) game.setPaused(false);
         else if(isMouseInButton(e, retryBtn) && retryBtn.isMousePressed()) {
@@ -116,6 +119,7 @@ public class PauseOverlay {
         resetButtons();
     }
 
+    @Override
     public void mouseMoved(MouseEvent e) {
         continueBtn.setMouseOver(false);
         retryBtn.setMouseOver(false);

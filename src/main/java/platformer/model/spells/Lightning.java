@@ -6,6 +6,7 @@ public class Lightning extends Spell {
 
     public Lightning(SpellType spellType, int xPos, int yPos) {
         super(spellType, xPos, yPos, SpellSize.LIGHTNING_WIDTH.getValue(), SpellSize.LIGHTNING_HEIGHT.getValue());
+        super.setAlive(false);
         initHitBox(width/1.5, height);
     }
 

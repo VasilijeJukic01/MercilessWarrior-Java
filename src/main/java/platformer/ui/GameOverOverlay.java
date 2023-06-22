@@ -13,7 +13,7 @@ import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 
-public class GameOverOverlay {
+public class GameOverOverlay implements MouseControls{
 
     private final Game game;
     private BufferedImage overlay;
@@ -75,11 +75,18 @@ public class GameOverOverlay {
         menuBtn.render(g);
     }
 
+    @Override
+    public void mouseDragged(MouseEvent e) {
+
+    }
+
+    @Override
     public void mousePressed(MouseEvent e) {
         if (isMouseInButton(e, retryBtn)) retryBtn.setMousePressed(true);
         if (isMouseInButton(e, menuBtn)) menuBtn.setMousePressed(true);
     }
 
+    @Override
     public void mouseReleased(MouseEvent e) {
         if(isMouseInButton(e, retryBtn) && retryBtn.isMousePressed()) {
             game.reset();
@@ -92,6 +99,7 @@ public class GameOverOverlay {
         resetButtons();
     }
 
+    @Override
     public void mouseMoved(MouseEvent e) {
         menuBtn.setMouseOver(false);
         retryBtn.setMouseOver(false);

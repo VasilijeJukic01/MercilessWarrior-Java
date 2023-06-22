@@ -26,15 +26,15 @@ public class ObjectManager {
     private final BufferedImage[][] objects; // ObjType Dependency
     // Projectiles
     private final BufferedImage projectileArrow;
-    private BufferedImage[][] projectileLightningBall;
+    private final BufferedImage[][] projectileLightningBall;
     private final ArrayList<Projectile> projectiles;
+    // Objects
     private ArrayList<Potion> potions;
     private ArrayList<Container> containers;
     private ArrayList<Spike> spikes;
     private ArrayList<ArrowLauncher> arrowLaunchers;
     private final ArrayList<Coin> coins;
     private ArrayList<Shop> shops;
-
     // Flags
     private boolean shopVisible;
 
@@ -46,10 +46,10 @@ public class ObjectManager {
         this.shops = new ArrayList<>();
         this.projectileArrow = Utils.getInstance().importImage("src/main/resources/images/objs/arrow.png", (int) PRSet.ARROW_WID.getValue(), (int)PRSet.ARROW_HEI.getValue());
         this.projectileLightningBall = new BufferedImage[6][4];
-        generateLB();
+        generateLightningBalls();
     }
 
-    private void generateLB() {
+    private void generateLightningBalls() {
         this.projectileLightningBall[0] = AnimationUtils.instance.loadLightningBall();
         for (int i = 0; i < 4; i++) {
             projectileLightningBall[1][i] = Utils.getInstance().rotateImage(projectileLightningBall[0][i], Math.PI/2);
@@ -264,6 +264,7 @@ public class ObjectManager {
         return false;
     }
 
+    // Projectiles
     private void shootArrow(ArrowLauncher arrowLauncher) {
         Audio.getInstance().getAudioPlayer().playSound(Sounds.ARROW_SOUND.ordinal());
         Direction direction = (arrowLauncher.getObjType() == ObjType.ARROW_LAUNCHER_RIGHT) ? Direction.LEFT : Direction.RIGHT;
@@ -288,6 +289,7 @@ public class ObjectManager {
         projectiles.add(new LightningBall((int)(spearWoman.getHitBox().x/1.15), (int)(spearWoman.getHitBox().y*1.3), Direction.N_DEGREE_60));
     }
 
+    // Updates
     private void updateArrowLaunchers(int[][] lvlData, Player player) {
         for (ArrowLauncher arrowLauncher : arrowLaunchers) {
             boolean flag = true;
@@ -433,6 +435,7 @@ public class ObjectManager {
             if (!p.isAlive()) continue;
             int fS = 1, fC = 0;
 
+            // Arrow
             if (p instanceof Arrow) {
                 if (p.getDirection() == Direction.LEFT) {
                     fS = -1;
@@ -442,33 +445,29 @@ public class ObjectManager {
                 int y = (int)p.getHitBox().y-yLevelOffset;
                 g.drawImage(projectileArrow, x, y, fS*(int)PRSet.ARROW_WID.getValue(), (int)PRSet.ARROW_HEI.getValue(), null);
             }
+            // Lightning Ball
             else {
                 BufferedImage object = projectileLightningBall[0][p.getAnimIndex()];
-                if (p.getDirection() == Direction.RIGHT) {
-                    fS = -1;
-                    fC = (int)PRSet.LB_WID.getValue();
+                switch (p.getDirection()) {
+                    case RIGHT:
+                        fS = -1;
+                        fC = (int)PRSet.LB_WID.getValue();
+                        break;
+                    case DOWN:
+                        object = projectileLightningBall[1][p.getAnimIndex()]; break;
+                    case DEGREE_45:
+                    case DEGREE_60:
+                        object = projectileLightningBall[2][p.getAnimIndex()]; break;
+                    case DEGREE_30:
+                        object = projectileLightningBall[3][p.getAnimIndex()]; break;
+                    case N_DEGREE_45:
+                    case N_DEGREE_60:
+                        object = projectileLightningBall[4][p.getAnimIndex()]; break;
+                    case N_DEGREE_30:
+                        object = projectileLightningBall[5][p.getAnimIndex()]; break;
+
                 }
-                if (p.getDirection() == Direction.DOWN) {
-                    object = projectileLightningBall[1][p.getAnimIndex()];
-                }
-                else if (p.getDirection() == Direction.DEGREE_45) {
-                    object = projectileLightningBall[2][p.getAnimIndex()];
-                }
-                else if (p.getDirection() == Direction.DEGREE_30) {
-                    object = projectileLightningBall[3][p.getAnimIndex()];
-                }
-                else if (p.getDirection() == Direction.N_DEGREE_45) {
-                    object = projectileLightningBall[4][p.getAnimIndex()];
-                }
-                else if (p.getDirection() == Direction.N_DEGREE_30) {
-                    object = projectileLightningBall[5][p.getAnimIndex()];
-                }
-                else if (p.getDirection() == Direction.DEGREE_60) {
-                    object = projectileLightningBall[2][p.getAnimIndex()];
-                }
-                else if (p.getDirection() == Direction.N_DEGREE_60) {
-                    object = projectileLightningBall[4][p.getAnimIndex()];
-                }
+
                 int x = (int)(p.getHitBox().x-xLevelOffset+fC-22*Tiles.SCALE.getValue());
                 int y = (int)(p.getHitBox().y-yLevelOffset-20*Tiles.SCALE.getValue());
                 g.drawImage(object, x, y, fS*(int)PRSet.LB_WID.getValue(), (int)PRSet.LB_HEI.getValue(), null);

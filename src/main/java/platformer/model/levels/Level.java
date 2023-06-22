@@ -55,17 +55,22 @@ public class Level {
         this.playerSpawn = Utils.getInstance().getPlayerSpawn(dataL1);
     }
 
+    // Data gatherer
     private void getEnemyData() {
         for (int i = 0; i < dataL1.getWidth(); i++) {
             for (int j = 0; j < dataL1.getHeight(); j++) {
                 Color color = new Color(dataL1.getRGB(i, j));
                 int value = color.getGreen();
-                if (value == EnemyType.SKELETON.ordinal())
-                    skeletons.add(new Skeleton((int)(i*Tiles.TILES_SIZE.getValue()), (int)((j-1)*Tiles.TILES_SIZE.getValue())));
-                else if (value == EnemyType.GHOUL.ordinal())
-                    ghouls.add(new Ghoul((int)(i*Tiles.TILES_SIZE.getValue()), (int)((j-1)*Tiles.TILES_SIZE.getValue())));
-                else if (value == EnemyType.SPEAR_WOMAN.ordinal())
-                    spearWoman = new SpearWoman((int)(i*Tiles.TILES_SIZE.getValue()), (int)((j-1)*Tiles.TILES_SIZE.getValue()));
+                if (value >= EnemyType.MAX.ordinal()) continue;
+                switch (EnemyType.values()[value]) {
+                    case SKELETON:
+                        skeletons.add(new Skeleton((int)(i*Tiles.TILES_SIZE.getValue()), (int)((j-1)*Tiles.TILES_SIZE.getValue()))); break;
+                    case GHOUL:
+                        ghouls.add(new Ghoul((int)(i*Tiles.TILES_SIZE.getValue()), (int)((j-1)*Tiles.TILES_SIZE.getValue()))); break;
+                    case SPEAR_WOMAN:
+                        spearWoman = new SpearWoman((int)(i*Tiles.TILES_SIZE.getValue()), (int)((j-1)*Tiles.TILES_SIZE.getValue())); break;
+                    default: break;
+                }
             }
         }
     }
@@ -76,22 +81,25 @@ public class Level {
             for (int j = 0; j < dataL1.getHeight(); j++) {
                 Color color = new Color(dataL1.getRGB(i, j));
                 int value = color.getBlue();
-                if (value == ObjType.HEAL_POTION.ordinal())
-                    potions.add(new Potion(ObjType.HEAL_POTION, (int)((i+0.5)*Tiles.TILES_SIZE.getValue()), (int)(j*Tiles.TILES_SIZE.getValue())));
-                else if (value == ObjType.STAMINA_POTION.ordinal())
-                    potions.add(new Potion(ObjType.STAMINA_POTION, (int)((i+0.5)*Tiles.TILES_SIZE.getValue()), (int)(j*Tiles.TILES_SIZE.getValue())));
-                else if (value == ObjType.BOX.ordinal())
-                    containers.add(new Container(ObjType.BOX, (int)(i*Tiles.TILES_SIZE.getValue()), (int)(j*Tiles.TILES_SIZE.getValue())));
-                else if (value == ObjType.BARREL.ordinal())
-                    containers.add(new Container(ObjType.BARREL, (int)(i*Tiles.TILES_SIZE.getValue()), (int)(j*Tiles.TILES_SIZE.getValue())));
-                else if (value == ObjType.SPIKE.ordinal())
-                    spikes.add(new Spike(ObjType.SPIKE, (int)(i*Tiles.TILES_SIZE.getValue()), (int)(j*Tiles.TILES_SIZE.getValue())));
-                else if (value == ObjType.ARROW_LAUNCHER_LEFT.ordinal())
-                    arrowLaunchers.add(new ArrowLauncher(ObjType.ARROW_LAUNCHER_LEFT, (int)(i*Tiles.TILES_SIZE.getValue()), (int)(j*Tiles.TILES_SIZE.getValue())));
-                else if (value == ObjType.ARROW_LAUNCHER_RIGHT.ordinal())
-                    arrowLaunchers.add(new ArrowLauncher(ObjType.ARROW_LAUNCHER_RIGHT, (int)(i*Tiles.TILES_SIZE.getValue()), (int)(j*Tiles.TILES_SIZE.getValue())));
-                else if (value == ObjType.SHOP.ordinal())
-                    shops.add(new Shop(ObjType.SHOP, (int)(i*Tiles.TILES_SIZE.getValue()), (int)(j*Tiles.TILES_SIZE.getValue())));
+                if (value >= ObjType.MAX.ordinal()) continue;
+                switch (ObjType.values()[value]) {
+                    case HEAL_POTION:
+                        potions.add(new Potion(ObjType.HEAL_POTION, (int)((i+0.5)*Tiles.TILES_SIZE.getValue()), (int)(j*Tiles.TILES_SIZE.getValue()))); break;
+                    case STAMINA_POTION:
+                        potions.add(new Potion(ObjType.STAMINA_POTION, (int)((i+0.5)*Tiles.TILES_SIZE.getValue()), (int)(j*Tiles.TILES_SIZE.getValue()))); break;
+                    case BOX:
+                        containers.add(new Container(ObjType.BOX, (int)(i*Tiles.TILES_SIZE.getValue()), (int)(j*Tiles.TILES_SIZE.getValue()))); break;
+                    case BARREL:
+                        containers.add(new Container(ObjType.BARREL, (int)(i*Tiles.TILES_SIZE.getValue()), (int)(j*Tiles.TILES_SIZE.getValue()))); break;
+                    case SPIKE:
+                        spikes.add(new Spike(ObjType.SPIKE, (int)(i*Tiles.TILES_SIZE.getValue()), (int)(j*Tiles.TILES_SIZE.getValue()))); break;
+                    case ARROW_LAUNCHER_LEFT:
+                    case ARROW_LAUNCHER_RIGHT:
+                        arrowLaunchers.add(new ArrowLauncher(ObjType.values()[value], (int)(i*Tiles.TILES_SIZE.getValue()), (int)(j*Tiles.TILES_SIZE.getValue()))); break;
+                    case SHOP:
+                        shops.add(new Shop(ObjType.SHOP, (int)(i*Tiles.TILES_SIZE.getValue()), (int)(j*Tiles.TILES_SIZE.getValue()))); break;
+                    default: break;
+                }
             }
         }
     }
@@ -103,6 +111,7 @@ public class Level {
                 Color color = new Color(dataL1.getRGB(i, j));
                 int valueG = color.getGreen();
                 int valueB = color.getBlue();
+                // 100 : >100 Rule
                 if (valueG == 100 && valueB == 101) {
                     Lightning l = new Lightning(SpellType.LIGHTNING, (int)(i*Tiles.TILES_SIZE.getValue()), (int)(j*Tiles.TILES_SIZE.getValue()));
                     lightnings.add(l);
@@ -124,6 +133,7 @@ public class Level {
         getLightningPos();
     }
 
+    // Other
     public void setOffset() {
         this.levelTilesWidth = dataL1.getWidth();
         this.xMaxTilesOffset = levelTilesWidth - (int)(Tiles.TILES_WIDTH.getValue());

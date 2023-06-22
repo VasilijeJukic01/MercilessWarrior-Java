@@ -1,7 +1,7 @@
 package platformer.model.entities;
 
 public enum Cooldown {
-    ATTACK,
-    BLOCK,
-    DASH
+    ATTACK,     // 0
+    BLOCK,      // 1
+    DASH        // 2
 }

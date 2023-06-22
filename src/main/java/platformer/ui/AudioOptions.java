@@ -7,7 +7,7 @@ import platformer.ui.buttons.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 
-public class AudioOptions {
+public class AudioOptions implements MouseControls{
 
     private SoundButton sfxBtn;
     private MusicButton musicBtn;
@@ -43,6 +43,7 @@ public class AudioOptions {
         volumeButton.render(g);
     }
 
+    @Override
     public void mouseDragged(MouseEvent e) {
         if (volumeButton.isMousePressed()) {
             float prevValue = volumeButton.getValue();
@@ -53,12 +54,14 @@ public class AudioOptions {
 
     }
 
+    @Override
     public void mousePressed(MouseEvent e) {
         if (isMouseInButton(e, sfxBtn)) sfxBtn.setMousePressed(true);
         else if (isMouseInButton(e, musicBtn)) musicBtn.setMousePressed(true);
         else if (isMouseInButton(e, volumeButton)) volumeButton.setMousePressed(true);
     }
 
+    @Override
     public void mouseReleased(MouseEvent e) {
         if (isMouseInButton(e, sfxBtn) && sfxBtn.isMousePressed()) {
             sfxBtn.setMuted(!sfxBtn.isMuted());
@@ -71,6 +74,7 @@ public class AudioOptions {
         resetButtons();
     }
 
+    @Override
     public void mouseMoved(MouseEvent e) {
         sfxBtn.setMouseOver(false);
         musicBtn.setMouseOver(false);

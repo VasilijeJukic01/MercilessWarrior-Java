@@ -247,7 +247,7 @@ public class AnimationUtils {
     // Boss
     public BufferedImage[][] loadSpearWomanAnimations() {
         BufferedImage sprite = Utils.getInstance().importImage("src/main/resources/images/enemies/Bosses/SpearWoman.png", -1, -1);
-        BufferedImage[][] anim = new BufferedImage[21][25];
+        BufferedImage[][] anim = new BufferedImage[20][25];
 
         // Size
         int w = EnemySize.SW_WIDTH.getValue();
@@ -336,13 +336,6 @@ public class AnimationUtils {
             spell4Anim[i] = Utils.getInstance().resize(sprite.getSubimage((i+1)*128, 115*15, 128, 115), w, h);
         }
         anim[19] = spell4Anim;
-
-        // 20 Slide anim
-        BufferedImage[] slideAnim = new BufferedImage[8];
-        for (int i = 0; i < slideAnim.length; i++) {
-            slideAnim[i] = Utils.getInstance().resize(sprite.getSubimage(i*128, 115*3, 128, 115), w, h);
-        }
-        anim[20] = slideAnim;
 
         return anim;
     }

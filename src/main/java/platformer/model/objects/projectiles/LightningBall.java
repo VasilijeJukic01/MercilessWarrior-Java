@@ -7,7 +7,6 @@ import java.awt.geom.Rectangle2D;
 
 public class LightningBall extends Projectile{
 
-
     public LightningBall(int xPos, int yPos, Direction direction) {
         super(PRType.LIGHTNING_BALL, direction);
         super.animate = true;

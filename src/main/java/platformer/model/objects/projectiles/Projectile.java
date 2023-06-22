@@ -46,6 +46,7 @@ public abstract class Projectile {
             case N_DEGREE_45: X = -1; Y = 1; break;
             case N_DEGREE_30: X = -1.6; Y = 1; break;
             case N_DEGREE_60: X = -0.5; Y = 1; break;
+            default: break;
         }
 
         if (prType == PRType.ARROW) {
@@ -53,9 +54,9 @@ public abstract class Projectile {
             hitBox.y += Y * PRSet.ARROW_SPEED.getValue();
         }
         else if (prType == PRType.LIGHTNING_BALL) {
-            int speed = (int)PRSet.LB_SPEED_MEDIUM.getValue();
+            double speed = PRSet.LB_SPEED_MEDIUM.getValue();
             if (direction == Direction.LEFT || direction == Direction.RIGHT)
-                speed = (int)PRSet.LB_SPEED_FAST.getValue();
+                speed = PRSet.LB_SPEED_FAST.getValue();
             hitBox.x += X * speed;
             hitBox.y += Y * speed;
         }

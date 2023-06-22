@@ -13,7 +13,7 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 
-public class ShopOverlay {
+public class ShopOverlay implements MouseControls{
 
     private final PlayingState playingState;
 
@@ -130,6 +130,12 @@ public class ShopOverlay {
         }
     }
 
+    @Override
+    public void mouseDragged(MouseEvent e) {
+
+    }
+
+    @Override
     public void mousePressed(MouseEvent e) {
         for (ShopButton button : buttons) {
             if (isMouseInButton(e, button)) {
@@ -148,6 +154,7 @@ public class ShopOverlay {
         }
     }
 
+    @Override
     public void mouseReleased(MouseEvent e) {
         for (ShopButton button : buttons) {
             if (isMouseInButton(e, button) && button.isMousePressed()) {
@@ -168,6 +175,7 @@ public class ShopOverlay {
         }
     }
 
+    @Override
     public void mouseMoved(MouseEvent e) {
         for (ShopButton button : buttons) {
             button.setMouseOver(false);

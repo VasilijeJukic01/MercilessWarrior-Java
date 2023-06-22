@@ -286,6 +286,10 @@ public class PlayingState extends StateAbstraction implements State {
                 player.changeStamina(100);
                 game.notifyLogger("Stamina cheat activated.", Message.WARNING);
                 break;
+            case KeyEvent.VK_F3: // Health Cheat
+                player.changeHealth(100);
+                game.notifyLogger("Health cheat activated.", Message.WARNING);
+                break;
             default: break;
         }
         pressedKeys.remove(key);

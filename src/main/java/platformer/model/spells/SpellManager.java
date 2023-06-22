@@ -19,7 +19,6 @@ public class SpellManager {
     private final BufferedImage[] flashAnimations;
     private List<Lightning> bossLightnings;
     private List<Flash> bossFlashes;
-    private int[] flashFlags;
 
     private final Random rand = new Random();
 
@@ -32,6 +31,7 @@ public class SpellManager {
         gatherSpellPlacements();
     }
 
+    // Updates
     private void updateFlames() {
         Player player = playingState.getPlayer();
         flames.getHitBox().x = playingState.getPlayer().getHitBox().x - flames.getXOffset();
@@ -61,6 +61,7 @@ public class SpellManager {
         renderLightnings(g, xLevelOffset, yLevelOffset);
     }
 
+    // Renders
     private void renderLightnings(Graphics g, int xLevelOffset, int yLevelOffset) {
         for (Lightning bossLightning : bossLightnings) {
             if (bossLightning.isAlive()) {
@@ -100,7 +101,6 @@ public class SpellManager {
     public void gatherSpellPlacements() {
         this.bossLightnings = playingState.getLevelManager().getCurrentLevel().getLightnings();
         this.bossFlashes = playingState.getLevelManager().getCurrentLevel().getFlashes();
-        this.flashFlags = new int[bossFlashes.size()];
     }
 
     public Flames getFlames() {
