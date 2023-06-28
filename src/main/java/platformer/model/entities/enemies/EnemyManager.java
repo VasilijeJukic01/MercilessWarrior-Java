@@ -13,7 +13,6 @@ import platformer.model.objects.GameObject;
 import platformer.model.objects.projectiles.Projectile;
 import platformer.model.objects.Spike;
 import platformer.model.spells.Flames;
-import platformer.model.spells.SpellManager;
 import platformer.state.PlayingState;
 
 
@@ -28,9 +27,11 @@ import java.util.Random;
 public class EnemyManager {
 
     private final PlayingState playingState;
+    // Animations
     private BufferedImage[][] skeletonAnimations;
     private BufferedImage[][] ghoulAnimations;
     private BufferedImage[][] spearWomanAnimations;
+    // Enemies
     private List<Skeleton> skeletons = new ArrayList<>();
     private List<Ghoul> ghouls = new ArrayList<>();
     private SpearWoman spearWoman;
@@ -78,6 +79,7 @@ public class EnemyManager {
                 g.drawImage(ghoulAnimations[gh.getEnemyAction().ordinal()][gh.getAnimIndex()], x, y, w, h, null);
                 gh.hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.BLUE);
                 gh.attackBoxRenderer(g, xLevelOffset, yLevelOffset);
+                // Ghoul special
                 if (gh.getEnemyAction() == AnimType.HIDE || gh.getEnemyAction() == AnimType.REVEAL) {
                     int r = (gh.getAnimIndex() > 15 && gh.getEnemyAction() == AnimType.REVEAL) ? (255) : (0);
                     g.setColor(new Color(r, 0, 0, gh.getFadeCoefficient()));
@@ -88,6 +90,7 @@ public class EnemyManager {
     }
 
     private void renderSpearWoman(Graphics g, int xLevelOffset, int yLevelOffset) {
+        if (spearWoman == null) return;
         if (spearWoman.isAlive()) {
             int fC = spearWoman.getFlipCoefficient(), fS = spearWoman.getFlipSign();
             int x = (int) spearWoman.getHitBox().x - EnemySize.SW_X_OFFSET.getValue() - xLevelOffset + fC;
@@ -96,14 +99,12 @@ public class EnemyManager {
             int h = EnemySize.SW_HEIGHT.getValue();
             if (fS == -1) x -= 21*Tiles.SCALE.getValue();
             g.drawImage(spearWomanAnimations[spearWoman.getEnemyAction().ordinal()][spearWoman.getAnimIndex()], x, y, w, h, null);
-            if (spearWoman == null) return;
             spearWoman.hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.BLUE);
             spearWoman.attackBoxRenderer(g, xLevelOffset, yLevelOffset);
         }
     }
 
     // Enemy hit
-
     private void checkEnemyDying(Enemy e, Player player) {
         Random rand = new Random();
         if (e.getEnemyAction() == AnimType.DEATH) {
@@ -203,6 +204,7 @@ public class EnemyManager {
         }
     }
 
+    // Core
     public void update(int[][] levelData, Player player) {
         for (Skeleton skeleton : skeletons) {
             if (skeleton.isAlive()) skeleton.update(skeletonAnimations, levelData, player);
