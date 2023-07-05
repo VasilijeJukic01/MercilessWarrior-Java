@@ -39,7 +39,7 @@ public class OpenAL implements AudioPlayer {
 
     // Data
     private void loadSongs() {
-        String[] ids = {"menuTheme", "forestTheme"};
+        String[] ids = {"menuTheme", "forestTheme", "spearWoman"};
         for (String id : ids) {
             songs.add(loadBuffers("audio/" + id + ".wav"));
             songSources.add(new OpenALSource());
@@ -49,7 +49,8 @@ public class OpenAL implements AudioPlayer {
 
     private void loadSounds() {
         String[] ids = {"airSlash1", "airSlash2", "airSlash3", "attackSlash1", "attackSlash2", "gameOver", "crateBreak1", "crateBreak2", "skeletonD1", "playerDash", "arrowSound",
-                        "block1", "block2", "swordBlock1", "swordBlock2", "swordBlock3", "fireSound1", "ghoulHide", "ghoulReveal", "ghoulDeath", "coin", "buySound"};
+                        "block1", "block2", "swordBlock1", "swordBlock2", "swordBlock3", "fireSound1", "ghoulHide", "ghoulReveal", "ghoulDeath", "coin", "buySound",
+                        "lightning1", "lightning2", "lightning3", "swRoar1", "swRoar2", "swRoar3"};
         for (String id : ids) {
             sounds.add(loadBuffers("audio/" + id + ".wav"));
             soundSources.add(new OpenALSource());

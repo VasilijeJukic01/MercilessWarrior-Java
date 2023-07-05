@@ -1,6 +1,9 @@
 package platformer.model.entities.enemies.boss;
 
 import platformer.animation.AnimType;
+import platformer.audio.Audio;
+import platformer.audio.Songs;
+import platformer.audio.Sounds;
 import platformer.model.Tiles;
 import platformer.model.entities.Cooldown;
 import platformer.model.entities.Direction;
@@ -23,7 +26,7 @@ public class SpearWoman extends Enemy {
     private AnimType prevAnim = AnimType.IDLE;
     private boolean start;
 
-    private boolean shooting;
+    private boolean shooting, flash = true;
     private int shootCount = 0;
     private int multiShootCount = 0;
     private int multiShootFlag = 0;
@@ -93,7 +96,7 @@ public class SpearWoman extends Enemy {
             setEnemyAction(AnimType.DEATH);
         }
         else {
-            prevAnim = entityState;
+            if (entityState != AnimType.IDLE) prevAnim = entityState;
             setEnemyAction(AnimType.HIT);
         }
     }
@@ -186,6 +189,7 @@ public class SpearWoman extends Enemy {
         // Dash-slash
         else if (entityState == AnimType.ATTACK_3) {
             teleport(levelData, player, 8);
+            Audio.getInstance().getAudioPlayer().playSound(Sounds.SW_ROAR_1.ordinal());
         }
         // Multi Lightning ball
         else if (entityState == AnimType.SPELL_4) {
@@ -193,7 +197,7 @@ public class SpearWoman extends Enemy {
             hitBox.y = 4*Tiles.TILES_SIZE.getValue();
         }
         else if (entityState == AnimType.ATTACK_1 || entityState == AnimType.SPELL_1) {
-            animSpeed = 15;
+            animSpeed = 20;
             teleport(levelData, player, 3);
         }
     }
@@ -201,7 +205,11 @@ public class SpearWoman extends Enemy {
     private void updateBehavior(int[][] levelData, Player player, SpellManager spellManager, ObjectManager objectManager) {
         switch (entityState) {
             case IDLE:
-                if (!start && isPlayerCloseForAttack(player)) start = true;
+                if (!start && isPlayerCloseForAttack(player)) {
+                    setStart(true);
+                    setEnemyAction(AnimType.SPELL_3);
+                    return;
+                }
                 if (start && cooldown[Cooldown.ATTACK.ordinal()] == 0)
                     attack(levelData, player);
                 break;
@@ -209,15 +217,20 @@ public class SpearWoman extends Enemy {
             case ATTACK_2:
                 if (animIndex == 2) movingAttack(levelData, 30);
                 if (animIndex == 0) {
+                    Audio.getInstance().getAudioPlayer().playSound(Sounds.SW_ROAR_2.ordinal());
                     attackCheck = false;
                 }
                 //if (animIndex == 3 && !attackCheck) checkPlayerHit(attackBox, player);
                 break;
             case ATTACK_3:
                 if (slashCount == 0) dashSlash(levelData, player);
-                else if (animIndex == 2) movingAttack(levelData, 30);
+                else if (animIndex == 2) {
+                    movingAttack(levelData, 30);
+                    Audio.getInstance().getAudioPlayer().playSound(Sounds.SW_ROAR_1.ordinal());
+                }
                 break;
             case SPELL_1:
+                if (animIndex == 0) Audio.getInstance().getAudioPlayer().playSound(Sounds.SW_ROAR_3.ordinal());
                 movingAttack(levelData, 10);
                 if (animIndex % 2 == 0) setDirection(Direction.LEFT);
                 else setDirection(Direction.RIGHT);
@@ -225,6 +238,7 @@ public class SpearWoman extends Enemy {
             case SPELL_2:
                 if (animIndex == 7 && !shooting) {
                     objectManager.shootLightningBall(this);
+                    Audio.getInstance().getAudioPlayer().playSound(Sounds.LIGHTNING_2.ordinal());
                     shooting = true;
                 }
                 else if (animIndex == 9 && shootCount < 2) {
@@ -234,12 +248,16 @@ public class SpearWoman extends Enemy {
                 }
                 break;
             case SPELL_3:
+                if (animIndex == 11) Audio.getInstance().getAudioPlayer().playSound(Sounds.SW_ROAR_2.ordinal());
                 if (animIndex == 13) spellManager.activateLightnings();
                 break;
             case SPELL_4:
                 if (animIndex == 1 && !shooting) {
                     if (multiShootFlag == 1) objectManager.multiLightningBallShoot(this);
-                    if (multiShootFlag == 2) spellManager.activateFlashes();
+                    if (multiShootFlag == 2 || multiShootFlag == 0) {
+                        if (flash) spellManager.activateFlashes();
+                        flash = !flash;
+                    }
                     if (multiShootFlag == 3) objectManager.multiLightningBallShot2(this);
                     multiShootFlag = (multiShootFlag + 1) % 4;
                     shooting = true;
@@ -263,7 +281,6 @@ public class SpearWoman extends Enemy {
                 if (spellAnimations.contains(entityState) || entityState == AnimType.HIT) {
                     // Hit finish
                     if (entityState == AnimType.HIT) {
-                        prevAnim = entityState;
                         shootCount = 0;
                         setEnemyAction(AnimType.IDLE);
                         return;
@@ -276,6 +293,7 @@ public class SpearWoman extends Enemy {
                         multiShootCount++;
                         if (multiShootCount == 16) {
                             multiShootCount = 0;
+                            flash = true;
                         }
                     }
                     // Attack finish
@@ -315,6 +333,18 @@ public class SpearWoman extends Enemy {
     }
 
     @Override
+    public void reset() {
+        super.reset();
+        start = false;
+        multiShootCount = shootCount  = 0;
+        shooting = false;
+        multiShootFlag = 0;
+        slashCount = 0;
+        setDirection(Direction.LEFT);
+        setEnemyAction(AnimType.IDLE);
+    }
+
+    @Override
     public void hitBoxRenderer(Graphics g, int xLevelOffset, int yLevelOffset, Color color) {
         renderHitBox(g, xLevelOffset, yLevelOffset, color);
     }
@@ -322,5 +352,10 @@ public class SpearWoman extends Enemy {
     @Override
     public void attackBoxRenderer(Graphics g, int xLevelOffset, int yLevelOffset) {
         renderAttackBox(g, xLevelOffset, yLevelOffset);
+    }
+
+    public void setStart(boolean start) {
+        this.start = start;
+        if (start) Audio.getInstance().getAudioPlayer().playSong(Songs.BOSS_1.ordinal());
     }
 }

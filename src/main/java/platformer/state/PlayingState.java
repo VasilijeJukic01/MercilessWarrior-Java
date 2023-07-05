@@ -223,7 +223,7 @@ public class PlayingState extends StateAbstraction implements State {
             case KeyEvent.VK_X:
                 if (player.getCooldown()[Cooldown.ATTACK.ordinal()] != 0) return;
                 player.setPlayerAttackState(AttackState.ATTACK_1);
-                player.getCooldown()[Cooldown.ATTACK.ordinal()] = 1.2;
+                player.getCooldown()[Cooldown.ATTACK.ordinal()] = 0.5;
                 break;
             case KeyEvent.VK_C:
                 if (pressedKeys.contains(key) && player.getSpellState() != 0) return;

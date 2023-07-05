@@ -22,5 +22,11 @@ public enum Sounds {
     GHOUL_REVEAL,      // 18
     GHOUL_DEATH,       // 19
     COIN_PICK,         // 20
-    SHOP_BUY           // 21
+    SHOP_BUY,          // 21
+    LIGHTNING_1,       // 22
+    LIGHTNING_2,       // 23
+    LIGHTNING_3,       // 24
+    SW_ROAR_1,         // 25
+    SW_ROAR_2,         // 26
+    SW_ROAR_3          // 27
 }

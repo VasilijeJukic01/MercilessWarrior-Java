@@ -1,5 +1,7 @@
 package platformer.model.spells;
 
+import platformer.audio.Audio;
+import platformer.audio.Sounds;
 import platformer.debug.Debug;
 import platformer.debug.DebugSettings;
 import platformer.model.ModelUtils;
@@ -41,6 +43,8 @@ public abstract class Spell implements Debug {
                     alive = false;
                 }
             }
+            else if (spellType == SpellType.FLASH && alive && animIndex == 9) Audio.getInstance().getAudioPlayer().playSound(Sounds.LIGHTNING_3.ordinal());
+            else if (spellType == SpellType.LIGHTNING && alive && animIndex == 1) Audio.getInstance().getAudioPlayer().playSound(Sounds.LIGHTNING_1.ordinal());
         }
     }
 

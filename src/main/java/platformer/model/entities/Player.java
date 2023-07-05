@@ -343,7 +343,7 @@ public class Player extends Entity {
             canDash = false;
             Audio.getInstance().getAudioPlayer().playSound(Sounds.DASH.ordinal());
             changeStamina(-3);
-            cooldown[Cooldown.DASH.ordinal()] = 2;
+            cooldown[Cooldown.DASH.ordinal()] = 1;
         }
     }
 
@@ -611,7 +611,7 @@ public class Player extends Entity {
         this.canBlock = canBlock;
         if (canBlock) {
             game.notifyLogger("Damage blocked successfully!", Message.INFORMATION);
-            cooldown[Cooldown.BLOCK.ordinal()] = 1.5;
+            cooldown[Cooldown.BLOCK.ordinal()] = 1.2;
         }
     }
 
