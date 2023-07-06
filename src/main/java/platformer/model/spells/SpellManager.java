@@ -19,6 +19,7 @@ public class SpellManager {
     private final BufferedImage[] flashAnimations;
     private List<Lightning> bossLightnings;
     private List<Flash> bossFlashes;
+    private boolean hitFlag;
 
     private final Random rand = new Random();
 
@@ -29,6 +30,31 @@ public class SpellManager {
         this.lightningAnimations = AnimationUtils.getInstance().loadLightningAnimations();
         this.flashAnimations = AnimationUtils.getInstance().loadFlashAnimations();
         gatherSpellPlacements();
+    }
+
+    // Checks
+    public void checkLightningHit() {
+        if (hitFlag) return;
+        Player player = playingState.getPlayer();
+        for (Lightning bossLightning : bossLightnings) {
+            int aIndex = bossLightning.getAnimIndex();
+            if (bossLightning.isAlive() && aIndex > 0 && aIndex < 5 && bossLightning.getHitBox().intersects(player.getHitBox())) {
+                hitFlag = true;
+                player.changeHealth(-20);
+            }
+        }
+    }
+
+    public void checkFlashHit() {
+        if (hitFlag) return;
+        Player player = playingState.getPlayer();
+        for (Flash bossFlash : bossFlashes) {
+            int aIndex = bossFlash.getAnimIndex();
+            if (bossFlash.isAlive() && aIndex > 12 && aIndex < 16 && bossFlash.getHitBox().intersects(player.getHitBox())) {
+                hitFlag = true;
+                player.changeHealth(-10);
+            }
+        }
     }
 
     // Updates
@@ -47,6 +73,8 @@ public class SpellManager {
         for (Flash bossFlash : bossFlashes) {
             bossFlash.updateAnimation();
         }
+        checkLightningHit();
+        checkFlashHit();
     }
 
 
@@ -81,7 +109,9 @@ public class SpellManager {
         }
     }
 
+    // Activators
     public void activateLightnings() {
+        hitFlag = false;
         for (Lightning bossLightning : bossLightnings) {
             bossLightning.setAnimIndex(0);
             bossLightning.setAlive(true);
@@ -89,6 +119,7 @@ public class SpellManager {
     }
 
     public void activateFlashes() {
+        hitFlag = false;
         int n = bossFlashes.size();
         int k = rand.nextInt(n);
         bossFlashes.get(k).setAnimIndex(0);

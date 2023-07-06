@@ -10,6 +10,7 @@ import platformer.model.entities.effects.EffectType;
 import platformer.model.Tiles;
 import platformer.model.entities.enemies.Enemy;
 import platformer.model.entities.enemies.EnemyManager;
+import platformer.model.entities.enemies.boss.SpearWoman;
 import platformer.model.objects.ObjectManager;
 import platformer.model.objects.projectiles.Projectile;
 import platformer.ui.UserInterface;
@@ -372,7 +373,7 @@ public class Player extends Entity {
         pushOffset = 0;
         Rectangle2D.Double hBox =  (o instanceof Enemy) ? (((Enemy) o).getHitBox()) : (((Projectile) o).getHitBox());
         game.notifyLogger("Damage received: "+value, Message.INFORMATION);
-        if (hBox.x < hitBox.x) pushDirection = Direction.RIGHT;
+        if (hBox.x < hitBox.x && (o instanceof SpearWoman)) pushDirection = Direction.RIGHT;
         else pushDirection = Direction.LEFT;
     }
 

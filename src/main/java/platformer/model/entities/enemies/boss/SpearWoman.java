@@ -32,6 +32,8 @@ public class SpearWoman extends Enemy {
     private int multiShootFlag = 0;
     private int slashCount = 0;
 
+    private final int attackBoxWid = (int)(96 * Tiles.SCALE.getValue()), attackBoxReducedWid = (int)(48 * Tiles.SCALE.getValue());
+
     private int attackOffset;
     private final List<AnimType> spellAnimations =
             new ArrayList<>(List.of(AnimType.ATTACK_1, AnimType.ATTACK_2, AnimType.ATTACK_3, AnimType.SPELL_1, AnimType.SPELL_2, AnimType.SPELL_3, AnimType.SPELL_4));
@@ -54,9 +56,8 @@ public class SpearWoman extends Enemy {
     }
 
     private void initAttackBox() {
-        int w = (int)(96 * Tiles.SCALE.getValue());
         int h = (int)(54 * Tiles.SCALE.getValue());
-        this.attackBox = new Rectangle2D.Double(xPos, yPos-1, w, h);
+        this.attackBox = new Rectangle2D.Double(xPos, yPos-1, attackBoxWid, h);
         this.attackOffset = (int)(33*Tiles.SCALE.getValue());
     }
 
@@ -101,17 +102,6 @@ public class SpearWoman extends Enemy {
         }
     }
 
-    public void spellHit(double damage) {
-        currentHealth -= damage;
-        if (currentHealth <= 0) {
-            setEnemyAction(AnimType.DEATH);
-        }
-        else {
-            if (entityState == AnimType.HIT) setEnemyActionNoReset(AnimType.HIT);
-            else setEnemyAction(AnimType.HIT);
-        }
-    }
-
     private void teleport(int[][] levelData, Player player, int tiles) {
         double playerX = player.getHitBox().x;
         int k = rand.nextInt(2);
@@ -131,10 +121,9 @@ public class SpearWoman extends Enemy {
         else setDirection(Direction.RIGHT);
     }
 
-    private void dashSlash(int[][] levelData, Player player) {
+    private void dashSlash(int[][] levelData) {
         if (animIndex == 0) attackCheck = false;
         if (animIndex == 2 && !attackCheck) {
-            //checkPlayerHit(attackBox, player);
             double xSpeed;
 
             if (direction == Direction.LEFT) xSpeed = -enemySpeed;
@@ -161,6 +150,8 @@ public class SpearWoman extends Enemy {
 
     // Core
     private void attack(int[][] levelData, Player player) {
+        attackBox.width = attackBoxWid;
+        attackBox.x = xPos;
         shootCount = 0;
         AnimType next;
         do {
@@ -189,6 +180,7 @@ public class SpearWoman extends Enemy {
         // Dash-slash
         else if (entityState == AnimType.ATTACK_3) {
             teleport(levelData, player, 8);
+            changeAttackBox();
             Audio.getInstance().getAudioPlayer().playSound(Sounds.SW_ROAR_1.ordinal());
         }
         // Multi Lightning ball
@@ -197,6 +189,7 @@ public class SpearWoman extends Enemy {
             hitBox.y = 4*Tiles.TILES_SIZE.getValue();
         }
         else if (entityState == AnimType.ATTACK_1 || entityState == AnimType.SPELL_1) {
+            changeAttackBox();
             animSpeed = 20;
             teleport(levelData, player, 3);
         }
@@ -220,20 +213,23 @@ public class SpearWoman extends Enemy {
                     Audio.getInstance().getAudioPlayer().playSound(Sounds.SW_ROAR_2.ordinal());
                     attackCheck = false;
                 }
-                //if (animIndex == 3 && !attackCheck) checkPlayerHit(attackBox, player);
+                if ((animIndex == 3 || animIndex == 2) && !attackCheck) checkPlayerHit(attackBox, player);
                 break;
             case ATTACK_3:
-                if (slashCount == 0) dashSlash(levelData, player);
+                if (animIndex == 0) attackCheck = false;
+                if (slashCount == 0) dashSlash(levelData);
                 else if (animIndex == 2) {
                     movingAttack(levelData, 30);
                     Audio.getInstance().getAudioPlayer().playSound(Sounds.SW_ROAR_1.ordinal());
                 }
+                if (!attackCheck) checkPlayerHit(attackBox, player);
                 break;
             case SPELL_1:
                 if (animIndex == 0) Audio.getInstance().getAudioPlayer().playSound(Sounds.SW_ROAR_3.ordinal());
                 movingAttack(levelData, 10);
                 if (animIndex % 2 == 0) setDirection(Direction.LEFT);
                 else setDirection(Direction.RIGHT);
+                checkPlayerHit(attackBox, player);
                 break;
             case SPELL_2:
                 if (animIndex == 7 && !shooting) {
@@ -248,8 +244,9 @@ public class SpearWoman extends Enemy {
                 }
                 break;
             case SPELL_3:
+                if (animIndex > 5 && animIndex < 16) checkPlayerHit(attackBox, player);
                 if (animIndex == 11) Audio.getInstance().getAudioPlayer().playSound(Sounds.SW_ROAR_2.ordinal());
-                if (animIndex == 13) spellManager.activateLightnings();
+                else if (animIndex == 13) spellManager.activateLightnings();
                 break;
             case SPELL_4:
                 if (animIndex == 1 && !shooting) {
@@ -266,9 +263,21 @@ public class SpearWoman extends Enemy {
         }
     }
 
+    private void changeAttackBox() {
+        if (entityState == AnimType.ATTACK_1 || entityState == AnimType.ATTACK_3) attackBox.width = attackBoxReducedWid;
+        if (direction == Direction.RIGHT) attackBox.x = attackBoxWid/2;
+        else attackBox.x = xPos;
+    }
+
     private void updateAttackBox() {
-        this.attackBox.x = hitBox.x - attackOffset;
-        this.attackBox.y = hitBox.y;
+        if (entityState == AnimType.ATTACK_1 || entityState == AnimType.ATTACK_2 || entityState == AnimType.ATTACK_3) {
+            if (direction == Direction.RIGHT) attackBox.x = hitBox.x-hitBox.width + attackOffset*1.3;
+            else attackBox.x = hitBox.x - attackOffset*1.3;
+        }
+        else {
+            attackBox.x = hitBox.x - attackOffset;
+        }
+        attackBox.y = hitBox.y;
     }
 
     private void updateBoss(BufferedImage[][] animations) {
