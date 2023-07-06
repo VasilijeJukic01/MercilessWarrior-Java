@@ -10,5 +10,6 @@ public enum ObjType {
     ARROW_LAUNCHER_RIGHT,     // 6
     COIN,                     // 7
     SHOP,                     // 8
-    MAX                       // 9
+    BLOCKER,                  // 9
+    MAX                       // 10
 }

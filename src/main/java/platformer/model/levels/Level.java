@@ -35,6 +35,7 @@ public class Level {
     private final ArrayList<Spike> spikes = new ArrayList<>();
     private final ArrayList<ArrowLauncher> arrowLaunchers = new ArrayList<>();
     private final ArrayList<Shop> shops = new ArrayList<>();
+    private final ArrayList<Blocker> blockers = new ArrayList<>();
     // Spells
     private final ArrayList<Lightning> lightnings = new ArrayList<>();
     private final ArrayList<Flash> flashes = new ArrayList<>();
@@ -98,6 +99,8 @@ public class Level {
                         arrowLaunchers.add(new ArrowLauncher(ObjType.values()[value], (int)(i*Tiles.TILES_SIZE.getValue()), (int)(j*Tiles.TILES_SIZE.getValue()))); break;
                     case SHOP:
                         shops.add(new Shop(ObjType.SHOP, (int)(i*Tiles.TILES_SIZE.getValue()), (int)(j*Tiles.TILES_SIZE.getValue()))); break;
+                    case BLOCKER:
+                        blockers.add(new Blocker(ObjType.BLOCKER, (int)((i-1.75)*Tiles.TILES_SIZE.getValue()), (int)((j-1)*Tiles.TILES_SIZE.getValue()))); break;
                     default: break;
                 }
             }
@@ -106,6 +109,7 @@ public class Level {
 
     private void getLightningPos() {
         lightnings.clear();
+        flashes.clear();
         for (int i = 0; i < dataL1.getWidth(); i++) {
             for (int j = 0; j < dataL1.getHeight(); j++) {
                 Color color = new Color(dataL1.getRGB(i, j));
@@ -149,6 +153,7 @@ public class Level {
         spikes.clear();
         shops.clear();
         arrowLaunchers.clear();
+        blockers.clear();
     }
 
     public int getSpriteIndex(int x, int y) {
@@ -209,6 +214,10 @@ public class Level {
 
     public ArrayList<Shop> getShops() {
         return shops;
+    }
+
+    public ArrayList<Blocker> getBlockers() {
+        return blockers;
     }
 
     public ArrayList<Lightning> getLightnings() {

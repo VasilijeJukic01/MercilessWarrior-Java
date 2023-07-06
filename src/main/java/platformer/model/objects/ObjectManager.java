@@ -35,6 +35,7 @@ public class ObjectManager {
     private ArrayList<ArrowLauncher> arrowLaunchers;
     private final ArrayList<Coin> coins;
     private ArrayList<Shop> shops;
+    private ArrayList<Blocker> blockers;
     // Flags
     private boolean shopVisible;
 
@@ -44,6 +45,7 @@ public class ObjectManager {
         this.projectiles = new ArrayList<>();
         this.coins = new ArrayList<>();
         this.shops = new ArrayList<>();
+        this.blockers = new ArrayList<>();
         this.projectileArrow = Utils.getInstance().importImage("src/main/resources/images/objs/arrow.png", (int) PRSet.ARROW_WID.getValue(), (int)PRSet.ARROW_HEI.getValue());
         this.projectileLightningBall = new BufferedImage[6][4];
         generateLightningBalls();
@@ -67,6 +69,7 @@ public class ObjectManager {
         this.spikes = level.getSpikes();
         this.arrowLaunchers = level.getArrowLaunchers();
         this.shops = level.getShops();
+        this.blockers = level.getBlockers();
         projectiles.clear();
     }
 
@@ -83,6 +86,10 @@ public class ObjectManager {
     public void checkPlayerIntersection(Player p) {
         for (Spike spike : spikes) {
             if (p.getHitBox().intersects(spike.getHitBox()))
+                p.kill();
+        }
+        for (Blocker blocker : blockers) {
+            if (blocker.getAnimIndex() > 2 && p.getHitBox().intersects(blocker.getHitBox()))
                 p.kill();
         }
         for (Shop shop : shops) {
@@ -264,7 +271,7 @@ public class ObjectManager {
         return false;
     }
 
-    // Projectiles
+    // Projectiles/Activators
     private void shootArrow(ArrowLauncher arrowLauncher) {
         Audio.getInstance().getAudioPlayer().playSound(Sounds.ARROW_SOUND.ordinal());
         Direction direction = (arrowLauncher.getObjType() == ObjType.ARROW_LAUNCHER_RIGHT) ? Direction.LEFT : Direction.RIGHT;
@@ -287,6 +294,13 @@ public class ObjectManager {
     public void multiLightningBallShot2(SpearWoman spearWoman) {
         projectiles.add(new LightningBall((int)spearWoman.getHitBox().x, (int)(spearWoman.getHitBox().y*1.3), Direction.DEGREE_60));
         projectiles.add(new LightningBall((int)(spearWoman.getHitBox().x/1.15), (int)(spearWoman.getHitBox().y*1.3), Direction.N_DEGREE_60));
+    }
+
+    public void activateBlockers(boolean value) {
+        for (Blocker blocker : blockers) {
+            blocker.setAnimate(value);
+            if (!value) blocker.stop();
+        }
     }
 
     // Updates
@@ -336,6 +350,12 @@ public class ObjectManager {
         }
     }
 
+    private void updateBlockers() {
+        for (Blocker blocker : blockers) {
+            blocker.update();
+        }
+    }
+
     // Core
     public void update(int[][] lvlData, Player player) {
         for (Potion potion : potions) if (potion.isAlive()) potion.update();
@@ -345,6 +365,7 @@ public class ObjectManager {
         updateProjectiles(lvlData, player);
         updateCoins();
         updateShops();
+        updateBlockers();
         checkEnemyIntersection();
     }
 
@@ -356,6 +377,7 @@ public class ObjectManager {
         renderProjectiles(g, xLevelOffset, yLevelOffset);
         renderCoins(g, xLevelOffset, yLevelOffset);
         renderShops(g, xLevelOffset, yLevelOffset);
+        renderBlockers(g, xLevelOffset, yLevelOffset);
     }
 
     // Render
@@ -483,6 +505,15 @@ public class ObjectManager {
             g.drawImage(objects[s.getObjType().ordinal()][s.getAnimIndex()], x, y, ObjValue.SHOP_WID.getValue(), ObjValue.SHOP_HEI.getValue(), null);
             s.hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.ORANGE);
             s.render(g, xLevelOffset, yLevelOffset);
+        }
+    }
+
+    private void renderBlockers(Graphics g, int xLevelOffset, int yLevelOffset) {
+        for (Blocker b : blockers) {
+            int x = (int)b.getHitBox().x-b.getXOffset()-xLevelOffset;
+            int y = (int)b.getHitBox().y-b.getYOffset()-yLevelOffset+(int)(12*Tiles.SCALE.getValue());
+            g.drawImage(objects[b.getObjType().ordinal()][b.getAnimIndex()], x, y, ObjValue.BLOCKER_WID.getValue(), ObjValue.BLOCKER_HEI.getValue(), null);
+            b.hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.MAGENTA);
         }
     }
 

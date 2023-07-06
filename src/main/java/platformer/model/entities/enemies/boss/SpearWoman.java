@@ -175,7 +175,7 @@ public class SpearWoman extends Enemy {
                 setDirection(Direction.RIGHT);
                 hitBox.x = 3*Tiles.TILES_SIZE.getValue();
             }
-            hitBox.y = player.getHitBox().y-Tiles.TILES_SIZE.getValue();
+            hitBox.y = yPos;
         }
         // Dash-slash
         else if (entityState == AnimType.ATTACK_3) {
@@ -200,6 +200,7 @@ public class SpearWoman extends Enemy {
             case IDLE:
                 if (!start && isPlayerCloseForAttack(player)) {
                     setStart(true);
+                    objectManager.activateBlockers(true);
                     setEnemyAction(AnimType.SPELL_3);
                     return;
                 }
@@ -259,6 +260,10 @@ public class SpearWoman extends Enemy {
                     multiShootFlag = (multiShootFlag + 1) % 4;
                     shooting = true;
                 }
+                break;
+            case DEATH:
+                objectManager.activateBlockers(false);
+                break;
             default: break;
         }
     }

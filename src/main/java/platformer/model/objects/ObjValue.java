@@ -34,7 +34,12 @@ public enum ObjValue {
     SHOP_WID_DEF(154),
     SHOP_HEI_DEF(132),
     SHOP_WID((int)(SHOP_WID_DEF.getValue()*Tiles.SCALE.getValue())),
-    SHOP_HEI((int)(SHOP_HEI_DEF.getValue()*Tiles.SCALE.getValue()));
+    SHOP_HEI((int)(SHOP_HEI_DEF.getValue()*Tiles.SCALE.getValue())),
+
+    BLOCKER_WID_DEF(96),
+    BLOCKER_HEI_DEF(128),
+    BLOCKER_WID((int)(BLOCKER_WID_DEF.getValue()*Tiles.SCALE.getValue())),
+    BLOCKER_HEI((int)(BLOCKER_HEI_DEF.getValue()*Tiles.SCALE.getValue()));
 
     private final int value;
 

@@ -40,6 +40,10 @@ public abstract class GameObject implements Debug {
                 else if (objType == ObjType.ARROW_LAUNCHER_LEFT || objType == ObjType.ARROW_LAUNCHER_RIGHT) {
                     animate = false;
                 }
+                else if (objType == ObjType.BLOCKER) {
+                    if (animate) animIndex = 3;
+                    else animIndex = 1;
+                }
             }
         }
     }

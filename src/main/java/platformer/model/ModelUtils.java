@@ -44,6 +44,8 @@ public class ModelUtils {
                 return 4;
             case SHOP:
                 return 6;
+            case BLOCKER:
+                return 10;
         }
         return 1;
     }

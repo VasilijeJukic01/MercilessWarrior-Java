@@ -368,6 +368,7 @@ public class AnimationUtils {
         return anim;
     }
 
+    // Objects
     public BufferedImage[][] loadObjects() {
         BufferedImage[][] anim = new BufferedImage[17][17];
         int index = 0;
@@ -416,6 +417,14 @@ public class AnimationUtils {
         for (int i = 0; i < 1; i++, index++) {
             for (int j = 0; j < 6; j++) {
                 anim[index][j] = shopSprite.getSubimage((118*j), 128*i, 118, 128);
+            }
+        }
+
+        // Blocker 9
+        BufferedImage blockerSprite = Utils.getInstance().importImage("src/main/resources/images/objs/blocker.png", -1, -1);
+        for (int i = 0; i < 1; i++, index++) {
+            for (int j = 0; j < 12; j++) {
+                anim[index][j] = blockerSprite.getSubimage((96*j), 0, 96, 96);
             }
         }
 
