@@ -13,6 +13,7 @@ import platformer.model.entities.enemies.EnemySize;
 import platformer.model.entities.enemies.EnemyType;
 import platformer.model.objects.ObjectManager;
 import platformer.model.spells.SpellManager;
+import platformer.ui.BossInterface;
 import platformer.utils.Utils;
 
 import java.awt.*;
@@ -43,11 +44,15 @@ public class SpearWoman extends Enemy {
     private final double gravity = 0.1 * Tiles.SCALE.getValue();
     private final double collisionFallSpeed = 0.5 * Tiles.SCALE.getValue();
 
+    // Overlay
+    private final BossInterface bossInterface;
+
 
     public SpearWoman(int xPos, int yPos) {
         super(xPos, yPos, EnemySize.SW_WIDTH.getValue(), EnemySize.SW_HEIGHT.getValue(), EnemyType.SPEAR_WOMAN, 15);
         super.setDirection(Direction.LEFT);
         super.enemySpeed = 0.4*Tiles.SCALE.getValue();
+        this.bossInterface = new BossInterface(this);
         int w = (int)(25 * Tiles.SCALE.getValue());
         int h =  (int)(50 * Tiles.SCALE.getValue());
         initHitBox(w, h);
@@ -344,6 +349,10 @@ public class SpearWoman extends Enemy {
         updateMove(levelData, player, spellManager, objectManager);
         updateBoss(animations);
         updateAttackBox();
+    }
+
+    public void overlayRender(Graphics g) {
+        if (start) bossInterface.render(g);
     }
 
     @Override

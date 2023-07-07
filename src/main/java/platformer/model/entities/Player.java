@@ -466,7 +466,7 @@ public class Player extends Entity {
 
     // Core
     public void update() {
-        userInterface.update(currentHealth, maxHealth, currentStamina, maxStamina);
+        userInterface.update(currentHealth, maxHealth, currentStamina, maxStamina, exp, 1000*level);
         if (currentHealth <= 0) {
             updateDeath();
             return;
@@ -622,10 +622,6 @@ public class Player extends Entity {
 
     public int getCoins() {
         return coins;
-    }
-
-    public int getExp() {
-        return exp;
     }
 
     public int getLevel() {

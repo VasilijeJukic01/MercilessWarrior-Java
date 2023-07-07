@@ -13,39 +13,47 @@ public class UserInterface {
     private final Player player;
 
     private final BufferedImage statusBar;
-    private int healthWidth = (int)(150* Tiles.SCALE.getValue()), staminaWidth = (int)(115*Tiles.SCALE.getValue());
+    private final BufferedImage portrait;
+    private final int healthW = 134, staminaW = 134, expW = 149;
+    private int healthWidth = (int)(healthW*Tiles.SCALE.getValue()), staminaWidth = (int)(staminaW*Tiles.SCALE.getValue()), expWidth = (int)(expW*Tiles.SCALE.getValue());
 
     public UserInterface(Player player) {
         this.player = player;
-        this.statusBar = Utils.getInstance().importImage("src/main/resources/images/health_power_bar.png",-1,-1);
+        this.statusBar = Utils.getInstance().importImage("src/main/resources/images/playerHUD.png",-1,-1);
+        this.portrait = Utils.getInstance().importImage("src/main/resources/images/portraitHUD.png",-1,-1);
     }
 
-    private void updateBars(double currentHealth, double maxHealth, double currentStamina, double maxStamina) {
-        this.healthWidth = (int)((currentHealth / maxHealth) * (int)(150*Tiles.SCALE.getValue()));
-        this.staminaWidth = (int)((currentStamina / maxStamina) * (int)(115*Tiles.SCALE.getValue()));
+    private void updateBars(double currentHealth, double maxHealth, double currentStamina, double maxStamina, double currentExp, double expCap) {
+        this.healthWidth = (int)((currentHealth / maxHealth) * (int)(healthW*Tiles.SCALE.getValue()));
+        this.staminaWidth = (int)((currentStamina / maxStamina) * (int)(staminaW*Tiles.SCALE.getValue()));
+        this.expWidth = (int)((currentExp / expCap) * (int)(expW*Tiles.SCALE.getValue()));
     }
 
-    public void update(double currentHealth, double maxHealth, double currentStamina, double maxStamina) {
-        updateBars(currentHealth, maxHealth, currentStamina, maxStamina);
+    public void update(double currentHealth, double maxHealth, double currentStamina, double maxStamina, double currentExp, double expCap) {
+        updateBars(currentHealth, maxHealth, currentStamina, maxStamina, currentExp, expCap);
     }
 
     public void render(Graphics g) {
-        g.drawImage(statusBar,(int)(10*Tiles.SCALE.getValue()), (int)(15*Tiles.SCALE.getValue()), (int)(192*Tiles.SCALE.getValue()), (int)(58*Tiles.SCALE.getValue()), null);
+        g.drawImage(statusBar, (int)(10*Tiles.SCALE.getValue()), (int)(15*Tiles.SCALE.getValue()), (int)(192*Tiles.SCALE.getValue()), (int)(92*Tiles.SCALE.getValue()), null);
         renderStatusBar(g);
         g.setColor(Color.WHITE);
-        g.setFont(new Font("Arial", Font.BOLD, 20));
-        g.drawString("Coins: "+player.getCoins(), (int)Tiles.GAME_WIDTH.getValue()-250, 20);
-        g.drawString("Level: "+player.getLevel()+" | EXP: "+player.getExp(), (int)Tiles.GAME_WIDTH.getValue()-250, 40);
-        g.drawString("Attack Cooldown: "+Math.round(player.getCooldown()[Cooldown.ATTACK.ordinal()]*100.0)/100.0, (int)Tiles.GAME_WIDTH.getValue()-250, 60);
-        g.drawString("Block Cooldown:  "+Math.round(player.getCooldown()[Cooldown.BLOCK.ordinal()]*100.0)/100.0, (int)Tiles.GAME_WIDTH.getValue()-250, 80);
-        g.drawString("Dash Cooldown:   "+Math.round(player.getCooldown()[Cooldown.DASH.ordinal()]*100.0)/100.0, (int)Tiles.GAME_WIDTH.getValue()-250, 100);
+        g.setFont(new Font("Arial", Font.BOLD, (int)(10*Tiles.SCALE.getValue())));
+        g.drawString(""+player.getCoins(), (int)(93*Tiles.SCALE.getValue()), (int)(82*Tiles.SCALE.getValue()));
+        g.drawString("Attack Cooldown: "+Math.round(player.getCooldown()[Cooldown.ATTACK.ordinal()]*100.0)/100.0, (int)Tiles.GAME_WIDTH.getValue()-250, 20);
+        g.drawString("Block Cooldown:  "+Math.round(player.getCooldown()[Cooldown.BLOCK.ordinal()]*100.0)/100.0, (int)Tiles.GAME_WIDTH.getValue()-250, 40);
+        g.drawString("Dash Cooldown:   "+Math.round(player.getCooldown()[Cooldown.DASH.ordinal()]*100.0)/100.0, (int)Tiles.GAME_WIDTH.getValue()-250, 60);
+        g.setFont(new Font("Arial", Font.BOLD, (int)(7*Tiles.SCALE.getValue())));
+        g.drawString("Lvl: "+player.getLevel(), (int)(170*Tiles.SCALE.getValue()), (int)(67*Tiles.SCALE.getValue()));
+        g.drawImage(portrait, (int)(18*Tiles.SCALE.getValue()), (int)(22*Tiles.SCALE.getValue()), (int)(40*Tiles.SCALE.getValue()), (int)(40*Tiles.SCALE.getValue()), null);
     }
 
     private void renderStatusBar(Graphics g) {
         g.setColor(Color.RED);
-        g.fillRect((int)(44*Tiles.SCALE.getValue()), (int)(29*Tiles.SCALE.getValue()), healthWidth, (int)(4*Tiles.SCALE.getValue()));
+        g.fillRect((int)(64.5*Tiles.SCALE.getValue()), (int)(27*Tiles.SCALE.getValue()), healthWidth, (int)(12*Tiles.SCALE.getValue()));
         g.setColor(Color.BLUE);
-        g.fillRect((int)(44*Tiles.SCALE.getValue()), (int)(48*Tiles.SCALE.getValue()), staminaWidth, (int)(4*Tiles.SCALE.getValue()));
+        g.fillRect((int)(64.5*Tiles.SCALE.getValue()), (int)(44*Tiles.SCALE.getValue()), staminaWidth, (int)(12*Tiles.SCALE.getValue()));
+        g.setColor(Color.GREEN);
+        g.fillRect((int)(48.5*Tiles.SCALE.getValue()), (int)(61*Tiles.SCALE.getValue()), expWidth, (int)(7*Tiles.SCALE.getValue()));
     }
 
 

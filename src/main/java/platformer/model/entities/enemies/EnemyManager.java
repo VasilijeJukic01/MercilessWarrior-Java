@@ -101,6 +101,7 @@ public class EnemyManager {
             g.drawImage(spearWomanAnimations[spearWoman.getEnemyAction().ordinal()][spearWoman.getAnimIndex()], x, y, w, h, null);
             spearWoman.hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.BLUE);
             spearWoman.attackBoxRenderer(g, xLevelOffset, yLevelOffset);
+            spearWoman.overlayRender(g);
         }
     }
 
