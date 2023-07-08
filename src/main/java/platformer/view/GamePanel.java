@@ -38,9 +38,10 @@ public class GamePanel extends JPanel {
         super.paintComponent(g);
         game.render(g);
         g.setColor(new Color(255, 255, 255));
-        g.setFont(new Font("Arial", Font.BOLD, 20));
-        g.drawString("FPS: "+game.getCurrentFps(), 3, 20);
-        g.drawString("UPS: "+game.getCurrentUpdates(), 100, 20);
+        g.setFont(new Font("Arial", Font.BOLD, (int)(10*Tiles.SCALE.getValue())));
+        g.drawString(game.getAccount().getName(), (int)(1.5*Tiles.SCALE.getValue()), (int)(10*Tiles.SCALE.getValue()));
+        g.drawString("FPS: "+game.getCurrentFps(), (int)(1.5*Tiles.SCALE.getValue()), (int)(20*Tiles.SCALE.getValue()));
+        g.drawString("UPS: "+game.getCurrentUpdates(), (int)(50*Tiles.SCALE.getValue()), (int)(20*Tiles.SCALE.getValue()));
     }
 
     public Game getGame() {

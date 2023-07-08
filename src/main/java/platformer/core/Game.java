@@ -20,6 +20,8 @@ public class Game implements Runnable, Publisher {
     private GameFrame gameFrame;
     private final Thread gameThread;
 
+    private final Account account;
+
     private StateManager stateManager;
     private AudioOptions audioOptions;
 
@@ -31,8 +33,9 @@ public class Game implements Runnable, Publisher {
     private ArrayList<Subscriber> subscribers;
     private final Logger consoleLogger, fileLogger;
 
-    public Game() {
+    public Game(String cheats, String name) {
         init();
+        this.account = new Account(name, !cheats.equals("Yes"));
         this.gameThread = new Thread(this);
         this.gameThread.start();
         Audio.getInstance().getAudioPlayer().playSong(Songs.MENU.ordinal());
@@ -174,6 +177,11 @@ public class Game implements Runnable, Publisher {
         return audioOptions;
     }
 
+    public Account getAccount() {
+        return account;
+    }
+
+    // Observer
     @Override
     public void addSubscriber(Subscriber s) {
         if(s == null) return;

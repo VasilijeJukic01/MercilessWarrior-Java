@@ -5,11 +5,13 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import launcher.controller.LaunchController;
 
 import java.io.File;
+import java.net.MalformedURLException;
 
 public class LauncherView extends Stage {
 
@@ -33,8 +35,12 @@ public class LauncherView extends Stage {
 
     private final Label lbSpacing2 = new Label();
     private final Button btnLaunch = new Button("Launch");
+    private final Button btnExit = new Button("Exit");
 
     private final ToggleGroup tgCheats = new ToggleGroup();
+
+    private Image logo;
+    private ImageView imgLogo;
 
     private final Image BackgroundImg =  new Image(new File("src/main/resources/images/launcherBG.jpg").toURI().toString());
     private final BackgroundImage backgroundImage = new BackgroundImage(
@@ -59,17 +65,27 @@ public class LauncherView extends Stage {
         lbResolution.setStyle("-fx-font-weight: bold;");
 
         // Setup
+        try {
+            logo = new Image(new File("src/main/resources/images/menu/menuLogo.png").toURI().toURL().toExternalForm());
+            imgLogo = new ImageView(logo);
+            imgLogo.setFitWidth(200);
+            imgLogo.setFitHeight(100);
+            root.getChildren().add(imgLogo);
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
         tgCheats.getToggles().addAll(rbEnableCheatsYes, rbEnableCheatsNo);
         cbResolution.setItems(FXCollections.observableArrayList("832x448", "1664x896"));
         cbResolution.getSelectionModel().select(1);
         rbEnableCheatsNo.setSelected(true);
 
         // Components init
-        root.getChildren().addAll(lbLogo, lbSpacing1, new DefaultHBox(Pos.CENTER, lbName, tfName),
+        root.getChildren().addAll(lbSpacing1, new DefaultHBox(Pos.CENTER, lbName, tfName),
                 new DefaultHBox(Pos.CENTER, lnEnableCheats, lbYes, rbEnableCheatsYes, lbNo, rbEnableCheatsNo));
-        root.getChildren().addAll(new DefaultHBox(Pos.CENTER, lbResolution, cbResolution), lbSpacing2, btnLaunch);
+        root.getChildren().addAll(new DefaultHBox(Pos.CENTER, lbResolution, cbResolution), lbSpacing2, btnLaunch, btnExit);
 
-        btnLaunch.setOnAction(new LaunchController(tfName, rbEnableCheatsYes, rbEnableCheatsNo, cbResolution));
+        btnLaunch.setOnAction(new LaunchController(tfName, rbEnableCheatsYes, cbResolution));
+        btnExit.setOnAction(e -> System.exit(0));
 
         // Window
         super.setTitle("MW Launcher");

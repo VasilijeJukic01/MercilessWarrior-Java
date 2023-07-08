@@ -14,18 +14,17 @@ public class LaunchController implements EventHandler<ActionEvent> {
 
     private final TextField tfName;
     private final RadioButton rbYes;
-    private final RadioButton rbNo;
     private final ComboBox<String> cbResolution;
 
-    public LaunchController(TextField tfName, RadioButton rbYes, RadioButton rbNo, ComboBox<String> cbResolution) {
+    public LaunchController(TextField tfName, RadioButton rbYes, ComboBox<String> cbResolution) {
         this.tfName = tfName;
         this.rbYes = rbYes;
-        this.rbNo = rbNo;
         this.cbResolution = cbResolution;
     }
 
     @Override
     public void handle(ActionEvent event) {
+        String[] args = new String[3];
         switch (cbResolution.getSelectionModel().getSelectedIndex()) {
             case 0:
                 scale = "1";
@@ -35,9 +34,10 @@ public class LaunchController implements EventHandler<ActionEvent> {
                 break;
             default: break;
         }
-        LauncherView.getInstance().close();
-        String[] args = new String[1];
         args[0] = scale;
+        args[1] = rbYes.isSelected() ? "Yes" : "No";
+        args[2] = tfName.getText();
+        LauncherView.getInstance().close();
         AppCore.main(args);
     }
 }

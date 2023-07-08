@@ -279,14 +279,17 @@ public class PlayingState extends StateAbstraction implements State {
                 if (objectManager.isShopVisible() && !shopVisible) shopVisible = true;
                 break;
             case KeyEvent.VK_F1: // Show HitBox
+                if (!game.getAccount().isEnableCheats()) break;
                 DebugSettings.getInstance().setDebugMode(!DebugSettings.getInstance().isDebugMode());
                 game.notifyLogger("HitBox functionality changed.", Message.WARNING);
                 break;
             case KeyEvent.VK_F2: // Stamina Cheat
+                if (!game.getAccount().isEnableCheats()) break;
                 player.changeStamina(100);
                 game.notifyLogger("Stamina cheat activated.", Message.WARNING);
                 break;
             case KeyEvent.VK_F3: // Health Cheat
+                if (!game.getAccount().isEnableCheats()) break;
                 player.changeHealth(100);
                 game.notifyLogger("Health cheat activated.", Message.WARNING);
                 break;
