@@ -16,7 +16,7 @@ import java.awt.image.BufferedImage;
 @SuppressWarnings("FieldCanBeLocal")
 public class MenuState extends StateAbstraction implements State{
 
-    private final MenuButton[] buttons = new MenuButton[3];
+    private final MenuButton[] buttons = new MenuButton[4];
     private final BufferedImage[] background;
     private final int animSpeed = 20;
     private int animTick = 0, animIndex = 0;
@@ -35,8 +35,9 @@ public class MenuState extends StateAbstraction implements State{
 
     private void loadButtons() {
         buttons[0] = new MenuButton((int)(Tiles.GAME_WIDTH.getValue() / 2), (int)(170*Tiles.SCALE.getValue()), ButtonType.PLAY);
-        buttons[1] = new MenuButton((int)(Tiles.GAME_WIDTH.getValue() / 2), (int)(240*Tiles.SCALE.getValue()), ButtonType.OPTIONS);
-        buttons[2] = new MenuButton((int)(Tiles.GAME_WIDTH.getValue() / 2), (int)(310*Tiles.SCALE.getValue()), ButtonType.QUIT);
+        buttons[1] = new MenuButton((int)(Tiles.GAME_WIDTH.getValue() / 2), (int)(225*Tiles.SCALE.getValue()), ButtonType.OPTIONS);
+        buttons[2] = new MenuButton((int)(Tiles.GAME_WIDTH.getValue() / 2), (int)(280*Tiles.SCALE.getValue()), ButtonType.CONTROLS);
+        buttons[3] = new MenuButton((int)(Tiles.GAME_WIDTH.getValue() / 2), (int)(335*Tiles.SCALE.getValue()), ButtonType.QUIT);
     }
 
     private void updateAnimation() {
@@ -95,6 +96,7 @@ public class MenuState extends StateAbstraction implements State{
                 switch (button.getButtonType()) {
                     case PLAY: game.startPlayingState(); break;
                     case OPTIONS: game.startOptionsState(); break;
+                    case CONTROLS: game.startControlsState(); break;
                     case QUIT: game.startQuitState(); break;
                     default: break;
                 }

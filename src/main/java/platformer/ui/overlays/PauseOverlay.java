@@ -1,9 +1,12 @@
-package platformer.ui;
+package platformer.ui.overlays;
 
 import platformer.audio.Audio;
 import platformer.audio.Songs;
 import platformer.core.Game;
 import platformer.model.Tiles;
+import platformer.ui.AudioOptions;
+import platformer.ui.MouseControls;
+import platformer.ui.UI;
 import platformer.ui.buttons.*;
 import platformer.utils.Utils;
 
@@ -11,7 +14,7 @@ import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 
-public class PauseOverlay implements MouseControls{
+public class PauseOverlay implements MouseControls {
 
     private final Game game;
     private final AudioOptions audioOptions;

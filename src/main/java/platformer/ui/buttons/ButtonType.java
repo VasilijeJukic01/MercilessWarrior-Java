@@ -9,4 +9,5 @@ public enum ButtonType {
     EXIT,       // 5
     BUY,        // 6
     LEAVE,      // 7
+    CONTROLS    // 8
 }

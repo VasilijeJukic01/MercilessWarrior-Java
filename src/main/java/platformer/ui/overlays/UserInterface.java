@@ -1,4 +1,4 @@
-package platformer.ui;
+package platformer.ui.overlays;
 
 import platformer.model.Tiles;
 import platformer.model.entities.Cooldown;

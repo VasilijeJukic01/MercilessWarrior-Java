@@ -1,8 +1,10 @@
-package platformer.ui;
+package platformer.ui.overlays;
 
 import platformer.model.Tiles;
 import platformer.model.objects.Shop;
 import platformer.state.PlayingState;
+import platformer.ui.MouseControls;
+import platformer.ui.ShopItem;
 import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.ShopButton;
 import platformer.utils.Utils;
@@ -13,7 +15,7 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 
-public class ShopOverlay implements MouseControls{
+public class ShopOverlay implements MouseControls {
 
     private final PlayingState playingState;
 

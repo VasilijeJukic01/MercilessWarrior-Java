@@ -13,7 +13,7 @@ import platformer.model.entities.enemies.EnemyManager;
 import platformer.model.entities.enemies.boss.SpearWoman;
 import platformer.model.objects.ObjectManager;
 import platformer.model.objects.projectiles.Projectile;
-import platformer.ui.UserInterface;
+import platformer.ui.overlays.UserInterface;
 import platformer.utils.Utils;
 
 import java.awt.*;

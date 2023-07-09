@@ -13,7 +13,7 @@ import platformer.model.entities.enemies.EnemySize;
 import platformer.model.entities.enemies.EnemyType;
 import platformer.model.objects.ObjectManager;
 import platformer.model.spells.SpellManager;
-import platformer.ui.BossInterface;
+import platformer.ui.overlays.BossInterface;
 import platformer.utils.Utils;
 
 import java.awt.*;

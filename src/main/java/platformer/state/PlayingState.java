@@ -12,9 +12,9 @@ import platformer.model.entities.Player;
 import platformer.model.levels.LevelManager;
 import platformer.model.objects.ObjectManager;
 import platformer.model.spells.SpellManager;
-import platformer.ui.GameOverOverlay;
-import platformer.ui.PauseOverlay;
-import platformer.ui.ShopOverlay;
+import platformer.ui.overlays.GameOverOverlay;
+import platformer.ui.overlays.PauseOverlay;
+import platformer.ui.overlays.ShopOverlay;
 import platformer.utils.Utils;
 
 import java.awt.*;

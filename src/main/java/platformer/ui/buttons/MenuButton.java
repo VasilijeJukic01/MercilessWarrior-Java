@@ -38,6 +38,11 @@ public class MenuButton implements GameButton{
                 images[1] = Utils.getInstance().importImage("src/main/resources/images/buttons/OptionsBtn1.png", UI.B_WIDTH.getValue(), UI.B_HEIGHT.getValue());
                 images[2] = Utils.getInstance().importImage("src/main/resources/images/buttons/OptionsBtn1.png", UI.B_WIDTH.getValue(), UI.B_HEIGHT.getValue());
                 break;
+            case CONTROLS:
+                images[0] = Utils.getInstance().importImage("src/main/resources/images/buttons/ControlsBtn0.png", UI.B_WIDTH.getValue(), UI.B_HEIGHT.getValue());
+                images[1] = Utils.getInstance().importImage("src/main/resources/images/buttons/ControlsBtn1.png", UI.B_WIDTH.getValue(), UI.B_HEIGHT.getValue());
+                images[2] = Utils.getInstance().importImage("src/main/resources/images/buttons/ControlsBtn1.png", UI.B_WIDTH.getValue(), UI.B_HEIGHT.getValue());
+                break;
             case QUIT:
                 images[0] = Utils.getInstance().importImage("src/main/resources/images/buttons/QuitBtn0.png", UI.B_WIDTH.getValue(), UI.B_HEIGHT.getValue());
                 images[1] = Utils.getInstance().importImage("src/main/resources/images/buttons/QuitBtn1.png", UI.B_WIDTH.getValue(), UI.B_HEIGHT.getValue());

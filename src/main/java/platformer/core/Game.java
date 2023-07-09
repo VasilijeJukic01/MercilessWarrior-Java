@@ -3,6 +3,7 @@ package platformer.core;
 import platformer.audio.Audio;
 import platformer.audio.Songs;
 import platformer.debug.*;
+import platformer.state.ControlsState;
 import platformer.state.OptionsState;
 import platformer.state.StateManager;
 import platformer.ui.AudioOptions;
@@ -31,7 +32,8 @@ public class Game implements Runnable, Publisher {
     private int currentUpdates = 0;
 
     private ArrayList<Subscriber> subscribers;
-    private final Logger consoleLogger, fileLogger;
+    private final Logger consoleLogger;
+    //private final Logger fileLogger;
 
     public Game(String cheats, String name) {
         init();
@@ -40,7 +42,7 @@ public class Game implements Runnable, Publisher {
         this.gameThread.start();
         Audio.getInstance().getAudioPlayer().playSong(Songs.MENU.ordinal());
         this.consoleLogger = new ConsoleLogger(this);
-        this.fileLogger = new FileLogger(this);
+        //this.fileLogger = new FileLogger(this);
     }
 
     private void init() {
@@ -147,7 +149,8 @@ public class Game implements Runnable, Publisher {
     }
 
     public void startMenuState() {
-        if (!(stateManager.getCurrentState() instanceof OptionsState)) Audio.getInstance().getAudioPlayer().playSong(Songs.MENU.ordinal());
+        if (!(stateManager.getCurrentState() instanceof OptionsState) && !(stateManager.getCurrentState() instanceof ControlsState))
+            Audio.getInstance().getAudioPlayer().playSong(Songs.MENU.ordinal());
         stateManager.setMenuState();
     }
 
@@ -158,6 +161,10 @@ public class Game implements Runnable, Publisher {
 
     public void startOptionsState() {
         stateManager.setOptionsState();
+    }
+
+    public void startControlsState() {
+        stateManager.setControlsState();
     }
 
     public void startQuitState() {

@@ -4,8 +4,8 @@ import platformer.model.Tiles;
 
 public enum UI {
 
-    B_WIDTH_DEFAULT(140),
-    B_HEIGHT_DEFAULT(50),
+    B_WIDTH_DEFAULT(120),
+    B_HEIGHT_DEFAULT(42),
 
     SB_WIDTH_DEFAULT(94),
     SB_HEIGHT_DEFAULT(34),
