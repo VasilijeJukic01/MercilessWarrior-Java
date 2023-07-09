@@ -1,12 +1,12 @@
 package platformer.state;
 
-import platformer.animation.AnimationUtils;
 import platformer.core.Game;
 import platformer.model.Tiles;
 import platformer.ui.UI;
 import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.CREButton;
 import platformer.ui.buttons.PauseButton;
+import platformer.ui.overlays.Overlay;
 import platformer.utils.Utils;
 
 import java.awt.*;
@@ -17,21 +17,13 @@ import java.awt.image.BufferedImage;
 
 public class ControlsState extends StateAbstraction implements State {
 
-    private final BufferedImage[] background;
     private BufferedImage keyboardSprite;
     private final int wKey = (int)(20*Tiles.SCALE.getValue()), hKey = (int)(20*Tiles.SCALE.getValue());
-    private BufferedImage overlay;
     private BufferedImage controlsText;
-    private final int animSpeed = 20;
-    private int animTick = 0, animIndex = 0;
 
-    private CREButton nextBtn;
-    private CREButton prevBtn;
     private CREButton exitBtn;
 
     // Size Variables [Init]
-    private final int overlayWid = (int)(300* Tiles.SCALE.getValue());
-    private final int overlayHei = (int)(350*Tiles.SCALE.getValue());
     private final int controlsTextWid = (int)(180*Tiles.SCALE.getValue());
     private final int controlsTextHei = (int)(40*Tiles.SCALE.getValue());
 
@@ -39,21 +31,17 @@ public class ControlsState extends StateAbstraction implements State {
     private final int exitBtnY = (int)(350*Tiles.SCALE.getValue());
 
     // Size Variables [Render]
-    private final int overlayX = (int)(270*Tiles.SCALE.getValue());
-    private final int overlayY = (int)(50*Tiles.SCALE.getValue());
     private final int controlsTextX = (int)(330*Tiles.SCALE.getValue());
     private final int controlsTextY = (int)(85*Tiles.SCALE.getValue());
 
 
     public ControlsState(Game game) {
         super(game);
-        this.background = AnimationUtils.getInstance().loadMenuAnimation();
         loadImages();
         loadButtons();
     }
 
     private void loadImages() {
-        this.overlay = Utils.getInstance().importImage("src/main/resources/images/overlay1.png",overlayWid, overlayHei);
         this.controlsText = Utils.getInstance().importImage("src/main/resources/images/buttons/ControlsText.png", controlsTextWid, controlsTextHei);
         this.keyboardSprite = Utils.getInstance().importImage("src/main/resources/images/keyboard.png", -1, -1);
     }
@@ -62,27 +50,15 @@ public class ControlsState extends StateAbstraction implements State {
         this.exitBtn = new CREButton(exitBtnX, exitBtnY, UI.CRE_B_SIZE.getValue(), UI.CRE_B_SIZE.getValue(), ButtonType.EXIT);
     }
 
-    private void updateAnimation() {
-        animTick++;
-        if (animTick >= animSpeed) {
-            animTick = 0;
-            animIndex++;
-            if (animIndex >= 24) {
-                animIndex = 0;
-            }
-        }
-    }
-
     @Override
     public void update() {
-        updateAnimation();
+        Overlay.getInstance().update();
         exitBtn.update();
     }
 
     @Override
     public void render(Graphics g) {
-        g.drawImage(background[animIndex], 0, 0,null);
-        g.drawImage(overlay,  overlayX,  overlayY, overlay.getWidth(), overlay.getHeight(), null);
+        Overlay.getInstance().render(g);
         g.drawImage(controlsText, controlsTextX, controlsTextY, controlsText.getWidth(), controlsText.getHeight(), null);
         exitBtn.render(g);
         renderControls(g);

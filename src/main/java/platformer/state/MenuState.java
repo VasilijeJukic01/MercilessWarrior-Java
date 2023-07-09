@@ -1,10 +1,10 @@
 package platformer.state;
 
-import platformer.animation.AnimationUtils;
 import platformer.model.Tiles;
 import platformer.core.Game;
 import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.MenuButton;
+import platformer.ui.overlays.Overlay;
 import platformer.utils.Utils;
 
 import java.awt.*;
@@ -17,14 +17,10 @@ import java.awt.image.BufferedImage;
 public class MenuState extends StateAbstraction implements State{
 
     private final MenuButton[] buttons = new MenuButton[4];
-    private final BufferedImage[] background;
-    private final int animSpeed = 20;
-    private int animTick = 0, animIndex = 0;
     private BufferedImage menuLogo;
 
     public MenuState(Game game) {
         super(game);
-        this.background = AnimationUtils.getInstance().loadMenuAnimation();
         loadImages();
         loadButtons();
     }
@@ -40,20 +36,9 @@ public class MenuState extends StateAbstraction implements State{
         buttons[3] = new MenuButton((int)(Tiles.GAME_WIDTH.getValue() / 2), (int)(335*Tiles.SCALE.getValue()), ButtonType.QUIT);
     }
 
-    private void updateAnimation() {
-        animTick++;
-        if (animTick >= animSpeed) {
-            animTick = 0;
-            animIndex++;
-            if (animIndex >= 24) {
-                animIndex = 0;
-            }
-        }
-    }
-
     @Override
     public void update() {
-        updateAnimation();
+        Overlay.getInstance().update();
         for (MenuButton button : buttons) {
             button.update();
         }
@@ -61,7 +46,7 @@ public class MenuState extends StateAbstraction implements State{
 
     @Override
     public void render(Graphics g) {
-        g.drawImage(background[animIndex], 0, 0,null);
+        Overlay.getInstance().renderMenu(g);
         int logoX = (int)(Tiles.GAME_WIDTH.getValue() / 3)- (int)(12*Tiles.SCALE.getValue()), logoY = (int)(10*Tiles.SCALE.getValue());
         int logoW = (int)(menuLogo.getWidth()*Tiles.SCALE.getValue()), logoH = (int)(menuLogo.getHeight()*Tiles.SCALE.getValue());
         g.drawImage(menuLogo, logoX, logoY, logoW, logoH, null);

@@ -7,6 +7,7 @@ import platformer.state.ControlsState;
 import platformer.state.OptionsState;
 import platformer.state.StateManager;
 import platformer.ui.AudioOptions;
+import platformer.ui.overlays.Overlay;
 import platformer.view.GameFrame;
 
 import java.awt.*;
@@ -49,6 +50,7 @@ public class Game implements Runnable, Publisher {
         this.gameFrame = new GameFrame(this);
         this.audioOptions = new AudioOptions();
         this.stateManager = new StateManager(this);
+        Overlay.getInstance().update(); // Prepare instance
     }
 
     public void start() {

@@ -18,13 +18,10 @@ public class PauseOverlay implements MouseControls {
 
     private final Game game;
     private final AudioOptions audioOptions;
-    private BufferedImage overlay;
     private BufferedImage pauseText;
     private BufferedImage SFXText, musicText, volumeText;
 
     // Size Variables [Init]
-    private final int overlayWid = (int)(300*Tiles.SCALE.getValue());
-    private final int overlayHei = (int)(350*Tiles.SCALE.getValue());
     private final int pauseTextWid = (int)(180*Tiles.SCALE.getValue());
     private final int pauseTextHei = (int)(40*Tiles.SCALE.getValue());
     private final int SFXTextWid = (int)(60*Tiles.SCALE.getValue());
@@ -42,8 +39,6 @@ public class PauseOverlay implements MouseControls {
     private final int exitBtnY = (int)(350*Tiles.SCALE.getValue());
 
     // Size Variables [Render]
-    private final int overlayX = (int)(270*Tiles.SCALE.getValue());
-    private final int overlayY = (int)(50*Tiles.SCALE.getValue());
     private final int pauseTextX = (int)(330*Tiles.SCALE.getValue());
     private final int pauseTextY = (int)(85*Tiles.SCALE.getValue());
     private final int SFXTextX = (int)(325*Tiles.SCALE.getValue());
@@ -63,7 +58,6 @@ public class PauseOverlay implements MouseControls {
     }
 
     private void init() {
-        this.overlay = Utils.instance.importImage("src/main/resources/images/overlay1.png", overlayWid, overlayHei);
         this.pauseText = Utils.instance.importImage("src/main/resources/images/buttons/PauseText.png", pauseTextWid, pauseTextHei);
         this.SFXText = Utils.instance.importImage("src/main/resources/images/buttons/SFXText.png", SFXTextWid, SFXTextHei);
         this.musicText = Utils.instance.importImage("src/main/resources/images/buttons/MusicText.png", musicTextWid, musicTextHei);
@@ -83,7 +77,7 @@ public class PauseOverlay implements MouseControls {
     public void render(Graphics g) {
         g.setColor(new Color(0, 0, 0, 150));
         g.fillRect(0, 0, (int)Tiles.GAME_WIDTH.getValue(), (int)Tiles.GAME_HEIGHT.getValue());
-        g.drawImage(overlay, overlayX, overlayY, overlay.getWidth(), overlay.getHeight(), null);
+        Overlay.getInstance().renderOverlay(g);
         g.drawImage(pauseText, pauseTextX, pauseTextY, pauseText.getWidth(), pauseText.getHeight(), null);
         g.drawImage(SFXText, SFXTextX, SFXTextY, SFXText.getWidth(), SFXText.getHeight(), null);
         g.drawImage(musicText, musicTextX, musicTextY, musicText.getWidth(), musicText.getHeight(), null);

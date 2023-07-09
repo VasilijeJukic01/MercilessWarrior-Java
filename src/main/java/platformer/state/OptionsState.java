@@ -1,6 +1,5 @@
 package platformer.state;
 
-import platformer.animation.AnimationUtils;
 import platformer.core.Game;
 import platformer.model.Tiles;
 import platformer.ui.AudioOptions;
@@ -8,6 +7,7 @@ import platformer.ui.UI;
 import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.CREButton;
 import platformer.ui.buttons.PauseButton;
+import platformer.ui.overlays.Overlay;
 import platformer.utils.Utils;
 
 import java.awt.*;
@@ -21,18 +21,12 @@ public class OptionsState extends StateAbstraction implements State{
 
     private final AudioOptions audioOptions;
 
-    private final BufferedImage[] background;
-    private BufferedImage overlay;
     private BufferedImage optionsText;
     private BufferedImage SFXText, musicText, volumeText;
-    private final int animSpeed = 20;
-    private int animTick = 0, animIndex = 0;
 
     private CREButton exitBtn;
 
     // Size Variables [Init]
-    private final int overlayWid = (int)(300*Tiles.SCALE.getValue());
-    private final int overlayHei = (int)(350*Tiles.SCALE.getValue());
     private final int optionsTextWid = (int)(180*Tiles.SCALE.getValue());
     private final int optionsTextHei = (int)(40*Tiles.SCALE.getValue());
     private final int volumeTextWid = (int)(110*Tiles.SCALE.getValue());
@@ -46,8 +40,6 @@ public class OptionsState extends StateAbstraction implements State{
     private final int exitBtnY = (int)(350*Tiles.SCALE.getValue());
 
     // Size Variables [Render]
-    private final int overlayX = (int)(270*Tiles.SCALE.getValue());
-    private final int overlayY = (int)(50*Tiles.SCALE.getValue());
     private final int optionsTextX = (int)(330*Tiles.SCALE.getValue());
     private final int optionsTextY = (int)(85*Tiles.SCALE.getValue());
     private final int volumeTextX = (int)(365*Tiles.SCALE.getValue());
@@ -60,13 +52,11 @@ public class OptionsState extends StateAbstraction implements State{
     public OptionsState(Game game) {
         super(game);
         this.audioOptions = game.getAudioOptions();
-        this.background = AnimationUtils.getInstance().loadMenuAnimation();
         loadImages();
         loadButtons();
     }
 
     private void loadImages() {
-        this.overlay = Utils.instance.importImage("src/main/resources/images/overlay1.png",overlayWid, overlayHei);
         this.optionsText = Utils.instance.importImage("src/main/resources/images/buttons/OptionsText.png", optionsTextWid, optionsTextHei);
         this.volumeText = Utils.instance.importImage("src/main/resources/images/buttons/VolumeText.png", volumeTextWid, volumeTextHei);
         this.SFXText = Utils.instance.importImage("src/main/resources/images/buttons/SFXText.png", SFXTextWid, SFXTextHei);
@@ -77,28 +67,16 @@ public class OptionsState extends StateAbstraction implements State{
         this.exitBtn = new CREButton(exitBtnX, exitBtnY, UI.CRE_B_SIZE.getValue(), UI.CRE_B_SIZE.getValue(), ButtonType.EXIT);
     }
 
-    private void updateAnimation() {
-        animTick++;
-        if (animTick >= animSpeed) {
-            animTick = 0;
-            animIndex++;
-            if (animIndex >= 24) {
-                animIndex = 0;
-            }
-        }
-    }
-
     @Override
     public void update() {
-        updateAnimation();
+        Overlay.getInstance().update();
         exitBtn.update();
         audioOptions.update();
     }
 
     @Override
     public void render(Graphics g) {
-        g.drawImage(background[animIndex], 0, 0,null);
-        g.drawImage(overlay,  overlayX,  overlayY, overlay.getWidth(), overlay.getHeight(), null);
+        Overlay.getInstance().render(g);
         g.drawImage(optionsText, optionsTextX, optionsTextY, optionsText.getWidth(), optionsText.getHeight(), null);
         g.drawImage(volumeText, volumeTextX, volumeTextY, volumeText.getWidth(), volumeText.getHeight(), null);
         g.drawImage(SFXText, SFXTextX, SFXTextY, SFXText.getWidth(), SFXText.getHeight(), null);
