@@ -36,6 +36,7 @@ public class ModelUtils {
                 return 7;
             case BARREL:
             case BOX:
+            case BLACKSMITH:
                 return 8;
             case ARROW_LAUNCHER_RIGHT:
             case ARROW_LAUNCHER_LEFT:

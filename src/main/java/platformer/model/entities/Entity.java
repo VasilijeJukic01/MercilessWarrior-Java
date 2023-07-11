@@ -84,10 +84,6 @@ public abstract class Entity implements Debug {
         if (!DebugSettings.getInstance().isDebugMode()) return;
         g.setColor(color);
         g.drawRect((int)hitBox.x-xLevelOffset, (int)hitBox.y-yLevelOffset, (int)hitBox.width, (int)hitBox.height);
-        for (int i = 0; i < Tiles.TILES_WIDTH.getValue(); i++) {
-            for (int j = 0; j < Tiles.GAME_HEIGHT.getValue(); j++)
-                g.drawRect((int)(i*Tiles.TILES_SIZE.getValue()), (int)(j*Tiles.TILES_SIZE.getValue()), 64, 64);
-        }
     }
 
     public Rectangle2D.Double getHitBox() {

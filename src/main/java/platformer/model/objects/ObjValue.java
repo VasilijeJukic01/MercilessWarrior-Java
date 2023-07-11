@@ -39,7 +39,12 @@ public enum ObjValue {
     BLOCKER_WID_DEF(96),
     BLOCKER_HEI_DEF(128),
     BLOCKER_WID((int)(BLOCKER_WID_DEF.getValue()*Tiles.SCALE.getValue())),
-    BLOCKER_HEI((int)(BLOCKER_HEI_DEF.getValue()*Tiles.SCALE.getValue()));
+    BLOCKER_HEI((int)(BLOCKER_HEI_DEF.getValue()*Tiles.SCALE.getValue())),
+
+    BLACKSMITH_WID_DEF(110),
+    BLACKSMITH_HEI_DEF(85),
+    BLACKSMITH_WID((int)(BLACKSMITH_WID_DEF.getValue()*Tiles.SCALE.getValue())),
+    BLACKSMITH_HEI((int)(BLACKSMITH_HEI_DEF.getValue()*Tiles.SCALE.getValue()));
 
     private final int value;
 

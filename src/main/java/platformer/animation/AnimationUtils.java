@@ -428,6 +428,14 @@ public class AnimationUtils {
             }
         }
 
+        // Blacksmith 10
+        for (int i = 0; i < 1; i++, index++) {
+            for (int j = 0; j < 8; j++) {
+                anim[index][j] = Utils.getInstance().importImage("src/main/resources/images/objs/blacksmith/Idle"+j+".png", -1, -1);
+                anim[index][j] = Utils.getInstance().flipImage(anim[index][j]);
+            }
+        }
+
         return anim;
     }
 

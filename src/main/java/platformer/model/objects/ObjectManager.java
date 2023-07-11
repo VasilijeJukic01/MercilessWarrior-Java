@@ -36,8 +36,9 @@ public class ObjectManager {
     private final ArrayList<Coin> coins;
     private ArrayList<Shop> shops;
     private ArrayList<Blocker> blockers;
+    private ArrayList<Blacksmith> blacksmiths;
     // Flags
-    private boolean shopVisible;
+    private boolean shopVisible, blacksmithVisible;
 
     public ObjectManager(PlayingState playingState) {
         this.playingState = playingState;
@@ -46,6 +47,7 @@ public class ObjectManager {
         this.coins = new ArrayList<>();
         this.shops = new ArrayList<>();
         this.blockers = new ArrayList<>();
+        this.blacksmiths = new ArrayList<>();
         this.projectileArrow = Utils.getInstance().importImage("src/main/resources/images/objs/arrow.png", (int) PRSet.ARROW_WID.getValue(), (int)PRSet.ARROW_HEI.getValue());
         this.projectileLightningBall = new BufferedImage[6][4];
         generateLightningBalls();
@@ -70,6 +72,7 @@ public class ObjectManager {
         this.arrowLaunchers = level.getArrowLaunchers();
         this.shops = level.getShops();
         this.blockers = level.getBlockers();
+        this.blacksmiths = level.getBlacksmiths();
         projectiles.clear();
     }
 
@@ -95,6 +98,10 @@ public class ObjectManager {
         for (Shop shop : shops) {
             shop.setActive(p.getHitBox().intersects(shop.getHitBox()));
             shopVisible = p.getHitBox().intersects(shop.getHitBox());
+        }
+        for (Blacksmith blacksmith : blacksmiths) {
+            blacksmith.setActive(p.getHitBox().intersects(blacksmith.getHitBox()));
+            blacksmithVisible = p.getHitBox().intersects(blacksmith.getHitBox());
         }
     }
 
@@ -253,6 +260,10 @@ public class ObjectManager {
             if (isObjectInAir(container)) container.setOnGround(false);
             if (!container.isOnGround) landObject(container);
         }
+        for (Blacksmith blacksmith : blacksmiths) {
+            if (isObjectInAir(blacksmith)) blacksmith.setOnGround(false);
+            if (!blacksmith.isOnGround) landObject(blacksmith);
+        }
     }
 
     // Launchers
@@ -356,6 +367,12 @@ public class ObjectManager {
         }
     }
 
+    private void updateBlacksmiths() {
+        for (Blacksmith blacksmith : blacksmiths) {
+            blacksmith.update();
+        }
+    }
+
     // Core
     public void update(int[][] lvlData, Player player) {
         for (Potion potion : potions) if (potion.isAlive()) potion.update();
@@ -366,6 +383,7 @@ public class ObjectManager {
         updateCoins();
         updateShops();
         updateBlockers();
+        updateBlacksmiths();
         checkEnemyIntersection();
     }
 
@@ -378,6 +396,7 @@ public class ObjectManager {
         renderCoins(g, xLevelOffset, yLevelOffset);
         renderShops(g, xLevelOffset, yLevelOffset);
         renderBlockers(g, xLevelOffset, yLevelOffset);
+        renderBlacksmiths(g, xLevelOffset, yLevelOffset);
     }
 
     // Render
@@ -514,6 +533,16 @@ public class ObjectManager {
             int y = (int)b.getHitBox().y-b.getYOffset()-yLevelOffset+(int)(12*Tiles.SCALE.getValue());
             g.drawImage(objects[b.getObjType().ordinal()][b.getAnimIndex()], x, y, ObjValue.BLOCKER_WID.getValue(), ObjValue.BLOCKER_HEI.getValue(), null);
             b.hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.MAGENTA);
+        }
+    }
+
+    private void renderBlacksmiths(Graphics g, int xLevelOffset, int yLevelOffset) {
+        for (Blacksmith b : blacksmiths) {
+            int x = (int)b.getHitBox().x-b.getXOffset()-xLevelOffset;
+            int y = (int)b.getHitBox().y-b.getYOffset()-yLevelOffset+(int)(1*Tiles.SCALE.getValue());
+            g.drawImage(objects[b.getObjType().ordinal()][b.getAnimIndex()], x, y, ObjValue.BLACKSMITH_WID.getValue(), ObjValue.BLACKSMITH_HEI.getValue(), null);
+            b.hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.MAGENTA);
+            b.render(g, xLevelOffset, yLevelOffset);
         }
     }
 

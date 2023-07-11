@@ -36,6 +36,7 @@ public class Level {
     private final ArrayList<ArrowLauncher> arrowLaunchers = new ArrayList<>();
     private final ArrayList<Shop> shops = new ArrayList<>();
     private final ArrayList<Blocker> blockers = new ArrayList<>();
+    private final ArrayList<Blacksmith> blacksmiths = new ArrayList<>();
     // Spells
     private final ArrayList<Lightning> lightnings = new ArrayList<>();
     private final ArrayList<Flash> flashes = new ArrayList<>();
@@ -101,6 +102,8 @@ public class Level {
                         shops.add(new Shop(ObjType.SHOP, (int)(i*Tiles.TILES_SIZE.getValue()), (int)(j*Tiles.TILES_SIZE.getValue()))); break;
                     case BLOCKER:
                         blockers.add(new Blocker(ObjType.BLOCKER, (int)((i-1.75)*Tiles.TILES_SIZE.getValue()), (int)((j-1)*Tiles.TILES_SIZE.getValue()))); break;
+                    case BLACKSMITH:
+                        blacksmiths.add(new Blacksmith(ObjType.BLACKSMITH, (int)(i*Tiles.TILES_SIZE.getValue()), (int)(j*Tiles.TILES_SIZE.getValue()))); break;
                     default: break;
                 }
             }
@@ -154,6 +157,7 @@ public class Level {
         shops.clear();
         arrowLaunchers.clear();
         blockers.clear();
+        blacksmiths.clear();
     }
 
     public int getSpriteIndex(int x, int y) {
@@ -218,6 +222,10 @@ public class Level {
 
     public ArrayList<Blocker> getBlockers() {
         return blockers;
+    }
+
+    public ArrayList<Blacksmith> getBlacksmiths() {
+        return blacksmiths;
     }
 
     public ArrayList<Lightning> getLightnings() {
