@@ -558,4 +558,8 @@ public class ObjectManager {
     public boolean isShopVisible() {
         return shopVisible;
     }
+
+    public boolean isBlacksmithVisible() {
+        return blacksmithVisible;
+    }
 }

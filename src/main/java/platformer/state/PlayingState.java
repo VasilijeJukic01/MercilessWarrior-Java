@@ -11,7 +11,9 @@ import platformer.core.Game;
 import platformer.model.entities.Player;
 import platformer.model.levels.LevelManager;
 import platformer.model.objects.ObjectManager;
+import platformer.model.perks.PerksManager;
 import platformer.model.spells.SpellManager;
+import platformer.ui.overlays.BlacksmithOverlay;
 import platformer.ui.overlays.GameOverOverlay;
 import platformer.ui.overlays.PauseOverlay;
 import platformer.ui.overlays.ShopOverlay;
@@ -35,14 +37,16 @@ public class PlayingState extends StateAbstraction implements State {
     private ObjectManager objectManager;
     private EnemyManager enemyManager;
     private SpellManager spellManager;
+    private PerksManager perksManager;
 
     // Overlays
     private PauseOverlay pauseOverlay;
     private GameOverOverlay gameOverOverlay;
     private ShopOverlay shopOverlay;
+    private BlacksmithOverlay blacksmithOverlay;
 
     // Flags
-    private boolean paused, gameOver, dying, shopVisible;
+    private boolean paused, gameOver, dying, shopVisible, bmVisible;
 
     // Borders
     private int xLevelOffset;
@@ -74,7 +78,9 @@ public class PlayingState extends StateAbstraction implements State {
         this.pauseOverlay = new PauseOverlay(game);
         this.gameOverOverlay = new GameOverOverlay(game);
         this.shopOverlay = new ShopOverlay(this);
+        this.blacksmithOverlay = new BlacksmithOverlay(this);
         this.spellManager = new SpellManager(this);
+        this.perksManager = new PerksManager();
         loadStartLevel();
     }
 
@@ -145,6 +151,7 @@ public class PlayingState extends StateAbstraction implements State {
             yBorderUpdate();
             this.player.update();
             if (shopVisible) this.shopOverlay.update();
+            if (bmVisible) this.blacksmithOverlay.update();
         }
     }
 
@@ -160,6 +167,7 @@ public class PlayingState extends StateAbstraction implements State {
         if (paused) this.pauseOverlay.render(g);
         if (gameOver) this.gameOverOverlay.render(g);
         if (shopVisible) this.shopOverlay.render(g);
+        else if (bmVisible) this.blacksmithOverlay.render(g);
     }
 
     @Override
@@ -172,6 +180,7 @@ public class PlayingState extends StateAbstraction implements State {
         if (paused) pauseOverlay.mousePressed(e);
         else if (gameOver) gameOverOverlay.mousePressed(e);
         else if (shopVisible) shopOverlay.mousePressed(e);
+        else if (bmVisible) blacksmithOverlay.mousePressed(e);
     }
 
     @Override
@@ -179,6 +188,7 @@ public class PlayingState extends StateAbstraction implements State {
         if (paused) pauseOverlay.mouseReleased(e);
         else if (gameOver) gameOverOverlay.mouseReleased(e);
         else if (shopVisible) shopOverlay.mouseReleased(e);
+        else if (bmVisible) blacksmithOverlay.mouseReleased(e);
     }
 
     @Override
@@ -186,6 +196,7 @@ public class PlayingState extends StateAbstraction implements State {
         if (paused) pauseOverlay.mouseMoved(e);
         else if (gameOver) gameOverOverlay.mouseMoved(e);
         else if (shopVisible) shopOverlay.mouseMoved(e);
+        else if (bmVisible) blacksmithOverlay.mouseMoved(e);
     }
 
     @Override
@@ -196,7 +207,7 @@ public class PlayingState extends StateAbstraction implements State {
     // Input
     @Override
     public void keyPressed(KeyEvent e) {
-        if (shopVisible && e.getKeyCode() != KeyEvent.VK_ESCAPE) return;
+        if ((shopVisible || bmVisible) && e.getKeyCode() != KeyEvent.VK_ESCAPE) return;
         if (gameOver && e.getKeyCode() != KeyEvent.VK_ESCAPE) return;
         if (gameOver && e.getKeyCode() == KeyEvent.VK_ESCAPE) {
             reset();
@@ -242,7 +253,10 @@ public class PlayingState extends StateAbstraction implements State {
                 player.setBlock(true);
                 break;
             case KeyEvent.VK_ESCAPE:
-                if (shopVisible) shopVisible = false;
+                if (shopVisible || bmVisible) {
+                    if (shopVisible) shopVisible = false;
+                    else bmVisible = false;
+                }
                 else paused = !paused;
                 break;
             default: break;
@@ -277,6 +291,7 @@ public class PlayingState extends StateAbstraction implements State {
                 break;
             case KeyEvent.VK_F:
                 if (objectManager.isShopVisible() && !shopVisible) shopVisible = true;
+                if (objectManager.isBlacksmithVisible() && !bmVisible) bmVisible = true;
                 break;
             case KeyEvent.VK_F1: // Show HitBox
                 if (!game.getAccount().isEnableCheats()) break;
@@ -359,7 +374,15 @@ public class PlayingState extends StateAbstraction implements State {
         return spellManager;
     }
 
+    public PerksManager getPerksManager() {
+        return perksManager;
+    }
+
     public void setShopVisible(boolean shopVisible) {
         this.shopVisible = shopVisible;
+    }
+
+    public void setBmVisible(boolean bmVisible) {
+        this.bmVisible = bmVisible;
     }
 }
