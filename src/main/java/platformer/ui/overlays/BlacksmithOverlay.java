@@ -69,6 +69,7 @@ public class BlacksmithOverlay implements MouseControls {
         this.selectedSlot = new Rectangle2D.Double((slot%SLOT_MAX_ROW)*slotSpacing+slotX, (slot/SLOT_MAX_ROW)*slotSpacing+slotY, slotWid, slotHei);
     }
 
+    // Core
     public void update() {
         for (ShopButton button : buttons) {
             button.update();
@@ -81,17 +82,19 @@ public class BlacksmithOverlay implements MouseControls {
         for (ShopButton button : buttons) {
             button.render(g);
         }
-        g.setColor(Color.RED);
         renderSlots(g);
         renderPerks(g);
+        g.setColor(Color.RED);
         g.drawRect((int)selectedSlot.x, (int)selectedSlot.y,  (int)selectedSlot.width,  (int)selectedSlot.height);
     }
 
+    // Render
     private boolean isSafe(int i, int j, int n, int m) {
         return i >= 0 && j >= 0 && i < n && j < m;
     }
 
     private void renderSlots(Graphics g) {
+        g.setColor(Color.RED);
         for (int i = 0; i < SLOT_MAX_ROW; i++) {
             for (int j = 0; j < SLOT_MAX_COL; j++) {
                 if (placeHolders[i][j] == 1) {
@@ -113,12 +116,17 @@ public class BlacksmithOverlay implements MouseControls {
 
     private void renderPerks(Graphics g) {
         for (Perk p : playingState.getPerksManager().getPerks()) {
-            int y = (p.getSlot()/SLOT_MAX_COL)*slotSpacing+slotY + slotHei/4;
             int x = (p.getSlot()%SLOT_MAX_COL)*slotSpacing+slotX + slotWid/4;
+            int y = (p.getSlot()/SLOT_MAX_COL)*slotSpacing+slotY + slotHei/4;
             g.drawImage(p.getImage(), x, y, slotWid/2, slotHei/2, null);
+            if (p.isLocked()) {
+                g.setColor(new Color(0, 0, 0, 200));
+                g.fillRect((p.getSlot()%SLOT_MAX_COL)*slotSpacing+slotX, (p.getSlot()/SLOT_MAX_COL)*slotSpacing+slotY, slotWid, slotHei);
+            }
         }
     }
 
+    // Other
     private void changeSlot(MouseEvent e) {
         int x = e.getX(), y = e.getY();
         for (int i = 0; i < SLOT_MAX_COL; i++) {
@@ -131,6 +139,10 @@ public class BlacksmithOverlay implements MouseControls {
                 }
             }
         }
+    }
+
+    public void upgrade() {
+        playingState.getPerksManager().upgrade(placeHolders, SLOT_MAX_COL, SLOT_MAX_ROW, slot);
     }
 
     @Override
@@ -155,7 +167,7 @@ public class BlacksmithOverlay implements MouseControls {
             if (isMouseInButton(e, button) && button.isMousePressed()) {
                 switch (button.getButtonType()) {
                     case BUY:
-                        // TODO
+                        upgrade();
                         break;
                     case LEAVE:
                         playingState.setBmVisible(false);

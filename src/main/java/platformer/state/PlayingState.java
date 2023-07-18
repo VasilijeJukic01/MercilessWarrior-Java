@@ -3,6 +3,7 @@ package platformer.state;
 import platformer.debug.DebugSettings;
 import platformer.debug.Message;
 import platformer.model.entities.Cooldown;
+import platformer.model.entities.PlayerBonus;
 import platformer.model.entities.effects.Particle;
 import platformer.model.entities.enemies.EnemyManager;
 import platformer.model.entities.AttackState;
@@ -234,7 +235,7 @@ public class PlayingState extends StateAbstraction implements State {
             case KeyEvent.VK_X:
                 if (player.getCooldown()[Cooldown.ATTACK.ordinal()] != 0) return;
                 player.setPlayerAttackState(AttackState.ATTACK_1);
-                player.getCooldown()[Cooldown.ATTACK.ordinal()] = 0.5;
+                player.getCooldown()[Cooldown.ATTACK.ordinal()] = 0.75+PlayerBonus.getInstance().getBonusCooldown();
                 break;
             case KeyEvent.VK_C:
                 if (pressedKeys.contains(key) && player.getSpellState() != 0) return;

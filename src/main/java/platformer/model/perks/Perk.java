@@ -11,8 +11,8 @@ public class Perk {
     private final String description;
     private final int cost;
     private final String name;
-    private boolean locked;
-    private Perk parent;
+    private boolean locked = true;
+    private boolean upgraded;
 
     public Perk(int slot, String imageName, String description, int cost, String name) {
         this.slot = slot;
@@ -40,5 +40,21 @@ public class Perk {
 
     public String getName() {
         return name;
+    }
+
+    public boolean isLocked() {
+        return locked;
+    }
+
+    public void setLocked(boolean locked) {
+        this.locked = locked;
+    }
+
+    public boolean isUpgraded() {
+        return upgraded;
+    }
+
+    public void setUpgraded(boolean upgraded) {
+        this.upgraded = upgraded;
     }
 }

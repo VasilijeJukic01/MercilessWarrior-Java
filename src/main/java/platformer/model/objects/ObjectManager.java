@@ -7,6 +7,7 @@ import platformer.debug.Message;
 import platformer.model.Tiles;
 import platformer.model.entities.Direction;
 import platformer.model.entities.Player;
+import platformer.model.entities.PlayerBonus;
 import platformer.model.entities.enemies.boss.SpearWoman;
 import platformer.model.levels.Level;
 import platformer.model.objects.projectiles.*;
@@ -402,7 +403,7 @@ public class ObjectManager {
     // Render
     public void generateCoins(Rectangle2D.Double location) {
         Random rand = new Random();
-        int n = rand.nextInt(7);
+        int n = rand.nextInt(7+PlayerBonus.getInstance().getBonusCoin());
         for (int i = 0; i < n; i++) {
             int x = rand.nextInt((int)location.width)+(int)location.x;
             int y = rand.nextInt((int)(location.height/3)) + (int)location.y + 2*(int)location.height/3;

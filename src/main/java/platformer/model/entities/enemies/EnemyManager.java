@@ -7,6 +7,7 @@ import platformer.debug.Message;
 import platformer.model.Tiles;
 import platformer.model.entities.Direction;
 import platformer.model.entities.Player;
+import platformer.model.entities.PlayerBonus;
 import platformer.model.entities.enemies.boss.SpearWoman;
 import platformer.model.levels.Level;
 import platformer.model.objects.GameObject;
@@ -119,7 +120,8 @@ public class EnemyManager {
         for (Skeleton skeleton : skeletons) {
             if (skeleton.isAlive() && skeleton.getEnemyAction() != AnimType.DEATH) {
                 if (attackBox.intersects(skeleton.getHitBox())) {
-                    int dmg = player.isTransform() ? 8 : 5;
+                    int dmg = player.isTransform() ? player.getTransformAttackDmg() : player.getAttackDmg();
+                    dmg += PlayerBonus.getInstance().getBonusAttack();
                     skeleton.hit(dmg, true, true);
                     checkEnemyDying(skeleton, player);
                     if (skeleton.getEnemyAction() == AnimType.BLOCK) playingState.getGame().notifyLogger("Enemy blocks player's attack.", Message.NOTIFICATION);
@@ -132,7 +134,8 @@ public class EnemyManager {
             if (ghoul.isAlive() && ghoul.getEnemyAction() != AnimType.DEATH) {
                 if (attackBox.intersects(ghoul.getHitBox())) {
                     if (ghoul.getEnemyAction() == AnimType.HIDE || ghoul.getEnemyAction() == AnimType.REVEAL) return;
-                    int dmg = player.isTransform() ? 12 : 5;
+                    int dmg = player.isTransform() ? player.getTransformAttackDmg() : player.getAttackDmg();
+                    dmg += PlayerBonus.getInstance().getBonusAttack();
                     ghoul.hit(dmg, true, true);
                     checkEnemyDying(ghoul, player);
                     playingState.getGame().notifyLogger("Player gives damage to enemy: "+dmg, Message.NOTIFICATION);
@@ -144,7 +147,8 @@ public class EnemyManager {
         if (spearWoman == null) return;
         if (spearWoman.isAlive() && spearWoman.getEnemyAction() != AnimType.DEATH) {
             if (attackBox.intersects(spearWoman.getHitBox())) {
-                int dmg = player.isTransform() ? 12 : 5;
+                int dmg = player.isTransform() ? player.getTransformAttackDmg() : player.getAttackDmg();
+                dmg += PlayerBonus.getInstance().getBonusAttack();
                 spearWoman.hit(dmg);
                 checkEnemyDying(spearWoman, player);
                 playingState.getGame().notifyLogger("Player gives damage to enemy: "+dmg, Message.NOTIFICATION);

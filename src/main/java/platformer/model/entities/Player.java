@@ -50,6 +50,7 @@ public class Player extends Entity {
     private boolean doubleJump, onWall, onObject, wallPush, canDash = true, canBlock, canTransform;
     // Status
     private final UserInterface userInterface;
+    private final int attackDmg = 5, transformAttackDmg = 8;
     private final int maxStamina = 100;
     private double currentStamina = 15;
     private int currentJumps = 0, dashCount = 0;
@@ -344,7 +345,7 @@ public class Player extends Entity {
             canDash = false;
             Audio.getInstance().getAudioPlayer().playSound(Sounds.DASH.ordinal());
             changeStamina(-3);
-            cooldown[Cooldown.DASH.ordinal()] = 1;
+            cooldown[Cooldown.DASH.ordinal()] = 1.75 + PlayerBonus.getInstance().getDashCooldown();
         }
     }
 
@@ -362,7 +363,7 @@ public class Player extends Entity {
             else hit = true;
         }
         currentHealth += value;
-        currentHealth = Math.max(Math.min(currentHealth, maxHealth), 0);
+        currentHealth = Math.max(Math.min(currentHealth, maxHealth+PlayerBonus.getInstance().getBonusHealth()), 0);
     }
 
     public void changeHealth(int value, Object o) {
@@ -379,7 +380,7 @@ public class Player extends Entity {
 
     public void changeStamina(double value) {
         currentStamina += value;
-        currentStamina = Math.max(Math.min(currentStamina, maxStamina), 0);
+        currentStamina = Math.max(Math.min(currentStamina, maxStamina+PlayerBonus.getInstance().getBonusPower()), 0);
         if (currentStamina == 0) {
             transform = false;
             if (spellState == 1) spellState = 2;
@@ -387,7 +388,7 @@ public class Player extends Entity {
     }
 
     public void changeExp(double value) {
-        exp += value;
+        exp += value+PlayerBonus.getInstance().getBonusExp();
         exp = Math.max(Math.min(exp, maxExp), 0);
         if (exp > 1000*level) {
             exp = exp % (1000*level);
@@ -466,7 +467,7 @@ public class Player extends Entity {
 
     // Core
     public void update() {
-        userInterface.update(currentHealth, maxHealth, currentStamina, maxStamina, exp, 1000*level);
+        userInterface.update(currentHealth, maxHealth+PlayerBonus.getInstance().getBonusHealth(), currentStamina, maxStamina+PlayerBonus.getInstance().getBonusPower(), exp, 1000*level);
         if (currentHealth <= 0) {
             updateDeath();
             return;
@@ -526,7 +527,7 @@ public class Player extends Entity {
         left = right = jump = false;
         animIndex = animTick = 0;
         entityState = AnimType.IDLE;
-        currentHealth = maxHealth;
+        currentHealth = maxHealth+PlayerBonus.getInstance().getBonusHealth();
         currentStamina = 0;
         hitBox.x = xPos;
         hitBox.y = yPos;
@@ -593,6 +594,14 @@ public class Player extends Entity {
         return spellState;
     }
 
+    public int getAttackDmg() {
+        return attackDmg;
+    }
+
+    public int getTransformAttackDmg() {
+        return transformAttackDmg;
+    }
+
     public void setSpellState(int spellState) {
         if (spellState == 2 && this.spellState == 1) animIndex = 10;
         if (spellState == 0) Audio.getInstance().getAudioPlayer().stopSound(Sounds.FIRE_SPELL_1.ordinal());
@@ -637,6 +646,7 @@ public class Player extends Entity {
     }
 
     public void setCanTransform(boolean canTransform) {
+        if (!PlayerBonus.getInstance().isTransform()) return;
         if (transform) transform = false;
         else {
             this.canTransform = canTransform;
