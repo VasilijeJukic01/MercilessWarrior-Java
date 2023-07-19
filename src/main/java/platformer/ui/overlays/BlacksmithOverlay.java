@@ -33,7 +33,7 @@ public class BlacksmithOverlay implements MouseControls {
     };
 
     // Size Variables [Init]
-    private final int overlayWid = (int)(500* Tiles.SCALE.getValue());
+    private final int overlayWid = (int)(700*Tiles.SCALE.getValue());
     private final int overlayHei = (int)(410*Tiles.SCALE.getValue());
     private final int shopTextWid = (int)(180*Tiles.SCALE.getValue());
     private final int shopTextHei = (int)(60*Tiles.SCALE.getValue());
@@ -41,7 +41,7 @@ public class BlacksmithOverlay implements MouseControls {
     private final int slotHei = (int)(40*Tiles.SCALE.getValue());
 
     // Size Variables [Render]
-    private final int overlayX = (int)(170*Tiles.SCALE.getValue());
+    private final int overlayX = (int)(65*Tiles.SCALE.getValue());
     private final int overlayY = (int)(30*Tiles.SCALE.getValue());
     private final int shopTextX = (int)(330*Tiles.SCALE.getValue());
     private final int shopTextY = (int)(60*Tiles.SCALE.getValue());
@@ -49,7 +49,7 @@ public class BlacksmithOverlay implements MouseControls {
     private final int buyBtnY = (int)(380*Tiles.SCALE.getValue());
     private final int exitBtnX = (int)(440*Tiles.SCALE.getValue());
     private final int exitBtnY = (int)(380*Tiles.SCALE.getValue());
-    private final int slotX = (int)(210*Tiles.SCALE.getValue());
+    private final int slotX = (int)(110*Tiles.SCALE.getValue());
     private final int slotY = (int)(140*Tiles.SCALE.getValue());
 
     private final int slotSpacing = (int)(60*Tiles.SCALE.getValue());
@@ -84,6 +84,7 @@ public class BlacksmithOverlay implements MouseControls {
         }
         renderSlots(g);
         renderPerks(g);
+        renderPerkInfo(g);
         g.setColor(Color.RED);
         g.drawRect((int)selectedSlot.x, (int)selectedSlot.y,  (int)selectedSlot.width,  (int)selectedSlot.height);
     }
@@ -123,6 +124,24 @@ public class BlacksmithOverlay implements MouseControls {
                 g.setColor(new Color(0, 0, 0, 200));
                 g.fillRect((p.getSlot()%SLOT_MAX_COL)*slotSpacing+slotX, (p.getSlot()/SLOT_MAX_COL)*slotSpacing+slotY, slotWid, slotHei);
             }
+            else if (p.isUpgraded()) {
+                g.setColor(new Color(255, 100, 0, 100));
+                g.fillRect((p.getSlot()%SLOT_MAX_COL)*slotSpacing+slotX, (p.getSlot()/SLOT_MAX_COL)*slotSpacing+slotY, slotWid, slotHei);
+            }
+        }
+    }
+
+    private void renderPerkInfo(Graphics g) {
+        for (Perk perk : playingState.getPerksManager().getPerks()) {
+            if (slot == perk.getSlot()) {
+                g.setColor(Color.WHITE);
+                g.setFont(new Font("Arial", Font.BOLD, (int)(10*Tiles.SCALE.getValue())));
+                g.drawString("Tokens: "+playingState.getPlayer().getUpgradeTokens(), (int)(550*Tiles.SCALE.getValue()), (int)(150*Tiles.SCALE.getValue()));
+                g.drawString(perk.getName(), (int)(550*Tiles.SCALE.getValue()), (int)(240*Tiles.SCALE.getValue()));
+                g.drawString("Cost: "+perk.getCost(), (int)(550*Tiles.SCALE.getValue()), (int)(255*Tiles.SCALE.getValue()));
+                g.setFont(new Font("Arial", Font.PLAIN, (int)(10*Tiles.SCALE.getValue())));
+                g.drawString(perk.getDescription(), (int)(550*Tiles.SCALE.getValue()), (int)(275*Tiles.SCALE.getValue()));
+            }
         }
     }
 
@@ -141,7 +160,18 @@ public class BlacksmithOverlay implements MouseControls {
         }
     }
 
+    private boolean checkTokens() {
+        for (Perk perk : playingState.getPerksManager().getPerks()) {
+            if (slot == perk.getSlot() && playingState.getPlayer().getUpgradeTokens() >= perk.getCost()) {
+                playingState.getPlayer().changeUpgradeTokens(-perk.getCost());
+                return true;
+            }
+        }
+        return false;
+    }
+
     public void upgrade() {
+        if (!checkTokens()) return;
         playingState.getPerksManager().upgrade(placeHolders, SLOT_MAX_COL, SLOT_MAX_ROW, slot);
     }
 

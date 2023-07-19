@@ -20,7 +20,7 @@ public class PerksManager {
     // Init
     private void initPerks() {
         perks.add(new Perk(0, "Perk0", "Increase gained XP by 15%", 1, "XP Bonus"));
-        perks.add(new Perk(2, "Perk1", "Reduce attack cooldown by 30%", 2, "Strong Arms"));
+        perks.add(new Perk(2, "Perk1", "Reduce attack cooldown by 30%", 1, "Strong Arms"));
         perks.add(new Perk(4, "Perk2", "Unlock fire ball spell", 1, "Ancient Notes"));
         perks.add(new Perk(6, "Perk3", "Increase stamina capacity by 20%", 1, "Power Pills"));
         perks.add(new Perk(7, "Perk4", "Get more coins from loot", 1, "Lucky Drop"));
@@ -57,7 +57,7 @@ public class PerksManager {
         ArrayList<Integer> unlocks = new ArrayList<>();
         int I = slot/n, J = slot%n;
         for (Perk perk : perks) {
-            if (perk.getSlot() == slot) {
+            if (perk.getSlot() == slot && !perk.isLocked()) {
                 if (perk.isUpgraded()) return;
                 perk.setUpgraded(true);
                 unlock(perk);
@@ -88,7 +88,7 @@ public class PerksManager {
             case "Fast Eye": PlayerBonus.getInstance().setDeflect(true); break;
             case "Amber": PlayerBonus.getInstance().setLavaWalk(true); break;
             case "Dragon Fruit": PlayerBonus.getInstance().setBonusPower(26); break;
-            case "Elementary Magic": PlayerBonus.getInstance().setCriticalHitChance(2); break;
+            case "Elementary Magic": PlayerBonus.getInstance().setCriticalHitChance(5); break;
             case "Unbreakable Bones": PlayerBonus.getInstance().setDashSlash(true); break;
             case "God's Blood": PlayerBonus.getInstance().setBonusHealth(32); break;
             default: break;

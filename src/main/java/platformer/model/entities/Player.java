@@ -55,7 +55,7 @@ public class Player extends Entity {
     private double currentStamina = 15;
     private int currentJumps = 0, dashCount = 0;
     private int dashTick = 0;
-    private int coins = 0, exp = 0, level = 1;
+    private int coins = 0, exp = 0, level = 1, upgradeTokens = 0;
     private final int maxExp = 10000;
     // Cooldowns
     private final double[] cooldown;
@@ -296,6 +296,7 @@ public class Player extends Entity {
         attackCheck = !dash;
         enemyManager.checkEnemyHit(attackBox, this);
         objectManager.checkObjectBreak(attackBox);
+        objectManager.checkArrowDeflect(attackBox);
     }
 
     private void checkOnObject() {
@@ -393,12 +394,18 @@ public class Player extends Entity {
         if (exp > 1000*level) {
             exp = exp % (1000*level);
             level++;
+            if (level % 2 == 0) changeUpgradeTokens(1);
         }
     }
 
     public void changeCoins(int value) {
         coins += value;
         coins = Math.max(coins, 0);
+    }
+
+    public void changeUpgradeTokens(int value) {
+        upgradeTokens += value;
+        upgradeTokens = Math.max(upgradeTokens, 0);
     }
 
     public void kill() {
@@ -622,6 +629,7 @@ public class Player extends Entity {
         if (canBlock) {
             game.notifyLogger("Damage blocked successfully!", Message.INFORMATION);
             cooldown[Cooldown.BLOCK.ordinal()] = 1.2;
+            if (PlayerBonus.getInstance().isRestorePower()) changeStamina(5);
         }
     }
 
@@ -656,6 +664,10 @@ public class Player extends Entity {
 
     public boolean isTransform() {
         return transform;
+    }
+
+    public int getUpgradeTokens() {
+        return upgradeTokens;
     }
 
     @Override

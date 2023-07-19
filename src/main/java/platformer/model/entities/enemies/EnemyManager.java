@@ -116,12 +116,20 @@ public class EnemyManager {
         }
     }
 
+    private int damage(Player player) {
+        int dmg = player.isTransform() ? player.getTransformAttackDmg() : player.getAttackDmg();
+        dmg += PlayerBonus.getInstance().getBonusAttack();
+        Random rand = new Random();
+        int criticalHit = rand.nextInt(100-PlayerBonus.getInstance().getCriticalHitChance());
+        if (criticalHit >= 1 && criticalHit <= 10) dmg *= 2;
+        return dmg;
+    }
+
     public void checkEnemyHit(Rectangle2D.Double attackBox, Player player) {
         for (Skeleton skeleton : skeletons) {
             if (skeleton.isAlive() && skeleton.getEnemyAction() != AnimType.DEATH) {
                 if (attackBox.intersects(skeleton.getHitBox())) {
-                    int dmg = player.isTransform() ? player.getTransformAttackDmg() : player.getAttackDmg();
-                    dmg += PlayerBonus.getInstance().getBonusAttack();
+                    int dmg = damage(player);
                     skeleton.hit(dmg, true, true);
                     checkEnemyDying(skeleton, player);
                     if (skeleton.getEnemyAction() == AnimType.BLOCK) playingState.getGame().notifyLogger("Enemy blocks player's attack.", Message.NOTIFICATION);
@@ -134,8 +142,7 @@ public class EnemyManager {
             if (ghoul.isAlive() && ghoul.getEnemyAction() != AnimType.DEATH) {
                 if (attackBox.intersects(ghoul.getHitBox())) {
                     if (ghoul.getEnemyAction() == AnimType.HIDE || ghoul.getEnemyAction() == AnimType.REVEAL) return;
-                    int dmg = player.isTransform() ? player.getTransformAttackDmg() : player.getAttackDmg();
-                    dmg += PlayerBonus.getInstance().getBonusAttack();
+                    int dmg = damage(player);
                     ghoul.hit(dmg, true, true);
                     checkEnemyDying(ghoul, player);
                     playingState.getGame().notifyLogger("Player gives damage to enemy: "+dmg, Message.NOTIFICATION);
@@ -147,8 +154,7 @@ public class EnemyManager {
         if (spearWoman == null) return;
         if (spearWoman.isAlive() && spearWoman.getEnemyAction() != AnimType.DEATH) {
             if (attackBox.intersects(spearWoman.getHitBox())) {
-                int dmg = player.isTransform() ? player.getTransformAttackDmg() : player.getAttackDmg();
-                dmg += PlayerBonus.getInstance().getBonusAttack();
+                int dmg = damage(player);
                 spearWoman.hit(dmg);
                 checkEnemyDying(spearWoman, player);
                 playingState.getGame().notifyLogger("Player gives damage to enemy: "+dmg, Message.NOTIFICATION);

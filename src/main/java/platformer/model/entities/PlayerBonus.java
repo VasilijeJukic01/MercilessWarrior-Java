@@ -4,8 +4,8 @@ public class PlayerBonus {
 
     public static PlayerBonus instance = null;
 
-    private int bonusAttack, bonusHealth, bonusPower, bonusExp, bonusCoin;
-    private double bonusCooldown, dashCooldown, criticalHitChance;
+    private int bonusAttack, bonusHealth, bonusPower, bonusExp, bonusCoin, criticalHitChance;
+    private double bonusCooldown, dashCooldown;
     private boolean fireball, transform, restorePower, deflect, lavaWalk, dashSlash;
 
     private PlayerBonus() {}
@@ -73,11 +73,11 @@ public class PlayerBonus {
         this.dashCooldown = dashCooldown;
     }
 
-    public double getCriticalHitChance() {
+    public int getCriticalHitChance() {
         return criticalHitChance;
     }
 
-    public void setCriticalHitChance(double criticalHitChance) {
+    public void setCriticalHitChance(int criticalHitChance) {
         this.criticalHitChance = criticalHitChance;
     }
 

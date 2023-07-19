@@ -150,6 +150,15 @@ public class ObjectManager {
         }
     }
 
+    public void checkArrowDeflect(Rectangle2D.Double attackBox) {
+        if (!PlayerBonus.getInstance().isDeflect()) return;
+        for (Projectile projectile : projectiles) {
+            if (projectile.isAlive() && attackBox.intersects(projectile.getHitBox())) {
+                projectile.setAlive(false);
+            }
+        }
+    }
+
     // Object Touch & Bounds
     public boolean isPlayerTouchingObject() {
         for (Container c : containers) {
