@@ -1,0 +1,51 @@
+package platformer.animation.graphics;
+
+import platformer.model.entities.Direction;
+
+import java.awt.*;
+
+public class CircularAnim implements GraphicsAnimation {
+
+    private Direction direction;
+    private double angle;
+    private double angularSpeed;
+    private double radius;
+    private int p, q;
+
+    public CircularAnim(double angle, double angularSpeed, double radius, int p, int q) {
+        this.angle = angle;
+        this.angularSpeed = angularSpeed;
+        this.radius = radius;
+        this.p = p;
+        this.q = q;
+    }
+
+    @Override
+    public Point calculatePoint() {
+        double theta = (direction == Direction.LEFT) ? angle : -angle;
+        int x1 = (int)(p+radius*Math.cos(theta));
+        int y1 = (int)(q+radius*Math.sin(theta));
+        angle += angularSpeed;
+        q += 1;
+        return new Point(x1, y1);
+    }
+
+    @Override
+    public void movementRender(Graphics g, boolean viewMovement) {
+        Point curve = calculatePoint();
+        g.setColor(Color.RED);
+        g.drawRect(curve.x-25, curve.y-25, 50, 50);
+
+        if (viewMovement) {
+            g.setColor(Color.GREEN);
+            g.drawLine(p, q, curve.x, curve.y);
+            int diameter = (int)(2 * radius);
+            g.setColor(Color.BLUE);
+            g.drawOval((int)(p - radius), (int)(q - radius), diameter, diameter);
+        }
+    }
+
+    public void setDirection(Direction direction) {
+        this.direction = direction;
+    }
+}
