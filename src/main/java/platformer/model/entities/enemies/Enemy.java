@@ -20,7 +20,7 @@ public abstract class Enemy extends Entity implements Debug {
     protected final Random rand;
     private final EnemyType enemyType;
     protected double enemySpeed = 0.2*Tiles.SCALE.getValue();
-    protected int animSpeed, animIndex, animTick = 0;
+    protected int originalAnimSpeed, animSpeed, animIndex, animTick = 0;
     protected Direction direction = Direction.RIGHT;
     protected double attackRange = 1.25*Tiles.TILES_SIZE.getValue();
     protected boolean alive = true;
@@ -30,7 +30,7 @@ public abstract class Enemy extends Entity implements Debug {
     public Enemy(int xPos, int yPos, int width, int height, EnemyType enemyType, int animSpeed) {
         super(xPos, yPos, width, height);
         this.enemyType = enemyType;
-        this.animSpeed = animSpeed;
+        this.animSpeed = this.originalAnimSpeed = animSpeed;
         this.maxHealth = ModelUtils.getInstance().getHealth(enemyType);
         this.currentHealth = maxHealth;
         this.rand = new Random();
@@ -130,7 +130,7 @@ public abstract class Enemy extends Entity implements Debug {
         entityState = AnimType.IDLE;
         alive = true;
         animIndex = animTick = 0;
-        animSpeed = 25;
+        animSpeed = originalAnimSpeed;
         enemySpeed = 0.2*Tiles.SCALE.getValue();
         pushOffset = 0;
     }

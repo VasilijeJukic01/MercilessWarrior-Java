@@ -17,7 +17,8 @@ public enum PRSet {
     LB_HEI((int)(LB_DEF_HEI.getValue()*Tiles.SCALE.getValue())),
 
     LB_SPEED_FAST((1.0*Tiles.SCALE.getValue())),
-    LB_SPEED_MEDIUM((0.5*Tiles.SCALE.getValue()));
+    LB_SPEED_MEDIUM((0.75*Tiles.SCALE.getValue())),
+    LB_SPEED_SLOW((0.5*Tiles.SCALE.getValue()));
 
     private final double value;
 

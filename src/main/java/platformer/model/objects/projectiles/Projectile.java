@@ -1,14 +1,20 @@
 package platformer.model.objects.projectiles;
 
+import platformer.animation.graphics.GraphicsAnimation;
+import platformer.animation.graphics.WaveAnim;
 import platformer.debug.DebugSettings;
 import platformer.model.ModelUtils;
 import platformer.model.entities.Direction;
+import platformer.model.entities.Player;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
+import java.util.ArrayList;
+import java.util.List;
 
 public abstract class Projectile {
 
+    protected GraphicsAnimation waveMovement;
     protected final PRType prType;
     protected Rectangle2D.Double hitBox;
     protected final Direction direction;
@@ -16,6 +22,10 @@ public abstract class Projectile {
     protected boolean animate;
     private final int animSpeed = 20;
     protected int animTick, animIndex;
+
+    // Special
+    private boolean following = true;
+    private double trackX, trackY;
 
     public Projectile(PRType prType, Direction direction) {
         this.direction = direction;
@@ -33,7 +43,9 @@ public abstract class Projectile {
         }
     }
 
-    public void updatePosition() {
+    private List<Point> points = new ArrayList<>();
+
+    public void updatePosition(Player player) {
         double X = 0, Y = 0;
         switch (direction) {
             case LEFT: X = 1; Y = 0; break;
@@ -49,16 +61,50 @@ public abstract class Projectile {
             default: break;
         }
 
+        // Oscillation parameters
+        double oscillationAmplitude = 1.2; // Adjust the amplitude of the oscillation
+        double oscillationFrequency = 0.5; // Adjust the frequency of the oscillation
+
+        double time = System.currentTimeMillis() / 1000.0;
+        double oscillationOffset = oscillationAmplitude * Math.sin(2 * Math.PI * oscillationFrequency * time);
+
+        X += oscillationOffset;
+
         if (prType == PRType.ARROW) {
             hitBox.x += X * PRSet.ARROW_SPEED.getValue();
             hitBox.y += Y * PRSet.ARROW_SPEED.getValue();
         }
         else if (prType == PRType.LIGHTNING_BALL) {
-            double speed = PRSet.LB_SPEED_MEDIUM.getValue();
-            if (direction == Direction.LEFT || direction == Direction.RIGHT)
-                speed = PRSet.LB_SPEED_FAST.getValue();
-            hitBox.x += X * speed;
-            hitBox.y += Y * speed;
+            double speed = PRSet.LB_SPEED_SLOW.getValue();
+            if (direction == Direction.LEFT || direction == Direction.RIGHT) {
+                ((WaveAnim)waveMovement).setDirection(direction);
+                Point p = waveMovement.calculatePoint();
+                hitBox.x = p.x;
+                hitBox.y = p.y;
+            }
+            else if (direction == Direction.TRACK) {
+                speed = PRSet.LB_SPEED_MEDIUM.getValue();
+                double dx = player.getHitBox().x - hitBox.x;
+                double dy = player.getHitBox().y - hitBox.y;
+                double d = Math.sqrt(dx * dx + dy * dy);
+                if (d > 100 && following) {
+                    trackX = dx / d;
+                    trackY = dy / d;
+                }
+                else following = false;
+                hitBox.x += trackX * speed;
+                hitBox.y += trackY * speed;
+            }
+            else {
+                hitBox.x += X * speed;
+                hitBox.y += Y * speed;
+                Point p = new Point((int)hitBox.x, (int)hitBox.y);
+                try {
+                    if (!points.contains(p)) points.add(p);
+                }
+                catch (Exception ignored) {}
+            }
+
         }
         if (animate) updateAnimation();
     }
@@ -67,6 +113,14 @@ public abstract class Projectile {
         if (!DebugSettings.getInstance().isDebugMode()) return;
         g.setColor(color);
         g.drawRect((int)hitBox.x-xLevelOffset, (int)hitBox.y-yLevelOffset, (int)hitBox.width, (int)hitBox.height);
+        g.setColor(Color.RED);
+        try {
+            for (Point point : points) {
+                g.drawRect(point.x, point.y, 2, 2);
+            }
+        }
+        catch (Exception ignored) {}
+
     }
 
     public Rectangle2D.Double getHitBox() {

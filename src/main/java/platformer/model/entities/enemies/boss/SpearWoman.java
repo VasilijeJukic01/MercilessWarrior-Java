@@ -21,6 +21,8 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.Random;
 
 public class SpearWoman extends Enemy {
 
@@ -32,6 +34,9 @@ public class SpearWoman extends Enemy {
     private int multiShootCount = 0;
     private int multiShootFlag = 0;
     private int slashCount = 0;
+    private int rapidSlashCount = 0;
+
+    private int specialType;
 
     private final int attackBoxWid = (int)(96 * Tiles.SCALE.getValue()), attackBoxReducedWid = (int)(48 * Tiles.SCALE.getValue());
 
@@ -49,9 +54,8 @@ public class SpearWoman extends Enemy {
 
 
     public SpearWoman(int xPos, int yPos) {
-        super(xPos, yPos, EnemySize.SW_WIDTH.getValue(), EnemySize.SW_HEIGHT.getValue(), EnemyType.SPEAR_WOMAN, 15);
+        super(xPos, yPos, EnemySize.SW_WIDTH.getValue(), EnemySize.SW_HEIGHT.getValue(), EnemyType.SPEAR_WOMAN, 18);
         super.setDirection(Direction.LEFT);
-        super.enemySpeed = 0.4*Tiles.SCALE.getValue();
         this.bossInterface = new BossInterface(this);
         int w = (int)(25 * Tiles.SCALE.getValue());
         int h =  (int)(50 * Tiles.SCALE.getValue());
@@ -134,9 +138,9 @@ public class SpearWoman extends Enemy {
             if (direction == Direction.LEFT) xSpeed = -enemySpeed;
             else xSpeed = enemySpeed;
 
-            if (Utils.getInstance().canMoveHere(hitBox.x + xSpeed * 60, hitBox.y, hitBox.width, hitBox.height, levelData))
-                if (Utils.getInstance().isFloor(hitBox, xSpeed * 60, levelData, direction)) {
-                    hitBox.x += xSpeed * 60;
+            if (Utils.getInstance().canMoveHere(hitBox.x + xSpeed * 80, hitBox.y, hitBox.width, hitBox.height, levelData))
+                if (Utils.getInstance().isFloor(hitBox, xSpeed * 80, levelData, direction)) {
+                    hitBox.x += xSpeed * 80;
                 }
         }
     }
@@ -187,20 +191,47 @@ public class SpearWoman extends Enemy {
             teleport(levelData, player, 8);
             changeAttackBox();
             Audio.getInstance().getAudioPlayer().playSound(Sounds.SW_ROAR_1.ordinal());
+            cooldown[Cooldown.ATTACK.ordinal()] = 5;
         }
         // Multi Lightning ball
         else if (entityState == AnimType.SPELL_4) {
+            Random rand = new Random();
+            specialType = rand.nextInt(2);
             hitBox.x = 12.5*Tiles.TILES_SIZE.getValue();
             hitBox.y = 4*Tiles.TILES_SIZE.getValue();
         }
         else if (entityState == AnimType.ATTACK_1 || entityState == AnimType.SPELL_1) {
+            rapidSlashCount = 0;
             changeAttackBox();
-            animSpeed = 20;
+            animSpeed = 18;
             teleport(levelData, player, 3);
+            cooldown[Cooldown.ATTACK.ordinal()] = 5;
+        }
+    }
+
+    private void oscillationProjectiles(ObjectManager objectManager) {
+        if (animIndex == 1 && !shooting) {
+            if (multiShootFlag == 1) objectManager.multiLightningBallShoot(this);
+            if (multiShootFlag == 4) objectManager.multiLightningBallShoot2(this);
+            multiShootFlag = (multiShootFlag + 1) % 5;
+            shooting = true;
+        }
+    }
+
+    private void oscillationProjectiles2(SpellManager spellManager, ObjectManager objectManager) {
+        if (animIndex == 1 && !shooting) {
+            if (multiShootFlag == 1) objectManager.followingLightningBallShoot(this);
+            if (multiShootFlag == 2 || multiShootFlag == 0) {
+                if (flash) spellManager.activateFlashes();
+                flash = !flash;
+            }
+            multiShootFlag = (multiShootFlag + 1) % 5;
+            shooting = true;
         }
     }
 
     private void updateBehavior(int[][] levelData, Player player, SpellManager spellManager, ObjectManager objectManager) {
+        if (cooldown[Cooldown.ATTACK.ordinal()] != 0) return;
         switch (entityState) {
             case IDLE:
                 if (!start && isPlayerCloseForAttack(player)) {
@@ -231,6 +262,10 @@ public class SpearWoman extends Enemy {
                 if (!attackCheck) checkPlayerHit(attackBox, player);
                 break;
             case SPELL_1:
+                if (animIndex == 12 && rapidSlashCount < 1) {
+                    rapidSlashCount++;
+                    animIndex = 2;
+                }
                 if (animIndex == 0) Audio.getInstance().getAudioPlayer().playSound(Sounds.SW_ROAR_3.ordinal());
                 movingAttack(levelData, 10);
                 if (animIndex % 2 == 0) setDirection(Direction.LEFT);
@@ -243,7 +278,7 @@ public class SpearWoman extends Enemy {
                     Audio.getInstance().getAudioPlayer().playSound(Sounds.LIGHTNING_2.ordinal());
                     shooting = true;
                 }
-                else if (animIndex == 9 && shootCount < 2) {
+                else if (animIndex == 9 && shootCount < 4) {
                     animIndex = 2;
                     shootCount++;
                     shooting = false;
@@ -255,16 +290,8 @@ public class SpearWoman extends Enemy {
                 else if (animIndex == 13) spellManager.activateLightnings();
                 break;
             case SPELL_4:
-                if (animIndex == 1 && !shooting) {
-                    if (multiShootFlag == 1) objectManager.multiLightningBallShoot(this);
-                    if (multiShootFlag == 2 || multiShootFlag == 0) {
-                        if (flash) spellManager.activateFlashes();
-                        flash = !flash;
-                    }
-                    if (multiShootFlag == 3) objectManager.multiLightningBallShot2(this);
-                    multiShootFlag = (multiShootFlag + 1) % 4;
-                    shooting = true;
-                }
+                if (specialType == 1) oscillationProjectiles(objectManager);
+                else oscillationProjectiles2(spellManager, objectManager);
                 break;
             case DEATH:
                 objectManager.activateBlockers(false);
@@ -291,6 +318,10 @@ public class SpearWoman extends Enemy {
     }
 
     private void updateBoss(BufferedImage[][] animations) {
+        if (cooldown != null) {
+            coolDownTickUpdate();
+            if ((entityState != AnimType.IDLE && entityState != AnimType.HIT) && cooldown[Cooldown.ATTACK.ordinal()] != 0) return;
+        }
         animTick++;
         if (animTick >= animSpeed) {
             animTick = 0;
@@ -330,10 +361,10 @@ public class SpearWoman extends Enemy {
                         }
                     }
                     if (multiShootCount == 0 && entityState != AnimType.IDLE) {
-                        cooldown[Cooldown.ATTACK.ordinal()] = 14;
+                        Objects.requireNonNull(cooldown)[Cooldown.ATTACK.ordinal()] = 14;
                         if (entityState == AnimType.ATTACK_1 || entityState == AnimType.ATTACK_2) prevAnim = AnimType.ATTACK_1;
                         else prevAnim = entityState;
-                        animSpeed = 25;
+                        animSpeed = 18;
                         setEnemyAction(AnimType.IDLE);
                     }
                 }
@@ -341,7 +372,6 @@ public class SpearWoman extends Enemy {
                 shooting = false;
             }
         }
-        if (cooldown != null) coolDownTickUpdate();
     }
 
     // Update

@@ -27,7 +27,7 @@ public class ObjectManager {
     private final BufferedImage[][] objects; // ObjType Dependency
     // Projectiles
     private final BufferedImage projectileArrow;
-    private final BufferedImage[][] projectileLightningBall;
+    private final BufferedImage[] projectileLightningBall, projectileLightningBall2;
     private final ArrayList<Projectile> projectiles;
     // Objects
     private ArrayList<Potion> potions;
@@ -50,19 +50,8 @@ public class ObjectManager {
         this.blockers = new ArrayList<>();
         this.blacksmiths = new ArrayList<>();
         this.projectileArrow = Utils.getInstance().importImage("src/main/resources/images/objs/arrow.png", (int) PRSet.ARROW_WID.getValue(), (int)PRSet.ARROW_HEI.getValue());
-        this.projectileLightningBall = new BufferedImage[6][4];
-        generateLightningBalls();
-    }
-
-    private void generateLightningBalls() {
-        this.projectileLightningBall[0] = AnimationUtils.instance.loadLightningBall();
-        for (int i = 0; i < 4; i++) {
-            projectileLightningBall[1][i] = Utils.getInstance().rotateImage(projectileLightningBall[0][i], Math.PI/2);
-            projectileLightningBall[2][i] =  Utils.getInstance().rotateImage(projectileLightningBall[0][i], Math.PI/4);
-            projectileLightningBall[3][i] =  Utils.getInstance().rotateImage(projectileLightningBall[0][i], Math.PI/6);
-            projectileLightningBall[4][i] =  Utils.getInstance().flipImage( projectileLightningBall[2][i]);
-            projectileLightningBall[5][i] =  Utils.getInstance().flipImage( projectileLightningBall[3][i]);
-        }
+        this.projectileLightningBall = AnimationUtils.getInstance().loadLightningBall(1);
+        this.projectileLightningBall2 = AnimationUtils.getInstance().loadLightningBall(2);
     }
 
     public void loadObjects(Level level) {
@@ -312,9 +301,13 @@ public class ObjectManager {
         projectiles.add(new LightningBall((int)(spearWoman.getHitBox().x/1.38), (int)(spearWoman.getHitBox().y*1.2), Direction.N_DEGREE_30));
     }
 
-    public void multiLightningBallShot2(SpearWoman spearWoman) {
+    public void multiLightningBallShoot2(SpearWoman spearWoman) {
         projectiles.add(new LightningBall((int)spearWoman.getHitBox().x, (int)(spearWoman.getHitBox().y*1.3), Direction.DEGREE_60));
         projectiles.add(new LightningBall((int)(spearWoman.getHitBox().x/1.15), (int)(spearWoman.getHitBox().y*1.3), Direction.N_DEGREE_60));
+    }
+
+    public void followingLightningBallShoot(SpearWoman spearWoman) {
+        projectiles.add(new LightningBall((int)(spearWoman.getHitBox().x/1.1), (int)(spearWoman.getHitBox().y*1.3), Direction.TRACK));
     }
 
     public void activateBlockers(boolean value) {
@@ -347,7 +340,7 @@ public class ObjectManager {
     private void updateProjectiles(int[][] lvlData, Player player) {
         for (Projectile projectile : projectiles) {
             if (projectile.isAlive()) {
-                projectile.updatePosition();
+                projectile.updatePosition(player);
                 if (projectile.getHitBox().intersects(player.getHitBox())) {
                     player.changeHealth(-10, projectile);
                     projectile.setAlive(false);
@@ -498,25 +491,12 @@ public class ObjectManager {
             }
             // Lightning Ball
             else {
-                BufferedImage object = projectileLightningBall[0][p.getAnimIndex()];
-                switch (p.getDirection()) {
-                    case RIGHT:
-                        fS = -1;
-                        fC = (int)PRSet.LB_WID.getValue();
-                        break;
-                    case DOWN:
-                        object = projectileLightningBall[1][p.getAnimIndex()]; break;
-                    case DEGREE_45:
-                    case DEGREE_60:
-                        object = projectileLightningBall[2][p.getAnimIndex()]; break;
-                    case DEGREE_30:
-                        object = projectileLightningBall[3][p.getAnimIndex()]; break;
-                    case N_DEGREE_45:
-                    case N_DEGREE_60:
-                        object = projectileLightningBall[4][p.getAnimIndex()]; break;
-                    case N_DEGREE_30:
-                        object = projectileLightningBall[5][p.getAnimIndex()]; break;
-
+                BufferedImage object = projectileLightningBall2[p.getAnimIndex()];
+                if (p.getDirection() == Direction.LEFT || p.getDirection() == Direction.RIGHT)
+                    object = projectileLightningBall[p.getAnimIndex()];
+                if (p.getDirection() == Direction.RIGHT) {
+                    fS = -1;
+                    fC = (int) PRSet.LB_WID.getValue();
                 }
 
                 int x = (int)(p.getHitBox().x-xLevelOffset+fC-22*Tiles.SCALE.getValue());

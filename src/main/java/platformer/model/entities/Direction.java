@@ -10,5 +10,6 @@ public enum Direction {
     DEGREE_60,      // 6
     N_DEGREE_30,    // 7
     N_DEGREE_45,    // 8
-    N_DEGREE_60     // 9
+    N_DEGREE_60,    // 9
+    TRACK           // 10
 }
