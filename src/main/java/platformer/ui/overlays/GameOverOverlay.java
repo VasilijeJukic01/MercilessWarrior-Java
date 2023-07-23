@@ -61,6 +61,7 @@ public class GameOverOverlay implements MouseControls {
         this.menuBtn = new CREButton(menuX, menuY, UI.CRE_B_SIZE.getValue(), UI.CRE_B_SIZE.getValue(), ButtonType.EXIT);
     }
 
+    // Core
     public void update() {
         retryBtn.update();
         menuBtn.update();

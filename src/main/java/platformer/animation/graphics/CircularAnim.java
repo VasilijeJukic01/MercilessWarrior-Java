@@ -7,10 +7,10 @@ import java.awt.*;
 public class CircularAnim implements GraphicsAnimation {
 
     private Direction direction;
-    private double angle;
+    private double angle; // Radians
     private double angularSpeed;
     private double radius;
-    private int p, q;
+    private int p, q; // Center
 
     public CircularAnim(double angle, double angularSpeed, double radius, int p, int q) {
         this.angle = angle;
@@ -26,7 +26,6 @@ public class CircularAnim implements GraphicsAnimation {
         int x1 = (int)(p+radius*Math.cos(theta));
         int y1 = (int)(q+radius*Math.sin(theta));
         angle += angularSpeed;
-        q += 1;
         return new Point(x1, y1);
     }
 
@@ -47,5 +46,18 @@ public class CircularAnim implements GraphicsAnimation {
 
     public void setDirection(Direction direction) {
         this.direction = direction;
+    }
+
+    public void setAngularSpeed(double angularSpeed) {
+        this.angularSpeed = angularSpeed;
+    }
+
+    public void setRadius(double radius) {
+        this.radius = radius;
+    }
+
+    public void setCenter(Point p) {
+        this.p = p.x;
+        this.q = p.y;
     }
 }

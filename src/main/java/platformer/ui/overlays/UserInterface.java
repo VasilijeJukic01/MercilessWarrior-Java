@@ -39,9 +39,10 @@ public class UserInterface {
         g.setColor(Color.WHITE);
         g.setFont(new Font("Arial", Font.BOLD, (int)(10*Tiles.SCALE.getValue())));
         g.drawString(""+player.getCoins(), (int)(93*Tiles.SCALE.getValue()), (int)(82*Tiles.SCALE.getValue()));
-        g.drawString("Attack Cooldown: "+Math.round(player.getCooldown()[Cooldown.ATTACK.ordinal()]*100.0)/100.0, (int)Tiles.GAME_WIDTH.getValue()-250, 20);
-        g.drawString("Block Cooldown:  "+Math.round(player.getCooldown()[Cooldown.BLOCK.ordinal()]*100.0)/100.0, (int)Tiles.GAME_WIDTH.getValue()-250, 40);
-        g.drawString("Dash Cooldown:   "+Math.round(player.getCooldown()[Cooldown.DASH.ordinal()]*100.0)/100.0, (int)Tiles.GAME_WIDTH.getValue()-250, 60);
+        int xStr = (int)(Tiles.GAME_WIDTH.getValue()-(125*Tiles.SCALE.getValue())), yStr = (int)(10*Tiles.SCALE.getValue());
+        g.drawString("Attack Cooldown: "+Math.round(player.getCooldown()[Cooldown.ATTACK.ordinal()]*100.0)/100.0, xStr, yStr);
+        g.drawString("Block Cooldown:  "+Math.round(player.getCooldown()[Cooldown.BLOCK.ordinal()]*100.0)/100.0, xStr, 2*yStr);
+        g.drawString("Dash Cooldown:   "+Math.round(player.getCooldown()[Cooldown.DASH.ordinal()]*100.0)/100.0, xStr, 3*yStr);
         g.setFont(new Font("Arial", Font.BOLD, (int)(7*Tiles.SCALE.getValue())));
         g.drawString("Lvl: "+player.getLevel(), (int)(170*Tiles.SCALE.getValue()), (int)(67*Tiles.SCALE.getValue()));
         g.drawImage(portrait, (int)(18*Tiles.SCALE.getValue()), (int)(22*Tiles.SCALE.getValue()), (int)(40*Tiles.SCALE.getValue()), (int)(40*Tiles.SCALE.getValue()), null);

@@ -18,7 +18,7 @@ public class AudioOptions implements MouseControls{
     private final int sfxY = (int)(148*Tiles.SCALE.getValue());
     private final int musicX = (int)(450*Tiles.SCALE.getValue());
     private final int musicY = (int)(198*Tiles.SCALE.getValue());
-    private final int volumeX = (int)(355*Tiles.SCALE.getValue());
+    private final int volumeX = (int)(330*Tiles.SCALE.getValue());
     private final int volumeY = (int)(290*Tiles.SCALE.getValue());
 
     public AudioOptions() {

@@ -22,7 +22,9 @@ public class LightningBall extends Projectile{
         if (direction == Direction.LEFT || direction == Direction.RIGHT) {
             Random rand = new Random();
             int dir = rand.nextInt(2);
-            super.waveMovement = new WaveAnim((int)hitBox.x, (int)hitBox.y, 2, dir == 1 ? 50 : -50, 100, 2);
+            int period = (int)(50*Tiles.SCALE.getValue()), t = (int)(1*Tiles.SCALE.getValue());
+            int d = (int)(25*Tiles.SCALE.getValue());
+            super.waveMovement = new WaveAnim((int)hitBox.x, (int)hitBox.y, t, dir == 1 ? d : -d, period, t);
         }
     }
 }

@@ -6,7 +6,6 @@ import java.awt.*;
 
 public class Coin extends GameObject{
 
-
     public Coin(ObjType objType, int xPos, int yPos) {
         super(objType, xPos, yPos);
         generateHitBox();

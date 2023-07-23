@@ -86,7 +86,6 @@ public abstract class Enemy extends Entity implements Debug {
         entityState = AnimType.RUN;
         if (enemyType == EnemyType.GHOUL) enemySpeed = 0.45*Tiles.SCALE.getValue();
         else if (enemyType == EnemyType.SKELETON) enemySpeed = 0.35*Tiles.SCALE.getValue();
-        else if (enemyType == EnemyType.SPEAR_WOMAN) enemySpeed = 0.5*Tiles.SCALE.getValue();
         if (player.getHitBox().x > hitBox.x) setDirection(Direction.RIGHT);
         else setDirection(Direction.LEFT);
     }
@@ -101,7 +100,6 @@ public abstract class Enemy extends Entity implements Debug {
 
     protected boolean isPlayerInSight(Player player) {
         int distance = (int)Math.abs(player.getHitBox().x - hitBox.x);
-        if (enemyType == EnemyType.SPEAR_WOMAN) return distance <= attackRange * 20;
         return distance <= attackRange * 5;
     }
 
@@ -109,8 +107,7 @@ public abstract class Enemy extends Entity implements Debug {
         if (direction == Direction.LEFT) setDirection(Direction.RIGHT);
         else if (direction == Direction.RIGHT) setDirection(Direction.LEFT);
         entityState = AnimType.WALK;
-        if (enemyType == EnemyType.SPEAR_WOMAN) enemySpeed = 0.5*Tiles.SCALE.getValue();
-        else enemySpeed = 0.2*Tiles.SCALE.getValue();
+        enemySpeed = 0.2*Tiles.SCALE.getValue();
     }
 
     // Attack

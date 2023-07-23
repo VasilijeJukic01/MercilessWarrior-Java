@@ -10,6 +10,10 @@ public interface AudioPlayer {
 
     void stopSound(int sound);
 
+    void pauseSounds();
+
+    void unpauseSounds();
+
     void pauseSong();
 
     void unpauseSong();

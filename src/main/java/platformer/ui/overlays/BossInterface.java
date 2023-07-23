@@ -21,10 +21,10 @@ public class BossInterface {
     public void render(Graphics g) {
         if (spearWoman.isAlive()) {
             g.setColor(Color.WHITE);
-            g.setFont(new Font("Arial", Font.BOLD, 30));
-            g.drawString("Lancer", (int)(Tiles.GAME_WIDTH.getValue()/2-20*Tiles.SCALE.getValue()), (int) (75 * Tiles.SCALE.getValue()));
-            g.drawImage(bossBar, (int) (180 * Tiles.SCALE.getValue()), (int) (80 * Tiles.SCALE.getValue()), (int) (500 * Tiles.SCALE.getValue()), (int) (50 * Tiles.SCALE.getValue()), null);
-            g.drawString("?", (int)(Tiles.GAME_WIDTH.getValue()/2), (int) (107 * Tiles.SCALE.getValue()));
+            g.setFont(new Font("Arial", Font.BOLD, (int)(15*Tiles.SCALE.getValue())));
+            g.drawString("Lancer", (int)(Tiles.GAME_WIDTH.getValue()/2-20*Tiles.SCALE.getValue()), (int)(75 * Tiles.SCALE.getValue()));
+            g.drawImage(bossBar, (int)(180 * Tiles.SCALE.getValue()), (int)(80 * Tiles.SCALE.getValue()), (int)(500 * Tiles.SCALE.getValue()), (int)(50 * Tiles.SCALE.getValue()), null);
+            g.drawString("?", (int)(Tiles.GAME_WIDTH.getValue()/2), (int)(107 * Tiles.SCALE.getValue()));
         }
     }
 }

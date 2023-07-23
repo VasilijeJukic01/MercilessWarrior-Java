@@ -29,9 +29,7 @@ public class EnemyManager {
 
     private final PlayingState playingState;
     // Animations
-    private BufferedImage[][] skeletonAnimations;
-    private BufferedImage[][] ghoulAnimations;
-    private BufferedImage[][] spearWomanAnimations;
+    private BufferedImage[][] skeletonAnimations, ghoulAnimations, spearWomanAnimations;
     // Enemies
     private List<Skeleton> skeletons = new ArrayList<>();
     private List<Ghoul> ghouls = new ArrayList<>();
@@ -42,6 +40,7 @@ public class EnemyManager {
         init();
     }
 
+    // Init
     private void init() {
         this.skeletonAnimations = AnimationUtils.getInstance().loadSkeletonAnimations();
         this.ghoulAnimations = AnimationUtils.getInstance().loadGhoulAnimation();
@@ -54,6 +53,7 @@ public class EnemyManager {
         this.spearWoman = level.getSpearWoman();
     }
 
+    // Render
     private void renderSkeletons(Graphics g, int xLevelOffset, int yLevelOffset) {
         for (Skeleton s : skeletons) {
             if (s.isAlive()) {
@@ -126,14 +126,15 @@ public class EnemyManager {
     }
 
     public void checkEnemyHit(Rectangle2D.Double attackBox, Player player) {
+        int dmg = damage(player);
+
         for (Skeleton skeleton : skeletons) {
             if (skeleton.isAlive() && skeleton.getEnemyAction() != AnimType.DEATH) {
                 if (attackBox.intersects(skeleton.getHitBox())) {
-                    int dmg = damage(player);
                     skeleton.hit(dmg, true, true);
                     checkEnemyDying(skeleton, player);
-                    if (skeleton.getEnemyAction() == AnimType.BLOCK) playingState.getGame().notifyLogger("Enemy blocks player's attack.", Message.NOTIFICATION);
-                    else playingState.getGame().notifyLogger("Player gives damage to enemy: "+dmg, Message.NOTIFICATION);
+                    writeHitLog(skeleton.getEnemyAction(), dmg);
+                    player.setDashHit(true);
                     return;
                 }
             }
@@ -142,10 +143,10 @@ public class EnemyManager {
             if (ghoul.isAlive() && ghoul.getEnemyAction() != AnimType.DEATH) {
                 if (attackBox.intersects(ghoul.getHitBox())) {
                     if (ghoul.getEnemyAction() == AnimType.HIDE || ghoul.getEnemyAction() == AnimType.REVEAL) return;
-                    int dmg = damage(player);
                     ghoul.hit(dmg, true, true);
                     checkEnemyDying(ghoul, player);
-                    playingState.getGame().notifyLogger("Player gives damage to enemy: "+dmg, Message.NOTIFICATION);
+                    writeHitLog(ghoul.getEnemyAction(), dmg);
+                    player.setDashHit(true);
                     return;
                 }
             }
@@ -154,12 +155,17 @@ public class EnemyManager {
         if (spearWoman == null) return;
         if (spearWoman.isAlive() && spearWoman.getEnemyAction() != AnimType.DEATH) {
             if (attackBox.intersects(spearWoman.getHitBox())) {
-                int dmg = damage(player);
                 spearWoman.hit(dmg);
                 checkEnemyDying(spearWoman, player);
-                playingState.getGame().notifyLogger("Player gives damage to enemy: "+dmg, Message.NOTIFICATION);
+                writeHitLog(spearWoman.getEnemyAction(), dmg);
+                player.setDashHit(true);
             }
         }
+    }
+
+    private void writeHitLog(AnimType animType, int dmg) {
+        if (animType == AnimType.BLOCK) playingState.getGame().notifyLogger("Enemy blocks player's attack.", Message.NOTIFICATION);
+        else playingState.getGame().notifyLogger("Player gives damage to enemy: "+dmg, Message.NOTIFICATION);
     }
 
     public void checkEnemySpellHit() {
@@ -228,8 +234,11 @@ public class EnemyManager {
     }
 
     public void render(Graphics g, int xLevelOffset, int yLevelOffset) {
-        renderSkeletons(g, xLevelOffset, yLevelOffset);
-        renderGhouls(g, xLevelOffset, yLevelOffset);
+        try {
+            renderSkeletons(g, xLevelOffset, yLevelOffset);
+            renderGhouls(g, xLevelOffset, yLevelOffset);
+        }
+        catch (Exception ignored) {}
         if (spearWoman == null) return;
         renderSpearWoman(g, xLevelOffset, yLevelOffset);
     }

@@ -15,6 +15,7 @@ public class OpenAL implements AudioPlayer {
     private final List<OpenALSource> songSources = new ArrayList<>();
     private final List<Integer> sounds = new ArrayList<>();
     private final List<OpenALSource> soundSources = new ArrayList<>();
+    private final List<Integer> pausedSounds = new ArrayList<>();
 
     private int currentSong;
     private float volume = 0.5f;
@@ -105,6 +106,25 @@ public class OpenAL implements AudioPlayer {
     @Override
     public void stopSound(int sound) {
         soundSources.get(sound).stop();
+    }
+
+    @Override
+    public void pauseSounds() {
+        for (Integer sound : sounds) {
+            if (soundSources.get(sounds.indexOf(sound)).isPlaying()) {
+                pausedSounds.add(sound);
+                soundSources.get(sounds.indexOf(sound)).pause();
+            }
+        }
+    }
+
+    @Override
+    public void unpauseSounds() {
+        for (Integer sound : sounds) {
+            if (pausedSounds.contains(sound))
+                soundSources.get(sounds.indexOf(sound)).unpause();
+        }
+        pausedSounds.clear();
     }
 
     @Override

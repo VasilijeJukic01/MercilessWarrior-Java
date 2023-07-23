@@ -11,8 +11,8 @@ public class Perk {
     private final String description;
     private final int cost;
     private final String name;
-    private boolean locked = true;
-    private boolean upgraded;
+    // Flags
+    private boolean locked = true, upgraded;
 
     public Perk(int slot, String imageName, String description, int cost, String name) {
         this.slot = slot;

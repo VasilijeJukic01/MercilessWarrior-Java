@@ -51,6 +51,14 @@ public class BlacksmithOverlay implements MouseControls {
     private final int exitBtnY = (int)(380*Tiles.SCALE.getValue());
     private final int slotX = (int)(110*Tiles.SCALE.getValue());
     private final int slotY = (int)(140*Tiles.SCALE.getValue());
+    private final int tokensX = (int)(550*Tiles.SCALE.getValue());
+    private final int tokensY = (int)(150*Tiles.SCALE.getValue());
+    private final int perkNameX = (int)(550*Tiles.SCALE.getValue());
+    private final int perkNameY = (int)(240*Tiles.SCALE.getValue());
+    private final int perkCostX = (int)(550*Tiles.SCALE.getValue());
+    private final int perkCostY = (int)(255*Tiles.SCALE.getValue());
+    private final int perkDescX = (int)(550*Tiles.SCALE.getValue());
+    private final int perkDescY = (int)(275*Tiles.SCALE.getValue());;
 
     private final int slotSpacing = (int)(60*Tiles.SCALE.getValue());
 
@@ -136,16 +144,21 @@ public class BlacksmithOverlay implements MouseControls {
             if (slot == perk.getSlot()) {
                 g.setColor(Color.WHITE);
                 g.setFont(new Font("Arial", Font.BOLD, (int)(10*Tiles.SCALE.getValue())));
-                g.drawString("Tokens: "+playingState.getPlayer().getUpgradeTokens(), (int)(550*Tiles.SCALE.getValue()), (int)(150*Tiles.SCALE.getValue()));
-                g.drawString(perk.getName(), (int)(550*Tiles.SCALE.getValue()), (int)(240*Tiles.SCALE.getValue()));
-                g.drawString("Cost: "+perk.getCost(), (int)(550*Tiles.SCALE.getValue()), (int)(255*Tiles.SCALE.getValue()));
+                g.drawString("Tokens: "+playingState.getPlayer().getUpgradeTokens(), tokensX, tokensY);
+                g.drawString(perk.getName(), perkNameX, perkNameY);
+                g.drawString("Cost: "+perk.getCost(), perkCostX, perkCostY);
                 g.setFont(new Font("Arial", Font.PLAIN, (int)(10*Tiles.SCALE.getValue())));
-                g.drawString(perk.getDescription(), (int)(550*Tiles.SCALE.getValue()), (int)(275*Tiles.SCALE.getValue()));
+                g.drawString(perk.getDescription(), perkDescX, perkDescY);
             }
         }
     }
 
     // Other
+    private void setSelectedSlot() {
+        this.selectedSlot.x = (slot%SLOT_MAX_COL)*slotSpacing+slotX;
+        this.selectedSlot.y = (slot/SLOT_MAX_COL)*slotSpacing+slotY;
+    }
+
     private void changeSlot(MouseEvent e) {
         int x = e.getX(), y = e.getY();
         for (int i = 0; i < SLOT_MAX_COL; i++) {
@@ -223,11 +236,6 @@ public class BlacksmithOverlay implements MouseControls {
                 break;
             }
         }
-    }
-
-    private void setSelectedSlot() {
-        this.selectedSlot.x = (slot%SLOT_MAX_COL)*slotSpacing+slotX;
-        this.selectedSlot.y = (slot/SLOT_MAX_COL)*slotSpacing+slotY;
     }
 
     private boolean isMouseInButton(MouseEvent e, ShopButton shopButton) {

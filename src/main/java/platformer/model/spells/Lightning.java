@@ -12,7 +12,6 @@ public class Lightning extends Spell {
 
     public void render(Graphics g, int xLevelOffset, int yLevelOffset) {
         hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.CYAN);
-
     }
 
     @Override

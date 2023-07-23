@@ -22,6 +22,7 @@ public class Blacksmith extends GameObject{
         super.yOffset = (int)(20 * Tiles.SCALE.getValue());
     }
 
+    // Core
     public void update() {
         if (animate) updateAnimation();
     }

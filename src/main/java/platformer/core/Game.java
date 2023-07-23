@@ -38,7 +38,7 @@ public class Game implements Runnable, Publisher {
 
     public Game(String cheats, String name) {
         init();
-        this.account = new Account(name, !cheats.equals("Yes"));
+        this.account = new Account(name, cheats.equals("Yes"));
         this.gameThread = new Thread(this);
         this.gameThread.start();
         Audio.getInstance().getAudioPlayer().playSong(Songs.MENU.ordinal());

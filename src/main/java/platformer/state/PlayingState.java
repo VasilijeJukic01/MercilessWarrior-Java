@@ -1,5 +1,6 @@
 package platformer.state;
 
+import platformer.audio.Audio;
 import platformer.debug.DebugSettings;
 import platformer.debug.Message;
 import platformer.model.entities.Cooldown;
@@ -14,10 +15,7 @@ import platformer.model.levels.LevelManager;
 import platformer.model.objects.ObjectManager;
 import platformer.model.perks.PerksManager;
 import platformer.model.spells.SpellManager;
-import platformer.ui.overlays.BlacksmithOverlay;
-import platformer.ui.overlays.GameOverOverlay;
-import platformer.ui.overlays.PauseOverlay;
-import platformer.ui.overlays.ShopOverlay;
+import platformer.ui.overlays.OverlayManager;
 import platformer.utils.Utils;
 
 import java.awt.*;
@@ -34,17 +32,14 @@ public class PlayingState extends StateAbstraction implements State {
 
     private Player player;
     private BufferedImage background;
+
+    // Managers
     private LevelManager levelManager;
     private ObjectManager objectManager;
     private EnemyManager enemyManager;
     private SpellManager spellManager;
     private PerksManager perksManager;
-
-    // Overlays
-    private PauseOverlay pauseOverlay;
-    private GameOverOverlay gameOverOverlay;
-    private ShopOverlay shopOverlay;
-    private BlacksmithOverlay blacksmithOverlay;
+    private OverlayManager overlayManager;
 
     // Flags
     private boolean paused, gameOver, dying, shopVisible, bmVisible;
@@ -76,10 +71,7 @@ public class PlayingState extends StateAbstraction implements State {
         this.player = new Player(playerX, playerY, playerWid, playerHei, enemyManager, objectManager, game);
         player.loadLvlData(levelManager.getCurrentLevel().getLvlData());
         player.setSpawn(levelManager.getCurrentLevel().getPlayerSpawn());
-        this.pauseOverlay = new PauseOverlay(game);
-        this.gameOverOverlay = new GameOverOverlay(game);
-        this.shopOverlay = new ShopOverlay(this);
-        this.blacksmithOverlay = new BlacksmithOverlay(this);
+        this.overlayManager = new OverlayManager(this);
         this.spellManager = new SpellManager(this);
         this.perksManager = new PerksManager();
         loadStartLevel();
@@ -101,7 +93,7 @@ public class PlayingState extends StateAbstraction implements State {
         levelManager.loadNextLevel();
         player.setSpawn(levelManager.getCurrentLevel().getPlayerSpawn());
         calculateOffset();
-        shopOverlay.reset();
+        overlayManager.reset();
         game.notifyLogger("Next level loaded.", Message.NOTIFICATION);
     }
 
@@ -110,7 +102,7 @@ public class PlayingState extends StateAbstraction implements State {
         levelManager.loadPrevLevel();
         player.setSpawn(levelManager.getCurrentLevel().getPlayerSpawn());
         calculateOffset();
-        shopOverlay.reset();
+        overlayManager.reset();
         game.notifyLogger("Previous level loaded.", Message.NOTIFICATION);
     }
 
@@ -136,8 +128,8 @@ public class PlayingState extends StateAbstraction implements State {
     // Core
     @Override
     public void update() {
-        if (paused) this.pauseOverlay.update();
-        else if (gameOver) this.gameOverOverlay.update();
+        if (paused) overlayManager.update("PAUSE");
+        else if (gameOver) overlayManager.update("GAME_OVER");
         else if (dying) this.player.update();
         else {
             if (Utils.getInstance().isOnExit(levelManager.getCurrentLevel(), player.getHitBox()) == 1) loadNextLevel();
@@ -151,8 +143,8 @@ public class PlayingState extends StateAbstraction implements State {
             xBorderUpdate();
             yBorderUpdate();
             this.player.update();
-            if (shopVisible) this.shopOverlay.update();
-            if (bmVisible) this.blacksmithOverlay.update();
+            if (shopVisible) overlayManager.update("SHOP");
+            if (bmVisible) overlayManager.update("BLACKSMITH");
         }
     }
 
@@ -165,10 +157,7 @@ public class PlayingState extends StateAbstraction implements State {
         this.enemyManager.render(g, xLevelOffset, yLevelOffset);
         this.spellManager.render(g, xLevelOffset, yLevelOffset);
         this.player.getUserInterface().render(g);
-        if (paused) this.pauseOverlay.render(g);
-        if (gameOver) this.gameOverOverlay.render(g);
-        if (shopVisible) this.shopOverlay.render(g);
-        else if (bmVisible) this.blacksmithOverlay.render(g);
+        this.overlayManager.render(g, paused, gameOver, shopVisible, bmVisible);
     }
 
     @Override
@@ -178,31 +167,22 @@ public class PlayingState extends StateAbstraction implements State {
 
     @Override
     public void mousePressed(MouseEvent e) {
-        if (paused) pauseOverlay.mousePressed(e);
-        else if (gameOver) gameOverOverlay.mousePressed(e);
-        else if (shopVisible) shopOverlay.mousePressed(e);
-        else if (bmVisible) blacksmithOverlay.mousePressed(e);
+        overlayManager.mousePressed(e, paused, gameOver, shopVisible, bmVisible);
     }
 
     @Override
     public void mouseReleased(MouseEvent e) {
-        if (paused) pauseOverlay.mouseReleased(e);
-        else if (gameOver) gameOverOverlay.mouseReleased(e);
-        else if (shopVisible) shopOverlay.mouseReleased(e);
-        else if (bmVisible) blacksmithOverlay.mouseReleased(e);
+        overlayManager.mouseReleased(e, paused, gameOver, shopVisible, bmVisible);
     }
 
     @Override
     public void mouseMoved(MouseEvent e) {
-        if (paused) pauseOverlay.mouseMoved(e);
-        else if (gameOver) gameOverOverlay.mouseMoved(e);
-        else if (shopVisible) shopOverlay.mouseMoved(e);
-        else if (bmVisible) blacksmithOverlay.mouseMoved(e);
+        overlayManager.mouseMoved(e, paused, gameOver, shopVisible, bmVisible);
     }
 
     @Override
     public void mouseDragged(MouseEvent e) {
-        if (paused) pauseOverlay.mouseDragged(e);
+        overlayManager.mouseDragged(e, paused);
     }
 
     // Input
@@ -259,6 +239,8 @@ public class PlayingState extends StateAbstraction implements State {
                     else bmVisible = false;
                 }
                 else paused = !paused;
+                if (paused) Audio.getInstance().getAudioPlayer().pauseSounds();
+                else Audio.getInstance().getAudioPlayer().unpauseSounds();
                 break;
             default: break;
         }
@@ -309,6 +291,12 @@ public class PlayingState extends StateAbstraction implements State {
                 player.changeHealth(100);
                 game.notifyLogger("Health cheat activated.", Message.WARNING);
                 break;
+            case KeyEvent.VK_F4: // Coins Cheat
+                if (!game.getAccount().isEnableCheats()) break;
+                player.changeCoins(99999);
+                player.changeUpgradeTokens(50);
+                game.notifyLogger("Coins cheat activated.", Message.WARNING);
+                break;
             default: break;
         }
         pressedKeys.remove(key);
@@ -322,6 +310,7 @@ public class PlayingState extends StateAbstraction implements State {
         enemyManager.reset();
         player.reset();
         objectManager.reset();
+        spellManager.reset();
     }
 
     public void levelReset() {

@@ -62,6 +62,7 @@ public class ShopOverlay implements MouseControls {
         init();
     }
 
+    // Init
     private void init() {
         this.overlay = Utils.instance.importImage("src/main/resources/images/overlay1.png", overlayWid, overlayHei);
         this.shopText = Utils.instance.importImage("src/main/resources/images/buttons/ShopText.png", shopTextWid, shopTextHei);
@@ -70,6 +71,7 @@ public class ShopOverlay implements MouseControls {
         buttons[1] = new ShopButton(exitBtnX, exitBtnY, ButtonType.LEAVE);
     }
 
+    // Core
     public void update() {
         for (ShopButton button : buttons) {
             button.update();
@@ -88,6 +90,7 @@ public class ShopOverlay implements MouseControls {
         g.drawRect((int)selectedSlot.x, (int)selectedSlot.y,  (int)selectedSlot.width,  (int)selectedSlot.height);
     }
 
+    // Render
     private void renderItems(Graphics g) {
         for (Shop shop : shops) {
             if (shop.isActive()) {
@@ -117,6 +120,12 @@ public class ShopOverlay implements MouseControls {
                 g.drawImage(slotImage, i*slotSpacing+slotX, j*slotSpacing+slotY, slotImage.getWidth(), slotImage.getHeight(), null);
             }
         }
+    }
+
+    // Other
+    private void setSelectedSlot() {
+        this.selectedSlot.x = (slot%SLOT_MAX_ROW)*slotSpacing+slotX;
+        this.selectedSlot.y = (slot/SLOT_MAX_ROW)*slotSpacing+slotY;
     }
 
     private void changeSlot(MouseEvent e) {
@@ -192,11 +201,6 @@ public class ShopOverlay implements MouseControls {
 
     private boolean isMouseInButton(MouseEvent e, ShopButton shopButton) {
         return shopButton.getButtonHitBox().contains(e.getX(), e.getY());
-    }
-
-    private void setSelectedSlot() {
-        this.selectedSlot.x = (slot%SLOT_MAX_ROW)*slotSpacing+slotX;
-        this.selectedSlot.y = (slot/SLOT_MAX_ROW)*slotSpacing+slotY;
     }
 
     public void reset() {

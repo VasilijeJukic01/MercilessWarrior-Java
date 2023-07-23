@@ -10,8 +10,8 @@ import java.util.List;
 public class WaveAnim implements GraphicsAnimation {
 
     private Direction direction;
-    private int x, y;
-    private int xOffset, yOffset;
+    private int x, y; // Current point
+    private int xOffset, yOffset; // Starting point
     private int dx;
     private int amplitudeY;
     private int periodY;

@@ -9,7 +9,7 @@ public class Blocker extends GameObject {
     public Blocker(ObjType objType, int xPos, int yPos) {
         super(objType, xPos, yPos);
         int hbWid = (int)(32* Tiles.SCALE.getValue());
-        int hbHei = (int)(32*3*Tiles.SCALE.getValue());
+        int hbHei = (int)(32*3.5*Tiles.SCALE.getValue());
         initHitBox(hbWid, hbHei);
         xOffset = (int)(32*Tiles.SCALE.getValue());
         yOffset = (int)(22*Tiles.SCALE.getValue());

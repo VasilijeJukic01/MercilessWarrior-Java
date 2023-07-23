@@ -20,11 +20,8 @@ import java.util.ArrayList;
 public class Level {
 
     // Data
-    private final BufferedImage dataL1;
-    private final BufferedImage dataL2;
-    private int[][] lvlData;
-    private int[][] decoData;
-    private int[][] layerData;
+    private final BufferedImage dataL1, dataL2;
+    private int[][] lvlData, decoData, layerData;
     // Enemies
     private final ArrayList<Skeleton> skeletons = new ArrayList<>();
     private final ArrayList<Ghoul> ghouls = new ArrayList<>();
@@ -41,12 +38,9 @@ public class Level {
     private final ArrayList<Lightning> lightnings = new ArrayList<>();
     private final ArrayList<Flash> flashes = new ArrayList<>();
     // Other
-    private int levelTilesWidth;
-    private int xMaxTilesOffset;
-    private int xMaxLevelOffset;
-    private int levelTilesHeight;
-    private int yMaxTilesOffset;
-    private int yMaxLevelOffset;
+    private int levelTilesWidth, levelTilesHeight;
+    private int xMaxTilesOffset, xMaxLevelOffset;
+    private int yMaxTilesOffset, yMaxLevelOffset;
     private final Point playerSpawn;
 
     public Level(BufferedImage dataL1, BufferedImage dataL2) {

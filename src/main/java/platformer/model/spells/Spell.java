@@ -54,6 +54,11 @@ public abstract class Spell implements Debug {
         g.drawRect((int)hitBox.x-xLevelOffset, (int)hitBox.y-yLevelOffset, (int)hitBox.width, (int)hitBox.height);
     }
 
+    protected void reset() {
+        alive = false;
+        animTick = animIndex = 0;
+    }
+
     public Rectangle2D.Double getHitBox() {
         return hitBox;
     }

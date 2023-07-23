@@ -50,6 +50,7 @@ public class ControlsState extends StateAbstraction implements State {
         this.exitBtn = new CREButton(exitBtnX, exitBtnY, UI.CRE_B_SIZE.getValue(), UI.CRE_B_SIZE.getValue(), ButtonType.EXIT);
     }
 
+    // Core
     @Override
     public void update() {
         Overlay.getInstance().update();
@@ -64,6 +65,7 @@ public class ControlsState extends StateAbstraction implements State {
         renderControls(g);
     }
 
+    // Render
     private void renderControls(Graphics g) {
         g.setColor(Color.WHITE);
         g.setFont(new Font("Arial", Font.BOLD, (int)(10*Tiles.SCALE.getValue())));

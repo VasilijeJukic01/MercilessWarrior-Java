@@ -67,6 +67,7 @@ public class PauseOverlay implements MouseControls {
         this.exitBtn = new CREButton(exitBtnX, exitBtnY, UI.CRE_B_SIZE.getValue(), UI.CRE_B_SIZE.getValue(), ButtonType.EXIT);
     }
 
+    // Core
     public void update() {
         continueBtn.update();
         retryBtn.update();

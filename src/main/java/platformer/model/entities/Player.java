@@ -10,7 +10,6 @@ import platformer.model.entities.effects.EffectType;
 import platformer.model.Tiles;
 import platformer.model.entities.enemies.Enemy;
 import platformer.model.entities.enemies.EnemyManager;
-import platformer.model.entities.enemies.boss.SpearWoman;
 import platformer.model.objects.ObjectManager;
 import platformer.model.objects.projectiles.Projectile;
 import platformer.ui.overlays.UserInterface;
@@ -28,8 +27,7 @@ public class Player extends Entity {
     private final ObjectManager objectManager;
     private int[][] levelData;
     // Core Variables
-    private final BufferedImage[][] animations;
-    private final BufferedImage[][] transformAnimations;
+    private final BufferedImage[][] animations, transformAnimations;
     private final BufferedImage[][] effects;
     private final int animSpeed = 20;
     private int animTick = 0, animIndex = 0, effectIndex = 0;
@@ -45,7 +43,7 @@ public class Player extends Entity {
     private final double jumpSpeed = -2.25 * Tiles.SCALE.getValue();
     private final double collisionFallSpeed = 0.5 * Tiles.SCALE.getValue();
     // Flags
-    private boolean left, right, jump, moving, attacking, dash, hit, block, transform;
+    private boolean left, right, jump, moving, attacking, dash, dashHit, hit, block, transform;
     private int spellState = 0;
     private boolean doubleJump, onWall, onObject, wallPush, canDash = true, canBlock, canTransform;
     // Status
@@ -105,8 +103,8 @@ public class Player extends Entity {
             }
             if (animIndex >= animations[entityState.ordinal()].length) {
                 animIndex = 0;
-                attacking = false;
-                attackCheck = false;
+                attacking = attackCheck = false;
+                dashHit = false;
                 block = canBlock = false;
                 if (canTransform) {
                     canTransform = false;
@@ -131,6 +129,7 @@ public class Player extends Entity {
         }
     }
 
+    // TODO: Move to EffectManager
     private void updateEffectAnimation() {
         if (playerEffect == EffectType.DOUBLE_JUMP) {
             if (effectIndex >= effects[EffectType.DOUBLE_JUMP.ordinal()].length) {
@@ -269,7 +268,7 @@ public class Player extends Entity {
             if (onObject) hitBox.x = objectManager.getXObjectBound(hitBox, dx);
             else if (!onWall) hitBox.x = Utils.getInstance().getXPosOnTheWall(hitBox, dx);
             if (dash) {
-                dash = false;
+                dash = dashHit = false;
                 dashTick = 0;
             }
         }
@@ -292,7 +291,7 @@ public class Player extends Entity {
 
     // Checks
     private void checkAttack() {
-        if (attackCheck || animIndex != 1) return;
+        if (attackCheck || animIndex != 1 || dashHit) return;
         attackCheck = !dash;
         enemyManager.checkEnemyHit(attackBox, this);
         objectManager.checkObjectBreak(attackBox);
@@ -358,6 +357,7 @@ public class Player extends Entity {
         }
     }
 
+    // Status Changes
     public void changeHealth(int value) {
         if (value < 0) {
             if (hit) return;
@@ -375,7 +375,7 @@ public class Player extends Entity {
         pushOffset = 0;
         Rectangle2D.Double hBox =  (o instanceof Enemy) ? (((Enemy) o).getHitBox()) : (((Projectile) o).getHitBox());
         game.notifyLogger("Damage received: "+value, Message.INFORMATION);
-        if (hBox.x < hitBox.x && (o instanceof SpearWoman)) pushDirection = Direction.RIGHT;
+        if (hBox.x < hitBox.x) pushDirection = Direction.RIGHT;
         else pushDirection = Direction.LEFT;
     }
 
@@ -431,7 +431,7 @@ public class Player extends Entity {
     private void updateHitBlockMove() {
         if (hit) {
             setSpellState(0);
-            dash = false;
+            dash = dashHit = false;
             if (animIndex <= animations[entityState.ordinal()].length - 2)
                 pushBack(pushDirection, levelData, 1.2, playerSpeed);
             updatePushOffset();
@@ -440,7 +440,7 @@ public class Player extends Entity {
         else if (canBlock) {
             pushOffsetDirection = Direction.DOWN;
             pushDirection = (flipSign == 1) ? Direction.LEFT : Direction.RIGHT;
-            if (animIndex <= animations[entityState.ordinal()].length )
+            if (animIndex <= animations[entityState.ordinal()].length)
                 pushBack(pushDirection, levelData, 0.1, playerSpeed);
             updatePushOffset();
         }
@@ -455,7 +455,7 @@ public class Player extends Entity {
                 dashTick++;
                 if (dashTick >= 40) {
                     dashTick = 0;
-                    dash = false;
+                    dash = dashHit = false;
                 }
             }
         }
@@ -522,7 +522,7 @@ public class Player extends Entity {
         attackBoxRenderer(g, xLevelOffset, yLevelOffset);
     }
 
-    // Getters & Setters & Reset
+    // Reset
     public void resetDirections() {
         left = right = false;
         animIndex = animTick = 0;
@@ -542,6 +542,7 @@ public class Player extends Entity {
         if (!Utils.getInstance().isEntityOnFloor(hitBox, levelData)) inAir = true;
     }
 
+    // Setters
     public void setAttacking(boolean attacking) {
         this.attacking = attacking;
         setSpellState(0);
@@ -565,6 +566,10 @@ public class Player extends Entity {
         this.playerEffect = playerEffect;
     }
 
+    public void setCanDash(boolean canDash) {
+        this.canDash = canDash;
+    }
+
     public void setJump(boolean jump) {
         this.jump = jump;
     }
@@ -581,32 +586,8 @@ public class Player extends Entity {
         this.onWall = onWall;
     }
 
-    public boolean isOnWall() {
-        return onWall;
-    }
-
-    public boolean canDash() {
-        return canDash;
-    }
-
-    public void setCanDash(boolean canDash) {
-        this.canDash = canDash;
-    }
-
-    public boolean isDash() {
-        return dash;
-    }
-
-    public int getSpellState() {
-        return spellState;
-    }
-
-    public int getAttackDmg() {
-        return attackDmg;
-    }
-
-    public int getTransformAttackDmg() {
-        return transformAttackDmg;
+    public void setDashHit(boolean dashHit) {
+        this.dashHit = dashHit;
     }
 
     public void setSpellState(int spellState) {
@@ -633,6 +614,40 @@ public class Player extends Entity {
         }
     }
 
+    public void setCanTransform(boolean canTransform) {
+        if (!PlayerBonus.getInstance().isTransform()) return;
+        if (transform) transform = false;
+        else {
+            this.canTransform = canTransform;
+            dash = dashHit = false;
+        }
+    }
+
+    // Getters
+    public boolean isOnWall() {
+        return onWall;
+    }
+
+    public boolean canDash() {
+        return canDash;
+    }
+
+    public boolean isDash() {
+        return dash;
+    }
+
+    public int getSpellState() {
+        return spellState;
+    }
+
+    public int getAttackDmg() {
+        return attackDmg;
+    }
+
+    public int getTransformAttackDmg() {
+        return transformAttackDmg;
+    }
+
     public boolean canBlock() {
         return canBlock;
     }
@@ -651,15 +666,6 @@ public class Player extends Entity {
 
     public double[] getCooldown() {
         return cooldown;
-    }
-
-    public void setCanTransform(boolean canTransform) {
-        if (!PlayerBonus.getInstance().isTransform()) return;
-        if (transform) transform = false;
-        else {
-            this.canTransform = canTransform;
-            dash = false;
-        }
     }
 
     public boolean isTransform() {

@@ -16,16 +16,18 @@ import java.util.Random;
 public class Shop extends GameObject {
 
     private boolean active;
-    private ArrayList<ShopItem> shopItems;
+    private final ArrayList<ShopItem> shopItems;
     private final Random rand;
 
     public Shop(ObjType objType, int xPos, int yPos) {
         super(objType, xPos, yPos);
+        this.shopItems = new ArrayList<>();
         this.rand = new Random();
         generateHitBox();
         getItems();
     }
 
+    // Init
     private void generateHitBox() {
         super.animate = true;
         int hbWid = (int)(154 * Tiles.SCALE.getValue());
@@ -36,7 +38,6 @@ public class Shop extends GameObject {
     }
 
     private void getItems() {
-        this.shopItems = new ArrayList<>();
         int slot = 0;
         BufferedImage healthItemImg = Utils.getInstance().importImage("src/main/resources/images/shop/HealthItem.png", -1, -1);
         shopItems.add(new ShopItem(ItemType.HEALTH, healthItemImg, slot++, rand.nextInt(10)+1, 15));
@@ -61,6 +62,7 @@ public class Shop extends GameObject {
         }
     }
 
+    // Core
     public void update() {
         if (animate) updateAnimation();
     }

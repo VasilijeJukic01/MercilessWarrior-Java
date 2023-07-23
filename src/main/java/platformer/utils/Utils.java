@@ -20,6 +20,7 @@ public class Utils {
 
     private Utils() {}
 
+    // Image operations
     // Importing image: [(w, h) = (-1, -1) Original Size]
     public BufferedImage importImage(String name, int w, int h) {
         try {
@@ -281,6 +282,14 @@ public class Utils {
             }
         }
         return null;
+    }
+
+    // Danger zone
+    public void changeResolution(float value) {
+        Tiles.SCALE.setValue(value);
+        Tiles.TILES_SIZE.setValue(Tiles.TILES_DEFAULT_SIZE.getValue()*Tiles.SCALE.getValue());
+        Tiles.GAME_WIDTH.setValue(Tiles.TILES_SIZE.getValue()*Tiles.TILES_WIDTH.getValue());
+        Tiles.GAME_HEIGHT.setValue(Tiles.TILES_SIZE.getValue()*Tiles.TILES_HEIGHT.getValue());
     }
 
     public static Utils getInstance() {

@@ -3,7 +3,6 @@ package platformer.model.entities;
 import platformer.animation.AnimType;
 import platformer.debug.Debug;
 import platformer.debug.DebugSettings;
-import platformer.model.Tiles;
 import platformer.utils.Utils;
 
 import java.awt.*;

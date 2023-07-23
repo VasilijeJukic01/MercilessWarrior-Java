@@ -326,8 +326,7 @@ public class ObjectManager {
                     (arrowLauncher.getYTile() > (player.getHitBox().y+player.getHitBox().height)/(Tiles.TILES_SIZE.getValue()))) {
                 flag = false;
             }
-            if (!isPlayerInRange(arrowLauncher, player)) flag = false;
-            if (!isPlayerInFront(arrowLauncher, player)) flag = false;
+            if (!isPlayerInRange(arrowLauncher, player) || !isPlayerInFront(arrowLauncher, player)) flag = false;
             if (!Utils.getInstance().canLauncherSeePlayer(lvlData, player.getHitBox(), arrowLauncher.getHitBox(), arrowLauncher.getYTile())) flag = false;
             if (flag) arrowLauncher.setAnimate(true);
             arrowLauncher.update();

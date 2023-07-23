@@ -4,6 +4,7 @@ import platformer.animation.graphics.GraphicsAnimation;
 import platformer.animation.graphics.WaveAnim;
 import platformer.debug.DebugSettings;
 import platformer.model.ModelUtils;
+import platformer.model.Tiles;
 import platformer.model.entities.Direction;
 import platformer.model.entities.Player;
 
@@ -61,15 +62,6 @@ public abstract class Projectile {
             default: break;
         }
 
-        // Oscillation parameters
-        double oscillationAmplitude = 1.2; // Adjust the amplitude of the oscillation
-        double oscillationFrequency = 0.5; // Adjust the frequency of the oscillation
-
-        double time = System.currentTimeMillis() / 1000.0;
-        double oscillationOffset = oscillationAmplitude * Math.sin(2 * Math.PI * oscillationFrequency * time);
-
-        X += oscillationOffset;
-
         if (prType == PRType.ARROW) {
             hitBox.x += X * PRSet.ARROW_SPEED.getValue();
             hitBox.y += Y * PRSet.ARROW_SPEED.getValue();
@@ -87,7 +79,7 @@ public abstract class Projectile {
                 double dx = player.getHitBox().x - hitBox.x;
                 double dy = player.getHitBox().y - hitBox.y;
                 double d = Math.sqrt(dx * dx + dy * dy);
-                if (d > 100 && following) {
+                if (d > (50*Tiles.SCALE.getValue()) && following) {
                     trackX = dx / d;
                     trackY = dy / d;
                 }
@@ -96,6 +88,14 @@ public abstract class Projectile {
                 hitBox.y += trackY * speed;
             }
             else {
+                // Oscillation parameters
+                double oscillationAmplitude = 1.2; // Adjust the amplitude of the oscillation
+                double oscillationFrequency = 0.5; // Adjust the frequency of the oscillation
+
+                double time = System.currentTimeMillis() / 1000.0;
+                double oscillationOffset = oscillationAmplitude * Math.sin(2 * Math.PI * oscillationFrequency * time);
+
+                X += oscillationOffset;
                 hitBox.x += X * speed;
                 hitBox.y += Y * speed;
                 Point p = new Point((int)hitBox.x, (int)hitBox.y);

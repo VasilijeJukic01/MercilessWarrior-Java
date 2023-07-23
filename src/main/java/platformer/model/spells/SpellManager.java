@@ -14,11 +14,17 @@ import java.util.Random;
 public class SpellManager {
 
     private final PlayingState playingState;
-    private final Flames flames;
+
+    // Animations
     private final BufferedImage[] lightningAnimations;
     private final BufferedImage[] flashAnimations;
+
+    // Spells
+    private final Flames flames;
     private List<Lightning> bossLightnings;
     private List<Flash> bossFlashes;
+
+    // Flags
     private boolean hitFlag;
 
     private final Random rand = new Random();
@@ -68,10 +74,10 @@ public class SpellManager {
 
     private void updateLightnings() {
         for (Lightning bossLightning : bossLightnings) {
-            bossLightning.updateAnimation();
+            if (bossLightning.isAlive()) bossLightning.updateAnimation();
         }
         for (Flash bossFlash : bossFlashes) {
-            bossFlash.updateAnimation();
+            if (bossFlash.isAlive()) bossFlash.updateAnimation();
         }
         checkLightningHit();
         checkFlashHit();
@@ -132,6 +138,15 @@ public class SpellManager {
     public void gatherSpellPlacements() {
         this.bossLightnings = playingState.getLevelManager().getCurrentLevel().getLightnings();
         this.bossFlashes = playingState.getLevelManager().getCurrentLevel().getFlashes();
+    }
+
+    public void reset() {
+        for (Lightning bossLightning : bossLightnings) {
+            bossLightning.reset();
+        }
+        for (Flash bossFlash : bossFlashes) {
+            bossFlash.reset();
+        }
     }
 
     public Flames getFlames() {
