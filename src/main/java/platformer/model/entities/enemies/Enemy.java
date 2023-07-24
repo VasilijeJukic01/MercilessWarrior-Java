@@ -26,6 +26,7 @@ public abstract class Enemy extends Entity implements Debug {
     protected boolean alive = true;
     protected double[] cooldown;
     protected int fadeCoefficient = 0;
+    private boolean criticalHit;
 
     public Enemy(int xPos, int yPos, int width, int height, EnemyType enemyType, int animSpeed) {
         super(xPos, yPos, width, height);
@@ -59,6 +60,7 @@ public abstract class Enemy extends Entity implements Debug {
 
                 else if (entityState == AnimType.HIDE) entityState = AnimType.REVEAL;
                 else if (entityState == AnimType.DEATH) alive = false;
+                criticalHit = false;
             }
         }
         if (cooldown != null) coolDownTickUpdate();
@@ -169,6 +171,10 @@ public abstract class Enemy extends Entity implements Debug {
         this.direction = direction;
     }
 
+    public void setCriticalHit(boolean criticalHit) {
+        this.criticalHit = criticalHit;
+    }
+
     public double getPushOffset() {
         return pushOffset;
     }
@@ -179,5 +185,9 @@ public abstract class Enemy extends Entity implements Debug {
 
     public int getFadeCoefficient() {
         return fadeCoefficient;
+    }
+
+    public boolean isCriticalHit() {
+        return criticalHit;
     }
 }

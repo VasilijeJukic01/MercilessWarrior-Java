@@ -36,13 +36,12 @@ public class WaveAnim implements GraphicsAnimation {
             x = xOffset;
             points.clear();
         }
-        time++;
+        time += 0.5*Tiles.SCALE.getValue();
         return new Point(x, y);
     }
 
     @Override
     public void movementRender(Graphics g, boolean viewMovement) {
-        calculatePoint();
         g.drawRect(x, y, 20, 20);
         if (viewMovement) {
             if (!points.contains(new Point(x, y))) points.add(new Point(x, y));

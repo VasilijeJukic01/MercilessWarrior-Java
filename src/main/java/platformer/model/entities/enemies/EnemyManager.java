@@ -53,6 +53,15 @@ public class EnemyManager {
         this.spearWoman = level.getSpearWoman();
     }
 
+    private void renderCriticalHit(Graphics g, int xLevelOffset, int yLevelOffset, Enemy e) {
+        if (e.isCriticalHit()) {
+            int xCritical = (int)(e.getHitBox().x - xLevelOffset);
+            int yCritical = (int)(e.getHitBox().y - 5*Tiles.SCALE.getValue() - yLevelOffset);
+            g.setColor(Color.RED);
+            g.drawString("CRITICAL", xCritical, yCritical);
+        }
+    }
+
     // Render
     private void renderSkeletons(Graphics g, int xLevelOffset, int yLevelOffset) {
         for (Skeleton s : skeletons) {
@@ -63,6 +72,7 @@ public class EnemyManager {
                 int w = EnemySize.SKELETON_WIDTH.getValue() * fS;
                 int h = EnemySize.SKELETON_HEIGHT.getValue();
                 g.drawImage(skeletonAnimations[s.getEnemyAction().ordinal()][s.getAnimIndex()], x, y, w, h, null);
+                renderCriticalHit(g, xLevelOffset, yLevelOffset, s);
                 s.hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.BLUE);
                 s.attackBoxRenderer(g, xLevelOffset, yLevelOffset);
             }
@@ -78,6 +88,7 @@ public class EnemyManager {
                 int w = EnemySize.GHOUL_WIDTH.getValue() * fS;
                 int h = EnemySize.GHOUL_HEIGHT.getValue();
                 g.drawImage(ghoulAnimations[gh.getEnemyAction().ordinal()][gh.getAnimIndex()], x, y, w, h, null);
+                renderCriticalHit(g, xLevelOffset, yLevelOffset, gh);
                 gh.hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.BLUE);
                 gh.attackBoxRenderer(g, xLevelOffset, yLevelOffset);
                 // Ghoul special
@@ -100,6 +111,7 @@ public class EnemyManager {
             int h = EnemySize.SW_HEIGHT.getValue();
             if (fS == -1) x -= 21*Tiles.SCALE.getValue();
             g.drawImage(spearWomanAnimations[spearWoman.getEnemyAction().ordinal()][spearWoman.getAnimIndex()], x, y, w, h, null);
+            renderCriticalHit(g, xLevelOffset, yLevelOffset, spearWoman);
             spearWoman.hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.BLUE);
             spearWoman.attackBoxRenderer(g, xLevelOffset, yLevelOffset);
             spearWoman.overlayRender(g);
@@ -116,24 +128,29 @@ public class EnemyManager {
         }
     }
 
-    private int damage(Player player) {
+    private int[] damage(Player player) {
+        int critical = 0;
         int dmg = player.isTransform() ? player.getTransformAttackDmg() : player.getAttackDmg();
         dmg += PlayerBonus.getInstance().getBonusAttack();
         Random rand = new Random();
         int criticalHit = rand.nextInt(100-PlayerBonus.getInstance().getCriticalHitChance());
-        if (criticalHit >= 1 && criticalHit <= 10) dmg *= 2;
-        return dmg;
+        if (criticalHit >= 1 && criticalHit <= 10) {
+            dmg *= 2;
+            critical = 1;
+        }
+        return new int[] {dmg, critical};
     }
 
     public void checkEnemyHit(Rectangle2D.Double attackBox, Player player) {
-        int dmg = damage(player);
+        int[] dmg = damage(player);
 
         for (Skeleton skeleton : skeletons) {
             if (skeleton.isAlive() && skeleton.getEnemyAction() != AnimType.DEATH) {
                 if (attackBox.intersects(skeleton.getHitBox())) {
-                    skeleton.hit(dmg, true, true);
+                    skeleton.hit(dmg[0], true, true);
+                    skeleton.setCriticalHit(dmg[1] == 1);
                     checkEnemyDying(skeleton, player);
-                    writeHitLog(skeleton.getEnemyAction(), dmg);
+                    writeHitLog(skeleton.getEnemyAction(), dmg[0]);
                     player.setDashHit(true);
                     return;
                 }
@@ -143,9 +160,10 @@ public class EnemyManager {
             if (ghoul.isAlive() && ghoul.getEnemyAction() != AnimType.DEATH) {
                 if (attackBox.intersects(ghoul.getHitBox())) {
                     if (ghoul.getEnemyAction() == AnimType.HIDE || ghoul.getEnemyAction() == AnimType.REVEAL) return;
-                    ghoul.hit(dmg, true, true);
+                    ghoul.hit(dmg[0], true, true);
+                    ghoul.setCriticalHit(dmg[1] == 1);
                     checkEnemyDying(ghoul, player);
-                    writeHitLog(ghoul.getEnemyAction(), dmg);
+                    writeHitLog(ghoul.getEnemyAction(), dmg[0]);
                     player.setDashHit(true);
                     return;
                 }
@@ -155,9 +173,9 @@ public class EnemyManager {
         if (spearWoman == null) return;
         if (spearWoman.isAlive() && spearWoman.getEnemyAction() != AnimType.DEATH) {
             if (attackBox.intersects(spearWoman.getHitBox())) {
-                spearWoman.hit(dmg);
+                spearWoman.hit(dmg[0]);
                 checkEnemyDying(spearWoman, player);
-                writeHitLog(spearWoman.getEnemyAction(), dmg);
+                writeHitLog(spearWoman.getEnemyAction(), dmg[0]);
                 player.setDashHit(true);
             }
         }

@@ -1,5 +1,7 @@
 package platformer.model.perks;
 
+import platformer.audio.Audio;
+import platformer.audio.Sounds;
 import platformer.model.entities.PlayerBonus;
 
 import java.util.ArrayList;
@@ -61,6 +63,7 @@ public class PerksManager {
                 if (perk.isUpgraded()) return;
                 perk.setUpgraded(true);
                 unlock(perk);
+                Audio.getInstance().getAudioPlayer().playSound(Sounds.SHOP_BUY.ordinal());
                 if (isSafe(I+1, J, n, m) && slots[I+1][J] == 1 && !unlocked.contains(slot+n)) unlocks.add(slot+n);
                 if (isSafe(I-1, J, n, m) && slots[I-1][J] == 1 && !unlocked.contains(slot-n)) unlocks.add(slot-n);
                 if (isSafe(I, J+1, n, m) && slots[I][J+1] == 1 && !unlocked.contains(slot+1)) unlocks.add(slot+1);

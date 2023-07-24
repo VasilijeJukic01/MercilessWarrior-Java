@@ -223,7 +223,7 @@ public class Player extends Entity {
     }
 
     private void inAirUpdate() {
-        if (Utils.getInstance().canMoveHere(hitBox.x, hitBox.y + airSpeed, hitBox.width, hitBox.height, levelData)) {
+        if (Utils.getInstance().canMoveHere(hitBox.x, hitBox.y + airSpeed + 1, hitBox.width, hitBox.height, levelData)) {
             if (onWall && airSpeed > 0) airSpeed += wallGravity;
             else airSpeed += gravity;
             hitBox.y += airSpeed;

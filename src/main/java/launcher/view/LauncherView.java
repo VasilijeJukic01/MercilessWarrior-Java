@@ -75,8 +75,8 @@ public class LauncherView extends Stage {
             e.printStackTrace();
         }
         tgCheats.getToggles().addAll(rbEnableCheatsYes, rbEnableCheatsNo);
-        cbResolution.setItems(FXCollections.observableArrayList("832x448", "1664x896"));
-        cbResolution.getSelectionModel().select(1);
+        cbResolution.setItems(FXCollections.observableArrayList("832x448", "1248x672", "1664x896"));
+        cbResolution.getSelectionModel().select(2);
         rbEnableCheatsNo.setSelected(true);
 
         // Components init

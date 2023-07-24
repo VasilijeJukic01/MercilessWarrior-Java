@@ -30,6 +30,9 @@ public class LaunchController implements EventHandler<ActionEvent> {
                 scale = "1";
                 break;
             case 1:
+                scale = "1.5";
+                break;
+            case 2:
                 scale = "2";
                 break;
             default: break;
