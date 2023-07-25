@@ -34,6 +34,7 @@ public class Level {
     private final ArrayList<Shop> shops = new ArrayList<>();
     private final ArrayList<Blocker> blockers = new ArrayList<>();
     private final ArrayList<Blacksmith> blacksmiths = new ArrayList<>();
+    private final ArrayList<Dog> dogs = new ArrayList<>();
     // Spells
     private final ArrayList<Lightning> lightnings = new ArrayList<>();
     private final ArrayList<Flash> flashes = new ArrayList<>();
@@ -98,6 +99,8 @@ public class Level {
                         blockers.add(new Blocker(ObjType.BLOCKER, (int)((i-1.75)*Tiles.TILES_SIZE.getValue()), (int)((j-1)*Tiles.TILES_SIZE.getValue()))); break;
                     case BLACKSMITH:
                         blacksmiths.add(new Blacksmith(ObjType.BLACKSMITH, (int)(i*Tiles.TILES_SIZE.getValue()), (int)(j*Tiles.TILES_SIZE.getValue()))); break;
+                    case DOG:
+                        dogs.add(new Dog(ObjType.DOG, (int)(i*Tiles.TILES_SIZE.getValue()), (int)(j*Tiles.TILES_SIZE.getValue()))); break;
                     default: break;
                 }
             }
@@ -220,6 +223,10 @@ public class Level {
 
     public ArrayList<Blacksmith> getBlacksmiths() {
         return blacksmiths;
+    }
+
+    public ArrayList<Dog> getDogs() {
+        return dogs;
     }
 
     public ArrayList<Lightning> getLightnings() {

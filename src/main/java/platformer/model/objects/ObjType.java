@@ -12,5 +12,6 @@ public enum ObjType {
     SHOP,                     // 8
     BLOCKER,                  // 9
     BLACKSMITH,               // 10
-    MAX                       // 11
+    DOG,                      // 11
+    MAX                       // 12
 }

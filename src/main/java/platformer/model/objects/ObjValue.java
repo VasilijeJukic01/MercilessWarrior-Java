@@ -44,7 +44,12 @@ public enum ObjValue {
     BLACKSMITH_WID_DEF(110),
     BLACKSMITH_HEI_DEF(85),
     BLACKSMITH_WID((int)(BLACKSMITH_WID_DEF.getValue()*Tiles.SCALE.getValue())),
-    BLACKSMITH_HEI((int)(BLACKSMITH_HEI_DEF.getValue()*Tiles.SCALE.getValue()));
+    BLACKSMITH_HEI((int)(BLACKSMITH_HEI_DEF.getValue()*Tiles.SCALE.getValue())),
+
+    DOG_WID_DEF(64),
+    DOG_HEI_DEF(64),
+    DOG_WID((int)(DOG_WID_DEF.getValue()*Tiles.SCALE.getValue())),
+    DOG_HEI((int)(DOG_HEI_DEF.getValue()*Tiles.SCALE.getValue()));
 
     private final int value;
 

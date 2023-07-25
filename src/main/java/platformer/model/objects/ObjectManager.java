@@ -38,6 +38,7 @@ public class ObjectManager {
     private ArrayList<Shop> shops;
     private ArrayList<Blocker> blockers;
     private ArrayList<Blacksmith> blacksmiths;
+    private ArrayList<Dog> dogs;
     // Flags
     private boolean shopVisible, blacksmithVisible;
 
@@ -49,6 +50,7 @@ public class ObjectManager {
         this.shops = new ArrayList<>();
         this.blockers = new ArrayList<>();
         this.blacksmiths = new ArrayList<>();
+        this.dogs = new ArrayList<>();
         this.projectileArrow = Utils.getInstance().importImage("src/main/resources/images/objs/arrow.png", (int) PRSet.ARROW_WID.getValue(), (int)PRSet.ARROW_HEI.getValue());
         this.projectileLightningBall = AnimationUtils.getInstance().loadLightningBall(1);
         this.projectileLightningBall2 = AnimationUtils.getInstance().loadLightningBall(2);
@@ -63,6 +65,7 @@ public class ObjectManager {
         this.shops = level.getShops();
         this.blockers = level.getBlockers();
         this.blacksmiths = level.getBlacksmiths();
+        this.dogs = level.getDogs();
         projectiles.clear();
     }
 
@@ -373,6 +376,9 @@ public class ObjectManager {
         for (Blacksmith blacksmith : blacksmiths) {
             blacksmith.update();
         }
+        for (Dog dog : dogs) {
+            dog.update();
+        }
     }
 
     // Core
@@ -532,6 +538,12 @@ public class ObjectManager {
             g.drawImage(objects[b.getObjType().ordinal()][b.getAnimIndex()], x, y, ObjValue.BLACKSMITH_WID.getValue(), ObjValue.BLACKSMITH_HEI.getValue(), null);
             b.hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.MAGENTA);
             b.render(g, xLevelOffset, yLevelOffset);
+        }
+        for (Dog d : dogs) {
+            int x = (int)d.getHitBox().x-d.getXOffset()-xLevelOffset;
+            int y = (int)d.getHitBox().y-d.getYOffset()-yLevelOffset;
+            g.drawImage(objects[d.getObjType().ordinal()][d.getAnimIndex()], x, y, ObjValue.DOG_WID.getValue(), ObjValue.DOG_HEI.getValue(), null);
+            d.hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.MAGENTA);
         }
     }
 
