@@ -71,6 +71,14 @@ public class Player extends Entity {
         initHitBox((int)(15*Tiles.SCALE.getValue()), (int)(44*Tiles.SCALE.getValue()));
         initAttackBox();
         this.cooldown = new double[3];
+        loadData();
+    }
+
+    private void loadData() {
+        this.coins = game.getAccount().getCoins();
+        this.upgradeTokens = game.getAccount().getTokens();
+        this.level = game.getAccount().getLevel();
+        this.exp = game.getAccount().getExp();
     }
 
     private void initAttackBox() {

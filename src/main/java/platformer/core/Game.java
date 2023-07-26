@@ -2,6 +2,7 @@ package platformer.core;
 
 import platformer.audio.Audio;
 import platformer.audio.Songs;
+import platformer.database.bridge.Database;
 import platformer.debug.*;
 import platformer.state.ControlsState;
 import platformer.state.OptionsState;
@@ -22,7 +23,9 @@ public class Game implements Runnable, Publisher {
     private GameFrame gameFrame;
     private final Thread gameThread;
 
-    private final Account account;
+    private final Database database;
+    private final LauncherPrompt launcherPrompt;
+    private Account account;
 
     private StateManager stateManager;
     private AudioOptions audioOptions;
@@ -37,8 +40,9 @@ public class Game implements Runnable, Publisher {
     //private final Logger fileLogger;
 
     public Game(String cheats, String name) {
+        this.launcherPrompt = new LauncherPrompt(name, cheats.equals("Yes"));
+        this.database = new Database(launcherPrompt);
         init();
-        this.account = new Account(name, cheats.equals("Yes"));
         this.gameThread = new Thread(this);
         this.gameThread.start();
         Audio.getInstance().getAudioPlayer().playSong(Songs.MENU.ordinal());
@@ -47,10 +51,16 @@ public class Game implements Runnable, Publisher {
     }
 
     private void init() {
+        initAccount();
         this.gameFrame = new GameFrame(this);
         this.audioOptions = new AudioOptions();
         this.stateManager = new StateManager(this);
         Overlay.getInstance().update(); // Prepare instance
+    }
+
+    private void initAccount() {
+        this.account = database.getData();
+        this.account.setEnableCheats(launcherPrompt.isEnableCheats());
     }
 
     public void start() {
