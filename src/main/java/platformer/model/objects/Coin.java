@@ -1,8 +1,8 @@
 package platformer.model.objects;
 
-import platformer.model.Tiles;
-
 import java.awt.*;
+
+import static platformer.constants.Constants.SCALE;
 
 public class Coin extends GameObject{
 
@@ -13,11 +13,11 @@ public class Coin extends GameObject{
 
     private void generateHitBox() {
         super.animate = true;
-        int hbWid = (int)(10 * Tiles.SCALE.getValue());
-        int hbHei = (int)(10 * Tiles.SCALE.getValue());
+        int hbWid = (int)(10 * SCALE);
+        int hbHei = (int)(10 * SCALE);
         initHitBox(hbWid, hbHei);
-        super.xOffset = (int)(3 * Tiles.SCALE.getValue());
-        super.yOffset = (int)(3 * Tiles.SCALE.getValue());
+        super.xOffset = (int)(3 * SCALE);
+        super.yOffset = (int)(3 * SCALE);
     }
 
     public void update() {

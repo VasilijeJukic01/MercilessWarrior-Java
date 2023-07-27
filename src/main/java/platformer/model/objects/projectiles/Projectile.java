@@ -4,7 +4,6 @@ import platformer.animation.graphics.GraphicsAnimation;
 import platformer.animation.graphics.WaveAnim;
 import platformer.debug.DebugSettings;
 import platformer.model.ModelUtils;
-import platformer.model.Tiles;
 import platformer.model.entities.Direction;
 import platformer.model.entities.Player;
 
@@ -12,6 +11,8 @@ import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
+
+import static platformer.constants.Constants.*;
 
 public abstract class Projectile {
 
@@ -63,11 +64,11 @@ public abstract class Projectile {
         }
 
         if (prType == PRType.ARROW) {
-            hitBox.x += X * PRSet.ARROW_SPEED.getValue();
-            hitBox.y += Y * PRSet.ARROW_SPEED.getValue();
+            hitBox.x += X * ARROW_SPEED;
+            hitBox.y += Y * ARROW_SPEED;
         }
         else if (prType == PRType.LIGHTNING_BALL) {
-            double speed = PRSet.LB_SPEED_SLOW.getValue();
+            double speed = LB_SPEED_SLOW;
             if (direction == Direction.LEFT || direction == Direction.RIGHT) {
                 ((WaveAnim)waveMovement).setDirection(direction);
                 Point p = waveMovement.calculatePoint();
@@ -75,11 +76,11 @@ public abstract class Projectile {
                 hitBox.y = p.y;
             }
             else if (direction == Direction.TRACK) {
-                speed = PRSet.LB_SPEED_MEDIUM.getValue();
+                speed = LB_SPEED_MEDIUM;
                 double dx = player.getHitBox().x - hitBox.x;
                 double dy = player.getHitBox().y - hitBox.y;
                 double d = Math.sqrt(dx * dx + dy * dy);
-                if (d > (50*Tiles.SCALE.getValue()) && following) {
+                if (d > (50*SCALE) && following) {
                     trackX = dx / d;
                     trackY = dy / d;
                 }

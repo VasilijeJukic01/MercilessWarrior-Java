@@ -1,11 +1,12 @@
 package platformer.ui.overlays;
 
 import platformer.animation.AnimationUtils;
-import platformer.model.Tiles;
 import platformer.utils.Utils;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+
+import static platformer.constants.Constants.SCALE;
 
 public class Overlay {
 
@@ -13,10 +14,10 @@ public class Overlay {
 
     private BufferedImage[] background;
     private BufferedImage overlay;
-    private final int overlayWid = (int)(300* Tiles.SCALE.getValue());
-    private final int overlayHei = (int)(350*Tiles.SCALE.getValue());
-    private final int overlayX = (int)(270*Tiles.SCALE.getValue());
-    private final int overlayY = (int)(50*Tiles.SCALE.getValue());
+    private final int overlayWid = (int)(300*SCALE);
+    private final int overlayHei = (int)(350*SCALE);
+    private final int overlayX = (int)(270*SCALE);
+    private final int overlayY = (int)(50*SCALE);
     private final int animSpeed = 20;
     private int animTick = 0, animIndex = 0;
 

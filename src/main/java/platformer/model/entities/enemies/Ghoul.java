@@ -3,7 +3,6 @@ package platformer.model.entities.enemies;
 import platformer.animation.AnimType;
 import platformer.audio.Audio;
 import platformer.audio.Sounds;
-import platformer.model.Tiles;
 import platformer.model.entities.Cooldown;
 import platformer.model.entities.Direction;
 import platformer.model.entities.Player;
@@ -14,29 +13,31 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.Random;
 
+import static platformer.constants.Constants.*;
+
 public class Ghoul extends Enemy {
 
     private int attackOffset;
 
     // Physics
     private double airSpeed = 0;
-    private final double gravity = 0.025 * Tiles.SCALE.getValue();
-    private final double collisionFallSpeed = 0.5 * Tiles.SCALE.getValue();
+    private final double gravity = 0.025 * SCALE;
+    private final double collisionFallSpeed = 0.5 * SCALE;
 
     public Ghoul(int xPos, int yPos) {
-        super(xPos, yPos, EnemySize.GHOUL_WIDTH.getValue(), EnemySize.GHOUL_HEIGHT.getValue(), EnemyType.GHOUL, 25);
-        int w = (int)(21 * Tiles.SCALE.getValue());
-        int h =  (int)(42 * Tiles.SCALE.getValue());
+        super(xPos, yPos, GHOUL_WIDTH, GHOUL_HEIGHT, EnemyType.GHOUL, 25);
+        int w = (int)(21 * SCALE);
+        int h =  (int)(42 * SCALE);
         initHitBox(w, h);
         initAttackBox();
         super.cooldown = new double[1];
     }
 
     private void initAttackBox() {
-        int w = (int)(60 * Tiles.SCALE.getValue());
-        int h = (int)(45 * Tiles.SCALE.getValue());
+        int w = (int)(60 * SCALE);
+        int h = (int)(45 * SCALE);
         this.attackBox = new Rectangle2D.Double(xPos, yPos-1, w, h);
-        this.attackOffset = (int)(20*Tiles.SCALE.getValue());
+        this.attackOffset = (int)(20 * SCALE);
     }
 
     public void updateMove(int[][] levelData, Player player) {

@@ -1,8 +1,8 @@
 package platformer.model.spells;
 
-import platformer.model.Tiles;
-
 import java.awt.*;
+
+import static platformer.constants.Constants.SCALE;
 
 public class Flames extends Spell {
 
@@ -12,8 +12,8 @@ public class Flames extends Spell {
     public Flames(SpellType spellType, int xPos, int yPos, int width, int height) {
         super(spellType, xPos, yPos, width, height);
         initHitBox(width, height);
-        this.xOffset = (int)(55*Tiles.SCALE.getValue());
-        this.yOffset = (int)(1*Tiles.SCALE.getValue());
+        this.xOffset = (int)(55*SCALE);
+        this.yOffset = (int)(1*SCALE);
     }
 
     public void render(Graphics g, int xLevelOffset, int yLevelOffset) {

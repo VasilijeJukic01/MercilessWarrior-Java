@@ -1,8 +1,8 @@
 package platformer.model.objects;
 
-import platformer.model.Tiles;
-
 import java.awt.*;
+
+import static platformer.constants.Constants.SCALE;
 
 public class Blacksmith extends GameObject{
 
@@ -15,11 +15,11 @@ public class Blacksmith extends GameObject{
 
     private void generateHitBox() {
         super.animate = true;
-        int hbWid = (int)(43 * Tiles.SCALE.getValue());
-        int hbHei = (int)(45 * Tiles.SCALE.getValue());
+        int hbWid = (int)(43 * SCALE);
+        int hbHei = (int)(45 * SCALE);
         initHitBox(hbWid, hbHei);
-        super.xOffset = (int)(32 * Tiles.SCALE.getValue());
-        super.yOffset = (int)(20 * Tiles.SCALE.getValue());
+        super.xOffset = (int)(32 * SCALE);
+        super.yOffset = (int)(20 * SCALE);
     }
 
     // Core
@@ -30,9 +30,9 @@ public class Blacksmith extends GameObject{
     public void render(Graphics g, int xLevelOffset, int yLevelOffset) {
         if (active) {
             g.setColor(Color.WHITE);
-            g.setFont(new Font("Arial", Font.BOLD, (int)(20*Tiles.SCALE.getValue())));
+            g.setFont(new Font("Arial", Font.BOLD, (int)(20*SCALE)));
             int infoX = (int)(hitBox.x-hitBox.width/8-xLevelOffset);
-            int infoY = (int)(hitBox.y-yLevelOffset-5*Tiles.SCALE.getValue());
+            int infoY = (int)(hitBox.y-yLevelOffset-5*SCALE);
             g.drawString("SHOP", infoX, infoY);
         }
     }

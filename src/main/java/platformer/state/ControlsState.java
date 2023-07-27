@@ -1,7 +1,6 @@
 package platformer.state;
 
 import platformer.core.Game;
-import platformer.model.Tiles;
 import platformer.ui.UI;
 import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.CREButton;
@@ -15,24 +14,26 @@ import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 
+import static platformer.constants.Constants.SCALE;
+
 public class ControlsState extends StateAbstraction implements State {
 
     private BufferedImage keyboardSprite;
-    private final int wKey = (int)(20*Tiles.SCALE.getValue()), hKey = (int)(20*Tiles.SCALE.getValue());
+    private final int wKey = (int)(20*SCALE), hKey = (int)(20*SCALE);
     private BufferedImage controlsText;
 
     private CREButton exitBtn;
 
     // Size Variables [Init]
-    private final int controlsTextWid = (int)(180*Tiles.SCALE.getValue());
-    private final int controlsTextHei = (int)(40*Tiles.SCALE.getValue());
+    private final int controlsTextWid = (int)(180*SCALE);
+    private final int controlsTextHei = (int)(40*SCALE);
 
-    private final int exitBtnX = (int)(480*Tiles.SCALE.getValue());
-    private final int exitBtnY = (int)(350*Tiles.SCALE.getValue());
+    private final int exitBtnX = (int)(480*SCALE);
+    private final int exitBtnY = (int)(350*SCALE);
 
     // Size Variables [Render]
-    private final int controlsTextX = (int)(330*Tiles.SCALE.getValue());
-    private final int controlsTextY = (int)(85*Tiles.SCALE.getValue());
+    private final int controlsTextX = (int)(330*SCALE);
+    private final int controlsTextY = (int)(85*SCALE);
 
 
     public ControlsState(Game game) {
@@ -68,26 +69,26 @@ public class ControlsState extends StateAbstraction implements State {
     // Render
     private void renderControls(Graphics g) {
         g.setColor(Color.WHITE);
-        g.setFont(new Font("Arial", Font.BOLD, (int)(10*Tiles.SCALE.getValue())));
-        g.drawString("Move/Wall Slide:", (int)(300*Tiles.SCALE.getValue()), (int)(150*Tiles.SCALE.getValue()));
-        g.drawImage(keyboardSprite.getSubimage(16*2,0, 16, 16), (int)(390*Tiles.SCALE.getValue()), (int)(135*Tiles.SCALE.getValue()), wKey, hKey, null);
-        g.drawImage(keyboardSprite.getSubimage(16*3,0, 16, 16), (int)(410*Tiles.SCALE.getValue()), (int)(135*Tiles.SCALE.getValue()), wKey, hKey, null);
-        g.drawString("Jump:", (int)(300*Tiles.SCALE.getValue()), (int)(170*Tiles.SCALE.getValue()));
-        g.drawImage(keyboardSprite.getSubimage(0,0, 16, 16), (int)(335*Tiles.SCALE.getValue()), (int)(155*Tiles.SCALE.getValue()), wKey, hKey, null);
-        g.drawString("Attack:", (int)(300*Tiles.SCALE.getValue()), (int)(190*Tiles.SCALE.getValue()));
-        g.drawImage(keyboardSprite.getSubimage(16*7,16*4, 16, 16), (int)(345*Tiles.SCALE.getValue()), (int)(175*Tiles.SCALE.getValue()), wKey, hKey, null);
-        g.drawString("Flames:", (int)(300*Tiles.SCALE.getValue()), (int)(210*Tiles.SCALE.getValue()));
-        g.drawImage(keyboardSprite.getSubimage(16*2,16*2, 16, 16), (int)(345*Tiles.SCALE.getValue()), (int)(195*Tiles.SCALE.getValue()), wKey, hKey, null);
-        g.drawString("Block Attack:", (int)(300*Tiles.SCALE.getValue()), (int)(230*Tiles.SCALE.getValue()));
-        g.drawImage(keyboardSprite.getSubimage(16*2,16*4, 16, 16), (int)(370*Tiles.SCALE.getValue()), (int)(215*Tiles.SCALE.getValue()), wKey, hKey, null);
-        g.drawString("Dash:", (int)(300*Tiles.SCALE.getValue()), (int)(250*Tiles.SCALE.getValue()));
-        g.drawImage(keyboardSprite.getSubimage(16*5,16*4, 16, 16), (int)(330*Tiles.SCALE.getValue()), (int)(235*Tiles.SCALE.getValue()), wKey, hKey, null);
-        g.drawString("Transform:", (int)(300*Tiles.SCALE.getValue()), (int)(270*Tiles.SCALE.getValue()));
-        g.drawImage(keyboardSprite.getSubimage(0,16*4, 16, 16), (int)(360*Tiles.SCALE.getValue()), (int)(255*Tiles.SCALE.getValue()), wKey, hKey, null);
-        g.drawString("Double Jump:", (int)(300*Tiles.SCALE.getValue()), (int)(290*Tiles.SCALE.getValue()));
-        g.drawImage(keyboardSprite.getSubimage(0,0, 16, 16), (int)(370*Tiles.SCALE.getValue()), (int)(275*Tiles.SCALE.getValue()), wKey, hKey, null);
-        g.drawString("+", (int)(390*Tiles.SCALE.getValue()), (int)(288*Tiles.SCALE.getValue()));
-        g.drawImage(keyboardSprite.getSubimage(0,0, 16, 16), (int)(398*Tiles.SCALE.getValue()), (int)(275*Tiles.SCALE.getValue()), wKey, hKey, null);
+        g.setFont(new Font("Arial", Font.BOLD, (int)(10*SCALE)));
+        g.drawString("Move/Wall Slide:", (int)(300*SCALE), (int)(150*SCALE));
+        g.drawImage(keyboardSprite.getSubimage(16*2,0, 16, 16), (int)(390*SCALE), (int)(135*SCALE), wKey, hKey, null);
+        g.drawImage(keyboardSprite.getSubimage(16*3,0, 16, 16), (int)(410*SCALE), (int)(135*SCALE), wKey, hKey, null);
+        g.drawString("Jump:", (int)(300*SCALE), (int)(170*SCALE));
+        g.drawImage(keyboardSprite.getSubimage(0,0, 16, 16), (int)(335*SCALE), (int)(155*SCALE), wKey, hKey, null);
+        g.drawString("Attack:", (int)(300*SCALE), (int)(190*SCALE));
+        g.drawImage(keyboardSprite.getSubimage(16*7,16*4, 16, 16), (int)(345*SCALE), (int)(175*SCALE), wKey, hKey, null);
+        g.drawString("Flames:", (int)(300*SCALE), (int)(210*SCALE));
+        g.drawImage(keyboardSprite.getSubimage(16*2,16*2, 16, 16), (int)(345*SCALE), (int)(195*SCALE), wKey, hKey, null);
+        g.drawString("Block Attack:", (int)(300*SCALE), (int)(230*SCALE));
+        g.drawImage(keyboardSprite.getSubimage(16*2,16*4, 16, 16), (int)(370*SCALE), (int)(215*SCALE), wKey, hKey, null);
+        g.drawString("Dash:", (int)(300*SCALE), (int)(250*SCALE));
+        g.drawImage(keyboardSprite.getSubimage(16*5,16*4, 16, 16), (int)(330*SCALE), (int)(235*SCALE), wKey, hKey, null);
+        g.drawString("Transform:", (int)(300*SCALE), (int)(270*SCALE));
+        g.drawImage(keyboardSprite.getSubimage(0,16*4, 16, 16), (int)(360*SCALE), (int)(255*SCALE), wKey, hKey, null);
+        g.drawString("Double Jump:", (int)(300*SCALE), (int)(290*SCALE));
+        g.drawImage(keyboardSprite.getSubimage(0,0, 16, 16), (int)(370*SCALE), (int)(275*SCALE), wKey, hKey, null);
+        g.drawString("+", (int)(390*SCALE), (int)(288*SCALE));
+        g.drawImage(keyboardSprite.getSubimage(0,0, 16, 16), (int)(398*SCALE), (int)(275*SCALE), wKey, hKey, null);
     }
 
     private boolean isMouseInButton(MouseEvent e, PauseButton pauseButton) {

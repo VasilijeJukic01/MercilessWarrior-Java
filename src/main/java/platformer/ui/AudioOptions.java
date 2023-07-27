@@ -1,11 +1,12 @@
 package platformer.ui;
 
 import platformer.audio.Audio;
-import platformer.model.Tiles;
 import platformer.ui.buttons.*;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;
+
+import static platformer.constants.Constants.SCALE;
 
 public class AudioOptions implements MouseControls{
 
@@ -14,12 +15,12 @@ public class AudioOptions implements MouseControls{
     private VolumeButton volumeButton;
 
     // Size Variables [Render]
-    private final int sfxX = (int)(450*Tiles.SCALE.getValue());
-    private final int sfxY = (int)(148*Tiles.SCALE.getValue());
-    private final int musicX = (int)(450*Tiles.SCALE.getValue());
-    private final int musicY = (int)(198*Tiles.SCALE.getValue());
-    private final int volumeX = (int)(330*Tiles.SCALE.getValue());
-    private final int volumeY = (int)(290*Tiles.SCALE.getValue());
+    private final int sfxX = (int)(450*SCALE);
+    private final int sfxY = (int)(148*SCALE);
+    private final int musicX = (int)(450*SCALE);
+    private final int musicY = (int)(198*SCALE);
+    private final int volumeX = (int)(330*SCALE);
+    private final int volumeY = (int)(290*SCALE);
 
     public AudioOptions() {
         init();

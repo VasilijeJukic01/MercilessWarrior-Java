@@ -2,7 +2,6 @@ package platformer.model.entities.enemies;
 
 import platformer.animation.AnimType;
 import platformer.model.ModelUtils;
-import platformer.model.Tiles;
 import platformer.debug.Debug;
 import platformer.model.entities.Cooldown;
 import platformer.model.entities.Direction;
@@ -14,15 +13,18 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.Random;
 
+import static platformer.constants.Constants.SCALE;
+import static platformer.constants.Constants.TILES_SIZE;
+
 @SuppressWarnings("FieldCanBeLocal")
 public abstract class Enemy extends Entity implements Debug {
 
     protected final Random rand;
     private final EnemyType enemyType;
-    protected double enemySpeed = 0.2*Tiles.SCALE.getValue();
+    protected double enemySpeed = 0.2*SCALE;
     protected int originalAnimSpeed, animSpeed, animIndex, animTick = 0;
     protected Direction direction = Direction.RIGHT;
-    protected double attackRange = 1.25*Tiles.TILES_SIZE.getValue();
+    protected double attackRange = 1.25*TILES_SIZE;
     protected boolean alive = true;
     protected double[] cooldown;
     protected int fadeCoefficient = 0;
@@ -77,8 +79,8 @@ public abstract class Enemy extends Entity implements Debug {
 
     // Targeting Player
     protected boolean canSeePlayer(int[][] levelData, Player player) {
-        int yTilePlayer = (int)(player.getHitBox().y / Tiles.TILES_SIZE.getValue())+1;
-        int yTileEnemy = (int)(hitBox.y / Tiles.TILES_SIZE.getValue())+1;
+        int yTilePlayer = (int)(player.getHitBox().y / TILES_SIZE)+1;
+        int yTileEnemy = (int)(hitBox.y / TILES_SIZE)+1;
         if (yTilePlayer != yTileEnemy) return false;
         if (!isPlayerInSight(player)) return false;
         return (Utils.getInstance().isSightClear(levelData, hitBox, player.getHitBox(), yTileEnemy));
@@ -86,8 +88,8 @@ public abstract class Enemy extends Entity implements Debug {
 
     protected void directToPlayer(Player player) {
         entityState = AnimType.RUN;
-        if (enemyType == EnemyType.GHOUL) enemySpeed = 0.45*Tiles.SCALE.getValue();
-        else if (enemyType == EnemyType.SKELETON) enemySpeed = 0.35*Tiles.SCALE.getValue();
+        if (enemyType == EnemyType.GHOUL) enemySpeed = 0.45*SCALE;
+        else if (enemyType == EnemyType.SKELETON) enemySpeed = 0.35*SCALE;
         if (player.getHitBox().x > hitBox.x) setDirection(Direction.RIGHT);
         else setDirection(Direction.LEFT);
     }
@@ -109,7 +111,7 @@ public abstract class Enemy extends Entity implements Debug {
         if (direction == Direction.LEFT) setDirection(Direction.RIGHT);
         else if (direction == Direction.RIGHT) setDirection(Direction.LEFT);
         entityState = AnimType.WALK;
-        enemySpeed = 0.2*Tiles.SCALE.getValue();
+        enemySpeed = 0.2*SCALE;
     }
 
     // Attack
@@ -130,7 +132,7 @@ public abstract class Enemy extends Entity implements Debug {
         alive = true;
         animIndex = animTick = 0;
         animSpeed = originalAnimSpeed;
-        enemySpeed = 0.2*Tiles.SCALE.getValue();
+        enemySpeed = 0.2*SCALE;
         pushOffset = 0;
     }
 

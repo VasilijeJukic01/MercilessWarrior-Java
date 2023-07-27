@@ -3,7 +3,6 @@ package platformer.model.entities.enemies;
 import platformer.animation.AnimType;
 import platformer.audio.Audio;
 import platformer.audio.Sounds;
-import platformer.model.Tiles;
 import platformer.model.entities.Direction;
 import platformer.model.entities.Player;
 import platformer.utils.Utils;
@@ -13,28 +12,30 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.Random;
 
+import static platformer.constants.Constants.*;
+
 public class Skeleton extends Enemy {
 
     private int attackOffset;
 
     // Physics
     private double airSpeed = 0;
-    private final double gravity = 0.035 * Tiles.SCALE.getValue();
-    private final double collisionFallSpeed = 0.5 * Tiles.SCALE.getValue();
+    private final double gravity = 0.035 * SCALE;
+    private final double collisionFallSpeed = 0.5 * SCALE;
 
     public Skeleton(int xPos, int yPos) {
-        super(xPos, yPos, EnemySize.SKELETON_WIDTH.getValue(), EnemySize.SKELETON_HEIGHT.getValue(), EnemyType.SKELETON, 25);
-        int w = (int)(21 * Tiles.SCALE.getValue());
-        int h =  (int)(42 * Tiles.SCALE.getValue());
+        super(xPos, yPos, SKELETON_WIDTH, SKELETON_HEIGHT, EnemyType.SKELETON, 25);
+        int w = (int)(21 * SCALE);
+        int h =  (int)(42 * SCALE);
         initHitBox(w, h);
         initAttackBox();
     }
 
     private void initAttackBox() {
-        int w = (int)(60 * Tiles.SCALE.getValue());
-        int h = (int)(45 * Tiles.SCALE.getValue());
+        int w = (int)(60 * SCALE);
+        int h = (int)(45 * SCALE);
         this.attackBox = new Rectangle2D.Double(xPos, yPos-1, w, h);
-        this.attackOffset =  (int)(20*Tiles.SCALE.getValue());
+        this.attackOffset =  (int)(20 * SCALE);
     }
 
     public void updateMove(int[][] levelData, Player player) {
@@ -78,7 +79,7 @@ public class Skeleton extends Enemy {
         else setEnemyAction(AnimType.HIT);
         pushOffsetDirection = Direction.UP;
         pushOffset = 0;
-        enemySpeed = 0.2*Tiles.SCALE.getValue();
+        enemySpeed = 0.2*SCALE;
     }
 
     public void spellHit(double damage) {

@@ -3,7 +3,6 @@ package platformer.ui.overlays;
 import platformer.audio.Audio;
 import platformer.audio.Songs;
 import platformer.core.Game;
-import platformer.model.Tiles;
 import platformer.ui.AudioOptions;
 import platformer.ui.MouseControls;
 import platformer.ui.UI;
@@ -14,6 +13,8 @@ import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 
+import static platformer.constants.Constants.*;
+
 public class PauseOverlay implements MouseControls {
 
     private final Game game;
@@ -22,31 +23,31 @@ public class PauseOverlay implements MouseControls {
     private BufferedImage SFXText, musicText, volumeText;
 
     // Size Variables [Init]
-    private final int pauseTextWid = (int)(180*Tiles.SCALE.getValue());
-    private final int pauseTextHei = (int)(40*Tiles.SCALE.getValue());
-    private final int SFXTextWid = (int)(60*Tiles.SCALE.getValue());
-    private final int SFXTextHei = (int)(30*Tiles.SCALE.getValue());
-    private final int musicTextWid = (int)(90*Tiles.SCALE.getValue());
-    private final int musicTextHei = (int)(30*Tiles.SCALE.getValue());
-    private final int volumeTextWid = (int)(110*Tiles.SCALE.getValue());
-    private final int volumeTextHei = (int)(30*Tiles.SCALE.getValue());
+    private final int pauseTextWid = (int)(180*SCALE);
+    private final int pauseTextHei = (int)(40*SCALE);
+    private final int SFXTextWid = (int)(60*SCALE);
+    private final int SFXTextHei = (int)(30*SCALE);
+    private final int musicTextWid = (int)(90*SCALE);
+    private final int musicTextHei = (int)(30*SCALE);
+    private final int volumeTextWid = (int)(110*SCALE);
+    private final int volumeTextHei = (int)(30*SCALE);
 
-    private final int continueBtnX = (int)(330*Tiles.SCALE.getValue());
-    private final int continueBtnY = (int)(350*Tiles.SCALE.getValue());
-    private final int retryBtnX = (int)(405*Tiles.SCALE.getValue());
-    private final int retryBtnY = (int)(350*Tiles.SCALE.getValue());
-    private final int exitBtnX = (int)(480*Tiles.SCALE.getValue());
-    private final int exitBtnY = (int)(350*Tiles.SCALE.getValue());
+    private final int continueBtnX = (int)(330*SCALE);
+    private final int continueBtnY = (int)(350*SCALE);
+    private final int retryBtnX = (int)(405*SCALE);
+    private final int retryBtnY = (int)(350*SCALE);
+    private final int exitBtnX = (int)(480*SCALE);
+    private final int exitBtnY = (int)(350*SCALE);
 
     // Size Variables [Render]
-    private final int pauseTextX = (int)(330*Tiles.SCALE.getValue());
-    private final int pauseTextY = (int)(85*Tiles.SCALE.getValue());
-    private final int SFXTextX = (int)(325*Tiles.SCALE.getValue());
-    private final int SFXTextY = (int)(150*Tiles.SCALE.getValue());
-    private final int musicTextX = (int)(325*Tiles.SCALE.getValue());
-    private final int musicTextY = (int)(200*Tiles.SCALE.getValue());
-    private final int volumeTextX = (int)(365*Tiles.SCALE.getValue());
-    private final int volumeTextY = (int)(260*Tiles.SCALE.getValue());
+    private final int pauseTextX = (int)(330*SCALE);
+    private final int pauseTextY = (int)(85*SCALE);
+    private final int SFXTextX = (int)(325*SCALE);
+    private final int SFXTextY = (int)(150*SCALE);
+    private final int musicTextX = (int)(325*SCALE);
+    private final int musicTextY = (int)(200*SCALE);
+    private final int volumeTextX = (int)(365*SCALE);
+    private final int volumeTextY = (int)(260*SCALE);
 
 
     private CREButton continueBtn, retryBtn, exitBtn;
@@ -77,7 +78,7 @@ public class PauseOverlay implements MouseControls {
 
     public void render(Graphics g) {
         g.setColor(new Color(0, 0, 0, 150));
-        g.fillRect(0, 0, (int)Tiles.GAME_WIDTH.getValue(), (int)Tiles.GAME_HEIGHT.getValue());
+        g.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
         Overlay.getInstance().renderOverlay(g);
         g.drawImage(pauseText, pauseTextX, pauseTextY, pauseText.getWidth(), pauseText.getHeight(), null);
         g.drawImage(SFXText, SFXTextX, SFXTextY, SFXText.getWidth(), SFXText.getHeight(), null);

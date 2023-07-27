@@ -1,8 +1,9 @@
 package platformer.model.objects;
 
-import platformer.model.Tiles;
-
 import java.awt.*;
+
+import static platformer.constants.Constants.SCALE;
+import static platformer.constants.Constants.TILES_SIZE;
 
 public class ArrowLauncher extends GameObject {
 
@@ -10,13 +11,13 @@ public class ArrowLauncher extends GameObject {
 
     public ArrowLauncher(ObjType objType, int xPos, int yPos) {
         super(objType, xPos, yPos);
-        this.yTile = yPos/(int)(Tiles.TILES_SIZE.getValue());
-        int hbWid = (int)(32*Tiles.SCALE.getValue());
-        int hbHei = (int)(32*Tiles.SCALE.getValue());
+        this.yTile = yPos/TILES_SIZE;
+        int hbWid = (int)(32*SCALE);
+        int hbHei = (int)(32*SCALE);
         initHitBox(hbWid, hbHei);
-        if (objType == ObjType.ARROW_LAUNCHER_LEFT) hitBox.x -= (int)(6*Tiles.SCALE.getValue());
-        else if (objType == ObjType.ARROW_LAUNCHER_RIGHT) hitBox.x += (int)(6*Tiles.SCALE.getValue());
-        hitBox.y += (int)(2*Tiles.SCALE.getValue());
+        if (objType == ObjType.ARROW_LAUNCHER_LEFT) hitBox.x -= (int)(6*SCALE);
+        else if (objType == ObjType.ARROW_LAUNCHER_RIGHT) hitBox.x += (int)(6*SCALE);
+        hitBox.y += (int)(2*SCALE);
     }
 
     public void update() {

@@ -1,12 +1,14 @@
 package platformer.ui.overlays;
 
-import platformer.model.Tiles;
 import platformer.model.entities.Cooldown;
 import platformer.model.entities.Player;
 import platformer.utils.Utils;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+
+import static platformer.constants.Constants.GAME_WIDTH;
+import static platformer.constants.Constants.SCALE;
 
 public class UserInterface {
 
@@ -15,7 +17,7 @@ public class UserInterface {
     private final BufferedImage statusBar;
     private final BufferedImage portrait;
     private final int healthW = 134, staminaW = 134, expW = 149;
-    private int healthWidth = (int)(healthW*Tiles.SCALE.getValue()), staminaWidth = (int)(staminaW*Tiles.SCALE.getValue()), expWidth = (int)(expW*Tiles.SCALE.getValue());
+    private int healthWidth = (int)(healthW*SCALE), staminaWidth = (int)(staminaW*SCALE), expWidth = (int)(expW*SCALE);
 
     public UserInterface(Player player) {
         this.player = player;
@@ -24,9 +26,9 @@ public class UserInterface {
     }
 
     private void updateBars(double currentHealth, double maxHealth, double currentStamina, double maxStamina, double currentExp, double expCap) {
-        this.healthWidth = (int)((currentHealth / maxHealth) * (int)(healthW*Tiles.SCALE.getValue()));
-        this.staminaWidth = (int)((currentStamina / maxStamina) * (int)(staminaW*Tiles.SCALE.getValue()));
-        this.expWidth = (int)((currentExp / expCap) * (int)(expW*Tiles.SCALE.getValue()));
+        this.healthWidth = (int)((currentHealth / maxHealth) * (int)(healthW*SCALE));
+        this.staminaWidth = (int)((currentStamina / maxStamina) * (int)(staminaW*SCALE));
+        this.expWidth = (int)((currentExp / expCap) * (int)(expW*SCALE));
     }
 
     public void update(double currentHealth, double maxHealth, double currentStamina, double maxStamina, double currentExp, double expCap) {
@@ -34,27 +36,27 @@ public class UserInterface {
     }
 
     public void render(Graphics g) {
-        g.drawImage(statusBar, (int)(10*Tiles.SCALE.getValue()), (int)(15*Tiles.SCALE.getValue()), (int)(192*Tiles.SCALE.getValue()), (int)(92*Tiles.SCALE.getValue()), null);
+        g.drawImage(statusBar, (int)(10*SCALE), (int)(15*SCALE), (int)(192*SCALE), (int)(92*SCALE), null);
         renderStatusBar(g);
         g.setColor(Color.WHITE);
-        g.setFont(new Font("Arial", Font.BOLD, (int)(10*Tiles.SCALE.getValue())));
-        g.drawString(""+player.getCoins(), (int)(93*Tiles.SCALE.getValue()), (int)(82*Tiles.SCALE.getValue()));
-        int xStr = (int)(Tiles.GAME_WIDTH.getValue()-(125*Tiles.SCALE.getValue())), yStr = (int)(10*Tiles.SCALE.getValue());
+        g.setFont(new Font("Arial", Font.BOLD, (int)(10*SCALE)));
+        g.drawString(""+player.getCoins(), (int)(93*SCALE), (int)(82*SCALE));
+        int xStr = (int)(GAME_WIDTH-(125*SCALE)), yStr = (int)(10*SCALE);
         g.drawString("Attack Cooldown: "+Math.round(player.getCooldown()[Cooldown.ATTACK.ordinal()]*100.0)/100.0, xStr, yStr);
         g.drawString("Block Cooldown:  "+Math.round(player.getCooldown()[Cooldown.BLOCK.ordinal()]*100.0)/100.0, xStr, 2*yStr);
         g.drawString("Dash Cooldown:   "+Math.round(player.getCooldown()[Cooldown.DASH.ordinal()]*100.0)/100.0, xStr, 3*yStr);
-        g.setFont(new Font("Arial", Font.BOLD, (int)(7*Tiles.SCALE.getValue())));
-        g.drawString("Lvl: "+player.getLevel(), (int)(170*Tiles.SCALE.getValue()), (int)(67*Tiles.SCALE.getValue()));
-        g.drawImage(portrait, (int)(18*Tiles.SCALE.getValue()), (int)(22*Tiles.SCALE.getValue()), (int)(40*Tiles.SCALE.getValue()), (int)(40*Tiles.SCALE.getValue()), null);
+        g.setFont(new Font("Arial", Font.BOLD, (int)(7*SCALE)));
+        g.drawString("Lvl: "+player.getLevel(), (int)(170*SCALE), (int)(67*SCALE));
+        g.drawImage(portrait, (int)(18*SCALE), (int)(22*SCALE), (int)(40*SCALE), (int)(40*SCALE), null);
     }
 
     private void renderStatusBar(Graphics g) {
         g.setColor(Color.RED);
-        g.fillRect((int)(64.5*Tiles.SCALE.getValue()), (int)(27*Tiles.SCALE.getValue()), healthWidth, (int)(12*Tiles.SCALE.getValue()));
+        g.fillRect((int)(64.5*SCALE), (int)(27*SCALE), healthWidth, (int)(12*SCALE));
         g.setColor(Color.BLUE);
-        g.fillRect((int)(64.5*Tiles.SCALE.getValue()), (int)(44*Tiles.SCALE.getValue()), staminaWidth, (int)(12*Tiles.SCALE.getValue()));
+        g.fillRect((int)(64.5*SCALE), (int)(44*SCALE), staminaWidth, (int)(12*SCALE));
         g.setColor(Color.GREEN);
-        g.fillRect((int)(48.5*Tiles.SCALE.getValue()), (int)(61*Tiles.SCALE.getValue()), expWidth, (int)(7*Tiles.SCALE.getValue()));
+        g.fillRect((int)(48.5*SCALE), (int)(61*SCALE), expWidth, (int)(7*SCALE));
     }
 
 

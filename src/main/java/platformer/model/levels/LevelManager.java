@@ -1,7 +1,6 @@
 package platformer.model.levels;
 
 import platformer.debug.Message;
-import platformer.model.Tiles;
 import platformer.core.Game;
 import platformer.model.entities.effects.Particle;
 import platformer.state.PlayingState;
@@ -10,6 +9,8 @@ import platformer.utils.Utils;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+
+import static platformer.constants.Constants.*;
 
 public class LevelManager {
 
@@ -77,8 +78,8 @@ public class LevelManager {
                 int index = levels.get(levelIndex).getDecoSpriteIndex(i, j);
                 int layer = levels.get(levelIndex).getLayerSpriteIndex(i, j);
                 if (index == -1) continue;
-                int x = (int)(Tiles.TILES_SIZE.getValue()*i-xLevelOffset);
-                int y =  (int)(Tiles.TILES_SIZE.getValue()*j-yLevelOffset);
+                int x = TILES_SIZE*i-xLevelOffset;
+                int y = TILES_SIZE*j-yLevelOffset;
                 LevelObject levelObject = levelObjectManager.getLvlObjects()[index];
                 if (layer == lay) g.drawImage(levelObject.getObjectModel(), x+levelObject.getXOffset(), y+levelObject.getYOffset(), levelObject.getW(), levelObject.getH(), null);
             }
@@ -92,10 +93,10 @@ public class LevelManager {
                 if ((!behind && index < 255) || index == -1) continue;
                 if (behind && index >= 255) continue;
                 if (!behind) index -= 255;
-                int x = (int)(Tiles.TILES_SIZE.getValue()*i-xLevelOffset);
-                int y =  (int)(Tiles.TILES_SIZE.getValue()*j-yLevelOffset);
-                int w = (int)Tiles.TILES_SIZE.getValue()+1;
-                int h = (int)Tiles.TILES_SIZE.getValue()+1;
+                int x = TILES_SIZE*i-xLevelOffset;
+                int y = TILES_SIZE*j-yLevelOffset;
+                int w = TILES_SIZE+1;
+                int h = TILES_SIZE+1;
                 g.drawImage(levelSprite[index], x, y, w, h, null);
             }
         }
@@ -105,7 +106,7 @@ public class LevelManager {
         renderDeco(g, xLevelOffset, yLevelOffset, 0);
         renderDeco(g, xLevelOffset, yLevelOffset, 1);
         g.setColor(new Color(1, 130, 120, 110));
-        g.fillRect(0, 0, (int)Tiles.GAME_WIDTH.getValue(), (int)Tiles.GAME_HEIGHT.getValue());
+        g.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
         renderDeco(g, xLevelOffset, yLevelOffset, 2);
         renderTerrain(g, xLevelOffset, yLevelOffset, true);
         renderDeco(g, xLevelOffset, yLevelOffset, 3);

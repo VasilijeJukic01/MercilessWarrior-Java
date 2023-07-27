@@ -1,18 +1,18 @@
 package platformer.model.objects;
 
-import platformer.model.Tiles;
-
 import java.awt.*;
+
+import static platformer.constants.Constants.SCALE;
 
 public class Blocker extends GameObject {
 
     public Blocker(ObjType objType, int xPos, int yPos) {
         super(objType, xPos, yPos);
-        int hbWid = (int)(32* Tiles.SCALE.getValue());
-        int hbHei = (int)(32*3.5*Tiles.SCALE.getValue());
+        int hbWid = (int)(32*SCALE);
+        int hbHei = (int)(32*3.5*SCALE);
         initHitBox(hbWid, hbHei);
-        xOffset = (int)(32*Tiles.SCALE.getValue());
-        yOffset = (int)(22*Tiles.SCALE.getValue());
+        xOffset = (int)(32*SCALE);
+        yOffset = (int)(22*SCALE);
         hitBox.y += yOffset;
         hitBox.x += xOffset;
     }

@@ -2,7 +2,6 @@ package platformer.model.objects;
 
 import platformer.audio.Audio;
 import platformer.audio.Sounds;
-import platformer.model.Tiles;
 import platformer.model.entities.Player;
 import platformer.ui.ItemType;
 import platformer.ui.ShopItem;
@@ -12,6 +11,8 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Random;
+
+import static platformer.constants.Constants.SCALE;
 
 public class Shop extends GameObject {
 
@@ -30,11 +31,11 @@ public class Shop extends GameObject {
     // Init
     private void generateHitBox() {
         super.animate = true;
-        int hbWid = (int)(154 * Tiles.SCALE.getValue());
-        int hbHei = (int)(132 * Tiles.SCALE.getValue());
+        int hbWid = (int)(154 * SCALE);
+        int hbHei = (int)(132 * SCALE);
         initHitBox(hbWid, hbHei);
-        super.xOffset = (int)(1 * Tiles.SCALE.getValue());
-        super.yOffset = (int)(1 * Tiles.SCALE.getValue());
+        super.xOffset = (int)(1 * SCALE);
+        super.yOffset = (int)(1 * SCALE);
     }
 
     private void getItems() {
@@ -72,7 +73,7 @@ public class Shop extends GameObject {
             g.setColor(Color.WHITE);
             g.setFont(new Font("Arial", Font.BOLD, 40));
             int infoX = (int)(hitBox.x+hitBox.width/3-xLevelOffset);
-            int infoY = (int)(hitBox.y-yLevelOffset+25*Tiles.SCALE.getValue());
+            int infoY = (int)(hitBox.y-yLevelOffset+25*SCALE);
             g.drawString("SHOP", infoX, infoY);
         }
     }

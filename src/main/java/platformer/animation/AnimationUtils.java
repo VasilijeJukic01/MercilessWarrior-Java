@@ -1,10 +1,10 @@
 package platformer.animation;
 
-import platformer.model.Tiles;
-import platformer.model.entities.enemies.EnemySize;
 import platformer.utils.Utils;
 
 import java.awt.image.BufferedImage;
+
+import static platformer.constants.Constants.*;
 
 public class AnimationUtils {
 
@@ -116,8 +116,8 @@ public class AnimationUtils {
         BufferedImage[][] anim = new BufferedImage[13][13];
 
         // Size
-        int w = EnemySize.SKELETON_WIDTH.getValue();
-        int h = EnemySize.SKELETON_HEIGHT.getValue();
+        int w = SKELETON_WIDTH;
+        int h = SKELETON_HEIGHT;
 
         // 0 Idle anim
         BufferedImage[] idleAnim = new BufferedImage[4];
@@ -182,8 +182,8 @@ public class AnimationUtils {
         BufferedImage[][] anim = new BufferedImage[17][20];
 
         // Size
-        int w = EnemySize.GHOUL_WIDTH.getValue();
-        int h = EnemySize.GHOUL_HEIGHT.getValue();
+        int w = GHOUL_WIDTH;
+        int h = GHOUL_HEIGHT;
 
         // 0 Idle anim
         BufferedImage[] idleAnim = new BufferedImage[8];
@@ -250,8 +250,8 @@ public class AnimationUtils {
         BufferedImage[][] anim = new BufferedImage[20][25];
 
         // Size
-        int w = EnemySize.SW_WIDTH.getValue();
-        int h = EnemySize.SW_HEIGHT.getValue();
+        int w = SW_WIDTH;
+        int h = SW_HEIGHT;
 
         // 0 Idle anim
         BufferedImage[] idleAnim = new BufferedImage[8];
@@ -347,8 +347,8 @@ public class AnimationUtils {
 
         // Double Jump Effect
         BufferedImage[] doubleJump = new BufferedImage[4];
-        int djW = (int)(57.5*Tiles.SCALE.getValue());
-        int djH = (int)(25*Tiles.SCALE.getValue());
+        int djW = (int)(57.5*SCALE);
+        int djH = (int)(25*SCALE);
         for (int i = 0; i < 4; i++) {
             doubleJump[i] = Utils.getInstance().importImage("src/main/resources/images/player/DoubleJump/doubleJump"+i+".png", djW, djH);
         }
@@ -479,8 +479,7 @@ public class AnimationUtils {
     public BufferedImage[] loadMenuAnimation() {
         BufferedImage[] anim = new BufferedImage[24];
         for (int i = 0; i < 24; i++) {
-            anim[i] = Utils.getInstance().importImage("src/main/resources/images/menu/background/Background"+i+".png", (int)Tiles.GAME_WIDTH.getValue(),
-                    (int)Tiles.GAME_HEIGHT.getValue());
+            anim[i] = Utils.getInstance().importImage("src/main/resources/images/menu/background/Background"+i+".png", GAME_WIDTH, GAME_HEIGHT);
         }
         return anim;
     }

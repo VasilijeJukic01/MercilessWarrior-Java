@@ -1,8 +1,8 @@
 package platformer.model.objects;
 
-import platformer.model.Tiles;
-
 import java.awt.*;
+
+import static platformer.constants.Constants.SCALE;
 
 public class Dog  extends GameObject {
 
@@ -13,11 +13,11 @@ public class Dog  extends GameObject {
 
     private void generateHitBox() {
         super.animate = true;
-        int hbWid = (int)(32 * Tiles.SCALE.getValue());
-        int hbHei = (int)(32 * Tiles.SCALE.getValue());
+        int hbWid = (int)(32 * SCALE);
+        int hbHei = (int)(32 * SCALE);
         initHitBox(hbWid, hbHei);
-        super.xOffset = (int)(18 * Tiles.SCALE.getValue());
-        super.yOffset = (int)(12 * Tiles.SCALE.getValue());
+        super.xOffset = (int)(18 * SCALE);
+        super.yOffset = (int)(12 * SCALE);
     }
 
     // Core

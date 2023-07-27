@@ -4,12 +4,10 @@ import platformer.animation.AnimType;
 import platformer.audio.Audio;
 import platformer.audio.Songs;
 import platformer.audio.Sounds;
-import platformer.model.Tiles;
 import platformer.model.entities.Cooldown;
 import platformer.model.entities.Direction;
 import platformer.model.entities.Player;
 import platformer.model.entities.enemies.Enemy;
-import platformer.model.entities.enemies.EnemySize;
 import platformer.model.entities.enemies.EnemyType;
 import platformer.model.objects.ObjectManager;
 import platformer.model.spells.SpellManager;
@@ -24,10 +22,12 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Random;
 
+import static platformer.constants.Constants.*;
+
 public class SpearWoman extends Enemy {
 
     private AnimType prevAnim = AnimType.IDLE;
-    private final int attackBoxWid = (int)(96 * Tiles.SCALE.getValue()), attackBoxReducedWid = (int)(48 * Tiles.SCALE.getValue());
+    private final int attackBoxWid = (int)(96 * SCALE), attackBoxReducedWid = (int)(48 * SCALE);
 
     // Flags
     private boolean start, shooting, flash = true;
@@ -42,27 +42,27 @@ public class SpearWoman extends Enemy {
 
     // Physics
     private double airSpeed = 0;
-    private final double gravity = 0.1 * Tiles.SCALE.getValue();
-    private final double collisionFallSpeed = 0.5 * Tiles.SCALE.getValue();
+    private final double gravity = 0.1 * SCALE;
+    private final double collisionFallSpeed = 0.5 * SCALE;
 
     // Overlay
     private final BossInterface bossInterface;
 
     public SpearWoman(int xPos, int yPos) {
-        super(xPos, yPos, EnemySize.SW_WIDTH.getValue(), EnemySize.SW_HEIGHT.getValue(), EnemyType.SPEAR_WOMAN, 18);
+        super(xPos, yPos, SW_WIDTH, SW_HEIGHT, EnemyType.SPEAR_WOMAN, 18);
         super.setDirection(Direction.LEFT);
         this.bossInterface = new BossInterface(this);
-        int w = (int)(25 * Tiles.SCALE.getValue());
-        int h =  (int)(50 * Tiles.SCALE.getValue());
+        int w = (int)(25 * SCALE);
+        int h =  (int)(50 * SCALE);
         initHitBox(w, h);
         initAttackBox();
         super.cooldown = new double[1];
     }
 
     private void initAttackBox() {
-        int h = (int)(54 * Tiles.SCALE.getValue());
+        int h = (int)(54 * SCALE);
         this.attackBox = new Rectangle2D.Double(xPos, yPos-1, attackBoxWid, h);
-        this.attackOffset = (int)(33*Tiles.SCALE.getValue());
+        this.attackOffset = (int)(33 * SCALE);
     }
 
     // Checkers
@@ -109,17 +109,17 @@ public class SpearWoman extends Enemy {
     private void teleport(int[][] levelData, Player player, int tiles) {
         double playerX = player.getHitBox().x;
         int k = rand.nextInt(2);
-        if (k == 0 && Utils.getInstance().canMoveHere(playerX+tiles*Tiles.TILES_SIZE.getValue(), hitBox.y, hitBox.width, hitBox.height, levelData)) {
-            hitBox.x = playerX+tiles*Tiles.TILES_SIZE.getValue();
+        if (k == 0 && Utils.getInstance().canMoveHere(playerX+tiles*TILES_SIZE, hitBox.y, hitBox.width, hitBox.height, levelData)) {
+            hitBox.x = playerX+tiles*TILES_SIZE;
         }
-        else if (k == 0 && Utils.getInstance().canMoveHere(playerX-tiles*Tiles.TILES_SIZE.getValue(), hitBox.y, hitBox.width, hitBox.height, levelData)) {
-            hitBox.x = playerX-tiles*Tiles.TILES_SIZE.getValue();
+        else if (k == 0 && Utils.getInstance().canMoveHere(playerX-tiles*TILES_SIZE, hitBox.y, hitBox.width, hitBox.height, levelData)) {
+            hitBox.x = playerX-tiles*TILES_SIZE;
         }
-        if (k == 1 && Utils.getInstance().canMoveHere(playerX-tiles*Tiles.TILES_SIZE.getValue(), hitBox.y, hitBox.width, hitBox.height, levelData)) {
-            hitBox.x = playerX-tiles*Tiles.TILES_SIZE.getValue();
+        if (k == 1 && Utils.getInstance().canMoveHere(playerX-tiles*TILES_SIZE, hitBox.y, hitBox.width, hitBox.height, levelData)) {
+            hitBox.x = playerX-tiles*TILES_SIZE;
         }
-        else if (k == 1 && Utils.getInstance().canMoveHere(playerX+tiles*Tiles.TILES_SIZE.getValue(), hitBox.y, hitBox.width, hitBox.height, levelData)) {
-            hitBox.x = playerX+tiles*Tiles.TILES_SIZE.getValue();
+        else if (k == 1 && Utils.getInstance().canMoveHere(playerX+tiles*TILES_SIZE, hitBox.y, hitBox.width, hitBox.height, levelData)) {
+            hitBox.x = playerX+tiles*TILES_SIZE;
         }
         if (playerX < hitBox.x) setDirection(Direction.LEFT);
         else setDirection(Direction.RIGHT);
@@ -164,19 +164,19 @@ public class SpearWoman extends Enemy {
 
         // Thunder slam
         if (entityState == AnimType.SPELL_3) {
-            hitBox.x = 12.5*Tiles.TILES_SIZE.getValue();
-            hitBox.y = 4*Tiles.TILES_SIZE.getValue();
+            hitBox.x = 12.5*TILES_SIZE;
+            hitBox.y = 4*TILES_SIZE;
         }
         // Lightning ball
         else if (entityState == AnimType.SPELL_2) {
             int dir = rand.nextInt(2);
             if (dir == 0) {
                 setDirection(Direction.LEFT);
-                hitBox.x = 23*Tiles.TILES_SIZE.getValue();
+                hitBox.x = 23*TILES_SIZE;
             }
             else {
                 setDirection(Direction.RIGHT);
-                hitBox.x = 3*Tiles.TILES_SIZE.getValue();
+                hitBox.x = 3*TILES_SIZE;
             }
             hitBox.y = yPos;
         }
@@ -191,8 +191,8 @@ public class SpearWoman extends Enemy {
         else if (entityState == AnimType.SPELL_4) {
             Random rand = new Random();
             specialType = rand.nextInt(2);
-            hitBox.x = 12.5*Tiles.TILES_SIZE.getValue();
-            hitBox.y = 4*Tiles.TILES_SIZE.getValue();
+            hitBox.x = 12.5*TILES_SIZE;
+            hitBox.y = 4*TILES_SIZE;
         }
         // Classic Attack
         else if (entityState == AnimType.ATTACK_1 || entityState == AnimType.SPELL_1) {

@@ -4,7 +4,6 @@ import platformer.animation.AnimType;
 import platformer.animation.AnimationUtils;
 import platformer.audio.Audio;
 import platformer.debug.Message;
-import platformer.model.Tiles;
 import platformer.model.entities.Direction;
 import platformer.model.entities.Player;
 import platformer.model.entities.PlayerBonus;
@@ -23,6 +22,8 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+
+import static platformer.constants.Constants.*;
 
 @SuppressWarnings("FieldCanBeLocal")
 public class EnemyManager {
@@ -56,7 +57,7 @@ public class EnemyManager {
     private void renderCriticalHit(Graphics g, int xLevelOffset, int yLevelOffset, Enemy e) {
         if (e.isCriticalHit()) {
             int xCritical = (int)(e.getHitBox().x - xLevelOffset);
-            int yCritical = (int)(e.getHitBox().y - 5*Tiles.SCALE.getValue() - yLevelOffset);
+            int yCritical = (int)(e.getHitBox().y - 5*SCALE - yLevelOffset);
             g.setColor(Color.RED);
             g.drawString("CRITICAL", xCritical, yCritical);
         }
@@ -67,10 +68,10 @@ public class EnemyManager {
         for (Skeleton s : skeletons) {
             if (s.isAlive()) {
                 int fC = s.getFlipCoefficient(), fS = s.getFlipSign();
-                int x = (int) s.getHitBox().x - EnemySize.SKELETON_X_OFFSET.getValue() - xLevelOffset + fC;
-                int y = (int) s.getHitBox().y - EnemySize.SKELETON_Y_OFFSET.getValue() - yLevelOffset+1 + (int)s.getPushOffset();
-                int w = EnemySize.SKELETON_WIDTH.getValue() * fS;
-                int h = EnemySize.SKELETON_HEIGHT.getValue();
+                int x = (int) s.getHitBox().x - SKELETON_X_OFFSET - xLevelOffset + fC;
+                int y = (int) s.getHitBox().y - SKELETON_Y_OFFSET - yLevelOffset+1 + (int)s.getPushOffset();
+                int w = SKELETON_WIDTH * fS;
+                int h = SKELETON_HEIGHT;
                 g.drawImage(skeletonAnimations[s.getEnemyAction().ordinal()][s.getAnimIndex()], x, y, w, h, null);
                 renderCriticalHit(g, xLevelOffset, yLevelOffset, s);
                 s.hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.BLUE);
@@ -83,10 +84,10 @@ public class EnemyManager {
         for (Ghoul gh : ghouls) {
             if (gh.isAlive()) {
                 int fC = gh.getFlipCoefficient(), fS = gh.getFlipSign();
-                int x = (int) gh.getHitBox().x - EnemySize.GHOUL_X_OFFSET.getValue() - xLevelOffset + fC;
-                int y = (int) gh.getHitBox().y - EnemySize.GHOUL_Y_OFFSET.getValue() - yLevelOffset+1 + (int)gh.getPushOffset();
-                int w = EnemySize.GHOUL_WIDTH.getValue() * fS;
-                int h = EnemySize.GHOUL_HEIGHT.getValue();
+                int x = (int) gh.getHitBox().x - GHOUL_X_OFFSET - xLevelOffset + fC;
+                int y = (int) gh.getHitBox().y - GHOUL_Y_OFFSET - yLevelOffset+1 + (int)gh.getPushOffset();
+                int w = GHOUL_WIDTH * fS;
+                int h = GHOUL_HEIGHT;
                 g.drawImage(ghoulAnimations[gh.getEnemyAction().ordinal()][gh.getAnimIndex()], x, y, w, h, null);
                 renderCriticalHit(g, xLevelOffset, yLevelOffset, gh);
                 gh.hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.BLUE);
@@ -95,7 +96,7 @@ public class EnemyManager {
                 if (gh.getEnemyAction() == AnimType.HIDE || gh.getEnemyAction() == AnimType.REVEAL) {
                     int r = (gh.getAnimIndex() > 15 && gh.getEnemyAction() == AnimType.REVEAL) ? (255) : (0);
                     g.setColor(new Color(r, 0, 0, gh.getFadeCoefficient()));
-                    g.fillRect(0, 0, (int)Tiles.GAME_WIDTH.getValue(), (int)Tiles.GAME_HEIGHT.getValue());
+                    g.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
                 }
             }
         }
@@ -105,11 +106,11 @@ public class EnemyManager {
         if (spearWoman == null) return;
         if (spearWoman.isAlive()) {
             int fC = spearWoman.getFlipCoefficient(), fS = spearWoman.getFlipSign();
-            int x = (int) spearWoman.getHitBox().x - EnemySize.SW_X_OFFSET.getValue() - xLevelOffset + fC;
-            int y = (int) spearWoman.getHitBox().y - EnemySize.SW_Y_OFFSET.getValue() - yLevelOffset+1 + (int)spearWoman.getPushOffset();
-            int w = EnemySize.SW_WIDTH.getValue() * fS;
-            int h = EnemySize.SW_HEIGHT.getValue();
-            if (fS == -1) x -= 21*Tiles.SCALE.getValue();
+            int x = (int) spearWoman.getHitBox().x - SW_X_OFFSET - xLevelOffset + fC;
+            int y = (int) spearWoman.getHitBox().y - SW_Y_OFFSET - yLevelOffset+1 + (int)spearWoman.getPushOffset();
+            int w = SW_WIDTH * fS;
+            int h = SW_HEIGHT;
+            if (fS == -1) x -= 21*SCALE;
             g.drawImage(spearWomanAnimations[spearWoman.getEnemyAction().ordinal()][spearWoman.getAnimIndex()], x, y, w, h, null);
             renderCriticalHit(g, xLevelOffset, yLevelOffset, spearWoman);
             spearWoman.hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.BLUE);

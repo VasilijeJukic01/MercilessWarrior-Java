@@ -3,7 +3,6 @@ package platformer.ui.overlays;
 import platformer.audio.Audio;
 import platformer.audio.Songs;
 import platformer.core.Game;
-import platformer.model.Tiles;
 import platformer.ui.MouseControls;
 import platformer.ui.UI;
 import platformer.ui.buttons.ButtonType;
@@ -15,6 +14,8 @@ import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 
+import static platformer.constants.Constants.*;
+
 public class GameOverOverlay implements MouseControls {
 
     private final Game game;
@@ -23,29 +24,29 @@ public class GameOverOverlay implements MouseControls {
     private CREButton retryBtn, menuBtn;
 
     // Size Variables [Init]
-    private final int overlayWid = (int)(300*Tiles.SCALE.getValue());
-    private final int overlayHei = (int)(260*Tiles.SCALE.getValue());
-    private final int deadTextWid = (int)(180*Tiles.SCALE.getValue());
-    private final int deadTextHei = (int)(40*Tiles.SCALE.getValue());
-    private final int respawnTextWid = (int)(110*Tiles.SCALE.getValue());
-    private final int respawnTextHei = (int)(30*Tiles.SCALE.getValue());
-    private final int menuTextWid = (int)(90*Tiles.SCALE.getValue());
-    private final int menuTextHei = (int)(30*Tiles.SCALE.getValue());
+    private final int overlayWid = (int)(300*SCALE);
+    private final int overlayHei = (int)(260*SCALE);
+    private final int deadTextWid = (int)(180*SCALE);
+    private final int deadTextHei = (int)(40*SCALE);
+    private final int respawnTextWid = (int)(110*SCALE);
+    private final int respawnTextHei = (int)(30*SCALE);
+    private final int menuTextWid = (int)(90*SCALE);
+    private final int menuTextHei = (int)(30*SCALE);
 
-    private final int retryX = (int)(340*Tiles.SCALE.getValue());
-    private final int retryY = (int)(290*Tiles.SCALE.getValue());
-    private final int menuX = (int)(480*Tiles.SCALE.getValue());
-    private final int menuY = (int)(290*Tiles.SCALE.getValue());
+    private final int retryX = (int)(340*SCALE);
+    private final int retryY = (int)(290*SCALE);
+    private final int menuX = (int)(480*SCALE);
+    private final int menuY = (int)(290*SCALE);
 
     // Size Variables [Render]
-    private final int overlayX = (int)(270*Tiles.SCALE.getValue());
-    private final int overlayY = (int)(90*Tiles.SCALE.getValue());
-    private final int deadTextX = (int)(330*Tiles.SCALE.getValue());
-    private final int deadTextY = (int)(130*Tiles.SCALE.getValue());
-    private final int respawnTextX = (int)(300*Tiles.SCALE.getValue());
-    private final int respawnTextY = (int)(230*Tiles.SCALE.getValue());
-    private final int menuTextX = (int)(450*Tiles.SCALE.getValue());
-    private final int menuTextY = (int)(230*Tiles.SCALE.getValue());
+    private final int overlayX = (int)(270*SCALE);
+    private final int overlayY = (int)(90*SCALE);
+    private final int deadTextX = (int)(330*SCALE);
+    private final int deadTextY = (int)(130*SCALE);
+    private final int respawnTextX = (int)(300*SCALE);
+    private final int respawnTextY = (int)(230*SCALE);
+    private final int menuTextX = (int)(450*SCALE);
+    private final int menuTextY = (int)(230*SCALE);
 
     public GameOverOverlay(Game game) {
         this.game = game;
@@ -69,7 +70,7 @@ public class GameOverOverlay implements MouseControls {
 
     public void render(Graphics g) {
         g.setColor(new Color(0, 0, 0, 200));
-        g.fillRect(0, 0, (int)Tiles.GAME_WIDTH.getValue(), (int)Tiles.GAME_HEIGHT.getValue());
+        g.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
         g.drawImage(overlay, overlayX, overlayY, overlay.getWidth(), overlay.getHeight(), null);
         g.drawImage(deadText, deadTextX, deadTextY, deadText.getWidth(), deadText.getHeight(), null);
         g.drawImage(respawnText, respawnTextX, respawnTextY, respawnText.getWidth(), respawnText.getHeight(), null);

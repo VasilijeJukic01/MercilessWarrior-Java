@@ -1,11 +1,12 @@
 package platformer.ui.buttons;
 
-import platformer.model.Tiles;
 import platformer.ui.UI;
 import platformer.utils.Utils;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+
+import static platformer.constants.Constants.SCALE;
 
 public class MusicButton extends PauseButton {
 
@@ -42,8 +43,8 @@ public class MusicButton extends PauseButton {
     @Override
     public void render(Graphics g) {
         if (mousePressed) {
-            int buttonX = xPos+(int)(5 * Tiles.SCALE.getValue()), buttonY = yPos+(int)(5 * Tiles.SCALE.getValue());
-            int buttonWid = width-(int)(10 * Tiles.SCALE.getValue()), buttonHei = height-(int)(10 * Tiles.SCALE.getValue());
+            int buttonX = xPos+(int)(5 * SCALE), buttonY = yPos+(int)(5 * SCALE);
+            int buttonWid = width-(int)(10 * SCALE), buttonHei = height-(int)(10 * SCALE);
             g.drawImage(images[imageIndexI][imageIndexJ], buttonX, buttonY, buttonWid, buttonHei, null);
         }
         else g.drawImage(images[imageIndexI][imageIndexJ], xPos, yPos, width, height, null);

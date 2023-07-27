@@ -1,6 +1,5 @@
 package platformer.model.levels;
 
-import platformer.model.Tiles;
 import platformer.model.entities.enemies.EnemyType;
 import platformer.model.entities.enemies.Ghoul;
 import platformer.model.entities.enemies.Skeleton;
@@ -15,6 +14,8 @@ import platformer.utils.Utils;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+
+import static platformer.constants.Constants.*;
 
 @SuppressWarnings("FieldCanBeLocal")
 public class Level {
@@ -61,11 +62,11 @@ public class Level {
                 if (value >= EnemyType.MAX.ordinal()) continue;
                 switch (EnemyType.values()[value]) {
                     case SKELETON:
-                        skeletons.add(new Skeleton((int)(i*Tiles.TILES_SIZE.getValue()), (int)((j-1)*Tiles.TILES_SIZE.getValue()))); break;
+                        skeletons.add(new Skeleton(i*TILES_SIZE, (j-1)*TILES_SIZE)); break;
                     case GHOUL:
-                        ghouls.add(new Ghoul((int)(i*Tiles.TILES_SIZE.getValue()), (int)((j-1)*Tiles.TILES_SIZE.getValue()))); break;
+                        ghouls.add(new Ghoul(i*TILES_SIZE, (j-1)*TILES_SIZE)); break;
                     case SPEAR_WOMAN:
-                        spearWoman = new SpearWoman((int)(i*Tiles.TILES_SIZE.getValue()), (int)((j-1)*Tiles.TILES_SIZE.getValue())); break;
+                        spearWoman = new SpearWoman(i*TILES_SIZE, (j-1)*TILES_SIZE); break;
                     default: break;
                 }
             }
@@ -81,26 +82,26 @@ public class Level {
                 if (value >= ObjType.MAX.ordinal()) continue;
                 switch (ObjType.values()[value]) {
                     case HEAL_POTION:
-                        potions.add(new Potion(ObjType.HEAL_POTION, (int)((i+0.5)*Tiles.TILES_SIZE.getValue()), (int)(j*Tiles.TILES_SIZE.getValue()))); break;
+                        potions.add(new Potion(ObjType.HEAL_POTION, (int)((i+0.5)*TILES_SIZE), j*TILES_SIZE)); break;
                     case STAMINA_POTION:
-                        potions.add(new Potion(ObjType.STAMINA_POTION, (int)((i+0.5)*Tiles.TILES_SIZE.getValue()), (int)(j*Tiles.TILES_SIZE.getValue()))); break;
+                        potions.add(new Potion(ObjType.STAMINA_POTION, (int)((i+0.5)*TILES_SIZE), j*TILES_SIZE)); break;
                     case BOX:
-                        containers.add(new Container(ObjType.BOX, (int)(i*Tiles.TILES_SIZE.getValue()), (int)(j*Tiles.TILES_SIZE.getValue()))); break;
+                        containers.add(new Container(ObjType.BOX, i*TILES_SIZE, j*TILES_SIZE)); break;
                     case BARREL:
-                        containers.add(new Container(ObjType.BARREL, (int)(i*Tiles.TILES_SIZE.getValue()), (int)(j*Tiles.TILES_SIZE.getValue()))); break;
+                        containers.add(new Container(ObjType.BARREL, i*TILES_SIZE, j*TILES_SIZE)); break;
                     case SPIKE:
-                        spikes.add(new Spike(ObjType.SPIKE, (int)(i*Tiles.TILES_SIZE.getValue()), (int)(j*Tiles.TILES_SIZE.getValue()))); break;
+                        spikes.add(new Spike(ObjType.SPIKE, i*TILES_SIZE, j*TILES_SIZE)); break;
                     case ARROW_LAUNCHER_LEFT:
                     case ARROW_LAUNCHER_RIGHT:
-                        arrowLaunchers.add(new ArrowLauncher(ObjType.values()[value], (int)(i*Tiles.TILES_SIZE.getValue()), (int)(j*Tiles.TILES_SIZE.getValue()))); break;
+                        arrowLaunchers.add(new ArrowLauncher(ObjType.values()[value], i*TILES_SIZE, j*TILES_SIZE)); break;
                     case SHOP:
-                        shops.add(new Shop(ObjType.SHOP, (int)(i*Tiles.TILES_SIZE.getValue()), (int)(j*Tiles.TILES_SIZE.getValue()))); break;
+                        shops.add(new Shop(ObjType.SHOP, i*TILES_SIZE, j*TILES_SIZE)); break;
                     case BLOCKER:
-                        blockers.add(new Blocker(ObjType.BLOCKER, (int)((i-1.75)*Tiles.TILES_SIZE.getValue()), (int)((j-1)*Tiles.TILES_SIZE.getValue()))); break;
+                        blockers.add(new Blocker(ObjType.BLOCKER, (int)((i-1.75)*TILES_SIZE), (j-1)*TILES_SIZE)); break;
                     case BLACKSMITH:
-                        blacksmiths.add(new Blacksmith(ObjType.BLACKSMITH, (int)(i*Tiles.TILES_SIZE.getValue()), (int)(j*Tiles.TILES_SIZE.getValue()))); break;
+                        blacksmiths.add(new Blacksmith(ObjType.BLACKSMITH, i*TILES_SIZE, j*TILES_SIZE)); break;
                     case DOG:
-                        dogs.add(new Dog(ObjType.DOG, (int)(i*Tiles.TILES_SIZE.getValue()), (int)(j*Tiles.TILES_SIZE.getValue()))); break;
+                        dogs.add(new Dog(ObjType.DOG, i*TILES_SIZE, j*TILES_SIZE)); break;
                     default: break;
                 }
             }
@@ -117,11 +118,11 @@ public class Level {
                 int valueB = color.getBlue();
                 // 100 : >100 Rule
                 if (valueG == 100 && valueB == 101) {
-                    Lightning l = new Lightning(SpellType.LIGHTNING, (int)(i*Tiles.TILES_SIZE.getValue()), (int)(j*Tiles.TILES_SIZE.getValue()));
+                    Lightning l = new Lightning(SpellType.LIGHTNING, i*TILES_SIZE, j*TILES_SIZE);
                     lightnings.add(l);
                 }
                 else if (valueG == 100 && valueB == 102) {
-                    Flash f = new Flash(SpellType.FLASH, (int)(i*Tiles.TILES_SIZE.getValue()), (int)((j+1)*Tiles.TILES_SIZE.getValue()));
+                    Flash f = new Flash(SpellType.FLASH, i*TILES_SIZE, (j+1)*TILES_SIZE);
                     flashes.add(f);
                 }
             }
@@ -140,11 +141,11 @@ public class Level {
     // Other
     public void setOffset() {
         this.levelTilesWidth = dataL1.getWidth();
-        this.xMaxTilesOffset = levelTilesWidth - (int)(Tiles.TILES_WIDTH.getValue());
-        this.xMaxLevelOffset = xMaxTilesOffset * (int)Tiles.TILES_SIZE.getValue();
+        this.xMaxTilesOffset = levelTilesWidth - TILES_WIDTH;
+        this.xMaxLevelOffset = xMaxTilesOffset * TILES_SIZE;
         this.levelTilesHeight = dataL1.getHeight();
-        this.yMaxTilesOffset = levelTilesHeight - (int)(Tiles.TILES_HEIGHT.getValue());
-        this.yMaxLevelOffset = yMaxTilesOffset * (int)(Tiles.TILES_SIZE.getValue());
+        this.yMaxTilesOffset = levelTilesHeight - TILES_HEIGHT;
+        this.yMaxLevelOffset = yMaxTilesOffset * TILES_SIZE;
     }
 
     private void clear() {

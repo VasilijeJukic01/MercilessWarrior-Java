@@ -8,7 +8,6 @@ import platformer.model.entities.PlayerBonus;
 import platformer.model.entities.effects.Particle;
 import platformer.model.entities.enemies.EnemyManager;
 import platformer.model.entities.AttackState;
-import platformer.model.Tiles;
 import platformer.core.Game;
 import platformer.model.entities.Player;
 import platformer.model.levels.LevelManager;
@@ -25,6 +24,8 @@ import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.util.Set;
 import java.util.TreeSet;
+
+import static platformer.constants.Constants.*;
 
 public class PlayingState extends StateAbstraction implements State {
 
@@ -46,13 +47,13 @@ public class PlayingState extends StateAbstraction implements State {
 
     // Borders
     private int xLevelOffset;
-    private final int leftBorder = (int)(0.2*Tiles.GAME_WIDTH.getValue());
-    private final int rightBorder = (int)(0.8*Tiles.GAME_WIDTH.getValue());
+    private final int leftBorder = (int)(0.2*GAME_WIDTH);
+    private final int rightBorder = (int)(0.8*GAME_WIDTH);
     private int xMaxLevelOffset;
 
     private int yLevelOffset;
-    private final int topBorder = (int)(0.4*Tiles.GAME_HEIGHT.getValue());
-    private final int bottomBorder = (int)(0.6*Tiles.GAME_HEIGHT.getValue());
+    private final int topBorder = (int)(0.4*GAME_HEIGHT);
+    private final int bottomBorder = (int)(0.6*GAME_HEIGHT);
     private int yMaxLevelOffset;
 
     public PlayingState(Game game) {
@@ -63,12 +64,12 @@ public class PlayingState extends StateAbstraction implements State {
 
     private void init() {
         this.perksManager = new PerksManager();
-        this.background = Utils.getInstance().importImage("src/main/resources/images/background1.jpg", (int)Tiles.GAME_WIDTH.getValue(), (int)Tiles.GAME_HEIGHT.getValue());
+        this.background = Utils.getInstance().importImage("src/main/resources/images/background1.jpg", GAME_WIDTH, GAME_HEIGHT);
         this.levelManager = new LevelManager(game, this);
         this.objectManager = new ObjectManager(this);
         this.enemyManager = new EnemyManager(this);
-        int playerX = (int)(300 * Tiles.SCALE.getValue()), playerY = (int)(250 * Tiles.SCALE.getValue());
-        int playerWid = (int)(125 * Tiles.SCALE.getValue()), playerHei = (int)(80 * Tiles.SCALE.getValue());
+        int playerX = (int)(300 * SCALE), playerY = (int)(250 * SCALE);
+        int playerWid = (int)(125 * SCALE), playerHei = (int)(80 * SCALE);
         this.player = new Player(playerX, playerY, playerWid, playerHei, enemyManager, objectManager, game);
         player.loadLvlData(levelManager.getCurrentLevel().getLvlData());
         player.setSpawn(levelManager.getCurrentLevel().getPlayerSpawn());

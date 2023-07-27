@@ -1,9 +1,10 @@
 package platformer.model.objects.projectiles;
 
-import platformer.model.Tiles;
 import platformer.model.entities.Direction;
 
 import java.awt.geom.Rectangle2D;
+
+import static platformer.constants.Constants.*;
 
 public class Arrow extends Projectile{
 
@@ -13,9 +14,9 @@ public class Arrow extends Projectile{
     }
 
     private void initHitBox(int xPos, int yPos) {
-        int xOffset = (direction == Direction.RIGHT) ? (int)(-20 * Tiles.SCALE.getValue()) : (int)(10 * Tiles.SCALE.getValue());
-        int yOffset = (int)(20 * Tiles.SCALE.getValue());
-        super.hitBox = new Rectangle2D.Double(xPos+xOffset, yPos+yOffset, PRSet.ARROW_WID.getValue(), PRSet.ARROW_HEI.getValue());
+        int xOffset = (direction == Direction.RIGHT) ? (int)(-20 * SCALE) : (int)(10 * SCALE);
+        int yOffset = (int)(20 * SCALE);
+        super.hitBox = new Rectangle2D.Double(xPos+xOffset, yPos+yOffset, ARROW_WID, ARROW_HEI);
     }
 
 }

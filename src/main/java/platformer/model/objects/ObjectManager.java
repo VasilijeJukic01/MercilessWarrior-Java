@@ -4,7 +4,6 @@ import platformer.animation.AnimationUtils;
 import platformer.audio.Audio;
 import platformer.audio.Sounds;
 import platformer.debug.Message;
-import platformer.model.Tiles;
 import platformer.model.entities.Direction;
 import platformer.model.entities.Player;
 import platformer.model.entities.PlayerBonus;
@@ -20,6 +19,8 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Random;
+
+import static platformer.constants.Constants.*;
 
 public class ObjectManager {
 
@@ -51,7 +52,7 @@ public class ObjectManager {
         this.blockers = new ArrayList<>();
         this.blacksmiths = new ArrayList<>();
         this.dogs = new ArrayList<>();
-        this.projectileArrow = Utils.getInstance().importImage("src/main/resources/images/objs/arrow.png", (int) PRSet.ARROW_WID.getValue(), (int)PRSet.ARROW_HEI.getValue());
+        this.projectileArrow = Utils.getInstance().importImage("src/main/resources/images/objs/arrow.png", ARROW_WID, ARROW_HEI);
         this.projectileLightningBall = AnimationUtils.getInstance().loadLightningBall(1);
         this.projectileLightningBall2 = AnimationUtils.getInstance().loadLightningBall(2);
     }
@@ -118,8 +119,8 @@ public class ObjectManager {
     // Apply Effects
     public void applyPotionEffect(Potion potion) {
         switch (potion.getObjType()) {
-            case HEAL_POTION: playingState.getPlayer().changeHealth(ObjValue.HEAL_POTION_VAL.getValue()); break;
-            case STAMINA_POTION: playingState.getPlayer().changeStamina(ObjValue.STAMINA_POTION_VAL.getValue()); break;
+            case HEAL_POTION: playingState.getPlayer().changeHealth(HEAL_POTION_VAL); break;
+            case STAMINA_POTION: playingState.getPlayer().changeStamina(STAMINA_POTION_VAL); break;
         }
     }
 
@@ -271,7 +272,7 @@ public class ObjectManager {
     // Launchers
     private boolean isPlayerInRange(ArrowLauncher arrowLauncher, Player player) {
         int distance = (int)Math.abs(player.getHitBox().x - arrowLauncher.getHitBox().x);
-        return distance <= (int)(Tiles.TILES_SIZE.getValue()) * 5;
+        return distance <= TILES_SIZE * 5;
     }
 
     private boolean isPlayerInFront(ArrowLauncher arrowLauncher, Player player) {
@@ -325,8 +326,8 @@ public class ObjectManager {
         for (ArrowLauncher arrowLauncher : arrowLaunchers) {
             boolean flag = true;
             if (arrowLauncher.animate) flag = false;
-            if ((arrowLauncher.getYTile() < player.getHitBox().y/(Tiles.TILES_SIZE.getValue())) ||
-                    (arrowLauncher.getYTile() > (player.getHitBox().y+player.getHitBox().height)/(Tiles.TILES_SIZE.getValue()))) {
+            if ((arrowLauncher.getYTile() < player.getHitBox().y/TILES_SIZE) ||
+                    (arrowLauncher.getYTile() > (player.getHitBox().y+player.getHitBox().height)/TILES_SIZE)) {
                 flag = false;
             }
             if (!isPlayerInRange(arrowLauncher, player) || !isPlayerInFront(arrowLauncher, player)) flag = false;
@@ -424,7 +425,7 @@ public class ObjectManager {
             if (c.isAlive()) {
                 int x = (int)c.getHitBox().x-c.getXOffset()-xLevelOffset;
                 int y = (int)c.getHitBox().y-c.getYOffset()-yLevelOffset;
-                g.drawImage(objects[c.getObjType().ordinal()][c.getAnimIndex()], x, y, ObjValue.COIN_WID.getValue(), ObjValue.COIN_HEI.getValue(), null);
+                g.drawImage(objects[c.getObjType().ordinal()][c.getAnimIndex()], x, y, COIN_WID, COIN_HEI, null);
                 c.hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.ORANGE);
             }
         }
@@ -435,7 +436,7 @@ public class ObjectManager {
             if (c.isAlive()) {
                 int x = (int)c.getHitBox().x-c.getXOffset()-xLevelOffset;
                 int y = (int)c.getHitBox().y-c.getYOffset()-yLevelOffset;
-                g.drawImage(objects[c.getObjType().ordinal()][c.getAnimIndex()], x, y, ObjValue.CONTAINER_WID.getValue(), ObjValue.CONTAINER_HEI.getValue(), null);
+                g.drawImage(objects[c.getObjType().ordinal()][c.getAnimIndex()], x, y, CONTAINER_WID, CONTAINER_HEI, null);
                 c.hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.ORANGE);
             }
         }
@@ -446,7 +447,7 @@ public class ObjectManager {
             if (p.isAlive()) {
                 int x = (int)p.getHitBox().x-p.getXOffset()-xLevelOffset;
                 int y = (int)p.getHitBox().y-p.getYOffset()-yLevelOffset;
-                g.drawImage(objects[p.getObjType().ordinal()][p.getAnimIndex()], x, y, ObjValue.POTION_WID.getValue(), ObjValue.POTION_HEI.getValue(), null);
+                g.drawImage(objects[p.getObjType().ordinal()][p.getAnimIndex()], x, y, POTION_WID, POTION_HEI, null);
                 p.hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.ORANGE);
             }
         }
@@ -455,8 +456,8 @@ public class ObjectManager {
     private void renderTraps(Graphics g, int xLevelOffset, int yLevelOffset) {
         for (Spike s : spikes) {
             int x = (int)s.getHitBox().x-s.getXOffset()-xLevelOffset;
-            int y = (int)s.getHitBox().y-s.getYOffset()-yLevelOffset+(int)(12*Tiles.SCALE.getValue());
-            g.drawImage(objects[s.getObjType().ordinal()][4], x, y, ObjValue.SPIKE_WID.getValue(), ObjValue.SPIKE_HEI.getValue(), null);
+            int y = (int)s.getHitBox().y-s.getYOffset()-yLevelOffset+(int)(12*SCALE);
+            g.drawImage(objects[s.getObjType().ordinal()][4], x, y, SPIKE_WID, SPIKE_HEI, null);
             s.hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.MAGENTA);
         }
     }
@@ -468,13 +469,13 @@ public class ObjectManager {
             int index = al.getObjType().ordinal();
             if (al.getObjType() == ObjType.ARROW_LAUNCHER_RIGHT) {
                 fS = -1;
-                fC = ObjValue.ARROW_LAUNCHER_WID.getValue();
+                fC = ARROW_LAUNCHER_WID;
                 sideOffset = -5;
                 index--;
             }
-            int x = (int)al.getHitBox().x-al.getXOffset()-xLevelOffset+fC-(int)(sideOffset*Tiles.SCALE.getValue());
-            int y = (int)al.getHitBox().y-al.getYOffset()-yLevelOffset+(int)(1*Tiles.SCALE.getValue());
-            g.drawImage(objects[index][al.getAnimIndex()], x, y, fS*ObjValue.ARROW_LAUNCHER_WID.getValue(), ObjValue.ARROW_LAUNCHER_HEI.getValue(), null);
+            int x = (int)al.getHitBox().x-al.getXOffset()-xLevelOffset+fC-(int)(sideOffset*SCALE);
+            int y = (int)al.getHitBox().y-al.getYOffset()-yLevelOffset+(int)(1*SCALE);
+            g.drawImage(objects[index][al.getAnimIndex()], x, y, fS*ARROW_LAUNCHER_WID, ARROW_LAUNCHER_HEI, null);
             al.hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.BLUE);
         }
     }
@@ -488,11 +489,11 @@ public class ObjectManager {
             if (p instanceof Arrow) {
                 if (p.getDirection() == Direction.LEFT) {
                     fS = -1;
-                    fC = ObjValue.ARROW_LAUNCHER_WID.getValue();
+                    fC = ARROW_LAUNCHER_WID;
                 }
                 int x = (int)p.getHitBox().x-xLevelOffset+fC;
                 int y = (int)p.getHitBox().y-yLevelOffset;
-                g.drawImage(projectileArrow, x, y, fS*(int)PRSet.ARROW_WID.getValue(), (int)PRSet.ARROW_HEI.getValue(), null);
+                g.drawImage(projectileArrow, x, y, fS*ARROW_WID, ARROW_HEI, null);
             }
             // Lightning Ball
             else {
@@ -501,12 +502,12 @@ public class ObjectManager {
                     object = projectileLightningBall[p.getAnimIndex()];
                 if (p.getDirection() == Direction.RIGHT) {
                     fS = -1;
-                    fC = (int) PRSet.LB_WID.getValue();
+                    fC = LB_WID;
                 }
 
-                int x = (int)(p.getHitBox().x-xLevelOffset+fC-22*Tiles.SCALE.getValue());
-                int y = (int)(p.getHitBox().y-yLevelOffset-20*Tiles.SCALE.getValue());
-                g.drawImage(object, x, y, fS*(int)PRSet.LB_WID.getValue(), (int)PRSet.LB_HEI.getValue(), null);
+                int x = (int)(p.getHitBox().x-xLevelOffset+fC-22*SCALE);
+                int y = (int)(p.getHitBox().y-yLevelOffset-20*SCALE);
+                g.drawImage(object, x, y, fS*LB_WID, LB_HEI, null);
             }
             p.renderHitBox(g, xLevelOffset, yLevelOffset, Color.BLUE);
         }
@@ -515,8 +516,8 @@ public class ObjectManager {
     private void renderShops(Graphics g, int xLevelOffset, int yLevelOffset) {
         for (Shop s : shops) {
             int x = (int)s.getHitBox().x-s.getXOffset()-xLevelOffset;
-            int y = (int)s.getHitBox().y-s.getYOffset()-yLevelOffset+(int)(1*Tiles.SCALE.getValue());
-            g.drawImage(objects[s.getObjType().ordinal()][s.getAnimIndex()], x, y, ObjValue.SHOP_WID.getValue(), ObjValue.SHOP_HEI.getValue(), null);
+            int y = (int)s.getHitBox().y-s.getYOffset()-yLevelOffset+(int)(1*SCALE);
+            g.drawImage(objects[s.getObjType().ordinal()][s.getAnimIndex()], x, y, SHOP_WID, SHOP_HEI, null);
             s.hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.ORANGE);
             s.render(g, xLevelOffset, yLevelOffset);
         }
@@ -525,8 +526,8 @@ public class ObjectManager {
     private void renderBlockers(Graphics g, int xLevelOffset, int yLevelOffset) {
         for (Blocker b : blockers) {
             int x = (int)b.getHitBox().x-b.getXOffset()-xLevelOffset;
-            int y = (int)b.getHitBox().y-b.getYOffset()-yLevelOffset+(int)(12*Tiles.SCALE.getValue());
-            g.drawImage(objects[b.getObjType().ordinal()][b.getAnimIndex()], x, y, ObjValue.BLOCKER_WID.getValue(), ObjValue.BLOCKER_HEI.getValue(), null);
+            int y = (int)b.getHitBox().y-b.getYOffset()-yLevelOffset+(int)(12*SCALE);
+            g.drawImage(objects[b.getObjType().ordinal()][b.getAnimIndex()], x, y, BLOCKER_WID, BLOCKER_HEI, null);
             b.hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.MAGENTA);
         }
     }
@@ -534,15 +535,15 @@ public class ObjectManager {
     private void renderBlacksmiths(Graphics g, int xLevelOffset, int yLevelOffset) {
         for (Blacksmith b : blacksmiths) {
             int x = (int)b.getHitBox().x-b.getXOffset()-xLevelOffset;
-            int y = (int)b.getHitBox().y-b.getYOffset()-yLevelOffset+(int)(1*Tiles.SCALE.getValue());
-            g.drawImage(objects[b.getObjType().ordinal()][b.getAnimIndex()], x, y, ObjValue.BLACKSMITH_WID.getValue(), ObjValue.BLACKSMITH_HEI.getValue(), null);
+            int y = (int)b.getHitBox().y-b.getYOffset()-yLevelOffset+(int)(1*SCALE);
+            g.drawImage(objects[b.getObjType().ordinal()][b.getAnimIndex()], x, y, BLACKSMITH_WID, BLACKSMITH_HEI, null);
             b.hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.MAGENTA);
             b.render(g, xLevelOffset, yLevelOffset);
         }
         for (Dog d : dogs) {
             int x = (int)d.getHitBox().x-d.getXOffset()-xLevelOffset;
             int y = (int)d.getHitBox().y-d.getYOffset()-yLevelOffset;
-            g.drawImage(objects[d.getObjType().ordinal()][d.getAnimIndex()], x, y, ObjValue.DOG_WID.getValue(), ObjValue.DOG_HEI.getValue(), null);
+            g.drawImage(objects[d.getObjType().ordinal()][d.getAnimIndex()], x, y, DOG_WID, DOG_HEI, null);
             d.hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.MAGENTA);
         }
     }

@@ -1,8 +1,8 @@
 package platformer.model.objects;
 
-import platformer.model.Tiles;
-
 import java.awt.*;
+
+import static platformer.constants.Constants.SCALE;
 
 public class Container extends GameObject{
 
@@ -13,20 +13,20 @@ public class Container extends GameObject{
 
     private void generateHitBox() {
         if (objType == ObjType.BOX) {
-            int hbWid = (int)(25*Tiles.SCALE.getValue())+1;
-            int hbHei = (int)(18*Tiles.SCALE.getValue())+1;
+            int hbWid = (int)(25*SCALE)+1;
+            int hbHei = (int)(18*SCALE)+1;
             initHitBox(hbWid, hbHei);
-            xOffset = (int)(7*Tiles.SCALE.getValue());
-            yOffset = (int)(12*Tiles.SCALE.getValue());
+            xOffset = (int)(7*SCALE);
+            yOffset = (int)(12*SCALE);
         }
         else if (objType == ObjType.BARREL) {
-            int hbWid = (int)(23*Tiles.SCALE.getValue())+1;
-            int hbHei = (int)(25*Tiles.SCALE.getValue())+1;
+            int hbWid = (int)(23*SCALE)+1;
+            int hbHei = (int)(25*SCALE)+1;
             initHitBox(hbWid, hbHei);
-            xOffset = (int)(8*Tiles.SCALE.getValue());
-            yOffset = (int)(5*Tiles.SCALE.getValue());
+            xOffset = (int)(8*SCALE);
+            yOffset = (int)(5*SCALE);
         }
-        hitBox.y += yOffset + (int)(6*Tiles.SCALE.getValue());
+        hitBox.y += yOffset + (int)(6*SCALE);
         hitBox.x += xOffset/2.0;
     }
 

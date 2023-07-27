@@ -1,8 +1,8 @@
 package platformer.model.objects;
 
-import platformer.model.Tiles;
-
 import java.awt.*;
+
+import static platformer.constants.Constants.SCALE;
 
 public class Potion extends GameObject{
 
@@ -13,16 +13,16 @@ public class Potion extends GameObject{
     public Potion(ObjType objType, int xPos, int yPos) {
         super(objType, xPos, yPos);
         super.animate = true;
-        int hbWid = (int)(7*Tiles.SCALE.getValue());
-        int hbHei = (int)(14*Tiles.SCALE.getValue());
+        int hbWid = (int)(7*SCALE);
+        int hbHei = (int)(14*SCALE);
         initHitBox(hbWid, hbHei);
-        super.xOffset = (int)(3*Tiles.SCALE.getValue());
-        super.yOffset = (int)(2*Tiles.SCALE.getValue());
-        this.maxFloatOffset = (int)(5*Tiles.SCALE.getValue());
+        super.xOffset = (int)(3*SCALE);
+        super.yOffset = (int)(2*SCALE);
+        this.maxFloatOffset = (int)(5*SCALE);
     }
 
     private void updateFloating() {
-        floatOffset += (0.065 * Tiles.SCALE.getValue() * floatDir);
+        floatOffset += (0.065 * SCALE * floatDir);
         if (floatOffset >= maxFloatOffset) floatDir = -1;
         else if (floatOffset < 0) floatDir = 1;
         hitBox.y = yPos+floatOffset;

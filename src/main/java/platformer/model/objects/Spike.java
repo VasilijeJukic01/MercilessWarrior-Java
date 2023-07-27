@@ -1,18 +1,18 @@
 package platformer.model.objects;
 
-import platformer.model.Tiles;
-
 import java.awt.*;
+
+import static platformer.constants.Constants.SCALE;
 
 public class Spike extends GameObject{
 
     public Spike(ObjType objType, int xPos, int yPos) {
         super(objType, xPos, yPos);
-        int hbWid = (int)(32*Tiles.SCALE.getValue());
-        int hbHei = (int)(15*Tiles.SCALE.getValue());
+        int hbWid = (int)(32*SCALE);
+        int hbHei = (int)(15*SCALE);
         initHitBox(hbWid, hbHei);
         xOffset = 0;
-        yOffset = (int)(22*Tiles.SCALE.getValue());
+        yOffset = (int)(22*SCALE);
         hitBox.y += yOffset;
     }
 

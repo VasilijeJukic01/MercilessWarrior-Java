@@ -1,6 +1,5 @@
 package platformer.ui.overlays;
 
-import platformer.model.Tiles;
 import platformer.model.objects.Shop;
 import platformer.state.PlayingState;
 import platformer.ui.MouseControls;
@@ -14,6 +13,8 @@ import java.awt.event.MouseEvent;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+
+import static platformer.constants.Constants.SCALE;
 
 public class ShopOverlay implements MouseControls {
 
@@ -31,28 +32,28 @@ public class ShopOverlay implements MouseControls {
     private ArrayList<Shop> shops;
 
     // Size Variables [Init]
-    private final int overlayWid = (int)(400* Tiles.SCALE.getValue());
-    private final int overlayHei = (int)(340*Tiles.SCALE.getValue());
-    private final int shopTextWid = (int)(180*Tiles.SCALE.getValue());
-    private final int shopTextHei = (int)(60*Tiles.SCALE.getValue());
-    private final int slotWid = (int)(40*Tiles.SCALE.getValue());
-    private final int slotHei = (int)(40*Tiles.SCALE.getValue());
+    private final int overlayWid = (int)(400*SCALE);
+    private final int overlayHei = (int)(340*SCALE);
+    private final int shopTextWid = (int)(180*SCALE);
+    private final int shopTextHei = (int)(60*SCALE);
+    private final int slotWid = (int)(40*SCALE);
+    private final int slotHei = (int)(40*SCALE);
 
     // Size Variables [Render]
-    private final int overlayX = (int)(220*Tiles.SCALE.getValue());
-    private final int overlayY = (int)(50*Tiles.SCALE.getValue());
-    private final int shopTextX = (int)(330*Tiles.SCALE.getValue());
-    private final int shopTextY = (int)(80*Tiles.SCALE.getValue());
-    private final int buyBtnX = (int)(300*Tiles.SCALE.getValue());
-    private final int buyBtnY = (int)(330*Tiles.SCALE.getValue());
-    private final int exitBtnX = (int)(440*Tiles.SCALE.getValue());
-    private final int exitBtnY = (int)(330*Tiles.SCALE.getValue());
-    private final int slotX = (int)(290*Tiles.SCALE.getValue());
-    private final int slotY = (int)(160*Tiles.SCALE.getValue());
-    private final int costX = (int)(530*Tiles.SCALE.getValue());
-    private final int costY = (int)(145*Tiles.SCALE.getValue());
+    private final int overlayX = (int)(220*SCALE);
+    private final int overlayY = (int)(50*SCALE);
+    private final int shopTextX = (int)(330*SCALE);
+    private final int shopTextY = (int)(80*SCALE);
+    private final int buyBtnX = (int)(300*SCALE);
+    private final int buyBtnY = (int)(330*SCALE);
+    private final int exitBtnX = (int)(440*SCALE);
+    private final int exitBtnY = (int)(330*SCALE);
+    private final int slotX = (int)(290*SCALE);
+    private final int slotY = (int)(160*SCALE);
+    private final int costX = (int)(530*SCALE);
+    private final int costY = (int)(145*SCALE);
 
-    private final int slotSpacing = (int)(40*Tiles.SCALE.getValue());
+    private final int slotSpacing = (int)(40*SCALE);
 
     public ShopOverlay(PlayingState playingState) {
         this.playingState = playingState;

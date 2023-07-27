@@ -1,6 +1,5 @@
 package platformer.state;
 
-import platformer.model.Tiles;
 import platformer.core.Game;
 import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.MenuButton;
@@ -12,6 +11,9 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
+
+import static platformer.constants.Constants.GAME_WIDTH;
+import static platformer.constants.Constants.SCALE;
 
 @SuppressWarnings("FieldCanBeLocal")
 public class MenuState extends StateAbstraction implements State{
@@ -30,10 +32,10 @@ public class MenuState extends StateAbstraction implements State{
     }
 
     private void loadButtons() {
-        buttons[0] = new MenuButton((int)(Tiles.GAME_WIDTH.getValue() / 2), (int)(170*Tiles.SCALE.getValue()), ButtonType.PLAY);
-        buttons[1] = new MenuButton((int)(Tiles.GAME_WIDTH.getValue() / 2), (int)(225*Tiles.SCALE.getValue()), ButtonType.OPTIONS);
-        buttons[2] = new MenuButton((int)(Tiles.GAME_WIDTH.getValue() / 2), (int)(280*Tiles.SCALE.getValue()), ButtonType.CONTROLS);
-        buttons[3] = new MenuButton((int)(Tiles.GAME_WIDTH.getValue() / 2), (int)(335*Tiles.SCALE.getValue()), ButtonType.QUIT);
+        buttons[0] = new MenuButton(GAME_WIDTH / 2, (int)(170*SCALE), ButtonType.PLAY);
+        buttons[1] = new MenuButton(GAME_WIDTH / 2, (int)(225*SCALE), ButtonType.OPTIONS);
+        buttons[2] = new MenuButton(GAME_WIDTH / 2, (int)(280*SCALE), ButtonType.CONTROLS);
+        buttons[3] = new MenuButton(GAME_WIDTH / 2, (int)(335*SCALE), ButtonType.QUIT);
     }
 
     @Override
@@ -47,8 +49,8 @@ public class MenuState extends StateAbstraction implements State{
     @Override
     public void render(Graphics g) {
         Overlay.getInstance().renderMenu(g);
-        int logoX = (int)(Tiles.GAME_WIDTH.getValue() / 3)- (int)(12*Tiles.SCALE.getValue()), logoY = (int)(10*Tiles.SCALE.getValue());
-        int logoW = (int)(menuLogo.getWidth()*Tiles.SCALE.getValue()), logoH = (int)(menuLogo.getHeight()*Tiles.SCALE.getValue());
+        int logoX = (GAME_WIDTH / 3) - (int)(12*SCALE), logoY = (int)(10*SCALE);
+        int logoW = (int)(menuLogo.getWidth()*SCALE), logoH = (int)(menuLogo.getHeight()*SCALE);
         g.drawImage(menuLogo, logoX, logoY, logoW, logoH, null);
 
         for (MenuButton button : buttons) {
@@ -56,7 +58,7 @@ public class MenuState extends StateAbstraction implements State{
         }
 
         g.setColor(new Color(255, 255, 255));
-        g.setFont(new Font("Arial", Font.PLAIN, (int)(7.5*Tiles.SCALE.getValue())));
+        g.setFont(new Font("Arial", Font.PLAIN, (int)(7.5*SCALE)));
     }
 
     @Override

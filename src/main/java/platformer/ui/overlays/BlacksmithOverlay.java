@@ -1,6 +1,5 @@
 package platformer.ui.overlays;
 
-import platformer.model.Tiles;
 import platformer.model.perks.Perk;
 import platformer.state.PlayingState;
 import platformer.ui.MouseControls;
@@ -12,6 +11,8 @@ import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+
+import static platformer.constants.Constants.SCALE;
 
 public class BlacksmithOverlay implements MouseControls {
 
@@ -28,34 +29,34 @@ public class BlacksmithOverlay implements MouseControls {
     private int[][] placeHolders;
 
     // Size Variables [Init]
-    private final int overlayWid = (int)(700*Tiles.SCALE.getValue());
-    private final int overlayHei = (int)(410*Tiles.SCALE.getValue());
-    private final int shopTextWid = (int)(180*Tiles.SCALE.getValue());
-    private final int shopTextHei = (int)(60*Tiles.SCALE.getValue());
-    private final int slotWid = (int)(40*Tiles.SCALE.getValue());
-    private final int slotHei = (int)(40*Tiles.SCALE.getValue());
+    private final int overlayWid = (int)(700*SCALE);
+    private final int overlayHei = (int)(410*SCALE);
+    private final int shopTextWid = (int)(180*SCALE);
+    private final int shopTextHei = (int)(60*SCALE);
+    private final int slotWid = (int)(40*SCALE);
+    private final int slotHei = (int)(40*SCALE);
 
     // Size Variables [Render]
-    private final int overlayX = (int)(65*Tiles.SCALE.getValue());
-    private final int overlayY = (int)(30*Tiles.SCALE.getValue());
-    private final int shopTextX = (int)(330*Tiles.SCALE.getValue());
-    private final int shopTextY = (int)(60*Tiles.SCALE.getValue());
-    private final int buyBtnX = (int)(300*Tiles.SCALE.getValue());
-    private final int buyBtnY = (int)(380*Tiles.SCALE.getValue());
-    private final int exitBtnX = (int)(440*Tiles.SCALE.getValue());
-    private final int exitBtnY = (int)(380*Tiles.SCALE.getValue());
-    private final int slotX = (int)(110*Tiles.SCALE.getValue());
-    private final int slotY = (int)(140*Tiles.SCALE.getValue());
-    private final int tokensX = (int)(550*Tiles.SCALE.getValue());
-    private final int tokensY = (int)(150*Tiles.SCALE.getValue());
-    private final int perkNameX = (int)(550*Tiles.SCALE.getValue());
-    private final int perkNameY = (int)(240*Tiles.SCALE.getValue());
-    private final int perkCostX = (int)(550*Tiles.SCALE.getValue());
-    private final int perkCostY = (int)(255*Tiles.SCALE.getValue());
-    private final int perkDescX = (int)(550*Tiles.SCALE.getValue());
-    private final int perkDescY = (int)(275*Tiles.SCALE.getValue());;
+    private final int overlayX = (int)(65*SCALE);
+    private final int overlayY = (int)(30*SCALE);
+    private final int shopTextX = (int)(330*SCALE);
+    private final int shopTextY = (int)(60*SCALE);
+    private final int buyBtnX = (int)(300*SCALE);
+    private final int buyBtnY = (int)(380*SCALE);
+    private final int exitBtnX = (int)(440*SCALE);
+    private final int exitBtnY = (int)(380*SCALE);
+    private final int slotX = (int)(110*SCALE);
+    private final int slotY = (int)(140*SCALE);
+    private final int tokensX = (int)(550*SCALE);
+    private final int tokensY = (int)(150*SCALE);
+    private final int perkNameX = (int)(550*SCALE);
+    private final int perkNameY = (int)(240*SCALE);
+    private final int perkCostX = (int)(550*SCALE);
+    private final int perkCostY = (int)(255*SCALE);
+    private final int perkDescX = (int)(550*SCALE);
+    private final int perkDescY = (int)(275*SCALE);;
 
-    private final int slotSpacing = (int)(60*Tiles.SCALE.getValue());
+    private final int slotSpacing = (int)(60*SCALE);
 
     public BlacksmithOverlay(PlayingState playingState) {
         this.playingState = playingState;
@@ -107,13 +108,13 @@ public class BlacksmithOverlay implements MouseControls {
                 if (placeHolders[i][j] == 1) {
                     g.drawImage(slotImage, j * slotSpacing + slotX, i * slotSpacing + slotY, slotImage.getWidth(), slotImage.getHeight(), null);
                     if (isSafe(i, j+1, SLOT_MAX_ROW, SLOT_MAX_COL) && placeHolders[i][j+1] == 1) {
-                        int x = j * slotSpacing + slotX + slotWid - (int)(2*Tiles.SCALE.getValue());
+                        int x = j * slotSpacing + slotX + slotWid - (int)(2*SCALE);
                         int y = i * slotSpacing + slotY;
                         g.drawLine(x, y + slotHei/2, x+slotSpacing/2, y + slotHei/2);
                     }
                     if (isSafe(i+1, j, SLOT_MAX_ROW, SLOT_MAX_COL) && placeHolders[i+1][j] == 1) {
                         int x = j * slotSpacing + slotX + slotWid/2;
-                        int y = i * slotSpacing + slotY + slotHei - (int)(2*Tiles.SCALE.getValue());;
+                        int y = i * slotSpacing + slotY + slotHei - (int)(2*SCALE);
                         g.drawLine(x, y, x, y + slotSpacing/2);
                     }
                 }
@@ -141,11 +142,11 @@ public class BlacksmithOverlay implements MouseControls {
         for (Perk perk : playingState.getPerksManager().getPerks()) {
             if (slot == perk.getSlot()) {
                 g.setColor(Color.WHITE);
-                g.setFont(new Font("Arial", Font.BOLD, (int)(10*Tiles.SCALE.getValue())));
+                g.setFont(new Font("Arial", Font.BOLD, (int)(10*SCALE)));
                 g.drawString("Tokens: "+playingState.getPlayer().getUpgradeTokens(), tokensX, tokensY);
                 g.drawString(perk.getName(), perkNameX, perkNameY);
                 g.drawString("Cost: "+perk.getCost(), perkCostX, perkCostY);
-                g.setFont(new Font("Arial", Font.PLAIN, (int)(10*Tiles.SCALE.getValue())));
+                g.setFont(new Font("Arial", Font.PLAIN, (int)(10*SCALE)));
                 g.drawString(perk.getDescription(), perkDescX, perkDescY);
             }
         }

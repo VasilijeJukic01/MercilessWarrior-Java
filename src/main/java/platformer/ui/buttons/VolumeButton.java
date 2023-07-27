@@ -1,11 +1,12 @@
 package platformer.ui.buttons;
 
-import platformer.model.Tiles;
 import platformer.ui.UI;
 import platformer.utils.Utils;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+
+import static platformer.constants.Constants.SCALE;
 
 public class VolumeButton extends PauseButton{
 
@@ -18,17 +19,17 @@ public class VolumeButton extends PauseButton{
     private float value = 0f;
 
     // Size Variables [Render]
-    private final int sliderX = (int)(315*Tiles.SCALE.getValue());
-    private final int sliderY = (int)(290*Tiles.SCALE.getValue());
+    private final int sliderX = (int)(315*SCALE);
+    private final int sliderY = (int)(290*SCALE);
 
     public VolumeButton(int xPos, int yPos, int width, int height) {
-        super(xPos+width/2, yPos+(int)(Tiles.SCALE.getValue()*9.5), UI.VOLUME_WIDTH.getValue(), height);
+        super(xPos+width/2, yPos+(int)(SCALE*9.5), UI.VOLUME_WIDTH.getValue(), height);
         super.buttonHitBox.x -= UI.VOLUME_WIDTH.getValue()/2;
         this.buttonX = xPos+width/2;
         this.xPos = xPos;
         this.width = width;
-        this.minValue = (int)(320*Tiles.SCALE.getValue());
-        this.maxValue = (int)(525*Tiles.SCALE.getValue());
+        this.minValue = (int)(320*SCALE);
+        this.maxValue = (int)(525*SCALE);
         loadButtons();
     }
 

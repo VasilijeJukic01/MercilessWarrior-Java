@@ -7,7 +7,6 @@ import platformer.audio.Sounds;
 import platformer.core.Game;
 import platformer.debug.Message;
 import platformer.model.entities.effects.EffectType;
-import platformer.model.Tiles;
 import platformer.model.entities.enemies.Enemy;
 import platformer.model.entities.enemies.EnemyManager;
 import platformer.model.objects.ObjectManager;
@@ -18,6 +17,9 @@ import platformer.utils.Utils;
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+
+import static platformer.constants.Constants.SCALE;
+import static platformer.constants.Constants.TILES_SIZE;
 
 @SuppressWarnings("FieldCanBeLocal")
 public class Player extends Entity {
@@ -33,15 +35,15 @@ public class Player extends Entity {
     private int animTick = 0, animIndex = 0, effectIndex = 0;
     private EffectType playerEffect;
     private AttackState attackState;
-    private final double playerSpeed = 0.5 * Tiles.SCALE.getValue();
-    private final double playerBoostSpeed = 0.6 * Tiles.SCALE.getValue();
-    private final double xHitBoxOffset = 42 * Tiles.SCALE.getValue(), yHitBoxOffset = 16 * Tiles.SCALE.getValue();
+    private final double playerSpeed = 0.5 * SCALE;
+    private final double playerBoostSpeed = 0.6 * SCALE;
+    private final double xHitBoxOffset = 42 * SCALE, yHitBoxOffset = 16 * SCALE;
     // Physics
     private double airSpeed = 0;
-    private final double gravity = 0.035 * Tiles.SCALE.getValue();
-    private final double wallGravity = 0.0005 * Tiles.SCALE.getValue();
-    private final double jumpSpeed = -2.25 * Tiles.SCALE.getValue();
-    private final double collisionFallSpeed = 0.5 * Tiles.SCALE.getValue();
+    private final double gravity = 0.035 * SCALE;
+    private final double wallGravity = 0.0005 * SCALE;
+    private final double jumpSpeed = -2.25 * SCALE;
+    private final double collisionFallSpeed = 0.5 * SCALE;
     // Flags
     private boolean left, right, jump, moving, attacking, dash, dashHit, hit, block, transform;
     private int spellState = 0;
@@ -68,7 +70,7 @@ public class Player extends Entity {
         this.transformAnimations = AnimationUtils.getInstance().loadPlayerAnimations(width, height, "transform");
         this.effects = AnimationUtils.getInstance().loadEffects();
         this.userInterface = new UserInterface(this);
-        initHitBox((int)(15*Tiles.SCALE.getValue()), (int)(44*Tiles.SCALE.getValue()));
+        initHitBox((int)(15*SCALE), (int)(44*SCALE));
         initAttackBox();
         this.cooldown = new double[3];
         loadData();
@@ -89,8 +91,8 @@ public class Player extends Entity {
     }
 
     private void initAttackBox() {
-        int w = (int)(20*Tiles.SCALE.getValue());
-        int h =  (int)(35*Tiles.SCALE.getValue());
+        int w = (int)(20*SCALE);
+        int h =  (int)(35*SCALE);
         this.attackBox = new Rectangle2D.Double(xPos, yPos-1, w, h);
     }
 
@@ -135,7 +137,7 @@ public class Player extends Entity {
         }
         // Wall flip lock
         if (moving && left && !onWall) {
-            this.flipCoefficient = (int)(width-hitBox.width-13*Tiles.SCALE.getValue());
+            this.flipCoefficient = (int)(width-hitBox.width-13*SCALE);
             this.flipSign = -1;
         }
         else if (moving && right && !onWall) {
@@ -292,12 +294,12 @@ public class Player extends Entity {
     private void updateAttackBox() {
         if (spellState != 0) return;
         if ((right && left) || (!right && !left)) {
-            if (flipSign == 1) attackBox.x = hitBox.x + hitBox.width + (int)(10*Tiles.SCALE.getValue());
-            else attackBox.x = hitBox.x - hitBox.width - (int)(10*Tiles.SCALE.getValue());
+            if (flipSign == 1) attackBox.x = hitBox.x + hitBox.width + (int)(10*SCALE);
+            else attackBox.x = hitBox.x - hitBox.width - (int)(10*SCALE);
         }
-        if (right || (dash && flipSign == 1)) attackBox.x = hitBox.x + hitBox.width + (int)(10*Tiles.SCALE.getValue());
-        else if (left || (dash && flipSign == -1)) attackBox.x = hitBox.x - hitBox.width - (int)(10*Tiles.SCALE.getValue());
-        attackBox.y = hitBox.y + (int)(10*Tiles.SCALE.getValue());
+        if (right || (dash && flipSign == 1)) attackBox.x = hitBox.x + hitBox.width + (int)(10*SCALE);
+        else if (left || (dash && flipSign == -1)) attackBox.x = hitBox.x - hitBox.width - (int)(10*SCALE);
+        attackBox.y = hitBox.y + (int)(10*SCALE);
     }
 
     private void updateAttack() {
@@ -338,7 +340,7 @@ public class Player extends Entity {
         if (Utils.getInstance().isOnWall(hitBox, levelData, Direction.RIGHT) && right && !left) return;
         if (inAir && doubleJump && onWall) return;
         if (inAir && currentJumps != 1) return;
-        if (onObject && Utils.getInstance().isTileSolid((int)(hitBox.x/Tiles.TILES_SIZE.getValue()), (int)((hitBox.y-5)/Tiles.TILES_SIZE.getValue()), levelData)) return;
+        if (onObject && Utils.getInstance().isTileSolid((int)(hitBox.x/TILES_SIZE), (int)((hitBox.y-5)/TILES_SIZE), levelData)) return;
 
         if (currentJumps == 1) {
             doubleJump = true;
@@ -507,16 +509,16 @@ public class Player extends Entity {
     private void renderEffects(Graphics g, int xLevelOffset, int yLevelOffset) {
         try {
             if (playerEffect == EffectType.DOUBLE_JUMP && doubleJump) {
-                int effectXPos = (int)(hitBox.x-xHitBoxOffset-xLevelOffset)+(int)(20*Tiles.SCALE.getValue());
-                int effectYPos = (int)(hitBox.y-yHitBoxOffset-yLevelOffset)+(int)(55*Tiles.SCALE.getValue());
+                int effectXPos = (int)(hitBox.x-xHitBoxOffset-xLevelOffset)+(int)(20*SCALE);
+                int effectYPos = (int)(hitBox.y-yHitBoxOffset-yLevelOffset)+(int)(55*SCALE);
                 g.drawImage(effects[0][effectIndex], effectXPos, effectYPos, effects[0][effectIndex].getWidth(), effects[0][effectIndex].getHeight(), null);
             }
             else if (playerEffect == EffectType.WALL_SLIDE && onWall) {
-                int newFlip = (flipCoefficient != 0) ? (0) : (int)(width-hitBox.width-10*Tiles.SCALE.getValue()), newSign = (flipSign == 1) ? (-1) : (1);
-                int effectXPos = (int)(hitBox.x-xHitBoxOffset-xLevelOffset)+(int)(newSign*27*Tiles.SCALE.getValue())+newFlip;
-                int effectYPos = (int)(hitBox.y-yHitBoxOffset-yLevelOffset)-(int)(Tiles.SCALE.getValue());
-                int effectWid = newSign*(effects[1][effectIndex].getWidth()+(int)(10*Tiles.SCALE.getValue()));
-                int effectHei = effects[1][effectIndex].getHeight()+(int)(50*Tiles.SCALE.getValue());
+                int newFlip = (flipCoefficient != 0) ? (0) : (int)(width-hitBox.width-10*SCALE), newSign = (flipSign == 1) ? (-1) : (1);
+                int effectXPos = (int)(hitBox.x-xHitBoxOffset-xLevelOffset)+(int)(newSign*27*SCALE)+newFlip;
+                int effectYPos = (int)(hitBox.y-yHitBoxOffset-yLevelOffset)-(int)(SCALE);
+                int effectWid = newSign*(effects[1][effectIndex].getWidth()+(int)(10*SCALE));
+                int effectHei = effects[1][effectIndex].getHeight()+(int)(50*SCALE);
                 g.drawImage(effects[1][effectIndex], effectXPos, effectYPos, effectWid, effectHei, null);
             }
         }

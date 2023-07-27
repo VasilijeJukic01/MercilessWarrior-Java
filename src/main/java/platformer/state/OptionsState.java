@@ -1,7 +1,6 @@
 package platformer.state;
 
 import platformer.core.Game;
-import platformer.model.Tiles;
 import platformer.ui.AudioOptions;
 import platformer.ui.UI;
 import platformer.ui.buttons.ButtonType;
@@ -16,6 +15,8 @@ import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 
+import static platformer.constants.Constants.SCALE;
+
 @SuppressWarnings("FieldCanBeLocal")
 public class OptionsState extends StateAbstraction implements State{
 
@@ -27,27 +28,27 @@ public class OptionsState extends StateAbstraction implements State{
     private CREButton exitBtn;
 
     // Size Variables [Init]
-    private final int optionsTextWid = (int)(180*Tiles.SCALE.getValue());
-    private final int optionsTextHei = (int)(40*Tiles.SCALE.getValue());
-    private final int volumeTextWid = (int)(110*Tiles.SCALE.getValue());
-    private final int volumeTextHei = (int)(30*Tiles.SCALE.getValue());
-    private final int SFXTextWid = (int)(60*Tiles.SCALE.getValue());
-    private final int SFXTextHei = (int)(30*Tiles.SCALE.getValue());
-    private final int musicTextWid = (int)(90*Tiles.SCALE.getValue());
-    private final int musicTextHei = (int)(30*Tiles.SCALE.getValue());
+    private final int optionsTextWid = (int)(180*SCALE);
+    private final int optionsTextHei = (int)(40*SCALE);
+    private final int volumeTextWid = (int)(110*SCALE);
+    private final int volumeTextHei = (int)(30*SCALE);
+    private final int SFXTextWid = (int)(60*SCALE);
+    private final int SFXTextHei = (int)(30*SCALE);
+    private final int musicTextWid = (int)(90*SCALE);
+    private final int musicTextHei = (int)(30*SCALE);
 
-    private final int exitBtnX = (int)(480*Tiles.SCALE.getValue());
-    private final int exitBtnY = (int)(350*Tiles.SCALE.getValue());
+    private final int exitBtnX = (int)(480*SCALE);
+    private final int exitBtnY = (int)(350*SCALE);
 
     // Size Variables [Render]
-    private final int optionsTextX = (int)(330*Tiles.SCALE.getValue());
-    private final int optionsTextY = (int)(85*Tiles.SCALE.getValue());
-    private final int volumeTextX = (int)(365*Tiles.SCALE.getValue());
-    private final int volumeTextY = (int)(260*Tiles.SCALE.getValue());
-    private final int SFXTextX = (int)(325*Tiles.SCALE.getValue());
-    private final int SFXTextY = (int)(150*Tiles.SCALE.getValue());
-    private final int musicTextX = (int)(325*Tiles.SCALE.getValue());
-    private final int musicTextY = (int)(200*Tiles.SCALE.getValue());
+    private final int optionsTextX = (int)(330*SCALE);
+    private final int optionsTextY = (int)(85*SCALE);
+    private final int volumeTextX = (int)(365*SCALE);
+    private final int volumeTextY = (int)(260*SCALE);
+    private final int SFXTextX = (int)(325*SCALE);
+    private final int SFXTextY = (int)(150*SCALE);
+    private final int musicTextX = (int)(325*SCALE);
+    private final int musicTextY = (int)(200*SCALE);
 
     public OptionsState(Game game) {
         super(game);
