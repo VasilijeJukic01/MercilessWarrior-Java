@@ -30,4 +30,8 @@ public class Database {
         return storage.loadData(launcherPrompt.getName());
     }
 
+    public void updateData(Account account) {
+        storage.updateData(account);
+    }
+
 }

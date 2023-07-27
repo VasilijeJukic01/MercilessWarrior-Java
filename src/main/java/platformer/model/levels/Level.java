@@ -155,6 +155,7 @@ public class Level {
         arrowLaunchers.clear();
         blockers.clear();
         blacksmiths.clear();
+        dogs.clear();
     }
 
     public int getSpriteIndex(int x, int y) {

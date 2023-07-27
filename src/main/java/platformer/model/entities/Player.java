@@ -81,6 +81,13 @@ public class Player extends Entity {
         this.exp = game.getAccount().getExp();
     }
 
+    public void saveData() {
+        game.getAccount().setCoins(coins);
+        game.getAccount().setTokens(upgradeTokens);
+        game.getAccount().setLevel(level);
+        game.getAccount().setExp(exp);
+    }
+
     private void initAttackBox() {
         int w = (int)(20*Tiles.SCALE.getValue());
         int h =  (int)(35*Tiles.SCALE.getValue());

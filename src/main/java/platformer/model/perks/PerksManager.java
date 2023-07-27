@@ -5,8 +5,17 @@ import platformer.audio.Sounds;
 import platformer.model.entities.PlayerBonus;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class PerksManager {
+
+    private final int SLOT_MAX_COL = 7, SLOT_MAX_ROW = 4;
+    private final int[][] placeHolders = {
+            {1, 0, 1, 0, 1, 0, 1},
+            {1, 0, 1, 0, 1, 0, 1},
+            {0, 1, 1, 1, 0, 1, 1},
+            {0, 1, 0, 1, 0, 0, 1}
+    };
 
     private final ArrayList<Perk> perks;
     private final ArrayList<Integer> unlocked;
@@ -98,7 +107,27 @@ public class PerksManager {
         }
     }
 
+    public void loadUnlockedPerks(List<String> p) {
+        for (Perk perk : perks) {
+            if (p.contains(perk.getName())) {
+                upgrade(placeHolders, SLOT_MAX_COL, SLOT_MAX_ROW, perk.getSlot());
+            }
+        }
+    }
+
     public ArrayList<Perk> getPerks() {
         return perks;
+    }
+
+    public int[][] getPlaceHolders() {
+        return placeHolders;
+    }
+
+    public int getSlotMaxCol() {
+        return SLOT_MAX_COL;
+    }
+
+    public int getSlotMaxRow() {
+        return SLOT_MAX_ROW;
     }
 }

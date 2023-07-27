@@ -75,6 +75,10 @@ public class Game implements Runnable, Publisher {
         stateManager.getCurrentState().render(g);
     }
 
+    public void saveProgress() {
+        database.updateData(account);
+    }
+
     // Core
     @Override
     public void run() {

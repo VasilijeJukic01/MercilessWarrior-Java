@@ -62,6 +62,7 @@ public class PlayingState extends StateAbstraction implements State {
     }
 
     private void init() {
+        this.perksManager = new PerksManager();
         this.background = Utils.getInstance().importImage("src/main/resources/images/background1.jpg", (int)Tiles.GAME_WIDTH.getValue(), (int)Tiles.GAME_HEIGHT.getValue());
         this.levelManager = new LevelManager(game, this);
         this.objectManager = new ObjectManager(this);
@@ -73,8 +74,12 @@ public class PlayingState extends StateAbstraction implements State {
         player.setSpawn(levelManager.getCurrentLevel().getPlayerSpawn());
         this.overlayManager = new OverlayManager(this);
         this.spellManager = new SpellManager(this);
-        this.perksManager = new PerksManager();
         loadStartLevel();
+        loadData();
+    }
+
+    private void loadData() {
+        perksManager.loadUnlockedPerks(game.getAccount().getPerks());
     }
 
     private void calculateOffset() {
@@ -275,6 +280,10 @@ public class PlayingState extends StateAbstraction implements State {
             case KeyEvent.VK_F:
                 if (objectManager.isShopVisible() && !shopVisible) shopVisible = true;
                 if (objectManager.isBlacksmithVisible() && !bmVisible) bmVisible = true;
+                break;
+            case KeyEvent.VK_F6:
+                player.saveData();
+                game.saveProgress();
                 break;
             case KeyEvent.VK_F1: // Show HitBox
                 if (!game.getAccount().isEnableCheats()) break;

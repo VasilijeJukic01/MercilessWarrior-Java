@@ -22,15 +22,10 @@ public class BlacksmithOverlay implements MouseControls {
     private final ShopButton[] buttons;
 
     private BufferedImage slotImage;
-    private final int SLOT_MAX_ROW = 4, SLOT_MAX_COL = 7;
+    private int SLOT_MAX_ROW, SLOT_MAX_COL;
     private Rectangle2D.Double selectedSlot;
     private int slot;
-    private final int[][] placeHolders = {
-            {1, 0, 1, 0, 1, 0, 1},
-            {1, 0, 1, 0, 1, 0, 1},
-            {0, 1, 1, 1, 0, 1, 1},
-            {0, 1, 0, 1, 0, 0, 1}
-    };
+    private int[][] placeHolders;
 
     // Size Variables [Init]
     private final int overlayWid = (int)(700*Tiles.SCALE.getValue());
@@ -69,6 +64,9 @@ public class BlacksmithOverlay implements MouseControls {
     }
 
     private void init() {
+        this.SLOT_MAX_COL = playingState.getPerksManager().getSlotMaxCol();
+        this.SLOT_MAX_ROW = playingState.getPerksManager().getSlotMaxRow();
+        this.placeHolders = playingState.getPerksManager().getPlaceHolders();
         this.overlay = Utils.instance.importImage("src/main/resources/images/overlay1.png", overlayWid, overlayHei);
         this.shopText = Utils.instance.importImage("src/main/resources/images/buttons/PerksText.png", shopTextWid, shopTextHei);
         this.slotImage = Utils.instance.importImage("src/main/resources/images/shop/Slot.png", slotWid, slotHei);

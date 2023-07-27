@@ -6,4 +6,6 @@ public interface Storage {
 
     Account loadData(String name);
 
+    void updateData(Account account);
+
 }
