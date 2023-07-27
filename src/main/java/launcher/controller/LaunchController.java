@@ -10,13 +10,16 @@ import platformer.AppCore;
 
 public class LaunchController implements EventHandler<ActionEvent> {
 
+    private final LauncherView launcherView;
+
     private String scale = "1";
 
     private final TextField tfName;
     private final RadioButton rbYes;
     private final ComboBox<String> cbResolution;
 
-    public LaunchController(TextField tfName, RadioButton rbYes, ComboBox<String> cbResolution) {
+    public LaunchController(LauncherView launcherView, TextField tfName, RadioButton rbYes, ComboBox<String> cbResolution) {
+        this.launcherView = launcherView;
         this.tfName = tfName;
         this.rbYes = rbYes;
         this.cbResolution = cbResolution;
@@ -40,7 +43,7 @@ public class LaunchController implements EventHandler<ActionEvent> {
         args[0] = scale;
         args[1] = rbYes.isSelected() ? "Yes" : "No";
         args[2] = tfName.getText();
-        LauncherView.getInstance().close();
+        launcherView.close();
         AppCore.main(args);
     }
 }

@@ -8,7 +8,8 @@ public class LauncherCore extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-        LauncherView.getInstance().show();
+        LauncherView launcherView = new LauncherView();
+        launcherView.show();
     }
 
 }
