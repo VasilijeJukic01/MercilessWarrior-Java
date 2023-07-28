@@ -3,7 +3,8 @@ package platformer.model.entities.enemies;
 import platformer.animation.AnimType;
 import platformer.animation.AnimationUtils;
 import platformer.audio.Audio;
-import platformer.debug.Message;
+import platformer.debug.logger.Message;
+import platformer.debug.logger.Logger;
 import platformer.model.entities.Direction;
 import platformer.model.entities.Player;
 import platformer.model.entities.PlayerBonus;
@@ -183,8 +184,8 @@ public class EnemyManager {
     }
 
     private void writeHitLog(AnimType animType, int dmg) {
-        if (animType == AnimType.BLOCK) playingState.getGame().notifyLogger("Enemy blocks player's attack.", Message.NOTIFICATION);
-        else playingState.getGame().notifyLogger("Player gives damage to enemy: "+dmg, Message.NOTIFICATION);
+        if (animType == AnimType.BLOCK) Logger.getInstance().notify("Enemy blocks player's attack.", Message.NOTIFICATION);
+        else Logger.getInstance().notify("Player gives damage to enemy: "+dmg, Message.NOTIFICATION);
     }
 
     public void checkEnemySpellHit() {

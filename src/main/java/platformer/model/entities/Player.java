@@ -5,7 +5,8 @@ import platformer.animation.AnimationUtils;
 import platformer.audio.Audio;
 import platformer.audio.Sounds;
 import platformer.core.Game;
-import platformer.debug.Message;
+import platformer.debug.logger.Message;
+import platformer.debug.logger.Logger;
 import platformer.model.entities.effects.EffectType;
 import platformer.model.entities.enemies.Enemy;
 import platformer.model.entities.enemies.EnemyManager;
@@ -370,7 +371,7 @@ public class Player extends Entity {
         if (inAir) return;
         if (currentStamina >= 5) {
             setSpellState(1);
-            game.notifyLogger("Player has used FLAME spell!", Message.INFORMATION);
+            Logger.getInstance().notify("Player has used FLAME spell!", Message.INFORMATION);
         }
     }
 
@@ -391,7 +392,7 @@ public class Player extends Entity {
         pushOffsetDirection = Direction.UP;
         pushOffset = 0;
         Rectangle2D.Double hBox =  (o instanceof Enemy) ? (((Enemy) o).getHitBox()) : (((Projectile) o).getHitBox());
-        game.notifyLogger("Damage received: "+value, Message.INFORMATION);
+        Logger.getInstance().notify("Damage received: "+value, Message.INFORMATION);
         if (hBox.x < hitBox.x) pushDirection = Direction.RIGHT;
         else pushDirection = Direction.LEFT;
     }
@@ -435,7 +436,7 @@ public class Player extends Entity {
             entityState = AnimType.DEATH;
             animIndex = animTick = 0;
             game.setDying(true);
-            game.notifyLogger("Player is dead.", Message.NOTIFICATION);
+            Logger.getInstance().notify("Player is dead.", Message.NOTIFICATION);
         }
         else if (animIndex == animations[entityState.ordinal()].length-1 && animTick >= animSpeed-1) {
             game.setGameOver(true);
@@ -625,7 +626,7 @@ public class Player extends Entity {
     public void setCanBlock(boolean canBlock) {
         this.canBlock = canBlock;
         if (canBlock) {
-            game.notifyLogger("Damage blocked successfully!", Message.INFORMATION);
+            Logger.getInstance().notify("Damage blocked successfully!", Message.INFORMATION);
             cooldown[Cooldown.BLOCK.ordinal()] = 1.2;
             if (PlayerBonus.getInstance().isRestorePower()) changeStamina(5);
         }

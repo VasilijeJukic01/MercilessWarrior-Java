@@ -10,8 +10,6 @@ public interface State {
 
     void render(Graphics g);
 
-    void mouseClicked(MouseEvent e);
-
     void mousePressed(MouseEvent e);
 
     void mouseReleased(MouseEvent e);

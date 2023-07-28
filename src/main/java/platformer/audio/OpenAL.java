@@ -4,6 +4,8 @@ import org.lwjgl.LWJGLException;
 import org.lwjgl.openal.AL;
 import org.lwjgl.openal.AL10;
 import org.lwjgl.util.WaveData;
+import platformer.debug.logger.Logger;
+import platformer.debug.logger.Message;
 import platformer.utils.ValueEnum;
 
 import java.util.ArrayList;
@@ -28,6 +30,7 @@ public class OpenAL implements AudioPlayer {
         loadSongs();
         loadSounds();
         setListenerData();
+        Logger.getInstance().notify("Audio loaded successfully!", Message.INFORMATION);
     }
 
     private void initAL() {

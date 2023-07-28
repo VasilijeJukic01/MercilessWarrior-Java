@@ -62,11 +62,6 @@ public class MenuState extends StateAbstraction implements State{
     }
 
     @Override
-    public void mouseClicked(MouseEvent e) {
-
-    }
-
-    @Override
     public void mousePressed(MouseEvent e) {
         for (MenuButton button : buttons) {
             if (isMouseInButton(e, button)) {

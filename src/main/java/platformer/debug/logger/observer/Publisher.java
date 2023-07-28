@@ -1,4 +1,4 @@
-package platformer.debug;
+package platformer.debug.logger.observer;
 
 public interface Publisher {
 
@@ -6,6 +6,6 @@ public interface Publisher {
 
     void removeSubscriber(Subscriber s);
 
-    void notifyLogger(Object ... o);
+    void notify(Object ... o);
 
 }

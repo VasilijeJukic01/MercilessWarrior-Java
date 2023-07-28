@@ -3,7 +3,6 @@ package platformer.core;
 import platformer.audio.Audio;
 import platformer.audio.Songs;
 import platformer.database.bridge.Database;
-import platformer.debug.*;
 import platformer.state.ControlsState;
 import platformer.state.OptionsState;
 import platformer.state.StateManager;
@@ -15,11 +14,9 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
-import java.util.ArrayList;
-import java.util.List;
 
 @SuppressWarnings({"InfiniteLoopStatement", "FieldCanBeLocal"})
-public class Game implements Runnable, Publisher {
+public class Game implements Runnable {
 
     private GameFrame gameFrame;
     private final Thread gameThread;
@@ -36,10 +33,6 @@ public class Game implements Runnable, Publisher {
     private int currentFps = 0;
     private int currentUpdates = 0;
 
-    private List<Subscriber> subscribers;
-    private Logger consoleLogger;
-    //private Logger fileLogger;
-
     public Game(String cheats, String name) {
         this.launcherPrompt = new LauncherPrompt(name, cheats.equals("Yes"));
         this.database = new Database(launcherPrompt);
@@ -51,7 +44,6 @@ public class Game implements Runnable, Publisher {
 
     private void init() {
         initAccount();
-        initLogger();
         this.gameFrame = new GameFrame(this);
         this.audioOptions = new AudioOptions();
         this.stateManager = new StateManager(this);
@@ -61,11 +53,6 @@ public class Game implements Runnable, Publisher {
     private void initAccount() {
         this.account = database.getData();
         this.account.setEnableCheats(launcherPrompt.isEnableCheats());
-    }
-
-    private void initLogger() {
-        this.consoleLogger = new ConsoleLogger(this);
-        //this.fileLogger = new FileLogger(this);
     }
 
     public void start() {
@@ -209,26 +196,4 @@ public class Game implements Runnable, Publisher {
         return account;
     }
 
-    // Observer
-    @Override
-    public void addSubscriber(Subscriber s) {
-        if(s == null) return;
-        if(this.subscribers == null) this.subscribers = new ArrayList<>();
-        if(this.subscribers.contains(s)) return;
-        this.subscribers.add(s);
-    }
-
-    @Override
-    public void removeSubscriber(Subscriber s) {
-        if(s == null ||  this.subscribers == null || !this.subscribers.contains(s)) return;
-        this.subscribers.remove(s);
-    }
-
-    @Override
-    public void notifyLogger(Object ... o) {
-        if (o == null || this.subscribers == null || this.subscribers.isEmpty()) return;
-        for (Subscriber subscriber : subscribers) {
-            subscriber.update(o);
-        }
-    }
 }

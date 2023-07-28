@@ -32,8 +32,6 @@ public class CircularAnim implements GraphicsAnimation {
     @Override
     public void movementRender(Graphics g, boolean viewMovement) {
         Point curve = calculatePoint();
-        g.setColor(Color.RED);
-        g.drawRect(curve.x-25, curve.y-25, 50, 50);
 
         if (viewMovement) {
             g.setColor(Color.GREEN);

@@ -1,4 +1,4 @@
-package platformer.debug;
+package platformer.debug.logger.observer;
 
 public interface Subscriber {
 

@@ -1,14 +1,16 @@
-package platformer.debug;
+package platformer.debug.logger;
 
-import platformer.core.Game;
+import platformer.debug.logger.observer.Subscriber;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 
-public class ConsoleLogger implements Logger, Subscriber {
+import static platformer.constants.Constants.*;
 
-    public ConsoleLogger(Game game) {
-        game.addSubscriber(this);
+public class ConsoleLogger implements LoggerAbstraction, Subscriber {
+
+    public ConsoleLogger(Logger logger) {
+        logger.addSubscriber(this);
     }
 
     @Override
@@ -16,16 +18,19 @@ public class ConsoleLogger implements Logger, Subscriber {
         String timestamp = " ["+ LocalDate.now()+" " +(""+ LocalTime.now()).substring(0, 8)+"] ";
         switch (type) {
             case ERROR:
-                System.out.println("[ERROR]        "+timestamp+message);
+                System.out.println(ERROR_PREFIX+timestamp+message);
                 break;
             case WARNING:
-                System.out.println("[WARNING]      "+timestamp+message);
+                System.out.println(WARNING_PREFIX+timestamp+message);
                 break;
             case NOTIFICATION:
-                System.out.println("[NOTIFICATION] "+timestamp+message);
+                System.out.println(NOTIFICATION_PREFIX+timestamp+message);
                 break;
             case INFORMATION:
-                System.out.println("[INFORMATION]  "+timestamp+message);
+                System.out.println(INFORMATION_PREFIX+timestamp+message);
+                break;
+            case DEBUG:
+                System.out.println(DEBUG_PREFIX+timestamp+message);
                 break;
             default: break;
         }

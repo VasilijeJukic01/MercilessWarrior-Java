@@ -76,7 +76,7 @@ public abstract class Projectile {
                 hitBox.y = p.y;
             }
             else if (direction == Direction.TRACK) {
-                speed = LB_SPEED_MEDIUM;
+                speed = LB_SPEED_FAST;
                 double dx = player.getHitBox().x - hitBox.x;
                 double dy = player.getHitBox().y - hitBox.y;
                 double d = Math.sqrt(dx * dx + dy * dy);

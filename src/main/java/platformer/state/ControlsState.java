@@ -96,11 +96,6 @@ public class ControlsState extends StateAbstraction implements State {
     }
 
     @Override
-    public void mouseClicked(MouseEvent e) {
-
-    }
-
-    @Override
     public void mousePressed(MouseEvent e) {
         if (isMouseInButton(e, exitBtn)) exitBtn.setMousePressed(true);
     }

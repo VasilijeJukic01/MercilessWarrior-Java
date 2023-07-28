@@ -1,6 +1,8 @@
 package platformer.database.bridge;
 
 import platformer.database.Settings;
+import platformer.debug.logger.Logger;
+import platformer.debug.logger.Message;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -21,9 +23,10 @@ public class DatabaseConnection {
     public void closeConnection(){
         try{
             connection.close();
+            Logger.getInstance().notify("Database connection closed successfully!", Message.INFORMATION);
         }
         catch (SQLException e){
-            e.printStackTrace();
+            Logger.getInstance().notify("Failed to close database connection!", Message.ERROR);
         }
         finally {
             connection = null;

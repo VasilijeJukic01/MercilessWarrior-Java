@@ -2,6 +2,8 @@ package platformer.database.bridge;
 
 import platformer.core.Account;
 import platformer.database.Settings;
+import platformer.debug.logger.Logger;
+import platformer.debug.logger.Message;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -31,6 +33,7 @@ public class SQLStorage implements Storage {
 
         try {
             databaseConnection.initConnection(settings);
+            Logger.getInstance().notify("Database connection established!", Message.INFORMATION);
 
             Account account = findAccount(user);
             if (account != null) {
@@ -41,7 +44,7 @@ public class SQLStorage implements Storage {
             return account;
         }
         catch (SQLException e) {
-            e.printStackTrace();
+            Logger.getInstance().notify("Databased connection failed!", Message.ERROR);
         }
         finally {
             if (databaseConnection.getConnection() != null)
@@ -55,12 +58,14 @@ public class SQLStorage implements Storage {
     public void updateData(Account account) {
         try {
             databaseConnection.initConnection(settings);
+            Logger.getInstance().notify("Database connection established!", Message.INFORMATION);
+
             updateSettings(account);
             deletePerks(account.getSettingsID());
             insertPerks(account);
         }
         catch (SQLException e) {
-            e.printStackTrace();
+            Logger.getInstance().notify("Databased connection failed!", Message.ERROR);
         }
         finally {
             if (databaseConnection.getConnection() != null)

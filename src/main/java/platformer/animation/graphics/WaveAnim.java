@@ -44,7 +44,6 @@ public class WaveAnim implements GraphicsAnimation {
 
     @Override
     public void movementRender(Graphics g, boolean viewMovement) {
-        g.drawRect(x, y, 20, 20);
         if (viewMovement) {
             if (!points.contains(new Point(x, y))) points.add(new Point(x, y));
             for (Point point : points) {

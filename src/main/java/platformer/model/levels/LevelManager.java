@@ -1,7 +1,8 @@
 package platformer.model.levels;
 
-import platformer.debug.Message;
+import platformer.debug.logger.Message;
 import platformer.core.Game;
+import platformer.debug.logger.Logger;
 import platformer.model.entities.effects.Particle;
 import platformer.state.PlayingState;
 import platformer.utils.Utils;
@@ -48,7 +49,7 @@ public class LevelManager {
         for (int i = 0; i < lvlsL1.length; i++) {
             levels.add(new Level(lvlsL1[i], lvlsL2[i]));
         }
-        game.notifyLogger("Levels built successfully!", Message.NOTIFICATION);
+        Logger.getInstance().notify("Levels built successfully!", Message.NOTIFICATION);
     }
 
     private void loadLevel() {

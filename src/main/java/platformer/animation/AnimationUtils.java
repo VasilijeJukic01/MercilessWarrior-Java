@@ -1,7 +1,6 @@
 package platformer.animation;
 
 import platformer.utils.Utils;
-
 import java.awt.image.BufferedImage;
 
 import static platformer.constants.Constants.*;
@@ -12,101 +11,59 @@ public class AnimationUtils {
 
     private AnimationUtils() {}
 
+    private BufferedImage[] loadAnimation(String basePath, int numFrames, int width, int height, boolean reverse) {
+        BufferedImage[] animation = new BufferedImage[numFrames];
+        for (int i = 0; i < numFrames; i++) {
+            int index = reverse ? numFrames - 1 - i : i;
+            String imagePath = basePath + index + ".png";
+            animation[i] = Utils.getInstance().importImage(imagePath, width, height);
+        }
+        return animation;
+    }
+
+    private BufferedImage[] loadAnimationWithSprite(String basePath, int numFrames, int row, int width, int height, int offset) {
+        BufferedImage sprite = Utils.getInstance().importImage(basePath, -1, -1);
+        BufferedImage[] animation = new BufferedImage[numFrames];
+        int yOffset = 115 * row;
+        for (int i = offset; i < numFrames+offset; i++) {
+            animation[i-offset] = Utils.getInstance().resize(sprite.getSubimage(i * 128, yOffset, 128, 115), width, height);
+        }
+        return animation;
+    }
+
     // Player
-    public BufferedImage[][] loadPlayerAnimations(int w, int h, String sheet) {
-        BufferedImage sprite = Utils.getInstance().importImage("src/main/resources/images/player/"+sheet+"Sheet.png", -1, -1);
-        BufferedImage[][] anim = new BufferedImage[16][16];
+    public static BufferedImage[][] loadPlayerAnimations(int w, int h, String sheet) {
+        BufferedImage sprite = Utils.getInstance().importImage("src/main/resources/images/player/" + sheet + "Sheet.png", -1, -1);
+        BufferedImage[][] anim = new BufferedImage[15][15];
 
-        // 0 Idle anim
-        BufferedImage[] idleAnim = new BufferedImage[8];
-        for (int i = 0; i < idleAnim.length; i++) {
-            idleAnim[i] = Utils.getInstance().resize(sprite.getSubimage(i*144, 0, 144, 80), w, h);
-        }
-        anim[0] = idleAnim;
+        int[][] animationInfo = {
+                // Frame count, Sheet row
+                {8, 0},             // Idle anim 0
+                {8, 80},            // Run anim 1
+                {3, 6*80},          // Jump anim 2
+                {3, 8*80},          // Fall anim 3
+                {4, 10*80},         // Attack 1 anim 4
+                {4, 11*80},         // Attack 2 anim 5
+                {5, 12*80},         // Attack 3 anim 6
+                {6, 14*80},         // Block anim 7
+                {4, 23*80},         // Hit anim 8
+                {11, 24*80},        // Death anim 9
+                {0, 0},             // Skipping frame 10
+                {0, 0},             // Skipping frame 11
+                {4, 21*80},         // Wall anim 12
+                {12, 20*80},        // Transform anim 13
+                {13, 19*80}         // Spell 1 anim 14
+        };
 
-        // 1 Run anim
-        BufferedImage[] runAnim = new BufferedImage[8];
-        for (int i = 0; i < runAnim.length; i++) {
-            runAnim[i] = Utils.getInstance().resize(sprite.getSubimage(i*144, 80, 144, 80), w, h);
+        for (int i = 0; i < anim.length; i++) {
+            int frameCount = animationInfo[i][0];
+            int sheetRow = animationInfo[i][1];
+            BufferedImage[] animation = new BufferedImage[frameCount];
+            for (int j = 0; j < frameCount; j++) {
+                animation[j] = Utils.getInstance().resize(sprite.getSubimage(j * 144, sheetRow, 144, 80), w, h);
+            }
+            anim[i] = animation;
         }
-        anim[1] = runAnim;
-
-        // 2 Jump anim
-        BufferedImage[] jumpAnim = new BufferedImage[3];
-        for (int i = 0; i < jumpAnim.length; i++) {
-            jumpAnim[i] = Utils.getInstance().resize(sprite.getSubimage(i*144, 6*80, 144, 80), w, h);
-        }
-        anim[2] = jumpAnim;
-
-        // 3 Fall anim
-        BufferedImage[] fallAnim = new BufferedImage[3];
-        for (int i = 0; i < fallAnim.length; i++) {
-            fallAnim[i] = Utils.getInstance().resize(sprite.getSubimage(i*144, 8*80, 144, 80), w, h);
-        }
-        anim[3] = fallAnim;
-
-        // 4 Attack 1 anim
-        BufferedImage[] attack1 = new BufferedImage[4];
-        for (int i = 0; i < attack1.length; i++) {
-            attack1[i] = Utils.getInstance().resize(sprite.getSubimage(i*144, 10*80, 144, 80), w, h);
-        }
-        anim[4] = attack1;
-
-        // 5 Attack 2 anim
-        BufferedImage[] attack2 = new BufferedImage[4];
-        for (int i = 0; i < attack2.length; i++) {
-            attack2[i] = Utils.getInstance().resize(sprite.getSubimage(i*144, 11*80, 144, 80), w, h);
-        }
-        anim[5] = attack2;
-
-        // 6 Attack 3 anim
-        BufferedImage[]  attack3 = new BufferedImage[5];
-        for (int i = 0; i < attack3.length; i++) {
-            attack3[i] = Utils.getInstance().resize(sprite.getSubimage(i*144, 12*80, 144, 80), w, h);
-        }
-        anim[6] = attack3;
-
-        // 7 Block anim
-        BufferedImage[]  block = new BufferedImage[6];
-        for (int i = 0; i < block.length; i++) {
-            block[i] = Utils.getInstance().resize(sprite.getSubimage(i*144, 14*80, 144, 80), w, h);
-        }
-        anim[7] = block;
-
-        // 8 Hit anim
-        BufferedImage[] hitAnim = new BufferedImage[4];
-        for (int i = 0; i < hitAnim.length; i++) {
-            hitAnim[i] = Utils.getInstance().resize(sprite.getSubimage(i*144, 23*80, 144, 80), w, h);
-        }
-        anim[8] = hitAnim;
-
-        // 9 Death anim
-        BufferedImage[] deathAnim = new BufferedImage[11];
-        for (int i = 0; i < deathAnim.length; i++) {
-            deathAnim[i] = Utils.getInstance().resize(sprite.getSubimage(i*144, 24*80, 144, 80), w, h);
-        }
-        anim[9] = deathAnim;
-
-        // 12 Wall anim
-        BufferedImage[] wallAnim = new BufferedImage[4];
-        for (int i = 0; i < wallAnim.length; i++) {
-            wallAnim[i] = Utils.getInstance().resize(sprite.getSubimage(i*144, 21*80, 144, 80), w, h);
-        }
-        anim[12] = wallAnim;
-
-        // 13 Transform anim
-        BufferedImage[] transformAnim = new BufferedImage[12];
-        for (int i = 0; i < transformAnim.length; i++) {
-            transformAnim[i] = Utils.getInstance().resize(sprite.getSubimage(i*144, 20*80, 144, 80), w, h);
-        }
-        anim[13] = transformAnim;
-
-        // 14 Spell 1 anim
-        BufferedImage[] spell1Anim = new BufferedImage[13];
-        for (int i = 1; i < spell1Anim.length+1; i++) {
-            spell1Anim[i-1] = Utils.getInstance().resize(sprite.getSubimage(i*144, 19*80, 144, 80), w, h);
-        }
-        anim[14] = spell1Anim;
 
         return anim;
     }
@@ -114,228 +71,56 @@ public class AnimationUtils {
     // Enemy
     public BufferedImage[][] loadSkeletonAnimations() {
         BufferedImage[][] anim = new BufferedImage[13][13];
-
-        // Size
         int w = SKELETON_WIDTH;
         int h = SKELETON_HEIGHT;
 
-        // 0 Idle anim
-        BufferedImage[] idleAnim = new BufferedImage[4];
-        for (int i = 0; i < idleAnim.length; i++) {
-            idleAnim[i] = Utils.getInstance().importImage("src/main/resources/images/enemies/Skeleton/Idle/Skeleton_Idle"+i+".png", w, h);
-        }
-        anim[0] = idleAnim;
-
-        // 1 Run anim
-        BufferedImage[] runAnim = new BufferedImage[8];
-        for (int i = 0; i < runAnim.length; i++) {
-            runAnim[i] = Utils.getInstance().importImage("src/main/resources/images/enemies/Skeleton/Run/Skeleton_Run"+i+".png", w, h);
-        }
-        anim[1] = runAnim;
-
-        // 3 Fall anim
-        BufferedImage[] fallAnim = new BufferedImage[2];
-        for (int i = 0; i < fallAnim.length; i++) {
-            fallAnim[i] = Utils.getInstance().importImage("src/main/resources/images/enemies/Skeleton/JumpFall/Skeleton_Fall"+i+".png", w, h);
-        }
-        anim[3] = fallAnim;
-
-        // 4 Attack anim
-        BufferedImage[] attack = new BufferedImage[6];
-        for (int i = 0; i < attack.length; i++) {
-            attack[i] = Utils.getInstance().importImage("src/main/resources/images/enemies/Skeleton/Attack/Skeleton_Attack"+i+".png", w, h);
-        }
-        anim[4] = attack;
-
-        // 7 Block anim
-        BufferedImage[] block = new BufferedImage[6];
-        for (int i = 0; i < block.length; i++) {
-            block[i] = Utils.getInstance().importImage("src/main/resources/images/enemies/Skeleton/Block/Skeleton_Block"+i+".png", w, h);
-        }
-        anim[7] = block;
-
-        // 8 Hit anim
-        BufferedImage[] hit = new BufferedImage[4];
-        for (int i = 0; i < hit.length; i++) {
-            hit[i] = Utils.getInstance().importImage("src/main/resources/images/enemies/Skeleton/Hit/Skeleton_Hit"+i+".png", w, h);
-        }
-        anim[8] = hit;
-
-        // 9 Death anim
-        BufferedImage[] death = new BufferedImage[10];
-        for (int i = 0; i < death.length; i++) {
-            death[i] = Utils.getInstance().importImage("src/main/resources/images/enemies/Skeleton/Death/Skeleton_Death"+i+".png", w, h);
-        }
-        anim[9] = death;
-
-        // 11 Walk anim
-        BufferedImage[] walk = new BufferedImage[8];
-        for (int i = 0; i < walk.length; i++) {
-            walk[i] = Utils.getInstance().importImage("src/main/resources/images/enemies/Skeleton/Walk/Skeleton_Walk"+i+".png", w, h);
-        }
-        anim[11] = walk;
+        anim[0] = loadAnimation("src/main/resources/images/enemies/Skeleton/Idle/Skeleton_Idle", 4, w, h, false);
+        anim[1] = loadAnimation("src/main/resources/images/enemies/Skeleton/Run/Skeleton_Run", 8, w, h, false);
+        anim[3] = loadAnimation("src/main/resources/images/enemies/Skeleton/JumpFall/Skeleton_Fall", 2, w, h, false);
+        anim[4] = loadAnimation("src/main/resources/images/enemies/Skeleton/Attack/Skeleton_Attack", 6, w, h, false);
+        anim[7] = loadAnimation("src/main/resources/images/enemies/Skeleton/Block/Skeleton_Block", 6, w, h, false);
+        anim[8] = loadAnimation("src/main/resources/images/enemies/Skeleton/Hit/Skeleton_Hit", 4, w, h, false);
+        anim[9] = loadAnimation("src/main/resources/images/enemies/Skeleton/Death/Skeleton_Death", 10, w, h, false);
+        anim[11] = loadAnimation("src/main/resources/images/enemies/Skeleton/Walk/Skeleton_Walk", 8, w, h, false);
 
         return anim;
     }
 
     public BufferedImage[][] loadGhoulAnimation() {
         BufferedImage[][] anim = new BufferedImage[17][20];
-
-        // Size
         int w = GHOUL_WIDTH;
         int h = GHOUL_HEIGHT;
 
-        // 0 Idle anim
-        BufferedImage[] idleAnim = new BufferedImage[8];
-        for (int i = 0; i < idleAnim.length; i++) {
-            idleAnim[i] = Utils.getInstance().importImage("src/main/resources/images/enemies/Ghoul/Idle/Ghoul_Idle"+i+".png", w, h);
-        }
-        anim[0] = idleAnim;
-
-        // 1 Chase anim
-        BufferedImage[] chaseAnim = new BufferedImage[6];
-        for (int i = 0; i < chaseAnim.length; i++) {
-            chaseAnim[i] = Utils.getInstance().importImage("src/main/resources/images/enemies/Ghoul/Chase/Ghoul_Chase"+i+".png", w, h);
-        }
-        anim[1] = chaseAnim;
-
-        // 4 Attack anim
-        BufferedImage[] attackAnim = new BufferedImage[8];
-        for (int i = 0; i < attackAnim.length; i++) {
-            attackAnim[i] = Utils.getInstance().importImage("src/main/resources/images/enemies/Ghoul/Attack/Ghoul_Attack"+i+".png", w, h);
-        }
-        anim[4] = attackAnim;
-
-        // 8 Hit anim
-        BufferedImage[] hitAnim = new BufferedImage[4];
-        for (int i = 0; i < hitAnim.length; i++) {
-            hitAnim[i] = Utils.getInstance().importImage("src/main/resources/images/enemies/Ghoul/Hit/Ghoul_Hit"+i+".png", w, h);
-        }
-        anim[8] = hitAnim;
-
-        // 9 Death anim
-        BufferedImage[] deathAnim = new BufferedImage[8];
-        for (int i = 0; i < deathAnim.length; i++) {
-            deathAnim[i] = Utils.getInstance().importImage("src/main/resources/images/enemies/Ghoul/Death/Ghoul_Death"+i+".png", w, h);
-        }
-        anim[9] = deathAnim;
-
-        // 11 Move anim
-        BufferedImage[] moveAnim = new BufferedImage[6];
-        for (int i = 0; i < moveAnim.length; i++) {
-            moveAnim[i] = Utils.getInstance().importImage("src/main/resources/images/enemies/Ghoul/Move/Ghoul_Move"+i+".png", w, h);
-        }
-        anim[11] = moveAnim;
-
-        // 15 Hide anim
-        BufferedImage[] hideAnim = new BufferedImage[19];
-        for (int i = 0; i < hideAnim.length; i++) {
-            hideAnim[i] = Utils.getInstance().importImage("src/main/resources/images/enemies/Ghoul/Exile/Ghoul_Exile"+i+".png", w, h);
-        }
-        anim[15] = hideAnim;
-
-        // 16 Reveal anim
-        BufferedImage[] revelAnim = new BufferedImage[19];
-        for (int i = revelAnim.length-1; i >= 0; i--) {
-            revelAnim[revelAnim.length-1-i] = Utils.getInstance().importImage("src/main/resources/images/enemies/Ghoul/Exile/Ghoul_Exile"+i+".png", w, h);
-        }
-        anim[16] = revelAnim;
+        anim[0] = loadAnimation("src/main/resources/images/enemies/Ghoul/Idle/Ghoul_Idle", 8, w, h, false);
+        anim[1] = loadAnimation("src/main/resources/images/enemies/Ghoul/Chase/Ghoul_Chase", 6, w, h, false);
+        anim[4] = loadAnimation("src/main/resources/images/enemies/Ghoul/Attack/Ghoul_Attack", 8, w, h, false);
+        anim[8] = loadAnimation("src/main/resources/images/enemies/Ghoul/Hit/Ghoul_Hit", 4, w, h, false);
+        anim[9] = loadAnimation("src/main/resources/images/enemies/Ghoul/Death/Ghoul_Death", 8, w, h, false);
+        anim[11] = loadAnimation("src/main/resources/images/enemies/Ghoul/Move/Ghoul_Move", 6, w, h, false);
+        anim[15] = loadAnimation("src/main/resources/images/enemies/Ghoul/Exile/Ghoul_Exile", 19, w, h, false);
+        anim[16] = loadAnimation("src/main/resources/images/enemies/Ghoul/Exile/Ghoul_Exile", 19, w, h, true);
 
         return anim;
     }
 
     // Boss
     public BufferedImage[][] loadSpearWomanAnimations() {
-        BufferedImage sprite = Utils.getInstance().importImage("src/main/resources/images/enemies/Bosses/SpearWoman.png", -1, -1);
         BufferedImage[][] anim = new BufferedImage[20][25];
-
-        // Size
         int w = SW_WIDTH;
         int h = SW_HEIGHT;
 
-        // 0 Idle anim
-        BufferedImage[] idleAnim = new BufferedImage[8];
-        for (int i = 0; i < idleAnim.length; i++) {
-            idleAnim[i] = Utils.getInstance().resize(sprite.getSubimage(i*128, 0, 128, 115), w, h);
-        }
-        anim[0] = idleAnim;
-
-        // 1 Run anim
-        BufferedImage[] runAnim = new BufferedImage[8];
-        for (int i = 0; i < runAnim.length; i++) {
-            runAnim[i] = Utils.getInstance().resize(sprite.getSubimage(i*128, 115*2, 128, 115), w, h);
-        }
-        anim[1] = runAnim;
-
-        // 4 Attack 1 anim
-        BufferedImage[] attack1Anim = new BufferedImage[5];
-        for (int i = 0; i < attack1Anim.length; i++) {
-            attack1Anim[i] = Utils.getInstance().resize(sprite.getSubimage(i*128, 115*10, 128, 115), w, h);
-        }
-        anim[4] = attack1Anim;
-
-        // 5 Attack 2 anim
-        BufferedImage[] attack2Anim = new BufferedImage[5];
-        for (int i = 0; i < attack2Anim.length; i++) {
-            attack2Anim[i] = Utils.getInstance().resize(sprite.getSubimage(i*128, 115*11, 128, 115), w, h);
-        }
-        anim[5] = attack2Anim;
-
-        // 6 Attack 3 anim
-        BufferedImage[] attack3Anim = new BufferedImage[6];
-        for (int i = 0; i < attack3Anim.length; i++) {
-            attack3Anim[i] = Utils.getInstance().resize(sprite.getSubimage(i*128, 115*12, 128, 115), w, h);
-        }
-        anim[6] = attack3Anim;
-
-        // 7 Block anim
-        BufferedImage[] blockAnim = new BufferedImage[16];
-        for (int i = 0; i < blockAnim.length; i++) {
-            blockAnim[i] = Utils.getInstance().resize(sprite.getSubimage(i*128, 115*16, 128, 115), w, h);
-        }
-        anim[7] = blockAnim;
-
-        // 8 Hit anim
-        BufferedImage[] hitAnim = new BufferedImage[4];
-        for (int i = 0; i < hitAnim.length; i++) {
-            hitAnim[i] = Utils.getInstance().resize(sprite.getSubimage(i*128, 115*23, 128, 115), w, h);
-        }
-        anim[8] = hitAnim;
-
-        // 9 Death anim
-        BufferedImage[] deathAnim = new BufferedImage[9];
-        for (int i = 0; i < deathAnim.length; i++) {
-            deathAnim[i] = Utils.getInstance().resize(sprite.getSubimage(i*128, 115*24, 128, 115), w, h);
-        }
-        anim[9] = deathAnim;
-
-        // 14 Spell 1 anim
-        BufferedImage[] spell1Anim = new BufferedImage[14];
-        for (int i = 0; i < spell1Anim.length; i++) {
-            spell1Anim[i] = Utils.getInstance().resize(sprite.getSubimage(i*128, 115*13, 128, 115), w, h);
-        }
-        anim[14] = spell1Anim;
-
-        // 17 Spell 2 anim
-        BufferedImage[] spell2Anim = new BufferedImage[11];
-        for (int i = 0; i < spell2Anim.length; i++) {
-            spell2Anim[i] = Utils.getInstance().resize(sprite.getSubimage(i*128, 115*14, 128, 115), w, h);
-        }
-        anim[17] = spell2Anim;
-
-        // 18 Spell 3 anim
-        BufferedImage[] spell3Anim = new BufferedImage[22];
-        for (int i = 0; i < spell3Anim.length; i++) {
-            spell3Anim[i] = Utils.getInstance().resize(sprite.getSubimage(i*128, 115*15, 128, 115), w, h);
-        }
-        anim[18] = spell3Anim;
-
-        // 19 Spell 4 anim
-        BufferedImage[] spell4Anim = new BufferedImage[2];
-        for (int i = 0; i < spell4Anim.length; i++) {
-            spell4Anim[i] = Utils.getInstance().resize(sprite.getSubimage((i+1)*128, 115*15, 128, 115), w, h);
-        }
-        anim[19] = spell4Anim;
+        anim[0] = loadAnimationWithSprite("src/main/resources/images/enemies/Bosses/SpearWoman.png", 8, 0, w, h, 0);
+        anim[1] = loadAnimationWithSprite("src/main/resources/images/enemies/Bosses/SpearWoman.png", 8, 2, w, h, 0);
+        anim[4] = loadAnimationWithSprite("src/main/resources/images/enemies/Bosses/SpearWoman.png", 5, 10, w, h, 0);
+        anim[5] = loadAnimationWithSprite("src/main/resources/images/enemies/Bosses/SpearWoman.png", 5, 11, w, h, 0);
+        anim[6] = loadAnimationWithSprite("src/main/resources/images/enemies/Bosses/SpearWoman.png", 6, 12, w, h, 0);
+        anim[7] = loadAnimationWithSprite("src/main/resources/images/enemies/Bosses/SpearWoman.png", 16, 16, w, h, 0);
+        anim[8] = loadAnimationWithSprite("src/main/resources/images/enemies/Bosses/SpearWoman.png", 4, 23, w, h, 0);
+        anim[9] = loadAnimationWithSprite("src/main/resources/images/enemies/Bosses/SpearWoman.png", 9, 24, w, h, 0);
+        anim[14] = loadAnimationWithSprite("src/main/resources/images/enemies/Bosses/SpearWoman.png", 14, 13, w, h, 0);
+        anim[17] = loadAnimationWithSprite("src/main/resources/images/enemies/Bosses/SpearWoman.png", 11, 14, w, h, 0);
+        anim[18] = loadAnimationWithSprite("src/main/resources/images/enemies/Bosses/SpearWoman.png", 22, 15, w, h, 0);
+        anim[19] = loadAnimationWithSprite("src/main/resources/images/enemies/Bosses/SpearWoman.png", 2, 15, w, h, 1);
 
         return anim;
     }

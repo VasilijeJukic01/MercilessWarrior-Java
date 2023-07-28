@@ -1,6 +1,6 @@
-package platformer.debug;
+package platformer.debug.logger;
 
-import platformer.core.Game;
+import platformer.debug.logger.observer.Subscriber;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -8,10 +8,12 @@ import java.nio.file.StandardOpenOption;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
-public class FileLogger implements Logger, Subscriber {
+import static platformer.constants.Constants.*;
 
-    public FileLogger(Game game) {
-        game.addSubscriber(this);
+public class FileLogger implements LoggerAbstraction, Subscriber {
+
+    public FileLogger(Logger logger) {
+        logger.addSubscriber(this);
     }
 
     @Override
@@ -20,16 +22,19 @@ public class FileLogger implements Logger, Subscriber {
         String log = "";
         switch (type) {
             case ERROR:
-                log = "[ERROR]         "+timestamp+message;
+                log = ERROR_PREFIX+timestamp+message;
                 break;
             case WARNING:
-                log = "[WARNING]       "+timestamp+message;
+                log = WARNING_PREFIX+timestamp+message;
                 break;
             case NOTIFICATION:
-                log = "[NOTIFICATION]  "+timestamp+message;
+                log = NOTIFICATION_PREFIX+timestamp+message;
                 break;
             case INFORMATION:
-                log = "[INFORMATION]   "+timestamp+message;
+                log = INFORMATION_PREFIX+timestamp+message;
+                break;
+            case DEBUG:
+                log = DEBUG_PREFIX+timestamp+message;
                 break;
             default: break;
         }

@@ -6,10 +6,24 @@ public class Constants {
     public static final int TILES_DEFAULT_SIZE = 32;
     public static final int TILES_WIDTH = 26;
     public static final int TILES_HEIGHT = 14;
+
     public static float SCALE = 2f;
     public static int TILES_SIZE = (int)(TILES_DEFAULT_SIZE * SCALE);
     public static int GAME_WIDTH = TILES_SIZE * TILES_WIDTH;
     public static int GAME_HEIGHT = TILES_SIZE * TILES_HEIGHT;
+
+    // Logger Constants
+    public static final String ERROR_PREFIX         = "[ERROR]         ";
+    public static final String WARNING_PREFIX       = "[WARNING]       ";
+    public static final String NOTIFICATION_PREFIX  = "[NOTIFICATION]  ";
+    public static final String INFORMATION_PREFIX   = "[INFORMATION]   ";
+    public static final String DEBUG_PREFIX         = "[DEBUG]         ";
+
+    // Player Constants
+    public static final int PLAYER_DEFAULT_WIDTH = 100;
+    public static final int PLAYER_DEFAULT_HEIGHT = 90;
+    public static final int PLAYER_WIDTH = (int)(PLAYER_DEFAULT_WIDTH * SCALE);
+    public static final int PLAYER_HEIGHT = (int)(PLAYER_DEFAULT_HEIGHT * SCALE);
 
     // Enemy Constants
     public static final int SKELETON_DEFAULT_WIDTH = 100;
@@ -94,7 +108,6 @@ public class Constants {
     public static final int LB_WID = (int)(LB_DEF_WID * SCALE);
     public static final int LB_HEI = (int)(LB_DEF_HEI * SCALE);
     public static final int LB_SPEED_FAST = (int)(1.0 * SCALE);
-    public static final int LB_SPEED_MEDIUM = (int)(0.75 * SCALE);
     public static final int LB_SPEED_SLOW = (int)(0.5 * SCALE);
 
     public static void setResolution(float scale) {

@@ -2,7 +2,8 @@ package platformer.state;
 
 import platformer.audio.Audio;
 import platformer.debug.DebugSettings;
-import platformer.debug.Message;
+import platformer.debug.logger.Message;
+import platformer.debug.logger.Logger;
 import platformer.model.entities.Cooldown;
 import platformer.model.entities.PlayerBonus;
 import platformer.model.entities.effects.Particle;
@@ -100,7 +101,7 @@ public class PlayingState extends StateAbstraction implements State {
         player.setSpawn(levelManager.getCurrentLevel().getPlayerSpawn());
         calculateOffset();
         overlayManager.reset();
-        game.notifyLogger("Next level loaded.", Message.NOTIFICATION);
+        Logger.getInstance().notify("Next level loaded.", Message.NOTIFICATION);
     }
 
     public void loadPrevLevel() {
@@ -109,7 +110,7 @@ public class PlayingState extends StateAbstraction implements State {
         player.setSpawn(levelManager.getCurrentLevel().getPlayerSpawn());
         calculateOffset();
         overlayManager.reset();
-        game.notifyLogger("Previous level loaded.", Message.NOTIFICATION);
+        Logger.getInstance().notify("Previous level loaded.", Message.NOTIFICATION);
     }
 
     // Level Borders
@@ -164,11 +165,6 @@ public class PlayingState extends StateAbstraction implements State {
         this.spellManager.render(g, xLevelOffset, yLevelOffset);
         this.player.getUserInterface().render(g);
         this.overlayManager.render(g, paused, gameOver, shopVisible, bmVisible);
-    }
-
-    @Override
-    public void mouseClicked(MouseEvent e) {
-
     }
 
     @Override
@@ -289,23 +285,23 @@ public class PlayingState extends StateAbstraction implements State {
             case KeyEvent.VK_F1: // Show HitBox
                 if (!game.getAccount().isEnableCheats()) break;
                 DebugSettings.getInstance().setDebugMode(!DebugSettings.getInstance().isDebugMode());
-                game.notifyLogger("HitBox functionality changed.", Message.WARNING);
+                Logger.getInstance().notify("HitBox functionality changed.", Message.WARNING);
                 break;
             case KeyEvent.VK_F2: // Stamina Cheat
                 if (!game.getAccount().isEnableCheats()) break;
                 player.changeStamina(100);
-                game.notifyLogger("Stamina cheat activated.", Message.WARNING);
+                Logger.getInstance().notify("Stamina cheat activated.", Message.WARNING);
                 break;
             case KeyEvent.VK_F3: // Health Cheat
                 if (!game.getAccount().isEnableCheats()) break;
                 player.changeHealth(100);
-                game.notifyLogger("Health cheat activated.", Message.WARNING);
+                Logger.getInstance().notify("Health cheat activated.", Message.WARNING);
                 break;
             case KeyEvent.VK_F4: // Coins Cheat
                 if (!game.getAccount().isEnableCheats()) break;
                 player.changeCoins(99999);
                 player.changeUpgradeTokens(50);
-                game.notifyLogger("Coins cheat activated.", Message.WARNING);
+                Logger.getInstance().notify("Coins cheat activated.", Message.WARNING);
                 break;
             default: break;
         }

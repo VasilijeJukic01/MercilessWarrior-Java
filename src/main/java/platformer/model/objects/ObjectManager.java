@@ -3,7 +3,8 @@ package platformer.model.objects;
 import platformer.animation.AnimationUtils;
 import platformer.audio.Audio;
 import platformer.audio.Sounds;
-import platformer.debug.Message;
+import platformer.debug.logger.Message;
+import platformer.debug.logger.Logger;
 import platformer.model.entities.Direction;
 import platformer.model.entities.Player;
 import platformer.model.entities.PlayerBonus;
@@ -130,7 +131,7 @@ public class ObjectManager {
         for (Container container : containers) {
             boolean isFlame = flames.getHitBox().intersects(container.getHitBox()) && flames.isAlive();
             if (container.isAlive() && !container.animate && (attackBox.intersects(container.getHitBox()) || isFlame)) {
-                playingState.getGame().notifyLogger("Player breaks container.", Message.NOTIFICATION);
+                Logger.getInstance().notify("Player breaks container.", Message.NOTIFICATION);
                 container.setAnimate(true);
                 Audio.getInstance().getAudioPlayer().playCrateSound();
                 Random rand = new Random();
@@ -287,7 +288,7 @@ public class ObjectManager {
 
     // Projectiles/Activators
     private void shootArrow(ArrowLauncher arrowLauncher) {
-        Audio.getInstance().getAudioPlayer().playSound(Sounds.ARROW_SOUND.ordinal());
+        Audio.getInstance().getAudioPlayer().playSound(Sounds.ARROW.ordinal());
         Direction direction = (arrowLauncher.getObjType() == ObjType.ARROW_LAUNCHER_RIGHT) ? Direction.LEFT : Direction.RIGHT;
         projectiles.add(new Arrow((int)arrowLauncher.getHitBox().x, (int)arrowLauncher.getHitBox().y, direction));
     }

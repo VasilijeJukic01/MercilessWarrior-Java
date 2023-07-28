@@ -1,5 +1,8 @@
 package platformer.database;
 
+import platformer.debug.logger.Logger;
+import platformer.debug.logger.Message;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
@@ -15,7 +18,7 @@ public class CredentialsLoader {
             properties.load(fileInputStream);
         }
         catch (IOException e) {
-            e.printStackTrace();
+            Logger.getInstance().notify("Error with database.config file!", Message.ERROR);
         }
     }
 
