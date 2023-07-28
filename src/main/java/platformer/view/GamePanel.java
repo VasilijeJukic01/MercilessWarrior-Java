@@ -16,14 +16,20 @@ public class GamePanel extends JPanel {
 
     public GamePanel(Game game) {
         this.game = game;
+        initListeners();
+        initFocus();
+        initPanelSize();
+    }
 
+    private void initListeners() {
         GameMouseListener mouseListener = new GameMouseListener(this);
         this.addMouseListener(mouseListener);
         this.addMouseMotionListener(mouseListener);
         this.addKeyListener(new GameKeyListener(this));
-        this.setFocusable(true);
+    }
 
-        initPanelSize();
+    private void initFocus() {
+        this.setFocusable(true);
     }
 
     private void initPanelSize() {
@@ -37,12 +43,20 @@ public class GamePanel extends JPanel {
     protected void paintComponent(Graphics g) {
         this.requestFocus(true);
         super.paintComponent(g);
+        renderGame(g);
+        renderInfo(g);
+    }
+
+    private void renderGame(Graphics g) {
         game.render(g);
+    }
+
+    private void renderInfo(Graphics g) {
         g.setColor(new Color(255, 255, 255));
-        g.setFont(new Font("Arial", Font.BOLD, (int)(10*SCALE)));
-        g.drawString(game.getAccount().getName(), (int)(1.5*SCALE), (int)(10*SCALE));
-        g.drawString("FPS: "+game.getCurrentFps(), (int)(1.5*SCALE), (int)(20*SCALE));
-        g.drawString("UPS: "+game.getCurrentUpdates(), (int)(50*SCALE), (int)(20*SCALE));
+        g.setFont(new Font("Arial", Font.BOLD, (int)(10 * SCALE)));
+        g.drawString(game.getAccount().getName(), (int)(1.5 * SCALE), (int)(10 * SCALE));
+        g.drawString("FPS: "+game.getCurrentFps(), (int)(1.5 * SCALE), (int)(20 * SCALE));
+        g.drawString("UPS: "+game.getCurrentUpdates(), (int)(50 * SCALE), (int)(20 * SCALE));
     }
 
     public Game getGame() {
