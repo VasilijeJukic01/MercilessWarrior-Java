@@ -2,7 +2,6 @@ package platformer;
 
 import platformer.constants.Constants;
 import platformer.core.Game;
-import platformer.utils.Utils;
 
 public class AppCore {
 

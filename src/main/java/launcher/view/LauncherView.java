@@ -72,8 +72,8 @@ public class LauncherView extends Stage {
 
     private void init() {
         initScene();
-        initRoot();
         initComponents();
+        initRoot();
         initButtons();
         initStyles(super.getScene());
     }
