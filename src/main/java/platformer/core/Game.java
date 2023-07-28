@@ -16,6 +16,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
+import java.util.List;
 
 @SuppressWarnings({"InfiniteLoopStatement", "FieldCanBeLocal"})
 public class Game implements Runnable, Publisher {
@@ -35,9 +36,9 @@ public class Game implements Runnable, Publisher {
     private int currentFps = 0;
     private int currentUpdates = 0;
 
-    private ArrayList<Subscriber> subscribers;
-    private final Logger consoleLogger;
-    //private final Logger fileLogger;
+    private List<Subscriber> subscribers;
+    private Logger consoleLogger;
+    //private Logger fileLogger;
 
     public Game(String cheats, String name) {
         this.launcherPrompt = new LauncherPrompt(name, cheats.equals("Yes"));
@@ -46,12 +47,11 @@ public class Game implements Runnable, Publisher {
         this.gameThread = new Thread(this);
         this.gameThread.start();
         Audio.getInstance().getAudioPlayer().playSong(Songs.MENU.ordinal());
-        this.consoleLogger = new ConsoleLogger(this);
-        //this.fileLogger = new FileLogger(this);
     }
 
     private void init() {
         initAccount();
+        initLogger();
         this.gameFrame = new GameFrame(this);
         this.audioOptions = new AudioOptions();
         this.stateManager = new StateManager(this);
@@ -61,6 +61,11 @@ public class Game implements Runnable, Publisher {
     private void initAccount() {
         this.account = database.getData();
         this.account.setEnableCheats(launcherPrompt.isEnableCheats());
+    }
+
+    private void initLogger() {
+        this.consoleLogger = new ConsoleLogger(this);
+        //this.fileLogger = new FileLogger(this);
     }
 
     public void start() {
