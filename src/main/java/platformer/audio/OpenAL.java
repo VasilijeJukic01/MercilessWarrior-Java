@@ -4,6 +4,7 @@ import org.lwjgl.LWJGLException;
 import org.lwjgl.openal.AL;
 import org.lwjgl.openal.AL10;
 import org.lwjgl.util.WaveData;
+import platformer.utils.ValueEnum;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,13 +24,13 @@ public class OpenAL implements AudioPlayer {
     private final Random rand = new Random();
 
     public OpenAL() {
-        init();
+        initAL();
         loadSongs();
         loadSounds();
         setListenerData();
     }
 
-    private void init() {
+    private void initAL() {
         try {
             AL.create();
         }
@@ -39,23 +40,23 @@ public class OpenAL implements AudioPlayer {
     }
 
     // Data
-    private void loadSongs() {
-        String[] ids = {"menuTheme", "forestTheme", "spearWoman"};
-        for (String id : ids) {
-            songs.add(loadBuffers("audio/" + id + ".wav"));
-            songSources.add(new OpenALSource());
+    private void loadAudio(ValueEnum[] audioArray, List<Integer> buffers, List<OpenALSource> sources) {
+        for (ValueEnum audio : audioArray) {
+            String id = audio.getValue();
+            buffers.add(loadBuffers("audio/" + id + ".wav"));
+            sources.add(new OpenALSource());
         }
+    }
+
+    private void loadSongs() {
+        Songs[] songsArray = Songs.values();
+        loadAudio(songsArray, songs, songSources);
         updateSongVolume();
     }
 
     private void loadSounds() {
-        String[] ids = {"airSlash1", "airSlash2", "airSlash3", "attackSlash1", "attackSlash2", "gameOver", "crateBreak1", "crateBreak2", "skeletonD1", "playerDash", "arrowSound",
-                        "block1", "block2", "swordBlock1", "swordBlock2", "swordBlock3", "fireSound1", "ghoulHide", "ghoulReveal", "ghoulDeath", "coin", "buySound",
-                        "lightning1", "lightning2", "lightning3", "swRoar1", "swRoar2", "swRoar3"};
-        for (String id : ids) {
-            sounds.add(loadBuffers("audio/" + id + ".wav"));
-            soundSources.add(new OpenALSource());
-        }
+        Sounds[] soundsArray = Sounds.values();
+        loadAudio(soundsArray, sounds, soundSources);
         updateSoundVolume();
     }
 
