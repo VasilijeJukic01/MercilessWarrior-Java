@@ -9,7 +9,6 @@ import platformer.model.objects.Container;
 import platformer.model.spells.Flash;
 import platformer.model.spells.Lightning;
 import platformer.model.spells.SpellType;
-import platformer.utils.Utils;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -50,7 +49,7 @@ public class Level {
         this.dataL2 = dataL2;
         init();
         setOffset();
-        this.playerSpawn = Utils.getInstance().getPlayerSpawn(dataL1);
+        this.playerSpawn = getPlayerSpawn(dataL1);
     }
 
     // Data gatherer
@@ -130,12 +129,52 @@ public class Level {
     }
 
     private void init() {
-        this.lvlData = Utils.getInstance().getLevelData(dataL1);
-        this.decoData = Utils.getInstance().getDecoData(dataL2, false);
-        this.layerData = Utils.getInstance().getDecoData(dataL2, true);
+        this.lvlData = getLevelData(dataL1);
+        this.decoData = getDecoData(dataL2, false);
+        this.layerData = getDecoData(dataL2, true);
         getEnemyData();
         getObjectData();
         getLightningPos();
+    }
+
+    // Data Gatherer
+    private int[][] getLevelData(BufferedImage level) {
+        int[][] lvlData = new int[level.getWidth()][level.getHeight()];
+        for (int i = 0; i < level.getWidth(); i++) {
+            for (int j = 0; j < level.getHeight(); j++) {
+                Color color = new Color(level.getRGB(i, j));
+                int value = color.getRed();
+                if (value >= 49) value = -1;
+                if (color.getBlue() == 255 && color.getGreen() == 255) value += 255;   // Value > 255  ->  Different layer
+                lvlData[i][j] = value;
+            }
+        }
+        return lvlData;
+    }
+
+    // layer = true -> Layer data;  layer = false -> Object data
+    private int[][] getDecoData(BufferedImage level, boolean layer) {
+        int[][] data = new int[level.getWidth()][level.getHeight()];
+        for (int i = 0; i < level.getWidth(); i++) {
+            for (int j = 0; j < level.getHeight(); j++) {
+                Color color = new Color(level.getRGB(i, j));
+                int value = layer ? color.getGreen() : color.getBlue();
+                if ((value >= 40 && !layer) || (value >= 4 && layer)) value = -1;
+                data[i][j] = value;
+            }
+        }
+        return data;
+    }
+
+    private Point getPlayerSpawn(BufferedImage level) {
+        for (int i = 0; i < level.getWidth(); i++) {
+            for (int j = 0; j < level.getHeight(); j++) {
+                Color color = new Color(level.getRGB(i, j));
+                int value = color.getGreen();
+                if (value == 100) return new Point(i*TILES_SIZE, j*TILES_SIZE);
+            }
+        }
+        return null;
     }
 
     // Other

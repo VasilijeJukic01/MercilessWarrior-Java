@@ -23,5 +23,6 @@ public class AnimConstants {
     public static final int LIGHTNING_BALL_W = 50, LIGHTNING_BALL_H = 50;
 
     public static final int DUST1_W = 64, DUST1_H = 64;
+    public static final int PARTICLE_W = 181, PARTICLE_H = 181;
 
 }

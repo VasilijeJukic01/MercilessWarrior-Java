@@ -138,8 +138,8 @@ public class PlayingState extends StateAbstraction implements State {
         else if (gameOver) overlayManager.update("GAME_OVER");
         else if (dying) this.player.update();
         else {
-            if (Utils.getInstance().isOnExit(levelManager.getCurrentLevel(), player.getHitBox()) == 1) loadNextLevel();
-            else if (Utils.getInstance().isOnExit(levelManager.getCurrentLevel(), player.getHitBox()) == -1) loadPrevLevel();
+            if (Utils.getInstance().isEntityOnExit(levelManager.getCurrentLevel(), player.getHitBox()) == 1) loadNextLevel();
+            else if (Utils.getInstance().isEntityOnExit(levelManager.getCurrentLevel(), player.getHitBox()) == -1) loadPrevLevel();
             for (Particle particle : levelManager.getParticles()) {
                 particle.update();
             }

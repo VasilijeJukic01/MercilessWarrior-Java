@@ -25,6 +25,14 @@ public class Constants {
     public static final int PLAYER_WIDTH = (int)(PLAYER_DEFAULT_WIDTH * SCALE);
     public static final int PLAYER_HEIGHT = (int)(PLAYER_DEFAULT_HEIGHT * SCALE);
 
+    // Level Constants
+    public static final int MAX_LEVELS = 3;
+    public static final int EMPTY_TILE = -1;
+    public static final int MAX_TILE_VALUE = 49;
+    public static final int LEFT_EXIT = 35;
+    public static final int RIGHT_EXIT = 36;
+    public static final int PARTICLES_CAP = 50;
+
     // Enemy Constants
     public static final int SKELETON_DEFAULT_WIDTH = 100;
     public static final int SKELETON_DEFAULT_HEIGHT = 90;

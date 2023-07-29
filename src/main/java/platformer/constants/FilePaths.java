@@ -30,5 +30,6 @@ public class FilePaths {
 
     // Effects
     public static final String DUST_SHEET_1 = "/images/particles/DustSprite.png";
+    public static final String PARTICLE_SHEET = "/images/particles/ParticleSprite.png";
 
 }

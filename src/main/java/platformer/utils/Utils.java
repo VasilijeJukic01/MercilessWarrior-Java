@@ -1,7 +1,8 @@
 package platformer.utils;
 
+import platformer.debug.logger.Logger;
+import platformer.debug.logger.Message;
 import platformer.model.entities.Direction;
-import platformer.model.entities.effects.Particle;
 import platformer.model.levels.Level;
 import platformer.model.objects.projectiles.Projectile;
 
@@ -10,15 +11,25 @@ import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.Objects;
-import java.util.Random;
 
 import static platformer.constants.Constants.*;
 
 public class Utils {
 
-    public static Utils instance = null;
+    public static volatile Utils instance = null;
 
     private Utils() {}
+
+    public static Utils getInstance() {
+        if (instance == null) {
+            synchronized (Utils.class) {
+                if (instance == null) {
+                    instance = new Utils();
+                }
+            }
+        }
+        return instance;
+    }
 
     // Image operations
     // Importing image: [(w, h) = (-1, -1) Original Size]
@@ -34,22 +45,9 @@ public class Utils {
             return resized;
 
         } catch (Exception e) {
-            System.out.println("Error: Importing Image");
-            System.out.println("Name: " + name + "(w, h) = (" + w + ", " + h + ")");
+            Logger.getInstance().notify("Importing image failed. "+"Name: " + name + "(w, h) = (" + w + ", " + h + ")", Message.ERROR);
         }
         return null;
-    }
-
-    // Rotate image [Angle = {PI/2, PI, 3PI/2}]
-    public BufferedImage rotateImage(BufferedImage src, double angle) {
-        int w = src.getWidth();
-        int h = src.getHeight();
-        BufferedImage dest = new BufferedImage(h, w, src.getType());
-        Graphics2D graphics2D = dest.createGraphics();
-        graphics2D.translate((h - w) / 2, (h - w) / 2);
-        graphics2D.rotate(angle, h / 2.0, w / 2.0);
-        graphics2D.drawRenderedImage(src, null);
-        return dest;
     }
 
     public BufferedImage flipImage(BufferedImage src) {
@@ -62,50 +60,13 @@ public class Utils {
         return dest;
     }
 
-    public BufferedImage resize(BufferedImage img, int newW, int newH) {
+    public BufferedImage resizeImage(BufferedImage img, int newW, int newH) {
         Image tmp = img.getScaledInstance(newW, newH, Image.SCALE_SMOOTH);
         BufferedImage newImg = new BufferedImage(newW, newH, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2d = newImg.createGraphics();
         g2d.drawImage(tmp, 0, 0, null);
         g2d.dispose();
         return newImg;
-    }
-
-    // Data gatherer
-    public BufferedImage[] getAllLevels(String layer) {
-        BufferedImage[] levels = new BufferedImage[3];
-        for (int i = 0; i < 3; i++) {
-            levels[i] = importImage("/images/levels/level"+(i+1)+"_layer"+layer+".png", -1, -1);
-        }
-        return levels;
-    }
-
-    public int[][] getLevelData(BufferedImage level) {
-        int[][] lvlData = new int[level.getWidth()][level.getHeight()];
-        for (int i = 0; i < level.getWidth(); i++) {
-            for (int j = 0; j < level.getHeight(); j++) {
-                Color color = new Color(level.getRGB(i, j));
-                int value = color.getRed();
-                if (value >= 49) value = -1;
-                if (color.getBlue() == 255 && color.getGreen() == 255) value += 255;   // Value > 255  ->  Different layer
-                lvlData[i][j] = value;
-            }
-        }
-        return lvlData;
-    }
-
-    // layer = true -> Layer data;  layer = false -> Object data
-    public int[][] getDecoData(BufferedImage level, boolean layer) {
-        int[][] data = new int[level.getWidth()][level.getHeight()];
-        for (int i = 0; i < level.getWidth(); i++) {
-            for (int j = 0; j < level.getHeight(); j++) {
-                Color color = new Color(level.getRGB(i, j));
-                int value = layer ? color.getGreen() : color.getBlue();
-                if ((value >= 40 && !layer) || (value >= 4 && layer)) value = -1;
-                data[i][j] = value;
-            }
-        }
-        return data;
     }
 
     // Checkers
@@ -133,8 +94,8 @@ public class Utils {
 
     public boolean isTileSolid(int xTile, int yTile, int[][] levelData) {
         int value = levelData[xTile][yTile];
-        if (value == -1) return false;
-        return (value >= 0 && value < 49);
+        if (value == EMPTY_TILE) return false;
+        return (value >= 0 && value < MAX_TILE_VALUE);
     }
 
     private boolean isSolidBetween(double x, double yA, double yB, int[][] levelData) {
@@ -144,7 +105,7 @@ public class Utils {
 
         for (int i = yAIndex; i <= yBIndex; i++) {
             int value = levelData[xIndex][i];
-            if (value > -1 && value < 49) return true;
+            if (value > EMPTY_TILE && value < MAX_TILE_VALUE) return true;
         }
 
         return false;
@@ -245,12 +206,12 @@ public class Utils {
         return false;
     }
 
-    public int isOnExit(Level level, Rectangle2D.Double hitBox) {
-        int xTile = (int)(hitBox.x/ TILES_SIZE);
+    public int isEntityOnExit(Level level, Rectangle2D.Double hitBox) {
+        int xTile = (int)(hitBox.x / TILES_SIZE);
         int yTile = (int)(hitBox.y / TILES_SIZE);
-        int xTileRight = (int)((hitBox.x+ hitBox.width)/ TILES_SIZE);
-        if (level.getDecoSpriteIndex(xTile, yTile) == 36 || level.getDecoSpriteIndex(xTileRight, yTile) == 36) return 1;
-        if (level.getDecoSpriteIndex(xTile, yTile) == 35) return -1;
+        int xTileRight = (int)((hitBox.x+ hitBox.width) / TILES_SIZE);
+        if (level.getDecoSpriteIndex(xTile, yTile) == RIGHT_EXIT || level.getDecoSpriteIndex(xTileRight, yTile) == RIGHT_EXIT) return 1;
+        if (level.getDecoSpriteIndex(xTile, yTile) == LEFT_EXIT) return -1;
         return 0;
     }
 
@@ -273,35 +234,4 @@ public class Utils {
         }
     }
 
-    public Particle[] loadParticles() {
-        Particle[] particles = new Particle[50];
-        Random rand = new Random();
-        for (int i = 0; i < particles.length; i++) {
-            int size = (int)((rand.nextInt(15-5) + 5) * SCALE);
-            int xPos = rand.nextInt(GAME_WIDTH-10) + 10;
-            int yPos = rand.nextInt(GAME_HEIGHT-10) + 10;
-            BufferedImage[] images = new BufferedImage[8];
-            for (int k = 0; k < 8; k++) images[k] = importImage("/images/particles/Default-Particle"+k+".png", size, size);
-            particles[i] = new Particle(images, xPos, yPos);
-        }
-        return particles;
-    }
-
-    public Point getPlayerSpawn(BufferedImage level) {
-        for (int i = 0; i < level.getWidth(); i++) {
-            for (int j = 0; j < level.getHeight(); j++) {
-                Color color = new Color(level.getRGB(i, j));
-                int value = color.getGreen();
-                if (value == 100) return new Point(i*TILES_SIZE, j*TILES_SIZE);
-            }
-        }
-        return null;
-    }
-
-    public static Utils getInstance() {
-        if (instance == null) {
-            instance = new Utils();
-        }
-        return instance;
-    }
 }

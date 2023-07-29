@@ -1,9 +1,8 @@
 package platformer.audio;
 
-
 public class Audio {
 
-    public static Audio instance = null;
+    public static volatile Audio instance = null;
 
     private AudioPlayer audioPlayer;
 
@@ -11,16 +10,21 @@ public class Audio {
         init();
     }
 
+    public static Audio getInstance() {
+        if (instance == null) {
+            synchronized (Audio.class) {
+                if (instance == null) {
+                    instance = new Audio();
+                }
+            }
+        }
+        return instance;
+    }
+
     private void init() {
         this.audioPlayer = new OpenAL();
     }
 
-    public static Audio getInstance() {
-        if (instance == null) {
-            instance = new Audio();
-        }
-        return instance;
-    }
 
     public AudioPlayer getAudioPlayer() {
         return audioPlayer;

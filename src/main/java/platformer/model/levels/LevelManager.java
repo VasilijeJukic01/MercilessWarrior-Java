@@ -1,5 +1,6 @@
 package platformer.model.levels;
 
+import platformer.animation.AnimationUtils;
 import platformer.debug.logger.Message;
 import platformer.core.Game;
 import platformer.debug.logger.Logger;
@@ -26,7 +27,7 @@ public class LevelManager {
     public LevelManager(Game game, PlayingState playingState) {
         this.game = game;
         this.playingState = playingState;
-        this.particles = Utils.getInstance().loadParticles();
+        this.particles = AnimationUtils.getInstance().loadParticles();
         this.levelObjectManager = new LevelObjectManager();
         loadFirstLayerSprite();
         buildLevels();
@@ -44,12 +45,20 @@ public class LevelManager {
     }
 
     private void buildLevels() {
-        BufferedImage[] lvlsL1 = Utils.getInstance().getAllLevels("1");
-        BufferedImage[] lvlsL2 = Utils.getInstance().getAllLevels("2");
+        BufferedImage[] lvlsL1 = getAllLevels("1");
+        BufferedImage[] lvlsL2 = getAllLevels("2");
         for (int i = 0; i < lvlsL1.length; i++) {
             levels.add(new Level(lvlsL1[i], lvlsL2[i]));
         }
         Logger.getInstance().notify("Levels built successfully!", Message.NOTIFICATION);
+    }
+
+    private BufferedImage[] getAllLevels(String layer) {
+        BufferedImage[] levels = new BufferedImage[MAX_LEVELS];
+        for (int i = 0; i < levels.length; i++) {
+            levels[i] = Utils.getInstance().importImage("/images/levels/level"+(i+1)+"_layer"+layer+".png", -1, -1);
+        }
+        return levels;
     }
 
     private void loadLevel() {

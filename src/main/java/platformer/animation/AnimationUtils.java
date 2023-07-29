@@ -1,9 +1,11 @@
 package platformer.animation;
 
 import platformer.model.entities.effects.EffectType;
+import platformer.model.entities.effects.Particle;
 import platformer.model.objects.Obj;
 import platformer.utils.Utils;
 import java.awt.image.BufferedImage;
+import java.util.Random;
 
 import static platformer.constants.AnimConstants.*;
 import static platformer.constants.Constants.*;
@@ -11,9 +13,20 @@ import static platformer.constants.FilePaths.*;
 
 public class AnimationUtils {
 
-    public static AnimationUtils instance = null;
+    public static volatile AnimationUtils instance = null;
 
     private AnimationUtils() {}
+
+    public static AnimationUtils getInstance() {
+        if (instance == null) {
+            synchronized (AnimationUtils.class) {
+                if (instance == null) {
+                    instance = new AnimationUtils();
+                }
+            }
+        }
+        return instance;
+    }
 
     // Animation loader
     private BufferedImage[] loadAnimFromSprite(String basePath, int frames, int row, int width, int height, int offset, int x, int y) {
@@ -21,7 +34,7 @@ public class AnimationUtils {
         BufferedImage[] animation = new BufferedImage[frames];
         int yOffset = y * row;
         for (int i = offset; i < frames+offset; i++) {
-            animation[i-offset] = Utils.getInstance().resize(sprite.getSubimage(i * x, yOffset, x, y), width, height);
+            animation[i-offset] = Utils.getInstance().resizeImage(sprite.getSubimage(i * x, yOffset, x, y), width, height);
         }
         return animation;
     }
@@ -66,14 +79,14 @@ public class AnimationUtils {
     public BufferedImage[][] loadGhoulAnimation(int w, int h) {
         BufferedImage[][] anim = new BufferedImage[17][20];
 
-        anim[Anim.IDLE.ordinal()] = loadAnimFromSprite(GHOUL_SHEET, 8, 0, w, h, 0, SKELETON_W, SKELETON_H);
-        anim[Anim.RUN.ordinal()] = loadAnimFromSprite(GHOUL_SHEET, 6, 2, w, h, 0, SKELETON_W, SKELETON_H);
-        anim[Anim.ATTACK_1.ordinal()] = loadAnimFromSprite(GHOUL_SHEET, 8, 5, w, h, 0, SKELETON_W, SKELETON_H);
-        anim[Anim.HIT.ordinal()] = loadAnimFromSprite(GHOUL_SHEET, 4, 4, w, h, 0, SKELETON_W, SKELETON_H);
-        anim[Anim.DEATH.ordinal()] = loadAnimFromSprite(GHOUL_SHEET, 4, 7, w, h, 0, SKELETON_W, SKELETON_H);
-        anim[Anim.WALK.ordinal()] = loadAnimFromSprite(GHOUL_SHEET, 6, 1, w, h, 0, SKELETON_W, SKELETON_H);
-        anim[Anim.HIDE.ordinal()] = loadAnimFromSprite(GHOUL_SHEET, 19, 6, w, h, 0, SKELETON_W, SKELETON_H);
-        anim[Anim.REVEAL.ordinal()] = loadAnimFromSprite(GHOUL_SHEET, 19, 6, w, h, 0, SKELETON_W, SKELETON_H);
+        anim[Anim.IDLE.ordinal()] = loadAnimFromSprite(GHOUL_SHEET, 8, 0, w, h, 0, GHOUL_W, GHOUL_H);
+        anim[Anim.RUN.ordinal()] = loadAnimFromSprite(GHOUL_SHEET, 6, 2, w, h, 0, GHOUL_W, GHOUL_H);
+        anim[Anim.ATTACK_1.ordinal()] = loadAnimFromSprite(GHOUL_SHEET, 8, 5, w, h, 0, GHOUL_W, GHOUL_H);
+        anim[Anim.HIT.ordinal()] = loadAnimFromSprite(GHOUL_SHEET, 4, 4, w, h, 0, GHOUL_W, GHOUL_H);
+        anim[Anim.DEATH.ordinal()] = loadAnimFromSprite(GHOUL_SHEET, 4, 7, w, h, 0, GHOUL_W, GHOUL_H);
+        anim[Anim.WALK.ordinal()] = loadAnimFromSprite(GHOUL_SHEET, 6, 1, w, h, 0, GHOUL_W, GHOUL_H);
+        anim[Anim.HIDE.ordinal()] = loadAnimFromSprite(GHOUL_SHEET, 19, 6, w, h, 0, GHOUL_W, GHOUL_H);
+        anim[Anim.REVEAL.ordinal()] = loadAnimFromSprite(GHOUL_SHEET, 19, 6, w, h, 0, GHOUL_W, GHOUL_H);
         Utils.getInstance().reverseArray(anim[16]);
 
         return anim;
@@ -104,6 +117,19 @@ public class AnimationUtils {
         BufferedImage[][] anim = new BufferedImage[11][11];
         anim[EffectType.WALL_SLIDE.ordinal()] = loadAnimFromSprite(DUST_SHEET_1, 8, 0, DUST1_W, DUST1_H, 0, DUST1_W, DUST1_H);
         return anim;
+    }
+
+    public Particle[] loadParticles() {
+        Particle[] particles = new Particle[PARTICLES_CAP];
+        Random rand = new Random();
+        for (int i = 0; i < particles.length; i++) {
+            int size = (int)((rand.nextInt(15-5) + 5) * SCALE);
+            int xPos = rand.nextInt(GAME_WIDTH-10) + 10;
+            int yPos = rand.nextInt(GAME_HEIGHT-10) + 10;
+            BufferedImage[] images = loadAnimFromSprite(PARTICLE_SHEET, 8, 0, size, size, 0, PARTICLE_W, PARTICLE_H);
+            particles[i] = new Particle(images, xPos, yPos);
+        }
+        return particles;
     }
 
     // Objects
@@ -148,10 +174,4 @@ public class AnimationUtils {
         return anim;
     }
 
-    public static AnimationUtils getInstance() {
-        if (instance == null) {
-            instance = new AnimationUtils();
-        }
-        return instance;
-    }
 }
