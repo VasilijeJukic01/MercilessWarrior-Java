@@ -10,7 +10,7 @@ import java.awt.geom.Rectangle2D;
 
 public abstract class GameObject implements Debug {
 
-    protected ObjType objType;
+    protected Obj obj;
     protected int xPos, yPos;
     protected Rectangle2D.Double hitBox;
     protected boolean animate;
@@ -20,8 +20,8 @@ public abstract class GameObject implements Debug {
     protected int xOffset, yOffset;
     protected boolean isOnGround;
 
-    public GameObject(ObjType objType, int xPos, int yPos) {
-        this.objType = objType;
+    public GameObject(Obj obj, int xPos, int yPos) {
+        this.obj = obj;
         this.xPos = xPos;
         this.yPos = yPos;
     }
@@ -31,16 +31,16 @@ public abstract class GameObject implements Debug {
         if (animTick >= animSpeed) {
             animTick = 0;
             animIndex++;
-            if (animIndex >= ModelUtils.getInstance().getObjectSprite(objType)) {
+            if (animIndex >= ModelUtils.getInstance().getObjectSprite(obj)) {
                 animIndex = 0;
-                if (objType == ObjType.BARREL || objType == ObjType.BOX) {
+                if (obj == Obj.BARREL || obj == Obj.BOX) {
                     animate = false;
                     alive = false;
                 }
-                else if (objType == ObjType.ARROW_LAUNCHER_LEFT || objType == ObjType.ARROW_LAUNCHER_RIGHT) {
+                else if (obj == Obj.ARROW_TRAP_LEFT || obj == Obj.ARROW_TRAP_RIGHT) {
                     animate = false;
                 }
-                else if (objType == ObjType.BLOCKER) {
+                else if (obj == Obj.BLOCKER) {
                     if (animate) animIndex = 3;
                     else animIndex = 1;
                 }
@@ -62,12 +62,12 @@ public abstract class GameObject implements Debug {
         animIndex = animTick = 0;
         alive = true;
         isOnGround = false;
-        animate = objType != ObjType.BARREL && objType != ObjType.BOX && objType != ObjType.ARROW_LAUNCHER_LEFT &&  objType != ObjType.ARROW_LAUNCHER_RIGHT;
+        animate = obj != Obj.BARREL && obj != Obj.BOX && obj != Obj.ARROW_TRAP_LEFT &&  obj != Obj.ARROW_TRAP_RIGHT;
     }
 
     // Getters & Setters
-    public ObjType getObjType() {
-        return objType;
+    public Obj getObjType() {
+        return obj;
     }
 
     public Rectangle2D.Double getHitBox() {

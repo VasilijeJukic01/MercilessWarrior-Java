@@ -66,10 +66,10 @@ public class Constants {
     public static final int SPIKE_WID = (int)(SPIKE_WID_DEF * SCALE);
     public static final int SPIKE_HEI = (int)(SPIKE_HEI_DEF * SCALE);
 
-    public static final int ARROW_LAUNCHER_WID_DEF = 32;
-    public static final int ARROW_LAUNCHER_HEI_DEF = 32;
-    public static final int ARROW_LAUNCHER_WID = (int)(ARROW_LAUNCHER_WID_DEF * SCALE);
-    public static final int ARROW_LAUNCHER_HEI = (int)(ARROW_LAUNCHER_HEI_DEF * SCALE);
+    public static final int ARROW_TRAP_WID_DEF = 96;
+    public static final int ARROW_TRAP_HEI_DEF = 32;
+    public static final int ARROW_TRAP_WID = (int)(ARROW_TRAP_WID_DEF * SCALE);
+    public static final int ARROW_TRAP_HEI = (int)(ARROW_TRAP_HEI_DEF * SCALE);
 
     public static final int COIN_WID_DEF = 15;
     public static final int COIN_HEI_DEF = 15;
@@ -96,7 +96,7 @@ public class Constants {
     public static final int DOG_WID = (int)(DOG_WID_DEF * SCALE);
     public static final int DOG_HEI = (int)(DOG_HEI_DEF * SCALE);
 
-    // Projectiles Constants
+    // Projectile Constants
     public static final int ARROW_DEF_WID = 32;
     public static final int ARROW_DEF_HEI = 4;
     public static final int ARROW_WID = (int)(ARROW_DEF_WID * SCALE);
@@ -109,6 +109,17 @@ public class Constants {
     public static final int LB_HEI = (int)(LB_DEF_HEI * SCALE);
     public static final int LB_SPEED_FAST = (int)(1.0 * SCALE);
     public static final int LB_SPEED_SLOW = (int)(0.5 * SCALE);
+
+    // Spell Constants
+    public static final int LIGHTNING_DEFAULT_WIDTH = (int)(0.75 * TILES_SIZE);
+    public static final int LIGHTNING_DEFAULT_HEIGHT = 4 * TILES_SIZE;
+    public static final int LIGHTNING_WIDTH = (int)(LIGHTNING_DEFAULT_WIDTH * SCALE);
+    public static final int LIGHTNING_HEIGHT = (int)(LIGHTNING_DEFAULT_HEIGHT * SCALE);
+
+    public static final int FLASH_DEFAULT_WIDTH = (int)(0.75 * TILES_SIZE);
+    public static final int FLASH_DEFAULT_HEIGHT = 3 * TILES_SIZE;
+    public static final int FLASH_WIDTH = (int)(FLASH_DEFAULT_WIDTH * SCALE);
+    public static final int FLASH_HEIGHT = (int)(FLASH_DEFAULT_HEIGHT * SCALE);
 
     public static void setResolution(float scale) {
         SCALE = scale;

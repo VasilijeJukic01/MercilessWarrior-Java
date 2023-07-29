@@ -58,10 +58,10 @@ public class OptionsState extends StateAbstraction implements State{
     }
 
     private void loadImages() {
-        this.optionsText = Utils.instance.importImage("src/main/resources/images/buttons/OptionsText.png", optionsTextWid, optionsTextHei);
-        this.volumeText = Utils.instance.importImage("src/main/resources/images/buttons/VolumeText.png", volumeTextWid, volumeTextHei);
-        this.SFXText = Utils.instance.importImage("src/main/resources/images/buttons/SFXText.png", SFXTextWid, SFXTextHei);
-        this.musicText = Utils.instance.importImage("src/main/resources/images/buttons/MusicText.png", musicTextWid,musicTextHei);
+        this.optionsText = Utils.instance.importImage("/images/buttons/OptionsText.png", optionsTextWid, optionsTextHei);
+        this.volumeText = Utils.instance.importImage("/images/buttons/VolumeText.png", volumeTextWid, volumeTextHei);
+        this.SFXText = Utils.instance.importImage("/images/buttons/SFXText.png", SFXTextWid, SFXTextHei);
+        this.musicText = Utils.instance.importImage("/images/buttons/MusicText.png", musicTextWid,musicTextHei);
     }
 
     private void loadButtons() {

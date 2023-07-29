@@ -1,6 +1,6 @@
 package platformer.model.entities;
 
-import platformer.animation.AnimType;
+import platformer.animation.Anim;
 import platformer.animation.AnimationUtils;
 import platformer.audio.Audio;
 import platformer.audio.Sounds;
@@ -149,13 +149,7 @@ public class Player extends Entity {
 
     // TODO: Move to EffectManager
     private void updateEffectAnimation() {
-        if (playerEffect == EffectType.DOUBLE_JUMP) {
-            if (effectIndex >= effects[EffectType.DOUBLE_JUMP.ordinal()].length) {
-                effectIndex = 0;
-                doubleJump = false;
-            }
-        }
-        else if (playerEffect == EffectType.WALL_SLIDE) {
+        if (playerEffect == EffectType.WALL_SLIDE) {
             if (effectIndex >= effects[EffectType.WALL_SLIDE.ordinal()].length) {
                 effectIndex = 2;
             }
@@ -164,37 +158,34 @@ public class Player extends Entity {
 
     private void setAnimation() {
         if (spellState == 2) return;
-        AnimType previousAction = entityState;
+        Anim previousAction = entityState;
 
-        if (moving) entityState = AnimType.RUN;
-        else entityState = AnimType.IDLE;
+        if (moving) entityState = Anim.RUN;
+        else entityState = Anim.IDLE;
 
         if (inAir) {
-            if (airSpeed < 0) {
-                entityState = AnimType.JUMP;
-                setPlayerEffect(EffectType.DOUBLE_JUMP);
-            }
-            else if (airSpeed > 0) entityState = AnimType.FALL;
+            if (airSpeed < 0) entityState = Anim.JUMP;
+            else if (airSpeed > 0) entityState = Anim.FALL;
         }
         if (onWall && !onObject) {
-            entityState = AnimType.WALL;
+            entityState = Anim.WALL;
             setPlayerEffect(EffectType.WALL_SLIDE);
         }
         if (dash) {
-            entityState = AnimType.ATTACK_1;
+            entityState = Anim.ATTACK_1;
             animIndex = 1;
             animTick = 0;
             return;
         }
-        if (spellState == 1) entityState = AnimType.SPELL_1;
-        else if (canBlock) entityState = AnimType.BLOCK;
-        else if (hit) entityState = AnimType.HIT;
+        if (spellState == 1) entityState = Anim.SPELL_1;
+        else if (canBlock) entityState = Anim.BLOCK;
+        else if (hit) entityState = Anim.HIT;
         else if (attacking && !onWall) {
-            if (attackState == AttackState.ATTACK_1) entityState = AnimType.ATTACK_1;
-            else if (attackState == AttackState.ATTACK_2) entityState = AnimType.ATTACK_2;
-            else if (attackState == AttackState.ATTACK_3) entityState = AnimType.ATTACK_3;
+            if (attackState == AttackState.ATTACK_1) entityState = Anim.ATTACK_1;
+            else if (attackState == AttackState.ATTACK_2) entityState = Anim.ATTACK_2;
+            else if (attackState == AttackState.ATTACK_3) entityState = Anim.ATTACK_3;
         }
-        else if (canTransform) entityState = AnimType.TRANSFORM;
+        else if (canTransform) entityState = Anim.TRANSFORM;
         if (previousAction != entityState) animIndex = animTick = 0;
     }
 
@@ -432,8 +423,8 @@ public class Player extends Entity {
 
     // Updates
     private void updateDeath() {
-        if (entityState != AnimType.DEATH) {
-            entityState = AnimType.DEATH;
+        if (entityState != Anim.DEATH) {
+            entityState = Anim.DEATH;
             animIndex = animTick = 0;
             game.setDying(true);
             Logger.getInstance().notify("Player is dead.", Message.NOTIFICATION);
@@ -509,12 +500,7 @@ public class Player extends Entity {
 
     private void renderEffects(Graphics g, int xLevelOffset, int yLevelOffset) {
         try {
-            if (playerEffect == EffectType.DOUBLE_JUMP && doubleJump) {
-                int effectXPos = (int)(hitBox.x-xHitBoxOffset-xLevelOffset)+(int)(20*SCALE);
-                int effectYPos = (int)(hitBox.y-yHitBoxOffset-yLevelOffset)+(int)(55*SCALE);
-                g.drawImage(effects[0][effectIndex], effectXPos, effectYPos, effects[0][effectIndex].getWidth(), effects[0][effectIndex].getHeight(), null);
-            }
-            else if (playerEffect == EffectType.WALL_SLIDE && onWall) {
+            if (playerEffect == EffectType.WALL_SLIDE && onWall) {
                 int newFlip = (flipCoefficient != 0) ? (0) : (int)(width-hitBox.width-10*SCALE), newSign = (flipSign == 1) ? (-1) : (1);
                 int effectXPos = (int)(hitBox.x-xHitBoxOffset-xLevelOffset)+(int)(newSign*27*SCALE)+newFlip;
                 int effectYPos = (int)(hitBox.y-yHitBoxOffset-yLevelOffset)-(int)(SCALE);
@@ -551,7 +537,7 @@ public class Player extends Entity {
         setSpellState(0);
         left = right = jump = false;
         animIndex = animTick = 0;
-        entityState = AnimType.IDLE;
+        entityState = Anim.IDLE;
         currentHealth = maxHealth+PlayerBonus.getInstance().getBonusHealth();
         currentStamina = 0;
         hitBox.x = xPos;

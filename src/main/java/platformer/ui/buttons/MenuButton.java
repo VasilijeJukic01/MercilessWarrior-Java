@@ -29,24 +29,24 @@ public class MenuButton implements GameButton{
         images = new BufferedImage[3];
         switch (buttonType) {
             case PLAY:
-                images[0] = Utils.getInstance().importImage("src/main/resources/images/buttons/PlayBtn0.png", UI.B_WIDTH.getValue(), UI.B_HEIGHT.getValue());
-                images[1] = Utils.getInstance().importImage("src/main/resources/images/buttons/PlayBtn1.png", UI.B_WIDTH.getValue(), UI.B_HEIGHT.getValue());
-                images[2] = Utils.getInstance().importImage("src/main/resources/images/buttons/PlayBtn1.png", UI.B_WIDTH.getValue(), UI.B_HEIGHT.getValue());
+                images[0] = Utils.getInstance().importImage("/images/buttons/PlayBtn0.png", UI.B_WIDTH.getValue(), UI.B_HEIGHT.getValue());
+                images[1] = Utils.getInstance().importImage("/images/buttons/PlayBtn1.png", UI.B_WIDTH.getValue(), UI.B_HEIGHT.getValue());
+                images[2] = Utils.getInstance().importImage("/images/buttons/PlayBtn1.png", UI.B_WIDTH.getValue(), UI.B_HEIGHT.getValue());
                 break;
             case OPTIONS:
-                images[0] = Utils.getInstance().importImage("src/main/resources/images/buttons/OptionsBtn0.png", UI.B_WIDTH.getValue(), UI.B_HEIGHT.getValue());
-                images[1] = Utils.getInstance().importImage("src/main/resources/images/buttons/OptionsBtn1.png", UI.B_WIDTH.getValue(), UI.B_HEIGHT.getValue());
-                images[2] = Utils.getInstance().importImage("src/main/resources/images/buttons/OptionsBtn1.png", UI.B_WIDTH.getValue(), UI.B_HEIGHT.getValue());
+                images[0] = Utils.getInstance().importImage("/images/buttons/OptionsBtn0.png", UI.B_WIDTH.getValue(), UI.B_HEIGHT.getValue());
+                images[1] = Utils.getInstance().importImage("/images/buttons/OptionsBtn1.png", UI.B_WIDTH.getValue(), UI.B_HEIGHT.getValue());
+                images[2] = Utils.getInstance().importImage("/images/buttons/OptionsBtn1.png", UI.B_WIDTH.getValue(), UI.B_HEIGHT.getValue());
                 break;
             case CONTROLS:
-                images[0] = Utils.getInstance().importImage("src/main/resources/images/buttons/ControlsBtn0.png", UI.B_WIDTH.getValue(), UI.B_HEIGHT.getValue());
-                images[1] = Utils.getInstance().importImage("src/main/resources/images/buttons/ControlsBtn1.png", UI.B_WIDTH.getValue(), UI.B_HEIGHT.getValue());
-                images[2] = Utils.getInstance().importImage("src/main/resources/images/buttons/ControlsBtn1.png", UI.B_WIDTH.getValue(), UI.B_HEIGHT.getValue());
+                images[0] = Utils.getInstance().importImage("/images/buttons/ControlsBtn0.png", UI.B_WIDTH.getValue(), UI.B_HEIGHT.getValue());
+                images[1] = Utils.getInstance().importImage("/images/buttons/ControlsBtn1.png", UI.B_WIDTH.getValue(), UI.B_HEIGHT.getValue());
+                images[2] = Utils.getInstance().importImage("/images/buttons/ControlsBtn1.png", UI.B_WIDTH.getValue(), UI.B_HEIGHT.getValue());
                 break;
             case QUIT:
-                images[0] = Utils.getInstance().importImage("src/main/resources/images/buttons/QuitBtn0.png", UI.B_WIDTH.getValue(), UI.B_HEIGHT.getValue());
-                images[1] = Utils.getInstance().importImage("src/main/resources/images/buttons/QuitBtn1.png", UI.B_WIDTH.getValue(), UI.B_HEIGHT.getValue());
-                images[2] = Utils.getInstance().importImage("src/main/resources/images/buttons/QuitBtn1.png", UI.B_WIDTH.getValue(), UI.B_HEIGHT.getValue());
+                images[0] = Utils.getInstance().importImage("/images/buttons/QuitBtn0.png", UI.B_WIDTH.getValue(), UI.B_HEIGHT.getValue());
+                images[1] = Utils.getInstance().importImage("/images/buttons/QuitBtn1.png", UI.B_WIDTH.getValue(), UI.B_HEIGHT.getValue());
+                images[2] = Utils.getInstance().importImage("/images/buttons/QuitBtn1.png", UI.B_WIDTH.getValue(), UI.B_HEIGHT.getValue());
                 break;
             default: break;
         }

@@ -33,7 +33,7 @@ public class LevelManager {
     }
 
     private void loadFirstLayerSprite() {
-        BufferedImage temp = Utils.getInstance().importImage("src/main/resources/images/levels/mossyTiles.png", 224, 224);
+        BufferedImage temp = Utils.getInstance().importImage("/images/levels/mossyTiles.png", 224, 224);
         levelSprite = new BufferedImage[49];
         for (int i = 0; i < 7; i++) {
             for (int j = 0; j < 7; j++) {

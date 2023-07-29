@@ -43,8 +43,8 @@ public class ControlsState extends StateAbstraction implements State {
     }
 
     private void loadImages() {
-        this.controlsText = Utils.getInstance().importImage("src/main/resources/images/buttons/ControlsText.png", controlsTextWid, controlsTextHei);
-        this.keyboardSprite = Utils.getInstance().importImage("src/main/resources/images/keyboard.png", -1, -1);
+        this.controlsText = Utils.getInstance().importImage("/images/buttons/ControlsText.png", controlsTextWid, controlsTextHei);
+        this.keyboardSprite = Utils.getInstance().importImage("/images/keyboard.png", -1, -1);
     }
 
     private void loadButtons() {

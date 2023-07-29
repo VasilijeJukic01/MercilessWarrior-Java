@@ -23,19 +23,19 @@ public class CREButton extends PauseButton implements GameButton{
         images = new BufferedImage[3];
         switch (buttonType) {
             case CONTINUE:
-                images[0] = Utils.getInstance().importImage("src/main/resources/images/buttons/ContinueBtn0.png", UI.CRE_B_SIZE.getValue(), UI.CRE_B_SIZE.getValue());
-                images[1] = Utils.getInstance().importImage("src/main/resources/images/buttons/ContinueBtn1.png", UI.CRE_B_SIZE.getValue(), UI.CRE_B_SIZE.getValue());
-                images[2] = Utils.getInstance().importImage("src/main/resources/images/buttons/ContinueBtn1.png", UI.CRE_B_SIZE.getValue(), UI.CRE_B_SIZE.getValue());
+                images[0] = Utils.getInstance().importImage("/images/buttons/ContinueBtn0.png", UI.CRE_B_SIZE.getValue(), UI.CRE_B_SIZE.getValue());
+                images[1] = Utils.getInstance().importImage("/images/buttons/ContinueBtn1.png", UI.CRE_B_SIZE.getValue(), UI.CRE_B_SIZE.getValue());
+                images[2] = Utils.getInstance().importImage("/images/buttons/ContinueBtn1.png", UI.CRE_B_SIZE.getValue(), UI.CRE_B_SIZE.getValue());
                 break;
             case RETRY:
-                images[0] = Utils.getInstance().importImage("src/main/resources/images/buttons/RetryBtn0.png", UI.CRE_B_SIZE.getValue(), UI.CRE_B_SIZE.getValue());
-                images[1] = Utils.getInstance().importImage("src/main/resources/images/buttons/RetryBtn1.png", UI.CRE_B_SIZE.getValue(), UI.CRE_B_SIZE.getValue());
-                images[2] = Utils.getInstance().importImage("src/main/resources/images/buttons/RetryBtn1.png", UI.CRE_B_SIZE.getValue(), UI.CRE_B_SIZE.getValue());
+                images[0] = Utils.getInstance().importImage("/images/buttons/RetryBtn0.png", UI.CRE_B_SIZE.getValue(), UI.CRE_B_SIZE.getValue());
+                images[1] = Utils.getInstance().importImage("/images/buttons/RetryBtn1.png", UI.CRE_B_SIZE.getValue(), UI.CRE_B_SIZE.getValue());
+                images[2] = Utils.getInstance().importImage("/images/buttons/RetryBtn1.png", UI.CRE_B_SIZE.getValue(), UI.CRE_B_SIZE.getValue());
                 break;
             case EXIT:
-                images[0] = Utils.getInstance().importImage("src/main/resources/images/buttons/ExitBtn0.png", UI.CRE_B_SIZE.getValue(), UI.CRE_B_SIZE.getValue());
-                images[1] = Utils.getInstance().importImage("src/main/resources/images/buttons/ExitBtn1.png", UI.CRE_B_SIZE.getValue(), UI.CRE_B_SIZE.getValue());
-                images[2] = Utils.getInstance().importImage("src/main/resources/images/buttons/ExitBtn1.png", UI.CRE_B_SIZE.getValue(), UI.CRE_B_SIZE.getValue());
+                images[0] = Utils.getInstance().importImage("/images/buttons/ExitBtn0.png", UI.CRE_B_SIZE.getValue(), UI.CRE_B_SIZE.getValue());
+                images[1] = Utils.getInstance().importImage("/images/buttons/ExitBtn1.png", UI.CRE_B_SIZE.getValue(), UI.CRE_B_SIZE.getValue());
+                images[2] = Utils.getInstance().importImage("/images/buttons/ExitBtn1.png", UI.CRE_B_SIZE.getValue(), UI.CRE_B_SIZE.getValue());
                 break;
             default: break;
         }

@@ -1,7 +1,7 @@
 package platformer.model;
 
 import platformer.model.entities.enemies.EnemyType;
-import platformer.model.objects.ObjType;
+import platformer.model.objects.Obj;
 import platformer.model.objects.projectiles.PRType;
 import platformer.model.spells.SpellType;
 
@@ -29,7 +29,7 @@ public class ModelUtils {
         }
     }
 
-    public int getObjectSprite(ObjType object) {
+    public int getObjectSprite(Obj object) {
         switch (object) {
             case HEAL_POTION:
             case STAMINA_POTION:
@@ -39,8 +39,8 @@ public class ModelUtils {
             case BLACKSMITH:
             case DOG:
                 return 8;
-            case ARROW_LAUNCHER_RIGHT:
-            case ARROW_LAUNCHER_LEFT:
+            case ARROW_TRAP_RIGHT:
+            case ARROW_TRAP_LEFT:
                 return 16;
             case COIN:
                 return 4;
@@ -60,7 +60,7 @@ public class ModelUtils {
     public int getSpellSprite(SpellType spell) {
         if (spell == SpellType.FLAME_1) return 14;
         else if (spell == SpellType.LIGHTNING) return 8;
-        else if (spell == SpellType.FLASH) return 17;
+        else if (spell == SpellType.FLASH) return 16;
         return 1;
     }
 

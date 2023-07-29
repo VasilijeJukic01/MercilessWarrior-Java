@@ -59,10 +59,10 @@ public class PauseOverlay implements MouseControls {
     }
 
     private void init() {
-        this.pauseText = Utils.instance.importImage("src/main/resources/images/buttons/PauseText.png", pauseTextWid, pauseTextHei);
-        this.SFXText = Utils.instance.importImage("src/main/resources/images/buttons/SFXText.png", SFXTextWid, SFXTextHei);
-        this.musicText = Utils.instance.importImage("src/main/resources/images/buttons/MusicText.png", musicTextWid, musicTextHei);
-        this.volumeText = Utils.instance.importImage("src/main/resources/images/buttons/VolumeText.png", volumeTextWid, volumeTextHei);
+        this.pauseText = Utils.instance.importImage("/images/buttons/PauseText.png", pauseTextWid, pauseTextHei);
+        this.SFXText = Utils.instance.importImage("/images/buttons/SFXText.png", SFXTextWid, SFXTextHei);
+        this.musicText = Utils.instance.importImage("/images/buttons/MusicText.png", musicTextWid, musicTextHei);
+        this.volumeText = Utils.instance.importImage("/images/buttons/VolumeText.png", volumeTextWid, volumeTextHei);
         this.continueBtn = new CREButton(continueBtnX, continueBtnY, UI.CRE_B_SIZE.getValue(), UI.CRE_B_SIZE.getValue(), ButtonType.CONTINUE);
         this.retryBtn = new CREButton(retryBtnX, retryBtnY, UI.CRE_B_SIZE.getValue(), UI.CRE_B_SIZE.getValue(), ButtonType.RETRY);
         this.exitBtn = new CREButton(exitBtnX, exitBtnY, UI.CRE_B_SIZE.getValue(), UI.CRE_B_SIZE.getValue(), ButtonType.EXIT);

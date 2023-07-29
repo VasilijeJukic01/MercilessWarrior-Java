@@ -9,14 +9,14 @@ public class ArrowLauncher extends GameObject {
 
     private final int yTile;
 
-    public ArrowLauncher(ObjType objType, int xPos, int yPos) {
-        super(objType, xPos, yPos);
+    public ArrowLauncher(Obj obj, int xPos, int yPos) {
+        super(obj, xPos, yPos);
         this.yTile = yPos/TILES_SIZE;
         int hbWid = (int)(32*SCALE);
         int hbHei = (int)(32*SCALE);
         initHitBox(hbWid, hbHei);
-        if (objType == ObjType.ARROW_LAUNCHER_LEFT) hitBox.x -= (int)(6*SCALE);
-        else if (objType == ObjType.ARROW_LAUNCHER_RIGHT) hitBox.x += (int)(6*SCALE);
+        if (obj == Obj.ARROW_TRAP_LEFT) hitBox.x -= (int)(6*SCALE);
+        else if (obj == Obj.ARROW_TRAP_RIGHT) hitBox.x += (int)(6*SCALE);
         hitBox.y += (int)(2*SCALE);
     }
 

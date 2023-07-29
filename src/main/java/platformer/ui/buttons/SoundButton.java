@@ -24,13 +24,13 @@ public class SoundButton extends PauseButton {
     public void loadButtons() {
         images = new BufferedImage[2][3];
 
-        images[0][0] = Utils.getInstance().importImage("src/main/resources/images/buttons/SFXON0.png", UI.SOUND_B_SIZE.getValue(), UI.SOUND_B_SIZE.getValue());
-        images[0][1] = Utils.getInstance().importImage("src/main/resources/images/buttons/SFXON1.png", UI.SOUND_B_SIZE.getValue(), UI.SOUND_B_SIZE.getValue());
-        images[0][2] = Utils.getInstance().importImage("src/main/resources/images/buttons/SFXON1.png", UI.SOUND_B_SIZE.getValue(), UI.SOUND_B_SIZE.getValue());
+        images[0][0] = Utils.getInstance().importImage("/images/buttons/SFXON0.png", UI.SOUND_B_SIZE.getValue(), UI.SOUND_B_SIZE.getValue());
+        images[0][1] = Utils.getInstance().importImage("/images/buttons/SFXON1.png", UI.SOUND_B_SIZE.getValue(), UI.SOUND_B_SIZE.getValue());
+        images[0][2] = Utils.getInstance().importImage("/images/buttons/SFXON1.png", UI.SOUND_B_SIZE.getValue(), UI.SOUND_B_SIZE.getValue());
 
-        images[1][0] = Utils.getInstance().importImage("src/main/resources/images/buttons/SFXOFF0.png", UI.SOUND_B_SIZE.getValue(), UI.SOUND_B_SIZE.getValue());
-        images[1][1] = Utils.getInstance().importImage("src/main/resources/images/buttons/SFXOFF1.png", UI.SOUND_B_SIZE.getValue(), UI.SOUND_B_SIZE.getValue());
-        images[1][2] = Utils.getInstance().importImage("src/main/resources/images/buttons/SFXOFF1.png", UI.SOUND_B_SIZE.getValue(), UI.SOUND_B_SIZE.getValue());
+        images[1][0] = Utils.getInstance().importImage("/images/buttons/SFXOFF0.png", UI.SOUND_B_SIZE.getValue(), UI.SOUND_B_SIZE.getValue());
+        images[1][1] = Utils.getInstance().importImage("/images/buttons/SFXOFF1.png", UI.SOUND_B_SIZE.getValue(), UI.SOUND_B_SIZE.getValue());
+        images[1][2] = Utils.getInstance().importImage("/images/buttons/SFXOFF1.png", UI.SOUND_B_SIZE.getValue(), UI.SOUND_B_SIZE.getValue());
     }
 
     @Override

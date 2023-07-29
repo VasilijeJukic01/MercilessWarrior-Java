@@ -1,6 +1,6 @@
 package platformer.model.entities.enemies;
 
-import platformer.animation.AnimType;
+import platformer.animation.Anim;
 import platformer.animation.AnimationUtils;
 import platformer.audio.Audio;
 import platformer.debug.logger.Message;
@@ -94,8 +94,8 @@ public class EnemyManager {
                 gh.hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.BLUE);
                 gh.attackBoxRenderer(g, xLevelOffset, yLevelOffset);
                 // Ghoul special
-                if (gh.getEnemyAction() == AnimType.HIDE || gh.getEnemyAction() == AnimType.REVEAL) {
-                    int r = (gh.getAnimIndex() > 15 && gh.getEnemyAction() == AnimType.REVEAL) ? (255) : (0);
+                if (gh.getEnemyAction() == Anim.HIDE || gh.getEnemyAction() == Anim.REVEAL) {
+                    int r = (gh.getAnimIndex() > 15 && gh.getEnemyAction() == Anim.REVEAL) ? (255) : (0);
                     g.setColor(new Color(r, 0, 0, gh.getFadeCoefficient()));
                     g.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
                 }
@@ -123,7 +123,7 @@ public class EnemyManager {
     // Enemy hit
     private void checkEnemyDying(Enemy e, Player player) {
         Random rand = new Random();
-        if (e.getEnemyAction() == AnimType.DEATH) {
+        if (e.getEnemyAction() == Anim.DEATH) {
             playingState.getObjectManager().generateCoins(e.getHitBox());
             player.changeStamina(rand.nextInt(5));
             player.changeExp(rand.nextInt(50)+100);
@@ -147,7 +147,7 @@ public class EnemyManager {
         int[] dmg = damage(player);
 
         for (Skeleton skeleton : skeletons) {
-            if (skeleton.isAlive() && skeleton.getEnemyAction() != AnimType.DEATH) {
+            if (skeleton.isAlive() && skeleton.getEnemyAction() != Anim.DEATH) {
                 if (attackBox.intersects(skeleton.getHitBox())) {
                     skeleton.hit(dmg[0], true, true);
                     skeleton.setCriticalHit(dmg[1] == 1);
@@ -159,9 +159,9 @@ public class EnemyManager {
             }
         }
         for (Ghoul ghoul : ghouls) {
-            if (ghoul.isAlive() && ghoul.getEnemyAction() != AnimType.DEATH) {
+            if (ghoul.isAlive() && ghoul.getEnemyAction() != Anim.DEATH) {
                 if (attackBox.intersects(ghoul.getHitBox())) {
-                    if (ghoul.getEnemyAction() == AnimType.HIDE || ghoul.getEnemyAction() == AnimType.REVEAL) return;
+                    if (ghoul.getEnemyAction() == Anim.HIDE || ghoul.getEnemyAction() == Anim.REVEAL) return;
                     ghoul.hit(dmg[0], true, true);
                     ghoul.setCriticalHit(dmg[1] == 1);
                     checkEnemyDying(ghoul, player);
@@ -173,7 +173,7 @@ public class EnemyManager {
         }
         if (!player.isDash() && !player.isOnWall()) Audio.getInstance().getAudioPlayer().playSlashSound();
         if (spearWoman == null) return;
-        if (spearWoman.isAlive() && spearWoman.getEnemyAction() != AnimType.DEATH) {
+        if (spearWoman.isAlive() && spearWoman.getEnemyAction() != Anim.DEATH) {
             if (attackBox.intersects(spearWoman.getHitBox())) {
                 spearWoman.hit(dmg[0]);
                 checkEnemyDying(spearWoman, player);
@@ -183,15 +183,15 @@ public class EnemyManager {
         }
     }
 
-    private void writeHitLog(AnimType animType, int dmg) {
-        if (animType == AnimType.BLOCK) Logger.getInstance().notify("Enemy blocks player's attack.", Message.NOTIFICATION);
+    private void writeHitLog(Anim anim, int dmg) {
+        if (anim == Anim.BLOCK) Logger.getInstance().notify("Enemy blocks player's attack.", Message.NOTIFICATION);
         else Logger.getInstance().notify("Player gives damage to enemy: "+dmg, Message.NOTIFICATION);
     }
 
     public void checkEnemySpellHit() {
         Flames flames = playingState.getSpellManager().getFlames();
         for (Skeleton skeleton : skeletons) {
-            if (skeleton.isAlive() && skeleton.getEnemyAction() != AnimType.DEATH) {
+            if (skeleton.isAlive() && skeleton.getEnemyAction() != Anim.DEATH) {
                 if (flames.isAlive() && flames.getHitBox().intersects(skeleton.getHitBox())) {
                     skeleton.spellHit(0.08);
                     checkEnemyDying(skeleton, playingState.getPlayer());
@@ -200,7 +200,7 @@ public class EnemyManager {
             }
         }
         for (Ghoul ghoul : ghouls) {
-            if (ghoul.isAlive() && ghoul.getEnemyAction() != AnimType.DEATH) {
+            if (ghoul.isAlive() && ghoul.getEnemyAction() != Anim.DEATH) {
                 if (flames.isAlive() && flames.getHitBox().intersects(ghoul.getHitBox())) {
                     ghoul.spellHit(0.16);
                     checkEnemyDying(ghoul, playingState.getPlayer());
@@ -213,13 +213,13 @@ public class EnemyManager {
     public void checkEnemyTrapHit(GameObject object) {
         if (!(object instanceof Spike)) return;
         for (Skeleton skeleton : skeletons) {
-            if (skeleton.isAlive() && skeleton.getEnemyAction() != AnimType.DEATH && object.getHitBox().intersects(skeleton.getHitBox())) {
+            if (skeleton.isAlive() && skeleton.getEnemyAction() != Anim.DEATH && object.getHitBox().intersects(skeleton.getHitBox())) {
                 skeleton.hit(500, false, false);
                 return;
             }
         }
         for (Ghoul ghoul : ghouls) {
-            if (ghoul.isAlive() && ghoul.getEnemyAction() != AnimType.DEATH && object.getHitBox().intersects(ghoul.getHitBox())) {
+            if (ghoul.isAlive() && ghoul.getEnemyAction() != Anim.DEATH && object.getHitBox().intersects(ghoul.getHitBox())) {
                 ghoul.hit(500, false, false);
                 return;
             }
@@ -228,7 +228,7 @@ public class EnemyManager {
 
     public void checkEnemyProjectileHit(Projectile projectile) {
         for (Skeleton skeleton : skeletons) {
-            if (skeleton.isAlive() && skeleton.getEnemyAction() != AnimType.DEATH && projectile.getHitBox().intersects(skeleton.getHitBox())) {
+            if (skeleton.isAlive() && skeleton.getEnemyAction() != Anim.DEATH && projectile.getHitBox().intersects(skeleton.getHitBox())) {
                 skeleton.hit(5, false, false);
                 Direction projectileDirection = projectile.getDirection();
                 Direction skeletonDirection = skeleton.getDirection();

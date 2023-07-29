@@ -118,7 +118,7 @@ public class LevelObjectManager {
             if (id[i].contains("_BIG")) bigFlag = 4;
             if (id[i].contains("_REVERSE")) reverseFlag = 8;
             String name = id[i].substring(0, id[i].length() - bigFlag - reverseFlag);
-            models[i] = Utils.getInstance().importImage("src/main/resources/images/levels/levelObjects/"+name+".png", size.get(id[i]).x, size.get(id[i]).y);
+            models[i] = Utils.getInstance().importImage("/images/levels/levelObjects/"+name+".png", size.get(id[i]).x, size.get(id[i]).y);
             if (reverseFlag != 0) models[i] = Utils.getInstance().flipImage(models[i]);
         }
     }

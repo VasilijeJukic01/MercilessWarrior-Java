@@ -37,11 +37,11 @@ public class VolumeButton extends PauseButton{
     public void loadButtons() {
         images = new BufferedImage[3];
 
-        images[0] = Utils.getInstance().importImage("src/main/resources/images/buttons/SliderBtn0.png", UI.VOLUME_WIDTH.getValue(), UI.VOLUME_HEIGHT.getValue());
-        images[1] = Utils.getInstance().importImage("src/main/resources/images/buttons/SliderBtn1.png", UI.VOLUME_WIDTH.getValue(), UI.VOLUME_HEIGHT.getValue());
-        images[2] = Utils.getInstance().importImage("src/main/resources/images/buttons/SliderBtn1.png", UI.VOLUME_WIDTH.getValue(), UI.VOLUME_HEIGHT.getValue());
+        images[0] = Utils.getInstance().importImage("/images/buttons/SliderBtn0.png", UI.VOLUME_WIDTH.getValue(), UI.VOLUME_HEIGHT.getValue());
+        images[1] = Utils.getInstance().importImage("/images/buttons/SliderBtn1.png", UI.VOLUME_WIDTH.getValue(), UI.VOLUME_HEIGHT.getValue());
+        images[2] = Utils.getInstance().importImage("/images/buttons/SliderBtn1.png", UI.VOLUME_WIDTH.getValue(), UI.VOLUME_HEIGHT.getValue());
 
-        slider = Utils.getInstance().importImage("src/main/resources/images/buttons/Slider.png", UI.SLIDER_WIDTH.getValue(), UI.VOLUME_HEIGHT.getValue());
+        slider = Utils.getInstance().importImage("/images/buttons/Slider.png", UI.SLIDER_WIDTH.getValue(), UI.VOLUME_HEIGHT.getValue());
     }
 
     @Override

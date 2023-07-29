@@ -2,10 +2,13 @@ package platformer.model.spells;
 
 import java.awt.*;
 
+import static platformer.constants.Constants.LIGHTNING_HEIGHT;
+import static platformer.constants.Constants.LIGHTNING_WIDTH;
+
 public class Lightning extends Spell {
 
     public Lightning(SpellType spellType, int xPos, int yPos) {
-        super(spellType, xPos, yPos, SpellSize.LIGHTNING_WIDTH.getValue(), SpellSize.LIGHTNING_HEIGHT.getValue());
+        super(spellType, xPos, yPos, LIGHTNING_WIDTH, LIGHTNING_HEIGHT);
         super.setAlive(false);
         initHitBox(width/1.5, height);
     }

@@ -65,7 +65,7 @@ public class PlayingState extends StateAbstraction implements State {
 
     private void init() {
         this.perksManager = new PerksManager();
-        this.background = Utils.getInstance().importImage("src/main/resources/images/background1.jpg", GAME_WIDTH, GAME_HEIGHT);
+        this.background = Utils.getInstance().importImage("/images/background1.jpg", GAME_WIDTH, GAME_HEIGHT);
         this.levelManager = new LevelManager(game, this);
         this.objectManager = new ObjectManager(this);
         this.enemyManager = new EnemyManager(this);

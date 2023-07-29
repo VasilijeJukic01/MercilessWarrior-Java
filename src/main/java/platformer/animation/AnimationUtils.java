@@ -1,9 +1,12 @@
 package platformer.animation;
 
+import platformer.model.objects.Obj;
 import platformer.utils.Utils;
 import java.awt.image.BufferedImage;
 
+import static platformer.constants.AnimConstants.*;
 import static platformer.constants.Constants.*;
+import static platformer.constants.FilePaths.*;
 
 public class AnimationUtils {
 
@@ -11,29 +14,20 @@ public class AnimationUtils {
 
     private AnimationUtils() {}
 
-    private BufferedImage[] loadAnimation(String basePath, int numFrames, int width, int height, boolean reverse) {
-        BufferedImage[] animation = new BufferedImage[numFrames];
-        for (int i = 0; i < numFrames; i++) {
-            int index = reverse ? numFrames - 1 - i : i;
-            String imagePath = basePath + index + ".png";
-            animation[i] = Utils.getInstance().importImage(imagePath, width, height);
-        }
-        return animation;
-    }
-
-    private BufferedImage[] loadAnimationWithSprite(String basePath, int numFrames, int row, int width, int height, int offset) {
+    // Animation loader
+    private BufferedImage[] loadAnimation(String basePath, int frames, int row, int width, int height, int offset, int x, int y) {
         BufferedImage sprite = Utils.getInstance().importImage(basePath, -1, -1);
-        BufferedImage[] animation = new BufferedImage[numFrames];
-        int yOffset = 115 * row;
-        for (int i = offset; i < numFrames+offset; i++) {
-            animation[i-offset] = Utils.getInstance().resize(sprite.getSubimage(i * 128, yOffset, 128, 115), width, height);
+        BufferedImage[] animation = new BufferedImage[frames];
+        int yOffset = y * row;
+        for (int i = offset; i < frames+offset; i++) {
+            animation[i-offset] = Utils.getInstance().resize(sprite.getSubimage(i * x, yOffset, x, y), width, height);
         }
         return animation;
     }
 
     // Player
     public static BufferedImage[][] loadPlayerAnimations(int w, int h, String sheet) {
-        BufferedImage sprite = Utils.getInstance().importImage("src/main/resources/images/player/" + sheet + "Sheet.png", -1, -1);
+        BufferedImage sprite = Utils.getInstance().importImage("/images/player/" + sheet + "Sheet.png", -1, -1);
         BufferedImage[][] anim = new BufferedImage[15][15];
 
         int[][] animationInfo = {
@@ -60,7 +54,7 @@ public class AnimationUtils {
             int sheetRow = animationInfo[i][1];
             BufferedImage[] animation = new BufferedImage[frameCount];
             for (int j = 0; j < frameCount; j++) {
-                animation[j] = Utils.getInstance().resize(sprite.getSubimage(j * 144, sheetRow, 144, 80), w, h);
+                animation[j] = Utils.getInstance().resize(sprite.getSubimage(j * PLAYER_W, sheetRow, PLAYER_W, PLAYER_H), w, h);
             }
             anim[i] = animation;
         }
@@ -74,14 +68,14 @@ public class AnimationUtils {
         int w = SKELETON_WIDTH;
         int h = SKELETON_HEIGHT;
 
-        anim[0] = loadAnimation("src/main/resources/images/enemies/Skeleton/Idle/Skeleton_Idle", 4, w, h, false);
-        anim[1] = loadAnimation("src/main/resources/images/enemies/Skeleton/Run/Skeleton_Run", 8, w, h, false);
-        anim[3] = loadAnimation("src/main/resources/images/enemies/Skeleton/JumpFall/Skeleton_Fall", 2, w, h, false);
-        anim[4] = loadAnimation("src/main/resources/images/enemies/Skeleton/Attack/Skeleton_Attack", 6, w, h, false);
-        anim[7] = loadAnimation("src/main/resources/images/enemies/Skeleton/Block/Skeleton_Block", 6, w, h, false);
-        anim[8] = loadAnimation("src/main/resources/images/enemies/Skeleton/Hit/Skeleton_Hit", 4, w, h, false);
-        anim[9] = loadAnimation("src/main/resources/images/enemies/Skeleton/Death/Skeleton_Death", 10, w, h, false);
-        anim[11] = loadAnimation("src/main/resources/images/enemies/Skeleton/Walk/Skeleton_Walk", 8, w, h, false);
+        anim[Anim.IDLE.ordinal()] = loadAnimation(SKELETON_SHEET, 4, 0, w, h, 0, SKELETON_W, SKELETON_H);
+        anim[Anim.RUN.ordinal()] = loadAnimation(SKELETON_SHEET, 8, 2, w, h, 0, SKELETON_W, SKELETON_H);
+        anim[Anim.FALL.ordinal()] = loadAnimation(SKELETON_SHEET, 2, 3, w, h, 0, SKELETON_W, SKELETON_H);
+        anim[Anim.ATTACK_1.ordinal()] = loadAnimation(SKELETON_SHEET, 6, 4, w, h, 0, SKELETON_W, SKELETON_H);
+        anim[Anim.BLOCK.ordinal()] = loadAnimation(SKELETON_SHEET, 6, 5, w, h, 0, SKELETON_W, SKELETON_H);
+        anim[Anim.HIT.ordinal()] = loadAnimation(SKELETON_SHEET, 4, 7, w, h, 0, SKELETON_W, SKELETON_H);
+        anim[Anim.DEATH.ordinal()] = loadAnimation(SKELETON_SHEET, 10, 6, w, h, 0, SKELETON_W, SKELETON_H);
+        anim[Anim.WALK.ordinal()] = loadAnimation(SKELETON_SHEET, 8, 1, w, h, 0, SKELETON_W, SKELETON_H);
 
         return anim;
     }
@@ -91,14 +85,15 @@ public class AnimationUtils {
         int w = GHOUL_WIDTH;
         int h = GHOUL_HEIGHT;
 
-        anim[0] = loadAnimation("src/main/resources/images/enemies/Ghoul/Idle/Ghoul_Idle", 8, w, h, false);
-        anim[1] = loadAnimation("src/main/resources/images/enemies/Ghoul/Chase/Ghoul_Chase", 6, w, h, false);
-        anim[4] = loadAnimation("src/main/resources/images/enemies/Ghoul/Attack/Ghoul_Attack", 8, w, h, false);
-        anim[8] = loadAnimation("src/main/resources/images/enemies/Ghoul/Hit/Ghoul_Hit", 4, w, h, false);
-        anim[9] = loadAnimation("src/main/resources/images/enemies/Ghoul/Death/Ghoul_Death", 8, w, h, false);
-        anim[11] = loadAnimation("src/main/resources/images/enemies/Ghoul/Move/Ghoul_Move", 6, w, h, false);
-        anim[15] = loadAnimation("src/main/resources/images/enemies/Ghoul/Exile/Ghoul_Exile", 19, w, h, false);
-        anim[16] = loadAnimation("src/main/resources/images/enemies/Ghoul/Exile/Ghoul_Exile", 19, w, h, true);
+        anim[Anim.IDLE.ordinal()] = loadAnimation(GHOUL_SHEET, 8, 0, w, h, 0, SKELETON_W, SKELETON_H);
+        anim[Anim.RUN.ordinal()] = loadAnimation(GHOUL_SHEET, 6, 2, w, h, 0, SKELETON_W, SKELETON_H);
+        anim[Anim.ATTACK_1.ordinal()] = loadAnimation(GHOUL_SHEET, 8, 5, w, h, 0, SKELETON_W, SKELETON_H);
+        anim[Anim.HIT.ordinal()] = loadAnimation(GHOUL_SHEET, 4, 4, w, h, 0, SKELETON_W, SKELETON_H);
+        anim[Anim.DEATH.ordinal()] = loadAnimation(GHOUL_SHEET, 4, 7, w, h, 0, SKELETON_W, SKELETON_H);
+        anim[Anim.WALK.ordinal()] = loadAnimation(GHOUL_SHEET, 6, 1, w, h, 0, SKELETON_W, SKELETON_H);
+        anim[Anim.HIDE.ordinal()] = loadAnimation(GHOUL_SHEET, 19, 6, w, h, 0, SKELETON_W, SKELETON_H);
+        anim[Anim.REVEAL.ordinal()] = loadAnimation(GHOUL_SHEET, 19, 6, w, h, 0, SKELETON_W, SKELETON_H);
+        Utils.getInstance().reverseArray(anim[16]);
 
         return anim;
     }
@@ -109,18 +104,18 @@ public class AnimationUtils {
         int w = SW_WIDTH;
         int h = SW_HEIGHT;
 
-        anim[0] = loadAnimationWithSprite("src/main/resources/images/enemies/Bosses/SpearWoman.png", 8, 0, w, h, 0);
-        anim[1] = loadAnimationWithSprite("src/main/resources/images/enemies/Bosses/SpearWoman.png", 8, 2, w, h, 0);
-        anim[4] = loadAnimationWithSprite("src/main/resources/images/enemies/Bosses/SpearWoman.png", 5, 10, w, h, 0);
-        anim[5] = loadAnimationWithSprite("src/main/resources/images/enemies/Bosses/SpearWoman.png", 5, 11, w, h, 0);
-        anim[6] = loadAnimationWithSprite("src/main/resources/images/enemies/Bosses/SpearWoman.png", 6, 12, w, h, 0);
-        anim[7] = loadAnimationWithSprite("src/main/resources/images/enemies/Bosses/SpearWoman.png", 16, 16, w, h, 0);
-        anim[8] = loadAnimationWithSprite("src/main/resources/images/enemies/Bosses/SpearWoman.png", 4, 23, w, h, 0);
-        anim[9] = loadAnimationWithSprite("src/main/resources/images/enemies/Bosses/SpearWoman.png", 9, 24, w, h, 0);
-        anim[14] = loadAnimationWithSprite("src/main/resources/images/enemies/Bosses/SpearWoman.png", 14, 13, w, h, 0);
-        anim[17] = loadAnimationWithSprite("src/main/resources/images/enemies/Bosses/SpearWoman.png", 11, 14, w, h, 0);
-        anim[18] = loadAnimationWithSprite("src/main/resources/images/enemies/Bosses/SpearWoman.png", 22, 15, w, h, 0);
-        anim[19] = loadAnimationWithSprite("src/main/resources/images/enemies/Bosses/SpearWoman.png", 2, 15, w, h, 1);
+        anim[Anim.IDLE.ordinal()] = loadAnimation(SW_SHEET, 8, 0, w, h, 0, SW_W, SW_H);
+        anim[Anim.RUN.ordinal()] = loadAnimation(SW_SHEET, 8, 2, w, h, 0, SW_W, SW_H);
+        anim[Anim.ATTACK_1.ordinal()] = loadAnimation(SW_SHEET, 5, 10, w, h, 0, SW_W, SW_H);
+        anim[Anim.ATTACK_2.ordinal()] = loadAnimation(SW_SHEET, 5, 11, w, h, 0, SW_W, SW_H);
+        anim[Anim.ATTACK_3.ordinal()] = loadAnimation(SW_SHEET, 6, 12, w, h, 0, SW_W, SW_H);
+        anim[Anim.BLOCK.ordinal()] = loadAnimation(SW_SHEET, 16, 16, w, h, 0, SW_W, SW_H);
+        anim[Anim.HIT.ordinal()] = loadAnimation(SW_SHEET, 4, 23, w, h, 0, SW_W, SW_H);
+        anim[Anim.DEATH.ordinal()] = loadAnimation(SW_SHEET, 9, 24, w, h, 0, SW_W, SW_H);
+        anim[Anim.SPELL_1.ordinal()] = loadAnimation(SW_SHEET, 14, 13, w, h, 0, SW_W, SW_H);
+        anim[Anim.SPELL_2.ordinal()] = loadAnimation(SW_SHEET, 11, 14, w, h, 0, SW_W, SW_H);
+        anim[Anim.SPELL_3.ordinal()] = loadAnimation(SW_SHEET, 22, 15, w, h, 0, SW_W, SW_H);
+        anim[Anim.SPELL_4.ordinal()] = loadAnimation(SW_SHEET, 2, 15, w, h, 1, SW_W, SW_H);
 
         return anim;
     }
@@ -130,17 +125,8 @@ public class AnimationUtils {
         BufferedImage[][] anim = new BufferedImage[11][11];
         int index = 0;
 
-        // Double Jump Effect
-        BufferedImage[] doubleJump = new BufferedImage[4];
-        int djW = (int)(57.5*SCALE);
-        int djH = (int)(25*SCALE);
-        for (int i = 0; i < 4; i++) {
-            doubleJump[i] = Utils.getInstance().importImage("src/main/resources/images/player/DoubleJump/doubleJump"+i+".png", djW, djH);
-        }
-        anim[index++] = doubleJump;
-
         // Wall Slide
-        BufferedImage sprite = Utils.getInstance().importImage("src/main/resources/images/particles/dustSprite.png", -1, -1);
+        BufferedImage sprite = Utils.getInstance().importImage("/images/particles/dustSprite.png", -1, -1);
         BufferedImage[] wallSlide = new BufferedImage[8];
         wallSlide[0] = sprite.getSubimage(0, 0, 1, 1);
         wallSlide[1] = sprite.getSubimage(0, 0, 1, 1);
@@ -156,103 +142,35 @@ public class AnimationUtils {
     // Objects
     public BufferedImage[][] loadObjects() {
         BufferedImage[][] anim = new BufferedImage[17][17];
-        int index = 0;
 
-        // Potions 0, 1
-        BufferedImage potionSprite = Utils.getInstance().importImage("src/main/resources/images/objs/potions_sprites.png", -1, -1);
-        for (int i = 0; i < 2; i++, index++) {
-            for (int j = 0; j < 7; j++) {
-                anim[index][j] = potionSprite.getSubimage(12*j, 16*i, 12, 16);
-            }
-        }
-
-        // Containers 2, 3
-        BufferedImage containerSprite = Utils.getInstance().importImage("src/main/resources/images/objs/objects_sprites.png", -1, -1);
-        for (int i = 0; i < 2; i++, index++) {
-            for (int j = 0; j < 8; j++) {
-                anim[index][j] = containerSprite.getSubimage(40*j, 30*i, 40, 30);
-            }
-        }
-
-        // Spikes 4
-        BufferedImage spikeSprite = Utils.getInstance().importImage("src/main/resources/images/objs/spikes.png", -1, -1);
-        for (int i = 0; i < 1; i++, index++) {
-            for (int j = 0; j < 10; j++) {
-                anim[index][j] = spikeSprite.getSubimage(32*j, 32*i, 32, 32);
-            }
-        }
-
-        // Arrow Launchers 5
-        BufferedImage arrowLauncherSprite = Utils.getInstance().importImage("src/main/resources/images/objs/arrowTrap.png", -1, -1);
-        for (int i = 0; i < 1; i++, index+=2) {
-            for (int j = 0; j < 16; j++) {
-                anim[index][j] = arrowLauncherSprite.getSubimage((96*j)+27, 32*i, 32, 32);
-            }
-        }
-
-        // Coins 7
-        for (int i = 0; i < 1; i++, index++) {
-            for (int j = 0; j < 4; j++) {
-                anim[index][j] = Utils.getInstance().importImage("src/main/resources/images/objs/coin/Coin"+j+".png", -1, -1);
-            }
-        }
-
-        // Shop 8
-        BufferedImage shopSprite = Utils.getInstance().importImage("src/main/resources/images/objs/shop.png", -1, -1);
-        for (int i = 0; i < 1; i++, index++) {
-            for (int j = 0; j < 6; j++) {
-                anim[index][j] = shopSprite.getSubimage((118*j), 128*i, 118, 128);
-            }
-        }
-
-        // Blocker 9
-        BufferedImage blockerSprite = Utils.getInstance().importImage("src/main/resources/images/objs/blocker.png", -1, -1);
-        for (int i = 0; i < 1; i++, index++) {
-            for (int j = 0; j < 12; j++) {
-                anim[index][j] = blockerSprite.getSubimage((96*j), 0, 96, 96);
-            }
-        }
-
-        // Blacksmith 10
-        for (int i = 0; i < 1; i++, index++) {
-            for (int j = 0; j < 8; j++) {
-                anim[index][j] = Utils.getInstance().importImage("src/main/resources/images/objs/blacksmith/Idle"+j+".png", -1, -1);
-                anim[index][j] = Utils.getInstance().flipImage(anim[index][j]);
-            }
-        }
-
-        // Dog 11
-        for (int i = 0; i < 1; i++, index++) {
-            for (int j = 0; j < 8; j++) {
-                anim[index][j] = Utils.getInstance().importImage("src/main/resources/images/objs/dog/Idle"+j+".png", -1, -1);
-                anim[index][j] = Utils.getInstance().flipImage(anim[index][j]);
-            }
-        }
+        anim[Obj.STAMINA_POTION.ordinal()] = loadAnimation(POTIONS_SHEET, 7, 0, POTION_WID, POTION_HEI, 0, POTION_W, POTION_H);
+        anim[Obj.HEAL_POTION.ordinal()] = loadAnimation(POTIONS_SHEET, 7, 1, POTION_WID, POTION_HEI, 0, POTION_W, POTION_H);
+        anim[Obj.BOX.ordinal()] = loadAnimation(CONTAINERS_SHEET, 8, 0, CONTAINER_WID, CONTAINER_HEI, 0, CONTAINER_W, CONTAINER_H);
+        anim[Obj.BARREL.ordinal()] = loadAnimation(CONTAINERS_SHEET, 8, 1, CONTAINER_WID, CONTAINER_HEI, 0, CONTAINER_W, CONTAINER_H);
+        anim[Obj.SPIKE.ordinal()] = loadAnimation(SPIKES_SHEET, 10, 0, SPIKE_WID, SPIKE_HEI, 0, SPIKES_W, SPIKES_H);
+        anim[Obj.ARROW_TRAP_RIGHT.ordinal()] = loadAnimation(ARROW_TRAP_SHEET, 16, 0, ARROW_TRAP_WID, ARROW_TRAP_HEI, 1, AT_W, AT_H);
+        anim[Obj.ARROW_TRAP_LEFT.ordinal()] = anim[Obj.ARROW_TRAP_RIGHT.ordinal()];
+        anim[Obj.COIN.ordinal()] = loadAnimation(COIN_SHEET, 4, 0, COIN_WID, COIN_HEI, 0, COIN_W, COIN_H);
+        anim[Obj.SHOP.ordinal()] = loadAnimation(SHOP_SHEET, 6, 0, SHOP_WID, SHOP_HEI, 0, SHOP_W, SHOP_H);
+        anim[Obj.BLOCKER.ordinal()] = loadAnimation(BLOCKER_SHEET, 12, 0, BLOCKER_WID, BLOCKER_HEI, 0, BLOCKER_W, BLOCKER_H);
+        anim[Obj.BLACKSMITH.ordinal()] = loadAnimation(BS_SHEET, 8, 0, BLACKSMITH_WID, BLACKSMITH_HEI, 0, BLACKSMITH_W, BLACKSMITH_H);
+        anim[Obj.DOG.ordinal()] = loadAnimation(DOG_SHEET, 8, 0, DOG_WID, DOG_HEI, 0, DOG_W, DOG_H);
 
         return anim;
     }
 
     // Spell
     public BufferedImage[] loadLightningAnimations() {
-        BufferedImage[] anim = new BufferedImage[8];
-        for (int i = 0; i < anim.length; i++) {
-            anim[i] = Utils.getInstance().importImage("src/main/resources/images/spells/Lightning"+(i+1)+".png", -1, -1);
-        }
-        return anim;
+        return loadAnimation(LIGHTNING_SHEET, 8, 0, LIGHTNING_WIDTH, LIGHTNING_HEIGHT, 0, LIGHTNING_W, LIGHTNING_H);
     }
 
     public BufferedImage[] loadFlashAnimations() {
-        BufferedImage[] anim = new BufferedImage[17];
-        for (int i = 0; i < anim.length; i++) {
-            anim[i] = Utils.getInstance().importImage("src/main/resources/images/spells/flash/Flash"+i+".png", -1, -1);
-            anim[i] = Utils.getInstance().rotateImage(anim[i], Math.PI/2);
-        }
-        return anim;
+        return loadAnimation(FLASH_SHEET, 16, 0, FLASH_WIDTH, FLASH_HEIGHT, 0, FLASH_W, FLASH_H);
     }
 
     public BufferedImage[] loadLightningBall(int type) {
         String index = type == 1 ? "" : "2";
-        BufferedImage sprite = Utils.getInstance().importImage("src/main/resources/images/objs/lightningBall"+index+".png", -1, -1);
+        BufferedImage sprite = Utils.getInstance().importImage("/images/objs/lightningBall"+index+".png", -1, -1);
         BufferedImage[] anim = new BufferedImage[9];
         for (int i = 0; i < anim.length; i++) {
             anim[i] = sprite.getSubimage(i*50, 0, 50, 50);
@@ -264,7 +182,7 @@ public class AnimationUtils {
     public BufferedImage[] loadMenuAnimation() {
         BufferedImage[] anim = new BufferedImage[24];
         for (int i = 0; i < 24; i++) {
-            anim[i] = Utils.getInstance().importImage("src/main/resources/images/menu/background/Background"+i+".png", GAME_WIDTH, GAME_HEIGHT);
+            anim[i] = Utils.getInstance().importImage("/images/menu/background/Background"+i+".png", GAME_WIDTH, GAME_HEIGHT);
         }
         return anim;
     }

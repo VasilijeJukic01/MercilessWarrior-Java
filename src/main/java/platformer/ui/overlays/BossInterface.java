@@ -17,7 +17,7 @@ public class BossInterface {
 
     public BossInterface(SpearWoman spearWoman) {
         this.spearWoman = spearWoman;
-        this.bossBar = Utils.getInstance().importImage("src/main/resources/images/enemies/Bosses/BossHP.png", -1, -1);
+        this.bossBar = Utils.getInstance().importImage("/images/enemies/Bosses/BossHP.png", -1, -1);
     }
 
     public void render(Graphics g) {

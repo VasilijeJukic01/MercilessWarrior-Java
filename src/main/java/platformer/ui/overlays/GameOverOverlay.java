@@ -54,10 +54,10 @@ public class GameOverOverlay implements MouseControls {
     }
 
     private void init() {
-        this.overlay = Utils.instance.importImage("src/main/resources/images/overlay1.png", overlayWid, overlayHei);
-        this.deadText = Utils.instance.importImage("src/main/resources/images/buttons/DeadText.png", deadTextWid, deadTextHei);
-        this.respawnText = Utils.instance.importImage("src/main/resources/images/buttons/RespawnText.png", respawnTextWid, respawnTextHei);
-        this.menuText = Utils.instance.importImage("src/main/resources/images/buttons/MenuText.png", menuTextWid, menuTextHei);
+        this.overlay = Utils.instance.importImage("/images/overlay1.png", overlayWid, overlayHei);
+        this.deadText = Utils.instance.importImage("/images/buttons/DeadText.png", deadTextWid, deadTextHei);
+        this.respawnText = Utils.instance.importImage("/images/buttons/RespawnText.png", respawnTextWid, respawnTextHei);
+        this.menuText = Utils.instance.importImage("/images/buttons/MenuText.png", menuTextWid, menuTextHei);
         this.retryBtn = new CREButton(retryX, retryY, UI.CRE_B_SIZE.getValue(), UI.CRE_B_SIZE.getValue(), ButtonType.RETRY);
         this.menuBtn = new CREButton(menuX, menuY, UI.CRE_B_SIZE.getValue(), UI.CRE_B_SIZE.getValue(), ButtonType.EXIT);
     }

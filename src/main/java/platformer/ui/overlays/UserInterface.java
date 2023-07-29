@@ -21,8 +21,8 @@ public class UserInterface {
 
     public UserInterface(Player player) {
         this.player = player;
-        this.statusBar = Utils.getInstance().importImage("src/main/resources/images/playerHUD.png",-1,-1);
-        this.portrait = Utils.getInstance().importImage("src/main/resources/images/portraitHUD.png",-1,-1);
+        this.statusBar = Utils.getInstance().importImage("/images/playerHUD.png",-1,-1);
+        this.portrait = Utils.getInstance().importImage("/images/portraitHUD.png",-1,-1);
     }
 
     private void updateBars(double currentHealth, double maxHealth, double currentStamina, double maxStamina, double currentExp, double expCap) {

@@ -19,7 +19,7 @@ public class Perk {
         this.description = description;
         this.cost = cost;
         this.name = name;
-        this.image = Utils.getInstance().importImage("src/main/resources/images/objs/perks/"+imageName+".png", -1, -1);
+        this.image = Utils.getInstance().importImage("/images/objs/perks/"+imageName+".png", -1, -1);
     }
 
     public int getSlot() {

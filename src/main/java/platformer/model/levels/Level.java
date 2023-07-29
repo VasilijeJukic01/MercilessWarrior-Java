@@ -79,29 +79,29 @@ public class Level {
             for (int j = 0; j < dataL1.getHeight(); j++) {
                 Color color = new Color(dataL1.getRGB(i, j));
                 int value = color.getBlue();
-                if (value >= ObjType.MAX.ordinal()) continue;
-                switch (ObjType.values()[value]) {
+                if (value >= Obj.MAX.ordinal()) continue;
+                switch (Obj.values()[value]) {
                     case HEAL_POTION:
-                        potions.add(new Potion(ObjType.HEAL_POTION, (int)((i+0.5)*TILES_SIZE), j*TILES_SIZE)); break;
+                        potions.add(new Potion(Obj.HEAL_POTION, (int)((i+0.5)*TILES_SIZE), j*TILES_SIZE)); break;
                     case STAMINA_POTION:
-                        potions.add(new Potion(ObjType.STAMINA_POTION, (int)((i+0.5)*TILES_SIZE), j*TILES_SIZE)); break;
+                        potions.add(new Potion(Obj.STAMINA_POTION, (int)((i+0.5)*TILES_SIZE), j*TILES_SIZE)); break;
                     case BOX:
-                        containers.add(new Container(ObjType.BOX, i*TILES_SIZE, j*TILES_SIZE)); break;
+                        containers.add(new Container(Obj.BOX, i*TILES_SIZE, j*TILES_SIZE)); break;
                     case BARREL:
-                        containers.add(new Container(ObjType.BARREL, i*TILES_SIZE, j*TILES_SIZE)); break;
+                        containers.add(new Container(Obj.BARREL, i*TILES_SIZE, j*TILES_SIZE)); break;
                     case SPIKE:
-                        spikes.add(new Spike(ObjType.SPIKE, i*TILES_SIZE, j*TILES_SIZE)); break;
-                    case ARROW_LAUNCHER_LEFT:
-                    case ARROW_LAUNCHER_RIGHT:
-                        arrowLaunchers.add(new ArrowLauncher(ObjType.values()[value], i*TILES_SIZE, j*TILES_SIZE)); break;
+                        spikes.add(new Spike(Obj.SPIKE, i*TILES_SIZE, j*TILES_SIZE)); break;
+                    case ARROW_TRAP_LEFT:
+                    case ARROW_TRAP_RIGHT:
+                        arrowLaunchers.add(new ArrowLauncher(Obj.values()[value], i*TILES_SIZE, j*TILES_SIZE)); break;
                     case SHOP:
-                        shops.add(new Shop(ObjType.SHOP, i*TILES_SIZE, j*TILES_SIZE)); break;
+                        shops.add(new Shop(Obj.SHOP, i*TILES_SIZE, j*TILES_SIZE)); break;
                     case BLOCKER:
-                        blockers.add(new Blocker(ObjType.BLOCKER, (int)((i-1.75)*TILES_SIZE), (j-1)*TILES_SIZE)); break;
+                        blockers.add(new Blocker(Obj.BLOCKER, (int)((i-1.75)*TILES_SIZE), (j-1)*TILES_SIZE)); break;
                     case BLACKSMITH:
-                        blacksmiths.add(new Blacksmith(ObjType.BLACKSMITH, i*TILES_SIZE, j*TILES_SIZE)); break;
+                        blacksmiths.add(new Blacksmith(Obj.BLACKSMITH, i*TILES_SIZE, j*TILES_SIZE)); break;
                     case DOG:
-                        dogs.add(new Dog(ObjType.DOG, i*TILES_SIZE, j*TILES_SIZE)); break;
+                        dogs.add(new Dog(Obj.DOG, i*TILES_SIZE, j*TILES_SIZE)); break;
                     default: break;
                 }
             }

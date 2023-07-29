@@ -1,6 +1,6 @@
 package platformer.model.entities.enemies;
 
-import platformer.animation.AnimType;
+import platformer.animation.Anim;
 import platformer.model.ModelUtils;
 import platformer.debug.Debug;
 import platformer.model.entities.Cooldown;
@@ -45,23 +45,23 @@ public abstract class Enemy extends Entity implements Debug {
             animTick = 0;
             animIndex++;
             // Ghoul Only
-            if ((entityState == AnimType.HIDE || entityState == AnimType.REVEAL) && fadeCoefficient < 255) {
+            if ((entityState == Anim.HIDE || entityState == Anim.REVEAL) && fadeCoefficient < 255) {
                 fadeCoefficient += 12;
                 fadeCoefficient = Math.min(fadeCoefficient, 255);
             }
             if (animIndex >= animations[entityState.ordinal()].length) {
                 animIndex = 0;
-                if (enemyType == EnemyType.GHOUL && entityState == AnimType.ATTACK_1){
+                if (enemyType == EnemyType.GHOUL && entityState == Anim.ATTACK_1){
                     cooldown[Cooldown.ATTACK.ordinal()] = 10;
-                    entityState = AnimType.IDLE;
+                    entityState = Anim.IDLE;
                 }
-                else if (entityState == AnimType.ATTACK_1 || entityState == AnimType.HIT || entityState == AnimType.BLOCK || entityState == AnimType.REVEAL) {
-                    entityState = AnimType.IDLE;
+                else if (entityState == Anim.ATTACK_1 || entityState == Anim.HIT || entityState == Anim.BLOCK || entityState == Anim.REVEAL) {
+                    entityState = Anim.IDLE;
                     fadeCoefficient = 0;
                 }
 
-                else if (entityState == AnimType.HIDE) entityState = AnimType.REVEAL;
-                else if (entityState == AnimType.DEATH) alive = false;
+                else if (entityState == Anim.HIDE) entityState = Anim.REVEAL;
+                else if (entityState == Anim.DEATH) alive = false;
                 criticalHit = false;
             }
         }
@@ -87,7 +87,7 @@ public abstract class Enemy extends Entity implements Debug {
     }
 
     protected void directToPlayer(Player player) {
-        entityState = AnimType.RUN;
+        entityState = Anim.RUN;
         if (enemyType == EnemyType.GHOUL) enemySpeed = 0.45*SCALE;
         else if (enemyType == EnemyType.SKELETON) enemySpeed = 0.35*SCALE;
         if (player.getHitBox().x > hitBox.x) setDirection(Direction.RIGHT);
@@ -110,7 +110,7 @@ public abstract class Enemy extends Entity implements Debug {
     protected void changeDirection() {
         if (direction == Direction.LEFT) setDirection(Direction.RIGHT);
         else if (direction == Direction.RIGHT) setDirection(Direction.LEFT);
-        entityState = AnimType.WALK;
+        entityState = Anim.WALK;
         enemySpeed = 0.2*SCALE;
     }
 
@@ -128,7 +128,7 @@ public abstract class Enemy extends Entity implements Debug {
         hitBox.x = xPos;
         hitBox.y = yPos;
         currentHealth = maxHealth;
-        entityState = AnimType.IDLE;
+        entityState = Anim.IDLE;
         alive = true;
         animIndex = animTick = 0;
         animSpeed = originalAnimSpeed;
@@ -141,7 +141,7 @@ public abstract class Enemy extends Entity implements Debug {
         return animIndex;
     }
 
-    public AnimType getEnemyAction() {
+    public Anim getEnemyAction() {
         return entityState;
     }
 
@@ -149,13 +149,13 @@ public abstract class Enemy extends Entity implements Debug {
         return alive;
     }
 
-    public void setEnemyAction(AnimType enemyAction) {
+    public void setEnemyAction(Anim enemyAction) {
         this.entityState = enemyAction;
         this.animIndex = 0;
         this.animTick = 0;
     }
 
-    public void setEnemyActionNoReset(AnimType enemyAction) {
+    public void setEnemyActionNoReset(Anim enemyAction) {
         this.entityState = enemyAction;
     }
 

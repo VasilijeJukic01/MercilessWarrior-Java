@@ -6,8 +6,8 @@ import static platformer.constants.Constants.SCALE;
 
 public class Dog  extends GameObject {
 
-    public Dog(ObjType objType, int xPos, int yPos) {
-        super(objType, xPos, yPos);
+    public Dog(Obj obj, int xPos, int yPos) {
+        super(obj, xPos, yPos);
         generateHitBox();
     }
 

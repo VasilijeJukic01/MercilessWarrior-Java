@@ -28,14 +28,14 @@ public class ShopButton implements GameButton {
         images = new BufferedImage[3];
         switch (buttonType) {
             case BUY:
-                images[0] = Utils.getInstance().importImage("src/main/resources/images/buttons/BuyBtn0.png", UI.SB_WIDTH.getValue(), UI.SB_HEIGHT.getValue());
-                images[1] = Utils.getInstance().importImage("src/main/resources/images/buttons/BuyBtn1.png", UI.SB_WIDTH.getValue(), UI.SB_HEIGHT.getValue());
-                images[2] = Utils.getInstance().importImage("src/main/resources/images/buttons/BuyBtn1.png", UI.SB_WIDTH.getValue(), UI.SB_HEIGHT.getValue());
+                images[0] = Utils.getInstance().importImage("/images/buttons/BuyBtn0.png", UI.SB_WIDTH.getValue(), UI.SB_HEIGHT.getValue());
+                images[1] = Utils.getInstance().importImage("/images/buttons/BuyBtn1.png", UI.SB_WIDTH.getValue(), UI.SB_HEIGHT.getValue());
+                images[2] = Utils.getInstance().importImage("/images/buttons/BuyBtn1.png", UI.SB_WIDTH.getValue(), UI.SB_HEIGHT.getValue());
                 break;
             case LEAVE:
-                images[0] = Utils.getInstance().importImage("src/main/resources/images/buttons/LeaveBtn0.png", UI.SB_WIDTH.getValue(), UI.SB_HEIGHT.getValue());
-                images[1] = Utils.getInstance().importImage("src/main/resources/images/buttons/LeaveBtn1.png", UI.SB_WIDTH.getValue(), UI.SB_HEIGHT.getValue());
-                images[2] = Utils.getInstance().importImage("src/main/resources/images/buttons/LeaveBtn1.png", UI.SB_WIDTH.getValue(), UI.SB_HEIGHT.getValue());
+                images[0] = Utils.getInstance().importImage("/images/buttons/LeaveBtn0.png", UI.SB_WIDTH.getValue(), UI.SB_HEIGHT.getValue());
+                images[1] = Utils.getInstance().importImage("/images/buttons/LeaveBtn1.png", UI.SB_WIDTH.getValue(), UI.SB_HEIGHT.getValue());
+                images[2] = Utils.getInstance().importImage("/images/buttons/LeaveBtn1.png", UI.SB_WIDTH.getValue(), UI.SB_HEIGHT.getValue());
                 break;
             default: break;
         }

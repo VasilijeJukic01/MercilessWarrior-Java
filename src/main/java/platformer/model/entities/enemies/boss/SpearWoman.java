@@ -1,6 +1,6 @@
 package platformer.model.entities.enemies.boss;
 
-import platformer.animation.AnimType;
+import platformer.animation.Anim;
 import platformer.audio.Audio;
 import platformer.audio.Songs;
 import platformer.audio.Sounds;
@@ -26,7 +26,7 @@ import static platformer.constants.Constants.*;
 
 public class SpearWoman extends Enemy {
 
-    private AnimType prevAnim = AnimType.IDLE;
+    private Anim prevAnim = Anim.IDLE;
     private final int attackBoxWid = (int)(96 * SCALE), attackBoxReducedWid = (int)(48 * SCALE);
 
     // Flags
@@ -37,8 +37,8 @@ public class SpearWoman extends Enemy {
     private int specialType;
 
     private int attackOffset;
-    private final List<AnimType> spellAnimations =
-            new ArrayList<>(List.of(AnimType.ATTACK_1, AnimType.ATTACK_2, AnimType.ATTACK_3, AnimType.SPELL_1, AnimType.SPELL_2, AnimType.SPELL_3, AnimType.SPELL_4));
+    private final List<Anim> spellAnimations =
+            new ArrayList<>(List.of(Anim.ATTACK_1, Anim.ATTACK_2, Anim.ATTACK_3, Anim.SPELL_1, Anim.SPELL_2, Anim.SPELL_3, Anim.SPELL_4));
 
     // Physics
     private double airSpeed = 0;
@@ -67,8 +67,8 @@ public class SpearWoman extends Enemy {
 
     // Checkers
     private boolean isAirFreeze() {
-        if (entityState == AnimType.SPELL_3 && animIndex < 2) return true;
-        if (entityState == AnimType.SPELL_4) return true;
+        if (entityState == Anim.SPELL_3 && animIndex < 2) return true;
+        if (entityState == Anim.SPELL_4) return true;
         return false;
     }
 
@@ -98,11 +98,11 @@ public class SpearWoman extends Enemy {
         currentHealth -= damage;
         slashCount = 0;
         if (currentHealth <= 0) {
-            setEnemyAction(AnimType.DEATH);
+            setEnemyAction(Anim.DEATH);
         }
         else {
-            if (entityState != AnimType.IDLE) prevAnim = entityState;
-            setEnemyAction(AnimType.HIT);
+            if (entityState != Anim.IDLE) prevAnim = entityState;
+            setEnemyAction(Anim.HIT);
         }
     }
 
@@ -156,19 +156,19 @@ public class SpearWoman extends Enemy {
         attackBox.x = xPos;
         shootCount = 0;
 
-        AnimType next;
+        Anim next;
         do {
             next = spellAnimations.get(rand.nextInt(7));
-        } while (next == prevAnim || next == AnimType.ATTACK_2);
+        } while (next == prevAnim || next == Anim.ATTACK_2);
         setEnemyAction(next);
 
         // Thunder slam
-        if (entityState == AnimType.SPELL_3) {
+        if (entityState == Anim.SPELL_3) {
             hitBox.x = 12.5*TILES_SIZE;
             hitBox.y = 4*TILES_SIZE;
         }
         // Lightning ball
-        else if (entityState == AnimType.SPELL_2) {
+        else if (entityState == Anim.SPELL_2) {
             int dir = rand.nextInt(2);
             if (dir == 0) {
                 setDirection(Direction.LEFT);
@@ -181,21 +181,21 @@ public class SpearWoman extends Enemy {
             hitBox.y = yPos;
         }
         // Dash-slash
-        else if (entityState == AnimType.ATTACK_3) {
+        else if (entityState == Anim.ATTACK_3) {
             teleport(levelData, player, 8);
             changeAttackBox();
             Audio.getInstance().getAudioPlayer().playSound(Sounds.SW_ROAR_1.ordinal());
             cooldown[Cooldown.ATTACK.ordinal()] = 5.5;
         }
         // Multi Lightning ball
-        else if (entityState == AnimType.SPELL_4) {
+        else if (entityState == Anim.SPELL_4) {
             Random rand = new Random();
             specialType = rand.nextInt(2);
             hitBox.x = 12.5*TILES_SIZE;
             hitBox.y = 4*TILES_SIZE;
         }
         // Classic Attack
-        else if (entityState == AnimType.ATTACK_1 || entityState == AnimType.SPELL_1) {
+        else if (entityState == Anim.ATTACK_1 || entityState == Anim.SPELL_1) {
             rapidSlashCount = 0;
             changeAttackBox();
             animSpeed = 18;
@@ -232,7 +232,7 @@ public class SpearWoman extends Enemy {
                 if (!start && isPlayerCloseForAttack(player)) {
                     setStart(true);
                     objectManager.activateBlockers(true);
-                    setEnemyAction(AnimType.SPELL_3);
+                    setEnemyAction(Anim.SPELL_3);
                     return;
                 }
                 if (start && cooldown[Cooldown.ATTACK.ordinal()] == 0)
@@ -296,13 +296,13 @@ public class SpearWoman extends Enemy {
     }
 
     private void changeAttackBox() {
-        if (entityState == AnimType.ATTACK_1 || entityState == AnimType.ATTACK_3) attackBox.width = attackBoxReducedWid;
+        if (entityState == Anim.ATTACK_1 || entityState == Anim.ATTACK_3) attackBox.width = attackBoxReducedWid;
         if (direction == Direction.RIGHT) attackBox.x = attackBoxWid/2;
         else attackBox.x = xPos;
     }
 
     private void updateAttackBox() {
-        if (entityState == AnimType.ATTACK_1 || entityState == AnimType.ATTACK_2 || entityState == AnimType.ATTACK_3) {
+        if (entityState == Anim.ATTACK_1 || entityState == Anim.ATTACK_2 || entityState == Anim.ATTACK_3) {
             if (direction == Direction.RIGHT) attackBox.x = hitBox.x-hitBox.width + attackOffset*1.3;
             else attackBox.x = hitBox.x - attackOffset*1.3;
         }
@@ -315,7 +315,7 @@ public class SpearWoman extends Enemy {
     private void updateBoss(BufferedImage[][] animations) {
         if (cooldown != null) {             // Pre-Attack cooldown check
             coolDownTickUpdate();
-            if ((entityState != AnimType.IDLE && entityState != AnimType.HIT) && cooldown[Cooldown.ATTACK.ordinal()] != 0) return;
+            if ((entityState != Anim.IDLE && entityState != Anim.HIT) && cooldown[Cooldown.ATTACK.ordinal()] != 0) return;
         }
         animTick++;
         if (animTick >= animSpeed) {
@@ -323,18 +323,18 @@ public class SpearWoman extends Enemy {
             animIndex++;
             if (animIndex >= animations[entityState.ordinal()].length) {
                 animIndex = 0;
-                if (spellAnimations.contains(entityState) || entityState == AnimType.HIT) {
+                if (spellAnimations.contains(entityState) || entityState == Anim.HIT) {
                     // Hit finish
-                    if (entityState == AnimType.HIT) {
+                    if (entityState == Anim.HIT) {
                         shootCount = 0;
-                        setEnemyAction(AnimType.IDLE);
+                        setEnemyAction(Anim.IDLE);
                         return;
                     }
                     if (shootCount >= 2) {
                         shootCount = 0;
                     }
                     // Multi shoot finish
-                    if (entityState == AnimType.SPELL_4) {
+                    if (entityState == Anim.SPELL_4) {
                         multiShootCount++;
                         if (multiShootCount == 16) {
                             multiShootCount = 0;
@@ -342,28 +342,28 @@ public class SpearWoman extends Enemy {
                         }
                     }
                     // Attack finish
-                    else if (entityState == AnimType.ATTACK_1 || entityState == AnimType.ATTACK_2 || (entityState == AnimType.ATTACK_3 && slashCount != 0)) {
+                    else if (entityState == Anim.ATTACK_1 || entityState == Anim.ATTACK_2 || (entityState == Anim.ATTACK_3 && slashCount != 0)) {
                         // Slash count check
                         if (slashCount == 2) {
                             slashCount = 0;
                         }
                         // Change attacks
                         else {
-                            if (slashCount == 0) setEnemyAction(AnimType.ATTACK_3);
-                            else if (slashCount == 1) setEnemyAction(AnimType.ATTACK_2);
+                            if (slashCount == 0) setEnemyAction(Anim.ATTACK_3);
+                            else if (slashCount == 1) setEnemyAction(Anim.ATTACK_2);
                             slashCount++;
                             return;
                         }
                     }
-                    if (multiShootCount == 0 && entityState != AnimType.IDLE) {
+                    if (multiShootCount == 0 && entityState != Anim.IDLE) {
                         Objects.requireNonNull(cooldown)[Cooldown.ATTACK.ordinal()] = 14;
-                        if (entityState == AnimType.ATTACK_1 || entityState == AnimType.ATTACK_2) prevAnim = AnimType.ATTACK_1;
+                        if (entityState == Anim.ATTACK_1 || entityState == Anim.ATTACK_2) prevAnim = Anim.ATTACK_1;
                         else prevAnim = entityState;
                         animSpeed = 18;
-                        setEnemyAction(AnimType.IDLE);
+                        setEnemyAction(Anim.IDLE);
                     }
                 }
-                else if (entityState == AnimType.DEATH) alive = false;
+                else if (entityState == Anim.DEATH) alive = false;
                 shooting = false;
             }
         }
@@ -389,7 +389,7 @@ public class SpearWoman extends Enemy {
         multiShootFlag = 0;
         slashCount = 0;
         setDirection(Direction.LEFT);
-        setEnemyAction(AnimType.IDLE);
+        setEnemyAction(Anim.IDLE);
     }
 
     @Override

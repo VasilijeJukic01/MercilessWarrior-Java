@@ -65,9 +65,9 @@ public class ShopOverlay implements MouseControls {
 
     // Init
     private void init() {
-        this.overlay = Utils.instance.importImage("src/main/resources/images/overlay1.png", overlayWid, overlayHei);
-        this.shopText = Utils.instance.importImage("src/main/resources/images/buttons/ShopText.png", shopTextWid, shopTextHei);
-        this.slotImage = Utils.instance.importImage("src/main/resources/images/shop/Slot.png", slotWid, slotHei);
+        this.overlay = Utils.instance.importImage("/images/overlay1.png", overlayWid, overlayHei);
+        this.shopText = Utils.instance.importImage("/images/buttons/ShopText.png", shopTextWid, shopTextHei);
+        this.slotImage = Utils.instance.importImage("/images/shop/Slot.png", slotWid, slotHei);
         buttons[0] = new ShopButton(buyBtnX, buyBtnY, ButtonType.BUY);
         buttons[1] = new ShopButton(exitBtnX, exitBtnY, ButtonType.LEAVE);
     }

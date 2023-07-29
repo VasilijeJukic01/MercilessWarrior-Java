@@ -9,7 +9,7 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
-import java.io.File;
+import java.util.Objects;
 import java.util.Random;
 
 import static platformer.constants.Constants.*;
@@ -24,7 +24,7 @@ public class Utils {
     // Importing image: [(w, h) = (-1, -1) Original Size]
     public BufferedImage importImage(String name, int w, int h) {
         try {
-            BufferedImage image = ImageIO.read(new File(name));
+            BufferedImage image = ImageIO.read(Objects.requireNonNull(getClass().getResource(name)));
             if (w == -1 && h == -1) return image;
             Image temp = image.getScaledInstance(w, h, Image.SCALE_SMOOTH);
             BufferedImage resized = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
@@ -35,7 +35,7 @@ public class Utils {
 
         } catch (Exception e) {
             System.out.println("Error: Importing Image");
-            System.out.println("Name: "+name+"(w, h) = ("+w+", "+h+")");
+            System.out.println("Name: " + name + "(w, h) = (" + w + ", " + h + ")");
         }
         return null;
     }
@@ -75,7 +75,7 @@ public class Utils {
     public BufferedImage[] getAllLevels(String layer) {
         BufferedImage[] levels = new BufferedImage[3];
         for (int i = 0; i < 3; i++) {
-            levels[i] = importImage("src/main/resources/images/levels/level"+(i+1)+"_layer"+layer+".png", -1, -1);
+            levels[i] = importImage("/images/levels/level"+(i+1)+"_layer"+layer+".png", -1, -1);
         }
         return levels;
     }
@@ -259,6 +259,20 @@ public class Utils {
     }
 
     // Other
+    public void reverseArray(Object[] arr) {
+        int start = 0;
+        int end = arr.length - 1;
+
+        while (start < end) {
+            Object temp = arr[start];
+            arr[start] = arr[end];
+            arr[end] = temp;
+
+            start++;
+            end--;
+        }
+    }
+
     public Particle[] loadParticles() {
         Particle[] particles = new Particle[50];
         Random rand = new Random();
@@ -267,7 +281,7 @@ public class Utils {
             int xPos = rand.nextInt(GAME_WIDTH-10) + 10;
             int yPos = rand.nextInt(GAME_HEIGHT-10) + 10;
             BufferedImage[] images = new BufferedImage[8];
-            for (int k = 0; k < 8; k++) images[k] = importImage("src/main/resources/images/particles/Default-Particle"+k+".png", size, size);
+            for (int k = 0; k < 8; k++) images[k] = importImage("/images/particles/Default-Particle"+k+".png", size, size);
             particles[i] = new Particle(images, xPos, yPos);
         }
         return particles;

@@ -1,6 +1,6 @@
 package platformer.model.entities.enemies;
 
-import platformer.animation.AnimType;
+import platformer.animation.Anim;
 import platformer.audio.Audio;
 import platformer.audio.Sounds;
 import platformer.model.entities.Direction;
@@ -65,7 +65,7 @@ public class Skeleton extends Enemy {
             Random rand = new Random();
             double x = rand.nextDouble();
             if (x < 0.3) {
-                entityState = AnimType.BLOCK;
+                entityState = Anim.BLOCK;
                 Audio.getInstance().getAudioPlayer().playBlockSound("Enemy");
                 return;
             }
@@ -74,9 +74,9 @@ public class Skeleton extends Enemy {
         if (hitSound) Audio.getInstance().getAudioPlayer().playHitSound();
         if (currentHealth <= 0) {
             Audio.getInstance().getAudioPlayer().playSound(Sounds.SKELETON_DEATH_1.ordinal());
-            setEnemyAction(AnimType.DEATH);
+            setEnemyAction(Anim.DEATH);
         }
-        else setEnemyAction(AnimType.HIT);
+        else setEnemyAction(Anim.HIT);
         pushOffsetDirection = Direction.UP;
         pushOffset = 0;
         enemySpeed = 0.2*SCALE;
@@ -86,11 +86,11 @@ public class Skeleton extends Enemy {
         currentHealth -= damage;
         if (currentHealth <= 0) {
             Audio.getInstance().getAudioPlayer().playSound(Sounds.SKELETON_DEATH_1.ordinal());
-            setEnemyAction(AnimType.DEATH);
+            setEnemyAction(Anim.DEATH);
         }
         else {
-            if (entityState == AnimType.HIT) setEnemyActionNoReset(AnimType.HIT);
-            else setEnemyAction(AnimType.HIT);
+            if (entityState == Anim.HIT) setEnemyActionNoReset(Anim.HIT);
+            else setEnemyAction(Anim.HIT);
         }
         pushOffsetDirection = Direction.DOWN;
         pushOffset = 0;
@@ -101,14 +101,14 @@ public class Skeleton extends Enemy {
     private void updateBehavior(int[][] levelData, Player player) {
         switch (entityState) {
             case IDLE:
-                setEnemyAction(AnimType.WALK);
+                setEnemyAction(Anim.WALK);
                 animSpeed = 25;
                 break;
             case RUN:
             case WALK:
                 if (canSeePlayer(levelData, player)) directToPlayer(player);
                 if (canSeePlayer(levelData, player) && isPlayerCloseForAttack(player)) {
-                    setEnemyAction(AnimType.ATTACK_1);
+                    setEnemyAction(Anim.ATTACK_1);
                     animSpeed = 18;
                 }
                 double enemyXSpeed = 0;

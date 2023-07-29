@@ -53,7 +53,7 @@ public class ObjectManager {
         this.blockers = new ArrayList<>();
         this.blacksmiths = new ArrayList<>();
         this.dogs = new ArrayList<>();
-        this.projectileArrow = Utils.getInstance().importImage("src/main/resources/images/objs/arrow.png", ARROW_WID, ARROW_HEI);
+        this.projectileArrow = Utils.getInstance().importImage("/images/objs/arrow.png", ARROW_WID, ARROW_HEI);
         this.projectileLightningBall = AnimationUtils.getInstance().loadLightningBall(1);
         this.projectileLightningBall2 = AnimationUtils.getInstance().loadLightningBall(2);
     }
@@ -136,9 +136,9 @@ public class ObjectManager {
                 Audio.getInstance().getAudioPlayer().playCrateSound();
                 Random rand = new Random();
                 int value = rand.nextInt(4)-1;
-                ObjType potion = null;
-                if (value == 0) potion = ObjType.STAMINA_POTION;
-                else if (value == 1) potion = ObjType.HEAL_POTION;
+                Obj potion = null;
+                if (value == 0) potion = Obj.STAMINA_POTION;
+                else if (value == 1) potion = Obj.HEAL_POTION;
                 if (potion != null) potions.add(new Potion(potion, (int)(container.getHitBox().x+container.getHitBox().width/2), (int)(container.getHitBox().y-container.getHitBox().height/4)));
             }
         }
@@ -277,10 +277,10 @@ public class ObjectManager {
     }
 
     private boolean isPlayerInFront(ArrowLauncher arrowLauncher, Player player) {
-        if (arrowLauncher.getObjType() == ObjType.ARROW_LAUNCHER_LEFT) {
+        if (arrowLauncher.getObjType() == Obj.ARROW_TRAP_LEFT) {
             return arrowLauncher.getHitBox().x > player.getHitBox().x;
         }
-        else if (arrowLauncher.getObjType() == ObjType.ARROW_LAUNCHER_RIGHT) {
+        else if (arrowLauncher.getObjType() == Obj.ARROW_TRAP_RIGHT) {
             return arrowLauncher.getHitBox().x < player.getHitBox().x;
         }
         return false;
@@ -289,7 +289,7 @@ public class ObjectManager {
     // Projectiles/Activators
     private void shootArrow(ArrowLauncher arrowLauncher) {
         Audio.getInstance().getAudioPlayer().playSound(Sounds.ARROW.ordinal());
-        Direction direction = (arrowLauncher.getObjType() == ObjType.ARROW_LAUNCHER_RIGHT) ? Direction.LEFT : Direction.RIGHT;
+        Direction direction = (arrowLauncher.getObjType() == Obj.ARROW_TRAP_RIGHT) ? Direction.LEFT : Direction.RIGHT;
         projectiles.add(new Arrow((int)arrowLauncher.getHitBox().x, (int)arrowLauncher.getHitBox().y, direction));
     }
 
@@ -416,7 +416,7 @@ public class ObjectManager {
         for (int i = 0; i < n; i++) {
             int x = rand.nextInt((int)location.width)+(int)location.x;
             int y = rand.nextInt((int)(location.height/3)) + (int)location.y + 2*(int)location.height/3;
-            Coin coin = new Coin(ObjType.COIN, x, y);
+            Coin coin = new Coin(Obj.COIN, x, y);
             coins.add(coin);
         }
     }
@@ -466,17 +466,17 @@ public class ObjectManager {
     private void renderArrowLaunchers(Graphics g, int xLevelOffset, int yLevelOffset) {
         for (ArrowLauncher al : arrowLaunchers) {
             int fS = 1, fC = 0;
-            int sideOffset = 5;
+            int sideOffset = 32;
             int index = al.getObjType().ordinal();
-            if (al.getObjType() == ObjType.ARROW_LAUNCHER_RIGHT) {
+            if (al.getObjType() == Obj.ARROW_TRAP_RIGHT) {
                 fS = -1;
-                fC = ARROW_LAUNCHER_WID;
-                sideOffset = -5;
+                fC = ARROW_TRAP_WID;
+                sideOffset = -32;
                 index--;
             }
             int x = (int)al.getHitBox().x-al.getXOffset()-xLevelOffset+fC-(int)(sideOffset*SCALE);
             int y = (int)al.getHitBox().y-al.getYOffset()-yLevelOffset+(int)(1*SCALE);
-            g.drawImage(objects[index][al.getAnimIndex()], x, y, fS*ARROW_LAUNCHER_WID, ARROW_LAUNCHER_HEI, null);
+            g.drawImage(objects[index][al.getAnimIndex()], x, y, fS* ARROW_TRAP_WID, ARROW_TRAP_HEI, null);
             al.hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.BLUE);
         }
     }
@@ -490,7 +490,7 @@ public class ObjectManager {
             if (p instanceof Arrow) {
                 if (p.getDirection() == Direction.LEFT) {
                     fS = -1;
-                    fC = ARROW_LAUNCHER_WID;
+                    fC = ARROW_TRAP_WID;
                 }
                 int x = (int)p.getHitBox().x-xLevelOffset+fC;
                 int y = (int)p.getHitBox().y-yLevelOffset;

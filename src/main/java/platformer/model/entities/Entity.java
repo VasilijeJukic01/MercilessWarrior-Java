@@ -1,6 +1,6 @@
 package platformer.model.entities;
 
-import platformer.animation.AnimType;
+import platformer.animation.Anim;
 import platformer.debug.Debug;
 import platformer.debug.DebugSettings;
 import platformer.utils.Utils;
@@ -14,7 +14,7 @@ public abstract class Entity implements Debug {
     protected int width, height;
     protected Rectangle2D.Double hitBox;
 
-    protected AnimType entityState = AnimType.IDLE;
+    protected Anim entityState = Anim.IDLE;
     protected int flipCoefficient = 0, flipSign = 1;
     protected boolean inAir;
 

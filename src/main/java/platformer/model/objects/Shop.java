@@ -20,8 +20,8 @@ public class Shop extends GameObject {
     private final ArrayList<ShopItem> shopItems;
     private final Random rand;
 
-    public Shop(ObjType objType, int xPos, int yPos) {
-        super(objType, xPos, yPos);
+    public Shop(Obj obj, int xPos, int yPos) {
+        super(obj, xPos, yPos);
         this.shopItems = new ArrayList<>();
         this.rand = new Random();
         generateHitBox();
@@ -40,9 +40,9 @@ public class Shop extends GameObject {
 
     private void getItems() {
         int slot = 0;
-        BufferedImage healthItemImg = Utils.getInstance().importImage("src/main/resources/images/shop/HealthItem.png", -1, -1);
+        BufferedImage healthItemImg = Utils.getInstance().importImage("/images/shop/HealthItem.png", -1, -1);
         shopItems.add(new ShopItem(ItemType.HEALTH, healthItemImg, slot++, rand.nextInt(10)+1, 15));
-        BufferedImage staminaItemImg = Utils.getInstance().importImage("src/main/resources/images/shop/StaminaItem.png", -1, -1);
+        BufferedImage staminaItemImg = Utils.getInstance().importImage("/images/shop/StaminaItem.png", -1, -1);
         shopItems.add(new ShopItem(ItemType.STAMINA, staminaItemImg, slot, rand.nextInt(6)+1, 20));
     }
 

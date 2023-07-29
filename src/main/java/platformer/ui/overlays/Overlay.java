@@ -25,7 +25,7 @@ public class Overlay {
 
     private void init() {
         this.background = AnimationUtils.getInstance().loadMenuAnimation();
-        this.overlay = Utils.instance.importImage("src/main/resources/images/overlay1.png",overlayWid, overlayHei);
+        this.overlay = Utils.instance.importImage("/images/overlay1.png",overlayWid, overlayHei);
     }
 
     private void updateAnimation() {

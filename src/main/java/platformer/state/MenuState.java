@@ -28,7 +28,7 @@ public class MenuState extends StateAbstraction implements State{
     }
 
     private void loadImages() {
-        this.menuLogo = Utils.getInstance().importImage("src/main/resources/images/menu/menuLogo.png", 300, 150);
+        this.menuLogo = Utils.getInstance().importImage("/images/menu/menuLogo.png", 300, 150);
     }
 
     private void loadButtons() {
@@ -38,6 +38,21 @@ public class MenuState extends StateAbstraction implements State{
         buttons[3] = new MenuButton(GAME_WIDTH / 2, (int)(335*SCALE), ButtonType.QUIT);
     }
 
+    // Render
+    private void renderMenuImages(Graphics g) {
+        Overlay.getInstance().renderMenu(g);
+        int logoX = (GAME_WIDTH / 3) - (int)(12*SCALE), logoY = (int)(10*SCALE);
+        int logoW = (int)(menuLogo.getWidth()*SCALE), logoH = (int)(menuLogo.getHeight()*SCALE);
+        g.drawImage(menuLogo, logoX, logoY, logoW, logoH, null);
+    }
+
+    private void renderMenuButtons(Graphics g) {
+        for (MenuButton button : buttons) {
+            button.render(g);
+        }
+    }
+
+    // Core
     @Override
     public void update() {
         Overlay.getInstance().update();
@@ -48,17 +63,8 @@ public class MenuState extends StateAbstraction implements State{
 
     @Override
     public void render(Graphics g) {
-        Overlay.getInstance().renderMenu(g);
-        int logoX = (GAME_WIDTH / 3) - (int)(12*SCALE), logoY = (int)(10*SCALE);
-        int logoW = (int)(menuLogo.getWidth()*SCALE), logoH = (int)(menuLogo.getHeight()*SCALE);
-        g.drawImage(menuLogo, logoX, logoY, logoW, logoH, null);
-
-        for (MenuButton button : buttons) {
-            button.render(g);
-        }
-
-        g.setColor(new Color(255, 255, 255));
-        g.setFont(new Font("Arial", Font.PLAIN, (int)(7.5*SCALE)));
+        renderMenuImages(g);
+        renderMenuButtons(g);
     }
 
     @Override
@@ -87,11 +93,6 @@ public class MenuState extends StateAbstraction implements State{
         }
         for (MenuButton button : buttons) {
             button.resetMouseSet();
-        }
-        try {
-            Thread.sleep(100);
-        } catch (InterruptedException ex) {
-            ex.printStackTrace();
         }
     }
 

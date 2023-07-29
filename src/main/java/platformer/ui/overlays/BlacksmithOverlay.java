@@ -68,9 +68,9 @@ public class BlacksmithOverlay implements MouseControls {
         this.SLOT_MAX_COL = playingState.getPerksManager().getSlotMaxCol();
         this.SLOT_MAX_ROW = playingState.getPerksManager().getSlotMaxRow();
         this.placeHolders = playingState.getPerksManager().getPlaceHolders();
-        this.overlay = Utils.instance.importImage("src/main/resources/images/overlay1.png", overlayWid, overlayHei);
-        this.shopText = Utils.instance.importImage("src/main/resources/images/buttons/PerksText.png", shopTextWid, shopTextHei);
-        this.slotImage = Utils.instance.importImage("src/main/resources/images/shop/Slot.png", slotWid, slotHei);
+        this.overlay = Utils.instance.importImage("/images/overlay1.png", overlayWid, overlayHei);
+        this.shopText = Utils.instance.importImage("/images/buttons/PerksText.png", shopTextWid, shopTextHei);
+        this.slotImage = Utils.instance.importImage("/images/shop/Slot.png", slotWid, slotHei);
         buttons[0] = new ShopButton(buyBtnX, buyBtnY, ButtonType.BUY);
         buttons[1] = new ShopButton(exitBtnX, exitBtnY, ButtonType.LEAVE);
         this.selectedSlot = new Rectangle2D.Double((slot%SLOT_MAX_ROW)*slotSpacing+slotX, (slot/SLOT_MAX_ROW)*slotSpacing+slotY, slotWid, slotHei);

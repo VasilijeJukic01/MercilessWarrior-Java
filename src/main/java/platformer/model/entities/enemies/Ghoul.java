@@ -1,6 +1,6 @@
 package platformer.model.entities.enemies;
 
-import platformer.animation.AnimType;
+import platformer.animation.Anim;
 import platformer.audio.Audio;
 import platformer.audio.Sounds;
 import platformer.model.entities.Cooldown;
@@ -67,7 +67,7 @@ public class Ghoul extends Enemy {
             Random rand = new Random();
             double x = rand.nextDouble();
             if (x < 0.3) {
-                entityState = AnimType.HIDE;
+                entityState = Anim.HIDE;
                 Audio.getInstance().getAudioPlayer().playSound(Sounds.GHOUL_HIDE.ordinal());
                 return;
             }
@@ -76,20 +76,20 @@ public class Ghoul extends Enemy {
         if (hitSound) Audio.getInstance().getAudioPlayer().playHitSound();
         if (currentHealth <= 0) {
             Audio.getInstance().getAudioPlayer().playSound(Sounds.GHOUL_DEATH.ordinal());
-            setEnemyAction(AnimType.DEATH);
+            setEnemyAction(Anim.DEATH);
         }
-        else setEnemyAction(AnimType.HIT);
+        else setEnemyAction(Anim.HIT);
     }
 
     public void spellHit(double damage) {
         currentHealth -= damage;
         if (currentHealth <= 0) {
             Audio.getInstance().getAudioPlayer().playSound(Sounds.GHOUL_DEATH.ordinal());
-            setEnemyAction(AnimType.DEATH);
+            setEnemyAction(Anim.DEATH);
         }
         else {
-            if (entityState == AnimType.HIT) setEnemyActionNoReset(AnimType.HIT);
-            else setEnemyAction(AnimType.HIT);
+            if (entityState == Anim.HIT) setEnemyActionNoReset(Anim.HIT);
+            else setEnemyAction(Anim.HIT);
         }
     }
 
@@ -97,14 +97,14 @@ public class Ghoul extends Enemy {
     private void updateBehavior(int[][] levelData, Player player) {
         switch (entityState) {
             case IDLE:
-                if (cooldown[Cooldown.ATTACK.ordinal()] == 0) setEnemyAction(AnimType.WALK);
+                if (cooldown[Cooldown.ATTACK.ordinal()] == 0) setEnemyAction(Anim.WALK);
                 animSpeed = 25;
                 break;
             case RUN:
             case WALK:
                 if (canSeePlayer(levelData, player)) directToPlayer(player);
                 if (canSeePlayer(levelData, player) && isPlayerCloseForAttack(player) && cooldown[Cooldown.ATTACK.ordinal()] == 0) {
-                    setEnemyAction(AnimType.ATTACK_1);
+                    setEnemyAction(Anim.ATTACK_1);
                     animSpeed = 15;
                 }
                 double enemyXSpeed = 0;
@@ -150,7 +150,7 @@ public class Ghoul extends Enemy {
                 hitBox.x += xSpeed * 12;
                 return;
             }
-        entityState = AnimType.IDLE;
+        entityState = Anim.IDLE;
     }
 
     private void updateAttackBox() {
