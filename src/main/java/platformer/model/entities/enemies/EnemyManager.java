@@ -44,9 +44,9 @@ public class EnemyManager {
 
     // Init
     private void init() {
-        this.skeletonAnimations = AnimationUtils.getInstance().loadSkeletonAnimations();
-        this.ghoulAnimations = AnimationUtils.getInstance().loadGhoulAnimation();
-        this.spearWomanAnimations = AnimationUtils.getInstance().loadSpearWomanAnimations();
+        this.skeletonAnimations = AnimationUtils.getInstance().loadSkeletonAnimations(SKELETON_WIDTH, SKELETON_HEIGHT);
+        this.ghoulAnimations = AnimationUtils.getInstance().loadGhoulAnimation(GHOUL_WIDTH, GHOUL_HEIGHT);
+        this.spearWomanAnimations = AnimationUtils.getInstance().loadSpearWomanAnimations(SW_WIDTH, SW_HEIGHT);
     }
 
     public void loadEnemies(Level level) {

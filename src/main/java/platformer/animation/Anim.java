@@ -15,9 +15,9 @@ public enum Anim {
     WALK,       // 11
     WALL,       // 12
     TRANSFORM,  // 13
-    SPELL_1,    // 14
-    HIDE,       // 15
-    REVEAL,     // 16
+    HIDE,       // 14
+    REVEAL,     // 15
+    SPELL_1,    // 16
     SPELL_2,    // 17
     SPELL_3,    // 18
     SPELL_4,    // 19

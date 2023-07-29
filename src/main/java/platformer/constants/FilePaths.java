@@ -2,6 +2,10 @@ package platformer.constants;
 
 public class FilePaths {
 
+    // Player
+    public static final String PLAYER_SHEET = "/images/player/playerSheet.png";
+    public static final String PLAYER_TRANSFORM_SHEET = "/images/player/transformSheet.png";
+
     // Enemy
     public static final String SKELETON_SHEET = "/images/enemies/SkeletonSprite.png";
     public static final String GHOUL_SHEET = "/images/enemies/GhoulSprite.png";
@@ -21,5 +25,10 @@ public class FilePaths {
     // Spells
     public static final String LIGHTNING_SHEET = "/images/spells/LightningSprite.png";
     public static final String FLASH_SHEET = "/images/spells/FlashSprite.png";
+    public static final String LIGHTNING_BALL_1_SHEET = "/images/objs/lightningBall.png";
+    public static final String LIGHTNING_BALL_2_SHEET = "/images/objs/lightningBall2.png";
+
+    // Effects
+    public static final String DUST_SHEET_1 = "/images/particles/DustSprite.png";
 
 }

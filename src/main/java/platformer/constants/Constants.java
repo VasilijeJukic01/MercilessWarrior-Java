@@ -20,8 +20,8 @@ public class Constants {
     public static final String DEBUG_PREFIX         = "[DEBUG]         ";
 
     // Player Constants
-    public static final int PLAYER_DEFAULT_WIDTH = 100;
-    public static final int PLAYER_DEFAULT_HEIGHT = 90;
+    public static final int PLAYER_DEFAULT_WIDTH = 125;
+    public static final int PLAYER_DEFAULT_HEIGHT = 80;
     public static final int PLAYER_WIDTH = (int)(PLAYER_DEFAULT_WIDTH * SCALE);
     public static final int PLAYER_HEIGHT = (int)(PLAYER_DEFAULT_HEIGHT * SCALE);
 

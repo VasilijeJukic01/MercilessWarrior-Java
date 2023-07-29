@@ -21,6 +21,8 @@ import java.awt.image.BufferedImage;
 
 import static platformer.constants.Constants.SCALE;
 import static platformer.constants.Constants.TILES_SIZE;
+import static platformer.constants.FilePaths.PLAYER_SHEET;
+import static platformer.constants.FilePaths.PLAYER_TRANSFORM_SHEET;
 
 @SuppressWarnings("FieldCanBeLocal")
 public class Player extends Entity {
@@ -67,8 +69,8 @@ public class Player extends Entity {
         this.game = game;
         this.enemyManager = enemyManager;
         this.objectManager = objectManager;
-        this.animations = AnimationUtils.getInstance().loadPlayerAnimations(width, height, "player");
-        this.transformAnimations = AnimationUtils.getInstance().loadPlayerAnimations(width, height, "transform");
+        this.animations = AnimationUtils.getInstance().loadPlayerAnimations(width, height, PLAYER_SHEET);
+        this.transformAnimations = AnimationUtils.getInstance().loadPlayerAnimations(width, height, PLAYER_TRANSFORM_SHEET);
         this.effects = AnimationUtils.getInstance().loadEffects();
         this.userInterface = new UserInterface(this);
         initHitBox((int)(15*SCALE), (int)(44*SCALE));
@@ -504,9 +506,9 @@ public class Player extends Entity {
                 int newFlip = (flipCoefficient != 0) ? (0) : (int)(width-hitBox.width-10*SCALE), newSign = (flipSign == 1) ? (-1) : (1);
                 int effectXPos = (int)(hitBox.x-xHitBoxOffset-xLevelOffset)+(int)(newSign*27*SCALE)+newFlip;
                 int effectYPos = (int)(hitBox.y-yHitBoxOffset-yLevelOffset)-(int)(SCALE);
-                int effectWid = newSign*(effects[1][effectIndex].getWidth()+(int)(10*SCALE));
-                int effectHei = effects[1][effectIndex].getHeight()+(int)(50*SCALE);
-                g.drawImage(effects[1][effectIndex], effectXPos, effectYPos, effectWid, effectHei, null);
+                int effectWid = newSign*(effects[EffectType.WALL_SLIDE.ordinal()][effectIndex].getWidth()+(int)(10*SCALE));
+                int effectHei = effects[EffectType.WALL_SLIDE.ordinal()][effectIndex].getHeight()+(int)(50*SCALE);
+                g.drawImage(effects[EffectType.WALL_SLIDE.ordinal()][effectIndex], effectXPos, effectYPos, effectWid, effectHei, null);
             }
         }
         catch (Exception ignored) {}

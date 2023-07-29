@@ -22,6 +22,8 @@ import java.util.ArrayList;
 import java.util.Random;
 
 import static platformer.constants.Constants.*;
+import static platformer.constants.FilePaths.LIGHTNING_BALL_1_SHEET;
+import static platformer.constants.FilePaths.LIGHTNING_BALL_2_SHEET;
 
 public class ObjectManager {
 
@@ -54,8 +56,8 @@ public class ObjectManager {
         this.blacksmiths = new ArrayList<>();
         this.dogs = new ArrayList<>();
         this.projectileArrow = Utils.getInstance().importImage("/images/objs/arrow.png", ARROW_WID, ARROW_HEI);
-        this.projectileLightningBall = AnimationUtils.getInstance().loadLightningBall(1);
-        this.projectileLightningBall2 = AnimationUtils.getInstance().loadLightningBall(2);
+        this.projectileLightningBall = AnimationUtils.getInstance().loadLightningBall(LIGHTNING_BALL_1_SHEET);
+        this.projectileLightningBall2 = AnimationUtils.getInstance().loadLightningBall(LIGHTNING_BALL_2_SHEET);
     }
 
     public void loadObjects(Level level) {
