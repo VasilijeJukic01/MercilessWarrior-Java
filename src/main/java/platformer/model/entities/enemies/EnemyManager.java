@@ -1,7 +1,7 @@
 package platformer.model.entities.enemies;
 
 import platformer.animation.Anim;
-import platformer.animation.AnimationUtils;
+import platformer.animation.AnimUtils;
 import platformer.audio.Audio;
 import platformer.debug.logger.Message;
 import platformer.debug.logger.Logger;
@@ -44,9 +44,9 @@ public class EnemyManager {
 
     // Init
     private void init() {
-        this.skeletonAnimations = AnimationUtils.getInstance().loadSkeletonAnimations(SKELETON_WIDTH, SKELETON_HEIGHT);
-        this.ghoulAnimations = AnimationUtils.getInstance().loadGhoulAnimation(GHOUL_WIDTH, GHOUL_HEIGHT);
-        this.spearWomanAnimations = AnimationUtils.getInstance().loadSpearWomanAnimations(SW_WIDTH, SW_HEIGHT);
+        this.skeletonAnimations = AnimUtils.getInstance().loadSkeletonAnimations(SKELETON_WIDTH, SKELETON_HEIGHT);
+        this.ghoulAnimations = AnimUtils.getInstance().loadGhoulAnimation(GHOUL_WIDTH, GHOUL_HEIGHT);
+        this.spearWomanAnimations = AnimUtils.getInstance().loadSpearWomanAnimations(SW_WIDTH, SW_HEIGHT);
     }
 
     public void loadEnemies(Level level) {

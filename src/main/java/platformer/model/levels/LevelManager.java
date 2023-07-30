@@ -1,6 +1,6 @@
 package platformer.model.levels;
 
-import platformer.animation.AnimationUtils;
+import platformer.animation.AnimUtils;
 import platformer.debug.logger.Message;
 import platformer.core.Game;
 import platformer.debug.logger.Logger;
@@ -27,7 +27,7 @@ public class LevelManager {
     public LevelManager(Game game, PlayingState playingState) {
         this.game = game;
         this.playingState = playingState;
-        this.particles = AnimationUtils.getInstance().loadParticles();
+        this.particles = AnimUtils.getInstance().loadParticles();
         this.levelObjectManager = new LevelObjectManager();
         loadFirstLayerSprite();
         buildLevels();

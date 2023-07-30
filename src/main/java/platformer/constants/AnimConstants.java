@@ -25,4 +25,7 @@ public class AnimConstants {
     public static final int DUST1_W = 64, DUST1_H = 64;
     public static final int PARTICLE_W = 181, PARTICLE_H = 181;
 
+    public static final int BTN_W = 700, BTN_H = 230;
+    public static final int SMALL_BTN_W = 150, SMALL_BTN_H = 158;
+    public static final int SL_BTN_W = 143, SL_BTN_H = 149;
 }

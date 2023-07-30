@@ -32,4 +32,13 @@ public class FilePaths {
     public static final String DUST_SHEET_1 = "/images/particles/DustSprite.png";
     public static final String PARTICLE_SHEET = "/images/particles/ParticleSprite.png";
 
+    // Buttons
+    public static final String BTN_BUY_SHEET = "/images/buttons/BuyButton.png";
+    public static final String BTN_LEAVE_SHEET = "/images/buttons/LeaveButton.png";
+    public static final String CRE_BTN_SHEET = "/images/buttons/CREButtons.png";
+    public static final String MENU_BTN_SHEET = "/images/buttons/MenuButtons.png";
+    public static final String AUDIO_BTN_SHEET = "/images/buttons/AudioButtons.png";
+    public static final String SLIDE_BTN_SHEET = "/images/buttons/SliderButton.png";
+    public static final String SLIDER_IMG = "/images/buttons/Slider.png";
+
 }

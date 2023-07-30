@@ -4,7 +4,6 @@ import platformer.audio.Audio;
 import platformer.audio.Songs;
 import platformer.core.Game;
 import platformer.ui.MouseControls;
-import platformer.ui.UI;
 import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.CREButton;
 import platformer.ui.buttons.PauseButton;
@@ -58,8 +57,8 @@ public class GameOverOverlay implements MouseControls {
         this.deadText = Utils.instance.importImage("/images/buttons/DeadText.png", deadTextWid, deadTextHei);
         this.respawnText = Utils.instance.importImage("/images/buttons/RespawnText.png", respawnTextWid, respawnTextHei);
         this.menuText = Utils.instance.importImage("/images/buttons/MenuText.png", menuTextWid, menuTextHei);
-        this.retryBtn = new CREButton(retryX, retryY, UI.CRE_B_SIZE.getValue(), UI.CRE_B_SIZE.getValue(), ButtonType.RETRY);
-        this.menuBtn = new CREButton(menuX, menuY, UI.CRE_B_SIZE.getValue(), UI.CRE_B_SIZE.getValue(), ButtonType.EXIT);
+        this.retryBtn = new CREButton(retryX, retryY, CRE_BTN_SIZE, CRE_BTN_SIZE, ButtonType.RETRY);
+        this.menuBtn = new CREButton(menuX, menuY, CRE_BTN_SIZE, CRE_BTN_SIZE, ButtonType.EXIT);
     }
 
     // Core

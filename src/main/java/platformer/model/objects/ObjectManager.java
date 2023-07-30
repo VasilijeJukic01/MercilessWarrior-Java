@@ -1,6 +1,6 @@
 package platformer.model.objects;
 
-import platformer.animation.AnimationUtils;
+import platformer.animation.AnimUtils;
 import platformer.audio.Audio;
 import platformer.audio.Sounds;
 import platformer.debug.logger.Message;
@@ -48,7 +48,7 @@ public class ObjectManager {
 
     public ObjectManager(PlayingState playingState) {
         this.playingState = playingState;
-        this.objects = AnimationUtils.getInstance().loadObjects();
+        this.objects = AnimUtils.getInstance().loadObjects();
         this.projectiles = new ArrayList<>();
         this.coins = new ArrayList<>();
         this.shops = new ArrayList<>();
@@ -56,8 +56,8 @@ public class ObjectManager {
         this.blacksmiths = new ArrayList<>();
         this.dogs = new ArrayList<>();
         this.projectileArrow = Utils.getInstance().importImage("/images/objs/arrow.png", ARROW_WID, ARROW_HEI);
-        this.projectileLightningBall = AnimationUtils.getInstance().loadLightningBall(LIGHTNING_BALL_1_SHEET);
-        this.projectileLightningBall2 = AnimationUtils.getInstance().loadLightningBall(LIGHTNING_BALL_2_SHEET);
+        this.projectileLightningBall = AnimUtils.getInstance().loadLightningBall(LIGHTNING_BALL_1_SHEET);
+        this.projectileLightningBall2 = AnimUtils.getInstance().loadLightningBall(LIGHTNING_BALL_2_SHEET);
     }
 
     public void loadObjects(Level level) {

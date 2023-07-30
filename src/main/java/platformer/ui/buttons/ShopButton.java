@@ -1,10 +1,15 @@
 package platformer.ui.buttons;
 
-import platformer.ui.UI;
-import platformer.utils.Utils;
+import platformer.animation.AnimUtils;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+
+import static platformer.constants.AnimConstants.*;
+import static platformer.constants.Constants.SMALL_BTN_HEI;
+import static platformer.constants.Constants.SMALL_BTN_WID;
+import static platformer.constants.FilePaths.BTN_BUY_SHEET;
+import static platformer.constants.FilePaths.BTN_LEAVE_SHEET;
 
 public class ShopButton implements GameButton {
 
@@ -20,22 +25,17 @@ public class ShopButton implements GameButton {
         this.xPos = xPos;
         this.yPos = yPos;
         this.buttonType = buttonType;
-        this.buttonHitBox = new Rectangle(xPos, yPos, UI.SB_WIDTH.getValue(), UI.SB_HEIGHT.getValue());
+        this.buttonHitBox = new Rectangle(xPos, yPos, SMALL_BTN_WID, SMALL_BTN_HEI);
         loadButtons();
     }
 
     private void loadButtons() {
-        images = new BufferedImage[3];
         switch (buttonType) {
             case BUY:
-                images[0] = Utils.getInstance().importImage("/images/buttons/BuyBtn0.png", UI.SB_WIDTH.getValue(), UI.SB_HEIGHT.getValue());
-                images[1] = Utils.getInstance().importImage("/images/buttons/BuyBtn1.png", UI.SB_WIDTH.getValue(), UI.SB_HEIGHT.getValue());
-                images[2] = Utils.getInstance().importImage("/images/buttons/BuyBtn1.png", UI.SB_WIDTH.getValue(), UI.SB_HEIGHT.getValue());
+                images = AnimUtils.getInstance().loadFromSprite(BTN_BUY_SHEET, 3, 0, SMALL_BTN_WID, SMALL_BTN_HEI, 0, BTN_W, BTN_H);
                 break;
             case LEAVE:
-                images[0] = Utils.getInstance().importImage("/images/buttons/LeaveBtn0.png", UI.SB_WIDTH.getValue(), UI.SB_HEIGHT.getValue());
-                images[1] = Utils.getInstance().importImage("/images/buttons/LeaveBtn1.png", UI.SB_WIDTH.getValue(), UI.SB_HEIGHT.getValue());
-                images[2] = Utils.getInstance().importImage("/images/buttons/LeaveBtn1.png", UI.SB_WIDTH.getValue(), UI.SB_HEIGHT.getValue());
+                images = AnimUtils.getInstance().loadFromSprite(BTN_LEAVE_SHEET, 3, 0, SMALL_BTN_WID, SMALL_BTN_HEI, 0, BTN_W, BTN_H);
                 break;
             default: break;
         }
@@ -50,8 +50,7 @@ public class ShopButton implements GameButton {
 
     @Override
     public void render(Graphics g) {
-        if (mousePressed) g.drawImage(images[imageIndex], xPos, yPos+10, UI.SB_WIDTH.getValue()-20, UI.SB_HEIGHT.getValue()-20, null);
-        else g.drawImage(images[imageIndex], xPos, yPos, UI.SB_WIDTH.getValue(), UI.SB_HEIGHT.getValue(), null);
+        g.drawImage(images[imageIndex], xPos, yPos, SMALL_BTN_WID, SMALL_BTN_HEI, null);
     }
 
     public void resetMouseSet() {

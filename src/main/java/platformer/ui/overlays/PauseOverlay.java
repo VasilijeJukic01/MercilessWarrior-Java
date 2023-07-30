@@ -5,7 +5,6 @@ import platformer.audio.Songs;
 import platformer.core.Game;
 import platformer.ui.AudioOptions;
 import platformer.ui.MouseControls;
-import platformer.ui.UI;
 import platformer.ui.buttons.*;
 import platformer.utils.Utils;
 
@@ -63,9 +62,9 @@ public class PauseOverlay implements MouseControls {
         this.SFXText = Utils.instance.importImage("/images/buttons/SFXText.png", SFXTextWid, SFXTextHei);
         this.musicText = Utils.instance.importImage("/images/buttons/MusicText.png", musicTextWid, musicTextHei);
         this.volumeText = Utils.instance.importImage("/images/buttons/VolumeText.png", volumeTextWid, volumeTextHei);
-        this.continueBtn = new CREButton(continueBtnX, continueBtnY, UI.CRE_B_SIZE.getValue(), UI.CRE_B_SIZE.getValue(), ButtonType.CONTINUE);
-        this.retryBtn = new CREButton(retryBtnX, retryBtnY, UI.CRE_B_SIZE.getValue(), UI.CRE_B_SIZE.getValue(), ButtonType.RETRY);
-        this.exitBtn = new CREButton(exitBtnX, exitBtnY, UI.CRE_B_SIZE.getValue(), UI.CRE_B_SIZE.getValue(), ButtonType.EXIT);
+        this.continueBtn = new CREButton(continueBtnX, continueBtnY, CRE_BTN_SIZE, CRE_BTN_SIZE, ButtonType.CONTINUE);
+        this.retryBtn = new CREButton(retryBtnX, retryBtnY, CRE_BTN_SIZE, CRE_BTN_SIZE, ButtonType.RETRY);
+        this.exitBtn = new CREButton(exitBtnX, exitBtnY, CRE_BTN_SIZE, CRE_BTN_SIZE, ButtonType.EXIT);
     }
 
     // Core

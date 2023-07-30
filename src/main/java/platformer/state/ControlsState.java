@@ -1,7 +1,6 @@
 package platformer.state;
 
 import platformer.core.Game;
-import platformer.ui.UI;
 import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.CREButton;
 import platformer.ui.buttons.PauseButton;
@@ -14,6 +13,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 
+import static platformer.constants.Constants.CRE_BTN_SIZE;
 import static platformer.constants.Constants.SCALE;
 
 public class ControlsState extends StateAbstraction implements State {
@@ -48,7 +48,7 @@ public class ControlsState extends StateAbstraction implements State {
     }
 
     private void loadButtons() {
-        this.exitBtn = new CREButton(exitBtnX, exitBtnY, UI.CRE_B_SIZE.getValue(), UI.CRE_B_SIZE.getValue(), ButtonType.EXIT);
+        this.exitBtn = new CREButton(exitBtnX, exitBtnY, CRE_BTN_SIZE, CRE_BTN_SIZE, ButtonType.EXIT);
     }
 
     // Core

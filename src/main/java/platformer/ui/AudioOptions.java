@@ -7,6 +7,7 @@ import java.awt.*;
 import java.awt.event.MouseEvent;
 
 import static platformer.constants.Constants.SCALE;
+import static platformer.constants.Constants.SOUND_BTN_SIZE;
 
 public class AudioOptions implements MouseControls{
 
@@ -27,9 +28,9 @@ public class AudioOptions implements MouseControls{
     }
 
     private void init() {
-        this.sfxBtn = new SoundButton(sfxX, sfxY, UI.SOUND_B_SIZE.getValue(), UI.SOUND_B_SIZE.getValue());
-        this.musicBtn = new MusicButton(musicX, musicY, UI.SOUND_B_SIZE.getValue(), UI.SOUND_B_SIZE.getValue());
-        this.volumeButton = new VolumeButton(volumeX, volumeY, UI.SLIDER_WIDTH.getValue(), UI.VOLUME_HEIGHT.getValue());
+        this.sfxBtn = new SoundButton(sfxX, sfxY, SOUND_BTN_SIZE, SOUND_BTN_SIZE);
+        this.musicBtn = new MusicButton(musicX, musicY, SOUND_BTN_SIZE, SOUND_BTN_SIZE);
+        this.volumeButton = new VolumeButton(volumeX, volumeY, SOUND_BTN_SIZE, SOUND_BTN_SIZE);
     }
 
     public void update() {

@@ -1,6 +1,6 @@
 package platformer.model.spells;
 
-import platformer.animation.AnimationUtils;
+import platformer.animation.AnimUtils;
 import platformer.model.entities.Player;
 import platformer.state.PlayingState;
 
@@ -34,8 +34,8 @@ public class SpellManager {
         this.playingState = playingState;
         Rectangle2D.Double hitBox = playingState.getPlayer().getHitBox();
         this.flames = new Flames(SpellType.FLAME_1, (int)hitBox.x, (int)hitBox.x,  (int)(hitBox.width*2.5),  (int)(hitBox.height-8.5*SCALE));
-        this.lightningAnimations = AnimationUtils.getInstance().loadLightningAnimations();
-        this.flashAnimations = AnimationUtils.getInstance().loadFlashAnimations();
+        this.lightningAnimations = AnimUtils.getInstance().loadLightningAnimations();
+        this.flashAnimations = AnimUtils.getInstance().loadFlashAnimations();
         gatherSpellPlacements();
     }
 

@@ -1,7 +1,7 @@
 package platformer.model.entities;
 
 import platformer.animation.Anim;
-import platformer.animation.AnimationUtils;
+import platformer.animation.AnimUtils;
 import platformer.audio.Audio;
 import platformer.audio.Sounds;
 import platformer.core.Game;
@@ -69,9 +69,9 @@ public class Player extends Entity {
         this.game = game;
         this.enemyManager = enemyManager;
         this.objectManager = objectManager;
-        this.animations = AnimationUtils.getInstance().loadPlayerAnimations(width, height, PLAYER_SHEET);
-        this.transformAnimations = AnimationUtils.getInstance().loadPlayerAnimations(width, height, PLAYER_TRANSFORM_SHEET);
-        this.effects = AnimationUtils.getInstance().loadEffects();
+        this.animations = AnimUtils.getInstance().loadPlayerAnimations(width, height, PLAYER_SHEET);
+        this.transformAnimations = AnimUtils.getInstance().loadPlayerAnimations(width, height, PLAYER_TRANSFORM_SHEET);
+        this.effects = AnimUtils.getInstance().loadEffects();
         this.userInterface = new UserInterface(this);
         initHitBox((int)(15*SCALE), (int)(44*SCALE));
         initAttackBox();

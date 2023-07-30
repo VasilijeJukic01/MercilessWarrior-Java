@@ -129,6 +129,32 @@ public class Constants {
     public static final int FLASH_WIDTH = (int)(FLASH_DEFAULT_WIDTH * SCALE);
     public static final int FLASH_HEIGHT = (int)(FLASH_DEFAULT_HEIGHT * SCALE);
 
+    // Button Constants
+
+    public static final int BTN_WID_DEFAULT = 120;
+    public static final int BTN_HEI_DEFAULT = 42;
+    public static final int SMALL_BTN_WID_DEFAULT = 94;
+    public static final int SMALL_BTN_HEI_DEFAULT = 34;
+    public static final int SOUND_BTN_DEFAULT = 30;
+    public static final int CRE_BTN_DEFAULT = 30;
+
+    public static final int BTN_WID = (int)(BTN_WID_DEFAULT * SCALE);
+    public static final int BTN_HEI = (int)(BTN_HEI_DEFAULT * SCALE);
+    public static final int SMALL_BTN_WID = (int)(SMALL_BTN_WID_DEFAULT * SCALE);
+    public static final int SMALL_BTN_HEI = (int)(SMALL_BTN_HEI_DEFAULT * SCALE);
+    public static final int SOUND_BTN_SIZE = (int)(SOUND_BTN_DEFAULT * SCALE);
+    public static final int CRE_BTN_SIZE = (int)(CRE_BTN_DEFAULT * SCALE);
+
+    public static final int SLIDER_BTN_WID_DEFAULT = 15;
+    public static final int SLIDER_BTN_HEI_DEFAULT = 15;
+    public static final int SLIDER_WID_DEFAULT = 215;
+    public static final int SLIDER_HEI_DEFAULT = 30;
+
+    public static final int SLIDER_BTN_WID = (int)(SLIDER_BTN_WID_DEFAULT * SCALE);
+    public static final int SLIDER_BTN_HEI = (int)(SLIDER_BTN_HEI_DEFAULT * SCALE);
+    public static final int SLIDER_WID = (int)(SLIDER_WID_DEFAULT * SCALE);
+    public static final int SLIDER_HEI = (int)(SLIDER_HEI_DEFAULT * SCALE);
+
     public static void setResolution(float scale) {
         SCALE = scale;
         TILES_SIZE = (int)(TILES_DEFAULT_SIZE * SCALE);

@@ -1,12 +1,13 @@
 package platformer.ui.buttons;
 
-import platformer.ui.UI;
-import platformer.utils.Utils;
+import platformer.animation.AnimUtils;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
-import static platformer.constants.Constants.SCALE;
+import static platformer.constants.AnimConstants.*;
+import static platformer.constants.Constants.SOUND_BTN_SIZE;
+import static platformer.constants.FilePaths.AUDIO_BTN_SHEET;
 
 public class MusicButton extends PauseButton {
 
@@ -22,14 +23,8 @@ public class MusicButton extends PauseButton {
 
     protected void loadButtons() {
         images = new BufferedImage[2][3];
-
-        images[0][0] = Utils.getInstance().importImage("/images/buttons/MusicON0.png", UI.SOUND_B_SIZE.getValue(), UI.SOUND_B_SIZE.getValue());
-        images[0][1] = Utils.getInstance().importImage("/images/buttons/MusicON1.png", UI.SOUND_B_SIZE.getValue(), UI.SOUND_B_SIZE.getValue());
-        images[0][2] = Utils.getInstance().importImage("/images/buttons/MusicON1.png", UI.SOUND_B_SIZE.getValue(), UI.SOUND_B_SIZE.getValue());
-
-        images[1][0] = Utils.getInstance().importImage("/images/buttons/MusicOFF0.png", UI.SOUND_B_SIZE.getValue(), UI.SOUND_B_SIZE.getValue());
-        images[1][1] = Utils.getInstance().importImage("/images/buttons/MusicOFF1.png", UI.SOUND_B_SIZE.getValue(), UI.SOUND_B_SIZE.getValue());
-        images[1][2] = Utils.getInstance().importImage("/images/buttons/MusicOFF1.png", UI.SOUND_B_SIZE.getValue(), UI.SOUND_B_SIZE.getValue());
+        images[0] = AnimUtils.getInstance().loadFromSprite(AUDIO_BTN_SHEET, 3, 0, SOUND_BTN_SIZE, SOUND_BTN_SIZE, 0, SMALL_BTN_W, SMALL_BTN_H);
+        images[1] = AnimUtils.getInstance().loadFromSprite(AUDIO_BTN_SHEET, 3, 1, SOUND_BTN_SIZE, SOUND_BTN_SIZE, 0, SMALL_BTN_W, SMALL_BTN_H);
     }
 
     @Override
@@ -42,12 +37,7 @@ public class MusicButton extends PauseButton {
 
     @Override
     public void render(Graphics g) {
-        if (mousePressed) {
-            int buttonX = xPos+(int)(5 * SCALE), buttonY = yPos+(int)(5 * SCALE);
-            int buttonWid = width-(int)(10 * SCALE), buttonHei = height-(int)(10 * SCALE);
-            g.drawImage(images[imageIndexI][imageIndexJ], buttonX, buttonY, buttonWid, buttonHei, null);
-        }
-        else g.drawImage(images[imageIndexI][imageIndexJ], xPos, yPos, width, height, null);
+        g.drawImage(images[imageIndexI][imageIndexJ], xPos, yPos, width, height, null);
     }
 
     public boolean isMousePressed() {

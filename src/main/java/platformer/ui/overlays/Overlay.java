@@ -1,6 +1,6 @@
 package platformer.ui.overlays;
 
-import platformer.animation.AnimationUtils;
+import platformer.animation.AnimUtils;
 import platformer.utils.Utils;
 
 import java.awt.*;
@@ -24,7 +24,7 @@ public class Overlay {
     private Overlay() {}
 
     private void init() {
-        this.background = AnimationUtils.getInstance().loadMenuAnimation();
+        this.background = AnimUtils.getInstance().loadMenuAnimation();
         this.overlay = Utils.instance.importImage("/images/overlay1.png",overlayWid, overlayHei);
     }
 
