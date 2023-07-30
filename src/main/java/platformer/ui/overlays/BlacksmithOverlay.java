@@ -12,7 +12,7 @@ import java.awt.event.MouseEvent;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 
-import static platformer.constants.Constants.SCALE;
+import static platformer.constants.Constants.*;
 
 public class BlacksmithOverlay implements MouseControls {
 
@@ -71,8 +71,8 @@ public class BlacksmithOverlay implements MouseControls {
         this.overlay = Utils.instance.importImage("/images/overlay1.png", overlayWid, overlayHei);
         this.shopText = Utils.instance.importImage("/images/buttons/PerksText.png", shopTextWid, shopTextHei);
         this.slotImage = Utils.instance.importImage("/images/shop/Slot.png", slotWid, slotHei);
-        buttons[0] = new ShopButton(buyBtnX, buyBtnY, ButtonType.BUY);
-        buttons[1] = new ShopButton(exitBtnX, exitBtnY, ButtonType.LEAVE);
+        buttons[0] = new ShopButton(buyBtnX, buyBtnY, SMALL_BTN_WID, SMALL_BTN_HEI, ButtonType.BUY);
+        buttons[1] = new ShopButton(exitBtnX, exitBtnY, SMALL_BTN_WID, SMALL_BTN_HEI, ButtonType.LEAVE);
         this.selectedSlot = new Rectangle2D.Double((slot%SLOT_MAX_ROW)*slotSpacing+slotX, (slot/SLOT_MAX_ROW)*slotSpacing+slotY, slotWid, slotHei);
     }
 

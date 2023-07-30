@@ -128,8 +128,8 @@ public class PauseOverlay implements MouseControls {
         else audioOptions.mouseMoved(e);
     }
 
-    private boolean isMouseInButton(MouseEvent e, PauseButton pauseButton) {
-        return pauseButton.getButtonHitBox().contains(e.getX(), e.getY());
+    private boolean isMouseInButton(MouseEvent e, AbstractButton abstractButton) {
+        return abstractButton.getButtonHitBox().contains(e.getX(), e.getY());
     }
 
     private void resetButtons() {

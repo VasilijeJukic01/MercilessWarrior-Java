@@ -3,7 +3,7 @@ package platformer.state;
 import platformer.core.Game;
 import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.CREButton;
-import platformer.ui.buttons.PauseButton;
+import platformer.ui.buttons.AbstractButton;
 import platformer.ui.overlays.Overlay;
 import platformer.utils.Utils;
 
@@ -91,8 +91,8 @@ public class ControlsState extends StateAbstraction implements State {
         g.drawImage(keyboardSprite.getSubimage(0,0, 16, 16), (int)(398*SCALE), (int)(275*SCALE), wKey, hKey, null);
     }
 
-    private boolean isMouseInButton(MouseEvent e, PauseButton pauseButton) {
-        return pauseButton.getButtonHitBox().contains(e.getX(), e.getY());
+    private boolean isMouseInButton(MouseEvent e, AbstractButton abstractButton) {
+        return abstractButton.getButtonHitBox().contains(e.getX(), e.getY());
     }
 
     @Override

@@ -12,8 +12,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 
-import static platformer.constants.Constants.GAME_WIDTH;
-import static platformer.constants.Constants.SCALE;
+import static platformer.constants.Constants.*;
 
 @SuppressWarnings("FieldCanBeLocal")
 public class MenuState extends StateAbstraction implements State{
@@ -32,10 +31,10 @@ public class MenuState extends StateAbstraction implements State{
     }
 
     private void loadButtons() {
-        buttons[0] = new MenuButton(GAME_WIDTH / 2, (int)(170*SCALE), ButtonType.PLAY);
-        buttons[1] = new MenuButton(GAME_WIDTH / 2, (int)(225*SCALE), ButtonType.OPTIONS);
-        buttons[2] = new MenuButton(GAME_WIDTH / 2, (int)(280*SCALE), ButtonType.CONTROLS);
-        buttons[3] = new MenuButton(GAME_WIDTH / 2, (int)(335*SCALE), ButtonType.QUIT);
+        buttons[0] = new MenuButton((int)(GAME_WIDTH / 2.3), (int)(170*SCALE), BTN_WID, BTN_HEI, ButtonType.PLAY);
+        buttons[1] = new MenuButton((int)(GAME_WIDTH / 2.3), (int)(225*SCALE), BTN_WID, BTN_HEI, ButtonType.OPTIONS);
+        buttons[2] = new MenuButton((int)(GAME_WIDTH / 2.3), (int)(280*SCALE), BTN_WID, BTN_HEI, ButtonType.CONTROLS);
+        buttons[3] = new MenuButton((int)(GAME_WIDTH / 2.3), (int)(335*SCALE), BTN_WID, BTN_HEI, ButtonType.QUIT);
     }
 
     // Render

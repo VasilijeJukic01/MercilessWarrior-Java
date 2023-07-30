@@ -11,9 +11,8 @@ import static platformer.constants.Constants.SOUND_BTN_SIZE;
 
 public class AudioOptions implements MouseControls{
 
-    private SoundButton sfxBtn;
-    private MusicButton musicBtn;
-    private VolumeButton volumeButton;
+    private AudioButton sfxBtn, musicBtn;
+    private SliderButton sliderButton;
 
     // Size Variables [Render]
     private final int sfxX = (int)(450*SCALE);
@@ -28,29 +27,29 @@ public class AudioOptions implements MouseControls{
     }
 
     private void init() {
-        this.sfxBtn = new SoundButton(sfxX, sfxY, SOUND_BTN_SIZE, SOUND_BTN_SIZE);
-        this.musicBtn = new MusicButton(musicX, musicY, SOUND_BTN_SIZE, SOUND_BTN_SIZE);
-        this.volumeButton = new VolumeButton(volumeX, volumeY, SOUND_BTN_SIZE, SOUND_BTN_SIZE);
+        this.sfxBtn = new AudioButton(sfxX, sfxY, SOUND_BTN_SIZE, SOUND_BTN_SIZE, ButtonType.SFX);
+        this.musicBtn = new AudioButton(musicX, musicY, SOUND_BTN_SIZE, SOUND_BTN_SIZE, ButtonType.MUSIC);
+        this.sliderButton = new SliderButton(volumeX, volumeY, SOUND_BTN_SIZE, SOUND_BTN_SIZE);
     }
 
     public void update() {
         sfxBtn.update();
         musicBtn.update();
-        volumeButton.update();
+        sliderButton.update();
     }
 
     public void render(Graphics g) {
         sfxBtn.render(g);
         musicBtn.render(g);
-        volumeButton.render(g);
+        sliderButton.render(g);
     }
 
     @Override
     public void mouseDragged(MouseEvent e) {
-        if (volumeButton.isMousePressed()) {
-            float prevValue = volumeButton.getValue();
-            volumeButton.updateSlider(e.getX());
-            float newValue = volumeButton.getValue();
+        if (sliderButton.isMousePressed()) {
+            float prevValue = sliderButton.getValue();
+            sliderButton.updateSlider(e.getX());
+            float newValue = sliderButton.getValue();
             if (prevValue != newValue) Audio.getInstance().getAudioPlayer().setVolume(newValue);
         }
 
@@ -60,7 +59,7 @@ public class AudioOptions implements MouseControls{
     public void mousePressed(MouseEvent e) {
         if (isMouseInButton(e, sfxBtn)) sfxBtn.setMousePressed(true);
         else if (isMouseInButton(e, musicBtn)) musicBtn.setMousePressed(true);
-        else if (isMouseInButton(e, volumeButton)) volumeButton.setMousePressed(true);
+        else if (isMouseInButton(e, sliderButton)) sliderButton.setMousePressed(true);
     }
 
     @Override
@@ -80,14 +79,14 @@ public class AudioOptions implements MouseControls{
     public void mouseMoved(MouseEvent e) {
         sfxBtn.setMouseOver(false);
         musicBtn.setMouseOver(false);
-        volumeButton.setMouseOver(false);
+        sliderButton.setMouseOver(false);
         if (isMouseInButton(e, sfxBtn)) sfxBtn.setMouseOver(true);
         else if (isMouseInButton(e, musicBtn)) musicBtn.setMouseOver(true);
-        else if (isMouseInButton(e, volumeButton)) volumeButton.setMouseOver(true);
+        else if (isMouseInButton(e, sliderButton)) sliderButton.setMouseOver(true);
     }
 
-    private boolean isMouseInButton(MouseEvent e, PauseButton pauseButton) {
-        return pauseButton.getButtonHitBox().contains(e.getX(), e.getY());
+    private boolean isMouseInButton(MouseEvent e, AbstractButton abstractButton) {
+        return abstractButton.getButtonHitBox().contains(e.getX(), e.getY());
     }
 
     private void resetButtons() {
@@ -95,7 +94,7 @@ public class AudioOptions implements MouseControls{
         sfxBtn.setMousePressed(false);
         musicBtn.setMouseOver(false);
         musicBtn.setMousePressed(false);
-        volumeButton.setMouseOver(false);
-        volumeButton.setMousePressed(false);
+        sliderButton.setMouseOver(false);
+        sliderButton.setMousePressed(false);
     }
 }

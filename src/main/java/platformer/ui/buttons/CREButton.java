@@ -9,19 +9,18 @@ import static platformer.constants.AnimConstants.*;
 import static platformer.constants.Constants.*;
 import static platformer.constants.FilePaths.*;
 
-public class CREButton extends PauseButton implements GameButton {
+public class CREButton extends AbstractButton implements GameButton {
 
     private BufferedImage[] images;
-    private final ButtonType buttonType;
     private int imageIndex;
-    private boolean mouseOver, mousePressed;
 
     public CREButton(int xPos, int yPos, int width, int height, ButtonType buttonType) {
         super(xPos, yPos, width, height);
-        this.buttonType = buttonType;
+        super.buttonType = buttonType;
         loadButtons();
     }
 
+    @Override
     protected void loadButtons() {
         int r = -1;
         switch (buttonType) {
@@ -46,18 +45,6 @@ public class CREButton extends PauseButton implements GameButton {
     @Override
     public void render(Graphics g) {
         g.drawImage(images[imageIndex], xPos, yPos, CRE_BTN_SIZE, CRE_BTN_SIZE, null);
-    }
-
-    public boolean isMousePressed() {
-        return mousePressed;
-    }
-
-    public void setMouseOver(boolean mouseOver) {
-        this.mouseOver = mouseOver;
-    }
-
-    public void setMousePressed(boolean mousePressed) {
-        this.mousePressed = mousePressed;
     }
 
 }

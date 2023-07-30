@@ -6,7 +6,7 @@ import platformer.core.Game;
 import platformer.ui.MouseControls;
 import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.CREButton;
-import platformer.ui.buttons.PauseButton;
+import platformer.ui.buttons.AbstractButton;
 import platformer.utils.Utils;
 
 import java.awt.*;
@@ -110,8 +110,8 @@ public class GameOverOverlay implements MouseControls {
         if (isMouseInButton(e, menuBtn)) menuBtn.setMouseOver(true);
     }
 
-    private boolean isMouseInButton(MouseEvent e, PauseButton pauseButton) {
-        return pauseButton.getButtonHitBox().contains(e.getX(), e.getY());
+    private boolean isMouseInButton(MouseEvent e, AbstractButton abstractButton) {
+        return abstractButton.getButtonHitBox().contains(e.getX(), e.getY());
     }
 
     private void resetButtons() {

@@ -130,7 +130,6 @@ public class Constants {
     public static final int FLASH_HEIGHT = (int)(FLASH_DEFAULT_HEIGHT * SCALE);
 
     // Button Constants
-
     public static final int BTN_WID_DEFAULT = 120;
     public static final int BTN_HEI_DEFAULT = 42;
     public static final int SMALL_BTN_WID_DEFAULT = 94;
