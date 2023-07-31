@@ -4,7 +4,6 @@ import platformer.audio.Audio;
 import platformer.audio.Songs;
 import platformer.core.Game;
 import platformer.ui.AudioOptions;
-import platformer.ui.MouseControls;
 import platformer.ui.buttons.*;
 import platformer.utils.Utils;
 
@@ -14,7 +13,7 @@ import java.awt.image.BufferedImage;
 
 import static platformer.constants.Constants.*;
 
-public class PauseOverlay implements MouseControls {
+public class PauseOverlay implements Overlay {
 
     private final Game game;
     private final AudioOptions audioOptions;
@@ -58,16 +57,17 @@ public class PauseOverlay implements MouseControls {
     }
 
     private void init() {
-        this.pauseText = Utils.instance.importImage("/images/buttons/PauseText.png", pauseTextWid, pauseTextHei);
-        this.SFXText = Utils.instance.importImage("/images/buttons/SFXText.png", SFXTextWid, SFXTextHei);
-        this.musicText = Utils.instance.importImage("/images/buttons/MusicText.png", musicTextWid, musicTextHei);
-        this.volumeText = Utils.instance.importImage("/images/buttons/VolumeText.png", volumeTextWid, volumeTextHei);
+        this.pauseText = Utils.getInstance().importImage("/images/buttons/PauseText.png", pauseTextWid, pauseTextHei);
+        this.SFXText = Utils.getInstance().importImage("/images/buttons/SFXText.png", SFXTextWid, SFXTextHei);
+        this.musicText = Utils.getInstance().importImage("/images/buttons/MusicText.png", musicTextWid, musicTextHei);
+        this.volumeText = Utils.getInstance().importImage("/images/buttons/VolumeText.png", volumeTextWid, volumeTextHei);
         this.continueBtn = new CREButton(continueBtnX, continueBtnY, CRE_BTN_SIZE, CRE_BTN_SIZE, ButtonType.CONTINUE);
         this.retryBtn = new CREButton(retryBtnX, retryBtnY, CRE_BTN_SIZE, CRE_BTN_SIZE, ButtonType.RETRY);
         this.exitBtn = new CREButton(exitBtnX, exitBtnY, CRE_BTN_SIZE, CRE_BTN_SIZE, ButtonType.EXIT);
     }
 
     // Core
+    @Override
     public void update() {
         continueBtn.update();
         retryBtn.update();
@@ -75,10 +75,11 @@ public class PauseOverlay implements MouseControls {
         audioOptions.update();
     }
 
+    @Override
     public void render(Graphics g) {
         g.setColor(new Color(0, 0, 0, 150));
         g.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
-        Overlay.getInstance().renderOverlay(g);
+        OverlayLayer.getInstance().renderOverlay(g);
         g.drawImage(pauseText, pauseTextX, pauseTextY, pauseText.getWidth(), pauseText.getHeight(), null);
         g.drawImage(SFXText, SFXTextX, SFXTextY, SFXText.getWidth(), SFXText.getHeight(), null);
         g.drawImage(musicText, musicTextX, musicTextY, musicText.getWidth(), musicText.getHeight(), null);
@@ -87,6 +88,11 @@ public class PauseOverlay implements MouseControls {
         retryBtn.render(g);
         exitBtn.render(g);
         audioOptions.render(g);
+    }
+
+    @Override
+    public void reset() {
+
     }
 
     @Override

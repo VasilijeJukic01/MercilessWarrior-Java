@@ -9,7 +9,7 @@ import java.awt.event.MouseEvent;
 import static platformer.constants.Constants.SCALE;
 import static platformer.constants.Constants.SOUND_BTN_SIZE;
 
-public class AudioOptions implements MouseControls{
+public class AudioOptions {
 
     private AudioButton sfxBtn, musicBtn;
     private SliderButton sliderButton;
@@ -44,7 +44,6 @@ public class AudioOptions implements MouseControls{
         sliderButton.render(g);
     }
 
-    @Override
     public void mouseDragged(MouseEvent e) {
         if (sliderButton.isMousePressed()) {
             float prevValue = sliderButton.getValue();
@@ -55,14 +54,12 @@ public class AudioOptions implements MouseControls{
 
     }
 
-    @Override
     public void mousePressed(MouseEvent e) {
         if (isMouseInButton(e, sfxBtn)) sfxBtn.setMousePressed(true);
         else if (isMouseInButton(e, musicBtn)) musicBtn.setMousePressed(true);
         else if (isMouseInButton(e, sliderButton)) sliderButton.setMousePressed(true);
     }
 
-    @Override
     public void mouseReleased(MouseEvent e) {
         if (isMouseInButton(e, sfxBtn) && sfxBtn.isMousePressed()) {
             sfxBtn.setMuted(!sfxBtn.isMuted());
@@ -75,7 +72,6 @@ public class AudioOptions implements MouseControls{
         resetButtons();
     }
 
-    @Override
     public void mouseMoved(MouseEvent e) {
         sfxBtn.setMouseOver(false);
         musicBtn.setMouseOver(false);
@@ -90,11 +86,8 @@ public class AudioOptions implements MouseControls{
     }
 
     private void resetButtons() {
-        sfxBtn.setMouseOver(false);
-        sfxBtn.setMousePressed(false);
-        musicBtn.setMouseOver(false);
-        musicBtn.setMousePressed(false);
-        sliderButton.setMouseOver(false);
-        sliderButton.setMousePressed(false);
+        sfxBtn.resetMouseSet();
+        musicBtn.resetMouseSet();
+        sliderButton.resetMouseSet();
     }
 }

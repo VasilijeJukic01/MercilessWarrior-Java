@@ -3,7 +3,7 @@ package platformer.state;
 import platformer.core.Game;
 import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.MenuButton;
-import platformer.ui.overlays.Overlay;
+import platformer.ui.overlays.OverlayLayer;
 import platformer.utils.Utils;
 
 import java.awt.*;
@@ -39,7 +39,7 @@ public class MenuState extends StateAbstraction implements State{
 
     // Render
     private void renderMenuImages(Graphics g) {
-        Overlay.getInstance().renderMenu(g);
+        OverlayLayer.getInstance().renderMenu(g);
         int logoX = (GAME_WIDTH / 3) - (int)(12*SCALE), logoY = (int)(10*SCALE);
         int logoW = (int)(menuLogo.getWidth()*SCALE), logoH = (int)(menuLogo.getHeight()*SCALE);
         g.drawImage(menuLogo, logoX, logoY, logoW, logoH, null);
@@ -54,7 +54,7 @@ public class MenuState extends StateAbstraction implements State{
     // Core
     @Override
     public void update() {
-        Overlay.getInstance().update();
+        OverlayLayer.getInstance().update();
         for (MenuButton button : buttons) {
             button.update();
         }

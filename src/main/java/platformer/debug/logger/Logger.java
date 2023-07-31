@@ -13,7 +13,7 @@ public class Logger implements Publisher {
 
     private List<Subscriber> subscribers;
 
-    public static volatile Logger instance = null;
+    private static volatile Logger instance = null;
 
     public static Logger getInstance() {
         if (instance == null) {

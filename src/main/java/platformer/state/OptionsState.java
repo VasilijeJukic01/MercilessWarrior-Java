@@ -5,7 +5,7 @@ import platformer.ui.AudioOptions;
 import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.CREButton;
 import platformer.ui.buttons.AbstractButton;
-import platformer.ui.overlays.Overlay;
+import platformer.ui.overlays.OverlayLayer;
 import platformer.utils.Utils;
 
 import java.awt.*;
@@ -58,10 +58,10 @@ public class OptionsState extends StateAbstraction implements State{
     }
 
     private void loadImages() {
-        this.optionsText = Utils.instance.importImage("/images/buttons/OptionsText.png", optionsTextWid, optionsTextHei);
-        this.volumeText = Utils.instance.importImage("/images/buttons/VolumeText.png", volumeTextWid, volumeTextHei);
-        this.SFXText = Utils.instance.importImage("/images/buttons/SFXText.png", SFXTextWid, SFXTextHei);
-        this.musicText = Utils.instance.importImage("/images/buttons/MusicText.png", musicTextWid,musicTextHei);
+        this.optionsText = Utils.getInstance().importImage("/images/buttons/OptionsText.png", optionsTextWid, optionsTextHei);
+        this.volumeText = Utils.getInstance().importImage("/images/buttons/VolumeText.png", volumeTextWid, volumeTextHei);
+        this.SFXText = Utils.getInstance().importImage("/images/buttons/SFXText.png", SFXTextWid, SFXTextHei);
+        this.musicText = Utils.getInstance().importImage("/images/buttons/MusicText.png", musicTextWid,musicTextHei);
     }
 
     private void loadButtons() {
@@ -70,14 +70,14 @@ public class OptionsState extends StateAbstraction implements State{
 
     @Override
     public void update() {
-        Overlay.getInstance().update();
+        OverlayLayer.getInstance().update();
         exitBtn.update();
         audioOptions.update();
     }
 
     @Override
     public void render(Graphics g) {
-        Overlay.getInstance().render(g);
+        OverlayLayer.getInstance().render(g);
         g.drawImage(optionsText, optionsTextX, optionsTextY, optionsText.getWidth(), optionsText.getHeight(), null);
         g.drawImage(volumeText, volumeTextX, volumeTextY, volumeText.getWidth(), volumeText.getHeight(), null);
         g.drawImage(SFXText, SFXTextX, SFXTextY, SFXText.getWidth(), SFXText.getHeight(), null);

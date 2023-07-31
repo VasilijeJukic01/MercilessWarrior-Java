@@ -41,4 +41,10 @@ public class FilePaths {
     public static final String SLIDE_BTN_SHEET = "/images/buttons/SliderButton.png";
     public static final String SLIDER_IMG = "/images/buttons/Slider.png";
 
+    // UI
+    public static final String OVERLAY = "/images/overlay1.png";
+    public static final String BOSS_BAR = "/images/enemies/Bosses/BossBar.png";
+    public static final String PLAYER_HUD = "/images/playerHUD.png";
+    public static final String PLAYER_PORTRAIT = "/images/portraitHUD.png";
+
 }

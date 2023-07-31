@@ -2,7 +2,7 @@ package platformer.audio;
 
 public class Audio {
 
-    public static volatile Audio instance = null;
+    private static volatile Audio instance = null;
 
     private AudioPlayer audioPlayer;
 

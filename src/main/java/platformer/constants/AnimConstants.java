@@ -28,4 +28,8 @@ public class AnimConstants {
     public static final int BTN_W = 700, BTN_H = 230;
     public static final int SMALL_BTN_W = 150, SMALL_BTN_H = 158;
     public static final int SL_BTN_W = 143, SL_BTN_H = 149;
+
+    // Frames
+    public static final int MENU_FRAMES = 24;
+
 }

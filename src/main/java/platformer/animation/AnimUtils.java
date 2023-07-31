@@ -13,7 +13,7 @@ import static platformer.constants.FilePaths.*;
 
 public class AnimUtils {
 
-    public static volatile AnimUtils instance = null;
+    private static volatile AnimUtils instance = null;
 
     private AnimUtils() {}
 
@@ -163,15 +163,6 @@ public class AnimUtils {
 
     public BufferedImage[] loadLightningBall(String sprite) {
         return loadFromSprite(sprite, 9, 0, LB_WID, LB_HEI, 0, LIGHTNING_BALL_W, LIGHTNING_BALL_H);
-    }
-
-    // Other
-    public BufferedImage[] loadMenuAnimation() {
-        BufferedImage[] anim = new BufferedImage[24];
-        for (int i = 0; i < 24; i++) {
-            anim[i] = Utils.getInstance().importImage("/images/menu/background/Background"+i+".png", GAME_WIDTH, GAME_HEIGHT);
-        }
-        return anim;
     }
 
 }

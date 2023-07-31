@@ -1,11 +1,8 @@
 package platformer.debug;
 
-
-import platformer.utils.Utils;
-
 public class DebugSettings {
 
-    public static volatile DebugSettings instance = null;
+    private static volatile DebugSettings instance = null;
 
     private boolean debugMode;
 

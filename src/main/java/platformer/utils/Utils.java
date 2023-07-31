@@ -16,7 +16,7 @@ import static platformer.constants.Constants.*;
 
 public class Utils {
 
-    public static volatile Utils instance = null;
+    private static volatile Utils instance = null;
 
     private Utils() {}
 

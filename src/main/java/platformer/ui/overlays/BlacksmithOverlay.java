@@ -2,7 +2,6 @@ package platformer.ui.overlays;
 
 import platformer.model.perks.Perk;
 import platformer.state.PlayingState;
-import platformer.ui.MouseControls;
 import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.ShopButton;
 import platformer.utils.Utils;
@@ -14,7 +13,7 @@ import java.awt.image.BufferedImage;
 
 import static platformer.constants.Constants.*;
 
-public class BlacksmithOverlay implements MouseControls {
+public class BlacksmithOverlay implements Overlay {
 
     private final PlayingState playingState;
 
@@ -68,21 +67,23 @@ public class BlacksmithOverlay implements MouseControls {
         this.SLOT_MAX_COL = playingState.getPerksManager().getSlotMaxCol();
         this.SLOT_MAX_ROW = playingState.getPerksManager().getSlotMaxRow();
         this.placeHolders = playingState.getPerksManager().getPlaceHolders();
-        this.overlay = Utils.instance.importImage("/images/overlay1.png", overlayWid, overlayHei);
-        this.shopText = Utils.instance.importImage("/images/buttons/PerksText.png", shopTextWid, shopTextHei);
-        this.slotImage = Utils.instance.importImage("/images/shop/Slot.png", slotWid, slotHei);
+        this.overlay = Utils.getInstance().importImage("/images/overlay1.png", overlayWid, overlayHei);
+        this.shopText = Utils.getInstance().importImage("/images/buttons/PerksText.png", shopTextWid, shopTextHei);
+        this.slotImage = Utils.getInstance().importImage("/images/shop/Slot.png", slotWid, slotHei);
         buttons[0] = new ShopButton(buyBtnX, buyBtnY, SMALL_BTN_WID, SMALL_BTN_HEI, ButtonType.BUY);
         buttons[1] = new ShopButton(exitBtnX, exitBtnY, SMALL_BTN_WID, SMALL_BTN_HEI, ButtonType.LEAVE);
         this.selectedSlot = new Rectangle2D.Double((slot%SLOT_MAX_ROW)*slotSpacing+slotX, (slot/SLOT_MAX_ROW)*slotSpacing+slotY, slotWid, slotHei);
     }
 
     // Core
+    @Override
     public void update() {
         for (ShopButton button : buttons) {
             button.update();
         }
     }
 
+    @Override
     public void render(Graphics g) {
         g.drawImage(overlay, overlayX, overlayY, overlay.getWidth(), overlay.getHeight(), null);
         g.drawImage(shopText, shopTextX, shopTextY, shopText.getWidth(), shopText.getHeight(), null);
@@ -94,6 +95,11 @@ public class BlacksmithOverlay implements MouseControls {
         renderPerkInfo(g);
         g.setColor(Color.RED);
         g.drawRect((int)selectedSlot.x, (int)selectedSlot.y,  (int)selectedSlot.width,  (int)selectedSlot.height);
+    }
+
+    @Override
+    public void reset() {
+
     }
 
     // Render

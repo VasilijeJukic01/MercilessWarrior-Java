@@ -12,7 +12,7 @@ import platformer.model.entities.enemies.Enemy;
 import platformer.model.entities.enemies.EnemyManager;
 import platformer.model.objects.ObjectManager;
 import platformer.model.objects.projectiles.Projectile;
-import platformer.ui.overlays.UserInterface;
+import platformer.ui.overlays.hud.UserInterface;
 import platformer.utils.Utils;
 
 import java.awt.*;

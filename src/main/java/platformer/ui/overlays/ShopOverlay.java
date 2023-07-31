@@ -2,7 +2,6 @@ package platformer.ui.overlays;
 
 import platformer.model.objects.Shop;
 import platformer.state.PlayingState;
-import platformer.ui.MouseControls;
 import platformer.ui.ShopItem;
 import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.ShopButton;
@@ -16,7 +15,7 @@ import java.util.ArrayList;
 
 import static platformer.constants.Constants.*;
 
-public class ShopOverlay implements MouseControls {
+public class ShopOverlay implements Overlay {
 
     private final PlayingState playingState;
 
@@ -65,20 +64,22 @@ public class ShopOverlay implements MouseControls {
 
     // Init
     private void init() {
-        this.overlay = Utils.instance.importImage("/images/overlay1.png", overlayWid, overlayHei);
-        this.shopText = Utils.instance.importImage("/images/buttons/ShopText.png", shopTextWid, shopTextHei);
-        this.slotImage = Utils.instance.importImage("/images/shop/Slot.png", slotWid, slotHei);
+        this.overlay = Utils.getInstance().importImage("/images/overlay1.png", overlayWid, overlayHei);
+        this.shopText = Utils.getInstance().importImage("/images/buttons/ShopText.png", shopTextWid, shopTextHei);
+        this.slotImage = Utils.getInstance().importImage("/images/shop/Slot.png", slotWid, slotHei);
         buttons[0] = new ShopButton(buyBtnX, buyBtnY, SMALL_BTN_WID, SMALL_BTN_HEI, ButtonType.BUY);
         buttons[1] = new ShopButton(exitBtnX, exitBtnY, SMALL_BTN_WID, SMALL_BTN_HEI, ButtonType.LEAVE);
     }
 
     // Core
+    @Override
     public void update() {
         for (ShopButton button : buttons) {
             button.update();
         }
     }
 
+    @Override
     public void render(Graphics g) {
         g.drawImage(overlay, overlayX, overlayY, overlay.getWidth(), overlay.getHeight(), null);
         g.drawImage(shopText, shopTextX, shopTextY, shopText.getWidth(), shopText.getHeight(), null);

@@ -3,7 +3,6 @@ package platformer.ui.overlays;
 import platformer.audio.Audio;
 import platformer.audio.Songs;
 import platformer.core.Game;
-import platformer.ui.MouseControls;
 import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.CREButton;
 import platformer.ui.buttons.AbstractButton;
@@ -15,7 +14,7 @@ import java.awt.image.BufferedImage;
 
 import static platformer.constants.Constants.*;
 
-public class GameOverOverlay implements MouseControls {
+public class GameOverOverlay implements Overlay {
 
     private final Game game;
     private BufferedImage overlay;
@@ -53,20 +52,22 @@ public class GameOverOverlay implements MouseControls {
     }
 
     private void init() {
-        this.overlay = Utils.instance.importImage("/images/overlay1.png", overlayWid, overlayHei);
-        this.deadText = Utils.instance.importImage("/images/buttons/DeadText.png", deadTextWid, deadTextHei);
-        this.respawnText = Utils.instance.importImage("/images/buttons/RespawnText.png", respawnTextWid, respawnTextHei);
-        this.menuText = Utils.instance.importImage("/images/buttons/MenuText.png", menuTextWid, menuTextHei);
+        this.overlay = Utils.getInstance().importImage("/images/overlay1.png", overlayWid, overlayHei);
+        this.deadText = Utils.getInstance().importImage("/images/buttons/DeadText.png", deadTextWid, deadTextHei);
+        this.respawnText = Utils.getInstance().importImage("/images/buttons/RespawnText.png", respawnTextWid, respawnTextHei);
+        this.menuText = Utils.getInstance().importImage("/images/buttons/MenuText.png", menuTextWid, menuTextHei);
         this.retryBtn = new CREButton(retryX, retryY, CRE_BTN_SIZE, CRE_BTN_SIZE, ButtonType.RETRY);
         this.menuBtn = new CREButton(menuX, menuY, CRE_BTN_SIZE, CRE_BTN_SIZE, ButtonType.EXIT);
     }
 
     // Core
+    @Override
     public void update() {
         retryBtn.update();
         menuBtn.update();
     }
 
+    @Override
     public void render(Graphics g) {
         g.setColor(new Color(0, 0, 0, 200));
         g.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
@@ -76,6 +77,11 @@ public class GameOverOverlay implements MouseControls {
         g.drawImage(menuText, menuTextX, menuTextY, menuText.getWidth(), menuText.getHeight(), null);
         retryBtn.render(g);
         menuBtn.render(g);
+    }
+
+    @Override
+    public void reset() {
+
     }
 
     @Override

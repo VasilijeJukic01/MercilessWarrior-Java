@@ -16,6 +16,7 @@ import platformer.model.objects.ObjectManager;
 import platformer.model.perks.PerksManager;
 import platformer.model.spells.SpellManager;
 import platformer.ui.overlays.OverlayManager;
+import platformer.ui.overlays.OverlayType;
 import platformer.utils.Utils;
 
 import java.awt.*;
@@ -134,8 +135,8 @@ public class PlayingState extends StateAbstraction implements State {
     // Core
     @Override
     public void update() {
-        if (paused) overlayManager.update("PAUSE");
-        else if (gameOver) overlayManager.update("GAME_OVER");
+        if (paused) overlayManager.update(OverlayType.PAUSE);
+        else if (gameOver) overlayManager.update(OverlayType.GAME_OVER);
         else if (dying) this.player.update();
         else {
             if (Utils.getInstance().isEntityOnExit(levelManager.getCurrentLevel(), player.getHitBox()) == 1) loadNextLevel();
@@ -149,8 +150,8 @@ public class PlayingState extends StateAbstraction implements State {
             xBorderUpdate();
             yBorderUpdate();
             this.player.update();
-            if (shopVisible) overlayManager.update("SHOP");
-            if (bmVisible) overlayManager.update("BLACKSMITH");
+            if (shopVisible) overlayManager.update(OverlayType.SHOP);
+            if (bmVisible) overlayManager.update(OverlayType.BLACKSMITH);
         }
     }
 
@@ -163,27 +164,27 @@ public class PlayingState extends StateAbstraction implements State {
         this.enemyManager.render(g, xLevelOffset, yLevelOffset);
         this.spellManager.render(g, xLevelOffset, yLevelOffset);
         this.player.getUserInterface().render(g);
-        this.overlayManager.render(g, paused, gameOver, shopVisible, bmVisible);
+        this.overlayManager.render(g);
     }
 
     @Override
     public void mousePressed(MouseEvent e) {
-        overlayManager.mousePressed(e, paused, gameOver, shopVisible, bmVisible);
+        overlayManager.mousePressed(e);
     }
 
     @Override
     public void mouseReleased(MouseEvent e) {
-        overlayManager.mouseReleased(e, paused, gameOver, shopVisible, bmVisible);
+        overlayManager.mouseReleased(e);
     }
 
     @Override
     public void mouseMoved(MouseEvent e) {
-        overlayManager.mouseMoved(e, paused, gameOver, shopVisible, bmVisible);
+        overlayManager.mouseMoved(e);
     }
 
     @Override
     public void mouseDragged(MouseEvent e) {
-        overlayManager.mouseDragged(e, paused);
+        overlayManager.mouseDragged(e);
     }
 
     // Input
@@ -349,6 +350,14 @@ public class PlayingState extends StateAbstraction implements State {
 
 
     // Getters & Setters
+    public OverlayType getActiveOverlay() {
+        if (paused) return OverlayType.PAUSE;
+        else if (gameOver) return OverlayType.GAME_OVER;
+        else if (shopVisible) return OverlayType.SHOP;
+        else if (bmVisible) return OverlayType.BLACKSMITH;
+        return null;
+    }
+
     public Player getPlayer() {
         return player;
     }

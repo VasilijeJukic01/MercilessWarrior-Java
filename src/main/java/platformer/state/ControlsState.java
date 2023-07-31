@@ -4,7 +4,7 @@ import platformer.core.Game;
 import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.CREButton;
 import platformer.ui.buttons.AbstractButton;
-import platformer.ui.overlays.Overlay;
+import platformer.ui.overlays.OverlayLayer;
 import platformer.utils.Utils;
 
 import java.awt.*;
@@ -54,13 +54,13 @@ public class ControlsState extends StateAbstraction implements State {
     // Core
     @Override
     public void update() {
-        Overlay.getInstance().update();
+        OverlayLayer.getInstance().update();
         exitBtn.update();
     }
 
     @Override
     public void render(Graphics g) {
-        Overlay.getInstance().render(g);
+        OverlayLayer.getInstance().render(g);
         g.drawImage(controlsText, controlsTextX, controlsTextY, controlsText.getWidth(), controlsText.getHeight(), null);
         exitBtn.render(g);
         renderControls(g);
