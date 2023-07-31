@@ -6,30 +6,22 @@ import platformer.ui.buttons.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 
-import static platformer.constants.Constants.SCALE;
 import static platformer.constants.Constants.SOUND_BTN_SIZE;
+import static platformer.constants.UI.*;
 
 public class AudioOptions {
 
     private AudioButton sfxBtn, musicBtn;
     private SliderButton sliderButton;
 
-    // Size Variables [Render]
-    private final int sfxX = (int)(450*SCALE);
-    private final int sfxY = (int)(148*SCALE);
-    private final int musicX = (int)(450*SCALE);
-    private final int musicY = (int)(198*SCALE);
-    private final int volumeX = (int)(330*SCALE);
-    private final int volumeY = (int)(290*SCALE);
-
     public AudioOptions() {
         init();
     }
 
     private void init() {
-        this.sfxBtn = new AudioButton(sfxX, sfxY, SOUND_BTN_SIZE, SOUND_BTN_SIZE, ButtonType.SFX);
-        this.musicBtn = new AudioButton(musicX, musicY, SOUND_BTN_SIZE, SOUND_BTN_SIZE, ButtonType.MUSIC);
-        this.sliderButton = new SliderButton(volumeX, volumeY, SOUND_BTN_SIZE, SOUND_BTN_SIZE);
+        this.sfxBtn = new AudioButton(SFX_X, SFX_Y, SOUND_BTN_SIZE, SOUND_BTN_SIZE, ButtonType.SFX);
+        this.musicBtn = new AudioButton(MUSIC_X, MUSIC_Y, SOUND_BTN_SIZE, SOUND_BTN_SIZE, ButtonType.MUSIC);
+        this.sliderButton = new SliderButton(SLIDER_BTN_X, SLIDER_BTN_Y, SOUND_BTN_SIZE, SOUND_BTN_SIZE);
     }
 
     public void update() {

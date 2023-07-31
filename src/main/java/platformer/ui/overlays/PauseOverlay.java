@@ -12,6 +12,8 @@ import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 
 import static platformer.constants.Constants.*;
+import static platformer.constants.FilePaths.*;
+import static platformer.constants.UI.*;
 
 public class PauseOverlay implements Overlay {
 
@@ -19,51 +21,26 @@ public class PauseOverlay implements Overlay {
     private final AudioOptions audioOptions;
     private BufferedImage pauseText;
     private BufferedImage SFXText, musicText, volumeText;
-
-    // Size Variables [Init]
-    private final int pauseTextWid = (int)(180*SCALE);
-    private final int pauseTextHei = (int)(40*SCALE);
-    private final int SFXTextWid = (int)(60*SCALE);
-    private final int SFXTextHei = (int)(30*SCALE);
-    private final int musicTextWid = (int)(90*SCALE);
-    private final int musicTextHei = (int)(30*SCALE);
-    private final int volumeTextWid = (int)(110*SCALE);
-    private final int volumeTextHei = (int)(30*SCALE);
-
-    private final int continueBtnX = (int)(330*SCALE);
-    private final int continueBtnY = (int)(350*SCALE);
-    private final int retryBtnX = (int)(405*SCALE);
-    private final int retryBtnY = (int)(350*SCALE);
-    private final int exitBtnX = (int)(480*SCALE);
-    private final int exitBtnY = (int)(350*SCALE);
-
-    // Size Variables [Render]
-    private final int pauseTextX = (int)(330*SCALE);
-    private final int pauseTextY = (int)(85*SCALE);
-    private final int SFXTextX = (int)(325*SCALE);
-    private final int SFXTextY = (int)(150*SCALE);
-    private final int musicTextX = (int)(325*SCALE);
-    private final int musicTextY = (int)(200*SCALE);
-    private final int volumeTextX = (int)(365*SCALE);
-    private final int volumeTextY = (int)(260*SCALE);
-
-
     private CREButton continueBtn, retryBtn, exitBtn;
 
     public PauseOverlay(Game game) {
         this.game = game;
         this.audioOptions = game.getAudioOptions();
-        init();
+        loadImages();
+        loadButtons();
     }
 
-    private void init() {
-        this.pauseText = Utils.getInstance().importImage("/images/buttons/PauseText.png", pauseTextWid, pauseTextHei);
-        this.SFXText = Utils.getInstance().importImage("/images/buttons/SFXText.png", SFXTextWid, SFXTextHei);
-        this.musicText = Utils.getInstance().importImage("/images/buttons/MusicText.png", musicTextWid, musicTextHei);
-        this.volumeText = Utils.getInstance().importImage("/images/buttons/VolumeText.png", volumeTextWid, volumeTextHei);
-        this.continueBtn = new CREButton(continueBtnX, continueBtnY, CRE_BTN_SIZE, CRE_BTN_SIZE, ButtonType.CONTINUE);
-        this.retryBtn = new CREButton(retryBtnX, retryBtnY, CRE_BTN_SIZE, CRE_BTN_SIZE, ButtonType.RETRY);
-        this.exitBtn = new CREButton(exitBtnX, exitBtnY, CRE_BTN_SIZE, CRE_BTN_SIZE, ButtonType.EXIT);
+    private void loadImages() {
+        this.pauseText = Utils.getInstance().importImage(PAUSE_TXT, PAUSE_TEXT_WID, PAUSE_TEXT_HEI);
+        this.SFXText = Utils.getInstance().importImage(SFX_TXT, SFX_TEXT_WID, SFX_TEXT_HEI);
+        this.musicText = Utils.getInstance().importImage(MUSIC_TXT, MUSIC_TEXT_WID, MUSIC_TEXT_HEI);
+        this.volumeText = Utils.getInstance().importImage(VOLUME_TXT, VOLUME_TEXT_WID, VOLUME_TEXT_HEI);
+    }
+
+    private void loadButtons() {
+        this.continueBtn = new CREButton(CONTINUE_BTN_X, CONTINUE_BTN_Y, CRE_BTN_SIZE, CRE_BTN_SIZE, ButtonType.CONTINUE);
+        this.retryBtn = new CREButton(RETRY_BTN_X, RETRY_BTN_Y, CRE_BTN_SIZE, CRE_BTN_SIZE, ButtonType.RETRY);
+        this.exitBtn = new CREButton(EXIT_BTN_X, EXIT_BTN_Y, CRE_BTN_SIZE, CRE_BTN_SIZE, ButtonType.EXIT);
     }
 
     // Core
@@ -80,10 +57,18 @@ public class PauseOverlay implements Overlay {
         g.setColor(new Color(0, 0, 0, 150));
         g.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
         OverlayLayer.getInstance().renderOverlay(g);
-        g.drawImage(pauseText, pauseTextX, pauseTextY, pauseText.getWidth(), pauseText.getHeight(), null);
-        g.drawImage(SFXText, SFXTextX, SFXTextY, SFXText.getWidth(), SFXText.getHeight(), null);
-        g.drawImage(musicText, musicTextX, musicTextY, musicText.getWidth(), musicText.getHeight(), null);
-        g.drawImage(volumeText, volumeTextX, volumeTextY, volumeText.getWidth(), volumeText.getHeight(), null);
+        renderTexts(g);
+        renderButtons(g);
+    }
+
+    private void renderTexts(Graphics g) {
+        g.drawImage(pauseText, PAUSE_TEXT_X, PAUSE_TEXT_Y, pauseText.getWidth(), pauseText.getHeight(), null);
+        g.drawImage(SFXText, SFX_TEXT_X, SFX_TEXT_Y, SFXText.getWidth(), SFXText.getHeight(), null);
+        g.drawImage(musicText, MUSIC_TEXT_X, MUSIC_TEXT_Y, musicText.getWidth(), musicText.getHeight(), null);
+        g.drawImage(volumeText, VOLUME_TEXT_X, VOLUME_TEXT_Y, volumeText.getWidth(), volumeText.getHeight(), null);
+    }
+
+    private void renderButtons(Graphics g) {
         continueBtn.render(g);
         retryBtn.render(g);
         exitBtn.render(g);
@@ -110,7 +95,9 @@ public class PauseOverlay implements Overlay {
 
     @Override
     public void mouseReleased(MouseEvent e) {
-        if(isMouseInButton(e, continueBtn) && continueBtn.isMousePressed()) game.setPaused(false);
+        if(isMouseInButton(e, continueBtn) && continueBtn.isMousePressed()) {
+            game.setPaused(false);
+        }
         else if(isMouseInButton(e, retryBtn) && retryBtn.isMousePressed()) {
             game.reset();
             Audio.getInstance().getAudioPlayer().playSong(Songs.FOREST_1.ordinal());
@@ -139,11 +126,8 @@ public class PauseOverlay implements Overlay {
     }
 
     private void resetButtons() {
-        continueBtn.setMouseOver(false);
-        continueBtn.setMousePressed(false);
-        retryBtn.setMouseOver(false);
-        retryBtn.setMousePressed(false);
-        exitBtn.setMouseOver(false);
-        exitBtn.setMousePressed(false);
+        continueBtn.resetMouseSet();
+        retryBtn.resetMouseSet();
+        exitBtn.resetMouseSet();
     }
 }

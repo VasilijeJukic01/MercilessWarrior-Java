@@ -8,6 +8,7 @@ import java.awt.image.BufferedImage;
 import static platformer.constants.AnimConstants.MENU_FRAMES;
 import static platformer.constants.Constants.*;
 import static platformer.constants.FilePaths.OVERLAY;
+import static platformer.constants.UI.*;
 
 public class OverlayLayer {
 
@@ -17,14 +18,6 @@ public class OverlayLayer {
     private BufferedImage overlay;
     private final int animSpeed = 20;
     private int animTick = 0, animIndex = 0;
-
-    // Size Variables [Init]
-    private static final int OVERLAY_WID = (int)(300*SCALE);
-    private static final int OVERLAY_HEI = (int)(350*SCALE);
-
-    // Size Variables [Render]
-    private static final int OVERLAY_X = (int)(270*SCALE);
-    private static final int OVERLAY_Y = (int)(50*SCALE);
 
     private OverlayLayer() {}
 

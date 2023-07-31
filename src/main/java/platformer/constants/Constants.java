@@ -159,6 +159,8 @@ public class Constants {
     // UI
     public static final int FONT_MEDIUM = scale(10);
     public static final int FONT_SMALL = scale(7);
+    public static final int SLOT_MAX_ROW = 7, SLOT_MAX_COL = 3;
+    public static final int SLOT_SPACING = scale(40);
 
     private static int scale(double value) {
         return (int)(value * SCALE);
