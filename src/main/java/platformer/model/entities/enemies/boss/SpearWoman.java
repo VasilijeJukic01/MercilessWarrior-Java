@@ -2,8 +2,8 @@ package platformer.model.entities.enemies.boss;
 
 import platformer.animation.Anim;
 import platformer.audio.Audio;
-import platformer.audio.Songs;
-import platformer.audio.Sounds;
+import platformer.audio.Song;
+import platformer.audio.Sound;
 import platformer.model.entities.Cooldown;
 import platformer.model.entities.Direction;
 import platformer.model.entities.Player;
@@ -184,7 +184,7 @@ public class SpearWoman extends Enemy {
         else if (entityState == Anim.ATTACK_3) {
             teleport(levelData, player, 8);
             changeAttackBox();
-            Audio.getInstance().getAudioPlayer().playSound(Sounds.SW_ROAR_1.ordinal());
+            Audio.getInstance().getAudioPlayer().playSound(Sound.SW_ROAR_1);
             cooldown[Cooldown.ATTACK.ordinal()] = 5.5;
         }
         // Multi Lightning ball
@@ -241,7 +241,7 @@ public class SpearWoman extends Enemy {
             case ATTACK_1:
             case ATTACK_2:
                 if (animIndex == 0) {
-                    Audio.getInstance().getAudioPlayer().playSound(Sounds.SW_ROAR_2.ordinal());
+                    Audio.getInstance().getAudioPlayer().playSound(Sound.SW_ROAR_2);
                     attackCheck = false;
                 }
                 if (animIndex == 2) movingAttack(levelData, 30);
@@ -252,12 +252,12 @@ public class SpearWoman extends Enemy {
                 if (slashCount == 0) dashSlash(levelData);
                 else if (animIndex == 2) {
                     movingAttack(levelData, 30);
-                    Audio.getInstance().getAudioPlayer().playSound(Sounds.SW_ROAR_1.ordinal());
+                    Audio.getInstance().getAudioPlayer().playSound(Sound.SW_ROAR_1);
                 }
                 if (!attackCheck) checkPlayerHit(attackBox, player);
                 break;
             case SPELL_1:
-                if (animIndex == 0) Audio.getInstance().getAudioPlayer().playSound(Sounds.SW_ROAR_3.ordinal());
+                if (animIndex == 0) Audio.getInstance().getAudioPlayer().playSound(Sound.SW_ROAR_3);
                 if (animIndex == 12 && rapidSlashCount < 1) {
                     rapidSlashCount++;
                     animIndex = 2;
@@ -270,7 +270,7 @@ public class SpearWoman extends Enemy {
             case SPELL_2:
                 if (animIndex == 7 && !shooting) {
                     objectManager.shootLightningBall(this);
-                    Audio.getInstance().getAudioPlayer().playSound(Sounds.LIGHTNING_2.ordinal());
+                    Audio.getInstance().getAudioPlayer().playSound(Sound.LIGHTNING_2);
                     shooting = true;
                 }
                 else if (animIndex == 9 && shootCount < 4) {
@@ -281,7 +281,7 @@ public class SpearWoman extends Enemy {
                 break;
             case SPELL_3:
                 if (animIndex > 5 && animIndex < 16) checkPlayerHit(attackBox, player);
-                if (animIndex == 11) Audio.getInstance().getAudioPlayer().playSound(Sounds.SW_ROAR_2.ordinal());
+                if (animIndex == 11) Audio.getInstance().getAudioPlayer().playSound(Sound.SW_ROAR_2);
                 else if (animIndex == 13) spellManager.activateLightnings();
                 break;
             case SPELL_4:
@@ -404,6 +404,6 @@ public class SpearWoman extends Enemy {
 
     public void setStart(boolean start) {
         this.start = start;
-        if (start) Audio.getInstance().getAudioPlayer().playSong(Songs.BOSS_1.ordinal());
+        if (start) Audio.getInstance().getAudioPlayer().playSong(Song.BOSS_1);
     }
 }

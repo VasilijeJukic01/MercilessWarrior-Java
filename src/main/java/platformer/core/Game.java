@@ -1,7 +1,7 @@
 package platformer.core;
 
 import platformer.audio.Audio;
-import platformer.audio.Songs;
+import platformer.audio.Song;
 import platformer.database.bridge.Database;
 import platformer.state.ControlsState;
 import platformer.state.GameState;
@@ -40,7 +40,7 @@ public class Game implements Runnable {
         init();
         this.gameThread = new Thread(this);
         this.gameThread.start();
-        Audio.getInstance().getAudioPlayer().playSong(Songs.MENU.ordinal());
+        Audio.getInstance().getAudioPlayer().playSong(Song.MENU);
     }
 
     private void init() {
@@ -157,13 +157,13 @@ public class Game implements Runnable {
 
     public void startMenuState() {
         if (!(stateManager.getCurrentState() instanceof OptionsState) && !(stateManager.getCurrentState() instanceof ControlsState))
-            Audio.getInstance().getAudioPlayer().playSong(Songs.MENU.ordinal());
+            Audio.getInstance().getAudioPlayer().playSong(Song.MENU);
         stateManager.setMenuState();
     }
 
     public void startPlayingState() {
         stateManager.setPlayingState();
-        Audio.getInstance().getAudioPlayer().playSong(Songs.FOREST_1.ordinal());
+        Audio.getInstance().getAudioPlayer().playSong(Song.FOREST_1);
     }
 
     public void startOptionsState() {

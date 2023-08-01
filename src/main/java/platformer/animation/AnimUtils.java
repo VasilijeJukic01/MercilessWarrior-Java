@@ -152,17 +152,8 @@ public class AnimUtils {
         return anim;
     }
 
-    // Spell
-    public BufferedImage[] loadLightningAnimations() {
-        return loadFromSprite(LIGHTNING_SHEET, 8, 0, LIGHTNING_WIDTH, LIGHTNING_HEIGHT, 0, LIGHTNING_W, LIGHTNING_H);
-    }
-
-    public BufferedImage[] loadFlashAnimations() {
-        return loadFromSprite(FLASH_SHEET, 16, 0, FLASH_WIDTH, FLASH_HEIGHT, 0, FLASH_W, FLASH_H);
-    }
-
     public BufferedImage[] loadLightningBall(String sprite) {
-        return loadFromSprite(sprite, 9, 0, LB_WID, LB_HEI, 0, LIGHTNING_BALL_W, LIGHTNING_BALL_H);
+        return AnimUtils.getInstance().loadFromSprite(sprite, 9, 0, LB_WID, LB_HEI, 0, LIGHTNING_BALL_W, LIGHTNING_BALL_H);
     }
 
 }

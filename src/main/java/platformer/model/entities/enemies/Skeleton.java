@@ -2,7 +2,7 @@ package platformer.model.entities.enemies;
 
 import platformer.animation.Anim;
 import platformer.audio.Audio;
-import platformer.audio.Sounds;
+import platformer.audio.Sound;
 import platformer.model.entities.Direction;
 import platformer.model.entities.Player;
 import platformer.utils.Utils;
@@ -73,7 +73,7 @@ public class Skeleton extends Enemy {
         currentHealth -= damage;
         if (hitSound) Audio.getInstance().getAudioPlayer().playHitSound();
         if (currentHealth <= 0) {
-            Audio.getInstance().getAudioPlayer().playSound(Sounds.SKELETON_DEATH_1.ordinal());
+            Audio.getInstance().getAudioPlayer().playSound(Sound.SKELETON_DEATH_1);
             setEnemyAction(Anim.DEATH);
         }
         else setEnemyAction(Anim.HIT);
@@ -85,7 +85,7 @@ public class Skeleton extends Enemy {
     public void spellHit(double damage) {
         currentHealth -= damage;
         if (currentHealth <= 0) {
-            Audio.getInstance().getAudioPlayer().playSound(Sounds.SKELETON_DEATH_1.ordinal());
+            Audio.getInstance().getAudioPlayer().playSound(Sound.SKELETON_DEATH_1);
             setEnemyAction(Anim.DEATH);
         }
         else {

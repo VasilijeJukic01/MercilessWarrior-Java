@@ -2,13 +2,13 @@ package platformer.audio;
 
 public interface AudioPlayer {
 
-    void playSong(int song);
+    void playSong(Song song);
 
     void stopSong();
 
-    void playSound(int sound);
+    void playSound(Sound sound);
 
-    void stopSound(int sound);
+    void stopSound(Sound sound);
 
     void pauseSounds();
 

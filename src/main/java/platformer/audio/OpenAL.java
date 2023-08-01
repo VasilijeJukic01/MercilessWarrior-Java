@@ -52,14 +52,14 @@ public class OpenAL implements AudioPlayer {
     }
 
     private void loadSongs() {
-        Songs[] songsArray = Songs.values();
-        loadAudio(songsArray, songs, songSources);
+        Song[] songArray = Song.values();
+        loadAudio(songArray, songs, songSources);
         updateSongVolume();
     }
 
     private void loadSounds() {
-        Sounds[] soundsArray = Sounds.values();
-        loadAudio(soundsArray, sounds, soundSources);
+        Sound[] soundArray = Sound.values();
+        loadAudio(soundArray, sounds, soundSources);
         updateSoundVolume();
     }
 
@@ -79,9 +79,9 @@ public class OpenAL implements AudioPlayer {
 
     // Mediator
     @Override
-    public void playSong(int song) {
+    public void playSong(Song song) {
         stopSong();
-        currentSong = song;
+        currentSong = song.ordinal();
         if (!songMute) setVolume(volume);
         songSources.get(currentSong).play(songs.get(currentSong));
         songSources.get(currentSong).loop(true);
@@ -103,13 +103,13 @@ public class OpenAL implements AudioPlayer {
     }
 
     @Override
-    public void playSound(int sound) {
-        soundSources.get(sound).play(sounds.get(sound));
+    public void playSound(Sound sound) {
+        soundSources.get(sound.ordinal()).play(sounds.get(sound.ordinal()));
     }
 
     @Override
-    public void stopSound(int sound) {
-        soundSources.get(sound).stop();
+    public void stopSound(Sound sound) {
+        soundSources.get(sound.ordinal()).stop();
     }
 
     @Override
@@ -133,21 +133,21 @@ public class OpenAL implements AudioPlayer {
 
     @Override
     public void setLevelSong() {
-        playSong(Songs.FOREST_1.ordinal());
+        playSong(Song.FOREST_1);
     }
 
     @Override
     public void playSlashSound() {
         int start = 0;
         start += rand.nextInt(3);
-        playSound(start);
+        playSound(Sound.values()[start]);
     }
 
     @Override
     public void playHitSound() {
         int start = 3;
         start += rand.nextInt(2);
-        playSound(start);
+        playSound(Sound.values()[start]);
     }
 
     @Override
@@ -161,14 +161,14 @@ public class OpenAL implements AudioPlayer {
             start = 13;
             start += rand.nextInt(3);
         }
-        playSound(start);
+        playSound(Sound.values()[start]);
     }
 
     @Override
     public void playCrateSound() {
         int start = 6;
         start += rand.nextInt(2);
-        playSound(start);
+        playSound(Sound.values()[start]);
     }
 
     // Mute

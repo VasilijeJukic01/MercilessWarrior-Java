@@ -2,7 +2,7 @@ package platformer.model.entities.enemies;
 
 import platformer.animation.Anim;
 import platformer.audio.Audio;
-import platformer.audio.Sounds;
+import platformer.audio.Sound;
 import platformer.model.entities.Cooldown;
 import platformer.model.entities.Direction;
 import platformer.model.entities.Player;
@@ -68,14 +68,14 @@ public class Ghoul extends Enemy {
             double x = rand.nextDouble();
             if (x < 0.3) {
                 entityState = Anim.HIDE;
-                Audio.getInstance().getAudioPlayer().playSound(Sounds.GHOUL_HIDE.ordinal());
+                Audio.getInstance().getAudioPlayer().playSound(Sound.GHOUL_HIDE);
                 return;
             }
         }
         currentHealth -= damage;
         if (hitSound) Audio.getInstance().getAudioPlayer().playHitSound();
         if (currentHealth <= 0) {
-            Audio.getInstance().getAudioPlayer().playSound(Sounds.GHOUL_DEATH.ordinal());
+            Audio.getInstance().getAudioPlayer().playSound(Sound.GHOUL_DEATH);
             setEnemyAction(Anim.DEATH);
         }
         else setEnemyAction(Anim.HIT);
@@ -84,7 +84,7 @@ public class Ghoul extends Enemy {
     public void spellHit(double damage) {
         currentHealth -= damage;
         if (currentHealth <= 0) {
-            Audio.getInstance().getAudioPlayer().playSound(Sounds.GHOUL_DEATH.ordinal());
+            Audio.getInstance().getAudioPlayer().playSound(Sound.GHOUL_DEATH);
             setEnemyAction(Anim.DEATH);
         }
         else {
@@ -134,7 +134,7 @@ public class Ghoul extends Enemy {
                     hitBox.y = player.getHitBox().y;
                     inAir = true;
                 }
-                else if (animIndex == 5) Audio.getInstance().getAudioPlayer().playSound(Sounds.GHOUL_REVEAL.ordinal());
+                else if (animIndex == 5) Audio.getInstance().getAudioPlayer().playSound(Sound.GHOUL_REVEAL);
             default: break;
         }
     }

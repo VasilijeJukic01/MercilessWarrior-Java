@@ -2,7 +2,7 @@ package platformer.model.objects;
 
 import platformer.animation.AnimUtils;
 import platformer.audio.Audio;
-import platformer.audio.Sounds;
+import platformer.audio.Sound;
 import platformer.debug.logger.Message;
 import platformer.debug.logger.Logger;
 import platformer.model.entities.Direction;
@@ -11,7 +11,7 @@ import platformer.model.entities.PlayerBonus;
 import platformer.model.entities.enemies.boss.SpearWoman;
 import platformer.model.levels.Level;
 import platformer.model.objects.projectiles.*;
-import platformer.model.spells.Flames;
+import platformer.model.spells.Flame;
 import platformer.state.GameState;
 import platformer.utils.Utils;
 
@@ -113,7 +113,7 @@ public class ObjectManager {
         for (Coin coin : copy) {
             if (coin.isAlive() && hitBox.intersects(coin.getHitBox())) {
                 coins.remove(coin);
-                Audio.getInstance().getAudioPlayer().playSound(Sounds.COIN_PICK.ordinal());
+                Audio.getInstance().getAudioPlayer().playSound(Sound.COIN_PICK);
                 gameState.getPlayer().changeCoins(1);
             }
         }
@@ -129,9 +129,9 @@ public class ObjectManager {
 
     // Object Break
     public void checkObjectBreak(Rectangle2D.Double attackBox) {
-        Flames flames = gameState.getSpellManager().getFlames();
+        Flame flame = gameState.getSpellManager().getFlames();
         for (Container container : containers) {
-            boolean isFlame = flames.getHitBox().intersects(container.getHitBox()) && flames.isAlive();
+            boolean isFlame = flame.getHitBox().intersects(container.getHitBox()) && flame.isActive();
             if (container.isAlive() && !container.animate && (attackBox.intersects(container.getHitBox()) || isFlame)) {
                 Logger.getInstance().notify("Player breaks container.", Message.NOTIFICATION);
                 container.setAnimate(true);
@@ -290,7 +290,7 @@ public class ObjectManager {
 
     // Projectiles/Activators
     private void shootArrow(ArrowLauncher arrowLauncher) {
-        Audio.getInstance().getAudioPlayer().playSound(Sounds.ARROW.ordinal());
+        Audio.getInstance().getAudioPlayer().playSound(Sound.ARROW);
         Direction direction = (arrowLauncher.getObjType() == ObjType.ARROW_TRAP_RIGHT) ? Direction.LEFT : Direction.RIGHT;
         projectiles.add(new Arrow((int)arrowLauncher.getHitBox().x, (int)arrowLauncher.getHitBox().y, direction));
     }

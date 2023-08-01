@@ -1,7 +1,7 @@
 package platformer.ui.overlays;
 
 import platformer.audio.Audio;
-import platformer.audio.Songs;
+import platformer.audio.Song;
 import platformer.core.Game;
 import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.CREButton;
@@ -86,7 +86,7 @@ public class GameOverOverlay implements Overlay {
     public void mouseReleased(MouseEvent e) {
         if(isMouseInButton(e, retryBtn) && retryBtn.isMousePressed()) {
             game.reset();
-            Audio.getInstance().getAudioPlayer().playSong(Songs.FOREST_1.ordinal());
+            Audio.getInstance().getAudioPlayer().playSong(Song.FOREST_1);
         }
         if(isMouseInButton(e, menuBtn) && menuBtn.isMousePressed()) {
             game.reset();

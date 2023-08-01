@@ -3,7 +3,7 @@ package platformer.model.entities;
 import platformer.animation.Anim;
 import platformer.animation.AnimUtils;
 import platformer.audio.Audio;
-import platformer.audio.Sounds;
+import platformer.audio.Sound;
 import platformer.core.Game;
 import platformer.debug.logger.Message;
 import platformer.debug.logger.Logger;
@@ -355,7 +355,7 @@ public class Player extends Entity {
             dash = true;
             dashCount++;
             canDash = false;
-            Audio.getInstance().getAudioPlayer().playSound(Sounds.DASH.ordinal());
+            Audio.getInstance().getAudioPlayer().playSound(Sound.DASH);
             changeStamina(-3);
             cooldown[Cooldown.DASH.ordinal()] = 1.75 + PlayerBonus.getInstance().getDashCooldown();
         }
@@ -435,7 +435,7 @@ public class Player extends Entity {
         else if (animIndex == animations[entityState.ordinal()].length-1 && animTick >= animSpeed-1) {
             game.setGameOver(true);
             Audio.getInstance().getAudioPlayer().stopSong();
-            Audio.getInstance().getAudioPlayer().playSound(Sounds.GAME_OVER.ordinal());
+            Audio.getInstance().getAudioPlayer().playSound(Sound.GAME_OVER);
         }
         else updateAnimation();
     }
@@ -601,8 +601,8 @@ public class Player extends Entity {
 
     public void setSpellState(int spellState) {
         if (spellState == 2 && this.spellState == 1) animIndex = 10;
-        if (spellState == 0) Audio.getInstance().getAudioPlayer().stopSound(Sounds.FIRE_SPELL_1.ordinal());
-        else if (spellState == 1) Audio.getInstance().getAudioPlayer().playSound(Sounds.FIRE_SPELL_1.ordinal());
+        if (spellState == 0) Audio.getInstance().getAudioPlayer().stopSound(Sound.FIRE_SPELL_1);
+        else if (spellState == 1) Audio.getInstance().getAudioPlayer().playSound(Sound.FIRE_SPELL_1);
         this.spellState = spellState;
     }
 

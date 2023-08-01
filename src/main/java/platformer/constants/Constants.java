@@ -109,15 +109,22 @@ public class Constants {
     public static final int LB_SPEED_SLOW = scale(0.5);
 
     // Spell Constants
+    public static final int FLAME_WID = scale(45);
+    public static final int FLAME_HEI = scale(35);
+    public static final int FLAME_OFFSET_X = scale(55);
+    public static final int FLAME_OFFSET_Y = scale(1);
+
     public static final int LIGHTNING_DEFAULT_WIDTH = (int)(0.75 * TILES_SIZE);
     public static final int LIGHTNING_DEFAULT_HEIGHT = 4 * TILES_SIZE;
     public static final int LIGHTNING_WIDTH = scale(LIGHTNING_DEFAULT_WIDTH);
     public static final int LIGHTNING_HEIGHT = scale(LIGHTNING_DEFAULT_HEIGHT);
+    public static final int LIGHTNING_OFFSET_X = (int)(LIGHTNING_WIDTH/3.8);
 
     public static final int FLASH_DEFAULT_WIDTH = (int)(0.75 * TILES_SIZE);
     public static final int FLASH_DEFAULT_HEIGHT = 3 * TILES_SIZE;
     public static final int FLASH_WIDTH = scale(FLASH_DEFAULT_WIDTH);
     public static final int FLASH_HEIGHT = scale(FLASH_DEFAULT_HEIGHT);
+    public static final int FLASH_OFFSET_X = (int)(FLASH_WIDTH/2.4);
 
     // Button Constants
     public static final int BTN_WID = scale(120);

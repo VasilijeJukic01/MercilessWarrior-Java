@@ -13,7 +13,7 @@ import platformer.model.levels.Level;
 import platformer.model.objects.GameObject;
 import platformer.model.objects.projectiles.Projectile;
 import platformer.model.objects.Spike;
-import platformer.model.spells.Flames;
+import platformer.model.spells.Flame;
 import platformer.state.GameState;
 
 
@@ -189,10 +189,10 @@ public class EnemyManager {
     }
 
     public void checkEnemySpellHit() {
-        Flames flames = gameState.getSpellManager().getFlames();
+        Flame flame = gameState.getSpellManager().getFlames();
         for (Skeleton skeleton : skeletons) {
             if (skeleton.isAlive() && skeleton.getEnemyAction() != Anim.DEATH) {
-                if (flames.isAlive() && flames.getHitBox().intersects(skeleton.getHitBox())) {
+                if (flame.isActive() && flame.getHitBox().intersects(skeleton.getHitBox())) {
                     skeleton.spellHit(0.08);
                     checkEnemyDying(skeleton, gameState.getPlayer());
                     return;
@@ -201,7 +201,7 @@ public class EnemyManager {
         }
         for (Ghoul ghoul : ghouls) {
             if (ghoul.isAlive() && ghoul.getEnemyAction() != Anim.DEATH) {
-                if (flames.isAlive() && flames.getHitBox().intersects(ghoul.getHitBox())) {
+                if (flame.isActive() && flame.getHitBox().intersects(ghoul.getHitBox())) {
                     ghoul.spellHit(0.16);
                     checkEnemyDying(ghoul, gameState.getPlayer());
                     return;

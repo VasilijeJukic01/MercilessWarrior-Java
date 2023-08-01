@@ -64,7 +64,7 @@ public class LevelManager {
         gameState.getEnemyManager().reset();
         gameState.getPlayer().loadLvlData(newLevel.getLvlData());
         gameState.getObjectManager().loadObjects(newLevel);
-        gameState.getSpellManager().gatherSpellPlacements();
+        gameState.getSpellManager().initBossSpells();
     }
 
     public void loadNextLevel() {
