@@ -6,8 +6,8 @@ import static platformer.constants.Constants.SCALE;
 
 public class Coin extends GameObject{
 
-    public Coin(Obj obj, int xPos, int yPos) {
-        super(obj, xPos, yPos);
+    public Coin(ObjType objType, int xPos, int yPos) {
+        super(objType, xPos, yPos);
         generateHitBox();
     }
 

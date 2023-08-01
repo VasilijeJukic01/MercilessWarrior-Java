@@ -6,8 +6,8 @@ import static platformer.constants.Constants.SCALE;
 
 public class Blocker extends GameObject {
 
-    public Blocker(Obj obj, int xPos, int yPos) {
-        super(obj, xPos, yPos);
+    public Blocker(ObjType objType, int xPos, int yPos) {
+        super(objType, xPos, yPos);
         int hbWid = (int)(32*SCALE);
         int hbHei = (int)(32*3.5*SCALE);
         initHitBox(hbWid, hbHei);

@@ -138,9 +138,9 @@ public class ObjectManager {
                 Audio.getInstance().getAudioPlayer().playCrateSound();
                 Random rand = new Random();
                 int value = rand.nextInt(4)-1;
-                Obj potion = null;
-                if (value == 0) potion = Obj.STAMINA_POTION;
-                else if (value == 1) potion = Obj.HEAL_POTION;
+                ObjType potion = null;
+                if (value == 0) potion = ObjType.STAMINA_POTION;
+                else if (value == 1) potion = ObjType.HEAL_POTION;
                 if (potion != null) potions.add(new Potion(potion, (int)(container.getHitBox().x+container.getHitBox().width/2), (int)(container.getHitBox().y-container.getHitBox().height/4)));
             }
         }
@@ -279,10 +279,10 @@ public class ObjectManager {
     }
 
     private boolean isPlayerInFront(ArrowLauncher arrowLauncher, Player player) {
-        if (arrowLauncher.getObjType() == Obj.ARROW_TRAP_LEFT) {
+        if (arrowLauncher.getObjType() == ObjType.ARROW_TRAP_LEFT) {
             return arrowLauncher.getHitBox().x > player.getHitBox().x;
         }
-        else if (arrowLauncher.getObjType() == Obj.ARROW_TRAP_RIGHT) {
+        else if (arrowLauncher.getObjType() == ObjType.ARROW_TRAP_RIGHT) {
             return arrowLauncher.getHitBox().x < player.getHitBox().x;
         }
         return false;
@@ -291,7 +291,7 @@ public class ObjectManager {
     // Projectiles/Activators
     private void shootArrow(ArrowLauncher arrowLauncher) {
         Audio.getInstance().getAudioPlayer().playSound(Sounds.ARROW.ordinal());
-        Direction direction = (arrowLauncher.getObjType() == Obj.ARROW_TRAP_RIGHT) ? Direction.LEFT : Direction.RIGHT;
+        Direction direction = (arrowLauncher.getObjType() == ObjType.ARROW_TRAP_RIGHT) ? Direction.LEFT : Direction.RIGHT;
         projectiles.add(new Arrow((int)arrowLauncher.getHitBox().x, (int)arrowLauncher.getHitBox().y, direction));
     }
 
@@ -418,7 +418,7 @@ public class ObjectManager {
         for (int i = 0; i < n; i++) {
             int x = rand.nextInt((int)location.width)+(int)location.x;
             int y = rand.nextInt((int)(location.height/3)) + (int)location.y + 2*(int)location.height/3;
-            Coin coin = new Coin(Obj.COIN, x, y);
+            Coin coin = new Coin(ObjType.COIN, x, y);
             coins.add(coin);
         }
     }
@@ -470,7 +470,7 @@ public class ObjectManager {
             int fS = 1, fC = 0;
             int sideOffset = 32;
             int index = al.getObjType().ordinal();
-            if (al.getObjType() == Obj.ARROW_TRAP_RIGHT) {
+            if (al.getObjType() == ObjType.ARROW_TRAP_RIGHT) {
                 fS = -1;
                 fC = ARROW_TRAP_WID;
                 sideOffset = -32;

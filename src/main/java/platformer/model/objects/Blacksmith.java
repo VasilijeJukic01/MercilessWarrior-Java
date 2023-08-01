@@ -8,8 +8,8 @@ public class Blacksmith extends GameObject{
 
     private boolean active;
 
-    public Blacksmith(Obj obj, int xPos, int yPos) {
-        super(obj, xPos, yPos);
+    public Blacksmith(ObjType objType, int xPos, int yPos) {
+        super(objType, xPos, yPos);
         generateHitBox();
     }
 

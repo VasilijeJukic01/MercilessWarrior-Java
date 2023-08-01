@@ -20,8 +20,8 @@ public class Shop extends GameObject {
     private final ArrayList<ShopItem> shopItems;
     private final Random rand;
 
-    public Shop(Obj obj, int xPos, int yPos) {
-        super(obj, xPos, yPos);
+    public Shop(ObjType objType, int xPos, int yPos) {
+        super(objType, xPos, yPos);
         this.shopItems = new ArrayList<>();
         this.rand = new Random();
         generateHitBox();

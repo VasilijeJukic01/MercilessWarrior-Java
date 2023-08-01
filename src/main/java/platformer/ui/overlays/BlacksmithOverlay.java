@@ -36,8 +36,8 @@ public class BlacksmithOverlay implements Overlay {
     }
 
     private void init() {
-        this.SLOT_MAX_COL = gameState.getPerksManager().getSlotMaxCol();
-        this.SLOT_MAX_ROW = gameState.getPerksManager().getSlotMaxRow();
+        this.SLOT_MAX_COL = PERK_SLOT_MAX_COL;
+        this.SLOT_MAX_ROW = PERK_SLOT_MAX_ROW;
         this.placeHolders = gameState.getPerksManager().getPlaceHolders();
         loadImages();
         loadButtons();
@@ -192,7 +192,7 @@ public class BlacksmithOverlay implements Overlay {
 
     public void upgrade() {
         if (!checkTokens()) return;
-        gameState.getPerksManager().upgrade(placeHolders, SLOT_MAX_COL, SLOT_MAX_ROW, slotNumber);
+        gameState.getPerksManager().upgrade(SLOT_MAX_COL, SLOT_MAX_ROW, slotNumber);
     }
 
     @Override

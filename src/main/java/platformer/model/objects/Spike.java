@@ -6,8 +6,8 @@ import static platformer.constants.Constants.SCALE;
 
 public class Spike extends GameObject{
 
-    public Spike(Obj obj, int xPos, int yPos) {
-        super(obj, xPos, yPos);
+    public Spike(ObjType objType, int xPos, int yPos) {
+        super(objType, xPos, yPos);
         int hbWid = (int)(32*SCALE);
         int hbHei = (int)(15*SCALE);
         initHitBox(hbWid, hbHei);

@@ -6,20 +6,20 @@ import static platformer.constants.Constants.SCALE;
 
 public class Container extends GameObject{
 
-    public Container(Obj obj, int xPos, int yPos) {
-        super(obj, xPos, yPos);
+    public Container(ObjType objType, int xPos, int yPos) {
+        super(objType, xPos, yPos);
         generateHitBox();
     }
 
     private void generateHitBox() {
-        if (obj == Obj.BOX) {
+        if (objType == ObjType.BOX) {
             int hbWid = (int)(25*SCALE)+1;
             int hbHei = (int)(18*SCALE)+1;
             initHitBox(hbWid, hbHei);
             xOffset = (int)(7*SCALE);
             yOffset = (int)(12*SCALE);
         }
-        else if (obj == Obj.BARREL) {
+        else if (objType == ObjType.BARREL) {
             int hbWid = (int)(23*SCALE)+1;
             int hbHei = (int)(25*SCALE)+1;
             initHitBox(hbWid, hbHei);

@@ -11,6 +11,7 @@ public class Perk {
     private final String description;
     private final int cost;
     private final String name;
+
     // Flags
     private boolean locked = true, upgraded;
 

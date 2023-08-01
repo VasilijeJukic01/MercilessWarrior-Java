@@ -53,8 +53,8 @@ public class ShopOverlay implements Overlay {
     }
 
     private void initSelectedSlot() {
-        int xPos = (slotNumber % SLOT_MAX_ROW) * SLOT_SPACING + SLOT_X;
-        int yPos = (slotNumber / SLOT_MAX_ROW) * SLOT_SPACING + SLOT_Y;
+        int xPos = (slotNumber % SHOP_SLOT_MAX_ROW) * SLOT_SPACING + SLOT_X;
+        int yPos = (slotNumber / SHOP_SLOT_MAX_ROW) * SLOT_SPACING + SLOT_Y;
         this.selectedSlot = new Rectangle2D.Double(xPos, yPos, SLOT_SIZE, SLOT_SIZE);
     }
 
@@ -101,8 +101,8 @@ public class ShopOverlay implements Overlay {
     }
 
     private void renderItem(Graphics g, ShopItem item) {
-        int xPos = (item.getSlot() % SLOT_MAX_ROW) * SLOT_SPACING + SLOT_X + ITEM_OFFSET_X;
-        int yPos = (item.getSlot() / SLOT_MAX_ROW) * SLOT_SPACING + SLOT_Y + ITEM_OFFSET_Y;
+        int xPos = (item.getSlot() % SHOP_SLOT_MAX_ROW) * SLOT_SPACING + SLOT_X + ITEM_OFFSET_X;
+        int yPos = (item.getSlot() / SHOP_SLOT_MAX_ROW) * SLOT_SPACING + SLOT_Y + ITEM_OFFSET_Y;
         g.drawImage(item.getItemImage(), xPos, yPos, ITEM_SIZE, ITEM_SIZE, null);
         g.setColor(Color.WHITE);
         g.setFont(new Font("Arial", Font.BOLD, 20));
@@ -115,8 +115,8 @@ public class ShopOverlay implements Overlay {
 
     private void renderSlots(Graphics g) {
         g.setColor(Color.RED);
-        for (int i = 0; i < SLOT_MAX_ROW; i++) {
-            for (int j = 0; j < SLOT_MAX_COL; j++) {
+        for (int i = 0; i < SHOP_SLOT_MAX_ROW; i++) {
+            for (int j = 0; j < SHOP_SLOT_MAX_COL; j++) {
                 g.drawImage(slotImage, i* SLOT_SPACING + SLOT_X, j* SLOT_SPACING + SLOT_Y, slotImage.getWidth(), slotImage.getHeight(), null);
             }
         }
@@ -124,16 +124,16 @@ public class ShopOverlay implements Overlay {
 
     // Other
     private void setSelectedSlot() {
-        this.selectedSlot.x = (slotNumber % SLOT_MAX_ROW) * SLOT_SPACING + SLOT_X;
-        this.selectedSlot.y = (slotNumber / SLOT_MAX_ROW) * SLOT_SPACING + SLOT_Y;
+        this.selectedSlot.x = (slotNumber % SHOP_SLOT_MAX_ROW) * SLOT_SPACING + SLOT_X;
+        this.selectedSlot.y = (slotNumber / SHOP_SLOT_MAX_ROW) * SLOT_SPACING + SLOT_Y;
     }
 
     private void changeSlot(MouseEvent e) {
         int x = e.getX(), y = e.getY();
-        for (int i = 0; i < SLOT_MAX_ROW; i++) {
-            for (int j = 0; j < SLOT_MAX_COL; j++) {
+        for (int i = 0; i < SHOP_SLOT_MAX_ROW; i++) {
+            for (int j = 0; j < SHOP_SLOT_MAX_COL; j++) {
                 if (x >= i*SLOT_SPACING+SLOT_X && x <= i*SLOT_SPACING+SLOT_X+SLOT_SIZE && y >= j*SLOT_SPACING+SLOT_Y && y <= j*SLOT_SPACING+SLOT_Y+SLOT_SIZE) {
-                    slotNumber = i + (j*SLOT_MAX_ROW);
+                    slotNumber = i + (j* SHOP_SLOT_MAX_ROW);
                     setSelectedSlot();
                     break;
                 }

@@ -2,7 +2,7 @@ package platformer.animation;
 
 import platformer.model.entities.effects.EffectType;
 import platformer.model.entities.effects.Particle;
-import platformer.model.objects.Obj;
+import platformer.model.objects.ObjType;
 import platformer.utils.Utils;
 import java.awt.image.BufferedImage;
 import java.util.Random;
@@ -136,18 +136,18 @@ public class AnimUtils {
     public BufferedImage[][] loadObjects() {
         BufferedImage[][] anim = new BufferedImage[17][17];
 
-        anim[Obj.STAMINA_POTION.ordinal()] = loadFromSprite(POTIONS_SHEET, 7, 0, POTION_WID, POTION_HEI, 0, POTION_W, POTION_H);
-        anim[Obj.HEAL_POTION.ordinal()] = loadFromSprite(POTIONS_SHEET, 7, 1, POTION_WID, POTION_HEI, 0, POTION_W, POTION_H);
-        anim[Obj.BOX.ordinal()] = loadFromSprite(CONTAINERS_SHEET, 8, 0, CONTAINER_WID, CONTAINER_HEI, 0, CONTAINER_W, CONTAINER_H);
-        anim[Obj.BARREL.ordinal()] = loadFromSprite(CONTAINERS_SHEET, 8, 1, CONTAINER_WID, CONTAINER_HEI, 0, CONTAINER_W, CONTAINER_H);
-        anim[Obj.SPIKE.ordinal()] = loadFromSprite(SPIKES_SHEET, 10, 0, SPIKE_WID, SPIKE_HEI, 0, SPIKES_W, SPIKES_H);
-        anim[Obj.ARROW_TRAP_RIGHT.ordinal()] = loadFromSprite(ARROW_TRAP_SHEET, 16, 0, ARROW_TRAP_WID, ARROW_TRAP_HEI, 1, AT_W, AT_H);
-        anim[Obj.ARROW_TRAP_LEFT.ordinal()] = anim[Obj.ARROW_TRAP_RIGHT.ordinal()];
-        anim[Obj.COIN.ordinal()] = loadFromSprite(COIN_SHEET, 4, 0, COIN_WID, COIN_HEI, 0, COIN_W, COIN_H);
-        anim[Obj.SHOP.ordinal()] = loadFromSprite(SHOP_SHEET, 6, 0, SHOP_WID, SHOP_HEI, 0, SHOP_W, SHOP_H);
-        anim[Obj.BLOCKER.ordinal()] = loadFromSprite(BLOCKER_SHEET, 12, 0, BLOCKER_WID, BLOCKER_HEI, 0, BLOCKER_W, BLOCKER_H);
-        anim[Obj.BLACKSMITH.ordinal()] = loadFromSprite(BS_SHEET, 8, 0, BLACKSMITH_WID, BLACKSMITH_HEI, 0, BLACKSMITH_W, BLACKSMITH_H);
-        anim[Obj.DOG.ordinal()] = loadFromSprite(DOG_SHEET, 8, 0, DOG_WID, DOG_HEI, 0, DOG_W, DOG_H);
+        anim[ObjType.STAMINA_POTION.ordinal()] = loadFromSprite(POTIONS_SHEET, 7, 0, POTION_WID, POTION_HEI, 0, POTION_W, POTION_H);
+        anim[ObjType.HEAL_POTION.ordinal()] = loadFromSprite(POTIONS_SHEET, 7, 1, POTION_WID, POTION_HEI, 0, POTION_W, POTION_H);
+        anim[ObjType.BOX.ordinal()] = loadFromSprite(CONTAINERS_SHEET, 8, 0, CONTAINER_WID, CONTAINER_HEI, 0, CONTAINER_W, CONTAINER_H);
+        anim[ObjType.BARREL.ordinal()] = loadFromSprite(CONTAINERS_SHEET, 8, 1, CONTAINER_WID, CONTAINER_HEI, 0, CONTAINER_W, CONTAINER_H);
+        anim[ObjType.SPIKE.ordinal()] = loadFromSprite(SPIKES_SHEET, 10, 0, SPIKE_WID, SPIKE_HEI, 0, SPIKES_W, SPIKES_H);
+        anim[ObjType.ARROW_TRAP_RIGHT.ordinal()] = loadFromSprite(ARROW_TRAP_SHEET, 16, 0, ARROW_TRAP_WID, ARROW_TRAP_HEI, 1, AT_W, AT_H);
+        anim[ObjType.ARROW_TRAP_LEFT.ordinal()] = anim[ObjType.ARROW_TRAP_RIGHT.ordinal()];
+        anim[ObjType.COIN.ordinal()] = loadFromSprite(COIN_SHEET, 4, 0, COIN_WID, COIN_HEI, 0, COIN_W, COIN_H);
+        anim[ObjType.SHOP.ordinal()] = loadFromSprite(SHOP_SHEET, 6, 0, SHOP_WID, SHOP_HEI, 0, SHOP_W, SHOP_H);
+        anim[ObjType.BLOCKER.ordinal()] = loadFromSprite(BLOCKER_SHEET, 12, 0, BLOCKER_WID, BLOCKER_HEI, 0, BLOCKER_W, BLOCKER_H);
+        anim[ObjType.BLACKSMITH.ordinal()] = loadFromSprite(BS_SHEET, 8, 0, BLACKSMITH_WID, BLACKSMITH_HEI, 0, BLACKSMITH_W, BLACKSMITH_H);
+        anim[ObjType.DOG.ordinal()] = loadFromSprite(DOG_SHEET, 8, 0, DOG_WID, DOG_HEI, 0, DOG_W, DOG_H);
 
         return anim;
     }

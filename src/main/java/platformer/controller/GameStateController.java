@@ -28,6 +28,7 @@ public class GameStateController {
         this.game = gameState.getGame();
     }
 
+    // Mouse
     public void mousePressed(MouseEvent e) {
         gameState.getOverlayManager().mousePressed(e);
     }
@@ -44,6 +45,7 @@ public class GameStateController {
         gameState.getOverlayManager().mouseDragged(e);
     }
 
+    // Keyboard
     public void keyPressed(KeyEvent e, boolean shopVisible, boolean blacksmithVisible, boolean paused, boolean gameOver) {
         if ((shopVisible || blacksmithVisible) && e.getKeyCode() != KeyEvent.VK_ESCAPE) return;
         if (gameOver && e.getKeyCode() != KeyEvent.VK_ESCAPE) return;

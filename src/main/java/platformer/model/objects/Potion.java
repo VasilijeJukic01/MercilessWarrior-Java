@@ -10,8 +10,8 @@ public class Potion extends GameObject{
     private final int maxFloatOffset;
     private int floatDir = 1;
 
-    public Potion(Obj obj, int xPos, int yPos) {
-        super(obj, xPos, yPos);
+    public Potion(ObjType objType, int xPos, int yPos) {
+        super(objType, xPos, yPos);
         super.animate = true;
         int hbWid = (int)(7*SCALE);
         int hbHei = (int)(14*SCALE);

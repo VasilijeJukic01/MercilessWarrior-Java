@@ -27,6 +27,17 @@ public class Constants {
     public static final int PLAYER_X = scale(300);
     public static final int PLAYER_Y = scale(250);
 
+    public static final int XP_BONUS_AMOUNT = 15;
+    public static final double STRONG_ARMS_BONUS_COOLDOWN = -0.225;
+    public static final int POWER_PILL_BONUS_POWER = 20;
+    public static final int LUCKY_DROP_BONUS_COINS = 5;
+    public static final int BROKEN_BONES_BONUS_ATTACK = 1;
+    public static final int WARRIOR_HEART_BONUS_HEALTH = 5;
+    public static final int DRAGON_FRUIT_BONUS_POWER = 26;
+    public static final int ELEMENTARY_MAGIC_CRITICAL_HIT_CHANCE = 5;
+    public static final int GODS_BLOOD_BONUS_HEALTH = 32;
+    public static final double FURIOUS_DASH_COOLDOWN = -0.75;
+
     // Level Constants
     public static final int MAX_LEVELS = 3;
     public static final int EMPTY_TILE = -1;
@@ -123,7 +134,8 @@ public class Constants {
     // UI
     public static final int FONT_MEDIUM = scale(10);
     public static final int FONT_SMALL = scale(7);
-    public static final int SLOT_MAX_ROW = 7, SLOT_MAX_COL = 3;
+    public static final int SHOP_SLOT_MAX_ROW = 7, SHOP_SLOT_MAX_COL = 3;
+    public static final int PERK_SLOT_MAX_ROW = 4, PERK_SLOT_MAX_COL = 7;
     public static final int SLOT_SPACING = scale(40);
 
     private static int scale(double value) {

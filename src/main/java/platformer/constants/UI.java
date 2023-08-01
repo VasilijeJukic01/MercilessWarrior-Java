@@ -59,7 +59,7 @@ public class UI {
     public static final int PORT_X = scale(18);
     public static final int PORT_Y = scale(22);
 
-    public static final int COINS_X = scale(493);
+    public static final int COINS_X = scale(90);
     public static final int COINS_Y = scale(82);
     public static final int LVL_X = scale(170);
     public static final int LVL_Y = scale(67);

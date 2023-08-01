@@ -1,74 +1,45 @@
 package platformer.model;
 
 import platformer.model.entities.enemies.EnemyType;
-import platformer.model.objects.Obj;
+import platformer.model.objects.ObjType;
 import platformer.model.objects.projectiles.PRType;
 import platformer.model.spells.SpellType;
 
 public class ModelUtils {
 
-    public static ModelUtils instance = null;
+    private static volatile ModelUtils instance = null;
+
+    public static ModelUtils getInstance() {
+        if (instance == null) {
+            synchronized (ModelUtils.class) {
+                if (instance == null) {
+                    instance = new ModelUtils();
+                }
+            }
+        }
+        return instance;
+    }
 
     private ModelUtils() {}
 
     public int getHealth(EnemyType enemyType) {
-        switch (enemyType) {
-            case SKELETON: return 25;
-            case GHOUL: return 40;
-            case SPEAR_WOMAN: return 120;
-            default: return 5;
-        }
+        return enemyType.getHealth();
     }
 
     public int getDamage(EnemyType enemyType) {
-        switch (enemyType) {
-            case SKELETON: return 15;
-            case GHOUL: return 20;
-            case SPEAR_WOMAN: return 25;
-            default: return 0;
-        }
+        return enemyType.getDamage();
     }
 
-    public int getObjectSprite(Obj object) {
-        switch (object) {
-            case HEAL_POTION:
-            case STAMINA_POTION:
-                return 7;
-            case BARREL:
-            case BOX:
-            case BLACKSMITH:
-            case DOG:
-                return 8;
-            case ARROW_TRAP_RIGHT:
-            case ARROW_TRAP_LEFT:
-                return 16;
-            case COIN:
-                return 4;
-            case SHOP:
-                return 6;
-            case BLOCKER:
-                return 10;
-        }
-        return 1;
+    public int getObjectSprite(ObjType object) {
+        return object.getSprites();
     }
 
     public int getProjectileSprite(PRType prType) {
-        if (prType == PRType.LIGHTNING_BALL) return 4;
-        return 1;
+        return prType.getSprites();
     }
 
     public int getSpellSprite(SpellType spell) {
-        if (spell == SpellType.FLAME_1) return 14;
-        else if (spell == SpellType.LIGHTNING) return 8;
-        else if (spell == SpellType.FLASH) return 16;
-        return 1;
-    }
-
-    public static ModelUtils getInstance() {
-        if (instance == null) {
-            instance = new ModelUtils();
-        }
-        return instance;
+        return spell.getSprites();
     }
 
 }
