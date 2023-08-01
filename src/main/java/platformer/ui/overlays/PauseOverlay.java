@@ -3,6 +3,7 @@ package platformer.ui.overlays;
 import platformer.audio.Audio;
 import platformer.audio.Songs;
 import platformer.core.Game;
+import platformer.state.GameState;
 import platformer.ui.AudioOptions;
 import platformer.ui.buttons.*;
 import platformer.utils.Utils;
@@ -18,13 +19,15 @@ import static platformer.constants.UI.*;
 public class PauseOverlay implements Overlay {
 
     private final Game game;
+    private final GameState gameState;
     private final AudioOptions audioOptions;
     private BufferedImage pauseText;
     private BufferedImage SFXText, musicText, volumeText;
     private CREButton continueBtn, retryBtn, exitBtn;
 
-    public PauseOverlay(Game game) {
+    public PauseOverlay(Game game, GameState gameState) {
         this.game = game;
+        this.gameState = gameState;
         this.audioOptions = game.getAudioOptions();
         loadImages();
         loadButtons();
@@ -96,14 +99,14 @@ public class PauseOverlay implements Overlay {
     @Override
     public void mouseReleased(MouseEvent e) {
         if(isMouseInButton(e, continueBtn) && continueBtn.isMousePressed()) {
-            game.setPaused(false);
+            gameState.setPaused(false);
         }
         else if(isMouseInButton(e, retryBtn) && retryBtn.isMousePressed()) {
             game.reset();
             Audio.getInstance().getAudioPlayer().playSong(Songs.FOREST_1.ordinal());
         }
         else if(isMouseInButton(e, exitBtn) && exitBtn.isMousePressed()) {
-            game.setPaused(false);
+            gameState.setPaused(false);
             game.startMenuState();
         }
         else audioOptions.mouseReleased(e);

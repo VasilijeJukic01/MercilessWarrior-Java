@@ -6,6 +6,9 @@ public class FilePaths {
     public static final String PLAYER_SHEET = "/images/player/playerSheet.png";
     public static final String PLAYER_TRANSFORM_SHEET = "/images/player/transformSheet.png";
 
+    // Levels
+    public static final String BACKGROUND_1 = "/images/background1.jpg";
+
     // Enemy
     public static final String SKELETON_SHEET = "/images/enemies/SkeletonSprite.png";
     public static final String GHOUL_SHEET = "/images/enemies/GhoulSprite.png";
@@ -42,6 +45,7 @@ public class FilePaths {
     public static final String SLIDER_IMG = "/images/buttons/Slider.png";
 
     // UI
+    public static final String MENU_LOGO = "/images/menu/menuLogo.png";
     public static final String OVERLAY = "/images/overlay1.png";
     public static final String BOSS_BAR = "/images/enemies/Bosses/BossBar.png";
     public static final String PLAYER_HUD = "/images/playerHUD.png";
@@ -56,5 +60,8 @@ public class FilePaths {
     public static final String SHOP_TXT = "/images/buttons/ShopText.png";
     public static final String SLOT_IMG = "/images/shop/Slot.png";
     public static final String PERKS_TXT_IMG = "/images/buttons/PerksText.png";
+    public static final String CONTROLS_TXT = "/images/buttons/ControlsText.png";
+    public static final String KEYBOARD_SPRITE = "/images/keyboard.png";
+    public static final String OPTIONS_TXT = "/images/buttons/OptionsText.png";
 
 }

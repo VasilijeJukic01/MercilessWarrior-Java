@@ -1,7 +1,7 @@
 package platformer.ui.overlays;
 
 import platformer.model.perks.Perk;
-import platformer.state.PlayingState;
+import platformer.state.GameState;
 import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.ShopButton;
 import platformer.utils.Utils;
@@ -17,7 +17,7 @@ import static platformer.constants.UI.*;
 
 public class BlacksmithOverlay implements Overlay {
 
-    private final PlayingState playingState;
+    private final GameState gameState;
 
     private BufferedImage overlay;
     private BufferedImage shopText;
@@ -29,16 +29,16 @@ public class BlacksmithOverlay implements Overlay {
     private int SLOT_MAX_ROW, SLOT_MAX_COL;
     private int[][] placeHolders;
 
-    public BlacksmithOverlay(PlayingState playingState) {
-        this.playingState = playingState;
+    public BlacksmithOverlay(GameState gameState) {
+        this.gameState = gameState;
         this.buttons = new ShopButton[2];
         init();
     }
 
     private void init() {
-        this.SLOT_MAX_COL = playingState.getPerksManager().getSlotMaxCol();
-        this.SLOT_MAX_ROW = playingState.getPerksManager().getSlotMaxRow();
-        this.placeHolders = playingState.getPerksManager().getPlaceHolders();
+        this.SLOT_MAX_COL = gameState.getPerksManager().getSlotMaxCol();
+        this.SLOT_MAX_ROW = gameState.getPerksManager().getSlotMaxRow();
+        this.placeHolders = gameState.getPerksManager().getPlaceHolders();
         loadImages();
         loadButtons();
         initSelectedSlot();
@@ -121,7 +121,7 @@ public class BlacksmithOverlay implements Overlay {
     }
 
     private void renderPerks(Graphics g) {
-        for (Perk p : playingState.getPerksManager().getPerks()) {
+        for (Perk p : gameState.getPerksManager().getPerks()) {
             int x = (p.getSlot() % SLOT_MAX_COL) * PERK_SLOT_SPACING + PERK_SLOT_X + SLOT_SIZE/4;
             int y = (p.getSlot() / SLOT_MAX_COL) * PERK_SLOT_SPACING + PERK_SLOT_Y + SLOT_SIZE/4;
             g.drawImage(p.getImage(), x, y, SLOT_SIZE/2, SLOT_SIZE/2, null);
@@ -143,11 +143,11 @@ public class BlacksmithOverlay implements Overlay {
     }
 
     private void renderPerkInfo(Graphics g) {
-        for (Perk perk : playingState.getPerksManager().getPerks()) {
+        for (Perk perk : gameState.getPerksManager().getPerks()) {
             if (slotNumber == perk.getSlot()) {
                 g.setColor(Color.WHITE);
                 g.setFont(new Font("Arial", Font.BOLD, FONT_MEDIUM));
-                g.drawString("Tokens: "+playingState.getPlayer().getUpgradeTokens(), TOKENS_TEXT_X, TOKENS_TEXT_Y);
+                g.drawString("Tokens: "+ gameState.getPlayer().getUpgradeTokens(), TOKENS_TEXT_X, TOKENS_TEXT_Y);
                 g.drawString(perk.getName(), PERK_NAME_X, PERK_NAME_Y);
                 g.drawString("Cost: "+perk.getCost(), PERK_COST_X, PERK_COST_Y);
                 g.setFont(new Font("Arial", Font.PLAIN, FONT_MEDIUM));
@@ -181,9 +181,9 @@ public class BlacksmithOverlay implements Overlay {
     }
 
     private boolean checkTokens() {
-        for (Perk perk : playingState.getPerksManager().getPerks()) {
-            if (slotNumber == perk.getSlot() && playingState.getPlayer().getUpgradeTokens() >= perk.getCost()) {
-                playingState.getPlayer().changeUpgradeTokens(-perk.getCost());
+        for (Perk perk : gameState.getPerksManager().getPerks()) {
+            if (slotNumber == perk.getSlot() && gameState.getPlayer().getUpgradeTokens() >= perk.getCost()) {
+                gameState.getPlayer().changeUpgradeTokens(-perk.getCost());
                 return true;
             }
         }
@@ -192,7 +192,7 @@ public class BlacksmithOverlay implements Overlay {
 
     public void upgrade() {
         if (!checkTokens()) return;
-        playingState.getPerksManager().upgrade(placeHolders, SLOT_MAX_COL, SLOT_MAX_ROW, slotNumber);
+        gameState.getPerksManager().upgrade(placeHolders, SLOT_MAX_COL, SLOT_MAX_ROW, slotNumber);
     }
 
     @Override
@@ -220,7 +220,7 @@ public class BlacksmithOverlay implements Overlay {
                         upgrade();
                         break;
                     case LEAVE:
-                        playingState.setBmVisible(false);
+                        gameState.setBlacksmithVisible(false);
                         break;
                     default: break;
                 }

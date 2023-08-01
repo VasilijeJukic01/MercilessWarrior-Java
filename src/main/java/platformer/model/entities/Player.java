@@ -347,6 +347,7 @@ public class Player extends Entity {
     }
 
     public void doDash() {
+        if (cooldown[Cooldown.DASH.ordinal()] != 0) return;
         if (Utils.getInstance().isTouchingWall(hitBox,Direction.LEFT) || Utils.getInstance().isTouchingWall(hitBox,Direction.RIGHT)) return;
         if (dashCount > 0) return;
         if (dash || !canDash) return;
@@ -563,8 +564,10 @@ public class Player extends Entity {
     }
 
     public void setPlayerAttackState(AttackState playerAttackState) {
+        if (cooldown[Cooldown.ATTACK.ordinal()] != 0) return;
         this.attackState = playerAttackState;
         this.setAttacking(true);
+        cooldown[Cooldown.ATTACK.ordinal()] = 0.75 + PlayerBonus.getInstance().getBonusCooldown();
     }
 
     public void setPlayerEffect(EffectType playerEffect) {
@@ -604,6 +607,7 @@ public class Player extends Entity {
     }
 
     public void setBlock(boolean block) {
+        if (cooldown[Cooldown.BLOCK.ordinal()] != 0) return;
         this.block = block;
     }
 

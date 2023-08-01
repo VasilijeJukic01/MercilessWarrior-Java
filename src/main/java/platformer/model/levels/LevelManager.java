@@ -2,10 +2,9 @@ package platformer.model.levels;
 
 import platformer.animation.AnimUtils;
 import platformer.debug.logger.Message;
-import platformer.core.Game;
 import platformer.debug.logger.Logger;
 import platformer.model.entities.effects.Particle;
-import platformer.state.PlayingState;
+import platformer.state.GameState;
 import platformer.utils.Utils;
 
 import java.awt.*;
@@ -16,17 +15,15 @@ import static platformer.constants.Constants.*;
 
 public class LevelManager {
 
-    private final Game game;
-    private final PlayingState playingState;
+    private final GameState gameState;
     private final LevelObjectManager levelObjectManager;
     private BufferedImage[] levelSprite;
     private final ArrayList<Level> levels = new ArrayList<>();
     private int levelIndex = 0;
     private final Particle[] particles;
 
-    public LevelManager(Game game, PlayingState playingState) {
-        this.game = game;
-        this.playingState = playingState;
+    public LevelManager(GameState gameState) {
+        this.gameState = gameState;
         this.particles = AnimUtils.getInstance().loadParticles();
         this.levelObjectManager = new LevelObjectManager();
         loadFirstLayerSprite();
@@ -63,22 +60,22 @@ public class LevelManager {
 
     private void loadLevel() {
         Level newLevel = levels.get(levelIndex);
-        playingState.getEnemyManager().loadEnemies(newLevel);
-        playingState.getEnemyManager().reset();
-        playingState.getPlayer().loadLvlData(newLevel.getLvlData());
-        playingState.getObjectManager().loadObjects(newLevel);
-        playingState.getSpellManager().gatherSpellPlacements();
+        gameState.getEnemyManager().loadEnemies(newLevel);
+        gameState.getEnemyManager().reset();
+        gameState.getPlayer().loadLvlData(newLevel.getLvlData());
+        gameState.getObjectManager().loadObjects(newLevel);
+        gameState.getSpellManager().gatherSpellPlacements();
     }
 
     public void loadNextLevel() {
         levelIndex++;
-        if (levelIndex >= levels.size()) game.startMenuState();
+        if (levelIndex >= levels.size()) gameState.getGame().startMenuState();
         loadLevel();
     }
 
     public void loadPrevLevel() {
         levelIndex--;
-        if (levelIndex < 0) game.startMenuState();
+        if (levelIndex < 0) gameState.getGame().startMenuState();
         loadLevel();
     }
 

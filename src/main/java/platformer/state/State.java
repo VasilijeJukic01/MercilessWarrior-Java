@@ -24,11 +24,5 @@ public interface State {
 
     void windowFocusLost(WindowEvent e);
 
-    void setPaused(boolean value);
-
-    void setGameOver(boolean value);
-
-    void setDying(boolean value);
-
     void reset();
 }

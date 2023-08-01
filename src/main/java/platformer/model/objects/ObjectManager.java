@@ -12,7 +12,7 @@ import platformer.model.entities.enemies.boss.SpearWoman;
 import platformer.model.levels.Level;
 import platformer.model.objects.projectiles.*;
 import platformer.model.spells.Flames;
-import platformer.state.PlayingState;
+import platformer.state.GameState;
 import platformer.utils.Utils;
 
 import java.awt.*;
@@ -27,7 +27,7 @@ import static platformer.constants.FilePaths.LIGHTNING_BALL_2_SHEET;
 
 public class ObjectManager {
 
-    private final PlayingState playingState;
+    private final GameState gameState;
     private final BufferedImage[][] objects; // ObjType Dependency
     // Projectiles
     private final BufferedImage projectileArrow;
@@ -46,8 +46,8 @@ public class ObjectManager {
     // Flags
     private boolean shopVisible, blacksmithVisible;
 
-    public ObjectManager(PlayingState playingState) {
-        this.playingState = playingState;
+    public ObjectManager(GameState gameState) {
+        this.gameState = gameState;
         this.objects = AnimUtils.getInstance().loadObjects();
         this.projectiles = new ArrayList<>();
         this.coins = new ArrayList<>();
@@ -76,10 +76,10 @@ public class ObjectManager {
     // Intersections
     public void checkEnemyIntersection() {
         for (Spike spike : spikes) {
-            playingState.getEnemyManager().checkEnemyTrapHit(spike);
+            gameState.getEnemyManager().checkEnemyTrapHit(spike);
         }
         for (Projectile projectile : projectiles) {
-            if (projectile.isAlive()) playingState.getEnemyManager().checkEnemyProjectileHit(projectile);
+            if (projectile.isAlive()) gameState.getEnemyManager().checkEnemyProjectileHit(projectile);
         }
     }
 
@@ -114,7 +114,7 @@ public class ObjectManager {
             if (coin.isAlive() && hitBox.intersects(coin.getHitBox())) {
                 coins.remove(coin);
                 Audio.getInstance().getAudioPlayer().playSound(Sounds.COIN_PICK.ordinal());
-                playingState.getPlayer().changeCoins(1);
+                gameState.getPlayer().changeCoins(1);
             }
         }
     }
@@ -122,14 +122,14 @@ public class ObjectManager {
     // Apply Effects
     public void applyPotionEffect(Potion potion) {
         switch (potion.getObjType()) {
-            case HEAL_POTION: playingState.getPlayer().changeHealth(HEAL_POTION_VAL); break;
-            case STAMINA_POTION: playingState.getPlayer().changeStamina(STAMINA_POTION_VAL); break;
+            case HEAL_POTION: gameState.getPlayer().changeHealth(HEAL_POTION_VAL); break;
+            case STAMINA_POTION: gameState.getPlayer().changeStamina(STAMINA_POTION_VAL); break;
         }
     }
 
     // Object Break
     public void checkObjectBreak(Rectangle2D.Double attackBox) {
-        Flames flames = playingState.getSpellManager().getFlames();
+        Flames flames = gameState.getSpellManager().getFlames();
         for (Container container : containers) {
             boolean isFlame = flames.getHitBox().intersects(container.getHitBox()) && flames.isAlive();
             if (container.isAlive() && !container.animate && (attackBox.intersects(container.getHitBox()) || isFlame)) {
@@ -159,7 +159,7 @@ public class ObjectManager {
     public boolean isPlayerTouchingObject() {
         for (Container c : containers) {
             if (c.isAlive() && c.getAnimIndex() < 1) {
-                if (c.getHitBox().intersects(playingState.getPlayer().getHitBox())) return true;
+                if (c.getHitBox().intersects(gameState.getPlayer().getHitBox())) return true;
             }
         }
         return false;
@@ -197,11 +197,11 @@ public class ObjectManager {
         for (Container c : containers) {
             if (c.isAlive() && checkTouch(c, hitBox, "X")) {
                 if (c.getHitBox().x < hitBox.x && dx > 0) {
-                    if (Utils.getInstance().canMoveHere(hitBox.x+1, hitBox.y, hitBox.width, hitBox.height, playingState.getLevelManager().getCurrentLevel().getLvlData()))
+                    if (Utils.getInstance().canMoveHere(hitBox.x+1, hitBox.y, hitBox.width, hitBox.height, gameState.getLevelManager().getCurrentLevel().getLvlData()))
                         return hitBox.x+1;
                 }
                 else if(c.getHitBox().x > hitBox.x && dx < 0) {
-                    if (Utils.getInstance().canMoveHere(hitBox.x-1, hitBox.y, hitBox.width, hitBox.height, playingState.getLevelManager().getCurrentLevel().getLvlData()))
+                    if (Utils.getInstance().canMoveHere(hitBox.x-1, hitBox.y, hitBox.width, hitBox.height, gameState.getLevelManager().getCurrentLevel().getLvlData()))
                         return hitBox.x-1;
                 }
                 else return hitBox.x;
@@ -211,21 +211,21 @@ public class ObjectManager {
                 GameObject left = canMove(Direction.LEFT, hitBox);
                 GameObject right = canMove(Direction.RIGHT, hitBox);
                 if (dx < 0 && left == null) {
-                    if (Utils.getInstance().canMoveHere(hitBox.x-1, hitBox.y, hitBox.width, hitBox.height, playingState.getLevelManager().getCurrentLevel().getLvlData()))
+                    if (Utils.getInstance().canMoveHere(hitBox.x-1, hitBox.y, hitBox.width, hitBox.height, gameState.getLevelManager().getCurrentLevel().getLvlData()))
                         return hitBox.x-1;
                 }
                 else if(dx > 0 && right == null) {
-                    if (Utils.getInstance().canMoveHere(hitBox.x+1, hitBox.y, hitBox.width, hitBox.height, playingState.getLevelManager().getCurrentLevel().getLvlData()))
+                    if (Utils.getInstance().canMoveHere(hitBox.x+1, hitBox.y, hitBox.width, hitBox.height, gameState.getLevelManager().getCurrentLevel().getLvlData()))
                         return hitBox.x+1;
                 }
                 else if (dx < 0 && left.isAlive()) {
                     double x = left.getHitBox().x+left.getHitBox().width;
-                    if (Utils.getInstance().canMoveHere(x, hitBox.y, hitBox.width, hitBox.height, playingState.getLevelManager().getCurrentLevel().getLvlData()))
+                    if (Utils.getInstance().canMoveHere(x, hitBox.y, hitBox.width, hitBox.height, gameState.getLevelManager().getCurrentLevel().getLvlData()))
                         return x;
                 }
                 else if (dx > 0 && right.isAlive()) {
                     double x = right.getHitBox().x-hitBox.width;
-                    if (Utils.getInstance().canMoveHere(x, hitBox.y, hitBox.width, hitBox.height, playingState.getLevelManager().getCurrentLevel().getLvlData()))
+                    if (Utils.getInstance().canMoveHere(x, hitBox.y, hitBox.width, hitBox.height, gameState.getLevelManager().getCurrentLevel().getLvlData()))
                             return x;
                 }
                 else return hitBox.x;
@@ -238,7 +238,7 @@ public class ObjectManager {
     private boolean isObjectInAir(GameObject object) {
         for (Container container : containers) {
             if (container != object && !Utils.getInstance().canMoveHere(object.getHitBox().x, object.getHitBox().y + 1, object.getHitBox().width, object.getHitBox().height,
-                    playingState.getLevelManager().getCurrentLevel().getLvlData())) return false;
+                    gameState.getLevelManager().getCurrentLevel().getLvlData())) return false;
             if (container.isAlive() && container != object && container.getHitBox().intersects(object.getHitBox())) return false;
         }
         return true;
@@ -250,7 +250,7 @@ public class ObjectManager {
             isSafe = isObjectInAir(gameObject);
             if (isSafe) {
                 if (Utils.getInstance().canMoveHere(gameObject.getHitBox().x, gameObject.getHitBox().y + 1, gameObject.getHitBox().width, gameObject.getHitBox().height,
-                        playingState.getLevelManager().getCurrentLevel().getLvlData())) {
+                        gameState.getLevelManager().getCurrentLevel().getLvlData())) {
                     gameObject.getHitBox().y += 1;
                 }
             }
@@ -553,7 +553,7 @@ public class ObjectManager {
 
     // Reset
     public void reset() {
-        loadObjects(playingState.getLevelManager().getCurrentLevel());
+        loadObjects(gameState.getLevelManager().getCurrentLevel());
         for (Potion potion : potions) potion.reset();
         for (Container container : containers) container.reset();
         for (ArrowLauncher arrowLauncher : arrowLaunchers) arrowLauncher.reset();

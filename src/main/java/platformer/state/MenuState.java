@@ -13,9 +13,11 @@ import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 
 import static platformer.constants.Constants.*;
+import static platformer.constants.FilePaths.MENU_LOGO;
+import static platformer.constants.UI.*;
 
 @SuppressWarnings("FieldCanBeLocal")
-public class MenuState extends StateAbstraction implements State{
+public class MenuState extends AbstractState implements State{
 
     private final MenuButton[] buttons = new MenuButton[4];
     private BufferedImage menuLogo;
@@ -26,29 +28,16 @@ public class MenuState extends StateAbstraction implements State{
         loadButtons();
     }
 
+    // Init
     private void loadImages() {
-        this.menuLogo = Utils.getInstance().importImage("/images/menu/menuLogo.png", 300, 150);
+        this.menuLogo = Utils.getInstance().importImage(MENU_LOGO, MENU_LOGO_WID, MENU_LOGO_HEI);
     }
 
     private void loadButtons() {
-        buttons[0] = new MenuButton((int)(GAME_WIDTH / 2.3), (int)(170*SCALE), BTN_WID, BTN_HEI, ButtonType.PLAY);
-        buttons[1] = new MenuButton((int)(GAME_WIDTH / 2.3), (int)(225*SCALE), BTN_WID, BTN_HEI, ButtonType.OPTIONS);
-        buttons[2] = new MenuButton((int)(GAME_WIDTH / 2.3), (int)(280*SCALE), BTN_WID, BTN_HEI, ButtonType.CONTROLS);
-        buttons[3] = new MenuButton((int)(GAME_WIDTH / 2.3), (int)(335*SCALE), BTN_WID, BTN_HEI, ButtonType.QUIT);
-    }
-
-    // Render
-    private void renderMenuImages(Graphics g) {
-        OverlayLayer.getInstance().renderMenu(g);
-        int logoX = (GAME_WIDTH / 3) - (int)(12*SCALE), logoY = (int)(10*SCALE);
-        int logoW = (int)(menuLogo.getWidth()*SCALE), logoH = (int)(menuLogo.getHeight()*SCALE);
-        g.drawImage(menuLogo, logoX, logoY, logoW, logoH, null);
-    }
-
-    private void renderMenuButtons(Graphics g) {
-        for (MenuButton button : buttons) {
-            button.render(g);
-        }
+        buttons[0] = new MenuButton(MENU_BTN_X, MENU_BTN1_Y, BTN_WID, BTN_HEI, ButtonType.PLAY);
+        buttons[1] = new MenuButton(MENU_BTN_X, MENU_BTN2_Y, BTN_WID, BTN_HEI, ButtonType.OPTIONS);
+        buttons[2] = new MenuButton(MENU_BTN_X, MENU_BTN3_Y, BTN_WID, BTN_HEI, ButtonType.CONTROLS);
+        buttons[3] = new MenuButton(MENU_BTN_X, MENU_BTN4_Y, BTN_WID, BTN_HEI, ButtonType.QUIT);
     }
 
     // Core
@@ -66,6 +55,18 @@ public class MenuState extends StateAbstraction implements State{
         renderMenuButtons(g);
     }
 
+    // Render
+    private void renderMenuImages(Graphics g) {
+        OverlayLayer.getInstance().renderMenu(g);
+        g.drawImage(menuLogo, MENU_LOGO_X, MENU_LOGO_Y, MENU_LOGO_WID, MENU_LOGO_HEI, null);
+    }
+
+    private void renderMenuButtons(Graphics g) {
+        for (MenuButton button : buttons) {
+            button.render(g);
+        }
+    }
+
     @Override
     public void mousePressed(MouseEvent e) {
         for (MenuButton button : buttons) {
@@ -81,10 +82,14 @@ public class MenuState extends StateAbstraction implements State{
         for (MenuButton button : buttons) {
             if (isMouseInButton(e, button) && button.isMousePressed()) {
                 switch (button.getButtonType()) {
-                    case PLAY: game.startPlayingState(); break;
-                    case OPTIONS: game.startOptionsState(); break;
-                    case CONTROLS: game.startControlsState(); break;
-                    case QUIT: game.startQuitState(); break;
+                    case PLAY:
+                        game.startPlayingState(); break;
+                    case OPTIONS:
+                        game.startOptionsState(); break;
+                    case CONTROLS:
+                        game.startControlsState(); break;
+                    case QUIT:
+                        game.startQuitState(); break;
                     default: break;
                 }
                 break;
@@ -126,21 +131,6 @@ public class MenuState extends StateAbstraction implements State{
 
     @Override
     public void windowFocusLost(WindowEvent e) {
-
-    }
-
-    @Override
-    public void setPaused(boolean value) {
-
-    }
-
-    @Override
-    public void setGameOver(boolean value) {
-
-    }
-
-    @Override
-    public void setDying(boolean value) {
 
     }
 

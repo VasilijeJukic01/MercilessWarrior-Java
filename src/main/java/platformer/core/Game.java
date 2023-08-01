@@ -4,6 +4,7 @@ import platformer.audio.Audio;
 import platformer.audio.Songs;
 import platformer.database.bridge.Database;
 import platformer.state.ControlsState;
+import platformer.state.GameState;
 import platformer.state.OptionsState;
 import platformer.state.StateManager;
 import platformer.ui.AudioOptions;
@@ -140,16 +141,14 @@ public class Game implements Runnable {
         stateManager.getCurrentState().windowFocusLost(e);
     }
 
-    public void setPaused(boolean value) {
-        stateManager.getCurrentState().setPaused(value);
-    }
-
     public void setGameOver(boolean value) {
-        stateManager.getCurrentState().setGameOver(value);
+        if (!(stateManager.getCurrentState() instanceof GameState)) return;
+            ((GameState) stateManager.getCurrentState()).setGameOver(value);
     }
 
     public void setDying(boolean value) {
-        stateManager.getCurrentState().setDying(value);
+        if (!(stateManager.getCurrentState() instanceof GameState)) return;
+            ((GameState) stateManager.getCurrentState()).setDying(value);
     }
 
     public void reset() {

@@ -14,7 +14,7 @@ import platformer.model.objects.GameObject;
 import platformer.model.objects.projectiles.Projectile;
 import platformer.model.objects.Spike;
 import platformer.model.spells.Flames;
-import platformer.state.PlayingState;
+import platformer.state.GameState;
 
 
 import java.awt.*;
@@ -29,7 +29,7 @@ import static platformer.constants.Constants.*;
 @SuppressWarnings("FieldCanBeLocal")
 public class EnemyManager {
 
-    private final PlayingState playingState;
+    private final GameState gameState;
     // Animations
     private BufferedImage[][] skeletonAnimations, ghoulAnimations, spearWomanAnimations;
     // Enemies
@@ -37,8 +37,8 @@ public class EnemyManager {
     private List<Ghoul> ghouls = new ArrayList<>();
     private SpearWoman spearWoman;
 
-    public EnemyManager(PlayingState playingState) {
-        this.playingState = playingState;
+    public EnemyManager(GameState gameState) {
+        this.gameState = gameState;
         init();
     }
 
@@ -124,7 +124,7 @@ public class EnemyManager {
     private void checkEnemyDying(Enemy e, Player player) {
         Random rand = new Random();
         if (e.getEnemyAction() == Anim.DEATH) {
-            playingState.getObjectManager().generateCoins(e.getHitBox());
+            gameState.getObjectManager().generateCoins(e.getHitBox());
             player.changeStamina(rand.nextInt(5));
             player.changeExp(rand.nextInt(50)+100);
         }
@@ -189,12 +189,12 @@ public class EnemyManager {
     }
 
     public void checkEnemySpellHit() {
-        Flames flames = playingState.getSpellManager().getFlames();
+        Flames flames = gameState.getSpellManager().getFlames();
         for (Skeleton skeleton : skeletons) {
             if (skeleton.isAlive() && skeleton.getEnemyAction() != Anim.DEATH) {
                 if (flames.isAlive() && flames.getHitBox().intersects(skeleton.getHitBox())) {
                     skeleton.spellHit(0.08);
-                    checkEnemyDying(skeleton, playingState.getPlayer());
+                    checkEnemyDying(skeleton, gameState.getPlayer());
                     return;
                 }
             }
@@ -203,7 +203,7 @@ public class EnemyManager {
             if (ghoul.isAlive() && ghoul.getEnemyAction() != Anim.DEATH) {
                 if (flames.isAlive() && flames.getHitBox().intersects(ghoul.getHitBox())) {
                     ghoul.spellHit(0.16);
-                    checkEnemyDying(ghoul, playingState.getPlayer());
+                    checkEnemyDying(ghoul, gameState.getPlayer());
                     return;
                 }
             }
@@ -250,7 +250,7 @@ public class EnemyManager {
             if (ghoul.isAlive()) ghoul.update(ghoulAnimations, levelData, player);
         }
         if (spearWoman == null) return;
-        spearWoman.update(spearWomanAnimations, levelData, player, playingState.getSpellManager(), playingState.getObjectManager());
+        spearWoman.update(spearWomanAnimations, levelData, player, gameState.getSpellManager(), gameState.getObjectManager());
     }
 
     public void render(Graphics g, int xLevelOffset, int yLevelOffset) {

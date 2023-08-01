@@ -15,10 +15,11 @@ import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 
 import static platformer.constants.Constants.CRE_BTN_SIZE;
-import static platformer.constants.Constants.SCALE;
+import static platformer.constants.FilePaths.*;
+import static platformer.constants.UI.*;
 
 @SuppressWarnings("FieldCanBeLocal")
-public class OptionsState extends StateAbstraction implements State{
+public class OptionsState extends AbstractState implements State{
 
     private final AudioOptions audioOptions;
 
@@ -27,28 +28,6 @@ public class OptionsState extends StateAbstraction implements State{
 
     private CREButton exitBtn;
 
-    // Size Variables [Init]
-    private final int optionsTextWid = (int)(180*SCALE);
-    private final int optionsTextHei = (int)(40*SCALE);
-    private final int volumeTextWid = (int)(110*SCALE);
-    private final int volumeTextHei = (int)(30*SCALE);
-    private final int SFXTextWid = (int)(60*SCALE);
-    private final int SFXTextHei = (int)(30*SCALE);
-    private final int musicTextWid = (int)(90*SCALE);
-    private final int musicTextHei = (int)(30*SCALE);
-
-    private final int exitBtnX = (int)(480*SCALE);
-    private final int exitBtnY = (int)(350*SCALE);
-
-    // Size Variables [Render]
-    private final int optionsTextX = (int)(330*SCALE);
-    private final int optionsTextY = (int)(85*SCALE);
-    private final int volumeTextX = (int)(365*SCALE);
-    private final int volumeTextY = (int)(260*SCALE);
-    private final int SFXTextX = (int)(325*SCALE);
-    private final int SFXTextY = (int)(150*SCALE);
-    private final int musicTextX = (int)(325*SCALE);
-    private final int musicTextY = (int)(200*SCALE);
 
     public OptionsState(Game game) {
         super(game);
@@ -58,14 +37,14 @@ public class OptionsState extends StateAbstraction implements State{
     }
 
     private void loadImages() {
-        this.optionsText = Utils.getInstance().importImage("/images/buttons/OptionsText.png", optionsTextWid, optionsTextHei);
-        this.volumeText = Utils.getInstance().importImage("/images/buttons/VolumeText.png", volumeTextWid, volumeTextHei);
-        this.SFXText = Utils.getInstance().importImage("/images/buttons/SFXText.png", SFXTextWid, SFXTextHei);
-        this.musicText = Utils.getInstance().importImage("/images/buttons/MusicText.png", musicTextWid,musicTextHei);
+        this.optionsText = Utils.getInstance().importImage(OPTIONS_TXT, OPTIONS_TEXT_WID, OPTIONS_TEXT_HEI);
+        this.volumeText = Utils.getInstance().importImage(VOLUME_TXT, VOLUME_TEXT_WID, VOLUME_TEXT_HEI);
+        this.SFXText = Utils.getInstance().importImage(SFX_TXT, SFX_TEXT_WID, SFX_TEXT_HEI);
+        this.musicText = Utils.getInstance().importImage(MUSIC_TXT, MUSIC_TEXT_WID, MUSIC_TEXT_HEI);
     }
 
     private void loadButtons() {
-        this.exitBtn = new CREButton(exitBtnX, exitBtnY, CRE_BTN_SIZE, CRE_BTN_SIZE, ButtonType.EXIT);
+        this.exitBtn = new CREButton(EXIT_BTN_X, EXIT_BTN_Y, CRE_BTN_SIZE, CRE_BTN_SIZE, ButtonType.EXIT);
     }
 
     @Override
@@ -78,12 +57,17 @@ public class OptionsState extends StateAbstraction implements State{
     @Override
     public void render(Graphics g) {
         OverlayLayer.getInstance().render(g);
-        g.drawImage(optionsText, optionsTextX, optionsTextY, optionsText.getWidth(), optionsText.getHeight(), null);
-        g.drawImage(volumeText, volumeTextX, volumeTextY, volumeText.getWidth(), volumeText.getHeight(), null);
-        g.drawImage(SFXText, SFXTextX, SFXTextY, SFXText.getWidth(), SFXText.getHeight(), null);
-        g.drawImage(musicText, musicTextX, musicTextY, musicText.getWidth(), musicText.getHeight(), null);
+        renderImages(g);
         exitBtn.render(g);
         audioOptions.render(g);
+    }
+
+    // Render
+    private void renderImages(Graphics g) {
+        g.drawImage(optionsText, OPTIONS_TEXT_X, OPTIONS_TEXT_Y, optionsText.getWidth(), optionsText.getHeight(), null);
+        g.drawImage(volumeText, VOLUME_TEXT_X, VOLUME_TEXT_Y, volumeText.getWidth(), volumeText.getHeight(), null);
+        g.drawImage(SFXText, SFX_TEXT_X, SFX_TEXT_Y, SFXText.getWidth(), SFXText.getHeight(), null);
+        g.drawImage(musicText, MUSIC_TEXT_X, MUSIC_TEXT_Y, musicText.getWidth(), musicText.getHeight(), null);
     }
 
     private boolean isMouseInButton(MouseEvent e, AbstractButton abstractButton) {
@@ -129,21 +113,6 @@ public class OptionsState extends StateAbstraction implements State{
 
     @Override
     public void windowFocusLost(WindowEvent e) {
-
-    }
-
-    @Override
-    public void setPaused(boolean value) {
-
-    }
-
-    @Override
-    public void setGameOver(boolean value) {
-
-    }
-
-    @Override
-    public void setDying(boolean value) {
 
     }
 

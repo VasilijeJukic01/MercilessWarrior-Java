@@ -216,7 +216,7 @@ public class Utils {
     }
 
     public boolean isProjectileHitLevel(int[][] lvlData, Projectile projectile) {
-        return isSolid(projectile.getHitBox().x+ARROW_DEF_WID/2.0, projectile.getHitBox().y+ARROW_DEF_HEI/2.0, lvlData);
+        return isSolid(projectile.getHitBox().x+ARROW_WID, projectile.getHitBox().y+ARROW_HEI, lvlData);
     }
 
     // Other

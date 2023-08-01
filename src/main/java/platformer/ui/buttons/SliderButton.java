@@ -25,8 +25,8 @@ public class SliderButton extends AbstractButton {
     private final int sliderY = (int)(290 * SCALE);
 
     public SliderButton(int xPos, int yPos, int width, int height) {
-        super(xPos+width/2, yPos+(int)(9.5 * SCALE), SLIDER_BTN_WID, height/2);
-        super.buttonHitBox.x -= SLIDER_BTN_WID/2;
+        super(xPos+width/2, yPos+(int)(9.5 * SCALE), SLIDER_BTN_SIZE, height/2);
+        super.buttonHitBox.x -= SLIDER_BTN_SIZE/2;
         this.buttonX = xPos+width/2;
         this.xPos = xPos;
         this.width = width;
@@ -37,7 +37,7 @@ public class SliderButton extends AbstractButton {
 
     @Override
     protected void loadButtons() {
-        images = AnimUtils.getInstance().loadFromSprite(SLIDE_BTN_SHEET, 3, 0, SLIDER_BTN_WID, SLIDER_BTN_HEI, 0, SL_BTN_W, SL_BTN_H);
+        images = AnimUtils.getInstance().loadFromSprite(SLIDE_BTN_SHEET, 3, 0, SLIDER_BTN_SIZE, SLIDER_BTN_SIZE, 0, SL_BTN_W, SL_BTN_H);
         slider = Utils.getInstance().importImage(SLIDER_IMG, SLIDER_WID, SLIDER_HEI);
     }
 
@@ -51,14 +51,14 @@ public class SliderButton extends AbstractButton {
     @Override
     public void render(Graphics g) {
         g.drawImage(slider, sliderX, sliderY, SLIDER_WID, SLIDER_HEI, null);
-        g.drawImage(images[imageIndex], buttonX-SLIDER_BTN_WID/2, yPos, SLIDER_BTN_WID, SLIDER_BTN_HEI, null);
+        g.drawImage(images[imageIndex], buttonX-SLIDER_BTN_SIZE/2, yPos, SLIDER_BTN_SIZE, SLIDER_BTN_SIZE, null);
     }
 
     public void updateSlider(int value) {
         if (value < minValue) buttonX = minValue;
         else buttonX = Math.min(value, maxValue);
         updateValue();
-        buttonHitBox.x = buttonX - SLIDER_BTN_WID / 2;
+        buttonHitBox.x = buttonX - SLIDER_BTN_SIZE / 2;
     }
 
     private void updateValue() {

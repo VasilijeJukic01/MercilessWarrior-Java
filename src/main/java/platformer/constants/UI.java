@@ -1,8 +1,49 @@
 package platformer.constants;
 
+import static platformer.constants.Constants.GAME_WIDTH;
 import static platformer.constants.Constants.SCALE;
 
 public class UI {
+
+    // Menu UI
+    public static final int MENU_BTN_X = (int)(GAME_WIDTH / 2.3);
+    public static final int MENU_BTN1_Y = scale(170);
+    public static final int MENU_BTN2_Y = scale(225);
+    public static final int MENU_BTN3_Y = scale(280);
+    public static final int MENU_BTN4_Y = scale(335);
+    public static final int MENU_LOGO_X = scale(270);
+    public static final int MENU_LOGO_Y = scale(10);
+    public static final int MENU_LOGO_WID = scale(300);
+    public static final int MENU_LOGO_HEI = scale(150);
+
+    // Controls UI
+    public static final int KEY_SIZE = scale(20);
+    public static final int CONTROLS_TXT_WID = scale(180);
+    public static final int CONTROLS_TXT_HEI = scale(40);
+    public static final int CONTROLS_TXT_X = scale(330);
+    public static final int CONTROLS_TXT_Y = scale(85);
+
+    public static final int CTRL_ROW_TXT_X = scale(300);
+
+    public static final int CTRL_ROW1_TXT_Y = scale(150);
+    public static final int CTRL_ROW2_TXT_Y = scale(170);
+    public static final int CTRL_ROW3_TXT_Y = scale(190);
+    public static final int CTRL_ROW4_TXT_Y = scale(210);
+    public static final int CTRL_ROW5_TXT_Y = scale(230);
+    public static final int CTRL_ROW6_TXT_Y = scale(250);
+    public static final int CTRL_ROW7_TXT_Y = scale(270);
+    public static final int CTRL_ROW8_TXT_Y = scale(290);
+
+    public static final int K1_X = scale(390), K_ROW1 = scale(135);
+    public static final int K2_X = scale(410);
+    public static final int K3_X = scale(335), K_ROW2 = scale(155);
+    public static final int K4_X = scale(345), K_ROW3 = scale(175);
+    public static final int K5_X = scale(345), K_ROW4 = scale(195);
+    public static final int K6_X = scale(370), K_ROW5 = scale(215);
+    public static final int K7_X = scale(330), K_ROW6 = scale(235);
+    public static final int K8_X = scale(360), K_ROW7 = scale(255);
+    public static final int K9_X = scale(370), K_ROW8 = scale(275);
+    public static final int K10_X = scale(398);
 
     // HUD
     public static final int HEALTH_WID = 134;
@@ -56,7 +97,9 @@ public class UI {
     public static final int OVERLAY_X = scale(270);
     public static final int OVERLAY_Y = scale(50);
 
-    // Pause UI
+    // Pause/Options UI
+    public static final int OPTIONS_TEXT_WID = scale(180);
+    public static final int OPTIONS_TEXT_HEI = scale(40);
     public static final int PAUSE_TEXT_WID = scale(180);
     public static final int PAUSE_TEXT_HEI = scale(40);
     public static final int SFX_TEXT_WID = scale(60);
@@ -73,6 +116,8 @@ public class UI {
     public static final int EXIT_BTN_X = scale(480);
     public static final int EXIT_BTN_Y = scale(350);
 
+    public static final int OPTIONS_TEXT_X = scale(330);
+    public static final int OPTIONS_TEXT_Y = scale(85);
     public static final int PAUSE_TEXT_X = scale(330);
     public static final int PAUSE_TEXT_Y = scale(85);
     public static final int SFX_TEXT_X = scale(325);

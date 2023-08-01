@@ -1,7 +1,7 @@
 package platformer.ui.overlays;
 
 import platformer.model.objects.Shop;
-import platformer.state.PlayingState;
+import platformer.state.GameState;
 import platformer.ui.ShopItem;
 import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.ShopButton;
@@ -19,7 +19,7 @@ import static platformer.constants.UI.*;
 
 public class ShopOverlay implements Overlay {
 
-    private final PlayingState playingState;
+    private final GameState gameState;
 
     private BufferedImage overlay;
     private BufferedImage shopText;
@@ -31,9 +31,9 @@ public class ShopOverlay implements Overlay {
 
     private ArrayList<Shop> shops;
 
-    public ShopOverlay(PlayingState playingState) {
-        this.playingState = playingState;
-        this.shops = playingState.getLevelManager().getCurrentLevel().getShops();
+    public ShopOverlay(GameState gameState) {
+        this.gameState = gameState;
+        this.shops = gameState.getLevelManager().getCurrentLevel().getShops();
         this.buttons = new ShopButton[2];
         initSelectedSlot();
         loadImages();
@@ -144,7 +144,7 @@ public class ShopOverlay implements Overlay {
     private void buyItem() {
         for (Shop shop : shops) {
             if (shop.isActive()) {
-                shop.buyItem(playingState.getPlayer(), slotNumber);
+                shop.buyItem(gameState.getPlayer(), slotNumber);
             }
         }
     }
@@ -174,7 +174,7 @@ public class ShopOverlay implements Overlay {
                         buyItem();
                         break;
                     case LEAVE:
-                        playingState.setShopVisible(false);
+                        gameState.setShopVisible(false);
                         break;
                     default: break;
                 }
@@ -204,6 +204,6 @@ public class ShopOverlay implements Overlay {
     }
 
     public void reset() {
-        this.shops = playingState.getLevelManager().getCurrentLevel().getShops();
+        this.shops = gameState.getLevelManager().getCurrentLevel().getShops();
     }
 }

@@ -2,10 +2,9 @@ package platformer.model.spells;
 
 import platformer.animation.AnimUtils;
 import platformer.model.entities.Player;
-import platformer.state.PlayingState;
+import platformer.state.GameState;
 
 import java.awt.*;
-import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.List;
 import java.util.Random;
@@ -14,7 +13,7 @@ import static platformer.constants.Constants.SCALE;
 
 public class SpellManager {
 
-    private final PlayingState playingState;
+    private final GameState gameState;
 
     // Animations
     private final BufferedImage[] lightningAnimations;
@@ -30,10 +29,9 @@ public class SpellManager {
 
     private final Random rand = new Random();
 
-    public SpellManager(PlayingState playingState) {
-        this.playingState = playingState;
-        Rectangle2D.Double hitBox = playingState.getPlayer().getHitBox();
-        this.flames = new Flames(SpellType.FLAME_1, (int)hitBox.x, (int)hitBox.x,  (int)(hitBox.width*2.5),  (int)(hitBox.height-8.5*SCALE));
+    public SpellManager(GameState gameState) {
+        this.gameState = gameState;
+        this.flames = new Flames(SpellType.FLAME_1, 0, 0, (int)(45*SCALE), (int)(35*SCALE));
         this.lightningAnimations = AnimUtils.getInstance().loadLightningAnimations();
         this.flashAnimations = AnimUtils.getInstance().loadFlashAnimations();
         gatherSpellPlacements();
@@ -42,7 +40,7 @@ public class SpellManager {
     // Checks
     public void checkLightningHit() {
         if (hitFlag) return;
-        Player player = playingState.getPlayer();
+        Player player = gameState.getPlayer();
         for (Lightning bossLightning : bossLightnings) {
             int aIndex = bossLightning.getAnimIndex();
             if (bossLightning.isAlive() && aIndex > 0 && aIndex < 5 && bossLightning.getHitBox().intersects(player.getHitBox())) {
@@ -54,7 +52,7 @@ public class SpellManager {
 
     public void checkFlashHit() {
         if (hitFlag) return;
-        Player player = playingState.getPlayer();
+        Player player = gameState.getPlayer();
         for (Flash bossFlash : bossFlashes) {
             int aIndex = bossFlash.getAnimIndex();
             if (bossFlash.isAlive() && aIndex > 12 && aIndex < 16 && bossFlash.getHitBox().intersects(player.getHitBox())) {
@@ -66,11 +64,11 @@ public class SpellManager {
 
     // Updates
     private void updateFlames() {
-        Player player = playingState.getPlayer();
-        flames.getHitBox().x = playingState.getPlayer().getHitBox().x - flames.getXOffset();
-        flames.getHitBox().y = playingState.getPlayer().getHitBox().y - flames.getYOffset();
+        Player player = gameState.getPlayer();
+        flames.getHitBox().x = gameState.getPlayer().getHitBox().x - flames.getXOffset();
+        flames.getHitBox().y = gameState.getPlayer().getHitBox().y - flames.getYOffset();
         if (player.getFlipSign() == 1) flames.getHitBox().x = flames.getHitBox().x + flames.getHitBox().width + (int)(38*SCALE);
-        flames.setAlive(playingState.getPlayer().getSpellState() != 0);
+        flames.setAlive(gameState.getPlayer().getSpellState() != 0);
     }
 
     private void updateLightnings() {
@@ -137,8 +135,8 @@ public class SpellManager {
     }
 
     public void gatherSpellPlacements() {
-        this.bossLightnings = playingState.getLevelManager().getCurrentLevel().getLightnings();
-        this.bossFlashes = playingState.getLevelManager().getCurrentLevel().getFlashes();
+        this.bossLightnings = gameState.getLevelManager().getCurrentLevel().getLightnings();
+        this.bossFlashes = gameState.getLevelManager().getCurrentLevel().getFlashes();
     }
 
     public void reset() {

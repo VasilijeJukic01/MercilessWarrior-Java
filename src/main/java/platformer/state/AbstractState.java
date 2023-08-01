@@ -5,11 +5,11 @@ import platformer.ui.buttons.MenuButton;
 
 import java.awt.event.MouseEvent;
 
-public abstract class StateAbstraction {
+public abstract class AbstractState {
 
     protected final Game game;
 
-    public StateAbstraction(Game game) {
+    public AbstractState(Game game) {
         this.game = game;
     }
 

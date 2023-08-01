@@ -10,7 +10,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
 
-public class QuitState extends StateAbstraction implements State{
+public class QuitState extends AbstractState implements State {
 
     public QuitState(Game game) {
         super(game);
@@ -60,21 +60,6 @@ public class QuitState extends StateAbstraction implements State{
 
     @Override
     public void windowFocusLost(WindowEvent e) {
-
-    }
-
-    @Override
-    public void setPaused(boolean value) {
-
-    }
-
-    @Override
-    public void setGameOver(boolean value) {
-
-    }
-
-    @Override
-    public void setDying(boolean value) {
 
     }
 
