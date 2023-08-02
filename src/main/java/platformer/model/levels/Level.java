@@ -230,12 +230,6 @@ public class Level {
         return spearWoman;
     }
 
-    private <T> List<T> getAllItems(Map<?, List<T>> itemMap) {
-        List<T> allItems = new ArrayList<>();
-        itemMap.values().forEach(allItems::addAll);
-        return allItems;
-    }
-
     private List<Enemy> getAllEnemies() {
         return getAllItems(enemiesMap);
     }
@@ -246,6 +240,12 @@ public class Level {
 
     private List<Spell> getAllSpells() {
         return getAllItems(spellsMap);
+    }
+
+    private <T> List<T> getAllItems(Map<?, List<T>> itemMap) {
+        List<T> allItems = new ArrayList<>();
+        itemMap.values().forEach(allItems::addAll);
+        return allItems;
     }
 
     public <T> List<T> getObjects(Class<T> objectType) {

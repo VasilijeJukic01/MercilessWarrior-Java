@@ -29,6 +29,9 @@ public class AnimConstants {
     public static final int SMALL_BTN_W = 150, SMALL_BTN_H = 158;
     public static final int SL_BTN_W = 143, SL_BTN_H = 149;
 
+    public static final int FOREST_SPRITE_W = 274, FOREST_SPRITE_H = 274;
+    public static final int FOREST_SPRITE_ROW = 7, FOREST_SPRITE_COL = 7;
+
     // Frames
     public static final int MENU_FRAMES = 24;
 

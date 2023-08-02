@@ -53,6 +53,7 @@ public class EnemyManager {
         this.skeletons = level.getEnemies(Skeleton.class);
         this.ghouls = level.getEnemies(Ghoul.class);
         this.spearWoman = level.getSpearWoman();
+        reset();
     }
 
     private void renderCriticalHit(Graphics g, int xLevelOffset, int yLevelOffset, Enemy e) {

@@ -8,6 +8,7 @@ public class FilePaths {
 
     // Levels
     public static final String BACKGROUND_1 = "/images/background1.jpg";
+    public static final String FOREST_SPRITE = "/images/levels/mossyTiles.png";
 
     // Enemy
     public static final String SKELETON_SHEET = "/images/enemies/SkeletonSprite.png";
