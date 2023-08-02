@@ -54,8 +54,8 @@ public class SpellManager {
     }
 
     public void initBossSpells() {
-        this.bossLightnings = gameState.getLevelManager().getCurrentLevel().getLightnings();
-        this.bossFlashes = gameState.getLevelManager().getCurrentLevel().getFlashes();
+        this.bossLightnings = gameState.getLevelManager().getCurrentLevel().getSpells(Lightning.class);
+        this.bossFlashes = gameState.getLevelManager().getCurrentLevel().getSpells(Flash.class);
     }
 
     // Checks

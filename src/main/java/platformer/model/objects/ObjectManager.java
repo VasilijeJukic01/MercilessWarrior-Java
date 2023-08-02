@@ -19,6 +19,7 @@ import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 import static platformer.constants.Constants.*;
@@ -32,17 +33,17 @@ public class ObjectManager {
     // Projectiles
     private final BufferedImage projectileArrow;
     private final BufferedImage[] projectileLightningBall, projectileLightningBall2;
-    private final ArrayList<Projectile> projectiles;
+    private final List<Projectile> projectiles;
     // Objects
-    private ArrayList<Potion> potions;
-    private ArrayList<Container> containers;
-    private ArrayList<Spike> spikes;
-    private ArrayList<ArrowLauncher> arrowLaunchers;
-    private final ArrayList<Coin> coins;
-    private ArrayList<Shop> shops;
-    private ArrayList<Blocker> blockers;
-    private ArrayList<Blacksmith> blacksmiths;
-    private ArrayList<Dog> dogs;
+    private List<Potion> potions;
+    private List<Container> containers;
+    private List<Spike> spikes;
+    private List<ArrowLauncher> arrowLaunchers;
+    private final List<Coin> coins;
+    private List<Shop> shops;
+    private List<Blocker> blockers;
+    private List<Blacksmith> blacksmiths;
+    private List<Dog> dogs;
     // Flags
     private boolean shopVisible, blacksmithVisible;
 
@@ -61,15 +62,15 @@ public class ObjectManager {
     }
 
     public void loadObjects(Level level) {
-        level.getObjectData();
-        this.potions = new ArrayList<>(level.getPotions());
-        this.containers = new ArrayList<>(level.getContainers());
-        this.spikes = level.getSpikes();
-        this.arrowLaunchers = level.getArrowLaunchers();
-        this.shops = level.getShops();
-        this.blockers = level.getBlockers();
-        this.blacksmiths = level.getBlacksmiths();
-        this.dogs = level.getDogs();
+        level.getData();
+        this.potions = level.getObjects(Potion.class);
+        this.containers = level.getObjects(Container.class);
+        this.spikes = level.getObjects(Spike.class);
+        this.arrowLaunchers = level.getObjects(ArrowLauncher.class);
+        this.shops = level.getObjects(Shop.class);
+        this.blockers = level.getObjects(Blocker.class);
+        this.blacksmiths = level.getObjects(Blacksmith.class);
+        this.dogs = level.getObjects(Dog.class);
         projectiles.clear();
     }
 

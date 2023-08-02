@@ -11,7 +11,7 @@ import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
+import java.util.List;
 
 import static platformer.constants.Constants.*;
 import static platformer.constants.FilePaths.*;
@@ -29,11 +29,11 @@ public class ShopOverlay implements Overlay {
     private Rectangle2D.Double selectedSlot;
     private int slotNumber;
 
-    private ArrayList<Shop> shops;
+    private List<Shop> shops;
 
     public ShopOverlay(GameState gameState) {
         this.gameState = gameState;
-        this.shops = gameState.getLevelManager().getCurrentLevel().getShops();
+        this.shops = gameState.getLevelManager().getCurrentLevel().getObjects(Shop.class);
         this.buttons = new ShopButton[2];
         initSelectedSlot();
         loadImages();
@@ -204,6 +204,6 @@ public class ShopOverlay implements Overlay {
     }
 
     public void reset() {
-        this.shops = gameState.getLevelManager().getCurrentLevel().getShops();
+        this.shops = gameState.getLevelManager().getCurrentLevel().getObjects(Shop.class);
     }
 }

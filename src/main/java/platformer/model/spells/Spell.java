@@ -91,6 +91,10 @@ public abstract class Spell implements Debug {
         return animIndex;
     }
 
+    public SpellType getSpellType() {
+        return spellType;
+    }
+
     public void setAnimIndex(int animIndex) {
         this.animIndex = animIndex;
     }

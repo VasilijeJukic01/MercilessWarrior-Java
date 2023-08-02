@@ -145,6 +145,10 @@ public abstract class Enemy extends Entity implements Debug {
         return entityState;
     }
 
+    public EnemyType getEnemyType() {
+        return enemyType;
+    }
+
     public boolean isAlive() {
         return alive;
     }

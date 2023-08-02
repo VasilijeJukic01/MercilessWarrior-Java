@@ -220,12 +220,12 @@ public class Utils {
     }
 
     // Other
-    public void reverseArray(Object[] arr) {
+    public <T> void reverseArray(T[] arr) {
         int start = 0;
         int end = arr.length - 1;
 
         while (start < end) {
-            Object temp = arr[start];
+            T temp = arr[start];
             arr[start] = arr[end];
             arr[end] = temp;
 

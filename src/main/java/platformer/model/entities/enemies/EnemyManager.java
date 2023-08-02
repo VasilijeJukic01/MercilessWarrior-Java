@@ -50,8 +50,8 @@ public class EnemyManager {
     }
 
     public void loadEnemies(Level level) {
-        this.skeletons = level.getSkeletons();
-        this.ghouls = level.getGhouls();
+        this.skeletons = level.getEnemies(Skeleton.class);
+        this.ghouls = level.getEnemies(Ghoul.class);
         this.spearWoman = level.getSpearWoman();
     }
 

@@ -5,7 +5,7 @@ import static launcher.Config.SCALING_FACTOR;
 public class Constants {
 
     // Resolution Settings
-    private static final int TILES_DEFAULT_SIZE = 32;
+    public static final int TILES_DEFAULT_SIZE = 32;
     public static final int TILES_WIDTH = 26;
     public static final int TILES_HEIGHT = 14;
 
@@ -118,13 +118,13 @@ public class Constants {
     public static final int LIGHTNING_DEFAULT_HEIGHT = 4 * TILES_SIZE;
     public static final int LIGHTNING_WIDTH = scale(LIGHTNING_DEFAULT_WIDTH);
     public static final int LIGHTNING_HEIGHT = scale(LIGHTNING_DEFAULT_HEIGHT);
-    public static final int LIGHTNING_OFFSET_X = (int)(LIGHTNING_WIDTH/3.8);
+    public static final int LIGHTNING_OFFSET_X = (int)(LIGHTNING_WIDTH / 3.8);
 
     public static final int FLASH_DEFAULT_WIDTH = (int)(0.75 * TILES_SIZE);
     public static final int FLASH_DEFAULT_HEIGHT = 3 * TILES_SIZE;
     public static final int FLASH_WIDTH = scale(FLASH_DEFAULT_WIDTH);
     public static final int FLASH_HEIGHT = scale(FLASH_DEFAULT_HEIGHT);
-    public static final int FLASH_OFFSET_X = (int)(FLASH_WIDTH/2.4);
+    public static final int FLASH_OFFSET_X = (int)(FLASH_WIDTH / 2.4);
 
     // Button Constants
     public static final int BTN_WID = scale(120);
