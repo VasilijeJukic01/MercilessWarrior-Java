@@ -102,11 +102,22 @@ public class Constants {
     public static final int ARROW_WID = scale(32);
     public static final int ARROW_HEI = scale(4);
     public static final int ARROW_SPEED = scale(0.75);
+    public static final int ARROW_OFFSET_X_RIGHT = scale(-20);
+    public static final int ARROW_OFFSET_X_LEFT = scale(10);
+    public static final int ARROW_OFFSET_Y = scale(20);
 
     public static final int LB_WID = scale(60);
     public static final int LB_HEI = scale(60);
     public static final int LB_SPEED_FAST = scale(1);
     public static final int LB_SPEED_SLOW = scale(0.5);
+    public static final int LB_OFFSET_X = scale(40);
+    public static final int LB_OFFSET_Y = scale(15);
+
+    public static final int LB_PERIOD = scale(50);
+    public static final int LB_T = scale(1);
+    public static final int LB_D = scale(25);
+
+    public static final int TRACKING_PROJECTILE_DISTANCE = scale(50);
 
     // Spell Constants
     public static final int FLAME_WID = scale(45);

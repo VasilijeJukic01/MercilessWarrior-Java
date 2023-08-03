@@ -8,7 +8,7 @@ import java.util.Random;
 
 import static platformer.constants.Constants.*;
 
-public class LightningBall extends Projectile{
+public class LightningBall extends Projectile {
 
     public LightningBall(int xPos, int yPos, Direction direction) {
         super(PRType.LIGHTNING_BALL, direction);
@@ -17,15 +17,17 @@ public class LightningBall extends Projectile{
     }
 
     private void initHitBox(int xPos, int yPos) {
-        int xOffset = (direction == Direction.RIGHT) ? (int)(-40 * SCALE) : (int)(40 * SCALE);
-        int yOffset = (int)(15 * SCALE);
-        super.hitBox = new Rectangle2D.Double(xPos+xOffset, yPos+yOffset, LB_WID/3.5, LB_HEI/3.5);
+        int xOffset = (direction == Direction.RIGHT) ? -LB_OFFSET_X : LB_OFFSET_X;
+        super.hitBox = new Rectangle2D.Double(xPos+xOffset, yPos+LB_OFFSET_Y, LB_WID/3.5, LB_HEI/3.5);
+        setWaveMovement();
+    }
+
+    private void setWaveMovement() {
         if (direction == Direction.LEFT || direction == Direction.RIGHT) {
             Random rand = new Random();
             int dir = rand.nextInt(2);
-            int period = (int)(50*SCALE), t = (int)(1*SCALE);
-            int d = (int)(25*SCALE);
-            super.waveMovement = new WaveAnim((int)hitBox.x, (int)hitBox.y, t, dir == 1 ? d : -d, period, t);
+            int d = dir == 1 ? LB_D : -LB_D;
+            super.waveMovement = new WaveAnim((int)hitBox.x, (int)hitBox.y, LB_T, d, LB_PERIOD, LB_T);
         }
     }
 }

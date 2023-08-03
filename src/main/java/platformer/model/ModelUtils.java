@@ -2,8 +2,6 @@ package platformer.model;
 
 import platformer.model.entities.enemies.EnemyType;
 import platformer.model.objects.ObjType;
-import platformer.model.objects.projectiles.PRType;
-import platformer.model.spells.SpellType;
 
 public class ModelUtils {
 
@@ -32,14 +30,6 @@ public class ModelUtils {
 
     public int getObjectSprite(ObjType object) {
         return object.getSprites();
-    }
-
-    public int getProjectileSprite(PRType prType) {
-        return prType.getSprites();
-    }
-
-    public int getSpellSprite(SpellType spell) {
-        return spell.getSprites();
     }
 
 }

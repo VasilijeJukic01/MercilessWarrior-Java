@@ -6,7 +6,7 @@ import java.awt.geom.Rectangle2D;
 
 import static platformer.constants.Constants.*;
 
-public class Arrow extends Projectile{
+public class Arrow extends Projectile {
 
     public Arrow(int xPos, int yPos, Direction direction) {
         super(PRType.ARROW, direction);
@@ -14,9 +14,8 @@ public class Arrow extends Projectile{
     }
 
     private void initHitBox(int xPos, int yPos) {
-        int xOffset = (direction == Direction.RIGHT) ? (int)(-20 * SCALE) : (int)(10 * SCALE);
-        int yOffset = (int)(20 * SCALE);
-        super.hitBox = new Rectangle2D.Double(xPos+xOffset, yPos+yOffset, ARROW_WID, ARROW_HEI);
+        int xOffset = (direction == Direction.RIGHT) ? ARROW_OFFSET_X_RIGHT : ARROW_OFFSET_X_LEFT;
+        super.hitBox = new Rectangle2D.Double(xPos+xOffset, yPos+ARROW_OFFSET_Y, ARROW_WID, ARROW_HEI);
     }
 
 }

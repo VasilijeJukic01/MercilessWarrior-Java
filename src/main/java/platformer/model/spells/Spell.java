@@ -4,7 +4,6 @@ import platformer.audio.Audio;
 import platformer.audio.Sound;
 import platformer.debug.Debug;
 import platformer.debug.DebugSettings;
-import platformer.model.ModelUtils;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
@@ -37,7 +36,7 @@ public abstract class Spell implements Debug {
         if (animTick >= animSpeed) {
             animTick = 0;
             animIndex++;
-            if (animIndex >= ModelUtils.getInstance().getSpellSprite(spellType)) {
+            if (animIndex >= spellType.getSprites()) {
                 animIndex = 0;
                 finishAnimation();
             }
