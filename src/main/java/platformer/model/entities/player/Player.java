@@ -37,7 +37,6 @@ public class Player extends Entity {
     private int animTick = 0, animIndex = 0;
     private AttackState attackState;
     // Physics
-    private double airSpeed = 0;
     private final double gravity = 0.035 * SCALE;
     private final double wallGravity = 0.0005 * SCALE;
     private final double jumpSpeed = -2.25 * SCALE;
@@ -62,15 +61,15 @@ public class Player extends Entity {
         this.objectManager = objectManager;
         loadAnimations();
         initHitBox(PLAYER_HB_WID, PLAYER_HB_HEI);
-        initAttackBox();
+        initAttackBox(PLAYER_AB_WID, PLAYER_AB_HEI);
         this.cooldown = new double[3];
         this.playerDataManager = new PlayerDataManager(game.getAccount(), this);
         this.effectController = new PlayerEffectController(this);
     }
 
     // Init
-    private void initAttackBox() {
-        this.attackBox = new Rectangle2D.Double(xPos, yPos-1, PLAYER_AB_WID, PLAYER_AB_HEI);
+    private void initAttackBox(int wid, int hei) {
+        this.attackBox = new Rectangle2D.Double(xPos, yPos-1, wid, hei);
     }
 
     private void loadAnimations() {
@@ -461,17 +460,34 @@ public class Player extends Entity {
     }
 
     public void reset() {
-        moving = attacking = inAir = hit = block = false;
+        resetFlags();
         setSpellState(0);
-        left = right = jump = false;
         animIndex = animTick = 0;
         entityState = Anim.IDLE;
         currentHealth = maxHealth+PlayerBonus.getInstance().getBonusHealth();
         currentStamina = 0;
         hitBox.x = xPos;
         hitBox.y = yPos;
-        initAttackBox();
+        initAttackBox(PLAYER_AB_WID, PLAYER_AB_HEI);
         if (!Utils.getInstance().isEntityOnFloor(hitBox, levelData)) inAir = true;
+    }
+
+    private void resetFlags() {
+        moving = attacking = inAir = hit = block = false;
+        left = right = jump = false;
+    }
+
+    // Facade
+    public void changeCoins(int value) {
+        playerDataManager.changeCoins(value);
+    }
+
+    public void changeUpgradeTokens(int value) {
+        playerDataManager.changeUpgradeTokens(value);
+    }
+
+    public void changeExp(double value) {
+        playerDataManager.changeExp(value);
     }
 
     // Setters
@@ -553,19 +569,6 @@ public class Player extends Entity {
         }
     }
 
-    // Facade
-    public void changeCoins(int value) {
-        playerDataManager.changeCoins(value);
-    }
-
-    public void changeUpgradeTokens(int value) {
-        playerDataManager.changeUpgradeTokens(value);
-    }
-
-    public void changeExp(double value) {
-        playerDataManager.changeExp(value);
-    }
-
     // Getters
     public double getCurrentStamina() {
         return currentStamina;
@@ -621,7 +624,7 @@ public class Player extends Entity {
 
     @Override
     public void hitBoxRenderer(Graphics g, int xLevelOffset, int yLevelOffset, Color color) {
-        renderHitBox(g, xLevelOffset, yLevelOffset, Color.GREEN);
+        renderHitBox(g, xLevelOffset, yLevelOffset, color);
     }
 
     @Override

@@ -44,8 +44,8 @@ public class Constants {
     public static final int XP_CAP = 10000;
     public static final int PLAYER_MAX_HP = 100;
     public static final int PLAYER_MAX_ST = 100;
-    public static final double PLAYER_SPEED = scale(0.5);
-    public static final double PLAYER_BOOST = scale(0.6);
+    public static final double PLAYER_SPEED = dScale(0.5);
+    public static final double PLAYER_BOOST = dScale(0.6);
 
     public static final int XP_BONUS_AMOUNT = 15;
     public static final double STRONG_ARMS_BONUS_COOLDOWN = -0.225;
@@ -60,6 +60,7 @@ public class Constants {
 
     public static final double PUSH_LIMIT = -30;
     public static final double PUSH_SPEED = 0.95;
+    public static final double COOLDOWN_TICK = 0.1;
 
     // Level Constants
     public static final int MAX_LEVELS = 3;
@@ -79,16 +80,36 @@ public class Constants {
     public static final int SKELETON_HEIGHT = scale(90);
     public static final int SKELETON_X_OFFSET = scale(40);
     public static final int SKELETON_Y_OFFSET = scale(24);
+    public static final int SKELETON_HB_WID = scale(21);
+    public static final int SKELETON_HB_HEI = scale(42);
+    public static final int SKELETON_AB_WID = scale(60);
+    public static final int SKELETON_AB_HEI = scale(45);
 
     public static final int GHOUL_WIDTH = scale(120);
     public static final int GHOUL_HEIGHT = scale(80);
     public static final int GHOUL_X_OFFSET = scale(50);
     public static final int GHOUL_Y_OFFSET = scale(18);
+    public static final int GHOUL_HB_WID = scale(21);
+    public static final int GHOUL_HB_HEI = scale(42);
+    public static final int GHOUL_AB_WID = scale(60);
+    public static final int GHOUL_AB_HEI = scale(45);
 
     public static final int SW_WIDTH = scale(153);
     public static final int SW_HEIGHT = scale(138);
     public static final int SW_X_OFFSET = scale(54);
     public static final int SW_Y_OFFSET = scale(63);
+
+    public static final double SKELETON_SPEED_FAST = dScale(0.35);
+    public static final double GHOUL_SPEED_FAST = dScale(0.45);
+
+    private static final double RANGE = 1.25 * TILES_SIZE;
+    public static final double SIGHT_RANGE = RANGE * 5;
+    public static final double SKELETON_ATT_RANGE = RANGE / 1.25;
+    public static final double GHOUL_ATT_RANGE = RANGE * 2;
+    public static final double SW_ATT_RANGE = RANGE * 1.8;
+    public static final double ENEMY_SPEED_SLOW = dScale(0.2);
+
+    public static final double GHOUL_ATT_CD = 10;
 
     // Object Constants
     public static final int HEAL_POTION_VAL = 15;
@@ -181,9 +202,19 @@ public class Constants {
 
     // Effect Constants
     public static final double PARTICLE_SHIFT = 0.1;
+    public static final double FADE_SPEED = 12;
+
+    public static final int DUST1_WID = scale(40);
+    public static final int DUST1_HEI = scale(80);
+    public static final int DUST1_OFFSET_X = scale(15);
+    public static final int DUST1_OFFSET_Y = scale(10);
 
     private static int scale(double value) {
         return (int)(value * SCALE);
+    }
+
+    private static double dScale(double value) {
+        return value * SCALE;
     }
 
 }

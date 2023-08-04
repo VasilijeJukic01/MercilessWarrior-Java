@@ -20,63 +20,31 @@ public class Ghoul extends Enemy {
     private int attackOffset;
 
     // Physics
-    private double airSpeed = 0;
     private final double gravity = 0.025 * SCALE;
     private final double collisionFallSpeed = 0.5 * SCALE;
 
     public Ghoul(int xPos, int yPos) {
         super(xPos, yPos, GHOUL_WIDTH, GHOUL_HEIGHT, EnemyType.GHOUL, 25);
-        int w = (int)(21 * SCALE);
-        int h =  (int)(42 * SCALE);
-        initHitBox(w, h);
+        initHitBox(GHOUL_HB_WID, GHOUL_HB_HEI);
         initAttackBox();
         super.cooldown = new double[1];
     }
 
     private void initAttackBox() {
-        int w = (int)(60 * SCALE);
-        int h = (int)(45 * SCALE);
-        this.attackBox = new Rectangle2D.Double(xPos, yPos-1, w, h);
+        this.attackBox = new Rectangle2D.Double(xPos, yPos-1, GHOUL_AB_WID, GHOUL_AB_HEI);
         this.attackOffset = (int)(20 * SCALE);
-    }
-
-    public void updateMove(int[][] levelData, Player player) {
-        if (!Utils.getInstance().isEntityOnFloor(hitBox, levelData)) inAir = true;
-        if (inAir) {
-            if (Utils.getInstance().canMoveHere(hitBox.x, hitBox.y + airSpeed, hitBox.width, hitBox.height, levelData)) {
-                hitBox.y += airSpeed;
-                airSpeed += gravity;
-            }
-            else {
-                hitBox.y = Utils.getInstance().getYPosOnTheCeil(hitBox, airSpeed);
-                if (airSpeed > 0) {
-                    airSpeed = 0;
-                    inAir = false;
-                }
-                else {
-                    airSpeed = collisionFallSpeed;
-                }
-            }
-        }
-        else updateBehavior(levelData, player);
     }
 
     // Attack
     public void hit(double damage, boolean enableRevive, boolean hitSound) {
         if (enableRevive) {
-            Random rand = new Random();
-            double x = rand.nextDouble();
-            if (x < 0.3) {
-                entityState = Anim.HIDE;
-                Audio.getInstance().getAudioPlayer().playSound(Sound.GHOUL_HIDE);
-                return;
-            }
+            hide();
+            if (entityState == Anim.HIDE) return;
         }
         currentHealth -= damage;
         if (hitSound) Audio.getInstance().getAudioPlayer().playHitSound();
         if (currentHealth <= 0) {
-            Audio.getInstance().getAudioPlayer().playSound(Sound.GHOUL_DEATH);
-            setEnemyAction(Anim.DEATH);
+            checkDeath();
         }
         else setEnemyAction(Anim.HIT);
     }
@@ -84,8 +52,7 @@ public class Ghoul extends Enemy {
     public void spellHit(double damage) {
         currentHealth -= damage;
         if (currentHealth <= 0) {
-            Audio.getInstance().getAudioPlayer().playSound(Sound.GHOUL_DEATH);
-            setEnemyAction(Anim.DEATH);
+            checkDeath();
         }
         else {
             if (entityState == Anim.HIT) setEnemyActionNoReset(Anim.HIT);
@@ -93,53 +60,71 @@ public class Ghoul extends Enemy {
         }
     }
 
+    private void hide() {
+        Random rand = new Random();
+        double x = rand.nextDouble();
+        if (x < 0.3) {
+            entityState = Anim.HIDE;
+            Audio.getInstance().getAudioPlayer().playSound(Sound.GHOUL_HIDE);
+        }
+    }
+
+    private void checkDeath() {
+        Audio.getInstance().getAudioPlayer().playSound(Sound.GHOUL_DEATH);
+        setEnemyAction(Anim.DEATH);
+    }
+
     // Ghoul Core
     private void updateBehavior(int[][] levelData, Player player) {
         switch (entityState) {
             case IDLE:
-                if (cooldown[Cooldown.ATTACK.ordinal()] == 0) setEnemyAction(Anim.WALK);
-                animSpeed = 25;
+                idleAction();
                 break;
             case RUN:
             case WALK:
-                if (canSeePlayer(levelData, player)) directToPlayer(player);
-                if (canSeePlayer(levelData, player) && isPlayerCloseForAttack(player) && cooldown[Cooldown.ATTACK.ordinal()] == 0) {
-                    setEnemyAction(Anim.ATTACK_1);
-                    animSpeed = 15;
-                }
-                double enemyXSpeed = 0;
-
-                if (direction == Direction.LEFT) enemyXSpeed = -enemySpeed;
-                else if (direction == Direction.RIGHT) enemyXSpeed = enemySpeed;
-
-                if (Utils.getInstance().canMoveHere(hitBox.x + enemyXSpeed, hitBox.y, hitBox.width, hitBox.height, levelData)) {
-                    if (Utils.getInstance().isFloor(hitBox, enemyXSpeed, levelData, direction)) {
-                        hitBox.x += enemyXSpeed;
-                        return;
-                    }
-                }
-
-                changeDirection();
+                moveAction(levelData, player);
                 break;
             case ATTACK_1:
-                if (animIndex == 0) attackCheck = false;
-                if (animIndex == 3 && !attackCheck) {
-                    checkPlayerHit(attackBox, player);
-                    fastMove(levelData);
-                }
+                attackAction(levelData, player);
                 break;
             case REVEAL:
-                if (animIndex == 0) {
-                    hitBox.x = player.getHitBox().x;
-                    hitBox.y = player.getHitBox().y;
-                    inAir = true;
-                }
-                else if (animIndex == 5) Audio.getInstance().getAudioPlayer().playSound(Sound.GHOUL_REVEAL);
+                revealAction(player);
+                break;
             default: break;
         }
     }
 
-    protected void fastMove(int[][] levelData) {
+    // Behavior
+    private void idleAction() {
+        if (cooldown[Cooldown.ATTACK.ordinal()] == 0) setEnemyAction(Anim.WALK);
+        animSpeed = 25;
+    }
+
+    private void moveAction(int[][] levelData, Player player) {
+        if (canSeePlayer(levelData, player)) directToPlayer(player);
+        if (canSeePlayer(levelData, player) && isPlayerCloseForAttack(player) && cooldown[Cooldown.ATTACK.ordinal()] == 0) {
+            setEnemyAction(Anim.ATTACK_1);
+            animSpeed = 15;
+        }
+        double enemyXSpeed = (direction == Direction.LEFT) ? -enemySpeed : enemySpeed;
+        if (Utils.getInstance().canMoveHere(hitBox.x + enemyXSpeed, hitBox.y, hitBox.width, hitBox.height, levelData)) {
+            if (Utils.getInstance().isFloor(hitBox, enemyXSpeed, levelData, direction)) {
+                hitBox.x += enemyXSpeed;
+                return;
+            }
+        }
+        changeDirection();
+    }
+
+    private void attackAction(int[][] levelData, Player player) {
+        if (animIndex == 0) attackCheck = false;
+        if (animIndex == 3 && !attackCheck) {
+            checkPlayerHit(attackBox, player);
+            fastAttack(levelData);
+        }
+    }
+
+    private void fastAttack(int[][] levelData) {
         double xSpeed;
 
         if (direction == Direction.LEFT) xSpeed = -enemySpeed;
@@ -153,15 +138,31 @@ public class Ghoul extends Enemy {
         entityState = Anim.IDLE;
     }
 
-    private void updateAttackBox() {
-        this.attackBox.x = hitBox.x - attackOffset;
-        this.attackBox.y = hitBox.y;
+    private void revealAction(Player player) {
+        if (animIndex == 0) {
+            hitBox.x = player.getHitBox().x;
+            hitBox.y = player.getHitBox().y;
+            inAir = true;
+        }
+        else if (animIndex == 5) Audio.getInstance().getAudioPlayer().playSound(Sound.GHOUL_REVEAL);
     }
 
+    // Update
     public void update(BufferedImage[][] animations, int[][] levelData, Player player) {
         updateMove(levelData, player);
         updateAnimation(animations);
         updateAttackBox();
+    }
+
+    public void updateMove(int[][] levelData, Player player) {
+        if (!Utils.getInstance().isEntityOnFloor(hitBox, levelData)) inAir = true;
+        if (inAir) updateInAir(levelData, gravity, collisionFallSpeed);
+        else updateBehavior(levelData, player);
+    }
+
+    private void updateAttackBox() {
+        this.attackBox.x = hitBox.x - attackOffset;
+        this.attackBox.y = hitBox.y;
     }
 
     @Override

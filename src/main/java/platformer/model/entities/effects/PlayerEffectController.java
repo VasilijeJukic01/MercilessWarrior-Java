@@ -63,12 +63,11 @@ public class PlayerEffectController {
         if (entity.getEntityEffect() != EffectType.WALL_SLIDE) return;
         Player p = (Player) entity;
         if (p.isOnWall()) {
-            int newFlip = (p.getFlipCoefficient() != 0) ? (0) : (int)(PLAYER_WIDTH-p.getHitBox().width-10*SCALE), newSign = (p.getFlipSign() == 1) ? (-1) : (1);
-            int effectXPos = (int)(p.getHitBox().x-PLAYER_HB_OFFSET_X-xLevelOffset)+(int)(newSign*27*SCALE)+newFlip;
-            int effectYPos = (int)(p.getHitBox().y-PLAYER_HB_OFFSET_Y-yLevelOffset)-(int)(SCALE);
-            int effectWid = newSign*(effects[EffectType.WALL_SLIDE.ordinal()][effectIndex].getWidth()+(int)(10*SCALE));
-            int effectHei = effects[EffectType.WALL_SLIDE.ordinal()][effectIndex].getHeight()+(int)(50*SCALE);
-            g.drawImage(effects[EffectType.WALL_SLIDE.ordinal()][effectIndex], effectXPos, effectYPos, effectWid, effectHei, null);
+            int wid = (p.getFlipCoefficient() != 0) ? (0) : (int)(p.getHitBox().width + DUST1_W);
+            int flip = (p.getFlipSign() == 1) ? (-1) : (1);
+            int xPos = (int)(p.getHitBox().x - DUST1_OFFSET_X) + wid;
+            int yPos = (int)(p.getHitBox().y - DUST1_OFFSET_Y);
+            g.drawImage(effects[EffectType.WALL_SLIDE.ordinal()][effectIndex], xPos-xLevelOffset, yPos-yLevelOffset, flip*DUST1_WID, DUST1_HEI, null);
         }
     }
 

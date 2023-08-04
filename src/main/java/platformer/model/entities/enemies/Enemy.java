@@ -10,20 +10,16 @@ import platformer.utils.Utils;
 
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
-import java.util.Random;
 
-import static platformer.constants.Constants.SCALE;
-import static platformer.constants.Constants.TILES_SIZE;
+import static platformer.constants.Constants.*;
 
 @SuppressWarnings("FieldCanBeLocal")
 public abstract class Enemy extends Entity implements Debug {
 
-    protected final Random rand;
     private final EnemyType enemyType;
-    protected double enemySpeed = 0.2*SCALE;
+    protected double enemySpeed = ENEMY_SPEED_SLOW;
     protected int originalAnimSpeed, animSpeed, animIndex, animTick = 0;
     protected Direction direction = Direction.RIGHT;
-    protected double attackRange = 1.25*TILES_SIZE;
     protected boolean alive = true;
     protected int fadeCoefficient = 0;
     private boolean criticalHit;
@@ -34,7 +30,6 @@ public abstract class Enemy extends Entity implements Debug {
         this.animSpeed = this.originalAnimSpeed = animSpeed;
         this.maxHealth = enemyType.getHealth();
         this.currentHealth = maxHealth;
-        this.rand = new Random();
     }
 
     protected void updateAnimation(BufferedImage[][] animations) {
@@ -42,34 +37,40 @@ public abstract class Enemy extends Entity implements Debug {
         if (animTick >= animSpeed) {
             animTick = 0;
             animIndex++;
-            // Ghoul Only
-            if ((entityState == Anim.HIDE || entityState == Anim.REVEAL) && fadeCoefficient < 255) {
-                fadeCoefficient += 12;
-                fadeCoefficient = Math.min(fadeCoefficient, 255);
-            }
+            updateFade();
             if (animIndex >= animations[entityState.ordinal()].length) {
-                animIndex = 0;
-                if (enemyType == EnemyType.GHOUL && entityState == Anim.ATTACK_1){
-                    cooldown[Cooldown.ATTACK.ordinal()] = 10;
-                    entityState = Anim.IDLE;
-                }
-                else if (entityState == Anim.ATTACK_1 || entityState == Anim.HIT || entityState == Anim.BLOCK || entityState == Anim.REVEAL) {
-                    entityState = Anim.IDLE;
-                    fadeCoefficient = 0;
-                }
-
-                else if (entityState == Anim.HIDE) entityState = Anim.REVEAL;
-                else if (entityState == Anim.DEATH) alive = false;
-                criticalHit = false;
+                finishAnimation();
             }
         }
         if (cooldown != null) coolDownTickUpdate();
     }
 
+    private void finishAnimation() {
+        animIndex = 0;
+        if (enemyType == EnemyType.GHOUL && entityState == Anim.ATTACK_1){
+            cooldown[Cooldown.ATTACK.ordinal()] = GHOUL_ATT_CD;
+            entityState = Anim.IDLE;
+        }
+        else if (entityState == Anim.ATTACK_1 || entityState == Anim.HIT || entityState == Anim.BLOCK || entityState == Anim.REVEAL) {
+            entityState = Anim.IDLE;
+            fadeCoefficient = 0;
+        }
+        else if (entityState == Anim.HIDE) entityState = Anim.REVEAL;
+        else if (entityState == Anim.DEATH) alive = false;
+        criticalHit = false;
+    }
+
+    private void updateFade() {
+        if ((entityState == Anim.HIDE || entityState == Anim.REVEAL) && fadeCoefficient < 255) {
+            fadeCoefficient += FADE_SPEED;
+            fadeCoefficient = Math.min(fadeCoefficient, 255);
+        }
+    }
+
     // Targeting Player
     protected boolean canSeePlayer(int[][] levelData, Player player) {
-        int yTilePlayer = (int)(player.getHitBox().y / TILES_SIZE)+1;
-        int yTileEnemy = (int)(hitBox.y / TILES_SIZE)+1;
+        int yTilePlayer = (int)(player.getHitBox().y / TILES_SIZE) + 1;
+        int yTileEnemy = (int)(hitBox.y / TILES_SIZE) + 1;
         if (yTilePlayer != yTileEnemy) return false;
         if (!isPlayerInSight(player)) return false;
         return (Utils.getInstance().isSightClear(levelData, hitBox, player.getHitBox(), yTileEnemy));
@@ -77,30 +78,30 @@ public abstract class Enemy extends Entity implements Debug {
 
     protected void directToPlayer(Player player) {
         entityState = Anim.RUN;
-        if (enemyType == EnemyType.GHOUL) enemySpeed = 0.45*SCALE;
-        else if (enemyType == EnemyType.SKELETON) enemySpeed = 0.35*SCALE;
+        if (enemyType == EnemyType.GHOUL) enemySpeed = GHOUL_SPEED_FAST;
+        else if (enemyType == EnemyType.SKELETON) enemySpeed = SKELETON_SPEED_FAST;
         if (player.getHitBox().x > hitBox.x) setDirection(Direction.RIGHT);
         else setDirection(Direction.LEFT);
     }
 
     protected boolean isPlayerCloseForAttack(Player player) {
         int distance = (int)Math.abs(player.getHitBox().x-hitBox.x);
-        if (enemyType == EnemyType.SKELETON) return distance <= attackRange/1.25;
-        else if (enemyType == EnemyType.GHOUL) return distance <= attackRange * 2;
-        else if (enemyType == EnemyType.SPEAR_WOMAN) return distance <= attackRange * 1.8;
+        if (enemyType == EnemyType.SKELETON) return distance <= SKELETON_ATT_RANGE;
+        else if (enemyType == EnemyType.GHOUL) return distance <= GHOUL_ATT_RANGE;
+        else if (enemyType == EnemyType.SPEAR_WOMAN) return distance <= SW_ATT_RANGE;
         return false;
     }
 
     protected boolean isPlayerInSight(Player player) {
         int distance = (int)Math.abs(player.getHitBox().x - hitBox.x);
-        return distance <= attackRange * 5;
+        return distance <= SIGHT_RANGE;
     }
 
     protected void changeDirection() {
         if (direction == Direction.LEFT) setDirection(Direction.RIGHT);
         else if (direction == Direction.RIGHT) setDirection(Direction.LEFT);
         entityState = Anim.WALK;
-        enemySpeed = 0.2*SCALE;
+        enemySpeed = ENEMY_SPEED_SLOW;
     }
 
     // Attack
@@ -121,7 +122,7 @@ public abstract class Enemy extends Entity implements Debug {
         alive = true;
         animIndex = animTick = 0;
         animSpeed = originalAnimSpeed;
-        enemySpeed = 0.2*SCALE;
+        enemySpeed = ENEMY_SPEED_SLOW;
         pushOffset = 0;
     }
 

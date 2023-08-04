@@ -1,6 +1,5 @@
 package platformer.animation;
 
-import platformer.model.entities.effects.EffectType;
 import platformer.model.entities.effects.Particle;
 import platformer.model.objects.ObjType;
 import platformer.utils.Utils;
@@ -83,7 +82,7 @@ public class AnimUtils {
         anim[Anim.RUN.ordinal()] = loadFromSprite(GHOUL_SHEET, 6, 2, w, h, 0, GHOUL_W, GHOUL_H);
         anim[Anim.ATTACK_1.ordinal()] = loadFromSprite(GHOUL_SHEET, 8, 5, w, h, 0, GHOUL_W, GHOUL_H);
         anim[Anim.HIT.ordinal()] = loadFromSprite(GHOUL_SHEET, 4, 4, w, h, 0, GHOUL_W, GHOUL_H);
-        anim[Anim.DEATH.ordinal()] = loadFromSprite(GHOUL_SHEET, 4, 7, w, h, 0, GHOUL_W, GHOUL_H);
+        anim[Anim.DEATH.ordinal()] = loadFromSprite(GHOUL_SHEET, 8, 7, w, h, 0, GHOUL_W, GHOUL_H);
         anim[Anim.WALK.ordinal()] = loadFromSprite(GHOUL_SHEET, 6, 1, w, h, 0, GHOUL_W, GHOUL_H);
         anim[Anim.HIDE.ordinal()] = loadFromSprite(GHOUL_SHEET, 19, 6, w, h, 0, GHOUL_W, GHOUL_H);
         anim[Anim.REVEAL.ordinal()] = loadFromSprite(GHOUL_SHEET, 19, 6, w, h, 0, GHOUL_W, GHOUL_H);

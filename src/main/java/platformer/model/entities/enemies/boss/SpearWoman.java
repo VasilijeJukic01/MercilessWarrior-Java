@@ -107,6 +107,7 @@ public class SpearWoman extends Enemy {
     }
 
     private void teleport(int[][] levelData, Player player, int tiles) {
+        Random rand = new Random();
         double playerX = player.getHitBox().x;
         int k = rand.nextInt(2);
         if (k == 0 && Utils.getInstance().canMoveHere(playerX+tiles*TILES_SIZE, hitBox.y, hitBox.width, hitBox.height, levelData)) {
@@ -152,6 +153,7 @@ public class SpearWoman extends Enemy {
 
     // Core
     private void attack(int[][] levelData, Player player) {
+        Random rand = new Random();
         attackBox.width = attackBoxWid;
         attackBox.x = xPos;
         shootCount = 0;
@@ -189,7 +191,6 @@ public class SpearWoman extends Enemy {
         }
         // Multi Lightning ball
         else if (entityState == Anim.SPELL_4) {
-            Random rand = new Random();
             specialType = rand.nextInt(2);
             hitBox.x = 12.5*TILES_SIZE;
             hitBox.y = 4*TILES_SIZE;

@@ -9,8 +9,7 @@ import platformer.utils.Utils;
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
 
-import static platformer.constants.Constants.PUSH_LIMIT;
-import static platformer.constants.Constants.PUSH_SPEED;
+import static platformer.constants.Constants.*;
 
 public abstract class Entity implements Debug {
 
@@ -21,6 +20,7 @@ public abstract class Entity implements Debug {
     protected Anim entityState = Anim.IDLE;
     protected int flipCoefficient = 0, flipSign = 1;
     protected boolean inAir;
+    protected double airSpeed = 0;
 
     protected int maxHealth;
     protected double currentHealth;
@@ -59,7 +59,7 @@ public abstract class Entity implements Debug {
     protected void coolDownTickUpdate() {
         for (int i = 0; i < cooldown.length; i++) {
             if (cooldown[i] > 0) {
-                cooldown[i] -= 0.1;
+                cooldown[i] -= COOLDOWN_TICK;
                 if (cooldown[i] < 0) cooldown[i] = 0;
             }
         }
@@ -81,6 +81,22 @@ public abstract class Entity implements Debug {
         double xSpeed = (pushDirection == Direction.LEFT) ? -enemySpeed : enemySpeed;
         if (Utils.getInstance().canMoveHere(hitBox.x + xSpeed * speed, hitBox.y, hitBox.width, hitBox.height, lvlData)) {
             hitBox.x += xSpeed * speed;
+        }
+    }
+
+    // Update
+    protected void updateInAir(int[][] levelData, double gravity, double collisionFallSpeed) {
+        if (Utils.getInstance().canMoveHere(hitBox.x, hitBox.y + airSpeed, hitBox.width, hitBox.height, levelData)) {
+            hitBox.y += airSpeed;
+            airSpeed += gravity;
+        }
+        else {
+            hitBox.y = Utils.getInstance().getYPosOnTheCeil(hitBox, airSpeed);
+            if (airSpeed > 0) {
+                airSpeed = 0;
+                inAir = false;
+            }
+            else airSpeed = collisionFallSpeed;
         }
     }
 

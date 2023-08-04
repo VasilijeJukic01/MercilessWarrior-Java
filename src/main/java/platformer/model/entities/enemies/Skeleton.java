@@ -19,74 +19,41 @@ public class Skeleton extends Enemy {
     private int attackOffset;
 
     // Physics
-    private double airSpeed = 0;
     private final double gravity = 0.035 * SCALE;
     private final double collisionFallSpeed = 0.5 * SCALE;
 
     public Skeleton(int xPos, int yPos) {
         super(xPos, yPos, SKELETON_WIDTH, SKELETON_HEIGHT, EnemyType.SKELETON, 25);
-        int w = (int)(21 * SCALE);
-        int h =  (int)(42 * SCALE);
-        initHitBox(w, h);
+        initHitBox(SKELETON_HB_WID, SKELETON_HB_HEI);
         initAttackBox();
     }
 
     private void initAttackBox() {
-        int w = (int)(60 * SCALE);
-        int h = (int)(45 * SCALE);
-        this.attackBox = new Rectangle2D.Double(xPos, yPos-1, w, h);
+        this.attackBox = new Rectangle2D.Double(xPos, yPos-1, SKELETON_AB_WID, SKELETON_AB_HEI);
         this.attackOffset =  (int)(20 * SCALE);
-    }
-
-    public void updateMove(int[][] levelData, Player player) {
-        if (!Utils.getInstance().isEntityOnFloor(hitBox, levelData)) inAir = true;
-        if (inAir) {
-            if (Utils.getInstance().canMoveHere(hitBox.x, hitBox.y + airSpeed, hitBox.width, hitBox.height, levelData)) {
-                hitBox.y += airSpeed;
-                airSpeed += gravity;
-            }
-            else {
-                hitBox.y = Utils.getInstance().getYPosOnTheCeil(hitBox, airSpeed);
-                if (airSpeed > 0) {
-                    airSpeed = 0;
-                    inAir = false;
-                }
-                else {
-                    airSpeed = collisionFallSpeed;
-                }
-            }
-        }
-        else updateBehavior(levelData, player);
     }
 
     // Attack
     public void hit(double damage, boolean enableBlock, boolean hitSound) {
         if (enableBlock) {
-            Random rand = new Random();
-            double x = rand.nextDouble();
-            if (x < 0.3) {
-                entityState = Anim.BLOCK;
-                Audio.getInstance().getAudioPlayer().playBlockSound("Enemy");
-                return;
-            }
+          blockAttack();
+          if (entityState == Anim.BLOCK) return;
         }
         currentHealth -= damage;
         if (hitSound) Audio.getInstance().getAudioPlayer().playHitSound();
         if (currentHealth <= 0) {
-            Audio.getInstance().getAudioPlayer().playSound(Sound.SKELETON_DEATH_1);
-            setEnemyAction(Anim.DEATH);
+            checkDeath();
         }
         else setEnemyAction(Anim.HIT);
         pushOffsetDirection = Direction.UP;
         pushOffset = 0;
-        enemySpeed = 0.2*SCALE;
+        enemySpeed = ENEMY_SPEED_SLOW;
     }
 
     public void spellHit(double damage) {
         currentHealth -= damage;
         if (currentHealth <= 0) {
-            Audio.getInstance().getAudioPlayer().playSound(Sound.SKELETON_DEATH_1);
-            setEnemyAction(Anim.DEATH);
+            checkDeath();
         }
         else {
             if (entityState == Anim.HIT) setEnemyActionNoReset(Anim.HIT);
@@ -97,64 +64,97 @@ public class Skeleton extends Enemy {
         enemySpeed = 0;
     }
 
+    private void blockAttack() {
+        Random rand = new Random();
+        double x = rand.nextDouble();
+        if (x < 0.3) {
+            entityState = Anim.BLOCK;
+            Audio.getInstance().getAudioPlayer().playBlockSound("Enemy");
+        }
+    }
+
+    private void checkDeath() {
+        Audio.getInstance().getAudioPlayer().playSound(Sound.SKELETON_DEATH_1);
+        setEnemyAction(Anim.DEATH);
+    }
+
     // Skeleton Core
     private void updateBehavior(int[][] levelData, Player player) {
         switch (entityState) {
             case IDLE:
-                setEnemyAction(Anim.WALK);
-                animSpeed = 25;
-                break;
+               idleAction();
+               break;
             case RUN:
             case WALK:
-                if (canSeePlayer(levelData, player)) directToPlayer(player);
-                if (canSeePlayer(levelData, player) && isPlayerCloseForAttack(player)) {
-                    setEnemyAction(Anim.ATTACK_1);
-                    animSpeed = 18;
-                }
-                double enemyXSpeed = 0;
-
-                if (direction == Direction.LEFT) enemyXSpeed = -enemySpeed;
-                else if (direction == Direction.RIGHT) enemyXSpeed = enemySpeed;
-
-                if (Utils.getInstance().canMoveHere(hitBox.x + enemyXSpeed, hitBox.y, hitBox.width, hitBox.height, levelData)) {
-                    if (Utils.getInstance().isFloor(hitBox, enemyXSpeed, levelData, direction)) {
-                        hitBox.x += enemyXSpeed;
-                        return;
-                    }
-                }
-
-                changeDirection();
+                moveAction(levelData, player);
                 break;
             case ATTACK_1:
-                if (animIndex == 0) {
-                    player.setCanBlock(false);
-                    attackCheck = false;
-                }
-                if ((animIndex == 1 || animIndex == 2) && player.isBlock()) {
-                    if ((player.getHitBox().x < this.hitBox.x && player.getFlipSign() == 1) || (player.getHitBox().x > this.hitBox.x && player.getFlipSign() == -1)) {
-                        player.setCanBlock(true);
-                        Audio.getInstance().getAudioPlayer().playBlockSound("Player");
-                    }
-                }
-                if (animIndex == 3 && !attackCheck) checkPlayerHit(attackBox, player);
-                player.setBlock(false);
+                attackAction(player);
                 break;
             case HIT:
-                pushBack(pushDirection, levelData, 1.5, enemySpeed);
-                updatePushOffset();
+                hitAction(levelData);
             default: break;
         }
+    }
+
+    // Behavior
+    private void idleAction() {
+        setEnemyAction(Anim.WALK);
+        animSpeed = 25;
+    }
+
+    private void moveAction(int[][] levelData, Player player) {
+        if (canSeePlayer(levelData, player)) directToPlayer(player);
+        if (canSeePlayer(levelData, player) && isPlayerCloseForAttack(player)) {
+            setEnemyAction(Anim.ATTACK_1);
+            animSpeed = 18;
+        }
+        double enemyXSpeed = (direction == Direction.LEFT) ? -enemySpeed : enemySpeed;
+        if (Utils.getInstance().canMoveHere(hitBox.x + enemyXSpeed, hitBox.y, hitBox.width, hitBox.height, levelData)) {
+            if (Utils.getInstance().isFloor(hitBox, enemyXSpeed, levelData, direction)) {
+                hitBox.x += enemyXSpeed;
+                return;
+            }
+        }
+        changeDirection();
+    }
+
+    private void attackAction(Player player) {
+        if (animIndex == 0) {
+            player.setCanBlock(false);
+            attackCheck = false;
+        }
+        else if ((animIndex == 1 || animIndex == 2) && player.isBlock()) {
+            if ((player.getHitBox().x < hitBox.x && player.getFlipSign() == 1) || (player.getHitBox().x > hitBox.x && player.getFlipSign() == -1)) {
+                player.setCanBlock(true);
+                Audio.getInstance().getAudioPlayer().playBlockSound("Player");
+            }
+        }
+        else if (animIndex == 3 && !attackCheck) checkPlayerHit(attackBox, player);
+        player.setBlock(false);
+    }
+
+    private void hitAction(int[][] levelData) {
+        pushBack(pushDirection, levelData, 1.5, enemySpeed);
+        updatePushOffset();
+    }
+
+    // Update
+    public void update(BufferedImage[][] animations, int[][] levelData, Player player) {
+        updateMove(levelData, player);
+        updateAnimation(animations);
+        updateAttackBox();
+    }
+
+    public void updateMove(int[][] levelData, Player player) {
+        if (!Utils.getInstance().isEntityOnFloor(hitBox, levelData)) inAir = true;
+        if (inAir) updateInAir(levelData, gravity, collisionFallSpeed);
+        else updateBehavior(levelData, player);
     }
 
     private void updateAttackBox() {
         this.attackBox.x = hitBox.x - attackOffset;
         this.attackBox.y = hitBox.y;
-    }
-
-    public void update(BufferedImage[][] animations, int[][] levelData, Player player) {
-        updateMove(levelData, player);
-        updateAnimation(animations);
-        updateAttackBox();
     }
 
     @Override
