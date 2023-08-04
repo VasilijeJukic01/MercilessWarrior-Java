@@ -3,10 +3,14 @@ package platformer.model.entities;
 import platformer.animation.Anim;
 import platformer.debug.Debug;
 import platformer.debug.DebugSettings;
+import platformer.model.entities.effects.EffectType;
 import platformer.utils.Utils;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
+
+import static platformer.constants.Constants.PUSH_LIMIT;
+import static platformer.constants.Constants.PUSH_SPEED;
 
 public abstract class Entity implements Debug {
 
@@ -26,6 +30,10 @@ public abstract class Entity implements Debug {
     protected Direction pushDirection;
     protected double pushOffset;
     protected Direction pushOffsetDirection = Direction.UP;
+
+    protected double[] cooldown;
+
+    protected EffectType entityEffect;
 
     public Entity(int xPos, int yPos, int width, int height, int maxHealth) {
         this.xPos = xPos;
@@ -47,32 +55,36 @@ public abstract class Entity implements Debug {
         this.hitBox = new Rectangle2D.Double(xPos, yPos, width, height);
     }
 
+    // Cooldown
+    protected void coolDownTickUpdate() {
+        for (int i = 0; i < cooldown.length; i++) {
+            if (cooldown[i] > 0) {
+                cooldown[i] -= 0.1;
+                if (cooldown[i] < 0) cooldown[i] = 0;
+            }
+        }
+    }
+
     // Push
     protected void updatePushOffset() {
-        double speed = 0.95;
-        double limit = -30;
-
         if (pushOffsetDirection == Direction.UP) {
-            pushOffset -= speed;
-            if (pushOffset <= limit) pushOffsetDirection = Direction.DOWN;
+            pushOffset -= PUSH_SPEED;
+            if (pushOffset <= PUSH_LIMIT) pushOffsetDirection = Direction.DOWN;
         }
         else {
-            pushOffset += speed;
+            pushOffset += PUSH_SPEED;
             if (pushOffset >= 0) pushOffset = 0;
         }
     }
 
     protected void pushBack(Direction pushDirection, int[][] lvlData, double speed, double enemySpeed) {
-        double xSpeed;
-        if (pushDirection == Direction.LEFT) xSpeed = -enemySpeed;
-        else xSpeed = enemySpeed;
-
+        double xSpeed = (pushDirection == Direction.LEFT) ? -enemySpeed : enemySpeed;
         if (Utils.getInstance().canMoveHere(hitBox.x + xSpeed * speed, hitBox.y, hitBox.width, hitBox.height, lvlData)) {
             hitBox.x += xSpeed * speed;
         }
     }
 
-    // Render Core
+    // Render
     public void renderAttackBox(Graphics g, int xOffset, int yOffset) {
         if (!DebugSettings.getInstance().isDebugMode()) return;
         g.setColor(Color.RED);
@@ -101,4 +113,19 @@ public abstract class Entity implements Debug {
         this.pushDirection = pushDirection;
     }
 
+    public double getCurrentHealth() {
+        return currentHealth;
+    }
+
+    public double[] getCooldown() {
+        return cooldown;
+    }
+
+    public EffectType getEntityEffect() {
+        return entityEffect;
+    }
+
+    public void setEntityEffect(EffectType entityEffect) {
+        this.entityEffect = entityEffect;
+    }
 }

@@ -4,7 +4,7 @@ import platformer.animation.graphics.GraphicsAnimation;
 import platformer.animation.graphics.WaveAnim;
 import platformer.debug.DebugSettings;
 import platformer.model.entities.Direction;
-import platformer.model.entities.Player;
+import platformer.model.entities.player.Player;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;

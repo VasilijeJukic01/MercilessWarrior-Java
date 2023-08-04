@@ -1,8 +1,8 @@
-package platformer.model.entities;
+package platformer.model.entities.player;
 
 public class PlayerBonus {
 
-    public static PlayerBonus instance = null;
+    private static volatile PlayerBonus instance = null;
 
     private int bonusAttack, bonusHealth, bonusPower, bonusExp, bonusCoin, criticalHitChance;
     private double bonusCooldown, dashCooldown;
@@ -12,7 +12,11 @@ public class PlayerBonus {
 
     public static PlayerBonus getInstance() {
         if (instance == null) {
-            instance = new PlayerBonus();
+            synchronized (PlayerBonus.class) {
+                if (instance == null) {
+                    instance = new PlayerBonus();
+                }
+            }
         }
         return instance;
     }

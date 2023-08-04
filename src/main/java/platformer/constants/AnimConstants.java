@@ -34,5 +34,6 @@ public class AnimConstants {
 
     // Frames
     public static final int MENU_FRAMES = 24;
+    public static final int DEFAULT_PARTICLE_FRAMES = 24;
 
 }

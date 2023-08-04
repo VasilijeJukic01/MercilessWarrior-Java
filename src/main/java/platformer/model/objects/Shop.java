@@ -2,7 +2,7 @@ package platformer.model.objects;
 
 import platformer.audio.Audio;
 import platformer.audio.Sound;
-import platformer.model.entities.Player;
+import platformer.model.entities.player.Player;
 import platformer.ui.ItemType;
 import platformer.ui.ShopItem;
 import platformer.utils.Utils;

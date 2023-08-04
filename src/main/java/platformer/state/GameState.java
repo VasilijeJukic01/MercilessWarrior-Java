@@ -1,12 +1,13 @@
 package platformer.state;
 
+import platformer.audio.Audio;
 import platformer.controller.GameStateController;
 import platformer.debug.logger.Message;
 import platformer.debug.logger.Logger;
 import platformer.model.entities.effects.Particle;
 import platformer.model.entities.enemies.EnemyManager;
 import platformer.core.Game;
-import platformer.model.entities.Player;
+import platformer.model.entities.player.Player;
 import platformer.model.levels.LevelManager;
 import platformer.model.objects.ObjectManager;
 import platformer.model.perks.PerksManager;
@@ -152,7 +153,7 @@ public class GameState extends AbstractState implements State {
         this.player.render(g, xLevelOffset, yLevelOffset);
         this.enemyManager.render(g, xLevelOffset, yLevelOffset);
         this.spellManager.render(g, xLevelOffset, yLevelOffset);
-        this.player.getUserInterface().render(g);
+        this.player.getPlayerStatusManager().getUserInterface().render(g);
         this.overlayManager.render(g);
     }
 
@@ -274,6 +275,8 @@ public class GameState extends AbstractState implements State {
 
     public void setPaused(boolean value) {
         this.paused = value;
+        if (paused) Audio.getInstance().getAudioPlayer().pauseSounds();
+        else Audio.getInstance().getAudioPlayer().unpauseSounds();
     }
 
     public void setGameOver(boolean value) {
@@ -291,5 +294,4 @@ public class GameState extends AbstractState implements State {
     public void setBlacksmithVisible(boolean blacksmithVisible) {
         this.blacksmithVisible = blacksmithVisible;
     }
-
 }

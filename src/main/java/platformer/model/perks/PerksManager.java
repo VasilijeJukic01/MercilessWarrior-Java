@@ -1,6 +1,6 @@
 package platformer.model.perks;
 
-import platformer.model.entities.PlayerBonus;
+import platformer.model.entities.player.PlayerBonus;
 
 import java.util.ArrayList;
 import java.util.HashMap;

@@ -6,7 +6,7 @@ import platformer.audio.Song;
 import platformer.audio.Sound;
 import platformer.model.entities.Cooldown;
 import platformer.model.entities.Direction;
-import platformer.model.entities.Player;
+import platformer.model.entities.player.Player;
 import platformer.model.entities.enemies.Enemy;
 import platformer.model.entities.enemies.EnemyType;
 import platformer.model.objects.ObjectManager;

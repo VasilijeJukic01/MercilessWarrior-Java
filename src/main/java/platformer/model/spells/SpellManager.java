@@ -1,7 +1,7 @@
 package platformer.model.spells;
 
 import platformer.animation.AnimUtils;
-import platformer.model.entities.Player;
+import platformer.model.entities.player.Player;
 import platformer.state.GameState;
 
 import java.awt.*;

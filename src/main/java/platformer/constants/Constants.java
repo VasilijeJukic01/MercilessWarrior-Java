@@ -2,6 +2,14 @@ package platformer.constants;
 
 import static launcher.Config.SCALING_FACTOR;
 
+// Vocabulary
+/*
+
+HB - Hit Box
+AB - Attack Box
+
+ */
+
 public class Constants {
 
     // Resolution Settings
@@ -26,6 +34,18 @@ public class Constants {
     public static final int PLAYER_HEIGHT = scale(80);
     public static final int PLAYER_X = scale(300);
     public static final int PLAYER_Y = scale(250);
+    public static final int PLAYER_AB_WID = scale(20);
+    public static final int PLAYER_AB_HEI = scale(35);
+    public static final int PLAYER_HB_WID = scale(15);
+    public static final int PLAYER_HB_HEI = scale(44);
+    public static final int PLAYER_HB_OFFSET_X = scale(42);
+    public static final int PLAYER_HB_OFFSET_Y = scale(16);
+
+    public static final int XP_CAP = 10000;
+    public static final int PLAYER_MAX_HP = 100;
+    public static final int PLAYER_MAX_ST = 100;
+    public static final double PLAYER_SPEED = scale(0.5);
+    public static final double PLAYER_BOOST = scale(0.6);
 
     public static final int XP_BONUS_AMOUNT = 15;
     public static final double STRONG_ARMS_BONUS_COOLDOWN = -0.225;
@@ -37,6 +57,9 @@ public class Constants {
     public static final int ELEMENTARY_MAGIC_CRITICAL_HIT_CHANCE = 5;
     public static final int GODS_BLOOD_BONUS_HEALTH = 32;
     public static final double FURIOUS_DASH_COOLDOWN = -0.75;
+
+    public static final double PUSH_LIMIT = -30;
+    public static final double PUSH_SPEED = 0.95;
 
     // Level Constants
     public static final int MAX_LEVELS = 3;
@@ -155,6 +178,9 @@ public class Constants {
     public static final int SHOP_SLOT_MAX_ROW = 7, SHOP_SLOT_MAX_COL = 3;
     public static final int PERK_SLOT_MAX_ROW = 4, PERK_SLOT_MAX_COL = 7;
     public static final int SLOT_SPACING = scale(40);
+
+    // Effect Constants
+    public static final double PARTICLE_SHIFT = 0.1;
 
     private static int scale(double value) {
         return (int)(value * SCALE);

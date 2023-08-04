@@ -3,7 +3,6 @@ package platformer.model.objects;
 
 import platformer.debug.Debug;
 import platformer.debug.DebugSettings;
-import platformer.model.ModelUtils;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
@@ -31,7 +30,7 @@ public abstract class GameObject implements Debug {
         if (animTick >= animSpeed) {
             animTick = 0;
             animIndex++;
-            if (animIndex >= ModelUtils.getInstance().getObjectSprite(objType)) {
+            if (animIndex >= objType.getSprites()) {
                 animIndex = 0;
                 if (objType == ObjType.BARREL || objType == ObjType.BOX) {
                     animate = false;

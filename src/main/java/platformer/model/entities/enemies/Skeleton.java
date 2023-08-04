@@ -4,7 +4,7 @@ import platformer.animation.Anim;
 import platformer.audio.Audio;
 import platformer.audio.Sound;
 import platformer.model.entities.Direction;
-import platformer.model.entities.Player;
+import platformer.model.entities.player.Player;
 import platformer.utils.Utils;
 
 import java.awt.*;

@@ -113,12 +113,6 @@ public class AnimUtils {
     }
 
     // Effects
-    public BufferedImage[][] loadEffects() {
-        BufferedImage[][] anim = new BufferedImage[11][11];
-        anim[EffectType.WALL_SLIDE.ordinal()] = loadFromSprite(DUST_SHEET_1, 8, 0, DUST1_W, DUST1_H, 0, DUST1_W, DUST1_H);
-        return anim;
-    }
-
     public Particle[] loadParticles() {
         Particle[] particles = new Particle[PARTICLES_CAP];
         Random rand = new Random();

@@ -1,12 +1,11 @@
 package platformer.controller;
 
-import platformer.audio.Audio;
 import platformer.core.Game;
 import platformer.debug.DebugSettings;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
 import platformer.model.entities.AttackState;
-import platformer.model.entities.Player;
+import platformer.model.entities.player.Player;
 import platformer.state.GameState;
 
 import java.awt.event.KeyEvent;
@@ -96,8 +95,6 @@ public class GameStateController {
                     else gameState.setBlacksmithVisible(false);
                 }
                 else gameState.setPaused(!paused);
-                if (paused) Audio.getInstance().getAudioPlayer().pauseSounds();
-                else Audio.getInstance().getAudioPlayer().unpauseSounds();
                 break;
             default: break;
         }
@@ -158,7 +155,7 @@ public class GameStateController {
     }
 
     private void saveToDatabase() {
-        player.saveData();
+        player.getPlayerStatusManager().saveData();
         game.saveProgress();
     }
 

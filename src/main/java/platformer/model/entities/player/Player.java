@@ -1,4 +1,4 @@
-package platformer.model.entities;
+package platformer.model.entities.player;
 
 import platformer.animation.Anim;
 import platformer.animation.AnimUtils;
@@ -7,20 +7,20 @@ import platformer.audio.Sound;
 import platformer.core.Game;
 import platformer.debug.logger.Message;
 import platformer.debug.logger.Logger;
+import platformer.model.entities.*;
 import platformer.model.entities.effects.EffectType;
+import platformer.model.entities.effects.PlayerEffectController;
 import platformer.model.entities.enemies.Enemy;
 import platformer.model.entities.enemies.EnemyManager;
 import platformer.model.objects.ObjectManager;
 import platformer.model.objects.projectiles.Projectile;
-import platformer.ui.overlays.hud.UserInterface;
 import platformer.utils.Utils;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 
-import static platformer.constants.Constants.SCALE;
-import static platformer.constants.Constants.TILES_SIZE;
+import static platformer.constants.Constants.*;
 import static platformer.constants.FilePaths.PLAYER_SHEET;
 import static platformer.constants.FilePaths.PLAYER_TRANSFORM_SHEET;
 
@@ -32,15 +32,10 @@ public class Player extends Entity {
     private final ObjectManager objectManager;
     private int[][] levelData;
     // Core Variables
-    private final BufferedImage[][] animations, transformAnimations;
-    private final BufferedImage[][] effects;
+    private BufferedImage[][] animations, transformAnimations;
     private final int animSpeed = 20;
-    private int animTick = 0, animIndex = 0, effectIndex = 0;
-    private EffectType playerEffect;
+    private int animTick = 0, animIndex = 0;
     private AttackState attackState;
-    private final double playerSpeed = 0.5 * SCALE;
-    private final double playerBoostSpeed = 0.6 * SCALE;
-    private final double xHitBoxOffset = 42 * SCALE, yHitBoxOffset = 16 * SCALE;
     // Physics
     private double airSpeed = 0;
     private final double gravity = 0.035 * SCALE;
@@ -52,51 +47,35 @@ public class Player extends Entity {
     private int spellState = 0;
     private boolean doubleJump, onWall, onObject, wallPush, canDash = true, canBlock, canTransform;
     // Status
-    private final UserInterface userInterface;
-    private final int attackDmg = 5, transformAttackDmg = 8;
-    private final int maxStamina = 100;
-    private double currentStamina = 15;
     private int currentJumps = 0, dashCount = 0;
     private int dashTick = 0;
-    private int coins = 0, exp = 0, level = 1, upgradeTokens = 0;
-    private final int maxExp = 10000;
-    // Cooldowns
-    private final double[] cooldown;
+    private final int attackDmg = 5, transformAttackDmg = 8;
+    private double currentStamina = 15;
+    private final PlayerDataManager playerDataManager;
+    // Effect
+    private final PlayerEffectController effectController;
 
-    // Init
     public Player(int xPos, int yPos, int width, int height, EnemyManager enemyManager, ObjectManager objectManager, Game game) {
-        super(xPos, yPos, width, height, 100);
+        super(xPos, yPos, width, height, PLAYER_MAX_HP);
         this.game = game;
         this.enemyManager = enemyManager;
         this.objectManager = objectManager;
-        this.animations = AnimUtils.getInstance().loadPlayerAnimations(width, height, PLAYER_SHEET);
-        this.transformAnimations = AnimUtils.getInstance().loadPlayerAnimations(width, height, PLAYER_TRANSFORM_SHEET);
-        this.effects = AnimUtils.getInstance().loadEffects();
-        this.userInterface = new UserInterface(this);
-        initHitBox((int)(15*SCALE), (int)(44*SCALE));
+        loadAnimations();
+        initHitBox(PLAYER_HB_WID, PLAYER_HB_HEI);
         initAttackBox();
         this.cooldown = new double[3];
-        loadData();
+        this.playerDataManager = new PlayerDataManager(game.getAccount(), this);
+        this.effectController = new PlayerEffectController(this);
     }
 
-    private void loadData() {
-        this.coins = game.getAccount().getCoins();
-        this.upgradeTokens = game.getAccount().getTokens();
-        this.level = game.getAccount().getLevel();
-        this.exp = game.getAccount().getExp();
-    }
-
-    public void saveData() {
-        game.getAccount().setCoins(coins);
-        game.getAccount().setTokens(upgradeTokens);
-        game.getAccount().setLevel(level);
-        game.getAccount().setExp(exp);
-    }
-
+    // Init
     private void initAttackBox() {
-        int w = (int)(20*SCALE);
-        int h =  (int)(35*SCALE);
-        this.attackBox = new Rectangle2D.Double(xPos, yPos-1, w, h);
+        this.attackBox = new Rectangle2D.Double(xPos, yPos-1, PLAYER_AB_WID, PLAYER_AB_HEI);
+    }
+
+    private void loadAnimations() {
+        this.animations = AnimUtils.getInstance().loadPlayerAnimations(width, height, PLAYER_SHEET);
+        this.transformAnimations = AnimUtils.getInstance().loadPlayerAnimations(width, height, PLAYER_TRANSFORM_SHEET);
     }
 
     public void loadLvlData(int[][] levelData) {
@@ -117,7 +96,6 @@ public class Player extends Entity {
         if (animTick >= animSpeed) {
             animTick = 0;
             animIndex++;
-            effectIndex++;
             if (spellState == 1 && animIndex >= animations[entityState.ordinal()].length-5) {
                 animIndex = 2;
             }
@@ -149,15 +127,6 @@ public class Player extends Entity {
         }
     }
 
-    // TODO: Move to EffectManager
-    private void updateEffectAnimation() {
-        if (playerEffect == EffectType.WALL_SLIDE) {
-            if (effectIndex >= effects[EffectType.WALL_SLIDE.ordinal()].length) {
-                effectIndex = 2;
-            }
-        }
-    }
-
     private void setAnimation() {
         if (spellState == 2) return;
         Anim previousAction = entityState;
@@ -171,7 +140,7 @@ public class Player extends Entity {
         }
         if (onWall && !onObject) {
             entityState = Anim.WALL;
-            setPlayerEffect(EffectType.WALL_SLIDE);
+            effectController.setPlayerEffect(EffectType.WALL_SLIDE);
         }
         if (dash) {
             entityState = Anim.ATTACK_1;
@@ -191,15 +160,6 @@ public class Player extends Entity {
         if (previousAction != entityState) animIndex = animTick = 0;
     }
 
-    private void coolDownTickUpdate() {
-        for (int i = 0; i < cooldown.length; i++) {
-            if (cooldown[i] > 0) {
-                cooldown[i] -= 0.1;
-                if (cooldown[i] < 0) cooldown[i] = 0;
-            }
-        }
-    }
-
     // Positioning
     private void updatePosition() {
         moving = false;
@@ -215,14 +175,14 @@ public class Player extends Entity {
 
         updateWallPosition();
 
-        if (left) dx -= playerSpeed;
-        if (right) dx += playerSpeed;
-        if (right && inAir && wallPush && !dash) dx += playerBoostSpeed;
-        if (left && inAir && wallPush && !dash) dx -= playerBoostSpeed;
+        if (left) dx -= PLAYER_SPEED;
+        if (right) dx += PLAYER_SPEED;
+        if (right && inAir && wallPush && !dash) dx += PLAYER_BOOST;
+        if (left && inAir && wallPush && !dash) dx -= PLAYER_BOOST;
 
         if (dash) {
-            if (((!left && !right) || (left && right)) && flipSign == -1) dx = -playerSpeed;
-            else if (((!left && !right) || (left && right)) && flipSign == 1) dx = playerSpeed;
+            if (((!left && !right) || (left && right)) && flipSign == -1) dx = -PLAYER_SPEED;
+            else if (((!left && !right) || (left && right)) && flipSign == 1) dx = PLAYER_SPEED;
             dx *= 6;
         }
 
@@ -312,7 +272,7 @@ public class Player extends Entity {
     private void checkOnObject() {
         if (objectManager.isPlayerTouchingObject() && !onObject) {
             inAir = wallPush = false;
-            playerEffect = null;
+            entityEffect = null;
             airSpeed = 0;
             currentJumps = 0;
             onObject = true;
@@ -339,7 +299,6 @@ public class Player extends Entity {
         if (currentJumps == 1) {
             doubleJump = true;
             animIndex = animTick = 0;
-            effectIndex = 0;
             currentJumps++;
         }
         inAir = true;
@@ -393,31 +352,11 @@ public class Player extends Entity {
 
     public void changeStamina(double value) {
         currentStamina += value;
-        currentStamina = Math.max(Math.min(currentStamina, maxStamina+PlayerBonus.getInstance().getBonusPower()), 0);
+        currentStamina = Math.max(Math.min(currentStamina, PLAYER_MAX_ST+PlayerBonus.getInstance().getBonusPower()), 0);
         if (currentStamina == 0) {
             transform = false;
             if (spellState == 1) spellState = 2;
         }
-    }
-
-    public void changeExp(double value) {
-        exp += value+PlayerBonus.getInstance().getBonusExp();
-        exp = Math.max(Math.min(exp, maxExp), 0);
-        if (exp > 1000*level) {
-            exp = exp % (1000*level);
-            level++;
-            if (level % 2 == 0) changeUpgradeTokens(1);
-        }
-    }
-
-    public void changeCoins(int value) {
-        coins += value;
-        coins = Math.max(coins, 0);
-    }
-
-    public void changeUpgradeTokens(int value) {
-        upgradeTokens += value;
-        upgradeTokens = Math.max(upgradeTokens, 0);
     }
 
     public void kill() {
@@ -445,7 +384,7 @@ public class Player extends Entity {
             setSpellState(0);
             dash = dashHit = false;
             if (animIndex <= animations[entityState.ordinal()].length - 2)
-                pushBack(pushDirection, levelData, 1.2, playerSpeed);
+                pushBack(pushDirection, levelData, 1.2, PLAYER_SPEED);
             updatePushOffset();
             inAirUpdate();
         }
@@ -453,7 +392,7 @@ public class Player extends Entity {
             pushOffsetDirection = Direction.DOWN;
             pushDirection = (flipSign == 1) ? Direction.LEFT : Direction.RIGHT;
             if (animIndex <= animations[entityState.ordinal()].length)
-                pushBack(pushDirection, levelData, 0.1, playerSpeed);
+                pushBack(pushDirection, levelData, 0.1, PLAYER_SPEED);
             updatePushOffset();
         }
         else updatePosition();
@@ -486,7 +425,7 @@ public class Player extends Entity {
 
     // Core
     public void update() {
-        userInterface.update(currentHealth, maxHealth+PlayerBonus.getInstance().getBonusHealth(), currentStamina, maxStamina+PlayerBonus.getInstance().getBonusPower(), exp, 1000*level);
+        playerDataManager.update();
         if (currentHealth <= 0) {
             updateDeath();
             return;
@@ -498,28 +437,14 @@ public class Player extends Entity {
         updateSpells();
         updateAttack();
         updateAnimation();
-        updateEffectAnimation();
-    }
-
-    private void renderEffects(Graphics g, int xLevelOffset, int yLevelOffset) {
-        try {
-            if (playerEffect == EffectType.WALL_SLIDE && onWall) {
-                int newFlip = (flipCoefficient != 0) ? (0) : (int)(width-hitBox.width-10*SCALE), newSign = (flipSign == 1) ? (-1) : (1);
-                int effectXPos = (int)(hitBox.x-xHitBoxOffset-xLevelOffset)+(int)(newSign*27*SCALE)+newFlip;
-                int effectYPos = (int)(hitBox.y-yHitBoxOffset-yLevelOffset)-(int)(SCALE);
-                int effectWid = newSign*(effects[EffectType.WALL_SLIDE.ordinal()][effectIndex].getWidth()+(int)(10*SCALE));
-                int effectHei = effects[EffectType.WALL_SLIDE.ordinal()][effectIndex].getHeight()+(int)(50*SCALE);
-                g.drawImage(effects[EffectType.WALL_SLIDE.ordinal()][effectIndex], effectXPos, effectYPos, effectWid, effectHei, null);
-            }
-        }
-        catch (Exception ignored) {}
+        effectController.update();
     }
 
     public void render(Graphics g, int xLevelOffset, int yLevelOffset) {
-        renderEffects(g, xLevelOffset, yLevelOffset);
+        effectController.render(g, xLevelOffset, yLevelOffset);
         try {
-            int playerXPos = (int)(hitBox.x-xHitBoxOffset-xLevelOffset+flipCoefficient);
-            int playerYPos = (int)(hitBox.y-yHitBoxOffset-yLevelOffset)+(int)pushOffset;
+            int playerXPos = (int)(hitBox.x-PLAYER_HB_OFFSET_X-xLevelOffset+flipCoefficient);
+            int playerYPos = (int)(hitBox.y-PLAYER_HB_OFFSET_Y-yLevelOffset)+(int)pushOffset;
 
             if (!transform) g.drawImage(animations[entityState.ordinal()][animIndex], playerXPos, playerYPos, flipSign*width, height, null);
             else g.drawImage(transformAnimations[entityState.ordinal()][animIndex], playerXPos, playerYPos, flipSign*width, height, null);
@@ -568,11 +493,6 @@ public class Player extends Entity {
         this.attackState = playerAttackState;
         this.setAttacking(true);
         cooldown[Cooldown.ATTACK.ordinal()] = 0.75 + PlayerBonus.getInstance().getBonusCooldown();
-    }
-
-    public void setPlayerEffect(EffectType playerEffect) {
-        if (playerEffect != this.playerEffect) effectIndex = 0;
-        this.playerEffect = playerEffect;
     }
 
     public void setCanDash(boolean canDash) {
@@ -633,7 +553,24 @@ public class Player extends Entity {
         }
     }
 
+    // Facade
+    public void changeCoins(int value) {
+        playerDataManager.changeCoins(value);
+    }
+
+    public void changeUpgradeTokens(int value) {
+        playerDataManager.changeUpgradeTokens(value);
+    }
+
+    public void changeExp(double value) {
+        playerDataManager.changeExp(value);
+    }
+
     // Getters
+    public double getCurrentStamina() {
+        return currentStamina;
+    }
+
     public boolean isOnWall() {
         return onWall;
     }
@@ -663,19 +600,11 @@ public class Player extends Entity {
     }
 
     public int getCoins() {
-        return coins;
+        return playerDataManager.getCoins();
     }
 
     public int getLevel() {
-        return level;
-    }
-
-    public UserInterface getUserInterface() {
-        return userInterface;
-    }
-
-    public double[] getCooldown() {
-        return cooldown;
+        return playerDataManager.getLevel();
     }
 
     public boolean isTransform() {
@@ -683,7 +612,11 @@ public class Player extends Entity {
     }
 
     public int getUpgradeTokens() {
-        return upgradeTokens;
+        return playerDataManager.getUpgradeTokens();
+    }
+
+    public PlayerDataManager getPlayerStatusManager() {
+        return playerDataManager;
     }
 
     @Override

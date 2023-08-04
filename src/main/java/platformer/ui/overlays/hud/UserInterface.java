@@ -1,7 +1,7 @@
 package platformer.ui.overlays.hud;
 
 import platformer.model.entities.Cooldown;
-import platformer.model.entities.Player;
+import platformer.model.entities.player.Player;
 import platformer.utils.Utils;
 
 import java.awt.*;

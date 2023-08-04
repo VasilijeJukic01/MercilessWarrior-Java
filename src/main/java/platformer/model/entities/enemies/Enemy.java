@@ -1,12 +1,11 @@
 package platformer.model.entities.enemies;
 
 import platformer.animation.Anim;
-import platformer.model.ModelUtils;
 import platformer.debug.Debug;
 import platformer.model.entities.Cooldown;
 import platformer.model.entities.Direction;
 import platformer.model.entities.Entity;
-import platformer.model.entities.Player;
+import platformer.model.entities.player.Player;
 import platformer.utils.Utils;
 
 import java.awt.geom.Rectangle2D;
@@ -26,7 +25,6 @@ public abstract class Enemy extends Entity implements Debug {
     protected Direction direction = Direction.RIGHT;
     protected double attackRange = 1.25*TILES_SIZE;
     protected boolean alive = true;
-    protected double[] cooldown;
     protected int fadeCoefficient = 0;
     private boolean criticalHit;
 
@@ -34,7 +32,7 @@ public abstract class Enemy extends Entity implements Debug {
         super(xPos, yPos, width, height);
         this.enemyType = enemyType;
         this.animSpeed = this.originalAnimSpeed = animSpeed;
-        this.maxHealth = ModelUtils.getInstance().getHealth(enemyType);
+        this.maxHealth = enemyType.getHealth();
         this.currentHealth = maxHealth;
         this.rand = new Random();
     }
@@ -66,15 +64,6 @@ public abstract class Enemy extends Entity implements Debug {
             }
         }
         if (cooldown != null) coolDownTickUpdate();
-    }
-
-    protected void coolDownTickUpdate() {
-        for (int i = 0; i < cooldown.length; i++) {
-            if (cooldown[i] > 0) {
-                cooldown[i] -= 0.1;
-                if (cooldown[i] < 0) cooldown[i] = 0;
-            }
-        }
     }
 
     // Targeting Player
@@ -117,7 +106,7 @@ public abstract class Enemy extends Entity implements Debug {
     // Attack
     protected void checkPlayerHit(Rectangle2D.Double attackBox, Player player) {
         if (attackBox.intersects(player.getHitBox())) {
-            if (!player.canBlock()) player.changeHealth(-ModelUtils.getInstance().getDamage(enemyType), this);
+            if (!player.canBlock()) player.changeHealth(-enemyType.getDamage(), this);
         }
         else if (enemyType == EnemyType.GHOUL || enemyType == EnemyType.SPEAR_WOMAN) return;
         attackCheck = true;
