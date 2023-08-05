@@ -1,6 +1,6 @@
 package platformer.model.entities.effects;
 
-import platformer.animation.AnimUtils;
+import platformer.animation.Animation;
 import platformer.model.entities.Entity;
 import platformer.model.entities.player.Player;
 
@@ -28,7 +28,7 @@ public class PlayerEffectController {
     // Init
     private void loadEffects() {
         BufferedImage[][] anim = new BufferedImage[11][11];
-        anim[EffectType.WALL_SLIDE.ordinal()] = AnimUtils.getInstance().loadFromSprite(DUST_SHEET_1, 8, 0, DUST1_W, DUST1_H, 0, DUST1_W, DUST1_H);
+        anim[EffectType.WALL_SLIDE.ordinal()] = Animation.getInstance().loadFromSprite(DUST_SHEET_1, 8, 0, DUST1_W, DUST1_H, 0, DUST1_W, DUST1_H);
         this.effects = anim;
     }
 

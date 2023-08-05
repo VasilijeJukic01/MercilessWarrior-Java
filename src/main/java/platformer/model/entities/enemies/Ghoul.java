@@ -36,6 +36,7 @@ public class Ghoul extends Enemy {
     }
 
     // Attack
+    @Override
     public void hit(double damage, boolean enableRevive, boolean hitSound) {
         if (enableRevive) {
             hide();
@@ -49,6 +50,7 @@ public class Ghoul extends Enemy {
         else setEnemyAction(Anim.HIT);
     }
 
+    @Override
     public void spellHit(double damage) {
         currentHealth -= damage;
         if (currentHealth <= 0) {

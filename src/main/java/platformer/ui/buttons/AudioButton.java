@@ -1,6 +1,6 @@
 package platformer.ui.buttons;
 
-import platformer.animation.AnimUtils;
+import platformer.animation.Animation;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -26,12 +26,12 @@ public class AudioButton extends AbstractButton {
     protected void loadButtons() {
         images = new BufferedImage[2][3];
         if (buttonType == ButtonType.SFX) {
-            images[0] = AnimUtils.getInstance().loadFromSprite(AUDIO_BTN_SHEET, 3, 2, SOUND_BTN_SIZE, SOUND_BTN_SIZE, 0, SMALL_BTN_W, SMALL_BTN_H);
-            images[1] = AnimUtils.getInstance().loadFromSprite(AUDIO_BTN_SHEET, 3, 3, SOUND_BTN_SIZE, SOUND_BTN_SIZE, 0, SMALL_BTN_W, SMALL_BTN_H);
+            images[0] = Animation.getInstance().loadFromSprite(AUDIO_BTN_SHEET, 3, 2, SOUND_BTN_SIZE, SOUND_BTN_SIZE, 0, SMALL_BTN_W, SMALL_BTN_H);
+            images[1] = Animation.getInstance().loadFromSprite(AUDIO_BTN_SHEET, 3, 3, SOUND_BTN_SIZE, SOUND_BTN_SIZE, 0, SMALL_BTN_W, SMALL_BTN_H);
         }
         else {
-            images[0] = AnimUtils.getInstance().loadFromSprite(AUDIO_BTN_SHEET, 3, 0, SOUND_BTN_SIZE, SOUND_BTN_SIZE, 0, SMALL_BTN_W, SMALL_BTN_H);
-            images[1] = AnimUtils.getInstance().loadFromSprite(AUDIO_BTN_SHEET, 3, 1, SOUND_BTN_SIZE, SOUND_BTN_SIZE, 0, SMALL_BTN_W, SMALL_BTN_H);
+            images[0] = Animation.getInstance().loadFromSprite(AUDIO_BTN_SHEET, 3, 0, SOUND_BTN_SIZE, SOUND_BTN_SIZE, 0, SMALL_BTN_W, SMALL_BTN_H);
+            images[1] = Animation.getInstance().loadFromSprite(AUDIO_BTN_SHEET, 3, 1, SOUND_BTN_SIZE, SOUND_BTN_SIZE, 0, SMALL_BTN_W, SMALL_BTN_H);
         }
     }
 

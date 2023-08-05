@@ -10,6 +10,9 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import static platformer.constants.Constants.*;
@@ -232,6 +235,12 @@ public class Utils {
             start++;
             end--;
         }
+    }
+
+    public  <T> List<T> getAllItems(Map<?, List<T>> itemMap) {
+        List<T> allItems = new ArrayList<>();
+        itemMap.values().forEach(allItems::addAll);
+        return allItems;
     }
 
 }

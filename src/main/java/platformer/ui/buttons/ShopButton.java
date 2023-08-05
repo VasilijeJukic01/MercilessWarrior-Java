@@ -1,6 +1,6 @@
 package platformer.ui.buttons;
 
-import platformer.animation.AnimUtils;
+import platformer.animation.Animation;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -26,10 +26,10 @@ public class ShopButton extends AbstractButton implements GameButton {
     protected void loadButtons() {
         switch (buttonType) {
             case BUY:
-                images = AnimUtils.getInstance().loadFromSprite(BTN_BUY_SHEET, 3, 0, SMALL_BTN_WID, SMALL_BTN_HEI, 0, BTN_W, BTN_H);
+                images = Animation.getInstance().loadFromSprite(BTN_BUY_SHEET, 3, 0, SMALL_BTN_WID, SMALL_BTN_HEI, 0, BTN_W, BTN_H);
                 break;
             case LEAVE:
-                images = AnimUtils.getInstance().loadFromSprite(BTN_LEAVE_SHEET, 3, 0, SMALL_BTN_WID, SMALL_BTN_HEI, 0, BTN_W, BTN_H);
+                images = Animation.getInstance().loadFromSprite(BTN_LEAVE_SHEET, 3, 0, SMALL_BTN_WID, SMALL_BTN_HEI, 0, BTN_W, BTN_H);
                 break;
             default: break;
         }

@@ -1,6 +1,6 @@
 package platformer.ui.buttons;
 
-import platformer.animation.AnimUtils;
+import platformer.animation.Animation;
 import platformer.utils.Utils;
 
 import java.awt.*;
@@ -37,7 +37,7 @@ public class SliderButton extends AbstractButton {
 
     @Override
     protected void loadButtons() {
-        images = AnimUtils.getInstance().loadFromSprite(SLIDE_BTN_SHEET, 3, 0, SLIDER_BTN_SIZE, SLIDER_BTN_SIZE, 0, SL_BTN_W, SL_BTN_H);
+        images = Animation.getInstance().loadFromSprite(SLIDE_BTN_SHEET, 3, 0, SLIDER_BTN_SIZE, SLIDER_BTN_SIZE, 0, SL_BTN_W, SL_BTN_H);
         slider = Utils.getInstance().importImage(SLIDER_IMG, SLIDER_WID, SLIDER_HEI);
     }
 

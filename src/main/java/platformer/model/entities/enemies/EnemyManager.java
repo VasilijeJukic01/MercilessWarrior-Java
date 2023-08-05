@@ -1,11 +1,15 @@
 package platformer.model.entities.enemies;
 
 import platformer.animation.Anim;
-import platformer.animation.AnimUtils;
+import platformer.animation.Animation;
 import platformer.audio.Audio;
 import platformer.debug.logger.Message;
 import platformer.debug.logger.Logger;
 import platformer.model.entities.Direction;
+import platformer.model.entities.enemies.renderer.EnemyRenderer;
+import platformer.model.entities.enemies.renderer.GhoulRenderer;
+import platformer.model.entities.enemies.renderer.SkeletonRenderer;
+import platformer.model.entities.enemies.renderer.SpearWomanRenderer;
 import platformer.model.entities.player.Player;
 import platformer.model.entities.player.PlayerBonus;
 import platformer.model.entities.enemies.boss.SpearWoman;
@@ -15,27 +19,28 @@ import platformer.model.objects.projectiles.Projectile;
 import platformer.model.objects.Spike;
 import platformer.model.spells.Flame;
 import platformer.state.GameState;
+import platformer.utils.Utils;
 
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
-import java.util.Random;
+import java.util.stream.Collectors;
 
 import static platformer.constants.Constants.*;
 
-@SuppressWarnings("FieldCanBeLocal")
+@SuppressWarnings("unchecked")
 public class EnemyManager {
 
     private final GameState gameState;
-    // Animations
-    private BufferedImage[][] skeletonAnimations, ghoulAnimations, spearWomanAnimations;
-    // Enemies
-    private List<Skeleton> skeletons = new ArrayList<>();
-    private List<Ghoul> ghouls = new ArrayList<>();
-    private SpearWoman spearWoman;
+
+    BufferedImage[][] skeletonAnimations, ghoulAnimations, spearWomanAnimations;
+
+    private Map<EnemyType, List<Enemy>> enemies = new HashMap<>();
+    private final Map<Class<? extends Enemy>, EnemyRenderer<? extends Enemy>> enemyRenderers = new HashMap<>();
+
 
     public EnemyManager(GameState gameState) {
         this.gameState = gameState;
@@ -44,81 +49,49 @@ public class EnemyManager {
 
     // Init
     private void init() {
-        this.skeletonAnimations = AnimUtils.getInstance().loadSkeletonAnimations(SKELETON_WIDTH, SKELETON_HEIGHT);
-        this.ghoulAnimations = AnimUtils.getInstance().loadGhoulAnimation(GHOUL_WIDTH, GHOUL_HEIGHT);
-        this.spearWomanAnimations = AnimUtils.getInstance().loadSpearWomanAnimations(SW_WIDTH, SW_HEIGHT);
+        this.skeletonAnimations = Animation.getInstance().loadSkeletonAnimations(SKELETON_WIDTH, SKELETON_HEIGHT);
+        this.ghoulAnimations = Animation.getInstance().loadGhoulAnimation(GHOUL_WIDTH, GHOUL_HEIGHT);
+        this.spearWomanAnimations = Animation.getInstance().loadSpearWomanAnimations(SW_WIDTH, SW_HEIGHT);
+        this.enemyRenderers.put(Skeleton.class, new SkeletonRenderer(skeletonAnimations));
+        this.enemyRenderers.put(Ghoul.class, new GhoulRenderer(ghoulAnimations));
+        this.enemyRenderers.put(SpearWoman.class, new SpearWomanRenderer(spearWomanAnimations));
     }
 
     public void loadEnemies(Level level) {
-        this.skeletons = level.getEnemies(Skeleton.class);
-        this.ghouls = level.getEnemies(Ghoul.class);
-        this.spearWoman = level.getSpearWoman();
+        this.enemies = level.getEnemiesMap();
         reset();
     }
 
     private void renderCriticalHit(Graphics g, int xLevelOffset, int yLevelOffset, Enemy e) {
         if (e.isCriticalHit()) {
             int xCritical = (int)(e.getHitBox().x - xLevelOffset);
-            int yCritical = (int)(e.getHitBox().y - 5*SCALE - yLevelOffset);
+            int yCritical = (int)(e.getHitBox().y - 2*SCALE - yLevelOffset);
             g.setColor(Color.RED);
             g.drawString("CRITICAL", xCritical, yCritical);
         }
     }
 
     // Render
-    private void renderSkeletons(Graphics g, int xLevelOffset, int yLevelOffset) {
-        for (Skeleton s : skeletons) {
-            if (s.isAlive()) {
-                int fC = s.getFlipCoefficient(), fS = s.getFlipSign();
-                int x = (int) s.getHitBox().x - SKELETON_X_OFFSET - xLevelOffset + fC;
-                int y = (int) s.getHitBox().y - SKELETON_Y_OFFSET - yLevelOffset+1 + (int)s.getPushOffset();
-                int w = SKELETON_WIDTH * fS;
-                int h = SKELETON_HEIGHT;
-                g.drawImage(skeletonAnimations[s.getEnemyAction().ordinal()][s.getAnimIndex()], x, y, w, h, null);
-                renderCriticalHit(g, xLevelOffset, yLevelOffset, s);
-                s.hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.BLUE);
-                s.attackBoxRenderer(g, xLevelOffset, yLevelOffset);
+    private <T extends Enemy> void renderEnemies(Class<T> enemyClass, Graphics g, int xLevelOffset, int yLevelOffset) {
+        for (T enemy : getEnemies(enemyClass)) {
+            if (enemy.isAlive()) {
+                EnemyRenderer<T> renderer = (EnemyRenderer<T>) enemyRenderers.get(enemyClass);
+                renderer.render(g, enemy, xLevelOffset, yLevelOffset);
+                renderCriticalHit(g, xLevelOffset, yLevelOffset, enemy);
             }
         }
+    }
+
+    private void renderSkeletons(Graphics g, int xLevelOffset, int yLevelOffset) {
+        renderEnemies(Skeleton.class, g, xLevelOffset, yLevelOffset);
     }
 
     private void renderGhouls(Graphics g, int xLevelOffset, int yLevelOffset) {
-        for (Ghoul gh : ghouls) {
-            if (gh.isAlive()) {
-                int fC = gh.getFlipCoefficient(), fS = gh.getFlipSign();
-                int x = (int) gh.getHitBox().x - GHOUL_X_OFFSET - xLevelOffset + fC;
-                int y = (int) gh.getHitBox().y - GHOUL_Y_OFFSET - yLevelOffset+1 + (int)gh.getPushOffset();
-                int w = GHOUL_WIDTH * fS;
-                int h = GHOUL_HEIGHT;
-                g.drawImage(ghoulAnimations[gh.getEnemyAction().ordinal()][gh.getAnimIndex()], x, y, w, h, null);
-                renderCriticalHit(g, xLevelOffset, yLevelOffset, gh);
-                gh.hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.BLUE);
-                gh.attackBoxRenderer(g, xLevelOffset, yLevelOffset);
-                // Ghoul special
-                if (gh.getEnemyAction() == Anim.HIDE || gh.getEnemyAction() == Anim.REVEAL) {
-                    int r = (gh.getAnimIndex() > 15 && gh.getEnemyAction() == Anim.REVEAL) ? (255) : (0);
-                    g.setColor(new Color(r, 0, 0, gh.getFadeCoefficient()));
-                    g.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
-                }
-            }
-        }
+        renderEnemies(Ghoul.class, g, xLevelOffset, yLevelOffset);
     }
 
     private void renderSpearWoman(Graphics g, int xLevelOffset, int yLevelOffset) {
-        if (spearWoman == null) return;
-        if (spearWoman.isAlive()) {
-            int fC = spearWoman.getFlipCoefficient(), fS = spearWoman.getFlipSign();
-            int x = (int) spearWoman.getHitBox().x - SW_X_OFFSET - xLevelOffset + fC;
-            int y = (int) spearWoman.getHitBox().y - SW_Y_OFFSET - yLevelOffset+1 + (int)spearWoman.getPushOffset();
-            int w = SW_WIDTH * fS;
-            int h = SW_HEIGHT;
-            if (fS == -1) x -= 21*SCALE;
-            g.drawImage(spearWomanAnimations[spearWoman.getEnemyAction().ordinal()][spearWoman.getAnimIndex()], x, y, w, h, null);
-            renderCriticalHit(g, xLevelOffset, yLevelOffset, spearWoman);
-            spearWoman.hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.BLUE);
-            spearWoman.attackBoxRenderer(g, xLevelOffset, yLevelOffset);
-            spearWoman.overlayRender(g);
-        }
+        renderEnemies(SpearWoman.class, g, xLevelOffset, yLevelOffset);
     }
 
     // Enemy hit
@@ -144,44 +117,28 @@ public class EnemyManager {
         return new int[] {dmg, critical};
     }
 
-    public void checkEnemyHit(Rectangle2D.Double attackBox, Player player) {
+    private <T extends Enemy> void handleEnemyHit(Rectangle2D.Double attackBox, Player player, Class<T> enemyClass) {
         int[] dmg = damage(player);
+        for (T enemy : getEnemies(enemyClass)) {
+            if (enemy.isAlive() && enemy.getEnemyAction() != Anim.DEATH) {
+                if (attackBox.intersects(enemy.getHitBox())) {
+                    if (enemy.getEnemyAction() == Anim.HIDE || enemy.getEnemyAction() == Anim.REVEAL) return;
+                    enemy.hit(dmg[0], true, true);
+                    enemy.setCriticalHit(dmg[1] == 1);
+                    checkEnemyDying(enemy, player);
+                    writeHitLog(enemy.getEnemyAction(), dmg[0]);
+                    player.setDashHit(true);
+                    return;
+                }
+            }
+        }
+    }
 
-        for (Skeleton skeleton : skeletons) {
-            if (skeleton.isAlive() && skeleton.getEnemyAction() != Anim.DEATH) {
-                if (attackBox.intersects(skeleton.getHitBox())) {
-                    skeleton.hit(dmg[0], true, true);
-                    skeleton.setCriticalHit(dmg[1] == 1);
-                    checkEnemyDying(skeleton, player);
-                    writeHitLog(skeleton.getEnemyAction(), dmg[0]);
-                    player.setDashHit(true);
-                    return;
-                }
-            }
-        }
-        for (Ghoul ghoul : ghouls) {
-            if (ghoul.isAlive() && ghoul.getEnemyAction() != Anim.DEATH) {
-                if (attackBox.intersects(ghoul.getHitBox())) {
-                    if (ghoul.getEnemyAction() == Anim.HIDE || ghoul.getEnemyAction() == Anim.REVEAL) return;
-                    ghoul.hit(dmg[0], true, true);
-                    ghoul.setCriticalHit(dmg[1] == 1);
-                    checkEnemyDying(ghoul, player);
-                    writeHitLog(ghoul.getEnemyAction(), dmg[0]);
-                    player.setDashHit(true);
-                    return;
-                }
-            }
-        }
+    public void checkEnemyHit(Rectangle2D.Double attackBox, Player player) {
+        handleEnemyHit(attackBox, player, Skeleton.class);
+        handleEnemyHit(attackBox, player, Ghoul.class);
+        handleEnemyHit(attackBox, player, SpearWoman.class);
         if (!player.isDash() && !player.isOnWall()) Audio.getInstance().getAudioPlayer().playSlashSound();
-        if (spearWoman == null) return;
-        if (spearWoman.isAlive() && spearWoman.getEnemyAction() != Anim.DEATH) {
-            if (attackBox.intersects(spearWoman.getHitBox())) {
-                spearWoman.hit(dmg[0]);
-                checkEnemyDying(spearWoman, player);
-                writeHitLog(spearWoman.getEnemyAction(), dmg[0]);
-                player.setDashHit(true);
-            }
-        }
     }
 
     private void writeHitLog(Anim anim, int dmg) {
@@ -189,54 +146,41 @@ public class EnemyManager {
         else Logger.getInstance().notify("Player gives damage to enemy: "+dmg, Message.NOTIFICATION);
     }
 
-    public void checkEnemySpellHit() {
+    public <T extends Enemy> void handleEnemySpellHit(Class<T> enemyClass, double dmg) {
         Flame flame = gameState.getSpellManager().getFlames();
-        for (Skeleton skeleton : skeletons) {
-            if (skeleton.isAlive() && skeleton.getEnemyAction() != Anim.DEATH) {
-                if (flame.isActive() && flame.getHitBox().intersects(skeleton.getHitBox())) {
-                    skeleton.spellHit(0.08);
-                    checkEnemyDying(skeleton, gameState.getPlayer());
-                    return;
-                }
-            }
-        }
-        for (Ghoul ghoul : ghouls) {
-            if (ghoul.isAlive() && ghoul.getEnemyAction() != Anim.DEATH) {
-                if (flame.isActive() && flame.getHitBox().intersects(ghoul.getHitBox())) {
-                    ghoul.spellHit(0.16);
-                    checkEnemyDying(ghoul, gameState.getPlayer());
+        for (T enemy : getEnemies(enemyClass)) {
+            if (enemy.isAlive() && enemy.getEnemyAction() != Anim.DEATH) {
+                if (flame.isActive() && flame.getHitBox().intersects(enemy.getHitBox())) {
+                    enemy.spellHit(dmg);
+                    checkEnemyDying(enemy, gameState.getPlayer());
                     return;
                 }
             }
         }
     }
 
+    public void checkEnemySpellHit() {
+        handleEnemySpellHit(Skeleton.class, 0.8);
+        handleEnemySpellHit(Ghoul.class, 0.16);
+    }
+
     public void checkEnemyTrapHit(GameObject object) {
         if (!(object instanceof Spike)) return;
-        for (Skeleton skeleton : skeletons) {
-            if (skeleton.isAlive() && skeleton.getEnemyAction() != Anim.DEATH && object.getHitBox().intersects(skeleton.getHitBox())) {
-                skeleton.hit(500, false, false);
-                return;
-            }
-        }
-        for (Ghoul ghoul : ghouls) {
-            if (ghoul.isAlive() && ghoul.getEnemyAction() != Anim.DEATH && object.getHitBox().intersects(ghoul.getHitBox())) {
-                ghoul.hit(500, false, false);
-                return;
+        for (List<Enemy> enemies : enemies.values()) {
+            for (Enemy enemy : enemies) {
+                if (enemy.isAlive() && enemy.getEnemyAction() != Anim.DEATH && object.getHitBox().intersects(enemy.getHitBox())) {
+                    enemy.hit(500, false, false);
+                }
             }
         }
     }
 
     public void checkEnemyProjectileHit(Projectile projectile) {
-        for (Skeleton skeleton : skeletons) {
+        for (Skeleton skeleton : getEnemies(Skeleton.class)) {
             if (skeleton.isAlive() && skeleton.getEnemyAction() != Anim.DEATH && projectile.getHitBox().intersects(skeleton.getHitBox())) {
-                skeleton.hit(5, false, false);
+                skeleton.hit(ENEMY_PROJECTILE_DMG, false, false);
                 Direction projectileDirection = projectile.getDirection();
-                Direction skeletonDirection = skeleton.getDirection();
-                if (projectileDirection == Direction.LEFT && skeletonDirection == Direction.LEFT) skeleton.setPushDirection(Direction.RIGHT);
-                else if (projectileDirection == Direction.LEFT && skeletonDirection == Direction.RIGHT) skeleton.setPushDirection(Direction.RIGHT);
-                else if (projectileDirection == Direction.RIGHT && skeletonDirection == Direction.LEFT) skeleton.setPushDirection(Direction.LEFT);
-                else if (projectileDirection == Direction.RIGHT && skeletonDirection == Direction.RIGHT) skeleton.setPushDirection(Direction.LEFT);
+                skeleton.setPushDirection(projectileDirection == Direction.LEFT ? Direction.RIGHT : Direction.LEFT);
                 projectile.setAlive(false);
             }
         }
@@ -244,35 +188,44 @@ public class EnemyManager {
 
     // Core
     public void update(int[][] levelData, Player player) {
-        for (Skeleton skeleton : skeletons) {
+        for (Skeleton skeleton : getEnemies(Skeleton.class)) {
             if (skeleton.isAlive()) skeleton.update(skeletonAnimations, levelData, player);
         }
-        for (Ghoul ghoul : ghouls) {
+        for (Ghoul ghoul : getEnemies(Ghoul.class)) {
             if (ghoul.isAlive()) ghoul.update(ghoulAnimations, levelData, player);
         }
-        if (spearWoman == null) return;
-        spearWoman.update(spearWomanAnimations, levelData, player, gameState.getSpellManager(), gameState.getObjectManager());
+        for (SpearWoman spearWoman : getEnemies(SpearWoman.class)) {
+            if (spearWoman.isAlive())
+                spearWoman.update(spearWomanAnimations, levelData, player, gameState.getSpellManager(), gameState.getObjectManager());
+        }
     }
 
     public void render(Graphics g, int xLevelOffset, int yLevelOffset) {
         try {
             renderSkeletons(g, xLevelOffset, yLevelOffset);
             renderGhouls(g, xLevelOffset, yLevelOffset);
+            renderSpearWoman(g, xLevelOffset, yLevelOffset);
         }
         catch (Exception ignored) {}
-        if (spearWoman == null) return;
-        renderSpearWoman(g, xLevelOffset, yLevelOffset);
     }
 
     public void reset() {
-        for (Skeleton skeleton : skeletons) {
-            skeleton.reset();
+        for (List<Enemy> enemies : enemies.values()) {
+            for (Enemy enemy : enemies) {
+                enemy.reset();
+            }
         }
-        for (Ghoul ghoul : ghouls) {
-            ghoul.reset();
-        }
-        if (spearWoman == null) return;
-        spearWoman.reset();
+    }
+
+    private List<Enemy> getAllEnemies() {
+        return Utils.getInstance().getAllItems(enemies);
+    }
+
+    private <T> List<T> getEnemies(Class<T> enemyType) {
+        return getAllEnemies().stream()
+                .filter(enemyType::isInstance)
+                .map(enemyType::cast)
+                .collect(Collectors.toList());
     }
 
 }

@@ -1,6 +1,6 @@
 package platformer.ui.buttons;
 
-import platformer.animation.AnimUtils;
+import platformer.animation.Animation;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -39,7 +39,7 @@ public class MenuButton extends AbstractButton implements GameButton {
                 break;
             default: break;
         }
-        images = AnimUtils.getInstance().loadFromSprite(MENU_BTN_SHEET, 3, r, BTN_WID, BTN_HEI, 0, BTN_W, BTN_H);
+        images = Animation.getInstance().loadFromSprite(MENU_BTN_SHEET, 3, r, BTN_WID, BTN_HEI, 0, BTN_W, BTN_H);
     }
 
     @Override

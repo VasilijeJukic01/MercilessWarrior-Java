@@ -98,6 +98,11 @@ public class Constants {
     public static final int SW_HEIGHT = scale(138);
     public static final int SW_X_OFFSET = scale(54);
     public static final int SW_Y_OFFSET = scale(63);
+    public static final int SW_HB_WID = scale(25);
+    public static final int SW_HB_HEI = scale(50);
+    public static final int SW_AB_WID = scale(96);
+    public static final int SW_AB_WID_REDUCE = scale(48);
+    public static final int SW_AB_HEI = scale(54);
 
     public static final double SKELETON_SPEED_FAST = dScale(0.35);
     public static final double GHOUL_SPEED_FAST = dScale(0.45);
@@ -162,6 +167,7 @@ public class Constants {
     public static final int LB_D = scale(25);
 
     public static final int TRACKING_PROJECTILE_DISTANCE = scale(50);
+    public static final int ENEMY_PROJECTILE_DMG = 5;
 
     // Spell Constants
     public static final int FLAME_WID = scale(45);

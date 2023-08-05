@@ -113,6 +113,10 @@ public abstract class Enemy extends Entity implements Debug {
         attackCheck = true;
     }
 
+    public abstract void hit(double damage, boolean special, boolean hitSound);
+
+    public abstract void spellHit(double damage);
+
     // Reset
     protected void reset() {
         hitBox.x = xPos;

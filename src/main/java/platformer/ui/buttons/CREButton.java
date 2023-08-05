@@ -1,6 +1,6 @@
 package platformer.ui.buttons;
 
-import platformer.animation.AnimUtils;
+import platformer.animation.Animation;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -32,7 +32,7 @@ public class CREButton extends AbstractButton implements GameButton {
                 break;
             default: break;
         }
-        images = AnimUtils.getInstance().loadFromSprite(CRE_BTN_SHEET, 3, r, CRE_BTN_SIZE, CRE_BTN_SIZE, 0, SMALL_BTN_W, SMALL_BTN_H);
+        images = Animation.getInstance().loadFromSprite(CRE_BTN_SHEET, 3, r, CRE_BTN_SIZE, CRE_BTN_SIZE, 0, SMALL_BTN_W, SMALL_BTN_H);
     }
 
     @Override

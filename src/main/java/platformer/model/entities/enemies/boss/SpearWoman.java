@@ -26,104 +26,188 @@ import static platformer.constants.Constants.*;
 
 public class SpearWoman extends Enemy {
 
+    private final SpearWomanHandler handler;
+
+    private int attackOffset;
     private Anim prevAnim = Anim.IDLE;
-    private final int attackBoxWid = (int)(96 * SCALE), attackBoxReducedWid = (int)(48 * SCALE);
 
     // Flags
-    private boolean start, shooting, flash = true;
+    private boolean start, shooting, canFlash = true;
     private int multiShootFlag = 0;
     private int shootCount = 0, multiShootCount = 0;
     private int slashCount = 0, rapidSlashCount = 0;
-    private int specialType;
+    private int specialAttackIndex;
 
-    private int attackOffset;
-    private final List<Anim> spellAnimations =
+    private final List<Anim> actions =
             new ArrayList<>(List.of(Anim.ATTACK_1, Anim.ATTACK_2, Anim.ATTACK_3, Anim.SPELL_1, Anim.SPELL_2, Anim.SPELL_3, Anim.SPELL_4));
 
     // Physics
-    private double airSpeed = 0;
     private final double gravity = 0.1 * SCALE;
     private final double collisionFallSpeed = 0.5 * SCALE;
 
-    // Overlay
     private final BossInterface bossInterface;
 
     public SpearWoman(int xPos, int yPos) {
         super(xPos, yPos, SW_WIDTH, SW_HEIGHT, EnemyType.SPEAR_WOMAN, 18);
         super.setDirection(Direction.LEFT);
-        this.bossInterface = new BossInterface(this);
-        int w = (int)(25 * SCALE);
-        int h =  (int)(50 * SCALE);
-        initHitBox(w, h);
+        initHitBox(SW_HB_WID, SW_HB_HEI);
         initAttackBox();
         super.cooldown = new double[1];
+        this.bossInterface = new BossInterface(this);
+        this.handler = new SpearWomanHandler(this);
     }
 
+    // Init
     private void initAttackBox() {
-        int h = (int)(54 * SCALE);
-        this.attackBox = new Rectangle2D.Double(xPos, yPos-1, attackBoxWid, h);
+        this.attackBox = new Rectangle2D.Double(xPos, yPos-1, SW_AB_WID, SW_AB_HEI);
         this.attackOffset = (int)(33 * SCALE);
     }
 
     // Checkers
     private boolean isAirFreeze() {
         if (entityState == Anim.SPELL_3 && animIndex < 2) return true;
-        if (entityState == Anim.SPELL_4) return true;
-        return false;
+        return (entityState == Anim.SPELL_4);
     }
 
-    public void updateMove(int[][] levelData, Player player, SpellManager spellManager, ObjectManager objectManager) {
-        if (!Utils.getInstance().isEntityOnFloor(hitBox, levelData) && !isAirFreeze()) inAir = true;
-        if (inAir) {
-            if (Utils.getInstance().canMoveHere(hitBox.x, hitBox.y + airSpeed, hitBox.width, hitBox.height, levelData)) {
-                hitBox.y += airSpeed;
-                airSpeed += gravity;
-            }
-            else {
-                hitBox.y = Utils.getInstance().getYPosOnTheCeil(hitBox, airSpeed);
-                if (airSpeed > 0) {
-                    airSpeed = 0;
-                    inAir = false;
-                }
-                else {
-                    airSpeed = collisionFallSpeed;
-                }
-            }
-        }
-        else updateBehavior(levelData, player, spellManager, objectManager);
-    }
-
-    // Attack
-    public void hit(double damage) {
+    // Hit
+    @Override
+    public void hit(double damage, boolean block, boolean hitSound) {
         currentHealth -= damage;
         slashCount = 0;
-        if (currentHealth <= 0) {
-            setEnemyAction(Anim.DEATH);
-        }
+        if (currentHealth <= 0) setEnemyAction(Anim.DEATH);
         else {
             if (entityState != Anim.IDLE) prevAnim = entityState;
             setEnemyAction(Anim.HIT);
         }
     }
 
-    private void teleport(int[][] levelData, Player player, int tiles) {
+    @Override
+    public void spellHit(double damage) {
+
+    }
+
+    // Core
+    private void attack(int[][] levelData, Player player) {
         Random rand = new Random();
-        double playerX = player.getHitBox().x;
-        int k = rand.nextInt(2);
-        if (k == 0 && Utils.getInstance().canMoveHere(playerX+tiles*TILES_SIZE, hitBox.y, hitBox.width, hitBox.height, levelData)) {
-            hitBox.x = playerX+tiles*TILES_SIZE;
+        attackReset();
+
+        Anim next;
+        do {
+            next = actions.get(rand.nextInt(actions.size()));
+        } while (next == prevAnim || next == Anim.ATTACK_2);
+        setEnemyAction(next);
+
+        switch (entityState) {
+            case ATTACK_1:
+            case SPELL_1:
+                prepareForClassicAttack();
+                handler.classicAttack(levelData, player); break;
+            case ATTACK_3:
+                changeAttackBox();
+                handler.dashSlashAttack(levelData, player); break;
+            case SPELL_2:
+                handler.lightningBallAttack(); break;
+            case SPELL_3:
+                handler.thunderSlamAttack(); break;
+            case SPELL_4:
+                specialAttackIndex = handler.multiLightningBallAttack(); break;
+            default: break;
+
         }
-        else if (k == 0 && Utils.getInstance().canMoveHere(playerX-tiles*TILES_SIZE, hitBox.y, hitBox.width, hitBox.height, levelData)) {
-            hitBox.x = playerX-tiles*TILES_SIZE;
+
+    }
+
+    private void updateBehavior(int[][] levelData, Player player, SpellManager spellManager, ObjectManager objectManager) {
+        if (cooldown[Cooldown.ATTACK.ordinal()] != 0) return;
+        switch (entityState) {
+            case IDLE:
+                idleAction(levelData, player, objectManager); break;
+            case ATTACK_1:
+            case ATTACK_2:
+                classicAttackAction(levelData, player); break;
+            case ATTACK_3:
+                dashSlashAction(levelData, player); break;
+            case SPELL_1:
+                rapidSlashAction(levelData, player); break;
+            case SPELL_2:
+                lightningBallAction(objectManager); break;
+            case SPELL_3:
+                thunderSlamAction(player, spellManager); break;
+            case SPELL_4:
+                multiLightningBallAction(objectManager, spellManager);
+                break;
+            case DEATH:
+                objectManager.activateBlockers(false);
+                break;
+            default: break;
         }
-        if (k == 1 && Utils.getInstance().canMoveHere(playerX-tiles*TILES_SIZE, hitBox.y, hitBox.width, hitBox.height, levelData)) {
-            hitBox.x = playerX-tiles*TILES_SIZE;
+    }
+
+    // Behavior
+    private void idleAction(int[][] levelData, Player player, ObjectManager objectManager) {
+        if (!start && isPlayerCloseForAttack(player)) {
+            setStart(true);
+            objectManager.activateBlockers(true);
+            setEnemyAction(Anim.SPELL_3);
+            return;
         }
-        else if (k == 1 && Utils.getInstance().canMoveHere(playerX+tiles*TILES_SIZE, hitBox.y, hitBox.width, hitBox.height, levelData)) {
-            hitBox.x = playerX+tiles*TILES_SIZE;
+        if (start && cooldown[Cooldown.ATTACK.ordinal()] == 0)
+            attack(levelData, player);
+    }
+
+    private void classicAttackAction(int[][] levelData, Player player) {
+        if (animIndex == 0) {
+            Audio.getInstance().getAudioPlayer().playSound(Sound.SW_ROAR_2);
+            attackCheck = false;
         }
-        if (playerX < hitBox.x) setDirection(Direction.LEFT);
+        if (animIndex == 2) movingAttack(levelData, 30);
+        if ((animIndex == 3 || animIndex == 2) && !attackCheck) checkPlayerHit(attackBox, player);
+    }
+
+    private void dashSlashAction(int[][] levelData, Player player) {
+        if (animIndex == 0) attackCheck = false;
+        if (slashCount == 0) dashSlash(levelData);
+        else if (animIndex == 2) {
+            movingAttack(levelData, 30);
+            Audio.getInstance().getAudioPlayer().playSound(Sound.SW_ROAR_1);
+        }
+        if (!attackCheck) checkPlayerHit(attackBox, player);
+    }
+
+    private void lightningBallAction(ObjectManager objectManager) {
+        if (animIndex == 7 && !shooting) {
+            objectManager.shootLightningBall(this);
+            Audio.getInstance().getAudioPlayer().playSound(Sound.LIGHTNING_2);
+            shooting = true;
+        }
+        else if (animIndex == 9 && shootCount < 4) {
+            animIndex = 2;
+            shootCount++;
+            shooting = false;
+        }
+    }
+
+    private void rapidSlashAction(int[][] levelData, Player player) {
+        if (animIndex == 0) Audio.getInstance().getAudioPlayer().playSound(Sound.SW_ROAR_3);
+        else if (animIndex == 12 && rapidSlashCount < 1) {
+            rapidSlashCount++;
+            animIndex = 2;
+        }
+        movingAttack(levelData, 10);
+        if (animIndex % 2 == 0) setDirection(Direction.LEFT);
         else setDirection(Direction.RIGHT);
+        if (animIndex >= 2 && animIndex <= 11) checkPlayerHit(attackBox, player);
+    }
+
+    private void thunderSlamAction(Player player, SpellManager spellManager) {
+        if (animIndex > 5 && animIndex < 16) checkPlayerHit(attackBox, player);
+        if (animIndex == 11) Audio.getInstance().getAudioPlayer().playSound(Sound.SW_ROAR_2);
+        else if (animIndex == 13) spellManager.activateLightnings();
+    }
+
+    private void multiLightningBallAction(ObjectManager objectManager, SpellManager spellManager) {
+        if (specialAttackIndex == 1) oscillationProjectiles(objectManager);
+        else trackingProjectiles(spellManager, objectManager);
     }
 
     private void dashSlash(int[][] levelData) {
@@ -151,167 +235,7 @@ public class SpearWoman extends Enemy {
                 hitBox.x += xSpeed * speed;
     }
 
-    // Core
-    private void attack(int[][] levelData, Player player) {
-        Random rand = new Random();
-        attackBox.width = attackBoxWid;
-        attackBox.x = xPos;
-        shootCount = 0;
-
-        Anim next;
-        do {
-            next = spellAnimations.get(rand.nextInt(7));
-        } while (next == prevAnim || next == Anim.ATTACK_2);
-        setEnemyAction(next);
-
-        // Thunder slam
-        if (entityState == Anim.SPELL_3) {
-            hitBox.x = 12.5*TILES_SIZE;
-            hitBox.y = 4*TILES_SIZE;
-        }
-        // Lightning ball
-        else if (entityState == Anim.SPELL_2) {
-            int dir = rand.nextInt(2);
-            if (dir == 0) {
-                setDirection(Direction.LEFT);
-                hitBox.x = 23*TILES_SIZE;
-            }
-            else {
-                setDirection(Direction.RIGHT);
-                hitBox.x = 3*TILES_SIZE;
-            }
-            hitBox.y = yPos;
-        }
-        // Dash-slash
-        else if (entityState == Anim.ATTACK_3) {
-            teleport(levelData, player, 8);
-            changeAttackBox();
-            Audio.getInstance().getAudioPlayer().playSound(Sound.SW_ROAR_1);
-            cooldown[Cooldown.ATTACK.ordinal()] = 5.5;
-        }
-        // Multi Lightning ball
-        else if (entityState == Anim.SPELL_4) {
-            specialType = rand.nextInt(2);
-            hitBox.x = 12.5*TILES_SIZE;
-            hitBox.y = 4*TILES_SIZE;
-        }
-        // Classic Attack
-        else if (entityState == Anim.ATTACK_1 || entityState == Anim.SPELL_1) {
-            rapidSlashCount = 0;
-            changeAttackBox();
-            animSpeed = 18;
-            teleport(levelData, player, 3);
-            cooldown[Cooldown.ATTACK.ordinal()] = 5.5;
-        }
-    }
-
-    private void oscillationProjectiles(ObjectManager objectManager) {
-        if (animIndex == 1 && !shooting) {
-            if (multiShootFlag == 1) objectManager.multiLightningBallShoot(this);
-            if (multiShootFlag == 4) objectManager.multiLightningBallShoot2(this);
-            multiShootFlag = (multiShootFlag + 1) % 5;
-            shooting = true;
-        }
-    }
-
-    private void trackingProjectiles(SpellManager spellManager, ObjectManager objectManager) {
-        if (animIndex == 1 && !shooting) {
-            if (multiShootFlag == 1) objectManager.followingLightningBallShoot(this);
-            if (multiShootFlag == 2 || multiShootFlag == 0) {
-                if (flash) spellManager.activateFlashes();
-                flash = !flash;
-            }
-            multiShootFlag = (multiShootFlag + 1) % 5;
-            shooting = true;
-        }
-    }
-
-    private void updateBehavior(int[][] levelData, Player player, SpellManager spellManager, ObjectManager objectManager) {
-        if (cooldown[Cooldown.ATTACK.ordinal()] != 0) return;
-        switch (entityState) {
-            case IDLE:
-                if (!start && isPlayerCloseForAttack(player)) {
-                    setStart(true);
-                    objectManager.activateBlockers(true);
-                    setEnemyAction(Anim.SPELL_3);
-                    return;
-                }
-                if (start && cooldown[Cooldown.ATTACK.ordinal()] == 0)
-                    attack(levelData, player);
-                break;
-            case ATTACK_1:
-            case ATTACK_2:
-                if (animIndex == 0) {
-                    Audio.getInstance().getAudioPlayer().playSound(Sound.SW_ROAR_2);
-                    attackCheck = false;
-                }
-                if (animIndex == 2) movingAttack(levelData, 30);
-                if ((animIndex == 3 || animIndex == 2) && !attackCheck) checkPlayerHit(attackBox, player);
-                break;
-            case ATTACK_3:
-                if (animIndex == 0) attackCheck = false;
-                if (slashCount == 0) dashSlash(levelData);
-                else if (animIndex == 2) {
-                    movingAttack(levelData, 30);
-                    Audio.getInstance().getAudioPlayer().playSound(Sound.SW_ROAR_1);
-                }
-                if (!attackCheck) checkPlayerHit(attackBox, player);
-                break;
-            case SPELL_1:
-                if (animIndex == 0) Audio.getInstance().getAudioPlayer().playSound(Sound.SW_ROAR_3);
-                if (animIndex == 12 && rapidSlashCount < 1) {
-                    rapidSlashCount++;
-                    animIndex = 2;
-                }
-                movingAttack(levelData, 10);
-                if (animIndex % 2 == 0) setDirection(Direction.LEFT);
-                else setDirection(Direction.RIGHT);
-                if (animIndex >= 2 && animIndex <= 11) checkPlayerHit(attackBox, player);
-                break;
-            case SPELL_2:
-                if (animIndex == 7 && !shooting) {
-                    objectManager.shootLightningBall(this);
-                    Audio.getInstance().getAudioPlayer().playSound(Sound.LIGHTNING_2);
-                    shooting = true;
-                }
-                else if (animIndex == 9 && shootCount < 4) {
-                    animIndex = 2;
-                    shootCount++;
-                    shooting = false;
-                }
-                break;
-            case SPELL_3:
-                if (animIndex > 5 && animIndex < 16) checkPlayerHit(attackBox, player);
-                if (animIndex == 11) Audio.getInstance().getAudioPlayer().playSound(Sound.SW_ROAR_2);
-                else if (animIndex == 13) spellManager.activateLightnings();
-                break;
-            case SPELL_4:
-                if (specialType == 1) oscillationProjectiles(objectManager);
-                else trackingProjectiles(spellManager, objectManager);
-                break;
-            case DEATH:
-                objectManager.activateBlockers(false);
-                break;
-            default: break;
-        }
-    }
-
-    private void changeAttackBox() {
-        if (entityState == Anim.ATTACK_1 || entityState == Anim.ATTACK_3) attackBox.width = attackBoxReducedWid;
-        if (direction == Direction.RIGHT) attackBox.x = attackBoxWid/2;
-        else attackBox.x = xPos;
-    }
-
-    private void updateAttackBox() {
-        if (entityState == Anim.ATTACK_1 || entityState == Anim.ATTACK_2 || entityState == Anim.ATTACK_3) {
-            if (direction == Direction.RIGHT) attackBox.x = hitBox.x-hitBox.width + attackOffset*1.3;
-            else attackBox.x = hitBox.x - attackOffset*1.3;
-        }
-        else {
-            attackBox.x = hitBox.x - attackOffset;
-        }
-        attackBox.y = hitBox.y;
-    }
+    // F
 
     private void updateBoss(BufferedImage[][] animations) {
         if (cooldown != null) {             // Pre-Attack cooldown check
@@ -324,7 +248,7 @@ public class SpearWoman extends Enemy {
             animIndex++;
             if (animIndex >= animations[entityState.ordinal()].length) {
                 animIndex = 0;
-                if (spellAnimations.contains(entityState) || entityState == Anim.HIT) {
+                if (actions.contains(entityState) || entityState == Anim.HIT) {
                     // Hit finish
                     if (entityState == Anim.HIT) {
                         shootCount = 0;
@@ -339,7 +263,7 @@ public class SpearWoman extends Enemy {
                         multiShootCount++;
                         if (multiShootCount == 16) {
                             multiShootCount = 0;
-                            flash = true;
+                            canFlash = true;
                         }
                     }
                     // Attack finish
@@ -370,6 +294,28 @@ public class SpearWoman extends Enemy {
         }
     }
 
+    // Projectiles
+    private void oscillationProjectiles(ObjectManager objectManager) {
+        if (animIndex == 1 && !shooting) {
+            if (multiShootFlag == 1) objectManager.multiLightningBallShoot(this);
+            if (multiShootFlag == 4) objectManager.multiLightningBallShoot2(this);
+            multiShootFlag = (multiShootFlag + 1) % 5;
+            shooting = true;
+        }
+    }
+
+    private void trackingProjectiles(SpellManager spellManager, ObjectManager objectManager) {
+        if (animIndex == 1 && !shooting) {
+            if (multiShootFlag == 1) objectManager.followingLightningBallShoot(this);
+            if (multiShootFlag == 2 || multiShootFlag == 0) {
+                if (canFlash) spellManager.activateFlashes();
+                canFlash = !canFlash;
+            }
+            multiShootFlag = (multiShootFlag + 1) % 5;
+            shooting = true;
+        }
+    }
+
     // Update
     public void update(BufferedImage[][] animations, int[][] levelData, Player player, SpellManager spellManager, ObjectManager objectManager) {
         updateMove(levelData, player, spellManager, objectManager);
@@ -377,8 +323,43 @@ public class SpearWoman extends Enemy {
         updateAttackBox();
     }
 
+    public void updateMove(int[][] levelData, Player player, SpellManager spellManager, ObjectManager objectManager) {
+        if (!Utils.getInstance().isEntityOnFloor(hitBox, levelData) && !isAirFreeze()) inAir = true;
+        if (inAir) updateInAir(levelData, gravity, collisionFallSpeed);
+        else updateBehavior(levelData, player, spellManager, objectManager);
+    }
+
+    private void updateAttackBox() {
+        if (entityState == Anim.ATTACK_1 || entityState == Anim.ATTACK_2 || entityState == Anim.ATTACK_3) {
+            if (direction == Direction.RIGHT) attackBox.x = hitBox.x-hitBox.width + attackOffset * 1.3;
+            else attackBox.x = hitBox.x - attackOffset * 1.3;
+        }
+        else attackBox.x = hitBox.x - attackOffset;
+        attackBox.y = hitBox.y;
+    }
+
+    // Other
     public void overlayRender(Graphics g) {
         if (start) bossInterface.render(g);
+    }
+
+    private void prepareForClassicAttack() {
+        rapidSlashCount = 0;
+        changeAttackBox();
+        animSpeed = 18;
+    }
+
+    private void changeAttackBox() {
+        if (entityState == Anim.ATTACK_1 || entityState == Anim.ATTACK_3) attackBox.width = SW_AB_WID_REDUCE;
+        if (direction == Direction.RIGHT) attackBox.x = SW_AB_WID / 2.0;
+        else attackBox.x = xPos;
+    }
+
+    // Reset
+    private void attackReset() {
+        attackBox.width = SW_AB_WID;
+        attackBox.x = xPos;
+        shootCount = 0;
     }
 
     @Override
@@ -403,8 +384,13 @@ public class SpearWoman extends Enemy {
         renderAttackBox(g, xLevelOffset, yLevelOffset);
     }
 
+    // Setters
     public void setStart(boolean start) {
         this.start = start;
         if (start) Audio.getInstance().getAudioPlayer().playSong(Song.BOSS_1);
+    }
+
+    public void setAttackCooldown(double value) {
+        cooldown[Cooldown.ATTACK.ordinal()] = value;
     }
 }

@@ -34,6 +34,7 @@ public class Skeleton extends Enemy {
     }
 
     // Attack
+    @Override
     public void hit(double damage, boolean enableBlock, boolean hitSound) {
         if (enableBlock) {
           blockAttack();
@@ -50,6 +51,7 @@ public class Skeleton extends Enemy {
         enemySpeed = ENEMY_SPEED_SLOW;
     }
 
+    @Override
     public void spellHit(double damage) {
         currentHealth -= damage;
         if (currentHealth <= 0) {

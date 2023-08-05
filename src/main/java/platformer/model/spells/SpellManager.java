@@ -1,6 +1,6 @@
 package platformer.model.spells;
 
-import platformer.animation.AnimUtils;
+import platformer.animation.Animation;
 import platformer.model.entities.player.Player;
 import platformer.state.GameState;
 
@@ -46,11 +46,11 @@ public class SpellManager {
     }
 
     private BufferedImage[] loadLightningAnimations() {
-        return AnimUtils.getInstance().loadFromSprite(LIGHTNING_SHEET, 8, 0, LIGHTNING_WIDTH, LIGHTNING_HEIGHT, 0, LIGHTNING_W, LIGHTNING_H);
+        return Animation.getInstance().loadFromSprite(LIGHTNING_SHEET, 8, 0, LIGHTNING_WIDTH, LIGHTNING_HEIGHT, 0, LIGHTNING_W, LIGHTNING_H);
     }
 
     private BufferedImage[] loadFlashAnimations() {
-        return AnimUtils.getInstance().loadFromSprite(FLASH_SHEET, 16, 0, FLASH_WIDTH, FLASH_HEIGHT, 0, FLASH_W, FLASH_H);
+        return Animation.getInstance().loadFromSprite(FLASH_SHEET, 16, 0, FLASH_WIDTH, FLASH_HEIGHT, 0, FLASH_W, FLASH_H);
     }
 
     public void initBossSpells() {

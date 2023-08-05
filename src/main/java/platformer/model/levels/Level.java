@@ -11,6 +11,7 @@ import platformer.model.spells.Flash;
 import platformer.model.spells.Lightning;
 import platformer.model.spells.Spell;
 import platformer.model.spells.SpellType;
+import platformer.utils.Utils;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -31,7 +32,6 @@ public class Level {
     private final Map<EnemyType, List<Enemy>> enemiesMap = new HashMap<>();
     private final Map<ObjType, List<GameObject>> objectsMap = new HashMap<>();
     private final Map<SpellType, List<Spell>> spellsMap = new HashMap<>();
-    private SpearWoman spearWoman;
 
     // Other
     private int levelTilesWidth, levelTilesHeight;
@@ -81,7 +81,7 @@ public class Level {
                 addEnemy(new Ghoul(i*TILES_SIZE, (j-1)*TILES_SIZE));
                 break;
             case SPEAR_WOMAN:
-                spearWoman = new SpearWoman(i*TILES_SIZE, (j-1)*TILES_SIZE);
+                addEnemy(new SpearWoman(i*TILES_SIZE, (j-1)*TILES_SIZE));
                 break;
             default: break;
         }
@@ -226,39 +226,18 @@ public class Level {
         return playerSpawn;
     }
 
-    public SpearWoman getSpearWoman() {
-        return spearWoman;
-    }
-
-    private List<Enemy> getAllEnemies() {
-        return getAllItems(enemiesMap);
-    }
-
     private List<GameObject> getAllObjects() {
-        return getAllItems(objectsMap);
+        return Utils.getInstance().getAllItems(objectsMap);
     }
 
     private List<Spell> getAllSpells() {
-        return getAllItems(spellsMap);
-    }
-
-    private <T> List<T> getAllItems(Map<?, List<T>> itemMap) {
-        List<T> allItems = new ArrayList<>();
-        itemMap.values().forEach(allItems::addAll);
-        return allItems;
+        return Utils.getInstance().getAllItems(spellsMap);
     }
 
     public <T> List<T> getObjects(Class<T> objectType) {
         return getAllObjects().stream()
                 .filter(objectType::isInstance)
                 .map(objectType::cast)
-                .collect(Collectors.toList());
-    }
-
-    public <T> List<T> getEnemies(Class<T> enemyType) {
-        return getAllEnemies().stream()
-                .filter(enemyType::isInstance)
-                .map(enemyType::cast)
                 .collect(Collectors.toList());
     }
 
@@ -269,4 +248,7 @@ public class Level {
                 .collect(Collectors.toList());
     }
 
+    public Map<EnemyType, List<Enemy>> getEnemiesMap() {
+        return enemiesMap;
+    }
 }

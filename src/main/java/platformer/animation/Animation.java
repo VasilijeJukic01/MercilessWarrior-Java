@@ -10,17 +10,17 @@ import static platformer.constants.AnimConstants.*;
 import static platformer.constants.Constants.*;
 import static platformer.constants.FilePaths.*;
 
-public class AnimUtils {
+public class Animation {
 
-    private static volatile AnimUtils instance = null;
+    private static volatile Animation instance = null;
 
-    private AnimUtils() {}
+    private Animation() {}
 
-    public static AnimUtils getInstance() {
+    public static Animation getInstance() {
         if (instance == null) {
-            synchronized (AnimUtils.class) {
+            synchronized (Animation.class) {
                 if (instance == null) {
-                    instance = new AnimUtils();
+                    instance = new Animation();
                 }
             }
         }
@@ -146,7 +146,7 @@ public class AnimUtils {
     }
 
     public BufferedImage[] loadLightningBall(String sprite) {
-        return AnimUtils.getInstance().loadFromSprite(sprite, 9, 0, LB_WID, LB_HEI, 0, LIGHTNING_BALL_W, LIGHTNING_BALL_H);
+        return Animation.getInstance().loadFromSprite(sprite, 9, 0, LB_WID, LB_HEI, 0, LIGHTNING_BALL_W, LIGHTNING_BALL_H);
     }
 
 }

@@ -1,7 +1,7 @@
 package platformer.model.entities.player;
 
 import platformer.animation.Anim;
-import platformer.animation.AnimUtils;
+import platformer.animation.Animation;
 import platformer.audio.Audio;
 import platformer.audio.Sound;
 import platformer.core.Game;
@@ -73,8 +73,8 @@ public class Player extends Entity {
     }
 
     private void loadAnimations() {
-        this.animations = AnimUtils.getInstance().loadPlayerAnimations(width, height, PLAYER_SHEET);
-        this.transformAnimations = AnimUtils.getInstance().loadPlayerAnimations(width, height, PLAYER_TRANSFORM_SHEET);
+        this.animations = Animation.getInstance().loadPlayerAnimations(width, height, PLAYER_SHEET);
+        this.transformAnimations = Animation.getInstance().loadPlayerAnimations(width, height, PLAYER_TRANSFORM_SHEET);
     }
 
     public void loadLvlData(int[][] levelData) {
