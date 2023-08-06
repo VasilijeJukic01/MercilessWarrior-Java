@@ -62,6 +62,12 @@ public class Constants {
     public static final double PUSH_SPEED = 0.95;
     public static final double COOLDOWN_TICK = 0.1;
 
+    // Shop
+    public static final int HEALTH_COST = 10;
+    public static final int STAMINA_COST = 12;
+    public static final int HEALTH_VAL = 40;
+    public static final int STAMINA_VAL = 40;
+
     // Level Constants
     public static final int MAX_LEVELS = 3;
     public static final int EMPTY_TILE = -1;
@@ -122,30 +128,66 @@ public class Constants {
 
     public static final int CONTAINER_WID = scale(40);
     public static final int CONTAINER_HEI = scale(30);
+    public static final int BOX_HB_WID = scale(25);
+    public static final int BOX_HB_HEI = scale(18);
+    public static final int BOX_OFFSET_X = scale(7);
+    public static final int BOX_OFFSET_Y = scale(12);
+    public static final int BARREL_HB_WID = scale(23);
+    public static final int BARREL_HB_HEI = scale(25);
+    public static final int BARREL_OFFSET_X = scale(8);
+    public static final int BARREL_OFFSET_Y = scale(5);
 
     public static final int POTION_WID = scale(12);
     public static final int POTION_HEI = scale(16);
+    public static final int POTION_HB_WID = scale(7);
+    public static final int POTION_HB_HEI = scale(14);
+    public static final int POTION_OFFSET_X = scale(3);
+    public static final int POTION_OFFSET_Y = scale(2);
 
     public static final int SPIKE_WID = scale(32);
     public static final int SPIKE_HEI = scale(35);
+    public static final int SPIKE_HB_WID = scale(32);
+    public static final int SPIKE_HB_HEI = scale(15);
+    public static final int SPIKE_OFFSET_X = scale(0);
+    public static final int SPIKE_OFFSET_Y = scale(22);
 
     public static final int ARROW_TRAP_WID = scale(96);
     public static final int ARROW_TRAP_HEI = scale(32);
+    public static final int ARROW_TRAP_HB_SIZE = scale(32);
+    public static final int ARROW_TRAP_OFFSET = scale(6);
 
     public static final int COIN_WID = scale(15);
     public static final int COIN_HEI = scale(15);
+    public static final int COIN_HB_SIZE = scale(10);
+    public static final int COIN_OFFSET = scale(3);
 
     public static final int SHOP_WID = scale(154);
     public static final int SHOP_HEI = scale(132);
+    public static final int SHOP_HB_WID = scale(154);
+    public static final int SHOP_HB_HEI = scale(132);
+    public static final int SHOP_OFFSET_X = scale(1);
+    public static final int SHOP_OFFSET_Y = scale(1);
 
     public static final int BLOCKER_WID = scale(96);
     public static final int BLOCKER_HEI = scale(128);
+    public static final int BLOCKER_HB_WID = scale(32);
+    public static final int BLOCKER_HB_HEI = scale(32 * 3.5);
+    public static final int BLOCKER_OFFSET_X = scale(32);
+    public static final int BLOCKER_OFFSET_Y = scale(22);
 
     public static final int BLACKSMITH_WID = scale(110);
     public static final int BLACKSMITH_HEI = scale(85);
+    public static final int BLACKSMITH_HB_WID = scale(43);
+    public static final int BLACKSMITH_HB_HEI = scale(45);
+    public static final int BLACKSMITH_OFFSET_X = scale(32);
+    public static final int BLACKSMITH_OFFSET_Y = scale(20);
 
     public static final int DOG_WID = scale(64);
     public static final int DOG_HEI = scale(64);
+    public static final int DOG_HB_WID = scale(32);
+    public static final int DOG_HB_HEI = scale(32);
+    public static final int DOG_OFFSET_X = scale(18);
+    public static final int DOG_OFFSET_Y = scale(12);
 
     // Projectile Constants
     public static final int ARROW_WID = scale(32);
@@ -200,6 +242,7 @@ public class Constants {
     public static final int SLIDER_HEI = scale(30);
 
     // UI
+    public static final int FONT_BIG = scale(20);
     public static final int FONT_MEDIUM = scale(10);
     public static final int FONT_SMALL = scale(7);
     public static final int SHOP_SLOT_MAX_ROW = 7, SHOP_SLOT_MAX_COL = 3;

@@ -2,7 +2,7 @@ package platformer.model.objects;
 
 import java.awt.*;
 
-import static platformer.constants.Constants.SCALE;
+import static platformer.constants.Constants.*;
 
 public class Coin extends GameObject{
 
@@ -13,11 +13,9 @@ public class Coin extends GameObject{
 
     private void generateHitBox() {
         super.animate = true;
-        int hbWid = (int)(10 * SCALE);
-        int hbHei = (int)(10 * SCALE);
-        initHitBox(hbWid, hbHei);
-        super.xOffset = (int)(3 * SCALE);
-        super.yOffset = (int)(3 * SCALE);
+        initHitBox(COIN_HB_SIZE, COIN_HB_SIZE);
+        super.xOffset = COIN_OFFSET;
+        super.yOffset = COIN_OFFSET;
     }
 
     public void update() {
@@ -26,7 +24,7 @@ public class Coin extends GameObject{
 
     @Override
     public void hitBoxRenderer(Graphics g, int xLevelOffset, int yLevelOffset, Color color) {
-        renderHitBox(g, xLevelOffset, yLevelOffset, Color.ORANGE);
+        renderHitBox(g, xLevelOffset, yLevelOffset, color);
     }
 
     @Override

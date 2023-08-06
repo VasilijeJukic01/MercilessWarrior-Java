@@ -26,6 +26,9 @@ public class FilePaths {
     public static final String BS_SHEET = "/images/objs/BlacksmithSprite.png";
     public static final String DOG_SHEET = "/images/objs/DogSprite.png";
 
+    public static final String HEALTH_ITEM = "/images/shop/HealthItem.png";
+    public static final String STAMINA_ITEM = "/images/shop/StaminaItem.png";
+
     // Spells
     public static final String LIGHTNING_SHEET = "/images/spells/LightningSprite.png";
     public static final String FLASH_SHEET = "/images/spells/FlashSprite.png";

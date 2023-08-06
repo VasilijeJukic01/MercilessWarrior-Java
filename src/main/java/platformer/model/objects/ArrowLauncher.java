@@ -2,8 +2,7 @@ package platformer.model.objects;
 
 import java.awt.*;
 
-import static platformer.constants.Constants.SCALE;
-import static platformer.constants.Constants.TILES_SIZE;
+import static platformer.constants.Constants.*;
 
 public class ArrowLauncher extends GameObject {
 
@@ -12,12 +11,10 @@ public class ArrowLauncher extends GameObject {
     public ArrowLauncher(ObjType objType, int xPos, int yPos) {
         super(objType, xPos, yPos);
         this.yTile = yPos/TILES_SIZE;
-        int hbWid = (int)(32*SCALE);
-        int hbHei = (int)(32*SCALE);
-        initHitBox(hbWid, hbHei);
-        if (objType == ObjType.ARROW_TRAP_LEFT) hitBox.x -= (int)(6*SCALE);
-        else if (objType == ObjType.ARROW_TRAP_RIGHT) hitBox.x += (int)(6*SCALE);
-        hitBox.y += (int)(2*SCALE);
+        initHitBox(ARROW_TRAP_HB_SIZE, ARROW_TRAP_HB_SIZE);
+        if (objType == ObjType.ARROW_TRAP_LEFT) hitBox.x -= ARROW_TRAP_OFFSET;
+        else if (objType == ObjType.ARROW_TRAP_RIGHT) hitBox.x += ARROW_TRAP_OFFSET;
+        hitBox.y += (int)(2 * SCALE);
     }
 
     public void update() {
@@ -30,7 +27,7 @@ public class ArrowLauncher extends GameObject {
 
     @Override
     public void hitBoxRenderer(Graphics g, int xLevelOffset, int yLevelOffset, Color color) {
-        renderHitBox(g, xLevelOffset, yLevelOffset, Color.BLUE);
+        renderHitBox(g, xLevelOffset, yLevelOffset, color);
     }
 
     @Override

@@ -2,17 +2,15 @@ package platformer.model.objects;
 
 import java.awt.*;
 
-import static platformer.constants.Constants.SCALE;
+import static platformer.constants.Constants.*;
 
 public class Blocker extends GameObject {
 
     public Blocker(ObjType objType, int xPos, int yPos) {
         super(objType, xPos, yPos);
-        int hbWid = (int)(32*SCALE);
-        int hbHei = (int)(32*3.5*SCALE);
-        initHitBox(hbWid, hbHei);
-        xOffset = (int)(32*SCALE);
-        yOffset = (int)(22*SCALE);
+        initHitBox(BLOCKER_HB_WID, BLOCKER_HB_HEI);
+        super.xOffset = BLOCKER_OFFSET_X;
+        super.yOffset = BLOCKER_OFFSET_Y;
         hitBox.y += yOffset;
         hitBox.x += xOffset;
     }
@@ -27,7 +25,7 @@ public class Blocker extends GameObject {
 
     @Override
     public void hitBoxRenderer(Graphics g, int xLevelOffset, int yLevelOffset, Color color) {
-        renderHitBox(g, xLevelOffset, yLevelOffset, Color.MAGENTA);
+        renderHitBox(g, xLevelOffset, yLevelOffset, color);
     }
 
     @Override

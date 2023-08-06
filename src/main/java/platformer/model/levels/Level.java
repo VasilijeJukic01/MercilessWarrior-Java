@@ -226,19 +226,8 @@ public class Level {
         return playerSpawn;
     }
 
-    private List<GameObject> getAllObjects() {
-        return Utils.getInstance().getAllItems(objectsMap);
-    }
-
     private List<Spell> getAllSpells() {
         return Utils.getInstance().getAllItems(spellsMap);
-    }
-
-    public <T> List<T> getObjects(Class<T> objectType) {
-        return getAllObjects().stream()
-                .filter(objectType::isInstance)
-                .map(objectType::cast)
-                .collect(Collectors.toList());
     }
 
     public <T> List<T> getSpells(Class<T> spellType) {
@@ -250,5 +239,9 @@ public class Level {
 
     public Map<EnemyType, List<Enemy>> getEnemiesMap() {
         return enemiesMap;
+    }
+
+    public Map<ObjType, List<GameObject>> getObjectsMap() {
+        return objectsMap;
     }
 }

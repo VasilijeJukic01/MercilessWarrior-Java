@@ -1,6 +1,5 @@
 package platformer.model.objects;
 
-
 import platformer.debug.Debug;
 import platformer.debug.DebugSettings;
 
@@ -11,12 +10,13 @@ public abstract class GameObject implements Debug {
 
     protected ObjType objType;
     protected int xPos, yPos;
+    protected int xOffset, yOffset;
     protected Rectangle2D.Double hitBox;
+
     protected boolean animate;
     protected boolean alive = true;
     private final int animSpeed = 20;
     protected int animTick, animIndex;
-    protected int xOffset, yOffset;
     protected boolean isOnGround;
 
     public GameObject(ObjType objType, int xPos, int yPos) {
@@ -25,30 +25,33 @@ public abstract class GameObject implements Debug {
         this.yPos = yPos;
     }
 
+    protected void initHitBox(double width, double height) {
+        this.hitBox = new Rectangle2D.Double(xPos, yPos, width, height);
+    }
+
     protected void updateAnimation() {
         animTick++;
         if (animTick >= animSpeed) {
             animTick = 0;
             animIndex++;
             if (animIndex >= objType.getSprites()) {
-                animIndex = 0;
-                if (objType == ObjType.BARREL || objType == ObjType.BOX) {
-                    animate = false;
-                    alive = false;
-                }
-                else if (objType == ObjType.ARROW_TRAP_LEFT || objType == ObjType.ARROW_TRAP_RIGHT) {
-                    animate = false;
-                }
-                else if (objType == ObjType.BLOCKER) {
-                    if (animate) animIndex = 3;
-                    else animIndex = 1;
-                }
+                finishAnimation();
             }
         }
     }
 
-    protected void initHitBox(double width, double height) {
-        this.hitBox = new Rectangle2D.Double(xPos, yPos, width, height);
+    private void finishAnimation() {
+        animIndex = 0;
+        if (objType == ObjType.BARREL || objType == ObjType.BOX) {
+            animate = alive = false;
+        }
+        else if (objType == ObjType.ARROW_TRAP_LEFT || objType == ObjType.ARROW_TRAP_RIGHT) {
+            animate = false;
+        }
+        else if (objType == ObjType.BLOCKER) {
+            if (animate) animIndex = 3;
+            else animIndex = 1;
+        }
     }
 
     public void renderHitBox(Graphics g, int xLevelOffset, int yLevelOffset, Color color) {
@@ -61,7 +64,15 @@ public abstract class GameObject implements Debug {
         animIndex = animTick = 0;
         alive = true;
         isOnGround = false;
-        animate = objType != ObjType.BARREL && objType != ObjType.BOX && objType != ObjType.ARROW_TRAP_LEFT &&  objType != ObjType.ARROW_TRAP_RIGHT;
+        animate = shouldAnimate();
+    }
+
+    private boolean shouldAnimate() {
+        ObjType[] nonAnimatingTypes = {ObjType.BARREL, ObjType.BOX, ObjType.ARROW_TRAP_LEFT, ObjType.ARROW_TRAP_RIGHT};
+        for (ObjType type : nonAnimatingTypes) {
+            if (objType == type) return false;
+        }
+        return true;
     }
 
     // Getters & Setters

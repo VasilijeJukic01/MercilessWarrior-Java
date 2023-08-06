@@ -237,7 +237,7 @@ public class Utils {
         }
     }
 
-    public  <T> List<T> getAllItems(Map<?, List<T>> itemMap) {
+    public <T> List<T> getAllItems(Map<?, List<T>> itemMap) {
         List<T> allItems = new ArrayList<>();
         itemMap.values().forEach(allItems::addAll);
         return allItems;

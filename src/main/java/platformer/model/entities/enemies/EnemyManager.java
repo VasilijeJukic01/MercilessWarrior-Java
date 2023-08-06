@@ -160,7 +160,7 @@ public class EnemyManager {
     }
 
     public void checkEnemySpellHit() {
-        handleEnemySpellHit(Skeleton.class, 0.8);
+        handleEnemySpellHit(Skeleton.class, 0.08);
         handleEnemySpellHit(Ghoul.class, 0.16);
     }
 
@@ -209,6 +209,7 @@ public class EnemyManager {
         catch (Exception ignored) {}
     }
 
+    // Reset
     public void reset() {
         for (List<Enemy> enemies : enemies.values()) {
             for (Enemy enemy : enemies) {

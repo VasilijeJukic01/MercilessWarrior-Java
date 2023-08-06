@@ -2,7 +2,7 @@ package platformer.model.objects;
 
 import java.awt.*;
 
-import static platformer.constants.Constants.SCALE;
+import static platformer.constants.Constants.*;
 
 public class Container extends GameObject{
 
@@ -13,21 +13,17 @@ public class Container extends GameObject{
 
     private void generateHitBox() {
         if (objType == ObjType.BOX) {
-            int hbWid = (int)(25*SCALE)+1;
-            int hbHei = (int)(18*SCALE)+1;
-            initHitBox(hbWid, hbHei);
-            xOffset = (int)(7*SCALE);
-            yOffset = (int)(12*SCALE);
+            initHitBox(BOX_HB_WID, BOX_HB_HEI);
+            super.xOffset = BOX_OFFSET_X;
+            super.yOffset = BOX_OFFSET_Y;
         }
         else if (objType == ObjType.BARREL) {
-            int hbWid = (int)(23*SCALE)+1;
-            int hbHei = (int)(25*SCALE)+1;
-            initHitBox(hbWid, hbHei);
-            xOffset = (int)(8*SCALE);
-            yOffset = (int)(5*SCALE);
+            initHitBox(BARREL_HB_WID, BARREL_HB_HEI);
+            super.xOffset = BARREL_OFFSET_X;
+            super.yOffset = BARREL_OFFSET_Y;
         }
-        hitBox.y += yOffset + (int)(6*SCALE);
-        hitBox.x += xOffset/2.0;
+        hitBox.y += yOffset + (int)(6 * SCALE);
+        hitBox.x += xOffset / 2.0;
     }
 
     public void update() {
@@ -36,7 +32,7 @@ public class Container extends GameObject{
 
     @Override
     public void hitBoxRenderer(Graphics g, int xLevelOffset, int yLevelOffset, Color color) {
-        renderHitBox(g, xLevelOffset, yLevelOffset, Color.ORANGE);
+        renderHitBox(g, xLevelOffset, yLevelOffset, color);
     }
 
     @Override

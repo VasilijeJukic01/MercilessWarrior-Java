@@ -18,9 +18,9 @@ import platformer.utils.Utils;
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
-import java.util.Random;
+import java.util.stream.Collectors;
 
 import static platformer.constants.Constants.*;
 import static platformer.constants.FilePaths.LIGHTNING_BALL_1_SHEET;
@@ -35,15 +35,7 @@ public class ObjectManager {
     private final BufferedImage[] projectileLightningBall, projectileLightningBall2;
     private final List<Projectile> projectiles;
     // Objects
-    private List<Potion> potions;
-    private List<Container> containers;
-    private List<Spike> spikes;
-    private List<ArrowLauncher> arrowLaunchers;
-    private final List<Coin> coins;
-    private List<Shop> shops;
-    private List<Blocker> blockers;
-    private List<Blacksmith> blacksmiths;
-    private List<Dog> dogs;
+    private Map<ObjType, List<GameObject>> objectsMap = new HashMap<>();
     // Flags
     private boolean shopVisible, blacksmithVisible;
 
@@ -51,11 +43,6 @@ public class ObjectManager {
         this.gameState = gameState;
         this.objects = Animation.getInstance().loadObjects();
         this.projectiles = new ArrayList<>();
-        this.coins = new ArrayList<>();
-        this.shops = new ArrayList<>();
-        this.blockers = new ArrayList<>();
-        this.blacksmiths = new ArrayList<>();
-        this.dogs = new ArrayList<>();
         this.projectileArrow = Utils.getInstance().importImage("/images/objs/arrow.png", ARROW_WID, ARROW_HEI);
         this.projectileLightningBall = Animation.getInstance().loadLightningBall(LIGHTNING_BALL_1_SHEET);
         this.projectileLightningBall2 = Animation.getInstance().loadLightningBall(LIGHTNING_BALL_2_SHEET);
@@ -63,20 +50,13 @@ public class ObjectManager {
 
     public void loadObjects(Level level) {
         level.getData();
-        this.potions = level.getObjects(Potion.class);
-        this.containers = level.getObjects(Container.class);
-        this.spikes = level.getObjects(Spike.class);
-        this.arrowLaunchers = level.getObjects(ArrowLauncher.class);
-        this.shops = level.getObjects(Shop.class);
-        this.blockers = level.getObjects(Blocker.class);
-        this.blacksmiths = level.getObjects(Blacksmith.class);
-        this.dogs = level.getObjects(Dog.class);
+        this.objectsMap = level.getObjectsMap();
         projectiles.clear();
     }
 
     // Intersections
     public void checkEnemyIntersection() {
-        for (Spike spike : spikes) {
+        for (Spike spike : getObjects(Spike.class)) {
             gameState.getEnemyManager().checkEnemyTrapHit(spike);
         }
         for (Projectile projectile : projectiles) {
@@ -85,35 +65,35 @@ public class ObjectManager {
     }
 
     public void checkPlayerIntersection(Player p) {
-        for (Spike spike : spikes) {
+        for (Spike spike : getObjects(Spike.class)) {
             if (p.getHitBox().intersects(spike.getHitBox()))
                 p.kill();
         }
-        for (Blocker blocker : blockers) {
+        for (Blocker blocker : getObjects(Blocker.class)) {
             if (blocker.getAnimIndex() > 2 && p.getHitBox().intersects(blocker.getHitBox()))
                 p.kill();
         }
-        for (Shop shop : shops) {
+        for (Shop shop : getObjects(Shop.class)) {
             shop.setActive(p.getHitBox().intersects(shop.getHitBox()));
             shopVisible = p.getHitBox().intersects(shop.getHitBox());
         }
-        for (Blacksmith blacksmith : blacksmiths) {
+        for (Blacksmith blacksmith : getObjects(Blacksmith.class)) {
             blacksmith.setActive(p.getHitBox().intersects(blacksmith.getHitBox()));
             blacksmithVisible = p.getHitBox().intersects(blacksmith.getHitBox());
         }
     }
 
     public void checkObjectPick(Rectangle2D.Double hitBox) {
-        for (Potion potion : potions) {
+        for (Potion potion : getObjects(Potion.class)) {
             if (potion.isAlive() && hitBox.intersects(potion.getHitBox())) {
                 potion.setAlive(false);
                 applyPotionEffect(potion);
             }
         }
-        ArrayList<Coin> copy = new ArrayList<>(coins);
+        ArrayList<Coin> copy = new ArrayList<>(getObjects(Coin.class));
         for (Coin coin : copy) {
             if (coin.isAlive() && hitBox.intersects(coin.getHitBox())) {
-                coins.remove(coin);
+                removeGameObject(coin);
                 Audio.getInstance().getAudioPlayer().playSound(Sound.COIN_PICK);
                 gameState.getPlayer().changeCoins(1);
             }
@@ -131,7 +111,7 @@ public class ObjectManager {
     // Object Break
     public void checkObjectBreak(Rectangle2D.Double attackBox) {
         Flame flame = gameState.getSpellManager().getFlames();
-        for (Container container : containers) {
+        for (Container container : getObjects(Container.class)) {
             boolean isFlame = flame.getHitBox().intersects(container.getHitBox()) && flame.isActive();
             if (container.isAlive() && !container.animate && (attackBox.intersects(container.getHitBox()) || isFlame)) {
                 Logger.getInstance().notify("Player breaks container.", Message.NOTIFICATION);
@@ -142,7 +122,8 @@ public class ObjectManager {
                 ObjType potion = null;
                 if (value == 0) potion = ObjType.STAMINA_POTION;
                 else if (value == 1) potion = ObjType.HEAL_POTION;
-                if (potion != null) potions.add(new Potion(potion, (int)(container.getHitBox().x+container.getHitBox().width/2), (int)(container.getHitBox().y-container.getHitBox().height/4)));
+                if (potion != null)
+                    addGameObject(new Potion(potion, (int)(container.getHitBox().x+container.getHitBox().width/2), (int)(container.getHitBox().y-container.getHitBox().height/4)));
             }
         }
     }
@@ -158,7 +139,7 @@ public class ObjectManager {
 
     // Object Touch & Bounds
     public boolean isPlayerTouchingObject() {
-        for (Container c : containers) {
+        for (Container c : getObjects(Container.class)) {
             if (c.isAlive() && c.getAnimIndex() < 1) {
                 if (c.getHitBox().intersects(gameState.getPlayer().getHitBox())) return true;
             }
@@ -185,7 +166,7 @@ public class ObjectManager {
     }
 
     private GameObject canMove(Direction direction, Rectangle2D.Double hitBox) {
-        for (Container c : containers) {
+        for (Container c : getObjects(Container.class)) {
             if (c.isAlive() && checkTouch(c, hitBox, "X")) {
                 if (c.getHitBox().x < hitBox.x && direction == Direction.LEFT) return c;
                 else if(c.getHitBox().x > hitBox.x && direction == Direction.RIGHT) return c;
@@ -195,7 +176,7 @@ public class ObjectManager {
     }
 
     public double getXObjectBound(Rectangle2D.Double hitBox, double dx) {
-        for (Container c : containers) {
+        for (Container c : getObjects(Container.class)) {
             if (c.isAlive() && checkTouch(c, hitBox, "X")) {
                 if (c.getHitBox().x < hitBox.x && dx > 0) {
                     if (Utils.getInstance().canMoveHere(hitBox.x+1, hitBox.y, hitBox.width, hitBox.height, gameState.getLevelManager().getCurrentLevel().getLvlData()))
@@ -237,7 +218,7 @@ public class ObjectManager {
 
     // Physics Checks
     private boolean isObjectInAir(GameObject object) {
-        for (Container container : containers) {
+        for (Container container : getObjects(Container.class)) {
             if (container != object && !Utils.getInstance().canMoveHere(object.getHitBox().x, object.getHitBox().y + 1, object.getHitBox().width, object.getHitBox().height,
                     gameState.getLevelManager().getCurrentLevel().getLvlData())) return false;
             if (container.isAlive() && container != object && container.getHitBox().intersects(object.getHitBox())) return false;
@@ -263,11 +244,11 @@ public class ObjectManager {
     }
 
     private void updateObjectInAir() {
-        for (Container container : containers) {
+        for (Container container : getObjects(Container.class)) {
             if (isObjectInAir(container)) container.setOnGround(false);
             if (!container.isOnGround) landObject(container);
         }
-        for (Blacksmith blacksmith : blacksmiths) {
+        for (Blacksmith blacksmith : getObjects(Blacksmith.class)) {
             if (isObjectInAir(blacksmith)) blacksmith.setOnGround(false);
             if (!blacksmith.isOnGround) landObject(blacksmith);
         }
@@ -319,7 +300,7 @@ public class ObjectManager {
     }
 
     public void activateBlockers(boolean value) {
-        for (Blocker blocker : blockers) {
+        for (Blocker blocker : getObjects(Blocker.class)) {
             blocker.setAnimate(value);
             if (!value) blocker.stop();
         }
@@ -327,7 +308,7 @@ public class ObjectManager {
 
     // Updates
     private void updateArrowLaunchers(int[][] lvlData, Player player) {
-        for (ArrowLauncher arrowLauncher : arrowLaunchers) {
+        for (ArrowLauncher arrowLauncher : getObjects(ArrowLauncher.class)) {
             boolean flag = true;
             if (arrowLauncher.animate) flag = false;
             if ((arrowLauncher.getYTile() < player.getHitBox().y/TILES_SIZE) ||
@@ -360,36 +341,36 @@ public class ObjectManager {
     }
 
     private void updateCoins() {
-        for (Coin coin : coins) {
+        for (Coin coin : getObjects(Coin.class)) {
             if (coin.isAlive()) coin.update();
         }
     }
 
     private void updateShops() {
-        for (Shop shop : shops) {
+        for (Shop shop : getObjects(Shop.class)) {
             shop.update();
         }
     }
 
     private void updateBlockers() {
-        for (Blocker blocker : blockers) {
+        for (Blocker blocker : getObjects(Blocker.class)) {
             blocker.update();
         }
     }
 
     private void updateBlacksmiths() {
-        for (Blacksmith blacksmith : blacksmiths) {
+        for (Blacksmith blacksmith : getObjects(Blacksmith.class)) {
             blacksmith.update();
         }
-        for (Dog dog : dogs) {
+        for (Dog dog : getObjects(Dog.class)) {
             dog.update();
         }
     }
 
     // Core
     public void update(int[][] lvlData, Player player) {
-        for (Potion potion : potions) if (potion.isAlive()) potion.update();
-        for (Container container : containers) if (container.isAlive()) container.update();
+        for (Potion potion : getObjects(Potion.class)) if (potion.isAlive()) potion.update();
+        for (Container container : getObjects(Container.class)) if (container.isAlive()) container.update();
         updateObjectInAir();
         updateArrowLaunchers(lvlData, player);
         updateProjectiles(lvlData, player);
@@ -420,12 +401,12 @@ public class ObjectManager {
             int x = rand.nextInt((int)location.width)+(int)location.x;
             int y = rand.nextInt((int)(location.height/3)) + (int)location.y + 2*(int)location.height/3;
             Coin coin = new Coin(ObjType.COIN, x, y);
-            coins.add(coin);
+            addGameObject(coin);
         }
     }
 
     private void renderCoins(Graphics g, int xLevelOffset, int yLevelOffset) {
-        for (Coin c : coins) {
+        for (Coin c : getObjects(Coin.class)) {
             if (c.isAlive()) {
                 int x = (int)c.getHitBox().x-c.getXOffset()-xLevelOffset;
                 int y = (int)c.getHitBox().y-c.getYOffset()-yLevelOffset;
@@ -436,7 +417,7 @@ public class ObjectManager {
     }
 
     private void renderContainers(Graphics g, int xLevelOffset, int yLevelOffset) {
-        for (Container c : containers) {
+        for (Container c : getObjects(Container.class)) {
             if (c.isAlive()) {
                 int x = (int)c.getHitBox().x-c.getXOffset()-xLevelOffset;
                 int y = (int)c.getHitBox().y-c.getYOffset()-yLevelOffset;
@@ -447,7 +428,7 @@ public class ObjectManager {
     }
 
     private void renderPotions(Graphics g, int xLevelOffset, int yLevelOffset) {
-        for (Potion p : potions) {
+        for (Potion p : getObjects(Potion.class)) {
             if (p.isAlive()) {
                 int x = (int)p.getHitBox().x-p.getXOffset()-xLevelOffset;
                 int y = (int)p.getHitBox().y-p.getYOffset()-yLevelOffset;
@@ -458,7 +439,7 @@ public class ObjectManager {
     }
     
     private void renderTraps(Graphics g, int xLevelOffset, int yLevelOffset) {
-        for (Spike s : spikes) {
+        for (Spike s : getObjects(Spike.class)) {
             int x = (int)s.getHitBox().x-s.getXOffset()-xLevelOffset;
             int y = (int)s.getHitBox().y-s.getYOffset()-yLevelOffset+(int)(12*SCALE);
             g.drawImage(objects[s.getObjType().ordinal()][4], x, y, SPIKE_WID, SPIKE_HEI, null);
@@ -467,7 +448,7 @@ public class ObjectManager {
     }
 
     private void renderArrowLaunchers(Graphics g, int xLevelOffset, int yLevelOffset) {
-        for (ArrowLauncher al : arrowLaunchers) {
+        for (ArrowLauncher al : getObjects(ArrowLauncher.class)) {
             int fS = 1, fC = 0;
             int sideOffset = 32;
             int index = al.getObjType().ordinal();
@@ -518,7 +499,7 @@ public class ObjectManager {
     }
 
     private void renderShops(Graphics g, int xLevelOffset, int yLevelOffset) {
-        for (Shop s : shops) {
+        for (Shop s : getObjects(Shop.class)) {
             int x = (int)s.getHitBox().x-s.getXOffset()-xLevelOffset;
             int y = (int)s.getHitBox().y-s.getYOffset()-yLevelOffset+(int)(1*SCALE);
             g.drawImage(objects[s.getObjType().ordinal()][s.getAnimIndex()], x, y, SHOP_WID, SHOP_HEI, null);
@@ -528,7 +509,7 @@ public class ObjectManager {
     }
 
     private void renderBlockers(Graphics g, int xLevelOffset, int yLevelOffset) {
-        for (Blocker b : blockers) {
+        for (Blocker b : getObjects(Blocker.class)) {
             int x = (int)b.getHitBox().x-b.getXOffset()-xLevelOffset;
             int y = (int)b.getHitBox().y-b.getYOffset()-yLevelOffset+(int)(12*SCALE);
             g.drawImage(objects[b.getObjType().ordinal()][b.getAnimIndex()], x, y, BLOCKER_WID, BLOCKER_HEI, null);
@@ -537,14 +518,14 @@ public class ObjectManager {
     }
 
     private void renderBlacksmiths(Graphics g, int xLevelOffset, int yLevelOffset) {
-        for (Blacksmith b : blacksmiths) {
+        for (Blacksmith b : getObjects(Blacksmith.class)) {
             int x = (int)b.getHitBox().x-b.getXOffset()-xLevelOffset;
             int y = (int)b.getHitBox().y-b.getYOffset()-yLevelOffset+(int)(1*SCALE);
             g.drawImage(objects[b.getObjType().ordinal()][b.getAnimIndex()], x, y, BLACKSMITH_WID, BLACKSMITH_HEI, null);
             b.hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.MAGENTA);
             b.render(g, xLevelOffset, yLevelOffset);
         }
-        for (Dog d : dogs) {
+        for (Dog d : getObjects(Dog.class)) {
             int x = (int)d.getHitBox().x-d.getXOffset()-xLevelOffset;
             int y = (int)d.getHitBox().y-d.getYOffset()-yLevelOffset;
             g.drawImage(objects[d.getObjType().ordinal()][d.getAnimIndex()], x, y, DOG_WID, DOG_HEI, null);
@@ -555,10 +536,34 @@ public class ObjectManager {
     // Reset
     public void reset() {
         loadObjects(gameState.getLevelManager().getCurrentLevel());
-        for (Potion potion : potions) potion.reset();
-        for (Container container : containers) container.reset();
-        for (ArrowLauncher arrowLauncher : arrowLaunchers) arrowLauncher.reset();
-        coins.clear();
+        for (Potion potion : getObjects(Potion.class)) potion.reset();
+        for (Container container : getObjects(Container.class)) container.reset();
+        for (ArrowLauncher arrowLauncher : getObjects(ArrowLauncher.class)) arrowLauncher.reset();
+        getObjects(Coin.class).clear();
+    }
+
+    private List<GameObject> getAllObjects() {
+        return Utils.getInstance().getAllItems(objectsMap);
+    }
+
+    public <T> List<T> getObjects(Class<T> objectType) {
+        return getAllObjects().stream()
+                .filter(objectType::isInstance)
+                .map(objectType::cast)
+                .collect(Collectors.toList());
+    }
+
+    private void addGameObject(GameObject gameObject) {
+        ObjType type = gameObject.getObjType();
+        objectsMap.computeIfAbsent(type, k -> new ArrayList<>()).add(gameObject);
+    }
+
+    private void removeGameObject(GameObject gameObject) {
+        ObjType type = gameObject.getObjType();
+        List<GameObject> objectsOfType = objectsMap.get(type);
+        if (objectsOfType != null) {
+            objectsOfType.remove(gameObject);
+        }
     }
 
     public boolean isShopVisible() {

@@ -12,18 +12,18 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Random;
 
-import static platformer.constants.Constants.SCALE;
+import static platformer.constants.Constants.*;
+import static platformer.constants.FilePaths.HEALTH_ITEM;
+import static platformer.constants.FilePaths.STAMINA_ITEM;
 
 public class Shop extends GameObject {
 
     private boolean active;
     private final ArrayList<ShopItem> shopItems;
-    private final Random rand;
 
     public Shop(ObjType objType, int xPos, int yPos) {
         super(objType, xPos, yPos);
         this.shopItems = new ArrayList<>();
-        this.rand = new Random();
         generateHitBox();
         getItems();
     }
@@ -31,19 +31,18 @@ public class Shop extends GameObject {
     // Init
     private void generateHitBox() {
         super.animate = true;
-        int hbWid = (int)(154 * SCALE);
-        int hbHei = (int)(132 * SCALE);
-        initHitBox(hbWid, hbHei);
-        super.xOffset = (int)(1 * SCALE);
-        super.yOffset = (int)(1 * SCALE);
+        initHitBox(SHOP_HB_WID, SHOP_HB_HEI);
+        super.xOffset = SHOP_OFFSET_X;
+        super.yOffset = SHOP_OFFSET_Y;
     }
 
     private void getItems() {
         int slot = 0;
-        BufferedImage healthItemImg = Utils.getInstance().importImage("/images/shop/HealthItem.png", -1, -1);
-        shopItems.add(new ShopItem(ItemType.HEALTH, healthItemImg, slot++, rand.nextInt(10)+1, 15));
-        BufferedImage staminaItemImg = Utils.getInstance().importImage("/images/shop/StaminaItem.png", -1, -1);
-        shopItems.add(new ShopItem(ItemType.STAMINA, staminaItemImg, slot, rand.nextInt(6)+1, 20));
+        Random rand = new Random();
+        BufferedImage healthItemImg = Utils.getInstance().importImage(HEALTH_ITEM, -1, -1);
+        shopItems.add(new ShopItem(ItemType.HEALTH, healthItemImg, slot++, rand.nextInt(10)+1, HEALTH_COST));
+        BufferedImage staminaItemImg = Utils.getInstance().importImage(STAMINA_ITEM, -1, -1);
+        shopItems.add(new ShopItem(ItemType.STAMINA, staminaItemImg, slot, rand.nextInt(6)+1, STAMINA_COST));
     }
 
     public void buyItem(Player player, int slot) {
@@ -54,8 +53,8 @@ public class Shop extends GameObject {
                     item.setAmount(item.getAmount()-1);
                     Audio.getInstance().getAudioPlayer().playSound(Sound.SHOP_BUY);
                     switch(item.getItemType()) {
-                        case HEALTH: player.changeHealth(30); break;
-                        case STAMINA: player.changeStamina(30); break;
+                        case HEALTH: player.changeHealth(HEALTH_VAL); break;
+                        case STAMINA: player.changeStamina(STAMINA_VAL); break;
                         default: break;
                     }
                 }
@@ -71,16 +70,16 @@ public class Shop extends GameObject {
     public void render(Graphics g, int xLevelOffset, int yLevelOffset) {
         if (active) {
             g.setColor(Color.WHITE);
-            g.setFont(new Font("Arial", Font.BOLD, 40));
-            int infoX = (int)(hitBox.x+hitBox.width/3-xLevelOffset);
-            int infoY = (int)(hitBox.y-yLevelOffset+25*SCALE);
+            g.setFont(new Font("Arial", Font.BOLD, FONT_BIG));
+            int infoX = (int)(hitBox.x + hitBox.width / 3 - xLevelOffset);
+            int infoY = (int)(hitBox.y - yLevelOffset + 25 * SCALE);
             g.drawString("SHOP", infoX, infoY);
         }
     }
 
     @Override
     public void hitBoxRenderer(Graphics g, int xLevelOffset, int yLevelOffset, Color color) {
-        renderHitBox(g, xLevelOffset, yLevelOffset, Color.ORANGE);
+        renderHitBox(g, xLevelOffset, yLevelOffset, color);
     }
 
     @Override

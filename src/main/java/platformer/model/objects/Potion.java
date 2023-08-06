@@ -2,7 +2,7 @@ package platformer.model.objects;
 
 import java.awt.*;
 
-import static platformer.constants.Constants.SCALE;
+import static platformer.constants.Constants.*;
 
 public class Potion extends GameObject{
 
@@ -13,11 +13,9 @@ public class Potion extends GameObject{
     public Potion(ObjType objType, int xPos, int yPos) {
         super(objType, xPos, yPos);
         super.animate = true;
-        int hbWid = (int)(7*SCALE);
-        int hbHei = (int)(14*SCALE);
-        initHitBox(hbWid, hbHei);
-        super.xOffset = (int)(3*SCALE);
-        super.yOffset = (int)(2*SCALE);
+        initHitBox(POTION_HB_WID, POTION_HB_HEI);
+        super.xOffset = POTION_OFFSET_X;
+        super.yOffset = POTION_OFFSET_Y;
         this.maxFloatOffset = (int)(5*SCALE);
     }
 
@@ -35,7 +33,7 @@ public class Potion extends GameObject{
 
     @Override
     public void hitBoxRenderer(Graphics g, int xLevelOffset, int yLevelOffset, Color color) {
-       renderHitBox(g, xLevelOffset, yLevelOffset, Color.ORANGE);
+       renderHitBox(g, xLevelOffset, yLevelOffset, color);
     }
 
     @Override

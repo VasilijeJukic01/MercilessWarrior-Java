@@ -2,7 +2,7 @@ package platformer.model.objects;
 
 import java.awt.*;
 
-import static platformer.constants.Constants.SCALE;
+import static platformer.constants.Constants.*;
 
 public class Dog  extends GameObject {
 
@@ -13,11 +13,9 @@ public class Dog  extends GameObject {
 
     private void generateHitBox() {
         super.animate = true;
-        int hbWid = (int)(32 * SCALE);
-        int hbHei = (int)(32 * SCALE);
-        initHitBox(hbWid, hbHei);
-        super.xOffset = (int)(18 * SCALE);
-        super.yOffset = (int)(12 * SCALE);
+        initHitBox(DOG_HB_WID, DOG_HB_HEI);
+        super.xOffset = DOG_OFFSET_X;
+        super.yOffset = DOG_OFFSET_Y;
     }
 
     // Core
@@ -27,7 +25,7 @@ public class Dog  extends GameObject {
 
     @Override
     public void hitBoxRenderer(Graphics g, int xLevelOffset, int yLevelOffset, Color color) {
-        renderHitBox(g, xLevelOffset, yLevelOffset, Color.ORANGE);
+        renderHitBox(g, xLevelOffset, yLevelOffset, color);
     }
 
     @Override

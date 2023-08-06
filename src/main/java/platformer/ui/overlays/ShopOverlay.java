@@ -33,7 +33,7 @@ public class ShopOverlay implements Overlay {
 
     public ShopOverlay(GameState gameState) {
         this.gameState = gameState;
-        this.shops = gameState.getLevelManager().getCurrentLevel().getObjects(Shop.class);
+        this.shops = gameState.getObjectManager().getObjects(Shop.class);
         this.buttons = new ShopButton[2];
         initSelectedSlot();
         loadImages();
@@ -204,6 +204,6 @@ public class ShopOverlay implements Overlay {
     }
 
     public void reset() {
-        this.shops = gameState.getLevelManager().getCurrentLevel().getObjects(Shop.class);
+        this.shops = gameState.getObjectManager().getObjects(Shop.class);
     }
 }
