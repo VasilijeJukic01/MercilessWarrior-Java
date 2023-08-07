@@ -5,6 +5,7 @@ import platformer.debug.DebugSettings;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
 
 public abstract class GameObject implements Debug {
 
@@ -39,6 +40,10 @@ public abstract class GameObject implements Debug {
             }
         }
     }
+
+    public abstract void update();
+
+    public abstract void render(Graphics g, int xLevelOffset, int yLevelOffset, BufferedImage[] animations);
 
     private void finishAnimation() {
         animIndex = 0;

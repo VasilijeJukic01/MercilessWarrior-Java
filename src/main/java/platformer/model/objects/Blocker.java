@@ -1,6 +1,7 @@
 package platformer.model.objects;
 
 import java.awt.*;
+import java.awt.image.BufferedImage;
 
 import static platformer.constants.Constants.*;
 
@@ -15,8 +16,17 @@ public class Blocker extends GameObject {
         hitBox.x += xOffset;
     }
 
+    @Override
     public void update() {
         if (animate) updateAnimation();
+    }
+
+    @Override
+    public void render(Graphics g, int xLevelOffset, int yLevelOffset, BufferedImage[] animations) {
+        int x = (int)hitBox.x  - xOffset - xLevelOffset;
+        int y = (int)hitBox.y - yOffset - yLevelOffset + (int)(12*SCALE);
+        g.drawImage(animations[animIndex], x, y, BLOCKER_WID, BLOCKER_HEI, null);
+        hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.MAGENTA);
     }
 
     public void stop() {

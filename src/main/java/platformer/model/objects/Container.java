@@ -1,10 +1,11 @@
 package platformer.model.objects;
 
 import java.awt.*;
+import java.awt.image.BufferedImage;
 
 import static platformer.constants.Constants.*;
 
-public class Container extends GameObject{
+public class Container extends GameObject {
 
     public Container(ObjType objType, int xPos, int yPos) {
         super(objType, xPos, yPos);
@@ -26,8 +27,17 @@ public class Container extends GameObject{
         hitBox.x += xOffset / 2.0;
     }
 
+    @Override
     public void update() {
         if (animate) updateAnimation();
+    }
+
+    @Override
+    public void render(Graphics g, int xLevelOffset, int yLevelOffset, BufferedImage[] animations) {
+        int x = (int)hitBox.x - xOffset - xLevelOffset;
+        int y = (int)hitBox.y - yOffset - yLevelOffset;
+        g.drawImage(animations[animIndex], x, y, CONTAINER_WID, CONTAINER_HEI, null);
+        hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.ORANGE);
     }
 
     @Override

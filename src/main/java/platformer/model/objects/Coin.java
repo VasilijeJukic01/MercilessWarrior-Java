@@ -1,10 +1,11 @@
 package platformer.model.objects;
 
 import java.awt.*;
+import java.awt.image.BufferedImage;
 
 import static platformer.constants.Constants.*;
 
-public class Coin extends GameObject{
+public class Coin extends GameObject {
 
     public Coin(ObjType objType, int xPos, int yPos) {
         super(objType, xPos, yPos);
@@ -18,8 +19,17 @@ public class Coin extends GameObject{
         super.yOffset = COIN_OFFSET;
     }
 
+    @Override
     public void update() {
         if (animate) updateAnimation();
+    }
+
+    @Override
+    public void render(Graphics g, int xLevelOffset, int yLevelOffset, BufferedImage[] animations) {
+        int x = (int)hitBox.x - xOffset - xLevelOffset;
+        int y = (int)hitBox.y - yOffset - yLevelOffset;
+        g.drawImage(animations[animIndex], x, y, COIN_WID, COIN_HEI, null);
+        hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.ORANGE);
     }
 
     @Override

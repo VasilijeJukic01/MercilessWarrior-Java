@@ -210,6 +210,7 @@ public class Constants {
 
     public static final int TRACKING_PROJECTILE_DISTANCE = scale(50);
     public static final int ENEMY_PROJECTILE_DMG = 5;
+    public static final int PLAYER_PROJECTILE_DMG = 10;
 
     // Spell Constants
     public static final int FLAME_WID = scale(45);

@@ -1,10 +1,11 @@
 package platformer.model.objects;
 
 import java.awt.*;
+import java.awt.image.BufferedImage;
 
 import static platformer.constants.Constants.*;
 
-public class Potion extends GameObject{
+public class Potion extends GameObject {
 
     private double floatOffset;
     private final int maxFloatOffset;
@@ -26,9 +27,18 @@ public class Potion extends GameObject{
         hitBox.y = yPos+floatOffset;
     }
 
+    @Override
     public void update() {
         updateAnimation();
         updateFloating();
+    }
+
+    @Override
+    public void render(Graphics g, int xLevelOffset, int yLevelOffset, BufferedImage[] animations) {
+        int x = (int)hitBox.x - xOffset - xLevelOffset;
+        int y = (int)hitBox.y - yOffset - yLevelOffset;
+        g.drawImage(animations[animIndex], x, y, POTION_WID, POTION_HEI, null);
+        hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.ORANGE);
     }
 
     @Override

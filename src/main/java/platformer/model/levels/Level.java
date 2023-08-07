@@ -52,11 +52,11 @@ public class Level {
         this.lvlData = getLevelData(layer1Img);
         this.decoData = getDecoData(layer2Img, false);
         this.layerData = getDecoData(layer2Img, true);
-        getData();
+        gatherData();
     }
 
     // Level items Data
-    public void getData() {
+    public void gatherData() {
         reset();
         for (int i = 0; i < layer1Img.getWidth(); i++) {
             for (int j = 0; j < layer1Img.getHeight(); j++) {

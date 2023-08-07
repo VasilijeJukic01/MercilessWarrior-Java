@@ -1,10 +1,11 @@
 package platformer.model.objects;
 
 import java.awt.*;
+import java.awt.image.BufferedImage;
 
 import static platformer.constants.Constants.*;
 
-public class Blacksmith extends GameObject{
+public class Blacksmith extends GameObject {
 
     private boolean active;
 
@@ -21,11 +22,21 @@ public class Blacksmith extends GameObject{
     }
 
     // Core
+    @Override
     public void update() {
         if (animate) updateAnimation();
     }
 
-    public void render(Graphics g, int xLevelOffset, int yLevelOffset) {
+    @Override
+    public void render(Graphics g, int xLevelOffset, int yLevelOffset, BufferedImage[] animations) {
+        int x = (int)hitBox.x - xOffset - xLevelOffset;
+        int y = (int)hitBox.y - yOffset - yLevelOffset + (int)(1*SCALE);
+        g.drawImage(animations[animIndex], x, y, BLACKSMITH_WID, BLACKSMITH_HEI, null);
+        hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.MAGENTA);
+        renderText(g, xLevelOffset, yLevelOffset);
+    }
+
+    private void renderText(Graphics g, int xLevelOffset, int yLevelOffset) {
         if (active) {
             g.setColor(Color.WHITE);
             g.setFont(new Font("Arial", Font.BOLD, FONT_BIG));

@@ -1,10 +1,11 @@
 package platformer.model.objects;
 
 import java.awt.*;
+import java.awt.image.BufferedImage;
 
 import static platformer.constants.Constants.*;
 
-public class Dog  extends GameObject {
+public class Dog extends GameObject {
 
     public Dog(ObjType objType, int xPos, int yPos) {
         super(objType, xPos, yPos);
@@ -19,8 +20,17 @@ public class Dog  extends GameObject {
     }
 
     // Core
+    @Override
     public void update() {
         if (animate) updateAnimation();
+    }
+
+    @Override
+    public void render(Graphics g, int xLevelOffset, int yLevelOffset, BufferedImage[] animations) {
+        int x = (int)hitBox.x - xOffset - xLevelOffset;
+        int y = (int)hitBox.y - yOffset - yLevelOffset;
+        g.drawImage(animations[animIndex], x, y, DOG_WID, DOG_HEI, null);
+        hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.MAGENTA);
     }
 
     @Override

@@ -63,8 +63,18 @@ public class Shop extends GameObject {
     }
 
     // Core
+    @Override
     public void update() {
         if (animate) updateAnimation();
+    }
+
+    @Override
+    public void render(Graphics g, int xLevelOffset, int yLevelOffset, BufferedImage[] animations) {
+        int x = (int)hitBox.x - xOffset - xLevelOffset;
+        int y = (int)hitBox.y - yOffset - yLevelOffset + (int)(1*SCALE);
+        g.drawImage(animations[animIndex], x, y, SHOP_WID, SHOP_HEI, null);
+        hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.ORANGE);
+        render(g, xLevelOffset, yLevelOffset);
     }
 
     public void render(Graphics g, int xLevelOffset, int yLevelOffset) {
