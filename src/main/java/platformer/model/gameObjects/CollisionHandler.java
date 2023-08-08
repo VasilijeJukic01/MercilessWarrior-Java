@@ -2,6 +2,7 @@ package platformer.model.gameObjects;
 
 import platformer.model.entities.Direction;
 import platformer.model.entities.Entity;
+import platformer.model.gameObjects.objects.Blacksmith;
 import platformer.model.gameObjects.objects.Container;
 import platformer.model.levels.LevelManager;
 import platformer.utils.Utils;
@@ -99,6 +100,49 @@ public class CollisionHandler {
         return hitBox.x;
     }
 
+    // In Air Check
+    private <T extends GameObject> boolean isObjectInAir(T object, Class<T> objectClass) {
+        for (T obj : getObjects(objectClass)) {
+            if (obj.isAlive() && obj instanceof Container && obj != object) {
+                if (obj.getHitBox().intersects(object.getHitBox())) return false;
+            }
+        }
+        double xPos = object.getHitBox().x;
+        double yPos = object.getHitBox().y + 1;
+        return canMove(xPos, yPos, object.getHitBox().width, object.getHitBox().height);
+    }
+
+    private <T extends GameObject> void landObject(T gameObject, Class<T> objectClass) {
+        boolean isSafe = true;
+        while(isSafe) {
+            isSafe = isObjectInAir(gameObject, objectClass);
+            if (isSafe) {
+                double xPos = gameObject.getHitBox().x;
+                double yPos = gameObject.getHitBox().y + 1;
+                if (canMove(xPos, yPos, gameObject.getHitBox().width, gameObject.getHitBox().height)) {
+                    gameObject.getHitBox().y += 1;
+                }
+            }
+            else {
+                gameObject.getHitBox().y += 2;
+                gameObject.setOnGround(true);
+            }
+        }
+    }
+
+    private <T extends GameObject> void updateObjectInAir(Class<T> objectClass) {
+        for (T object : getObjects(objectClass)) {
+            if (isObjectInAir(object, objectClass)) object.setOnGround(false);
+            if (!object.isOnGround) landObject(object, objectClass);
+        }
+    }
+
+    public void updateObjectInAir() {
+        updateObjectInAir(Container.class);
+        updateObjectInAir(Blacksmith.class);
+    }
+
+    // Helper
     private boolean canMove(double x, double y, double w, double h) {
         return Utils.getInstance().canMoveHere(x, y, w, h, levelManager.getCurrentLevel().getLvlData());
     }

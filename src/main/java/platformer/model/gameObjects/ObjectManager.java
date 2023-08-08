@@ -3,8 +3,6 @@ package platformer.model.gameObjects;
 import platformer.animation.Animation;
 import platformer.audio.Audio;
 import platformer.audio.Sound;
-import platformer.debug.logger.Message;
-import platformer.debug.logger.Logger;
 import platformer.model.entities.Direction;
 import platformer.model.entities.player.Player;
 import platformer.model.entities.player.PlayerBonus;
@@ -13,7 +11,6 @@ import platformer.model.gameObjects.objects.*;
 import platformer.model.gameObjects.objects.Container;
 import platformer.model.levels.Level;
 import platformer.model.gameObjects.projectiles.*;
-import platformer.model.spells.Flame;
 import platformer.state.GameState;
 import platformer.utils.Utils;
 
@@ -31,8 +28,9 @@ import static platformer.constants.FilePaths.*;
 public class ObjectManager {
 
     private final GameState gameState;
-    private final CollisionHandler collisionHandler;
-    private final IntersectionHandler intersectionHandler;
+    private CollisionHandler collisionHandler;
+    private IntersectionHandler intersectionHandler;
+    private ObjectBreakHandler objectBreakHandler;
 
     private final BufferedImage[][] objects;
     Class<? extends GameObject>[] classes = new Class[]{
@@ -55,8 +53,7 @@ public class ObjectManager {
 
     public ObjectManager(GameState gameState) {
         this.gameState = gameState;
-        this.collisionHandler = new CollisionHandler(gameState.getLevelManager(), this);
-        this.intersectionHandler = new IntersectionHandler(gameState.getEnemyManager(), this);
+        initHandlers();
         this.objects = Animation.getInstance().loadObjects();
         this.projectiles = new ArrayList<>();
         loadImages();
@@ -67,6 +64,12 @@ public class ObjectManager {
         this.projectileArrow = Utils.getInstance().importImage(ARROW_IMG, ARROW_WID, ARROW_HEI);
         this.projectileLightningBall = Animation.getInstance().loadLightningBall(LIGHTNING_BALL_1_SHEET);
         this.projectileLightningBall2 = Animation.getInstance().loadLightningBall(LIGHTNING_BALL_2_SHEET);
+    }
+
+    private void initHandlers() {
+        this.collisionHandler = new CollisionHandler(gameState.getLevelManager(), this);
+        this.intersectionHandler = new IntersectionHandler(gameState.getEnemyManager(), this);
+        this.objectBreakHandler = new ObjectBreakHandler(this);
     }
 
     public void loadObjects(Level level) {
@@ -101,42 +104,13 @@ public class ObjectManager {
         return collisionHandler.getXObjectBound(hitBox, dx);
     }
 
-    // Object Break
+    // Object Break Handler
     public void checkObjectBreak(Rectangle2D.Double attackBox) {
-        Flame flame = gameState.getSpellManager().getFlames();
-        for (platformer.model.gameObjects.objects.Container container : getObjects(platformer.model.gameObjects.objects.Container.class)) {
-            boolean isFlame = flame.getHitBox().intersects(container.getHitBox()) && flame.isActive();
-            if (container.isAlive() && !container.animate && (attackBox.intersects(container.getHitBox()) || isFlame)) {
-                container.setAnimate(true);
-                Audio.getInstance().getAudioPlayer().playCrateSound();
-                Logger.getInstance().notify("Player breaks container.", Message.NOTIFICATION);
-                generateLoot(container);
-            }
-        }
-    }
-
-    private void generateLoot(platformer.model.gameObjects.objects.Container container) {
-        Random rand = new Random();
-        int value = rand.nextInt(4)-1;
-        ObjType obj = null;
-        if (value == 0) obj = ObjType.STAMINA_POTION;
-        else if (value == 1) obj = ObjType.HEAL_POTION;
-        if (obj != null) {
-            int xPos = (int)(container.getHitBox().x + container.getHitBox().width / 2);
-            int yPos = (int)(container.getHitBox().y - container.getHitBox().height / 4);
-            addGameObject(new Potion(obj, xPos, yPos));
-        }
+        objectBreakHandler.checkObjectBreak(attackBox, gameState.getSpellManager().getFlames());
     }
 
     public void generateCoins(Rectangle2D.Double location) {
-        Random rand = new Random();
-        int n = rand.nextInt(7+PlayerBonus.getInstance().getBonusCoin());
-        for (int i = 0; i < n; i++) {
-            int x = rand.nextInt((int)location.width)+(int)location.x;
-            int y = rand.nextInt((int)(location.height/3)) + (int)location.y + 2*(int)location.height/3;
-            Coin coin = new Coin(ObjType.COIN, x, y);
-            addGameObject(coin);
-        }
+        objectBreakHandler.generateCoins(location);
     }
 
     public void checkProjectileDeflect(Rectangle2D.Double attackBox) {
@@ -146,52 +120,6 @@ public class ObjectManager {
                 projectile.setAlive(false);
             }
         }
-    }
-
-    // Physics Checks
-    private boolean canMove(double x, double y, double w, double h) {
-        return Utils.getInstance().canMoveHere(x, y, w, h, gameState.getLevelManager().getCurrentLevel().getLvlData());
-    }
-
-    private <T extends GameObject> boolean isObjectInAir(T object, Class<T> objectClass) {
-        for (T obj : getObjects(objectClass)) {
-            if (obj.isAlive() && obj instanceof Container && obj != object) {
-                if (obj.getHitBox().intersects(object.getHitBox())) return false;
-            }
-        }
-        double xPos = object.getHitBox().x;
-        double yPos = object.getHitBox().y + 1;
-        return canMove(xPos, yPos, object.getHitBox().width, object.getHitBox().height);
-    }
-
-    private <T extends GameObject> void landObject(T gameObject, Class<T> objectClass) {
-        boolean isSafe = true;
-        while(isSafe) {
-            isSafe = isObjectInAir(gameObject, objectClass);
-            if (isSafe) {
-                double xPos = gameObject.getHitBox().x;
-                double yPos = gameObject.getHitBox().y + 1;
-                if (canMove(xPos, yPos, gameObject.getHitBox().width, gameObject.getHitBox().height)) {
-                    gameObject.getHitBox().y += 1;
-                }
-            }
-            else {
-                gameObject.getHitBox().y += 2;
-                gameObject.setOnGround(true);
-            }
-        }
-    }
-
-    private <T extends GameObject> void updateObjectInAir(Class<T> objectClass) {
-        for (T object : getObjects(objectClass)) {
-            if (isObjectInAir(object, objectClass)) object.setOnGround(false);
-            if (!object.isOnGround) landObject(object, objectClass);
-        }
-    }
-
-    private void updateObjectInAir() {
-        updateObjectInAir(Container.class);
-        updateObjectInAir(Blacksmith.class);
     }
 
     // Launchers
@@ -223,16 +151,20 @@ public class ObjectManager {
     }
 
     public void multiLightningBallShoot(SpearWoman spearWoman) {
-        projectiles.add(new LightningBall((int)(spearWoman.getHitBox().x/1.1), (int)(spearWoman.getHitBox().y*1.3), Direction.DOWN));
-        projectiles.add(new LightningBall((int)spearWoman.getHitBox().x, (int)(spearWoman.getHitBox().y*1.3), Direction.DEGREE_45));
-        projectiles.add(new LightningBall((int)(spearWoman.getHitBox().x*1.1), (int)(spearWoman.getHitBox().y*1.2), Direction.DEGREE_30));
-        projectiles.add(new LightningBall((int)(spearWoman.getHitBox().x/1.23), (int)(spearWoman.getHitBox().y*1.3), Direction.N_DEGREE_45));
-        projectiles.add(new LightningBall((int)(spearWoman.getHitBox().x/1.38), (int)(spearWoman.getHitBox().y*1.2), Direction.N_DEGREE_30));
+        double x = spearWoman.getHitBox().x;
+        double y = spearWoman.getHitBox().y;
+        projectiles.add(new LightningBall((int)(x / 1.1),   (int)(y * 1.3), Direction.DOWN));
+        projectiles.add(new LightningBall((int)x,           (int)(y * 1.3), Direction.DEGREE_45));
+        projectiles.add(new LightningBall((int)(x * 1.1),   (int)(y * 1.2), Direction.DEGREE_30));
+        projectiles.add(new LightningBall((int)(x / 1.23),  (int)(y * 1.3), Direction.N_DEGREE_45));
+        projectiles.add(new LightningBall((int)(x / 1.38),  (int)(y * 1.2), Direction.N_DEGREE_30));
     }
 
     public void multiLightningBallShoot2(SpearWoman spearWoman) {
-        projectiles.add(new LightningBall((int)spearWoman.getHitBox().x, (int)(spearWoman.getHitBox().y*1.3), Direction.DEGREE_60));
-        projectiles.add(new LightningBall((int)(spearWoman.getHitBox().x/1.15), (int)(spearWoman.getHitBox().y*1.3), Direction.N_DEGREE_60));
+        double x = spearWoman.getHitBox().x;
+        double y = spearWoman.getHitBox().y;
+        projectiles.add(new LightningBall((int)x,           (int)(y * 1.3), Direction.DEGREE_60));
+        projectiles.add(new LightningBall((int)(x / 1.15),  (int)(y * 1.3), Direction.N_DEGREE_60));
     }
 
     public void followingLightningBallShoot(SpearWoman spearWoman) {
@@ -248,17 +180,13 @@ public class ObjectManager {
 
     // Core
     private <T extends GameObject> void updateObjects(Class<T> objectClass) {
-        for (T object : getObjects(objectClass)) {
-            object.update();
-        }
+        getObjects(objectClass).forEach(GameObject::update);
     }
 
     private <T extends GameObject> void renderObjects(Graphics g, int xLevelOffset, int yLevelOffset, Class<T> objectType) {
-        for (T obj : getObjects(objectType)) {
-            if (obj.isAlive()) {
-                obj.render(g, xLevelOffset, yLevelOffset, objects[obj.getObjType().ordinal()]);
-            }
-        }
+        getObjects(objectType).stream()
+                .filter(GameObject::isAlive)
+                .forEach(obj -> obj.render(g, xLevelOffset, yLevelOffset, objects[obj.getObjType().ordinal()]));
     }
 
     public void update(int[][] lvlData, Player player) {
@@ -267,7 +195,7 @@ public class ObjectManager {
         }
         updateArrowLaunchers(lvlData, player);
         checkEnemyIntersection();
-        updateObjectInAir();
+        collisionHandler.updateObjectInAir();
         updateProjectiles(lvlData, player);
     }
 
