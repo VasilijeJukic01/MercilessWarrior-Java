@@ -12,9 +12,8 @@ import platformer.model.entities.effects.EffectType;
 import platformer.model.entities.effects.PlayerEffectController;
 import platformer.model.entities.enemies.Enemy;
 import platformer.model.entities.enemies.EnemyManager;
-import platformer.model.objects.Container;
-import platformer.model.objects.ObjectManager;
-import platformer.model.objects.projectiles.Projectile;
+import platformer.model.gameObjects.ObjectManager;
+import platformer.model.gameObjects.projectiles.Projectile;
 import platformer.utils.Utils;
 
 import java.awt.*;
@@ -270,20 +269,20 @@ public class Player extends Entity {
     }
 
     private void checkOnObject() {
-        if (objectManager.isPlayerTouchingObject() && !onObject) {
-            inAir = !objectManager.isPlayerGlitchedInObject();
+        if (objectManager.isPlayerTouchingObject(this) && !onObject) {
+            inAir = !objectManager.isPlayerGlitchedInObject(this);
             wallPush = false;
             entityEffect = null;
             airSpeed = 0;
             currentJumps = 0;
             onObject = true;
         }
-        else if (onObject && !objectManager.isPlayerTouchingObject()) onObject = false;
+        else if (onObject && !objectManager.isPlayerTouchingObject(this)) onObject = false;
         if (onObject) wallPush = false;
     }
 
-    private void checkPotionCollide() {
-        objectManager.handleObjectInteraction(hitBox);
+    private void handleObjectInteraction() {
+        objectManager.handleObjectInteraction(hitBox, this);
     }
 
     private void checkTrapCollide() {
@@ -402,7 +401,7 @@ public class Player extends Entity {
 
     private void updateMove() {
         if (moving) {
-            checkPotionCollide();
+            handleObjectInteraction();
             checkTrapCollide();
             if (dash) {
                 dashTick++;

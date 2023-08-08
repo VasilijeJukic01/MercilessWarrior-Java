@@ -1,4 +1,4 @@
-package platformer.model.objects;
+package platformer.model.gameObjects;
 
 import platformer.animation.Animation;
 import platformer.audio.Audio;
@@ -9,8 +9,10 @@ import platformer.model.entities.Direction;
 import platformer.model.entities.player.Player;
 import platformer.model.entities.player.PlayerBonus;
 import platformer.model.entities.enemies.boss.SpearWoman;
+import platformer.model.gameObjects.objects.*;
+import platformer.model.gameObjects.objects.Container;
 import platformer.model.levels.Level;
-import platformer.model.objects.projectiles.*;
+import platformer.model.gameObjects.projectiles.*;
 import platformer.model.spells.Flame;
 import platformer.state.GameState;
 import platformer.utils.Utils;
@@ -25,15 +27,17 @@ import java.util.stream.Collectors;
 import static platformer.constants.Constants.*;
 import static platformer.constants.FilePaths.*;
 
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"unchecked", "SameParameterValue"})
 public class ObjectManager {
 
     private final GameState gameState;
+    private final CollisionHandler collisionHandler;
+    private final IntersectionHandler intersectionHandler;
 
     private final BufferedImage[][] objects;
     Class<? extends GameObject>[] classes = new Class[]{
             Coin.class,
-            Container.class,
+            platformer.model.gameObjects.objects.Container.class,
             Potion.class,
             Spike.class,
             Shop.class,
@@ -51,6 +55,8 @@ public class ObjectManager {
 
     public ObjectManager(GameState gameState) {
         this.gameState = gameState;
+        this.collisionHandler = new CollisionHandler(gameState.getLevelManager(), this);
+        this.intersectionHandler = new IntersectionHandler(gameState.getEnemyManager(), this);
         this.objects = Animation.getInstance().loadObjects();
         this.projectiles = new ArrayList<>();
         loadImages();
@@ -69,77 +75,36 @@ public class ObjectManager {
         this.projectiles.clear();
     }
 
-    // Intersections
-    public <T extends GameObject> void checkPlayerIntersection(Player p, Class<T> objectClass) {
-        for (T object : getObjects(objectClass)) {
-            boolean intersect = p.getHitBox().intersects(object.getHitBox());
-            if (intersect && object instanceof Spike || (object instanceof Blocker && object.getAnimIndex() > 2)) {
-                p.kill();
-            }
-            else if (object instanceof Shop) {
-                ((Shop) object).setActive(intersect);
-                shopVisible = intersect;
-            }
-            else if (object instanceof Blacksmith) {
-                ((Blacksmith) object).setActive(intersect);
-                blacksmithVisible = intersect;
-            }
-        }
-    }
-
+    // Intersection Handler
     public void checkPlayerIntersection(Player player) {
-        checkPlayerIntersection(player, Spike.class);
-        checkPlayerIntersection(player, Blocker.class);
-        checkPlayerIntersection(player, Shop.class);
-        checkPlayerIntersection(player, Blacksmith.class);
+        intersectionHandler.checkPlayerIntersection(player);
     }
 
     public void checkEnemyIntersection() {
-        for (Spike spike : getObjects(Spike.class)) {
-            gameState.getEnemyManager().checkEnemyTrapHit(spike);
-        }
-        for (Projectile projectile : projectiles) {
-            if (projectile.isAlive()) gameState.getEnemyManager().checkEnemyProjectileHit(projectile);
-        }
+        intersectionHandler.checkEnemyIntersection(projectiles);
     }
 
-    public <T extends GameObject> void handleObjectInteraction(Rectangle2D.Double hitBox, Class<T> objectType) {
-        ArrayList<T> objects = new ArrayList<>(getObjects(objectType));
-        for (T object : objects) {
-            if (object.isAlive() && hitBox.intersects(object.getHitBox())) {
-                object.setAlive(false);
-                if (object instanceof Potion) {
-                    applyPotionEffect((Potion) object);
-                }
-                else if (object instanceof Coin) {
-                    removeGameObject(object);
-                    Audio.getInstance().getAudioPlayer().playSound(Sound.COIN_PICK);
-                    gameState.getPlayer().changeCoins(1);
-                }
-            }
-        }
+    public void handleObjectInteraction(Rectangle2D.Double hitBox, Player player) {
+        intersectionHandler.handleObjectInteraction(hitBox, player);
     }
 
-    public void handleObjectInteraction(Rectangle2D.Double hitBox) {
-        handleObjectInteraction(hitBox, Potion.class);
-        handleObjectInteraction(hitBox, Coin.class);
+    // Collision Handler
+    public boolean isPlayerTouchingObject(Player player) {
+        return collisionHandler.isTouchingObject(Container.class, player);
     }
 
-    // Apply Effects
-    public void applyPotionEffect(Potion potion) {
-        if (potion == null) return;
-        switch (potion.getObjType()) {
-            case HEAL_POTION:
-                gameState.getPlayer().changeHealth(HEAL_POTION_VAL); break;
-            case STAMINA_POTION:
-                gameState.getPlayer().changeStamina(STAMINA_POTION_VAL); break;
-        }
+    public boolean isPlayerGlitchedInObject(Player player) {
+        return collisionHandler.isGlitchedInObject(Container.class, player);
+    }
+
+    public double getXObjectBound(Rectangle2D.Double hitBox, double dx) {
+        return collisionHandler.getXObjectBound(hitBox, dx);
     }
 
     // Object Break
     public void checkObjectBreak(Rectangle2D.Double attackBox) {
         Flame flame = gameState.getSpellManager().getFlames();
-        for (Container container : getObjects(Container.class)) {
+        for (platformer.model.gameObjects.objects.Container container : getObjects(platformer.model.gameObjects.objects.Container.class)) {
             boolean isFlame = flame.getHitBox().intersects(container.getHitBox()) && flame.isActive();
             if (container.isAlive() && !container.animate && (attackBox.intersects(container.getHitBox()) || isFlame)) {
                 container.setAnimate(true);
@@ -150,7 +115,7 @@ public class ObjectManager {
         }
     }
 
-    private void generateLoot(Container container) {
+    private void generateLoot(platformer.model.gameObjects.objects.Container container) {
         Random rand = new Random();
         int value = rand.nextInt(4)-1;
         ObjType obj = null;
@@ -181,109 +146,6 @@ public class ObjectManager {
                 projectile.setAlive(false);
             }
         }
-    }
-
-    // Object Touch & Bounds
-    private <T extends GameObject> boolean isPlayerTouchingObject(Class<T> objectClass) {
-        for (T o : getObjects(objectClass)) {
-            if (o.isAlive() && o.getAnimIndex() < 1) {
-                if (o.getHitBox().intersects(gameState.getPlayer().getHitBox())) return true;
-            }
-        }
-        return false;
-    }
-
-    private <T extends GameObject> boolean isPlayerGlitchedInObject(Class<T> objectClass) {
-        for (T o : getObjects(objectClass)) {
-            if (o.isAlive() && o.getAnimIndex() < 1) {
-                if (checkTouch(o, gameState.getPlayer().getHitBox(), "Y", 2)) return true;
-            }
-        }
-        return false;
-    }
-
-    public boolean isPlayerTouchingObject() {
-        return isPlayerTouchingObject(Container.class);
-    }
-
-    public boolean isPlayerGlitchedInObject() {
-        return isPlayerGlitchedInObject(Container.class);
-    }
-
-    private boolean checkTouch(GameObject o, Rectangle2D.Double hitBox, String axis, double offset) {
-        int x = (int)hitBox.x, y = (int)hitBox.y;
-        int width = (int)hitBox.width, height = (int)hitBox.height;
-
-        if (o.isAlive() && o.getAnimIndex() < 1) {
-            if (axis.equals("X")) {
-                if (o.getHitBox().contains(x, y)) return true;
-                if (o.getHitBox().contains(x+width, y)) return true;
-                if (o.getHitBox().contains(x, y+height-5)) return true;
-                return o.getHitBox().contains(x+width, y+height-5);
-            }
-            else if (axis.equals("Y")) {
-                if (o.getHitBox().contains(x+offset, y+height + 3)) return true;
-                return o.getHitBox().contains(x+width-offset, y+height + 3);
-            }
-        }
-
-        return false;
-    }
-
-    private <T extends GameObject> GameObject getCollidingObject(Direction direction, Rectangle2D.Double hitBox, Class<T> objectClass) {
-        for (T o : getObjects(objectClass)) {
-            if (o.isAlive() && checkTouch(o, hitBox, "X", 0)) {
-                if (o.getHitBox().x < hitBox.x && direction == Direction.LEFT) return o;
-                else if(o.getHitBox().x > hitBox.x && direction == Direction.RIGHT) return o;
-            }
-        }
-        return null;
-    }
-
-    public double getXObjectBound(Rectangle2D.Double hitBox, double dx) {
-        for (Container o : getObjects(Container.class)) {
-            if (!o.isAlive()) continue;
-
-            if (checkTouch(o, hitBox, "X", 0)) {
-                return playerHittingObjectBySide(o, hitBox, dx);
-            }
-            if (checkTouch(o, hitBox, "Y", 0)) {
-                return playerStandingOnObject(hitBox, dx);
-            }
-
-        }
-        return hitBox.x;
-    }
-
-    private double playerHittingObjectBySide(GameObject o, Rectangle2D.Double hitBox, double dx) {
-        if (o.getHitBox().x < hitBox.x && dx > 0) {
-            if (canMove(hitBox.x+1, hitBox.y, hitBox.width, hitBox.height)) return hitBox.x+1;
-        }
-        else if(o.getHitBox().x > hitBox.x && dx < 0) {
-            if (canMove(hitBox.x-1, hitBox.y, hitBox.width, hitBox.height)) return hitBox.x-1;
-        }
-        return hitBox.x;
-    }
-
-    private double playerStandingOnObject(Rectangle2D.Double hitBox, double dx) {
-        GameObject left = getCollidingObject(Direction.LEFT, hitBox, Container.class);
-        GameObject right = getCollidingObject(Direction.RIGHT, hitBox, Container.class);
-
-        if (dx < 0 && left == null) {
-            if (canMove(hitBox.x-1, hitBox.y, hitBox.width, hitBox.height)) return hitBox.x-1;
-        }
-        else if(dx > 0 && right == null) {
-            if (canMove(hitBox.x+1, hitBox.y, hitBox.width, hitBox.height)) return hitBox.x+1;
-        }
-        else if (dx < 0 && left.isAlive()) {
-            double x = left.getHitBox().x+left.getHitBox().width;
-            if (canMove(x, hitBox.y, hitBox.width, hitBox.height)) return x;
-        }
-        else if (dx > 0 && right.isAlive()) {
-            double x = right.getHitBox().x-hitBox.width;
-            if (canMove(x, hitBox.y, hitBox.width, hitBox.height)) return x;
-        }
-        return hitBox.x;
     }
 
     // Physics Checks
@@ -384,18 +246,52 @@ public class ObjectManager {
         }
     }
 
-    // Updates
+    // Core
+    private <T extends GameObject> void updateObjects(Class<T> objectClass) {
+        for (T object : getObjects(objectClass)) {
+            object.update();
+        }
+    }
+
+    private <T extends GameObject> void renderObjects(Graphics g, int xLevelOffset, int yLevelOffset, Class<T> objectType) {
+        for (T obj : getObjects(objectType)) {
+            if (obj.isAlive()) {
+                obj.render(g, xLevelOffset, yLevelOffset, objects[obj.getObjType().ordinal()]);
+            }
+        }
+    }
+
+    public void update(int[][] lvlData, Player player) {
+        for (Class<? extends GameObject> renderClass : classes) {
+            updateObjects(renderClass);
+        }
+        updateArrowLaunchers(lvlData, player);
+        checkEnemyIntersection();
+        updateObjectInAir();
+        updateProjectiles(lvlData, player);
+    }
+
+    public void render(Graphics g, int xLevelOffset, int yLevelOffset) {
+        for (Class<? extends GameObject> renderClass : classes) {
+            renderObjects(g, xLevelOffset, yLevelOffset, renderClass);
+        }
+        renderArrowLaunchers(g, xLevelOffset, yLevelOffset);
+        renderProjectiles(g, xLevelOffset, yLevelOffset);
+    }
+
     private void updateArrowLaunchers(int[][] lvlData, Player player) {
         for (ArrowLauncher arrowLauncher : getObjects(ArrowLauncher.class)) {
-            boolean flag = true;
-            if (arrowLauncher.animate) flag = false;
-            if ((arrowLauncher.getYTile() < player.getHitBox().y/TILES_SIZE) ||
-                    (arrowLauncher.getYTile() > (player.getHitBox().y+player.getHitBox().height)/TILES_SIZE)) {
-                flag = false;
-            }
-            if (!isPlayerInRangeForTrap(arrowLauncher, player) || !isPlayerInFrontOfTrap(arrowLauncher, player)) flag = false;
-            if (!Utils.getInstance().canLauncherSeePlayer(lvlData, player.getHitBox(), arrowLauncher.getHitBox(), arrowLauncher.getYTile())) flag = false;
-            if (flag) arrowLauncher.setAnimate(true);
+            boolean ready = !arrowLauncher.animate;
+
+            double playerTopTile = player.getHitBox().y / TILES_SIZE;
+            double playerBottomTile = (player.getHitBox().y + player.getHitBox().height) / TILES_SIZE;
+            int arrowLauncherTile = arrowLauncher.getYTile();
+
+            if (arrowLauncherTile < playerTopTile || arrowLauncherTile > playerBottomTile) ready = false;
+            if (!isPlayerInRangeForTrap(arrowLauncher, player) || !isPlayerInFrontOfTrap(arrowLauncher, player)) ready = false;
+            if (!Utils.getInstance().canLauncherSeePlayer(lvlData, player.getHitBox(), arrowLauncher.getHitBox(), arrowLauncherTile)) ready = false;
+
+            if (ready) arrowLauncher.setAnimate(true);
             arrowLauncher.update();
             if (arrowLauncher.getAnimIndex() == 9 && arrowLauncher.getAnimTick() == 0) {
                 shootArrow(arrowLauncher);
@@ -418,39 +314,6 @@ public class ObjectManager {
         }
     }
 
-    private <T extends GameObject> void updateObjects(Class<T> objectClass) {
-        for (T object : getObjects(objectClass)) {
-            object.update();
-        }
-    }
-
-    private <T extends GameObject> void renderObjects(Graphics g, int xLevelOffset, int yLevelOffset, Class<T> objectType) {
-        for (T obj : getObjects(objectType)) {
-            if (obj.isAlive()) {
-                obj.render(g, xLevelOffset, yLevelOffset, objects[obj.getObjType().ordinal()]);
-            }
-        }
-    }
-
-    // Core
-    public void update(int[][] lvlData, Player player) {
-        for (Class<? extends GameObject> renderClass : classes) {
-            updateObjects(renderClass);
-        }
-        updateArrowLaunchers(lvlData, player);
-        checkEnemyIntersection();
-        updateObjectInAir();
-        updateProjectiles(lvlData, player);
-    }
-
-    public void render(Graphics g, int xLevelOffset, int yLevelOffset) {
-        for (Class<? extends GameObject> renderClass : classes) {
-            renderObjects(g, xLevelOffset, yLevelOffset, renderClass);
-        }
-        renderArrowLaunchers(g, xLevelOffset, yLevelOffset);
-        renderProjectiles(g, xLevelOffset, yLevelOffset);
-    }
-
     private void renderArrowLaunchers(Graphics g, int xLevelOffset, int yLevelOffset) {
         for (ArrowLauncher al : getObjects(ArrowLauncher.class)) {
             if (al.isAlive()) {
@@ -463,32 +326,16 @@ public class ObjectManager {
     private void renderProjectiles(Graphics g, int xLevelOffset, int yLevelOffset) {
         for (Projectile p : projectiles) {
             if (!p.isAlive()) continue;
-            int fS = 1, fC = 0;
             // Arrow
             if (p instanceof Arrow) {
-                if (p.getDirection() == Direction.LEFT) {
-                    fS = -1;
-                    fC = ARROW_TRAP_WID;
-                }
-                int x = (int)p.getHitBox().x - xLevelOffset + fC;
-                int y = (int)p.getHitBox().y - yLevelOffset;
-                g.drawImage(projectileArrow, x, y, fS * ARROW_WID, ARROW_HEI, null);
+                p.render(g, xLevelOffset, yLevelOffset, projectileArrow);
             }
             // Lightning Ball
             else {
-                BufferedImage object = projectileLightningBall2[p.getAnimIndex()];
                 if (p.getDirection() == Direction.LEFT || p.getDirection() == Direction.RIGHT)
-                    object = projectileLightningBall[p.getAnimIndex()];
-                if (p.getDirection() == Direction.RIGHT) {
-                    fS = -1;
-                    fC = LB_WID;
-                }
-
-                int x = (int)(p.getHitBox().x - xLevelOffset + fC - 22*SCALE);
-                int y = (int)(p.getHitBox().y - yLevelOffset - 20*SCALE);
-                g.drawImage(object, x, y, fS * LB_WID, LB_HEI, null);
+                    p.render(g, xLevelOffset, yLevelOffset, projectileLightningBall);
+                else p.render(g, xLevelOffset, yLevelOffset, projectileLightningBall2);
             }
-            p.renderHitBox(g, xLevelOffset, yLevelOffset, Color.BLUE);
         }
     }
 
@@ -497,7 +344,6 @@ public class ObjectManager {
         objectsMap.clear();
         loadObjects(gameState.getLevelManager().getCurrentLevel());
     }
-
 
     // Hashmap operations
     private List<GameObject> getAllObjects() {
@@ -511,12 +357,12 @@ public class ObjectManager {
                 .collect(Collectors.toList());
     }
 
-    private void addGameObject(GameObject gameObject) {
+    public void addGameObject(GameObject gameObject) {
         ObjType type = gameObject.getObjType();
         objectsMap.computeIfAbsent(type, k -> new ArrayList<>()).add(gameObject);
     }
 
-    private void removeGameObject(GameObject gameObject) {
+    public void removeGameObject(GameObject gameObject) {
         ObjType type = gameObject.getObjType();
         List<GameObject> objectsOfType = objectsMap.get(type);
         if (objectsOfType != null) {
@@ -530,5 +376,13 @@ public class ObjectManager {
 
     public boolean isBlacksmithVisible() {
         return blacksmithVisible;
+    }
+
+    public void setShopVisible(boolean shopVisible) {
+        this.shopVisible = shopVisible;
+    }
+
+    public void setBlacksmithVisible(boolean blacksmithVisible) {
+        this.blacksmithVisible = blacksmithVisible;
     }
 }

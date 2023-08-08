@@ -1,8 +1,10 @@
-package platformer.model.objects;
+package platformer.model.gameObjects.objects;
 
 import platformer.audio.Audio;
 import platformer.audio.Sound;
 import platformer.model.entities.player.Player;
+import platformer.model.gameObjects.GameObject;
+import platformer.model.gameObjects.ObjType;
 import platformer.ui.ItemType;
 import platformer.ui.ShopItem;
 import platformer.utils.Utils;

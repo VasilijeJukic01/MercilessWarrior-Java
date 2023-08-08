@@ -1,4 +1,4 @@
-package platformer.model.objects.projectiles;
+package platformer.model.gameObjects.projectiles;
 
 import platformer.animation.graphics.GraphicsAnimation;
 import platformer.animation.graphics.WaveAnim;
@@ -132,6 +132,8 @@ public abstract class Projectile {
         hitBox.x += X * LB_SPEED_SLOW;
         hitBox.y += Y * LB_SPEED_SLOW;
     }
+
+    public abstract void render(Graphics g, int xLevelOffset, int yLevelOffset, Object animations);
 
     public void renderHitBox(Graphics g, int xLevelOffset, int yLevelOffset, Color color) {
         if (!DebugSettings.getInstance().isDebugMode()) return;

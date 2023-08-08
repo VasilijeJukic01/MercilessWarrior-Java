@@ -1,4 +1,4 @@
-package platformer.model.objects;
+package platformer.model.gameObjects;
 
 import platformer.debug.Debug;
 import platformer.debug.DebugSettings;

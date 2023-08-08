@@ -1,4 +1,7 @@
-package platformer.model.objects;
+package platformer.model.gameObjects.objects;
+
+import platformer.model.gameObjects.GameObject;
+import platformer.model.gameObjects.ObjType;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;

@@ -1,7 +1,7 @@
 package platformer.animation;
 
 import platformer.model.entities.effects.Particle;
-import platformer.model.objects.ObjType;
+import platformer.model.gameObjects.ObjType;
 import platformer.utils.Utils;
 import java.awt.image.BufferedImage;
 import java.util.Random;

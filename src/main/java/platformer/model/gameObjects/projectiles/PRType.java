@@ -1,4 +1,4 @@
-package platformer.model.objects.projectiles;
+package platformer.model.gameObjects.projectiles;
 
 public enum PRType {
     ARROW(1),               // 0

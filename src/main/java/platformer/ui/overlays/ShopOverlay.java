@@ -1,6 +1,6 @@
 package platformer.ui.overlays;
 
-import platformer.model.objects.Shop;
+import platformer.model.gameObjects.objects.Shop;
 import platformer.state.GameState;
 import platformer.ui.ShopItem;
 import platformer.ui.buttons.ButtonType;

@@ -1,4 +1,4 @@
-package platformer.model.objects;
+package platformer.model.gameObjects;
 
 public enum ObjType {
     STAMINA_POTION(7),              // 0

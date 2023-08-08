@@ -1,9 +1,11 @@
-package platformer.model.objects.projectiles;
+package platformer.model.gameObjects.projectiles;
 
 import platformer.animation.graphics.WaveAnim;
 import platformer.model.entities.Direction;
 
+import java.awt.*;
 import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
 import java.util.Random;
 
 import static platformer.constants.Constants.*;
@@ -30,4 +32,20 @@ public class LightningBall extends Projectile {
             super.waveMovement = new WaveAnim((int)hitBox.x, (int)hitBox.y, LB_T, d, LB_PERIOD, LB_T);
         }
     }
+
+    @Override
+    public void render(Graphics g, int xLevelOffset, int yLevelOffset, Object animations) {
+        if (!(animations instanceof BufferedImage[])) return;
+        BufferedImage[] animArray = (BufferedImage[]) animations;
+        int fS = 1, fC = 0;
+        if (direction == Direction.RIGHT) {
+            fS = -1;
+            fC = LB_WID;
+        }
+        int x = (int)(hitBox.x - xLevelOffset + fC - 22 * SCALE);
+        int y = (int)(hitBox.y - yLevelOffset - 20 * SCALE);
+        g.drawImage(animArray[animIndex], x, y, fS * LB_WID, LB_HEI, null);
+        renderHitBox(g, xLevelOffset, yLevelOffset, Color.BLUE);
+    }
+
 }

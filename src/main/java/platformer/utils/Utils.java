@@ -4,7 +4,7 @@ import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
 import platformer.model.entities.Direction;
 import platformer.model.levels.Level;
-import platformer.model.objects.projectiles.Projectile;
+import platformer.model.gameObjects.projectiles.Projectile;
 
 import javax.imageio.ImageIO;
 import java.awt.*;

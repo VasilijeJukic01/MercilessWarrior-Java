@@ -9,7 +9,7 @@ import platformer.model.entities.enemies.EnemyManager;
 import platformer.core.Game;
 import platformer.model.entities.player.Player;
 import platformer.model.levels.LevelManager;
-import platformer.model.objects.ObjectManager;
+import platformer.model.gameObjects.ObjectManager;
 import platformer.model.perks.PerksManager;
 import platformer.model.spells.SpellManager;
 import platformer.ui.overlays.OverlayManager;
@@ -68,8 +68,8 @@ public class GameState extends AbstractState implements State {
     private void initManagers() {
         this.perksManager = new PerksManager();
         this.levelManager = new LevelManager(this);
-        this.objectManager = new ObjectManager(this);
         this.enemyManager = new EnemyManager(this);
+        this.objectManager = new ObjectManager(this);
         this.overlayManager = new OverlayManager(this);
         this.spellManager = new SpellManager(this);
     }

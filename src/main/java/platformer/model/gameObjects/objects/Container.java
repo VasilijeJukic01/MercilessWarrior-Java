@@ -1,22 +1,33 @@
-package platformer.model.objects;
+package platformer.model.gameObjects.objects;
+
+import platformer.model.gameObjects.GameObject;
+import platformer.model.gameObjects.ObjType;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
 import static platformer.constants.Constants.*;
 
-public class Coin extends GameObject {
+public class Container extends GameObject {
 
-    public Coin(ObjType objType, int xPos, int yPos) {
+    public Container(ObjType objType, int xPos, int yPos) {
         super(objType, xPos, yPos);
         generateHitBox();
     }
 
     private void generateHitBox() {
-        super.animate = true;
-        initHitBox(COIN_HB_SIZE, COIN_HB_SIZE);
-        super.xOffset = COIN_OFFSET;
-        super.yOffset = COIN_OFFSET;
+        if (objType == ObjType.BOX) {
+            initHitBox(BOX_HB_WID, BOX_HB_HEI);
+            super.xOffset = BOX_OFFSET_X;
+            super.yOffset = BOX_OFFSET_Y;
+        }
+        else if (objType == ObjType.BARREL) {
+            initHitBox(BARREL_HB_WID, BARREL_HB_HEI);
+            super.xOffset = BARREL_OFFSET_X;
+            super.yOffset = BARREL_OFFSET_Y;
+        }
+        hitBox.y += yOffset + (int)(6 * SCALE);
+        hitBox.x += xOffset / 2.0;
     }
 
     @Override
@@ -28,7 +39,7 @@ public class Coin extends GameObject {
     public void render(Graphics g, int xLevelOffset, int yLevelOffset, BufferedImage[] animations) {
         int x = (int)hitBox.x - xOffset - xLevelOffset;
         int y = (int)hitBox.y - yOffset - yLevelOffset;
-        g.drawImage(animations[animIndex], x, y, COIN_WID, COIN_HEI, null);
+        g.drawImage(animations[animIndex], x, y, CONTAINER_WID, CONTAINER_HEI, null);
         hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.ORANGE);
     }
 
