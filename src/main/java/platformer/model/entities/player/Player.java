@@ -36,6 +36,7 @@ public class Player extends Entity {
     private final int animSpeed = 20;
     private int animTick = 0, animIndex = 0;
     private AttackState attackState;
+    private final PlayerActionHandler actionHandler;
     // Physics
     private final double gravity = 0.035 * SCALE;
     private final double wallGravity = 0.0005 * SCALE;
@@ -46,7 +47,7 @@ public class Player extends Entity {
     private int spellState = 0;
     private boolean doubleJump, onWall, onObject, wallPush, canDash = true, canBlock, canTransform;
     // Status
-    private int currentJumps = 0, dashCount = 0;
+    private int currentJumps = 0;
     private int dashTick = 0;
     private final int attackDmg = 5, transformAttackDmg = 8;
     private double currentStamina = 15;
@@ -61,15 +62,16 @@ public class Player extends Entity {
         this.objectManager = objectManager;
         loadAnimations();
         initHitBox(PLAYER_HB_WID, PLAYER_HB_HEI);
-        initAttackBox(PLAYER_AB_WID, PLAYER_AB_HEI);
+        initAttackBox();
         this.cooldown = new double[3];
         this.playerDataManager = new PlayerDataManager(game.getAccount(), this);
         this.effectController = new PlayerEffectController(this);
+        this.actionHandler = new PlayerActionHandler(this);
     }
 
     // Init
-    private void initAttackBox(int wid, int hei) {
-        this.attackBox = new Rectangle2D.Double(xPos, yPos-1, wid, hei);
+    private void initAttackBox() {
+        this.attackBox = new Rectangle2D.Double(xPos, yPos-1, PLAYER_AB_WID, PLAYER_AB_HEI);
     }
 
     private void loadAnimations() {
@@ -99,30 +101,33 @@ public class Player extends Entity {
                 animIndex = 2;
             }
             if (animIndex >= animations[entityState.ordinal()].length) {
-                animIndex = 0;
-                attacking = attackCheck = false;
-                dashHit = false;
-                block = canBlock = false;
-                if (canTransform) {
-                    canTransform = false;
-                    transform = true;
-                }
-                setSpellState(0);
-                if (hit) {
-                    hit = false;
-                    airSpeed = 0;
-                }
+                finishAnimation();
             }
             coolDownTickUpdate();
         }
-        // Wall flip lock
-        if (moving && left && !onWall) {
-            this.flipCoefficient = (int)(width-hitBox.width-13*SCALE);
-            this.flipSign = -1;
+        blockWallFlip();
+    }
+
+    private void finishAnimation() {
+        animIndex = 0;
+        attacking = attackCheck = false;
+        dashHit = false;
+        block = canBlock = false;
+        if (canTransform) {
+            canTransform = false;
+            transform = true;
         }
-        else if (moving && right && !onWall) {
-            this.flipCoefficient = 0;
-            this.flipSign = 1;
+        setSpellState(0);
+        if (hit) {
+            hit = false;
+            airSpeed = 0;
+        }
+    }
+
+    private void blockWallFlip() {
+        if (moving && !onWall) {
+            flipCoefficient = (left) ? (int)(width - hitBox.width - 13 * SCALE) : 0;
+            flipSign = (left) ? -1 : 1;
         }
     }
 
@@ -130,33 +135,50 @@ public class Player extends Entity {
         if (spellState == 2) return;
         Anim previousAction = entityState;
 
-        if (moving) entityState = Anim.RUN;
-        else entityState = Anim.IDLE;
+        entityState = (moving) ? Anim.RUN : Anim.IDLE;
 
         if (inAir) {
             if (airSpeed < 0) entityState = Anim.JUMP;
             else if (airSpeed > 0) entityState = Anim.FALL;
         }
-        if (onWall && !onObject) {
-            entityState = Anim.WALL;
-            effectController.setPlayerEffect(EffectType.WALL_SLIDE);
-        }
+        if (onWall && !onObject) setWallSlideAnimation();
         if (dash) {
-            entityState = Anim.ATTACK_1;
-            animIndex = 1;
-            animTick = 0;
+            setDashAnimation();
             return;
         }
         if (spellState == 1) entityState = Anim.SPELL_1;
         else if (canBlock) entityState = Anim.BLOCK;
         else if (hit) entityState = Anim.HIT;
-        else if (attacking && !onWall) {
-            if (attackState == AttackState.ATTACK_1) entityState = Anim.ATTACK_1;
-            else if (attackState == AttackState.ATTACK_2) entityState = Anim.ATTACK_2;
-            else if (attackState == AttackState.ATTACK_3) entityState = Anim.ATTACK_3;
-        }
+        else if (attacking && !onWall) setAttackAnimation();
         else if (canTransform) entityState = Anim.TRANSFORM;
+
         if (previousAction != entityState) animIndex = animTick = 0;
+    }
+
+    private void setWallSlideAnimation() {
+        entityState = Anim.WALL;
+        effectController.setPlayerEffect(EffectType.WALL_SLIDE);
+    }
+
+    private void setDashAnimation() {
+        entityState = Anim.ATTACK_1;
+        animIndex = 1;
+        animTick = 0;
+    }
+
+    private void setAttackAnimation() {
+        switch (attackState) {
+            case ATTACK_1:
+                entityState = Anim.ATTACK_1;
+                break;
+            case ATTACK_2:
+                entityState = Anim.ATTACK_2;
+                break;
+            case ATTACK_3:
+                entityState = Anim.ATTACK_3;
+                break;
+            default: break;
+        }
     }
 
     // Positioning
@@ -167,7 +189,7 @@ public class Player extends Entity {
 
         if (spellState != 0 || canBlock || canTransform) return;
         if (jump) doJump();
-        if (!inAir || onWall) dashCount = 0;
+        if (!inAir || onWall) actionHandler.setDashCount(0);
         if (((!left && !right) || (left && right)) && !inAir && !dash) return;
 
         double dx = 0;
@@ -185,9 +207,8 @@ public class Player extends Entity {
             dx *= 6;
         }
 
-        if (inAir && !dash) {
-            inAirUpdate();
-        }
+        if (inAir && !dash) inAirUpdate();
+
         updateX(dx);
         moving = true;
     }
@@ -206,8 +227,7 @@ public class Player extends Entity {
                 currentJumps = 0;
             }
             else {
-                if (onWall) airSpeed = wallGravity;
-                else airSpeed = collisionFallSpeed;
+                airSpeed = (onWall) ? wallGravity : collisionFallSpeed;
                 doubleJump = false;
             }
         }
@@ -281,22 +301,9 @@ public class Player extends Entity {
         if (onObject) wallPush = false;
     }
 
-    private void handleObjectInteraction() {
-        objectManager.handleObjectInteraction(hitBox, this);
-    }
-
-    private void checkTrapCollide() {
-        objectManager.checkPlayerIntersection(this);
-    }
-
     // Actions
     public void doJump() {
-        if (Utils.getInstance().isOnWall(hitBox, levelData, Direction.LEFT) && left && !right) return;
-        if (Utils.getInstance().isOnWall(hitBox, levelData, Direction.RIGHT) && right && !left) return;
-        if (inAir && doubleJump && onWall) return;
-        if (inAir && currentJumps != 1) return;
-        if (onObject && Utils.getInstance().isTileSolid((int)(hitBox.x/TILES_SIZE), (int)((hitBox.y-5)/TILES_SIZE), levelData)) return;
-
+        if (!actionHandler.canJump(levelData, left, right, doubleJump)) return;
         if (currentJumps == 1) {
             doubleJump = true;
             animIndex = animTick = 0;
@@ -304,29 +311,6 @@ public class Player extends Entity {
         }
         inAir = true;
         airSpeed = jumpSpeed;
-    }
-
-    public void doDash() {
-        if (cooldown[Cooldown.DASH.ordinal()] != 0) return;
-        if (Utils.getInstance().isTouchingWall(hitBox,Direction.LEFT) || Utils.getInstance().isTouchingWall(hitBox,Direction.RIGHT)) return;
-        if (dashCount > 0) return;
-        if (dash || !canDash) return;
-        if (currentStamina >= 3) {
-            dash = true;
-            dashCount++;
-            canDash = false;
-            Audio.getInstance().getAudioPlayer().playSound(Sound.DASH);
-            changeStamina(-3);
-            cooldown[Cooldown.DASH.ordinal()] = 1.75 + PlayerBonus.getInstance().getDashCooldown();
-        }
-    }
-
-    public void doSpell() {
-        if (inAir) return;
-        if (currentStamina >= 5) {
-            setSpellState(1);
-            Logger.getInstance().notify("Player has used FLAME spell!", Message.INFORMATION);
-        }
     }
 
     // Status Changes
@@ -401,8 +385,7 @@ public class Player extends Entity {
 
     private void updateMove() {
         if (moving) {
-            handleObjectInteraction();
-            checkTrapCollide();
+            actionHandler.handleObjectActions(objectManager);
             if (dash) {
                 dashTick++;
                 if (dashTick >= 40) {
@@ -470,7 +453,7 @@ public class Player extends Entity {
         currentStamina = 0;
         hitBox.x = xPos;
         hitBox.y = yPos;
-        initAttackBox(PLAYER_AB_WID, PLAYER_AB_HEI);
+        initAttackBox();
         if (!Utils.getInstance().isEntityOnFloor(hitBox, levelData)) inAir = true;
     }
 
@@ -498,12 +481,12 @@ public class Player extends Entity {
         setSpellState(0);
     }
 
-    public void setLeft(boolean left) {
-        this.left = left;
-    }
-
     public void setRight(boolean right) {
         this.right = right;
+    }
+
+    public void setLeft(boolean left) {
+        this.left = left;
     }
 
     public void setPlayerAttackState(AttackState playerAttackState) {
@@ -519,10 +502,6 @@ public class Player extends Entity {
 
     public void setJump(boolean jump) {
         this.jump = jump;
-    }
-
-    public int getCurrentJumps() {
-        return currentJumps;
     }
 
     public void setCurrentJumps(int currentJumps) {
@@ -549,10 +528,6 @@ public class Player extends Entity {
         this.block = block;
     }
 
-    public boolean isBlock() {
-        return block;
-    }
-
     public void setCanBlock(boolean canBlock) {
         this.canBlock = canBlock;
         if (canBlock) {
@@ -571,9 +546,21 @@ public class Player extends Entity {
         }
     }
 
+    public void setDash(boolean dash) {
+        this.dash = dash;
+    }
+
     // Getters
     public double getCurrentStamina() {
         return currentStamina;
+    }
+
+    public int getCurrentJumps() {
+        return currentJumps;
+    }
+
+    public boolean isBlock() {
+        return block;
     }
 
     public boolean isOnWall() {
@@ -588,16 +575,16 @@ public class Player extends Entity {
         return dash;
     }
 
+    public boolean isOnObject() {
+        return onObject;
+    }
+
     public int getSpellState() {
         return spellState;
     }
 
     public int getAttackDmg() {
-        return attackDmg;
-    }
-
-    public int getTransformAttackDmg() {
-        return transformAttackDmg;
+        return transform ? transformAttackDmg : attackDmg;
     }
 
     public boolean canBlock() {
@@ -612,16 +599,16 @@ public class Player extends Entity {
         return playerDataManager.getLevel();
     }
 
-    public boolean isTransform() {
-        return transform;
-    }
-
     public int getUpgradeTokens() {
         return playerDataManager.getUpgradeTokens();
     }
 
     public PlayerDataManager getPlayerStatusManager() {
         return playerDataManager;
+    }
+
+    public PlayerActionHandler getActionHandler() {
+        return actionHandler;
     }
 
     @Override

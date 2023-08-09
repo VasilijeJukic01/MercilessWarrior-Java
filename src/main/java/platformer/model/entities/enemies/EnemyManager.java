@@ -106,7 +106,7 @@ public class EnemyManager {
 
     private int[] damage(Player player) {
         int critical = 0;
-        int dmg = player.isTransform() ? player.getTransformAttackDmg() : player.getAttackDmg();
+        int dmg = player.getAttackDmg();
         dmg += PlayerBonus.getInstance().getBonusAttack();
         Random rand = new Random();
         int criticalHit = rand.nextInt(100-PlayerBonus.getInstance().getCriticalHitChance());

@@ -1,5 +1,6 @@
 package platformer.model.entities.enemies.boss;
 
+import platformer.animation.Anim;
 import platformer.audio.Audio;
 import platformer.audio.Sound;
 import platformer.model.entities.Direction;
@@ -7,18 +8,22 @@ import platformer.model.entities.player.Player;
 import platformer.utils.Utils;
 
 import java.awt.geom.Rectangle2D;
+import java.util.List;
 import java.util.Random;
 
 import static platformer.constants.Constants.*;
 
-public class SpearWomanHandler {
+public class BossAttackHandler {
 
     private final SpearWoman spearWoman;
     private final Rectangle2D.Double hitBox;
 
-    public SpearWomanHandler(SpearWoman spearWoman) {
+    private final List<Anim> actions;
+
+    public BossAttackHandler(SpearWoman spearWoman, List<Anim> actions) {
         this.spearWoman = spearWoman;
         this.hitBox = spearWoman.getHitBox();
+        this.actions = actions;
     }
 
     // Teleport
@@ -44,12 +49,12 @@ public class SpearWomanHandler {
     }
 
     // Attacks
-    public void thunderSlamAttack() {
+    private void thunderSlamAttack() {
         spearWoman.getHitBox().x = 12.5 * TILES_SIZE;
         spearWoman.getHitBox().y = 4 * TILES_SIZE;
     }
 
-    public void lightningBallAttack() {
+    private void lightningBallAttack() {
         Random rand = new Random();
         int dir = rand.nextInt(2);
         if (dir == 0) {
@@ -63,22 +68,52 @@ public class SpearWomanHandler {
         hitBox.y = spearWoman.getYPos();
     }
 
-    public void dashSlashAttack(int[][] levelData, Player player) {
+    private void dashSlashAttack(int[][] levelData, Player player) {
         teleport(levelData, player, 8);
         Audio.getInstance().getAudioPlayer().playSound(Sound.SW_ROAR_1);
         spearWoman.setAttackCooldown(5.5);
     }
 
-    public int multiLightningBallAttack() {
+    private int multiLightningBallAttack() {
         Random rand = new Random();
         hitBox.x = 12.5 * TILES_SIZE;
         hitBox.y = 4 * TILES_SIZE;
         return rand.nextInt(2);
     }
 
-    public void classicAttack(int[][] levelData, Player player) {
+    private void classicAttack(int[][] levelData, Player player) {
         teleport(levelData, player, 3);
         spearWoman.setAttackCooldown(5.5);
+    }
+
+    public void attack(int[][] levelData, Player player, Anim prevAnim) {
+        Random rand = new Random();
+        spearWoman.attackReset();
+
+        Anim next;
+        do {
+            next = actions.get(rand.nextInt(actions.size()));
+        } while (next == prevAnim || next == Anim.ATTACK_2);
+        spearWoman.setEnemyAction(next);
+
+        switch (spearWoman.getEnemyAction()) {
+            case ATTACK_1:
+            case SPELL_1:
+                spearWoman.prepareForClassicAttack();
+                classicAttack(levelData, player); break;
+            case ATTACK_3:
+                spearWoman.changeAttackBox();
+                dashSlashAttack(levelData, player); break;
+            case SPELL_2:
+                lightningBallAttack(); break;
+            case SPELL_3:
+                thunderSlamAttack(); break;
+            case SPELL_4:
+                spearWoman.setSpecialAttackIndex(multiLightningBallAttack()); break;
+            default: break;
+
+        }
+
     }
 
 

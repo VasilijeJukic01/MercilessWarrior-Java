@@ -77,13 +77,13 @@ public class GameStateController {
                 break;
             case KeyEvent.VK_C:
                 if (pressedKeys.contains(key) && player.getSpellState() != 0) return;
-                player.doSpell();
+                player.getActionHandler().doSpell();
                 break;
             case KeyEvent.VK_Z:
                 player.setPlayerAttackState(AttackState.ATTACK_2);
                 break;
             case KeyEvent.VK_V:
-                if (player.canDash()) player.doDash();
+                if (player.canDash()) player.getActionHandler().doDash();
                 break;
             case KeyEvent.VK_S:
                 if (player.isBlock()) return;

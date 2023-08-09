@@ -152,4 +152,8 @@ public abstract class Entity implements Debug {
     public void setEntityEffect(EffectType entityEffect) {
         this.entityEffect = entityEffect;
     }
+
+    public boolean isInAir() {
+        return inAir;
+    }
 }
