@@ -1,11 +1,13 @@
 package platformer.animation.graphics;
 
-import platformer.model.Tiles;
 import platformer.model.entities.Direction;
 
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
+
+import static platformer.constants.Constants.GAME_WIDTH;
+import static platformer.constants.Constants.SCALE;
 
 public class WaveAnim implements GraphicsAnimation {
 
@@ -32,17 +34,16 @@ public class WaveAnim implements GraphicsAnimation {
         if (direction == Direction.LEFT) this.x += dx;
         else x -= dx;
         this.y = (int)(yOffset + amplitudeY * Math.sin(2 * Math.PI * time / periodY));
-        if (x > Tiles.GAME_WIDTH.getValue()) {
+        if (x > GAME_WIDTH) {
             x = xOffset;
             points.clear();
         }
-        time += 0.5*Tiles.SCALE.getValue();
+        time += 0.5*SCALE;
         return new Point(x, y);
     }
 
     @Override
     public void movementRender(Graphics g, boolean viewMovement) {
-        g.drawRect(x, y, 20, 20);
         if (viewMovement) {
             if (!points.contains(new Point(x, y))) points.add(new Point(x, y));
             for (Point point : points) {

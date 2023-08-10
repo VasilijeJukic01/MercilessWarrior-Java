@@ -1,44 +1,38 @@
 package platformer.ui.buttons;
 
-import platformer.ui.UI;
-import platformer.utils.Utils;
+import platformer.animation.Animation;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
-public class CREButton extends PauseButton implements GameButton{
+import static platformer.constants.AnimConstants.*;
+import static platformer.constants.Constants.*;
+import static platformer.constants.FilePaths.*;
+
+public class CREButton extends AbstractButton implements GameButton {
 
     private BufferedImage[] images;
-    private final ButtonType buttonType;
     private int imageIndex;
-    private boolean mouseOver, mousePressed;
 
     public CREButton(int xPos, int yPos, int width, int height, ButtonType buttonType) {
         super(xPos, yPos, width, height);
-        this.buttonType = buttonType;
+        super.buttonType = buttonType;
         loadButtons();
     }
 
+    @Override
     protected void loadButtons() {
-        images = new BufferedImage[3];
+        int r = -1;
         switch (buttonType) {
-            case CONTINUE:
-                images[0] = Utils.getInstance().importImage("src/main/resources/images/buttons/ContinueBtn0.png", UI.CRE_B_SIZE.getValue(), UI.CRE_B_SIZE.getValue());
-                images[1] = Utils.getInstance().importImage("src/main/resources/images/buttons/ContinueBtn1.png", UI.CRE_B_SIZE.getValue(), UI.CRE_B_SIZE.getValue());
-                images[2] = Utils.getInstance().importImage("src/main/resources/images/buttons/ContinueBtn1.png", UI.CRE_B_SIZE.getValue(), UI.CRE_B_SIZE.getValue());
+            case CONTINUE: r = 0;
                 break;
-            case RETRY:
-                images[0] = Utils.getInstance().importImage("src/main/resources/images/buttons/RetryBtn0.png", UI.CRE_B_SIZE.getValue(), UI.CRE_B_SIZE.getValue());
-                images[1] = Utils.getInstance().importImage("src/main/resources/images/buttons/RetryBtn1.png", UI.CRE_B_SIZE.getValue(), UI.CRE_B_SIZE.getValue());
-                images[2] = Utils.getInstance().importImage("src/main/resources/images/buttons/RetryBtn1.png", UI.CRE_B_SIZE.getValue(), UI.CRE_B_SIZE.getValue());
+            case RETRY: r = 1;
                 break;
-            case EXIT:
-                images[0] = Utils.getInstance().importImage("src/main/resources/images/buttons/ExitBtn0.png", UI.CRE_B_SIZE.getValue(), UI.CRE_B_SIZE.getValue());
-                images[1] = Utils.getInstance().importImage("src/main/resources/images/buttons/ExitBtn1.png", UI.CRE_B_SIZE.getValue(), UI.CRE_B_SIZE.getValue());
-                images[2] = Utils.getInstance().importImage("src/main/resources/images/buttons/ExitBtn1.png", UI.CRE_B_SIZE.getValue(), UI.CRE_B_SIZE.getValue());
+            case EXIT: r = 2;
                 break;
             default: break;
         }
+        images = Animation.getInstance().loadFromSprite(CRE_BTN_SHEET, 3, r, CRE_BTN_SIZE, CRE_BTN_SIZE, 0, SMALL_BTN_W, SMALL_BTN_H);
     }
 
     @Override
@@ -50,19 +44,7 @@ public class CREButton extends PauseButton implements GameButton{
 
     @Override
     public void render(Graphics g) {
-        g.drawImage(images[imageIndex], xPos, yPos, UI.CRE_B_SIZE.getValue(), UI.CRE_B_SIZE.getValue(), null);
-    }
-
-    public boolean isMousePressed() {
-        return mousePressed;
-    }
-
-    public void setMouseOver(boolean mouseOver) {
-        this.mouseOver = mouseOver;
-    }
-
-    public void setMousePressed(boolean mousePressed) {
-        this.mousePressed = mousePressed;
+        g.drawImage(images[imageIndex], xPos, yPos, CRE_BTN_SIZE, CRE_BTN_SIZE, null);
     }
 
 }

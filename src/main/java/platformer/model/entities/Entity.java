@@ -1,12 +1,15 @@
 package platformer.model.entities;
 
-import platformer.animation.AnimType;
+import platformer.animation.Anim;
 import platformer.debug.Debug;
 import platformer.debug.DebugSettings;
+import platformer.model.entities.effects.EffectType;
 import platformer.utils.Utils;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
+
+import static platformer.constants.Constants.*;
 
 public abstract class Entity implements Debug {
 
@@ -14,9 +17,10 @@ public abstract class Entity implements Debug {
     protected int width, height;
     protected Rectangle2D.Double hitBox;
 
-    protected AnimType entityState = AnimType.IDLE;
+    protected Anim entityState = Anim.IDLE;
     protected int flipCoefficient = 0, flipSign = 1;
     protected boolean inAir;
+    protected double airSpeed = 0;
 
     protected int maxHealth;
     protected double currentHealth;
@@ -26,6 +30,10 @@ public abstract class Entity implements Debug {
     protected Direction pushDirection;
     protected double pushOffset;
     protected Direction pushOffsetDirection = Direction.UP;
+
+    protected double[] cooldown;
+
+    protected EffectType entityEffect;
 
     public Entity(int xPos, int yPos, int width, int height, int maxHealth) {
         this.xPos = xPos;
@@ -47,32 +55,52 @@ public abstract class Entity implements Debug {
         this.hitBox = new Rectangle2D.Double(xPos, yPos, width, height);
     }
 
+    // Cooldown
+    protected void coolDownTickUpdate() {
+        for (int i = 0; i < cooldown.length; i++) {
+            if (cooldown[i] > 0) {
+                cooldown[i] -= COOLDOWN_TICK;
+                if (cooldown[i] < 0) cooldown[i] = 0;
+            }
+        }
+    }
+
     // Push
     protected void updatePushOffset() {
-        double speed = 0.95;
-        double limit = -30;
-
         if (pushOffsetDirection == Direction.UP) {
-            pushOffset -= speed;
-            if (pushOffset <= limit) pushOffsetDirection = Direction.DOWN;
+            pushOffset -= PUSH_SPEED;
+            if (pushOffset <= PUSH_LIMIT) pushOffsetDirection = Direction.DOWN;
         }
         else {
-            pushOffset += speed;
+            pushOffset += PUSH_SPEED;
             if (pushOffset >= 0) pushOffset = 0;
         }
     }
 
     protected void pushBack(Direction pushDirection, int[][] lvlData, double speed, double enemySpeed) {
-        double xSpeed;
-        if (pushDirection == Direction.LEFT) xSpeed = -enemySpeed;
-        else xSpeed = enemySpeed;
-
+        double xSpeed = (pushDirection == Direction.LEFT) ? -enemySpeed : enemySpeed;
         if (Utils.getInstance().canMoveHere(hitBox.x + xSpeed * speed, hitBox.y, hitBox.width, hitBox.height, lvlData)) {
             hitBox.x += xSpeed * speed;
         }
     }
 
-    // Render Core
+    // Update
+    protected void updateInAir(int[][] levelData, double gravity, double collisionFallSpeed) {
+        if (Utils.getInstance().canMoveHere(hitBox.x, hitBox.y + airSpeed, hitBox.width, hitBox.height, levelData)) {
+            hitBox.y += airSpeed;
+            airSpeed += gravity;
+        }
+        else {
+            hitBox.y = Utils.getInstance().getYPosOnTheCeil(hitBox, airSpeed);
+            if (airSpeed > 0) {
+                airSpeed = 0;
+                inAir = false;
+            }
+            else airSpeed = collisionFallSpeed;
+        }
+    }
+
+    // Render
     public void renderAttackBox(Graphics g, int xOffset, int yOffset) {
         if (!DebugSettings.getInstance().isDebugMode()) return;
         g.setColor(Color.RED);
@@ -83,6 +111,14 @@ public abstract class Entity implements Debug {
         if (!DebugSettings.getInstance().isDebugMode()) return;
         g.setColor(color);
         g.drawRect((int)hitBox.x-xLevelOffset, (int)hitBox.y-yLevelOffset, (int)hitBox.width, (int)hitBox.height);
+    }
+
+    public int getXPos() {
+        return xPos;
+    }
+
+    public int getYPos() {
+        return yPos;
     }
 
     public Rectangle2D.Double getHitBox() {
@@ -101,4 +137,23 @@ public abstract class Entity implements Debug {
         this.pushDirection = pushDirection;
     }
 
+    public double getCurrentHealth() {
+        return currentHealth;
+    }
+
+    public double[] getCooldown() {
+        return cooldown;
+    }
+
+    public EffectType getEntityEffect() {
+        return entityEffect;
+    }
+
+    public void setEntityEffect(EffectType entityEffect) {
+        this.entityEffect = entityEffect;
+    }
+
+    public boolean isInAir() {
+        return inAir;
+    }
 }

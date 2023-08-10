@@ -2,108 +2,123 @@ package platformer.database.bridge;
 
 import platformer.core.Account;
 import platformer.database.Settings;
+import platformer.debug.logger.Logger;
+import platformer.debug.logger.Message;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class SQLStorage implements Storage {
 
     private final Settings settings;
-    private Connection connection;
+    private final DatabaseConnection databaseConnection;
+
+    private static final String FIND_ACCOUNT_QUERY = "SELECT * FROM Accounts WHERE Name LIKE ?";
+    private static final String FIND_SETTINGS_QUERY = "SELECT * FROM Settings WHERE account_id = ?";
+    private static final String FIND_PERKS_QUERY = "SELECT * FROM Perks WHERE settings_id = ?";
+    private static final String UPDATE_SETTINGS_QUERY = "UPDATE Settings SET spawn = ?, coins = ?, tokens = ?, level = ?, exp = ? WHERE account_id = ?";
+    private static final String DELETE_PERKS_QUERY = "DELETE FROM Perks WHERE settings_id = ?";
+    private static final String INSERT_PERK_QUERY = "INSERT INTO Perks (settings_id, name) VALUES (?, ?)";
 
     public SQLStorage(Settings settings) {
         this.settings = settings;
+        this.databaseConnection = new DatabaseConnection();
     }
 
-    // Connection
-    private void initConnection() throws SQLException {
-        String ip = (String) settings.getParameter("IP");
-        String database = (String) settings.getParameter("DATABASE");
-        String username = (String) settings.getParameter("USERNAME");
-        String password = (String) settings.getParameter("PASSWORD");
-        this.connection = DriverManager.getConnection("jdbc:mysql://"+ip+"/"+database,username,password);
-    }
-
-    private void closeConnection(){
-        try{
-            connection.close();
-        }
-        catch (SQLException e){
-            e.printStackTrace();
-        }
-        finally {
-            connection = null;
-        }
-    }
-
+    // Core
     @Override
     public Account loadData(String user) {
-        int spawn = 1;
-        int coins = 0, tokens = 0;
-        int level = 1, exp = 0;
+        if (user.isEmpty()) return new Account();
 
-        try{
-            initConnection();
-            String findAccountQuery  = "SELECT * FROM Accounts WHERE Name LIKE ?";
-            PreparedStatement preparedStatement = connection.prepareStatement(findAccountQuery);
-            preparedStatement.setString(1, "%" + user + "%");
-            ResultSet accountResultSet = preparedStatement.executeQuery();
+        try {
+            databaseConnection.initConnection(settings);
+            Logger.getInstance().notify("Database connection established!", Message.INFORMATION);
 
-            if (accountResultSet.next()) {
-                int accountId = accountResultSet.getInt("Account_ID");
-
-                String findSettingsQuery = "SELECT * FROM Settings WHERE account_id = ?";
-                preparedStatement = connection.prepareStatement(findSettingsQuery);
-                preparedStatement.setInt(1, accountId);
-                ResultSet settingsResultSet = preparedStatement.executeQuery();
-
-                if (settingsResultSet.next()) {
-                    spawn = settingsResultSet.getInt("spawn");
-                    coins = settingsResultSet.getInt("coins");
-                    tokens = settingsResultSet.getInt("tokens");
-                    level = settingsResultSet.getInt("level");
-                    exp = settingsResultSet.getInt("exp");
-
-                }
-
-                int settingsId = settingsResultSet.getInt("Settings_ID");
-
-                String findPerksQuery = "SELECT * FROM Perks WHERE settings_id = ?";
-                preparedStatement = connection.prepareStatement(findPerksQuery);
-                preparedStatement.setInt(1, settingsId);
-                ResultSet perksResultSet = preparedStatement.executeQuery();
-
-                Account account = new Account(user, accountId, settingsId, spawn, coins, tokens, level, exp);
-
-                while (perksResultSet.next()) {
-                    account.getPerks().add(perksResultSet.getString("name"));
-                }
-
-                preparedStatement.close();
-                accountResultSet.close();
-                settingsResultSet.close();
-                perksResultSet.close();
-
-                return account;
+            Account account = findAccount(user);
+            if (account != null) {
+                int settingsId = account.getSettingsID();
+                List<String> perks = findPerks(settingsId);
+                account.setPerks(perks);
             }
-            return new Account();
+            return account;
         }
-        catch (Exception e) {
-            e.printStackTrace();
+        catch (SQLException e) {
+            Logger.getInstance().notify("Databased connection failed!", Message.ERROR);
         }
         finally {
-            closeConnection();
+            if (databaseConnection.getConnection() != null)
+                databaseConnection.closeConnection();
         }
+
         return new Account();
     }
 
     @Override
     public void updateData(Account account) {
         try {
-            initConnection();
+            databaseConnection.initConnection(settings);
+            Logger.getInstance().notify("Database connection established!", Message.INFORMATION);
 
-            // Settings update
-            String updateSettingsQuery = "UPDATE Settings SET spawn = ?, coins = ?, tokens = ?, level = ?, exp = ? WHERE account_id = ?";
-            PreparedStatement preparedStatement = connection.prepareStatement(updateSettingsQuery);
+            updateSettings(account);
+            deletePerks(account.getSettingsID());
+            insertPerks(account);
+        }
+        catch (SQLException e) {
+            Logger.getInstance().notify("Databased connection failed!", Message.ERROR);
+        }
+        finally {
+            if (databaseConnection.getConnection() != null)
+                databaseConnection.closeConnection();
+        }
+    }
+
+    private Account findAccount(String user) throws SQLException {
+        try (PreparedStatement preparedStatement = databaseConnection.getConnection().prepareStatement(FIND_ACCOUNT_QUERY)) {
+            preparedStatement.setString(1, "%" + user + "%");
+            try (ResultSet accountResultSet = preparedStatement.executeQuery()) {
+                if (accountResultSet.next()) {
+                    int accountId = accountResultSet.getInt("Account_ID");
+                    return findSettings(accountId, user);
+                }
+            }
+        }
+        return null;
+    }
+
+    private Account findSettings(int accountId, String user) throws SQLException {
+        try (PreparedStatement settingsPreparedStatement = databaseConnection.getConnection().prepareStatement(FIND_SETTINGS_QUERY)) {
+            settingsPreparedStatement.setInt(1, accountId);
+            try (ResultSet settingsResultSet = settingsPreparedStatement.executeQuery()) {
+                if (settingsResultSet.next()) {
+                    int settingsId = settingsResultSet.getInt("Settings_ID");
+                    int spawn = settingsResultSet.getInt("spawn");
+                    int coins = settingsResultSet.getInt("coins");
+                    int tokens = settingsResultSet.getInt("tokens");
+                    int level = settingsResultSet.getInt("level");
+                    int exp = settingsResultSet.getInt("exp");
+                    return new Account(user, accountId, settingsId, spawn, coins, tokens, level, exp);
+                }
+            }
+        }
+        return null;
+    }
+
+    private List<String> findPerks(int settingsId) throws SQLException {
+        List<String> perks = new ArrayList<>();
+        try (PreparedStatement perksPreparedStatement = databaseConnection.getConnection().prepareStatement(FIND_PERKS_QUERY)) {
+            perksPreparedStatement.setInt(1, settingsId);
+            try (ResultSet perksResultSet = perksPreparedStatement.executeQuery()) {
+                while (perksResultSet.next()) {
+                    perks.add(perksResultSet.getString("name"));
+                }
+            }
+        }
+        return perks;
+    }
+
+    private void updateSettings(Account account) throws SQLException {
+        try (PreparedStatement preparedStatement = databaseConnection.getConnection().prepareStatement(UPDATE_SETTINGS_QUERY)) {
             preparedStatement.setInt(1, account.getSpawn());
             preparedStatement.setInt(2, account.getCoins());
             preparedStatement.setInt(3, account.getTokens());
@@ -111,28 +126,24 @@ public class SQLStorage implements Storage {
             preparedStatement.setInt(5, account.getExp());
             preparedStatement.setInt(6, account.getAccountID());
             preparedStatement.executeUpdate();
+        }
+    }
 
-            // Perks update
-            String deletePerksQuery = "DELETE FROM Perks WHERE settings_id = ?";
-            preparedStatement = connection.prepareStatement(deletePerksQuery);
-            preparedStatement.setInt(1, account.getSettingsID());
+    private void deletePerks(int settingsId) throws SQLException {
+        try (PreparedStatement preparedStatement = databaseConnection.getConnection().prepareStatement(DELETE_PERKS_QUERY)) {
+            preparedStatement.setInt(1, settingsId);
             preparedStatement.executeUpdate();
+        }
+    }
 
-            String insertPerkQuery = "INSERT INTO Perks (settings_id, name) VALUES (?, ?)";
-            preparedStatement = connection.prepareStatement(insertPerkQuery);
+    private void insertPerks(Account account) throws SQLException {
+        try (PreparedStatement preparedStatement = databaseConnection.getConnection().prepareStatement(INSERT_PERK_QUERY)) {
             int settingsId = account.getSettingsID();
             for (String perk : account.getPerks()) {
                 preparedStatement.setInt(1, settingsId);
                 preparedStatement.setString(2, perk);
                 preparedStatement.executeUpdate();
             }
-            preparedStatement.close();
-        }
-        catch (SQLException e) {
-            e.printStackTrace();
-        }
-        finally {
-            closeConnection();
         }
     }
 }

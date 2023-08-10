@@ -1,9 +1,7 @@
 package platformer.ui.overlays;
 
-import platformer.model.Tiles;
-import platformer.model.objects.Shop;
-import platformer.state.PlayingState;
-import platformer.ui.MouseControls;
+import platformer.model.gameObjects.objects.Shop;
+import platformer.state.GameState;
 import platformer.ui.ShopItem;
 import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.ShopButton;
@@ -13,100 +11,88 @@ import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
+import java.util.List;
 
-public class ShopOverlay implements MouseControls {
+import static platformer.constants.Constants.*;
+import static platformer.constants.FilePaths.*;
+import static platformer.constants.UI.*;
 
-    private final PlayingState playingState;
+public class ShopOverlay implements Overlay {
+
+    private final GameState gameState;
 
     private BufferedImage overlay;
     private BufferedImage shopText;
     private final ShopButton[] buttons;
 
     private BufferedImage slotImage;
-    private final Rectangle2D.Double selectedSlot;
-    private final int SLOT_MAX_ROW = 7, SLOT_MAX_COL = 3;
-    private int slot;
+    private Rectangle2D.Double selectedSlot;
+    private int slotNumber;
 
-    private ArrayList<Shop> shops;
+    private List<Shop> shops;
 
-    // Size Variables [Init]
-    private final int overlayWid = (int)(400* Tiles.SCALE.getValue());
-    private final int overlayHei = (int)(340*Tiles.SCALE.getValue());
-    private final int shopTextWid = (int)(180*Tiles.SCALE.getValue());
-    private final int shopTextHei = (int)(60*Tiles.SCALE.getValue());
-    private final int slotWid = (int)(40*Tiles.SCALE.getValue());
-    private final int slotHei = (int)(40*Tiles.SCALE.getValue());
-
-    // Size Variables [Render]
-    private final int overlayX = (int)(220*Tiles.SCALE.getValue());
-    private final int overlayY = (int)(50*Tiles.SCALE.getValue());
-    private final int shopTextX = (int)(330*Tiles.SCALE.getValue());
-    private final int shopTextY = (int)(80*Tiles.SCALE.getValue());
-    private final int buyBtnX = (int)(300*Tiles.SCALE.getValue());
-    private final int buyBtnY = (int)(330*Tiles.SCALE.getValue());
-    private final int exitBtnX = (int)(440*Tiles.SCALE.getValue());
-    private final int exitBtnY = (int)(330*Tiles.SCALE.getValue());
-    private final int slotX = (int)(290*Tiles.SCALE.getValue());
-    private final int slotY = (int)(160*Tiles.SCALE.getValue());
-    private final int costX = (int)(530*Tiles.SCALE.getValue());
-    private final int costY = (int)(145*Tiles.SCALE.getValue());
-
-    private final int slotSpacing = (int)(40*Tiles.SCALE.getValue());
-
-    public ShopOverlay(PlayingState playingState) {
-        this.playingState = playingState;
-        this.shops = playingState.getLevelManager().getCurrentLevel().getShops();
+    public ShopOverlay(GameState gameState) {
+        this.gameState = gameState;
+        this.shops = gameState.getObjectManager().getObjects(Shop.class);
         this.buttons = new ShopButton[2];
-        this.selectedSlot = new Rectangle2D.Double((slot%SLOT_MAX_ROW)*slotSpacing+slotX, (slot/SLOT_MAX_ROW)*slotSpacing+slotY, slotWid, slotHei);
-        init();
+        initSelectedSlot();
+        loadImages();
+        loadButtons();
     }
 
     // Init
-    private void init() {
-        this.overlay = Utils.instance.importImage("src/main/resources/images/overlay1.png", overlayWid, overlayHei);
-        this.shopText = Utils.instance.importImage("src/main/resources/images/buttons/ShopText.png", shopTextWid, shopTextHei);
-        this.slotImage = Utils.instance.importImage("src/main/resources/images/shop/Slot.png", slotWid, slotHei);
-        buttons[0] = new ShopButton(buyBtnX, buyBtnY, ButtonType.BUY);
-        buttons[1] = new ShopButton(exitBtnX, exitBtnY, ButtonType.LEAVE);
+    private void loadImages() {
+        this.overlay = Utils.getInstance().importImage(OVERLAY, SHOP_OVERLAY_WID, SHOP_OVERLAY_HEI);
+        this.shopText = Utils.getInstance().importImage(SHOP_TXT, SHOP_TEXT_WID, SHOP_TEXT_HEI);
+        this.slotImage = Utils.getInstance().importImage(SLOT_IMG, SLOT_SIZE, SLOT_SIZE);
+    }
+
+    private void loadButtons() {
+        buttons[0] = new ShopButton(BUY_BTN_X, BUY_BTN_Y, SMALL_BTN_WID, SMALL_BTN_HEI, ButtonType.BUY);
+        buttons[1] = new ShopButton(LEAVE_BTN_X, LEAVE_BTN_Y, SMALL_BTN_WID, SMALL_BTN_HEI, ButtonType.LEAVE);
+    }
+
+    private void initSelectedSlot() {
+        int xPos = (slotNumber % SHOP_SLOT_MAX_ROW) * SLOT_SPACING + SLOT_X;
+        int yPos = (slotNumber / SHOP_SLOT_MAX_ROW) * SLOT_SPACING + SLOT_Y;
+        this.selectedSlot = new Rectangle2D.Double(xPos, yPos, SLOT_SIZE, SLOT_SIZE);
     }
 
     // Core
+    @Override
     public void update() {
         for (ShopButton button : buttons) {
             button.update();
         }
     }
 
+    @Override
     public void render(Graphics g) {
-        g.drawImage(overlay, overlayX, overlayY, overlay.getWidth(), overlay.getHeight(), null);
-        g.drawImage(shopText, shopTextX, shopTextY, shopText.getWidth(), shopText.getHeight(), null);
-        for (ShopButton button : buttons) {
-            button.render(g);
-        }
-        g.setColor(Color.RED);
+        renderImages(g);
+        renderButtons(g);
         renderSlots(g);
         renderItems(g);
         g.drawRect((int)selectedSlot.x, (int)selectedSlot.y,  (int)selectedSlot.width,  (int)selectedSlot.height);
     }
 
     // Render
+    private void renderImages(Graphics g) {
+        g.drawImage(overlay, SHOP_OVERLAY_X, SHOP_OVERLAY_Y, overlay.getWidth(), overlay.getHeight(), null);
+        g.drawImage(shopText, SHOP_TEXT_X, SHOP_TEXT_Y, shopText.getWidth(), shopText.getHeight(), null);
+    }
+
+    private void renderButtons(Graphics g) {
+        for (ShopButton button : buttons) {
+            button.render(g);
+        }
+    }
+
     private void renderItems(Graphics g) {
         for (Shop shop : shops) {
             if (shop.isActive()) {
                 for (ShopItem item : shop.getShopItems()) {
                     if (item.getAmount() > 0) {
-                        int xPos = (item.getSlot()%SLOT_MAX_ROW)*slotSpacing+slotX;
-                        int yPos = (item.getSlot()/SLOT_MAX_ROW)*slotSpacing+slotY;
-                        int wid = (int)(slotImage.getWidth()/1.75), hei = (int)(slotImage.getHeight()/1.75);
-                        g.drawImage(item.getItemImage(), xPos+(int)(wid/2.5), yPos+(int)(hei/2.5), wid, hei, null);
-                        g.setColor(Color.WHITE);
-                        g.setFont(new Font("Arial", Font.BOLD, 20));
-                        int countX = (int)(xPos+slotWid/1.5), countY = (int)(yPos+slotHei/1.2);
-                        g.drawString(String.valueOf(item.getAmount()), countX, countY);
-                        if (slot == item.getSlot()) {
-                            g.drawString("Cost: "+item.getCost(), costX, costY);
-                        }
+                        renderItem(g, item);
                         g.setColor(Color.RED);
                     }
                 }
@@ -114,29 +100,51 @@ public class ShopOverlay implements MouseControls {
         }
     }
 
+    private void renderItem(Graphics g, ShopItem item) {
+        int xPos = (item.getSlot() % SHOP_SLOT_MAX_ROW) * SLOT_SPACING + SLOT_X + ITEM_OFFSET_X;
+        int yPos = (item.getSlot() / SHOP_SLOT_MAX_ROW) * SLOT_SPACING + SLOT_Y + ITEM_OFFSET_Y;
+        g.drawImage(item.getItemImage(), xPos, yPos, ITEM_SIZE, ITEM_SIZE, null);
+        g.setColor(Color.WHITE);
+        g.setFont(new Font("Arial", Font.BOLD, 20));
+        int countX = xPos + ITEM_COUNT_OFFSET_X, countY =  yPos + ITEM_COUNT_OFFSET_Y;
+        g.drawString(String.valueOf(item.getAmount()), countX, countY);
+        if (slotNumber == item.getSlot()) {
+            g.drawString("Cost: "+item.getCost(), COST_TEXT_X, COST_TEXT_Y);
+        }
+    }
+
     private void renderSlots(Graphics g) {
-        for (int i = 0; i < SLOT_MAX_ROW; i++) {
-            for (int j = 0; j < SLOT_MAX_COL; j++) {
-                g.drawImage(slotImage, i*slotSpacing+slotX, j*slotSpacing+slotY, slotImage.getWidth(), slotImage.getHeight(), null);
+        g.setColor(Color.RED);
+        for (int i = 0; i < SHOP_SLOT_MAX_ROW; i++) {
+            for (int j = 0; j < SHOP_SLOT_MAX_COL; j++) {
+                g.drawImage(slotImage, i* SLOT_SPACING + SLOT_X, j* SLOT_SPACING + SLOT_Y, slotImage.getWidth(), slotImage.getHeight(), null);
             }
         }
     }
 
     // Other
     private void setSelectedSlot() {
-        this.selectedSlot.x = (slot%SLOT_MAX_ROW)*slotSpacing+slotX;
-        this.selectedSlot.y = (slot/SLOT_MAX_ROW)*slotSpacing+slotY;
+        this.selectedSlot.x = (slotNumber % SHOP_SLOT_MAX_ROW) * SLOT_SPACING + SLOT_X;
+        this.selectedSlot.y = (slotNumber / SHOP_SLOT_MAX_ROW) * SLOT_SPACING + SLOT_Y;
     }
 
     private void changeSlot(MouseEvent e) {
         int x = e.getX(), y = e.getY();
-        for (int i = 0; i < SLOT_MAX_ROW; i++) {
-            for (int j = 0; j < SLOT_MAX_COL; j++) {
-                if (x >= i*slotSpacing+slotX && x <= i*slotSpacing+slotX+slotWid && y >= j*slotSpacing+slotY && y <= j*slotSpacing+slotY+slotHei) {
-                    slot = i + (j*SLOT_MAX_ROW);
+        for (int i = 0; i < SHOP_SLOT_MAX_ROW; i++) {
+            for (int j = 0; j < SHOP_SLOT_MAX_COL; j++) {
+                if (x >= i*SLOT_SPACING+SLOT_X && x <= i*SLOT_SPACING+SLOT_X+SLOT_SIZE && y >= j*SLOT_SPACING+SLOT_Y && y <= j*SLOT_SPACING+SLOT_Y+SLOT_SIZE) {
+                    slotNumber = i + (j* SHOP_SLOT_MAX_ROW);
                     setSelectedSlot();
                     break;
                 }
+            }
+        }
+    }
+
+    private void buyItem() {
+        for (Shop shop : shops) {
+            if (shop.isActive()) {
+                shop.buyItem(gameState.getPlayer(), slotNumber);
             }
         }
     }
@@ -157,14 +165,6 @@ public class ShopOverlay implements MouseControls {
         changeSlot(e);
     }
 
-    private void buyItem() {
-        for (Shop shop : shops) {
-            if (shop.isActive()) {
-                shop.buyItem(playingState.getPlayer(), slot);
-            }
-        }
-    }
-
     @Override
     public void mouseReleased(MouseEvent e) {
         for (ShopButton button : buttons) {
@@ -174,7 +174,7 @@ public class ShopOverlay implements MouseControls {
                         buyItem();
                         break;
                     case LEAVE:
-                        playingState.setShopVisible(false);
+                        gameState.setShopVisible(false);
                         break;
                     default: break;
                 }
@@ -204,6 +204,6 @@ public class ShopOverlay implements MouseControls {
     }
 
     public void reset() {
-        this.shops = playingState.getLevelManager().getCurrentLevel().getShops();
+        this.shops = gameState.getObjectManager().getObjects(Shop.class);
     }
 }

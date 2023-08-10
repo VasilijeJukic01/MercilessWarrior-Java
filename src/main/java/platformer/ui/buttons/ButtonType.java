@@ -3,11 +3,13 @@ package platformer.ui.buttons;
 public enum ButtonType {
     PLAY,       // 0
     OPTIONS,    // 1
-    QUIT,       // 2
-    CONTINUE,   // 3
-    RETRY,      // 4
-    EXIT,       // 5
-    BUY,        // 6
-    LEAVE,      // 7
-    CONTROLS    // 8
+    CONTROLS,   // 2
+    QUIT,       // 3
+    CONTINUE,   // 4
+    RETRY,      // 5
+    EXIT,       // 6
+    MUSIC,      // 7
+    SFX,        // 8
+    BUY,        // 9
+    LEAVE       // 10
 }

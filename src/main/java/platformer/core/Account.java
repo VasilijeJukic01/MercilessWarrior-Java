@@ -10,7 +10,7 @@ public class Account {
     private int spawn;
     private int coins, tokens;
     private int level, exp;
-    private final List<String> perks = new ArrayList<>();
+    private List<String> perks = new ArrayList<>();
 
     private boolean enableCheats;
 
@@ -87,6 +87,10 @@ public class Account {
 
     public void setExp(int exp) {
         this.exp = exp;
+    }
+
+    public void setPerks(List<String> perks) {
+        this.perks = perks;
     }
 
     public boolean isEnableCheats() {

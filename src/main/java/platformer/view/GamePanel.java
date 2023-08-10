@@ -1,12 +1,13 @@
 package platformer.view;
 
-import platformer.model.Tiles;
 import platformer.controller.GameKeyListener;
 import platformer.controller.GameMouseListener;
 import platformer.core.Game;
 
 import javax.swing.*;
 import java.awt.*;
+
+import static platformer.constants.Constants.*;
 
 @SuppressWarnings("FieldCanBeLocal")
 public class GamePanel extends JPanel {
@@ -15,18 +16,24 @@ public class GamePanel extends JPanel {
 
     public GamePanel(Game game) {
         this.game = game;
+        initListeners();
+        initFocus();
+        initPanelSize();
+    }
 
+    private void initListeners() {
         GameMouseListener mouseListener = new GameMouseListener(this);
         this.addMouseListener(mouseListener);
         this.addMouseMotionListener(mouseListener);
         this.addKeyListener(new GameKeyListener(this));
-        this.setFocusable(true);
+    }
 
-        initPanelSize();
+    private void initFocus() {
+        this.setFocusable(true);
     }
 
     private void initPanelSize() {
-        Dimension dimension = new Dimension((int)Tiles.GAME_WIDTH.getValue(), (int)Tiles.GAME_HEIGHT.getValue());
+        Dimension dimension = new Dimension(GAME_WIDTH, GAME_HEIGHT);
         this.setMinimumSize(dimension);
         this.setPreferredSize(dimension);
         this.setMinimumSize(dimension);
@@ -36,12 +43,20 @@ public class GamePanel extends JPanel {
     protected void paintComponent(Graphics g) {
         this.requestFocus(true);
         super.paintComponent(g);
+        renderGame(g);
+        renderInfo(g);
+    }
+
+    private void renderGame(Graphics g) {
         game.render(g);
+    }
+
+    private void renderInfo(Graphics g) {
         g.setColor(new Color(255, 255, 255));
-        g.setFont(new Font("Arial", Font.BOLD, (int)(10*Tiles.SCALE.getValue())));
-        g.drawString(game.getAccount().getName(), (int)(1.5*Tiles.SCALE.getValue()), (int)(10*Tiles.SCALE.getValue()));
-        g.drawString("FPS: "+game.getCurrentFps(), (int)(1.5*Tiles.SCALE.getValue()), (int)(20*Tiles.SCALE.getValue()));
-        g.drawString("UPS: "+game.getCurrentUpdates(), (int)(50*Tiles.SCALE.getValue()), (int)(20*Tiles.SCALE.getValue()));
+        g.setFont(new Font("Arial", Font.BOLD, (int)(10 * SCALE)));
+        g.drawString(game.getAccount().getName(), (int)(1.5 * SCALE), (int)(10 * SCALE));
+        g.drawString("FPS: "+game.getCurrentFps(), (int)(1.5 * SCALE), (int)(20 * SCALE));
+        g.drawString("UPS: "+game.getCurrentUpdates(), (int)(50 * SCALE), (int)(20 * SCALE));
     }
 
     public Game getGame() {

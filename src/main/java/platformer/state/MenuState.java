@@ -1,10 +1,9 @@
 package platformer.state;
 
-import platformer.model.Tiles;
 import platformer.core.Game;
 import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.MenuButton;
-import platformer.ui.overlays.Overlay;
+import platformer.ui.overlays.OverlayLayer;
 import platformer.utils.Utils;
 
 import java.awt.*;
@@ -13,8 +12,12 @@ import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 
+import static platformer.constants.Constants.*;
+import static platformer.constants.FilePaths.MENU_LOGO;
+import static platformer.constants.UI.*;
+
 @SuppressWarnings("FieldCanBeLocal")
-public class MenuState extends StateAbstraction implements State{
+public class MenuState extends AbstractState implements State{
 
     private final MenuButton[] buttons = new MenuButton[4];
     private BufferedImage menuLogo;
@@ -25,20 +28,22 @@ public class MenuState extends StateAbstraction implements State{
         loadButtons();
     }
 
+    // Init
     private void loadImages() {
-        this.menuLogo = Utils.getInstance().importImage("src/main/resources/images/menu/menuLogo.png", 300, 150);
+        this.menuLogo = Utils.getInstance().importImage(MENU_LOGO, MENU_LOGO_WID, MENU_LOGO_HEI);
     }
 
     private void loadButtons() {
-        buttons[0] = new MenuButton((int)(Tiles.GAME_WIDTH.getValue() / 2), (int)(170*Tiles.SCALE.getValue()), ButtonType.PLAY);
-        buttons[1] = new MenuButton((int)(Tiles.GAME_WIDTH.getValue() / 2), (int)(225*Tiles.SCALE.getValue()), ButtonType.OPTIONS);
-        buttons[2] = new MenuButton((int)(Tiles.GAME_WIDTH.getValue() / 2), (int)(280*Tiles.SCALE.getValue()), ButtonType.CONTROLS);
-        buttons[3] = new MenuButton((int)(Tiles.GAME_WIDTH.getValue() / 2), (int)(335*Tiles.SCALE.getValue()), ButtonType.QUIT);
+        buttons[0] = new MenuButton(MENU_BTN_X, MENU_BTN1_Y, BTN_WID, BTN_HEI, ButtonType.PLAY);
+        buttons[1] = new MenuButton(MENU_BTN_X, MENU_BTN2_Y, BTN_WID, BTN_HEI, ButtonType.OPTIONS);
+        buttons[2] = new MenuButton(MENU_BTN_X, MENU_BTN3_Y, BTN_WID, BTN_HEI, ButtonType.CONTROLS);
+        buttons[3] = new MenuButton(MENU_BTN_X, MENU_BTN4_Y, BTN_WID, BTN_HEI, ButtonType.QUIT);
     }
 
+    // Core
     @Override
     public void update() {
-        Overlay.getInstance().update();
+        OverlayLayer.getInstance().update();
         for (MenuButton button : buttons) {
             button.update();
         }
@@ -46,22 +51,20 @@ public class MenuState extends StateAbstraction implements State{
 
     @Override
     public void render(Graphics g) {
-        Overlay.getInstance().renderMenu(g);
-        int logoX = (int)(Tiles.GAME_WIDTH.getValue() / 3)- (int)(12*Tiles.SCALE.getValue()), logoY = (int)(10*Tiles.SCALE.getValue());
-        int logoW = (int)(menuLogo.getWidth()*Tiles.SCALE.getValue()), logoH = (int)(menuLogo.getHeight()*Tiles.SCALE.getValue());
-        g.drawImage(menuLogo, logoX, logoY, logoW, logoH, null);
+        renderMenuImages(g);
+        renderMenuButtons(g);
+    }
 
+    // Render
+    private void renderMenuImages(Graphics g) {
+        OverlayLayer.getInstance().renderMenu(g);
+        g.drawImage(menuLogo, MENU_LOGO_X, MENU_LOGO_Y, MENU_LOGO_WID, MENU_LOGO_HEI, null);
+    }
+
+    private void renderMenuButtons(Graphics g) {
         for (MenuButton button : buttons) {
             button.render(g);
         }
-
-        g.setColor(new Color(255, 255, 255));
-        g.setFont(new Font("Arial", Font.PLAIN, (int)(7.5*Tiles.SCALE.getValue())));
-    }
-
-    @Override
-    public void mouseClicked(MouseEvent e) {
-
     }
 
     @Override
@@ -79,10 +82,14 @@ public class MenuState extends StateAbstraction implements State{
         for (MenuButton button : buttons) {
             if (isMouseInButton(e, button) && button.isMousePressed()) {
                 switch (button.getButtonType()) {
-                    case PLAY: game.startPlayingState(); break;
-                    case OPTIONS: game.startOptionsState(); break;
-                    case CONTROLS: game.startControlsState(); break;
-                    case QUIT: game.startQuitState(); break;
+                    case PLAY:
+                        game.startPlayingState(); break;
+                    case OPTIONS:
+                        game.startOptionsState(); break;
+                    case CONTROLS:
+                        game.startControlsState(); break;
+                    case QUIT:
+                        game.startQuitState(); break;
                     default: break;
                 }
                 break;
@@ -90,11 +97,6 @@ public class MenuState extends StateAbstraction implements State{
         }
         for (MenuButton button : buttons) {
             button.resetMouseSet();
-        }
-        try {
-            Thread.sleep(100);
-        } catch (InterruptedException ex) {
-            ex.printStackTrace();
         }
     }
 
@@ -129,21 +131,6 @@ public class MenuState extends StateAbstraction implements State{
 
     @Override
     public void windowFocusLost(WindowEvent e) {
-
-    }
-
-    @Override
-    public void setPaused(boolean value) {
-
-    }
-
-    @Override
-    public void setGameOver(boolean value) {
-
-    }
-
-    @Override
-    public void setDying(boolean value) {
 
     }
 

@@ -8,7 +8,11 @@ import javafx.scene.control.TextField;
 import launcher.view.LauncherView;
 import platformer.AppCore;
 
+import static launcher.Config.SCALING_FACTOR;
+
 public class LaunchController implements EventHandler<ActionEvent> {
+
+    private final LauncherView launcherView;
 
     private String scale = "1";
 
@@ -16,7 +20,8 @@ public class LaunchController implements EventHandler<ActionEvent> {
     private final RadioButton rbYes;
     private final ComboBox<String> cbResolution;
 
-    public LaunchController(TextField tfName, RadioButton rbYes, ComboBox<String> cbResolution) {
+    public LaunchController(LauncherView launcherView, TextField tfName, RadioButton rbYes, ComboBox<String> cbResolution) {
+        this.launcherView = launcherView;
         this.tfName = tfName;
         this.rbYes = rbYes;
         this.cbResolution = cbResolution;
@@ -24,7 +29,7 @@ public class LaunchController implements EventHandler<ActionEvent> {
 
     @Override
     public void handle(ActionEvent event) {
-        String[] args = new String[3];
+        String[] args = new String[2];
         switch (cbResolution.getSelectionModel().getSelectedIndex()) {
             case 0:
                 scale = "1";
@@ -37,10 +42,10 @@ public class LaunchController implements EventHandler<ActionEvent> {
                 break;
             default: break;
         }
-        args[0] = scale;
-        args[1] = rbYes.isSelected() ? "Yes" : "No";
-        args[2] = tfName.getText();
-        LauncherView.getInstance().close();
+        SCALING_FACTOR = Float.parseFloat(scale);
+        args[0] = rbYes.isSelected() ? "Yes" : "No";
+        args[1] = tfName.getText();
+        launcherView.close();
         AppCore.main(args);
     }
 }

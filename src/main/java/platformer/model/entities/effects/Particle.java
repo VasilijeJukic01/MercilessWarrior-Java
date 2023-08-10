@@ -4,6 +4,9 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.Random;
 
+import static platformer.constants.AnimConstants.DEFAULT_PARTICLE_FRAMES;
+import static platformer.constants.Constants.PARTICLE_SHIFT;
+
 @SuppressWarnings("FieldCanBeLocal")
 public class Particle {
 
@@ -11,7 +14,6 @@ public class Particle {
     private final Random rand = new Random();
     private final int size;
     private double xPos, yPos;
-    private final double shift = 0.1;
     private int animSpeed = rand.nextInt(100-50)+50;
     private int animTick = 0, animIndex = 0;
     boolean xDir = rand.nextBoolean(), yDir = rand.nextBoolean();
@@ -30,17 +32,15 @@ public class Particle {
             yDir = rand.nextBoolean();
             animSpeed = rand.nextInt(100-50)+50;
             animIndex++;
-            if (animIndex >= 8) animIndex = 0;
+            if (animIndex >= DEFAULT_PARTICLE_FRAMES) animIndex = 0;
             animTick = 0;
         }
     }
 
     public void update() {
         updateAnimation();
-        if (xDir) xPos += shift;
-        else xPos -= shift;
-        if (yDir) yPos += shift;
-        else yPos -= shift;
+        xPos += xDir ? PARTICLE_SHIFT : -PARTICLE_SHIFT;
+        yPos += yDir ? PARTICLE_SHIFT : -PARTICLE_SHIFT;
     }
 
     public void render(Graphics g) {

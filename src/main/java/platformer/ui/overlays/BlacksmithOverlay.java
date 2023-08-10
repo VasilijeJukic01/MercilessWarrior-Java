@@ -1,9 +1,7 @@
 package platformer.ui.overlays;
 
-import platformer.model.Tiles;
 import platformer.model.perks.Perk;
-import platformer.state.PlayingState;
-import platformer.ui.MouseControls;
+import platformer.state.GameState;
 import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.ShopButton;
 import platformer.utils.Utils;
@@ -13,81 +11,69 @@ import java.awt.event.MouseEvent;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 
-public class BlacksmithOverlay implements MouseControls {
+import static platformer.constants.Constants.*;
+import static platformer.constants.FilePaths.*;
+import static platformer.constants.UI.*;
 
-    private final PlayingState playingState;
+public class BlacksmithOverlay implements Overlay {
+
+    private final GameState gameState;
 
     private BufferedImage overlay;
     private BufferedImage shopText;
     private final ShopButton[] buttons;
 
     private BufferedImage slotImage;
-    private int SLOT_MAX_ROW, SLOT_MAX_COL;
     private Rectangle2D.Double selectedSlot;
-    private int slot;
+    private int slotNumber;
+    private int SLOT_MAX_ROW, SLOT_MAX_COL;
     private int[][] placeHolders;
 
-    // Size Variables [Init]
-    private final int overlayWid = (int)(700*Tiles.SCALE.getValue());
-    private final int overlayHei = (int)(410*Tiles.SCALE.getValue());
-    private final int shopTextWid = (int)(180*Tiles.SCALE.getValue());
-    private final int shopTextHei = (int)(60*Tiles.SCALE.getValue());
-    private final int slotWid = (int)(40*Tiles.SCALE.getValue());
-    private final int slotHei = (int)(40*Tiles.SCALE.getValue());
-
-    // Size Variables [Render]
-    private final int overlayX = (int)(65*Tiles.SCALE.getValue());
-    private final int overlayY = (int)(30*Tiles.SCALE.getValue());
-    private final int shopTextX = (int)(330*Tiles.SCALE.getValue());
-    private final int shopTextY = (int)(60*Tiles.SCALE.getValue());
-    private final int buyBtnX = (int)(300*Tiles.SCALE.getValue());
-    private final int buyBtnY = (int)(380*Tiles.SCALE.getValue());
-    private final int exitBtnX = (int)(440*Tiles.SCALE.getValue());
-    private final int exitBtnY = (int)(380*Tiles.SCALE.getValue());
-    private final int slotX = (int)(110*Tiles.SCALE.getValue());
-    private final int slotY = (int)(140*Tiles.SCALE.getValue());
-    private final int tokensX = (int)(550*Tiles.SCALE.getValue());
-    private final int tokensY = (int)(150*Tiles.SCALE.getValue());
-    private final int perkNameX = (int)(550*Tiles.SCALE.getValue());
-    private final int perkNameY = (int)(240*Tiles.SCALE.getValue());
-    private final int perkCostX = (int)(550*Tiles.SCALE.getValue());
-    private final int perkCostY = (int)(255*Tiles.SCALE.getValue());
-    private final int perkDescX = (int)(550*Tiles.SCALE.getValue());
-    private final int perkDescY = (int)(275*Tiles.SCALE.getValue());;
-
-    private final int slotSpacing = (int)(60*Tiles.SCALE.getValue());
-
-    public BlacksmithOverlay(PlayingState playingState) {
-        this.playingState = playingState;
+    public BlacksmithOverlay(GameState gameState) {
+        this.gameState = gameState;
         this.buttons = new ShopButton[2];
         init();
     }
 
     private void init() {
-        this.SLOT_MAX_COL = playingState.getPerksManager().getSlotMaxCol();
-        this.SLOT_MAX_ROW = playingState.getPerksManager().getSlotMaxRow();
-        this.placeHolders = playingState.getPerksManager().getPlaceHolders();
-        this.overlay = Utils.instance.importImage("src/main/resources/images/overlay1.png", overlayWid, overlayHei);
-        this.shopText = Utils.instance.importImage("src/main/resources/images/buttons/PerksText.png", shopTextWid, shopTextHei);
-        this.slotImage = Utils.instance.importImage("src/main/resources/images/shop/Slot.png", slotWid, slotHei);
-        buttons[0] = new ShopButton(buyBtnX, buyBtnY, ButtonType.BUY);
-        buttons[1] = new ShopButton(exitBtnX, exitBtnY, ButtonType.LEAVE);
-        this.selectedSlot = new Rectangle2D.Double((slot%SLOT_MAX_ROW)*slotSpacing+slotX, (slot/SLOT_MAX_ROW)*slotSpacing+slotY, slotWid, slotHei);
+        this.SLOT_MAX_COL = PERK_SLOT_MAX_COL;
+        this.SLOT_MAX_ROW = PERK_SLOT_MAX_ROW;
+        this.placeHolders = gameState.getPerksManager().getPlaceHolders();
+        loadImages();
+        loadButtons();
+        initSelectedSlot();
+    }
+
+    // Init
+    private void loadImages() {
+        this.overlay = Utils.getInstance().importImage(OVERLAY, PERKS_OVERLAY_WID, PERKS_OVERLAY_HEI);
+        this.shopText = Utils.getInstance().importImage(PERKS_TXT_IMG, SHOP_TEXT_WID, SHOP_TEXT_HEI);
+        this.slotImage = Utils.getInstance().importImage(SLOT_IMG, SLOT_SIZE, SLOT_SIZE);
+    }
+
+    private void loadButtons() {
+        buttons[0] = new ShopButton(BUY_PERK_BTN_X, BUY_PERK_BTN_Y, SMALL_BTN_WID, SMALL_BTN_HEI, ButtonType.BUY);
+        buttons[1] = new ShopButton(LEAVE_PERK_BTN_X, LEAVE_PERK_BTN_Y, SMALL_BTN_WID, SMALL_BTN_HEI, ButtonType.LEAVE);
+    }
+
+    private void initSelectedSlot() {
+        int xPos = (slotNumber % SLOT_MAX_ROW) * PERK_SLOT_SPACING + PERK_SLOT_X;
+        int yPos = (slotNumber / SLOT_MAX_ROW) * PERK_SLOT_SPACING + PERK_SLOT_Y;
+        this.selectedSlot = new Rectangle2D.Double(xPos, yPos, SLOT_SIZE, SLOT_SIZE);
     }
 
     // Core
+    @Override
     public void update() {
         for (ShopButton button : buttons) {
             button.update();
         }
     }
 
+    @Override
     public void render(Graphics g) {
-        g.drawImage(overlay, overlayX, overlayY, overlay.getWidth(), overlay.getHeight(), null);
-        g.drawImage(shopText, shopTextX, shopTextY, shopText.getWidth(), shopText.getHeight(), null);
-        for (ShopButton button : buttons) {
-            button.render(g);
-        }
+        renderImages(g);
+        renderButtons(g);
         renderSlots(g);
         renderPerks(g);
         renderPerkInfo(g);
@@ -96,8 +82,15 @@ public class BlacksmithOverlay implements MouseControls {
     }
 
     // Render
-    private boolean isSafe(int i, int j, int n, int m) {
-        return i >= 0 && j >= 0 && i < n && j < m;
+    private void renderImages(Graphics g) {
+        g.drawImage(overlay, PERKS_OVERLAY_X, PERKS_OVERLAY_Y, overlay.getWidth(), overlay.getHeight(), null);
+        g.drawImage(shopText, PERKS_TEXT_X, PERKS_TEXT_Y, shopText.getWidth(), shopText.getHeight(), null);
+    }
+
+    private void renderButtons(Graphics g) {
+        for (ShopButton button : buttons) {
+            button.render(g);
+        }
     }
 
     private void renderSlots(Graphics g) {
@@ -105,64 +98,80 @@ public class BlacksmithOverlay implements MouseControls {
         for (int i = 0; i < SLOT_MAX_ROW; i++) {
             for (int j = 0; j < SLOT_MAX_COL; j++) {
                 if (placeHolders[i][j] == 1) {
-                    g.drawImage(slotImage, j * slotSpacing + slotX, i * slotSpacing + slotY, slotImage.getWidth(), slotImage.getHeight(), null);
-                    if (isSafe(i, j+1, SLOT_MAX_ROW, SLOT_MAX_COL) && placeHolders[i][j+1] == 1) {
-                        int x = j * slotSpacing + slotX + slotWid - (int)(2*Tiles.SCALE.getValue());
-                        int y = i * slotSpacing + slotY;
-                        g.drawLine(x, y + slotHei/2, x+slotSpacing/2, y + slotHei/2);
-                    }
-                    if (isSafe(i+1, j, SLOT_MAX_ROW, SLOT_MAX_COL) && placeHolders[i+1][j] == 1) {
-                        int x = j * slotSpacing + slotX + slotWid/2;
-                        int y = i * slotSpacing + slotY + slotHei - (int)(2*Tiles.SCALE.getValue());;
-                        g.drawLine(x, y, x, y + slotSpacing/2);
-                    }
+                    renderSlot(g, i, j);
                 }
             }
         }
     }
 
+    private void renderSlot(Graphics g, int i, int j) {
+        int xPos = j * PERK_SLOT_SPACING + PERK_SLOT_X;
+        int yPos = i * PERK_SLOT_SPACING + PERK_SLOT_Y;
+        g.drawImage(slotImage, xPos, yPos, slotImage.getWidth(), slotImage.getHeight(), null);
+        if (isSafe(i, j+1, SLOT_MAX_ROW, SLOT_MAX_COL) && placeHolders[i][j+1] == 1) {
+            int x = j * PERK_SLOT_SPACING + PERK_SLOT_X + SLOT_SIZE - (int)(2 * SCALE);
+            int y = i * PERK_SLOT_SPACING + PERK_SLOT_Y;
+            g.drawLine(x, y + SLOT_SIZE/2, x + PERK_SLOT_SPACING/2, y + SLOT_SIZE/2);
+        }
+        if (isSafe(i+1, j, SLOT_MAX_ROW, SLOT_MAX_COL) && placeHolders[i+1][j] == 1) {
+            int x = j * PERK_SLOT_SPACING + PERK_SLOT_X + SLOT_SIZE/2;
+            int y = i * PERK_SLOT_SPACING + PERK_SLOT_Y + SLOT_SIZE - (int)(2 * SCALE);
+            g.drawLine(x, y, x, y + PERK_SLOT_SPACING/2);
+        }
+    }
+
     private void renderPerks(Graphics g) {
-        for (Perk p : playingState.getPerksManager().getPerks()) {
-            int x = (p.getSlot()%SLOT_MAX_COL)*slotSpacing+slotX + slotWid/4;
-            int y = (p.getSlot()/SLOT_MAX_COL)*slotSpacing+slotY + slotHei/4;
-            g.drawImage(p.getImage(), x, y, slotWid/2, slotHei/2, null);
+        for (Perk p : gameState.getPerksManager().getPerks()) {
+            int x = (p.getSlot() % SLOT_MAX_COL) * PERK_SLOT_SPACING + PERK_SLOT_X + SLOT_SIZE/4;
+            int y = (p.getSlot() / SLOT_MAX_COL) * PERK_SLOT_SPACING + PERK_SLOT_Y + SLOT_SIZE/4;
+            g.drawImage(p.getImage(), x, y, SLOT_SIZE/2, SLOT_SIZE/2, null);
             if (p.isLocked()) {
                 g.setColor(new Color(0, 0, 0, 200));
-                g.fillRect((p.getSlot()%SLOT_MAX_COL)*slotSpacing+slotX, (p.getSlot()/SLOT_MAX_COL)*slotSpacing+slotY, slotWid, slotHei);
+                renderPerkOverlay(g, p);
             }
             else if (p.isUpgraded()) {
                 g.setColor(new Color(255, 100, 0, 100));
-                g.fillRect((p.getSlot()%SLOT_MAX_COL)*slotSpacing+slotX, (p.getSlot()/SLOT_MAX_COL)*slotSpacing+slotY, slotWid, slotHei);
+                renderPerkOverlay(g, p);
             }
         }
     }
 
+    private void renderPerkOverlay(Graphics g, Perk p) {
+        int xPos = (p.getSlot() % SLOT_MAX_COL) * PERK_SLOT_SPACING + PERK_SLOT_X;
+        int yPos = (p.getSlot() / SLOT_MAX_COL) * PERK_SLOT_SPACING + PERK_SLOT_Y;
+        g.fillRect(xPos, yPos, SLOT_SIZE, SLOT_SIZE);
+    }
+
     private void renderPerkInfo(Graphics g) {
-        for (Perk perk : playingState.getPerksManager().getPerks()) {
-            if (slot == perk.getSlot()) {
+        for (Perk perk : gameState.getPerksManager().getPerks()) {
+            if (slotNumber == perk.getSlot()) {
                 g.setColor(Color.WHITE);
-                g.setFont(new Font("Arial", Font.BOLD, (int)(10*Tiles.SCALE.getValue())));
-                g.drawString("Tokens: "+playingState.getPlayer().getUpgradeTokens(), tokensX, tokensY);
-                g.drawString(perk.getName(), perkNameX, perkNameY);
-                g.drawString("Cost: "+perk.getCost(), perkCostX, perkCostY);
-                g.setFont(new Font("Arial", Font.PLAIN, (int)(10*Tiles.SCALE.getValue())));
-                g.drawString(perk.getDescription(), perkDescX, perkDescY);
+                g.setFont(new Font("Arial", Font.BOLD, FONT_MEDIUM));
+                g.drawString("Tokens: "+ gameState.getPlayer().getUpgradeTokens(), TOKENS_TEXT_X, TOKENS_TEXT_Y);
+                g.drawString(perk.getName(), PERK_NAME_X, PERK_NAME_Y);
+                g.drawString("Cost: "+perk.getCost(), PERK_COST_X, PERK_COST_Y);
+                g.setFont(new Font("Arial", Font.PLAIN, FONT_MEDIUM));
+                g.drawString(perk.getDescription(), PERK_DESC_X, PERK_DESC_Y);
             }
         }
     }
 
     // Other
+    private boolean isSafe(int i, int j, int n, int m) {
+        return i >= 0 && j >= 0 && i < n && j < m;
+    }
+
     private void setSelectedSlot() {
-        this.selectedSlot.x = (slot%SLOT_MAX_COL)*slotSpacing+slotX;
-        this.selectedSlot.y = (slot/SLOT_MAX_COL)*slotSpacing+slotY;
+        this.selectedSlot.x = (slotNumber % SLOT_MAX_COL) * PERK_SLOT_SPACING + PERK_SLOT_X;
+        this.selectedSlot.y = (slotNumber / SLOT_MAX_COL) * PERK_SLOT_SPACING + PERK_SLOT_Y;
     }
 
     private void changeSlot(MouseEvent e) {
         int x = e.getX(), y = e.getY();
         for (int i = 0; i < SLOT_MAX_COL; i++) {
             for (int j = 0; j < SLOT_MAX_ROW; j++) {
-                if (x >= i*slotSpacing+slotX && x <= i*slotSpacing+slotX+slotWid && y >= j*slotSpacing+slotY && y <= j*slotSpacing+slotY+slotHei) {
-                    slot = i + (j*SLOT_MAX_COL);
+                if (x >= i*PERK_SLOT_SPACING+PERK_SLOT_X && x <= i*PERK_SLOT_SPACING+PERK_SLOT_X+SLOT_SIZE && y >= j*PERK_SLOT_SPACING+PERK_SLOT_Y && y <= j*PERK_SLOT_SPACING+PERK_SLOT_Y+SLOT_SIZE) {
+                    slotNumber = i + (j*SLOT_MAX_COL);
                     if (placeHolders[j][i] == 1)
                         setSelectedSlot();
                     break;
@@ -172,9 +181,9 @@ public class BlacksmithOverlay implements MouseControls {
     }
 
     private boolean checkTokens() {
-        for (Perk perk : playingState.getPerksManager().getPerks()) {
-            if (slot == perk.getSlot() && playingState.getPlayer().getUpgradeTokens() >= perk.getCost()) {
-                playingState.getPlayer().changeUpgradeTokens(-perk.getCost());
+        for (Perk perk : gameState.getPerksManager().getPerks()) {
+            if (slotNumber == perk.getSlot() && gameState.getPlayer().getUpgradeTokens() >= perk.getCost()) {
+                gameState.getPlayer().changeUpgradeTokens(-perk.getCost());
                 return true;
             }
         }
@@ -183,7 +192,7 @@ public class BlacksmithOverlay implements MouseControls {
 
     public void upgrade() {
         if (!checkTokens()) return;
-        playingState.getPerksManager().upgrade(placeHolders, SLOT_MAX_COL, SLOT_MAX_ROW, slot);
+        gameState.getPerksManager().upgrade(SLOT_MAX_COL, SLOT_MAX_ROW, slotNumber);
     }
 
     @Override
@@ -211,7 +220,7 @@ public class BlacksmithOverlay implements MouseControls {
                         upgrade();
                         break;
                     case LEAVE:
-                        playingState.setBmVisible(false);
+                        gameState.setBlacksmithVisible(false);
                         break;
                     default: break;
                 }
@@ -234,6 +243,11 @@ public class BlacksmithOverlay implements MouseControls {
                 break;
             }
         }
+    }
+
+    @Override
+    public void reset() {
+
     }
 
     private boolean isMouseInButton(MouseEvent e, ShopButton shopButton) {

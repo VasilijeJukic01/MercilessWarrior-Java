@@ -1,10 +1,9 @@
 package platformer.model.spells;
 
 import platformer.audio.Audio;
-import platformer.audio.Sounds;
+import platformer.audio.Sound;
 import platformer.debug.Debug;
 import platformer.debug.DebugSettings;
-import platformer.model.ModelUtils;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
@@ -18,7 +17,7 @@ public abstract class Spell implements Debug {
     protected Rectangle2D.Double hitBox;
     private final int animSpeed = 20;
     protected int animTick, animIndex;
-    protected boolean alive = true;
+    protected boolean active = true;
 
     public Spell(SpellType spellType, int xPos, int yPos, int width, int height) {
         this.spellType = spellType;
@@ -37,15 +36,23 @@ public abstract class Spell implements Debug {
         if (animTick >= animSpeed) {
             animTick = 0;
             animIndex++;
-            if (animIndex >= ModelUtils.getInstance().getSpellSprite(spellType)) {
+            if (animIndex >= spellType.getSprites()) {
                 animIndex = 0;
-                if (spellType == SpellType.FLAME_1 || spellType == SpellType.LIGHTNING || spellType == SpellType.FLASH) {
-                    alive = false;
-                }
+                finishAnimation();
             }
-            else if (spellType == SpellType.FLASH && alive && animIndex == 9) Audio.getInstance().getAudioPlayer().playSound(Sounds.LIGHTNING_3.ordinal());
-            else if (spellType == SpellType.LIGHTNING && alive && animIndex == 1) Audio.getInstance().getAudioPlayer().playSound(Sounds.LIGHTNING_1.ordinal());
+            else if (spellType == SpellType.FLASH && active && animIndex == 9) Audio.getInstance().getAudioPlayer().playSound(Sound.LIGHTNING_3);
+            else if (spellType == SpellType.LIGHTNING && active && animIndex == 1) Audio.getInstance().getAudioPlayer().playSound(Sound.LIGHTNING_1);
         }
+    }
+
+    private void finishAnimation() {
+        if (spellType == SpellType.FLAME_1 || spellType == SpellType.LIGHTNING || spellType == SpellType.FLASH) {
+            active = false;
+        }
+    }
+
+    protected void render(Graphics g, int xLevelOffset, int yLevelOffset) {
+        hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.CYAN);
     }
 
     protected void renderHitBox(Graphics g, int xLevelOffset, int yLevelOffset, Color color) {
@@ -55,7 +62,7 @@ public abstract class Spell implements Debug {
     }
 
     protected void reset() {
-        alive = false;
+        active = false;
         animTick = animIndex = 0;
     }
 
@@ -63,12 +70,12 @@ public abstract class Spell implements Debug {
         return hitBox;
     }
 
-    public boolean isAlive() {
-        return alive;
+    public boolean isActive() {
+        return active;
     }
 
-    public void setAlive(boolean alive) {
-        this.alive = alive;
+    public void setActive(boolean active) {
+        this.active = active;
     }
 
     public int getWidth() {
@@ -81,6 +88,10 @@ public abstract class Spell implements Debug {
 
     public int getAnimIndex() {
         return animIndex;
+    }
+
+    public SpellType getSpellType() {
+        return spellType;
     }
 
     public void setAnimIndex(int animIndex) {

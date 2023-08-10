@@ -4,6 +4,9 @@ import org.lwjgl.LWJGLException;
 import org.lwjgl.openal.AL;
 import org.lwjgl.openal.AL10;
 import org.lwjgl.util.WaveData;
+import platformer.debug.logger.Logger;
+import platformer.debug.logger.Message;
+import platformer.utils.ValueEnum;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,13 +26,14 @@ public class OpenAL implements AudioPlayer {
     private final Random rand = new Random();
 
     public OpenAL() {
-        init();
+        initAL();
         loadSongs();
         loadSounds();
         setListenerData();
+        Logger.getInstance().notify("Audio loaded successfully!", Message.INFORMATION);
     }
 
-    private void init() {
+    private void initAL() {
         try {
             AL.create();
         }
@@ -39,23 +43,23 @@ public class OpenAL implements AudioPlayer {
     }
 
     // Data
-    private void loadSongs() {
-        String[] ids = {"menuTheme", "forestTheme", "spearWoman"};
-        for (String id : ids) {
-            songs.add(loadBuffers("audio/" + id + ".wav"));
-            songSources.add(new OpenALSource());
+    private void loadAudio(ValueEnum[] audioArray, List<Integer> buffers, List<OpenALSource> sources) {
+        for (ValueEnum audio : audioArray) {
+            String id = audio.getValue();
+            buffers.add(loadBuffers("audio/" + id + ".wav"));
+            sources.add(new OpenALSource());
         }
+    }
+
+    private void loadSongs() {
+        Song[] songArray = Song.values();
+        loadAudio(songArray, songs, songSources);
         updateSongVolume();
     }
 
     private void loadSounds() {
-        String[] ids = {"airSlash1", "airSlash2", "airSlash3", "attackSlash1", "attackSlash2", "gameOver", "crateBreak1", "crateBreak2", "skeletonD1", "playerDash", "arrowSound",
-                        "block1", "block2", "swordBlock1", "swordBlock2", "swordBlock3", "fireSound1", "ghoulHide", "ghoulReveal", "ghoulDeath", "coin", "buySound",
-                        "lightning1", "lightning2", "lightning3", "swRoar1", "swRoar2", "swRoar3"};
-        for (String id : ids) {
-            sounds.add(loadBuffers("audio/" + id + ".wav"));
-            soundSources.add(new OpenALSource());
-        }
+        Sound[] soundArray = Sound.values();
+        loadAudio(soundArray, sounds, soundSources);
         updateSoundVolume();
     }
 
@@ -75,9 +79,9 @@ public class OpenAL implements AudioPlayer {
 
     // Mediator
     @Override
-    public void playSong(int song) {
+    public void playSong(Song song) {
         stopSong();
-        currentSong = song;
+        currentSong = song.ordinal();
         if (!songMute) setVolume(volume);
         songSources.get(currentSong).play(songs.get(currentSong));
         songSources.get(currentSong).loop(true);
@@ -99,13 +103,13 @@ public class OpenAL implements AudioPlayer {
     }
 
     @Override
-    public void playSound(int sound) {
-        soundSources.get(sound).play(sounds.get(sound));
+    public void playSound(Sound sound) {
+        soundSources.get(sound.ordinal()).play(sounds.get(sound.ordinal()));
     }
 
     @Override
-    public void stopSound(int sound) {
-        soundSources.get(sound).stop();
+    public void stopSound(Sound sound) {
+        soundSources.get(sound.ordinal()).stop();
     }
 
     @Override
@@ -129,21 +133,21 @@ public class OpenAL implements AudioPlayer {
 
     @Override
     public void setLevelSong() {
-        playSong(Songs.FOREST_1.ordinal());
+        playSong(Song.FOREST_1);
     }
 
     @Override
     public void playSlashSound() {
         int start = 0;
         start += rand.nextInt(3);
-        playSound(start);
+        playSound(Sound.values()[start]);
     }
 
     @Override
     public void playHitSound() {
         int start = 3;
         start += rand.nextInt(2);
-        playSound(start);
+        playSound(Sound.values()[start]);
     }
 
     @Override
@@ -157,14 +161,14 @@ public class OpenAL implements AudioPlayer {
             start = 13;
             start += rand.nextInt(3);
         }
-        playSound(start);
+        playSound(Sound.values()[start]);
     }
 
     @Override
     public void playCrateSound() {
         int start = 6;
         start += rand.nextInt(2);
-        playSound(start);
+        playSound(Sound.values()[start]);
     }
 
     // Mute

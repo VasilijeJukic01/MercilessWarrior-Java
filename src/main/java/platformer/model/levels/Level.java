@@ -1,163 +1,204 @@
 package platformer.model.levels;
 
-import platformer.model.Tiles;
+import platformer.model.entities.enemies.Enemy;
 import platformer.model.entities.enemies.EnemyType;
 import platformer.model.entities.enemies.Ghoul;
 import platformer.model.entities.enemies.Skeleton;
 import platformer.model.entities.enemies.boss.SpearWoman;
-import platformer.model.objects.*;
-import platformer.model.objects.Container;
+import platformer.model.gameObjects.*;
+import platformer.model.gameObjects.objects.*;
+import platformer.model.gameObjects.objects.Container;
 import platformer.model.spells.Flash;
 import platformer.model.spells.Lightning;
+import platformer.model.spells.Spell;
 import platformer.model.spells.SpellType;
 import platformer.utils.Utils;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
+import java.util.*;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static platformer.constants.Constants.*;
 
 @SuppressWarnings("FieldCanBeLocal")
 public class Level {
 
     // Data
-    private final BufferedImage dataL1, dataL2;
+    private final BufferedImage layer1Img, layer2Img;
     private int[][] lvlData, decoData, layerData;
-    // Enemies
-    private final ArrayList<Skeleton> skeletons = new ArrayList<>();
-    private final ArrayList<Ghoul> ghouls = new ArrayList<>();
-    private SpearWoman spearWoman;
-    // Objects
-    private final ArrayList<Potion> potions = new ArrayList<>();
-    private final ArrayList<Container> containers = new ArrayList<>();
-    private final ArrayList<Spike> spikes = new ArrayList<>();
-    private final ArrayList<ArrowLauncher> arrowLaunchers = new ArrayList<>();
-    private final ArrayList<Shop> shops = new ArrayList<>();
-    private final ArrayList<Blocker> blockers = new ArrayList<>();
-    private final ArrayList<Blacksmith> blacksmiths = new ArrayList<>();
-    private final ArrayList<Dog> dogs = new ArrayList<>();
-    // Spells
-    private final ArrayList<Lightning> lightnings = new ArrayList<>();
-    private final ArrayList<Flash> flashes = new ArrayList<>();
+
+    // Items
+    private final Map<EnemyType, List<Enemy>> enemiesMap = new HashMap<>();
+    private final Map<ObjType, List<GameObject>> objectsMap = new HashMap<>();
+    private final Map<SpellType, List<Spell>> spellsMap = new HashMap<>();
+
     // Other
     private int levelTilesWidth, levelTilesHeight;
     private int xMaxTilesOffset, xMaxLevelOffset;
     private int yMaxTilesOffset, yMaxLevelOffset;
     private final Point playerSpawn;
 
-    public Level(BufferedImage dataL1, BufferedImage dataL2) {
-        this.dataL1 = dataL1;
-        this.dataL2 = dataL2;
+    public Level(BufferedImage layer1Img, BufferedImage layer2Img) {
+        this.layer1Img = layer1Img;
+        this.layer2Img = layer2Img;
         init();
         setOffset();
-        this.playerSpawn = Utils.getInstance().getPlayerSpawn(dataL1);
+        this.playerSpawn = getPlayerSpawn(layer1Img);
     }
 
-    // Data gatherer
-    private void getEnemyData() {
-        for (int i = 0; i < dataL1.getWidth(); i++) {
-            for (int j = 0; j < dataL1.getHeight(); j++) {
-                Color color = new Color(dataL1.getRGB(i, j));
-                int value = color.getGreen();
-                if (value >= EnemyType.MAX.ordinal()) continue;
-                switch (EnemyType.values()[value]) {
-                    case SKELETON:
-                        skeletons.add(new Skeleton((int)(i*Tiles.TILES_SIZE.getValue()), (int)((j-1)*Tiles.TILES_SIZE.getValue()))); break;
-                    case GHOUL:
-                        ghouls.add(new Ghoul((int)(i*Tiles.TILES_SIZE.getValue()), (int)((j-1)*Tiles.TILES_SIZE.getValue()))); break;
-                    case SPEAR_WOMAN:
-                        spearWoman = new SpearWoman((int)(i*Tiles.TILES_SIZE.getValue()), (int)((j-1)*Tiles.TILES_SIZE.getValue())); break;
-                    default: break;
-                }
-            }
-        }
+    // Init
+    private void init() {
+        this.lvlData = getLevelData(layer1Img);
+        this.decoData = getDecoData(layer2Img, false);
+        this.layerData = getDecoData(layer2Img, true);
+        gatherData();
     }
 
-    public void getObjectData() {
-        clear();
-        for (int i = 0; i < dataL1.getWidth(); i++) {
-            for (int j = 0; j < dataL1.getHeight(); j++) {
-                Color color = new Color(dataL1.getRGB(i, j));
-                int value = color.getBlue();
-                if (value >= ObjType.MAX.ordinal()) continue;
-                switch (ObjType.values()[value]) {
-                    case HEAL_POTION:
-                        potions.add(new Potion(ObjType.HEAL_POTION, (int)((i+0.5)*Tiles.TILES_SIZE.getValue()), (int)(j*Tiles.TILES_SIZE.getValue()))); break;
-                    case STAMINA_POTION:
-                        potions.add(new Potion(ObjType.STAMINA_POTION, (int)((i+0.5)*Tiles.TILES_SIZE.getValue()), (int)(j*Tiles.TILES_SIZE.getValue()))); break;
-                    case BOX:
-                        containers.add(new Container(ObjType.BOX, (int)(i*Tiles.TILES_SIZE.getValue()), (int)(j*Tiles.TILES_SIZE.getValue()))); break;
-                    case BARREL:
-                        containers.add(new Container(ObjType.BARREL, (int)(i*Tiles.TILES_SIZE.getValue()), (int)(j*Tiles.TILES_SIZE.getValue()))); break;
-                    case SPIKE:
-                        spikes.add(new Spike(ObjType.SPIKE, (int)(i*Tiles.TILES_SIZE.getValue()), (int)(j*Tiles.TILES_SIZE.getValue()))); break;
-                    case ARROW_LAUNCHER_LEFT:
-                    case ARROW_LAUNCHER_RIGHT:
-                        arrowLaunchers.add(new ArrowLauncher(ObjType.values()[value], (int)(i*Tiles.TILES_SIZE.getValue()), (int)(j*Tiles.TILES_SIZE.getValue()))); break;
-                    case SHOP:
-                        shops.add(new Shop(ObjType.SHOP, (int)(i*Tiles.TILES_SIZE.getValue()), (int)(j*Tiles.TILES_SIZE.getValue()))); break;
-                    case BLOCKER:
-                        blockers.add(new Blocker(ObjType.BLOCKER, (int)((i-1.75)*Tiles.TILES_SIZE.getValue()), (int)((j-1)*Tiles.TILES_SIZE.getValue()))); break;
-                    case BLACKSMITH:
-                        blacksmiths.add(new Blacksmith(ObjType.BLACKSMITH, (int)(i*Tiles.TILES_SIZE.getValue()), (int)(j*Tiles.TILES_SIZE.getValue()))); break;
-                    case DOG:
-                        dogs.add(new Dog(ObjType.DOG, (int)(i*Tiles.TILES_SIZE.getValue()), (int)(j*Tiles.TILES_SIZE.getValue()))); break;
-                    default: break;
-                }
-            }
-        }
-    }
-
-    private void getLightningPos() {
-        lightnings.clear();
-        flashes.clear();
-        for (int i = 0; i < dataL1.getWidth(); i++) {
-            for (int j = 0; j < dataL1.getHeight(); j++) {
-                Color color = new Color(dataL1.getRGB(i, j));
+    // Level items Data
+    public void gatherData() {
+        reset();
+        for (int i = 0; i < layer1Img.getWidth(); i++) {
+            for (int j = 0; j < layer1Img.getHeight(); j++) {
+                Color color = new Color(layer1Img.getRGB(i, j));
                 int valueG = color.getGreen();
                 int valueB = color.getBlue();
-                // 100 : >100 Rule
-                if (valueG == 100 && valueB == 101) {
-                    Lightning l = new Lightning(SpellType.LIGHTNING, (int)(i*Tiles.TILES_SIZE.getValue()), (int)(j*Tiles.TILES_SIZE.getValue()));
-                    lightnings.add(l);
-                }
-                else if (valueG == 100 && valueB == 102) {
-                    Flash f = new Flash(SpellType.FLASH, (int)(i*Tiles.TILES_SIZE.getValue()), (int)((j+1)*Tiles.TILES_SIZE.getValue()));
-                    flashes.add(f);
-                }
+
+                getEnemyData(i, j, valueG);
+                getObjectData(i, j, valueB);
+                getSpellData(i, j, valueG, valueB);
             }
         }
     }
 
-    private void init() {
-        this.lvlData = Utils.getInstance().getLevelData(dataL1);
-        this.decoData = Utils.getInstance().getDecoData(dataL2, false);
-        this.layerData = Utils.getInstance().getDecoData(dataL2, true);
-        getEnemyData();
-        getObjectData();
-        getLightningPos();
+    private void getEnemyData(int i, int j, int valueG) {
+        if (valueG >= EnemyType.MAX.ordinal()) return;
+        switch (EnemyType.values()[valueG]) {
+            case SKELETON:
+                addEnemy(new Skeleton(i*TILES_SIZE, (j-1)*TILES_SIZE));
+                break;
+            case GHOUL:
+                addEnemy(new Ghoul(i*TILES_SIZE, (j-1)*TILES_SIZE));
+                break;
+            case SPEAR_WOMAN:
+                addEnemy(new SpearWoman(i*TILES_SIZE, (j-1)*TILES_SIZE));
+                break;
+            default: break;
+        }
+    }
+
+    private void getObjectData(int i, int j, int valueB) {
+        if (valueB >= ObjType.MAX.ordinal()) return;
+        switch (ObjType.values()[valueB]) {
+            case HEAL_POTION:
+            case STAMINA_POTION:
+                addGameObject(new Potion(ObjType.values()[valueB], (int)((i+0.5)*TILES_SIZE), j*TILES_SIZE));
+                break;
+            case BOX:
+            case BARREL:
+                addGameObject(new Container(ObjType.values()[valueB], i*TILES_SIZE, j*TILES_SIZE));
+                break;
+            case SPIKE:
+                addGameObject(new Spike(ObjType.values()[valueB], i*TILES_SIZE, j*TILES_SIZE));
+                break;
+            case ARROW_TRAP_LEFT:
+            case ARROW_TRAP_RIGHT:
+                addGameObject(new ArrowLauncher(ObjType.values()[valueB], i*TILES_SIZE, j*TILES_SIZE)); break;
+            case SHOP:
+                addGameObject(new Shop(ObjType.values()[valueB], i*TILES_SIZE, j*TILES_SIZE)); break;
+            case BLOCKER:
+                addGameObject(new Blocker(ObjType.values()[valueB], (int)((i-1.75)*TILES_SIZE), (j-1)*TILES_SIZE)); break;
+            case BLACKSMITH:
+                addGameObject(new Blacksmith(ObjType.values()[valueB], i*TILES_SIZE, j*TILES_SIZE)); break;
+            case DOG:
+                addGameObject(new Dog(ObjType.values()[valueB], i*TILES_SIZE, j*TILES_SIZE)); break;
+            default: break;
+        }
+    }
+
+    private void getSpellData(int i, int j, int valueG, int valueB) {
+        // 100 : >100 Rule
+        if (valueG == 100 && valueB == 101) {
+            addSpell(new Lightning(SpellType.LIGHTNING, i*TILES_SIZE, j*TILES_SIZE));
+        }
+        else if (valueG == 100 && valueB == 102) {
+            addSpell(new Flash(SpellType.FLASH, i*TILES_SIZE, (j+1)*TILES_SIZE));
+        }
+    }
+
+    private void addGameObject(GameObject gameObject) {
+        ObjType type = gameObject.getObjType();
+        objectsMap.computeIfAbsent(type, k -> new ArrayList<>()).add(gameObject);
+    }
+
+    private void addEnemy(Enemy enemy) {
+        EnemyType type = enemy.getEnemyType();
+        enemiesMap.computeIfAbsent(type, k -> new ArrayList<>()).add(enemy);
+    }
+
+    private void addSpell(Spell spell) {
+        SpellType type = spell.getSpellType();
+        spellsMap.computeIfAbsent(type, k -> new ArrayList<>()).add(spell);
+    }
+
+    // Data Gatherer
+    private int[][] getLevelData(BufferedImage level) {
+        int[][] lvlData = new int[level.getWidth()][level.getHeight()];
+        for (int i = 0; i < level.getWidth(); i++) {
+            for (int j = 0; j < level.getHeight(); j++) {
+                Color color = new Color(level.getRGB(i, j));
+                int value = color.getRed();
+                if (value >= 49) value = -1;
+                if (color.getBlue() == 255 && color.getGreen() == 255) value += 255;   // Value > 255  ->  Different layer
+                lvlData[i][j] = value;
+            }
+        }
+        return lvlData;
+    }
+
+    // layer = true -> Layer data;  layer = false -> Object data
+    private int[][] getDecoData(BufferedImage level, boolean layer) {
+        int[][] data = new int[level.getWidth()][level.getHeight()];
+        for (int i = 0; i < level.getWidth(); i++) {
+            for (int j = 0; j < level.getHeight(); j++) {
+                Color color = new Color(level.getRGB(i, j));
+                int value = layer ? color.getGreen() : color.getBlue();
+                if ((value >= 40 && !layer) || (value >= 4 && layer)) value = -1;
+                data[i][j] = value;
+            }
+        }
+        return data;
+    }
+
+    private Point getPlayerSpawn(BufferedImage level) {
+        for (int i = 0; i < level.getWidth(); i++) {
+            for (int j = 0; j < level.getHeight(); j++) {
+                Color color = new Color(level.getRGB(i, j));
+                int value = color.getGreen();
+                if (value == 100) return new Point(i*TILES_SIZE, j*TILES_SIZE);
+            }
+        }
+        return null;
     }
 
     // Other
     public void setOffset() {
-        this.levelTilesWidth = dataL1.getWidth();
-        this.xMaxTilesOffset = levelTilesWidth - (int)(Tiles.TILES_WIDTH.getValue());
-        this.xMaxLevelOffset = xMaxTilesOffset * (int)Tiles.TILES_SIZE.getValue();
-        this.levelTilesHeight = dataL1.getHeight();
-        this.yMaxTilesOffset = levelTilesHeight - (int)(Tiles.TILES_HEIGHT.getValue());
-        this.yMaxLevelOffset = yMaxTilesOffset * (int)(Tiles.TILES_SIZE.getValue());
+        this.levelTilesWidth = layer1Img.getWidth();
+        this.xMaxTilesOffset = levelTilesWidth - TILES_WIDTH;
+        this.xMaxLevelOffset = xMaxTilesOffset * TILES_SIZE;
+        this.levelTilesHeight = layer1Img.getHeight();
+        this.yMaxTilesOffset = levelTilesHeight - TILES_HEIGHT;
+        this.yMaxLevelOffset = yMaxTilesOffset * TILES_SIZE;
     }
 
-    private void clear() {
-        potions.clear();
-        containers.clear();
-        spikes.clear();
-        shops.clear();
-        arrowLaunchers.clear();
-        blockers.clear();
-        blacksmiths.clear();
-        dogs.clear();
+    private void reset() {
+        enemiesMap.clear();
+        objectsMap.clear();
+        spellsMap.clear();
     }
 
+    // Getters
     public int getSpriteIndex(int x, int y) {
         return lvlData[x][y];
     }
@@ -182,59 +223,26 @@ public class Level {
         return yMaxLevelOffset;
     }
 
-    public ArrayList<Skeleton> getSkeletons() {
-        return skeletons;
-    }
-
-    public ArrayList<Ghoul> getGhouls() {
-        return ghouls;
-    }
-
-    public SpearWoman getSpearWoman() {
-        return spearWoman;
-    }
-
     public Point getPlayerSpawn() {
         return playerSpawn;
     }
 
-    public ArrayList<Potion> getPotions() {
-        return potions;
+    private List<Spell> getAllSpells() {
+        return Utils.getInstance().getAllItems(spellsMap);
     }
 
-    public ArrayList<Container> getContainers() {
-        return containers;
+    public <T> List<T> getSpells(Class<T> spellType) {
+        return getAllSpells().stream()
+                .filter(spellType::isInstance)
+                .map(spellType::cast)
+                .collect(Collectors.toList());
     }
 
-    public ArrayList<Spike> getSpikes() {
-        return spikes;
+    public Map<EnemyType, List<Enemy>> getEnemiesMap() {
+        return enemiesMap;
     }
 
-    public ArrayList<ArrowLauncher> getArrowLaunchers() {
-        return arrowLaunchers;
-    }
-
-    public ArrayList<Shop> getShops() {
-        return shops;
-    }
-
-    public ArrayList<Blocker> getBlockers() {
-        return blockers;
-    }
-
-    public ArrayList<Blacksmith> getBlacksmiths() {
-        return blacksmiths;
-    }
-
-    public ArrayList<Dog> getDogs() {
-        return dogs;
-    }
-
-    public ArrayList<Lightning> getLightnings() {
-        return lightnings;
-    }
-
-    public ArrayList<Flash> getFlashes() {
-        return flashes;
+    public Map<ObjType, List<GameObject>> getObjectsMap() {
+        return objectsMap;
     }
 }

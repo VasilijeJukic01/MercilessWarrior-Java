@@ -1,41 +1,35 @@
 package platformer.ui.buttons;
 
-import platformer.ui.UI;
-import platformer.utils.Utils;
+import platformer.animation.Animation;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
-public class ShopButton implements GameButton {
+import static platformer.constants.AnimConstants.*;
+import static platformer.constants.Constants.SMALL_BTN_HEI;
+import static platformer.constants.Constants.SMALL_BTN_WID;
+import static platformer.constants.FilePaths.BTN_BUY_SHEET;
+import static platformer.constants.FilePaths.BTN_LEAVE_SHEET;
 
-    private final int xPos;
-    private final int yPos;
-    private final ButtonType buttonType;
+public class ShopButton extends AbstractButton implements GameButton {
+
     private BufferedImage[] images;
     private int imageIndex;
-    private boolean mouseOver, mousePressed;
-    private final Rectangle buttonHitBox;
 
-    public ShopButton(int xPos, int yPos, ButtonType buttonType) {
-        this.xPos = xPos;
-        this.yPos = yPos;
-        this.buttonType = buttonType;
-        this.buttonHitBox = new Rectangle(xPos, yPos, UI.SB_WIDTH.getValue(), UI.SB_HEIGHT.getValue());
+    public ShopButton(int xPos, int yPos, int width, int height, ButtonType buttonType) {
+        super(xPos, yPos, width, height);
+        super.buttonType = buttonType;
         loadButtons();
     }
 
-    private void loadButtons() {
-        images = new BufferedImage[3];
+    @Override
+    protected void loadButtons() {
         switch (buttonType) {
             case BUY:
-                images[0] = Utils.getInstance().importImage("src/main/resources/images/buttons/BuyBtn0.png", UI.SB_WIDTH.getValue(), UI.SB_HEIGHT.getValue());
-                images[1] = Utils.getInstance().importImage("src/main/resources/images/buttons/BuyBtn1.png", UI.SB_WIDTH.getValue(), UI.SB_HEIGHT.getValue());
-                images[2] = Utils.getInstance().importImage("src/main/resources/images/buttons/BuyBtn1.png", UI.SB_WIDTH.getValue(), UI.SB_HEIGHT.getValue());
+                images = Animation.getInstance().loadFromSprite(BTN_BUY_SHEET, 3, 0, SMALL_BTN_WID, SMALL_BTN_HEI, 0, BTN_W, BTN_H);
                 break;
             case LEAVE:
-                images[0] = Utils.getInstance().importImage("src/main/resources/images/buttons/LeaveBtn0.png", UI.SB_WIDTH.getValue(), UI.SB_HEIGHT.getValue());
-                images[1] = Utils.getInstance().importImage("src/main/resources/images/buttons/LeaveBtn1.png", UI.SB_WIDTH.getValue(), UI.SB_HEIGHT.getValue());
-                images[2] = Utils.getInstance().importImage("src/main/resources/images/buttons/LeaveBtn1.png", UI.SB_WIDTH.getValue(), UI.SB_HEIGHT.getValue());
+                images = Animation.getInstance().loadFromSprite(BTN_LEAVE_SHEET, 3, 0, SMALL_BTN_WID, SMALL_BTN_HEI, 0, BTN_W, BTN_H);
                 break;
             default: break;
         }
@@ -50,32 +44,7 @@ public class ShopButton implements GameButton {
 
     @Override
     public void render(Graphics g) {
-        if (mousePressed) g.drawImage(images[imageIndex], xPos, yPos+10, UI.SB_WIDTH.getValue()-20, UI.SB_HEIGHT.getValue()-20, null);
-        else g.drawImage(images[imageIndex], xPos, yPos, UI.SB_WIDTH.getValue(), UI.SB_HEIGHT.getValue(), null);
+        g.drawImage(images[imageIndex], xPos, yPos, SMALL_BTN_WID, SMALL_BTN_HEI, null);
     }
 
-    public void resetMouseSet() {
-        mouseOver = false;
-        mousePressed = false;
-    }
-
-    public boolean isMousePressed() {
-        return mousePressed;
-    }
-
-    public void setMouseOver(boolean mouseOver) {
-        this.mouseOver = mouseOver;
-    }
-
-    public void setMousePressed(boolean mousePressed) {
-        this.mousePressed = mousePressed;
-    }
-
-    public Rectangle getButtonHitBox() {
-        return buttonHitBox;
-    }
-
-    public ButtonType getButtonType() {
-        return buttonType;
-    }
 }
