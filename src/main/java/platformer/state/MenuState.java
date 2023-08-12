@@ -1,6 +1,7 @@
 package platformer.state;
 
 import platformer.core.Game;
+import platformer.ui.buttons.AbstractButton;
 import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.MenuButton;
 import platformer.ui.overlays.OverlayLayer;
@@ -11,6 +12,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
+import java.util.Arrays;
 
 import static platformer.constants.Constants.*;
 import static platformer.constants.FilePaths.MENU_LOGO;
@@ -69,12 +71,10 @@ public class MenuState extends AbstractState implements State{
 
     @Override
     public void mousePressed(MouseEvent e) {
-        for (MenuButton button : buttons) {
-            if (isMouseInButton(e, button)) {
-                button.setMousePressed(true);
-                break;
-            }
-        }
+        Arrays.stream(buttons)
+                .filter(button -> isMouseInButton(e, button))
+                .findFirst()
+                .ifPresent(button -> button.setMousePressed(true));
     }
 
     @Override
@@ -95,22 +95,16 @@ public class MenuState extends AbstractState implements State{
                 break;
             }
         }
-        for (MenuButton button : buttons) {
-            button.resetMouseSet();
-        }
+        Arrays.stream(buttons).forEach(AbstractButton::resetMouseSet);
     }
 
     @Override
     public void mouseMoved(MouseEvent e) {
-        for (MenuButton button : buttons) {
-            button.setMouseOver(false);
-        }
-        for (MenuButton button : buttons) {
-            if (isMouseInButton(e, button)) {
-                button.setMouseOver(true);
-                break;
-            }
-        }
+        Arrays.stream(buttons).forEach(menuButton -> menuButton.setMouseOver(false));
+        Arrays.stream(buttons)
+                .filter(button -> isMouseInButton(e, button))
+                .findFirst()
+                .ifPresent(button -> button.setMouseOver(true));
     }
 
     @Override

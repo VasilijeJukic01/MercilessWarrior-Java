@@ -115,11 +115,9 @@ public class ObjectManager {
 
     public void checkProjectileDeflect(Rectangle2D.Double attackBox) {
         if (!PlayerBonus.getInstance().isDeflect()) return;
-        for (Projectile projectile : projectiles) {
-            if (projectile.isAlive() && attackBox.intersects(projectile.getHitBox())) {
-                projectile.setAlive(false);
-            }
-        }
+        projectiles.stream()
+                .filter(projectile -> projectile.isAlive() && attackBox.intersects(projectile.getHitBox()))
+                .forEach(projectile -> projectile.setAlive(false));
     }
 
     // Launchers
@@ -190,9 +188,7 @@ public class ObjectManager {
     }
 
     public void update(int[][] lvlData, Player player) {
-        for (Class<? extends GameObject> renderClass : classes) {
-            updateObjects(renderClass);
-        }
+        Arrays.stream(classes).forEach(this::updateObjects);
         updateArrowLaunchers(lvlData, player);
         checkEnemyIntersection();
         collisionHandler.updateObjectInAir();
@@ -200,9 +196,7 @@ public class ObjectManager {
     }
 
     public void render(Graphics g, int xLevelOffset, int yLevelOffset) {
-        for (Class<? extends GameObject> renderClass : classes) {
-            renderObjects(g, xLevelOffset, yLevelOffset, renderClass);
-        }
+        Arrays.stream(classes).forEach(renderClass -> renderObjects(g, xLevelOffset, yLevelOffset, renderClass));
         renderArrowLaunchers(g, xLevelOffset, yLevelOffset);
         renderProjectiles(g, xLevelOffset, yLevelOffset);
     }

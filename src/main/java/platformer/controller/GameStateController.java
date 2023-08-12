@@ -156,6 +156,7 @@ public class GameStateController {
 
     private void saveToDatabase() {
         player.getPlayerStatusManager().saveData();
+        gameState.saveToDatabase();
         game.saveProgress();
     }
 

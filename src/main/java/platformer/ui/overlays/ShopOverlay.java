@@ -3,6 +3,7 @@ package platformer.ui.overlays;
 import platformer.model.gameObjects.objects.Shop;
 import platformer.state.GameState;
 import platformer.ui.ShopItem;
+import platformer.ui.buttons.AbstractButton;
 import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.ShopButton;
 import platformer.utils.Utils;
@@ -11,6 +12,7 @@ import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+import java.util.Arrays;
 import java.util.List;
 
 import static platformer.constants.Constants.*;
@@ -61,9 +63,7 @@ public class ShopOverlay implements Overlay {
     // Core
     @Override
     public void update() {
-        for (ShopButton button : buttons) {
-            button.update();
-        }
+        Arrays.stream(buttons).forEach(ShopButton::update);
     }
 
     @Override
@@ -82,9 +82,7 @@ public class ShopOverlay implements Overlay {
     }
 
     private void renderButtons(Graphics g) {
-        for (ShopButton button : buttons) {
-            button.render(g);
-        }
+        Arrays.stream(buttons).forEach(shopButton -> shopButton.render(g));
     }
 
     private void renderItems(Graphics g) {
@@ -142,11 +140,9 @@ public class ShopOverlay implements Overlay {
     }
 
     private void buyItem() {
-        for (Shop shop : shops) {
-            if (shop.isActive()) {
-                shop.buyItem(gameState.getPlayer(), slotNumber);
-            }
-        }
+        shops.stream()
+                .filter(Shop::isActive)
+                .forEach(shop -> shop.buyItem(gameState.getPlayer(), slotNumber));
     }
 
     @Override
@@ -156,12 +152,11 @@ public class ShopOverlay implements Overlay {
 
     @Override
     public void mousePressed(MouseEvent e) {
-        for (ShopButton button : buttons) {
-            if (isMouseInButton(e, button)) {
-                button.setMousePressed(true);
-                break;
-            }
-        }
+        Arrays.stream(buttons)
+                .filter(button -> isMouseInButton(e, button))
+                .findFirst()
+                .ifPresent(button -> button.setMousePressed(true));
+
         changeSlot(e);
     }
 
@@ -181,22 +176,17 @@ public class ShopOverlay implements Overlay {
                 break;
             }
         }
-        for (ShopButton button : buttons) {
-            button.resetMouseSet();
-        }
+        Arrays.stream(buttons).forEach(AbstractButton::resetMouseSet);
     }
 
     @Override
     public void mouseMoved(MouseEvent e) {
-        for (ShopButton button : buttons) {
-            button.setMouseOver(false);
-        }
-        for (ShopButton button : buttons) {
-            if (isMouseInButton(e, button)) {
-                button.setMouseOver(true);
-                break;
-            }
-        }
+        Arrays.stream(buttons).forEach(shopButton -> shopButton.setMouseOver(false));
+
+        Arrays.stream(buttons)
+                .filter(shopButton -> isMouseInButton(e, shopButton))
+                .findFirst()
+                .ifPresent(shopButton -> shopButton.setMouseOver(true));
     }
 
     private boolean isMouseInButton(MouseEvent e, ShopButton shopButton) {

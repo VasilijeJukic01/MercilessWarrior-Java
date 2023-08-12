@@ -125,9 +125,13 @@ public class Player extends Entity {
     }
 
     private void blockWallFlip() {
-        if (moving && !onWall) {
-            flipCoefficient = (left) ? (int)(width - hitBox.width - 13 * SCALE) : 0;
-            flipSign = (left) ? -1 : 1;
+        if (moving && left && !onWall) {
+            this.flipCoefficient = (int)(width-hitBox.width-13*SCALE);
+            this.flipSign = -1;
+        }
+        else if (moving && right && !onWall) {
+            this.flipCoefficient = 0;
+            this.flipSign = 1;
         }
     }
 

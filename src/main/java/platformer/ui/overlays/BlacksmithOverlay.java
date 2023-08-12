@@ -10,6 +10,7 @@ import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+import java.util.Arrays;
 
 import static platformer.constants.Constants.*;
 import static platformer.constants.FilePaths.*;
@@ -65,9 +66,7 @@ public class BlacksmithOverlay implements Overlay {
     // Core
     @Override
     public void update() {
-        for (ShopButton button : buttons) {
-            button.update();
-        }
+        Arrays.stream(buttons).forEach(ShopButton::update);
     }
 
     @Override
@@ -88,9 +87,7 @@ public class BlacksmithOverlay implements Overlay {
     }
 
     private void renderButtons(Graphics g) {
-        for (ShopButton button : buttons) {
-            button.render(g);
-        }
+        Arrays.stream(buttons).forEach(shopButton -> shopButton.render(g));
     }
 
     private void renderSlots(Graphics g) {
@@ -202,12 +199,11 @@ public class BlacksmithOverlay implements Overlay {
 
     @Override
     public void mousePressed(MouseEvent e) {
-        for (ShopButton button : buttons) {
-            if (isMouseInButton(e, button)) {
-                button.setMousePressed(true);
-                break;
-            }
-        }
+        Arrays.stream(buttons)
+                .filter(button -> isMouseInButton(e, button))
+                .findFirst()
+                .ifPresent(button -> button.setMousePressed(true));
+
         changeSlot(e);
     }
 
@@ -234,15 +230,12 @@ public class BlacksmithOverlay implements Overlay {
 
     @Override
     public void mouseMoved(MouseEvent e) {
-        for (ShopButton button : buttons) {
-            button.setMouseOver(false);
-        }
-        for (ShopButton button : buttons) {
-            if (isMouseInButton(e, button)) {
-                button.setMouseOver(true);
-                break;
-            }
-        }
+        Arrays.stream(buttons).forEach(shopButton -> shopButton.setMouseOver(false));
+
+        Arrays.stream(buttons)
+                .filter(shopButton -> isMouseInButton(e, shopButton))
+                .findFirst()
+                .ifPresent(shopButton -> shopButton.setMouseOver(true));
     }
 
     @Override
