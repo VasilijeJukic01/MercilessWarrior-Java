@@ -5,6 +5,7 @@ import platformer.ui.buttons.*;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;
+import java.util.function.Consumer;
 
 import static platformer.constants.Constants.SOUND_BTN_SIZE;
 import static platformer.constants.UI.*;
@@ -12,7 +13,7 @@ import static platformer.constants.UI.*;
 public class AudioOptions {
 
     private AudioButton sfxBtn, musicBtn;
-    private SliderButton sliderButton;
+    private SliderButton musicSliderButton, sfxSliderButton;
 
     public AudioOptions() {
         init();
@@ -21,35 +22,45 @@ public class AudioOptions {
     private void init() {
         this.sfxBtn = new AudioButton(SFX_X, SFX_Y, SOUND_BTN_SIZE, SOUND_BTN_SIZE, ButtonType.SFX);
         this.musicBtn = new AudioButton(MUSIC_X, MUSIC_Y, SOUND_BTN_SIZE, SOUND_BTN_SIZE, ButtonType.MUSIC);
-        this.sliderButton = new SliderButton(SLIDER_BTN_X, SLIDER_BTN_Y, SOUND_BTN_SIZE, SOUND_BTN_SIZE);
+        this.musicSliderButton = new SliderButton(MUSIC_SLIDER_BTN_X, MUSIC_SLIDER_BTN_Y, SOUND_BTN_SIZE, SOUND_BTN_SIZE, true);
+        this.sfxSliderButton = new SliderButton(SFX_SLIDER_BTN_X, SFX_SLIDER_BTN_Y, SOUND_BTN_SIZE, SOUND_BTN_SIZE, false);
     }
 
     public void update() {
         sfxBtn.update();
         musicBtn.update();
-        sliderButton.update();
+        musicSliderButton.update();
+        sfxSliderButton.update();
     }
 
     public void render(Graphics g) {
         sfxBtn.render(g);
         musicBtn.render(g);
-        sliderButton.render(g);
+        musicSliderButton.render(g);
+        sfxSliderButton.render(g);
     }
 
-    public void mouseDragged(MouseEvent e) {
+    private void updateSliderAndVolume(SliderButton sliderButton, MouseEvent e, Consumer<Float> volumeSetter) {
         if (sliderButton.isMousePressed()) {
             float prevValue = sliderButton.getValue();
             sliderButton.updateSlider(e.getX());
             float newValue = sliderButton.getValue();
-            if (prevValue != newValue) Audio.getInstance().getAudioPlayer().setVolume(newValue);
+            if (prevValue != newValue) {
+                volumeSetter.accept(newValue);
+            }
         }
+    }
 
+    public void mouseDragged(MouseEvent e) {
+        updateSliderAndVolume(musicSliderButton, e, Audio.getInstance().getAudioPlayer()::setMusicVolume);
+        updateSliderAndVolume(sfxSliderButton, e, Audio.getInstance().getAudioPlayer()::setSfxVolume);
     }
 
     public void mousePressed(MouseEvent e) {
         if (isMouseInButton(e, sfxBtn)) sfxBtn.setMousePressed(true);
         else if (isMouseInButton(e, musicBtn)) musicBtn.setMousePressed(true);
-        else if (isMouseInButton(e, sliderButton)) sliderButton.setMousePressed(true);
+        else if (isMouseInButton(e, musicSliderButton)) musicSliderButton.setMousePressed(true);
+        else if (isMouseInButton(e, sfxSliderButton)) sfxSliderButton.setMousePressed(true);
     }
 
     public void mouseReleased(MouseEvent e) {
@@ -67,10 +78,12 @@ public class AudioOptions {
     public void mouseMoved(MouseEvent e) {
         sfxBtn.setMouseOver(false);
         musicBtn.setMouseOver(false);
-        sliderButton.setMouseOver(false);
+        musicSliderButton.setMouseOver(false);
+        sfxSliderButton.setMouseOver(false);
         if (isMouseInButton(e, sfxBtn)) sfxBtn.setMouseOver(true);
         else if (isMouseInButton(e, musicBtn)) musicBtn.setMouseOver(true);
-        else if (isMouseInButton(e, sliderButton)) sliderButton.setMouseOver(true);
+        else if (isMouseInButton(e, musicSliderButton)) musicSliderButton.setMouseOver(true);
+        else if (isMouseInButton(e, sfxSliderButton)) sfxSliderButton.setMouseOver(true);
     }
 
     private boolean isMouseInButton(MouseEvent e, AbstractButton abstractButton) {
@@ -80,6 +93,7 @@ public class AudioOptions {
     private void resetButtons() {
         sfxBtn.resetMouseSet();
         musicBtn.resetMouseSet();
-        sliderButton.resetMouseSet();
+        musicSliderButton.resetMouseSet();
+        sfxSliderButton.resetMouseSet();
     }
 }

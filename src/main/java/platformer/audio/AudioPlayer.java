@@ -32,7 +32,9 @@ public interface AudioPlayer {
 
     void soundMute();
 
-    void setVolume(float volume);
+    void setMusicVolume(float musicVolume);
+
+    void setSfxVolume(float sfxVolume);
 
     void destroy();
 }

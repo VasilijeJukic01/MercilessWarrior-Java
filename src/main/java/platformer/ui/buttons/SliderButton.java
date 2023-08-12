@@ -10,6 +10,7 @@ import static platformer.constants.AnimConstants.*;
 import static platformer.constants.Constants.*;
 import static platformer.constants.FilePaths.SLIDER_IMG;
 import static platformer.constants.FilePaths.SLIDE_BTN_SHEET;
+import static platformer.constants.UI.*;
 
 public class SliderButton extends AbstractButton {
 
@@ -20,13 +21,12 @@ public class SliderButton extends AbstractButton {
     private int imageIndex;
     private float value = 0f;
 
-    // Size Variables [Render]
-    private final int sliderX = (int)(315 * SCALE);
-    private final int sliderY = (int)(290 * SCALE);
+    private final boolean musicSlider;
 
-    public SliderButton(int xPos, int yPos, int width, int height) {
+    public SliderButton(int xPos, int yPos, int width, int height, boolean musicSlider) {
         super(xPos+width/2, yPos+(int)(9.5 * SCALE), SLIDER_BTN_SIZE, height/2);
         super.buttonHitBox.x -= SLIDER_BTN_SIZE/2;
+        this.musicSlider = musicSlider;
         this.buttonX = xPos+width/2;
         this.xPos = xPos;
         this.width = width;
@@ -50,7 +50,9 @@ public class SliderButton extends AbstractButton {
 
     @Override
     public void render(Graphics g) {
-        g.drawImage(slider, sliderX, sliderY, SLIDER_WID, SLIDER_HEI, null);
+        int x = musicSlider ? MUSIC_SLIDER_X : SFX_SLIDER_X;
+        int y = musicSlider ? MUSIC_SLIDER_Y : SFX_SLIDER_Y;
+        g.drawImage(slider, x, y, SLIDER_WID, SLIDER_HEI, null);
         g.drawImage(images[imageIndex], buttonX-SLIDER_BTN_SIZE/2, yPos, SLIDER_BTN_SIZE, SLIDER_BTN_SIZE, null);
     }
 

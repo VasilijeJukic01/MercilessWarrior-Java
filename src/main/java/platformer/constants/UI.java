@@ -88,8 +88,15 @@ public class UI {
     public static final int SFX_Y = scale(148);
     public static final int MUSIC_X = scale(450);
     public static final int MUSIC_Y = scale(198);
-    public static final int SLIDER_BTN_X = scale(330);
-    public static final int SLIDER_BTN_Y = scale(290);
+    public static final int MUSIC_SLIDER_BTN_X = scale(330);
+    public static final int MUSIC_SLIDER_BTN_Y = scale(310);
+    public static final int SFX_SLIDER_BTN_X = scale(330);
+    public static final int SFX_SLIDER_BTN_Y = scale(290);
+
+    public static final int MUSIC_SLIDER_X = scale(315);
+    public static final int MUSIC_SLIDER_Y = scale(310);
+    public static final int SFX_SLIDER_X = scale(315);
+    public static final int SFX_SLIDER_Y = scale(290);
 
     // Overlay UI
     public static final int OVERLAY_WID = scale(300);

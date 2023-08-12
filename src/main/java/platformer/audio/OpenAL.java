@@ -21,7 +21,8 @@ public class OpenAL implements AudioPlayer {
     private final List<Integer> pausedSounds = new ArrayList<>();
 
     private int currentSong;
-    private float volume = 0.5f;
+    private float musicVolume = 0.5f;
+    private float sfxVolume = 0.5f;
     private boolean songMute, soundMute;
     private final Random rand = new Random();
 
@@ -82,7 +83,7 @@ public class OpenAL implements AudioPlayer {
     public void playSong(Song song) {
         stopSong();
         currentSong = song.ordinal();
-        if (!songMute) setVolume(volume);
+        if (!songMute) setMusicVolume(musicVolume);
         songSources.get(currentSong).play(songs.get(currentSong));
         songSources.get(currentSong).loop(true);
     }
@@ -175,7 +176,7 @@ public class OpenAL implements AudioPlayer {
     private void muteSource(List<Integer> buffers, List<OpenALSource> sources, boolean isMute) {
         for (Integer b : buffers) {
             if (isMute) sources.get(buffers.indexOf(b)).changeVolume(0);
-            else sources.get(buffers.indexOf(b)).changeVolume(volume);
+            else sources.get(buffers.indexOf(b)).changeVolume(musicVolume);
         }
     }
 
@@ -194,19 +195,25 @@ public class OpenAL implements AudioPlayer {
     // Volume
     private void updateSongVolume() {
         if (songMute) return;
-        songSources.get(currentSong).changeVolume(volume);
+        songSources.get(currentSong).changeVolume(musicVolume);
     }
 
     private void updateSoundVolume() {
+        if (soundMute) return;
         for (Integer sound : sounds) {
-            soundSources.get(sounds.indexOf(sound)).changeVolume(volume);
+            soundSources.get(sounds.indexOf(sound)).changeVolume(sfxVolume);
         }
     }
 
     @Override
-    public void setVolume(float volume) {
-        this.volume = volume;
+    public void setMusicVolume(float musicVolume) {
+        this.musicVolume = musicVolume;
         updateSongVolume();
+    }
+
+    @Override
+    public void setSfxVolume(float sfxVolume) {
+        this.sfxVolume = sfxVolume;
         updateSoundVolume();
     }
 
