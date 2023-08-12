@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static platformer.constants.Constants.*;
 
@@ -128,11 +129,18 @@ public class PerksManager {
         }
     }
 
+    public List<String> getUpgradedPerks() {
+        return perks.stream()
+                .filter(Perk::isUpgraded)
+                .map(Perk::getName)
+                .collect(Collectors.toList());
+    }
+
     private boolean isSafe(int i, int j, int n, int m) {
         return i >= 0 && j >= 0 && i < m && j < n;
     }
 
-    public ArrayList<Perk> getPerks() {
+    public List<Perk> getPerks() {
         return perks;
     }
 

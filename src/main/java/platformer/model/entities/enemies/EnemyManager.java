@@ -188,16 +188,17 @@ public class EnemyManager {
 
     // Core
     public void update(int[][] levelData, Player player) {
-        for (Skeleton skeleton : getEnemies(Skeleton.class)) {
-            if (skeleton.isAlive()) skeleton.update(skeletonAnimations, levelData, player);
-        }
-        for (Ghoul ghoul : getEnemies(Ghoul.class)) {
-            if (ghoul.isAlive()) ghoul.update(ghoulAnimations, levelData, player);
-        }
-        for (SpearWoman spearWoman : getEnemies(SpearWoman.class)) {
-            if (spearWoman.isAlive())
-                spearWoman.update(spearWomanAnimations, levelData, player, gameState.getSpellManager(), gameState.getObjectManager());
-        }
+        getEnemies(Skeleton.class).stream()
+                .filter(Skeleton::isAlive)
+                .forEach(skeleton -> skeleton.update(skeletonAnimations, levelData, player));
+
+        getEnemies(Ghoul.class).stream()
+                .filter(Ghoul::isAlive)
+                .forEach(ghoul -> ghoul.update(ghoulAnimations, levelData, player));
+
+        getEnemies(SpearWoman.class).stream()
+                .filter(SpearWoman::isAlive)
+                .forEach(spearWoman -> spearWoman.update(spearWomanAnimations, levelData, player, gameState.getSpellManager(), gameState.getObjectManager()));
     }
 
     public void render(Graphics g, int xLevelOffset, int yLevelOffset) {
@@ -211,11 +212,9 @@ public class EnemyManager {
 
     // Reset
     public void reset() {
-        for (List<Enemy> enemies : enemies.values()) {
-            for (Enemy enemy : enemies) {
-                enemy.reset();
-            }
-        }
+        enemies.values().stream()
+                .flatMap(List::stream)
+                .forEach(Enemy::reset);
     }
 
     private List<Enemy> getAllEnemies() {

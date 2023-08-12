@@ -21,6 +21,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
+import java.util.Arrays;
 
 import static platformer.constants.Constants.*;
 import static platformer.constants.FilePaths.BACKGROUND_1;
@@ -82,6 +83,10 @@ public class GameState extends AbstractState implements State {
 
     private void loadFromDatabase() {
         this.perksManager.loadUnlockedPerks(game.getAccount().getPerks());
+    }
+
+    public void saveToDatabase() {
+        game.getAccount().setPerks(perksManager.getUpgradedPerks());
     }
 
     private void calculateLevelOffset() {
@@ -170,9 +175,7 @@ public class GameState extends AbstractState implements State {
     }
 
     private void updateParticles() {
-        for (Particle particle : levelManager.getParticles()) {
-            particle.update();
-        }
+        Arrays.stream(levelManager.getParticles()).forEach(Particle::update);
     }
 
     private void updateManagers() {

@@ -50,12 +50,11 @@ public class IntersectionHandler {
     }
 
     public void checkEnemyIntersection(List<Projectile> projectiles) {
-        for (Spike spike : getObjects(Spike.class)) {
-            enemyManager.checkEnemyTrapHit(spike);
-        }
-        for (Projectile projectile : projectiles) {
-            if (projectile.isAlive()) enemyManager.checkEnemyProjectileHit(projectile);
-        }
+        getObjects(Spike.class).forEach(enemyManager::checkEnemyTrapHit);
+
+        projectiles.stream()
+                .filter(Projectile::isAlive)
+                .forEach(enemyManager::checkEnemyProjectileHit);
     }
 
     // Handle

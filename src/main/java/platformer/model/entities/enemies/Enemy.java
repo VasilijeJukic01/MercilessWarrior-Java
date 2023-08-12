@@ -57,7 +57,6 @@ public abstract class Enemy extends Entity implements Debug {
         }
         else if (entityState == Anim.HIDE) entityState = Anim.REVEAL;
         else if (entityState == Anim.DEATH) alive = false;
-        criticalHit = false;
     }
 
     private void updateFade() {
@@ -151,10 +150,12 @@ public abstract class Enemy extends Entity implements Debug {
         this.entityState = enemyAction;
         this.animIndex = 0;
         this.animTick = 0;
+        criticalHit = false;
     }
 
     public void setEnemyActionNoReset(Anim enemyAction) {
         this.entityState = enemyAction;
+        criticalHit = false;
     }
 
     public void setDirection(Direction direction) {

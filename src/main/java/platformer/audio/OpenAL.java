@@ -212,12 +212,8 @@ public class OpenAL implements AudioPlayer {
 
     @Override
     public void destroy() {
-        for (Integer buffer : songs) {
-            AL10.alDeleteBuffers(buffer);
-        }
-        for (Integer buffer : sounds) {
-            AL10.alDeleteBuffers(buffer);
-        }
+        songs.forEach(AL10::alDeleteBuffers);
+        sounds.forEach(AL10::alDeleteBuffers);
         AL.destroy();
     }
 
