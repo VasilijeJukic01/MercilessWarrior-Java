@@ -357,11 +357,11 @@ public class Player extends Entity {
         if (entityState != Anim.DEATH) {
             entityState = Anim.DEATH;
             animIndex = animTick = 0;
-            game.setDying(true);
+            game.setDying();
             Logger.getInstance().notify("Player is dead.", Message.NOTIFICATION);
         }
         else if (animIndex == animations[entityState.ordinal()].length-1 && animTick >= animSpeed-1) {
-            game.setGameOver(true);
+            game.setGameOver();
             Audio.getInstance().getAudioPlayer().stopSong();
             Audio.getInstance().getAudioPlayer().playSound(Sound.GAME_OVER);
         }

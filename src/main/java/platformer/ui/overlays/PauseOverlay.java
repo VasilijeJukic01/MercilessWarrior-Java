@@ -99,14 +99,14 @@ public class PauseOverlay implements Overlay {
     @Override
     public void mouseReleased(MouseEvent e) {
         if(isMouseInButton(e, continueBtn) && continueBtn.isMousePressed()) {
-            gameState.setPaused(false);
+            gameState.setOverlay(null);
         }
         else if(isMouseInButton(e, retryBtn) && retryBtn.isMousePressed()) {
             game.reset();
             Audio.getInstance().getAudioPlayer().playSong(Song.FOREST_1);
         }
         else if(isMouseInButton(e, exitBtn) && exitBtn.isMousePressed()) {
-            gameState.setPaused(false);
+            gameState.setOverlay(null);
             game.startMenuState();
         }
         else audioOptions.mouseReleased(e);

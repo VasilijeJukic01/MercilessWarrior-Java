@@ -216,7 +216,7 @@ public class BlacksmithOverlay implements Overlay {
                         upgrade();
                         break;
                     case LEAVE:
-                        gameState.setBlacksmithVisible(false);
+                        gameState.setOverlay(null);
                         break;
                     default: break;
                 }

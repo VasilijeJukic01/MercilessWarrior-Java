@@ -12,8 +12,8 @@ import platformer.model.levels.LevelManager;
 import platformer.model.gameObjects.ObjectManager;
 import platformer.model.perks.PerksManager;
 import platformer.model.spells.SpellManager;
+import platformer.ui.dialogue.DialogueManager;
 import platformer.ui.overlays.OverlayManager;
-import platformer.ui.overlays.OverlayType;
 import platformer.utils.Utils;
 
 import java.awt.*;
@@ -40,9 +40,10 @@ public class GameState extends AbstractState implements State {
     private SpellManager spellManager;
     private PerksManager perksManager;
     private OverlayManager overlayManager;
+    private DialogueManager dialogueManager;
 
-    // Flags
-    private boolean paused, gameOver, dying, shopVisible, blacksmithVisible;
+    // State
+    private PlayingState state;
 
     // Borders
     private int xLevelOffset;
@@ -73,6 +74,7 @@ public class GameState extends AbstractState implements State {
         this.objectManager = new ObjectManager(this);
         this.overlayManager = new OverlayManager(this);
         this.spellManager = new SpellManager(this);
+        this.dialogueManager = new DialogueManager(this);
     }
 
     private void initPlayer() {
@@ -141,13 +143,16 @@ public class GameState extends AbstractState implements State {
     // Core
     @Override
     public void update() {
-        if (paused)
-            overlayManager.update(OverlayType.PAUSE);
-        else if (gameOver)
-            overlayManager.update(OverlayType.GAME_OVER);
-        else if (dying)
+        if (state == PlayingState.PAUSE)
+            overlayManager.update(PlayingState.PAUSE);
+        else if (state == PlayingState.GAME_OVER)
+            overlayManager.update(PlayingState.GAME_OVER);
+        else if (state == PlayingState.DYING)
             player.update();
         else handleGameState();
+
+        if (state == PlayingState.DIALOGUE)
+            overlayManager.update(PlayingState.DIALOGUE);
     }
 
     @Override
@@ -185,8 +190,8 @@ public class GameState extends AbstractState implements State {
         objectManager.update(levelManager.getCurrentLevel().getLvlData(), player);
         spellManager.update();
         player.update();
-        if (shopVisible) overlayManager.update(OverlayType.SHOP);
-        if (blacksmithVisible) overlayManager.update(OverlayType.BLACKSMITH);
+        if (state == PlayingState.SHOP) overlayManager.update(PlayingState.SHOP);
+        else if (state == PlayingState.BLACKSMITH) overlayManager.update(PlayingState.BLACKSMITH);
     }
 
     @Override
@@ -211,17 +216,17 @@ public class GameState extends AbstractState implements State {
 
     @Override
     public void keyPressed(KeyEvent e) {
-        gameStateController.keyPressed(e, shopVisible, blacksmithVisible, paused, gameOver);
+        gameStateController.keyPressed(e, state);
     }
 
     @Override
     public void keyReleased(KeyEvent e) {
-        gameStateController.keyReleased(e, gameOver, shopVisible, blacksmithVisible);
+        gameStateController.keyReleased(e, state);
     }
 
     @Override
     public void reset() {
-        gameOver = paused = dying = false;
+        state = null;
         enemyManager.reset();
         player.reset();
         objectManager.reset();
@@ -229,7 +234,7 @@ public class GameState extends AbstractState implements State {
     }
 
     private void levelReset() {
-        gameOver = paused = dying = false;
+        state = null;
         enemyManager.reset();
         objectManager.reset();
     }
@@ -240,12 +245,9 @@ public class GameState extends AbstractState implements State {
     }
 
     // Getters & Setters
-    public OverlayType getActiveOverlay() {
-        if (paused) return OverlayType.PAUSE;
-        else if (gameOver) return OverlayType.GAME_OVER;
-        else if (shopVisible) return OverlayType.SHOP;
-        else if (blacksmithVisible) return OverlayType.BLACKSMITH;
-        return null;
+    public PlayingState getActiveState() {
+        if (state == PlayingState.DYING) return null;
+        return state;
     }
 
     public Player getPlayer() {
@@ -276,25 +278,13 @@ public class GameState extends AbstractState implements State {
         return overlayManager;
     }
 
-    public void setPaused(boolean value) {
-        this.paused = value;
-        if (paused) Audio.getInstance().getAudioPlayer().pauseSounds();
-        else Audio.getInstance().getAudioPlayer().unpauseSounds();
+    public DialogueManager getDialogueManager() {
+        return dialogueManager;
     }
 
-    public void setGameOver(boolean value) {
-        this.gameOver = value;
-    }
-
-    public void setDying(boolean value) {
-        this.dying = value;
-    }
-
-    public void setShopVisible(boolean shopVisible) {
-        this.shopVisible = shopVisible;
-    }
-
-    public void setBlacksmithVisible(boolean blacksmithVisible) {
-        this.blacksmithVisible = blacksmithVisible;
+    public void setOverlay(PlayingState newOverlay) {
+        if (state == PlayingState.PAUSE) Audio.getInstance().getAudioPlayer().unpauseSounds();
+        this.state = newOverlay;
+        if (state == PlayingState.PAUSE) Audio.getInstance().getAudioPlayer().pauseSounds();
     }
 }

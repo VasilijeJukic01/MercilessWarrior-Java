@@ -9,6 +9,7 @@ import platformer.state.OptionsState;
 import platformer.state.StateManager;
 import platformer.ui.AudioOptions;
 import platformer.ui.overlays.OverlayLayer;
+import platformer.state.PlayingState;
 import platformer.view.GameFrame;
 
 import java.awt.*;
@@ -141,14 +142,14 @@ public class Game implements Runnable {
         stateManager.getCurrentState().windowFocusLost(e);
     }
 
-    public void setGameOver(boolean value) {
+    public void setGameOver() {
         if (!(stateManager.getCurrentState() instanceof GameState)) return;
-            ((GameState) stateManager.getCurrentState()).setGameOver(value);
+            ((GameState) stateManager.getCurrentState()).setOverlay(PlayingState.GAME_OVER);
     }
 
-    public void setDying(boolean value) {
+    public void setDying() {
         if (!(stateManager.getCurrentState() instanceof GameState)) return;
-            ((GameState) stateManager.getCurrentState()).setDying(value);
+            ((GameState) stateManager.getCurrentState()).setOverlay(PlayingState.DYING);
     }
 
     public void reset() {

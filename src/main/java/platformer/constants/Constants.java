@@ -244,6 +244,7 @@ public class Constants {
 
     // UI
     public static final int FONT_BIG = scale(20);
+    public static final int FONT_DIALOGUE = scale(12);
     public static final int FONT_MEDIUM = scale(10);
     public static final int FONT_SMALL = scale(7);
     public static final int SHOP_SLOT_MAX_ROW = 7, SHOP_SLOT_MAX_COL = 3;

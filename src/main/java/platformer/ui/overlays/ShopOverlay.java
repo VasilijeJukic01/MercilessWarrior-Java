@@ -169,7 +169,7 @@ public class ShopOverlay implements Overlay {
                         buyItem();
                         break;
                     case LEAVE:
-                        gameState.setShopVisible(false);
+                        gameState.setOverlay(null);
                         break;
                     default: break;
                 }

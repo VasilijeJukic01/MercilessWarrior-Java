@@ -83,6 +83,16 @@ public class UI {
     public static final int BOSS_BAR_X = scale(180);
     public static final int BOSS_BAR_Y = scale(80);
 
+    // Dialogue UI
+    public static final int DIALOGUE_BOX_X = scale(270);
+    public static final int DIALOGUE_BOX_Y = scale(350);
+    public static final int DIALOGUE_BOX_WID = scale(300);
+    public static final int DIALOGUE_BOX_HEI = scale(80);
+
+    public static final int DIALOGUE_X = DIALOGUE_BOX_X + scale(20);
+    public static final int DIALOGUE_Y = DIALOGUE_BOX_Y + scale(20);
+    public static final int DIALOGUE_LINE = DIALOGUE_BOX_WID - scale(30);
+
     // Audio UI
     public static final int SFX_X = scale(450);
     public static final int SFX_Y = scale(148);

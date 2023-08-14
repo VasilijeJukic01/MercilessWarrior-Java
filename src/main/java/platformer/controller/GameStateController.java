@@ -6,10 +6,15 @@ import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
 import platformer.model.entities.AttackState;
 import platformer.model.entities.player.Player;
+import platformer.model.gameObjects.GameObject;
+import platformer.model.gameObjects.objects.Blacksmith;
+import platformer.model.gameObjects.objects.Shop;
 import platformer.state.GameState;
+import platformer.state.PlayingState;
 
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -45,13 +50,13 @@ public class GameStateController {
     }
 
     // Keyboard
-    public void keyPressed(KeyEvent e, boolean shopVisible, boolean blacksmithVisible, boolean paused, boolean gameOver) {
-        if ((shopVisible || blacksmithVisible) && e.getKeyCode() != KeyEvent.VK_ESCAPE) return;
-        if (gameOver && e.getKeyCode() != KeyEvent.VK_ESCAPE) return;
+    public void keyPressed(KeyEvent e, PlayingState state) {
+        if (isShopState(state) && e.getKeyCode() != KeyEvent.VK_ESCAPE) return;
+        if (state == PlayingState.GAME_OVER && e.getKeyCode() != KeyEvent.VK_ESCAPE) return;
 
-        if (gameOver && e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+        if (state == PlayingState.GAME_OVER && e.getKeyCode() == KeyEvent.VK_ESCAPE) {
             gameState.reset();
-            gameState.getGame().startMenuState();
+            game.startMenuState();
             return;
         }
 
@@ -61,7 +66,7 @@ public class GameStateController {
         switch (key) {
             case KeyEvent.VK_UP:
                 if (pressedKeys.contains(key) && player.isOnWall()) {
-                    gameState.getPlayer().setJump(false);
+                    player.setJump(false);
                     return;
                 }
                 player.setJump(true);
@@ -73,7 +78,8 @@ public class GameStateController {
                 player.setRight(true);
                 break;
             case KeyEvent.VK_X:
-                player.setPlayerAttackState(AttackState.ATTACK_1);
+                if (state != PlayingState.DIALOGUE)
+                    player.setPlayerAttackState(AttackState.ATTACK_1);
                 break;
             case KeyEvent.VK_C:
                 if (pressedKeys.contains(key) && player.getSpellState() != 0) return;
@@ -90,18 +96,16 @@ public class GameStateController {
                 player.setBlock(true);
                 break;
             case KeyEvent.VK_ESCAPE:
-                if (shopVisible || blacksmithVisible) {
-                    if (shopVisible) gameState.setShopVisible(false);
-                    else gameState.setBlacksmithVisible(false);
-                }
-                else gameState.setPaused(!paused);
+                if (isShopState(state)) gameState.setOverlay(null);
+                else gameState.setOverlay(pause(state));
                 break;
             default: break;
         }
     }
 
-    public void keyReleased(KeyEvent e, boolean gameOver, boolean shopVisible, boolean blacksmithVisible) {
-        if (gameOver) return;
+    public void keyReleased(KeyEvent e, PlayingState state) {
+        if (state == PlayingState.GAME_OVER) return;
+
         int key = e.getKeyCode();
         switch (key) {
             case KeyEvent.VK_UP:
@@ -125,8 +129,11 @@ public class GameStateController {
             case KeyEvent.VK_C:
                 if (player.getSpellState() == 1) player.setSpellState(2);
                 break;
+            case KeyEvent.VK_X:
+                if (state == PlayingState.DIALOGUE) gameState.getDialogueManager().updateDialogue();
+                break;
             case KeyEvent.VK_F:
-                interact(shopVisible, blacksmithVisible);
+                interact(state);
                 break;
             case KeyEvent.VK_F6:
                 saveToDatabase();
@@ -149,9 +156,17 @@ public class GameStateController {
     }
 
     // Actions
-    private void interact(boolean shopVisible, boolean blacksmithVisible) {
-        if (gameState.getObjectManager().isShopVisible() && !shopVisible) gameState.setShopVisible(true);
-        if (gameState.getObjectManager().isBlacksmithVisible() && !blacksmithVisible) gameState.setBlacksmithVisible(true);
+    private void interact(PlayingState state) {
+        if (state != PlayingState.SHOP && gameState.getObjectManager().isShopVisible())
+            activateDialogue(Shop.class);
+        else if (state != PlayingState.BLACKSMITH && gameState.getObjectManager().isBlacksmithVisible())
+            activateDialogue(Blacksmith.class);
+    }
+
+    private <T extends GameObject> void activateDialogue(Class<T> dialogueClass) {
+        gameState.setOverlay(PlayingState.DIALOGUE);
+        List<String> dialogues = gameState.getDialogueManager().getDialogues(dialogueClass);
+        gameState.getDialogueManager().setDialogueObject(dialogues);
     }
 
     private void saveToDatabase() {
@@ -183,6 +198,16 @@ public class GameStateController {
         player.changeCoins(99999);
         player.changeUpgradeTokens(50);
         Logger.getInstance().notify("Coins cheat activated.", Message.WARNING);
+    }
+
+    // Helper
+    private boolean isShopState(PlayingState state) {
+        return state == PlayingState.SHOP || state == PlayingState.BLACKSMITH;
+    }
+
+    private PlayingState pause(PlayingState state) {
+        if (state == PlayingState.PAUSE) return null;
+        else return PlayingState.PAUSE;
     }
 
 }

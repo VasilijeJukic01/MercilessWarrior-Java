@@ -182,9 +182,12 @@ public class ObjectManager {
     }
 
     private <T extends GameObject> void renderObjects(Graphics g, int xLevelOffset, int yLevelOffset, Class<T> objectType) {
-        getObjects(objectType).stream()
-                .filter(GameObject::isAlive)
-                .forEach(obj -> obj.render(g, xLevelOffset, yLevelOffset, objects[obj.getObjType().ordinal()]));
+        try {
+            getObjects(objectType).stream()
+                    .filter(GameObject::isAlive)
+                    .forEach(obj -> obj.render(g, xLevelOffset, yLevelOffset, objects[obj.getObjType().ordinal()]));
+        }
+        catch (Exception ignored) {}
     }
 
     public void update(int[][] lvlData, Player player) {
