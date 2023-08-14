@@ -1,12 +1,15 @@
 package platformer.ui.dialogue;
 
+import platformer.model.gameObjects.GameObject;
 import platformer.ui.overlays.Overlay;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.geom.RoundRectangle2D;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static platformer.constants.Constants.FONT_DIALOGUE;
 import static platformer.constants.Constants.SCALE;
@@ -24,6 +27,9 @@ public class DialogueOverlay implements Overlay {
     private String visibleText = "";
     private boolean changeText = true;
 
+    private Class<? extends GameObject> currentObject;
+    private Map<Class<? extends GameObject>, Boolean> firstTime;
+
     public DialogueOverlay() {
         init();
     }
@@ -31,6 +37,7 @@ public class DialogueOverlay implements Overlay {
     private void init() {
         this.dialogueBox = new RoundRectangle2D.Double(DIALOGUE_BOX_X, DIALOGUE_BOX_Y, DIALOGUE_BOX_WID, DIALOGUE_BOX_HEI, 25, 25);
         this.dialogues = new ArrayList<>();
+        this.firstTime = new HashMap<>();
     }
 
     @Override
@@ -53,6 +60,7 @@ public class DialogueOverlay implements Overlay {
 
     }
 
+    // Core
     @Override
     public void update() {
         animTick++;
@@ -75,17 +83,7 @@ public class DialogueOverlay implements Overlay {
         renderDialogue(g);
     }
 
-    @Override
-    public void reset() {
-        dialogueIndex = 0;
-        resetAnimation();
-    }
-
-    private void resetAnimation() {
-        currentLetterIndex = animTick = 0;
-        changeText = true;
-    }
-
+    // Render
     private void renderDialogue(Graphics g) {
         if (dialogues == null || dialogues.isEmpty()) return;
         g.setFont(new Font("Arial", Font.PLAIN, FONT_DIALOGUE));
@@ -99,6 +97,7 @@ public class DialogueOverlay implements Overlay {
         int lineHeight = g.getFontMetrics().getHeight();
 
         for (int i = 0; i < currentLetterIndex; i++) {
+            if (visibleText.charAt(i) == '~') continue;
             if (visibleText.charAt(i) == '\n') {
                 y += lineHeight;
                 x = DIALOGUE_X;
@@ -107,6 +106,34 @@ public class DialogueOverlay implements Overlay {
             x += g.getFontMetrics().charWidth(visibleText.charAt(i));
         }
         if (currentLetterIndex == dialogue.length()) renderArrow(g);
+    }
+
+    private void renderArrow(Graphics g) {
+        int xPos = DIALOGUE_BOX_X + DIALOGUE_BOX_WID - (int)(20 * SCALE);
+        int yPos = DIALOGUE_Y + DIALOGUE_BOX_HEI - (int)(30 * SCALE);
+        g.drawString("▼", xPos, yPos);
+    }
+
+    // Reset
+    @Override
+    public void reset() {
+        dialogueIndex = findRepetitionIndex();
+        resetAnimation();
+    }
+
+    private void resetAnimation() {
+        currentLetterIndex = animTick = 0;
+        changeText = true;
+    }
+
+    // Helper
+    private int findRepetitionIndex() {
+        if (firstTime.get(currentObject) != null && !firstTime.get(currentObject)) return 0;
+        if (firstTime.get(currentObject) == null) return 0;
+        for (int i = 0; i < dialogues.size(); i++) {
+            if (dialogues.get(i).startsWith("~")) return i;
+        }
+        return 0;
     }
 
     private String createCurrentText(Graphics g, String dialogue) {
@@ -133,12 +160,6 @@ public class DialogueOverlay implements Overlay {
         return text.toString();
     }
 
-    private void renderArrow(Graphics g) {
-        int xPos = DIALOGUE_BOX_X + DIALOGUE_BOX_WID - (int)(20 * SCALE);
-        int yPos = DIALOGUE_Y + DIALOGUE_BOX_HEI - (int)(30 * SCALE);
-        g.drawString("▼", xPos, yPos);
-    }
-
     public boolean next() {
         if (currentLetterIndex < dialogues.get(dialogueIndex).length()) {
             currentLetterIndex = dialogues.get(dialogueIndex).length();
@@ -150,7 +171,10 @@ public class DialogueOverlay implements Overlay {
         return true;
     }
 
-    public void setDialogues(List<String> dialogues) {
+    public <T extends GameObject> void setDialogues(List<String> dialogues, Class<T> objectClass) {
         this.dialogues = dialogues;
+        currentObject = objectClass;
+        reset();
+        this.firstTime.put(objectClass, true);
     }
 }

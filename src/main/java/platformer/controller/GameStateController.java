@@ -7,14 +7,13 @@ import platformer.debug.logger.Message;
 import platformer.model.entities.AttackState;
 import platformer.model.entities.player.Player;
 import platformer.model.gameObjects.GameObject;
-import platformer.model.gameObjects.objects.Blacksmith;
-import platformer.model.gameObjects.objects.Shop;
 import platformer.state.GameState;
 import platformer.state.PlayingState;
 
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -133,7 +132,7 @@ public class GameStateController {
                 if (state == PlayingState.DIALOGUE) gameState.getDialogueManager().updateDialogue();
                 break;
             case KeyEvent.VK_F:
-                interact(state);
+                interact();
                 break;
             case KeyEvent.VK_F6:
                 saveToDatabase();
@@ -156,17 +155,15 @@ public class GameStateController {
     }
 
     // Actions
-    private void interact(PlayingState state) {
-        if (state != PlayingState.SHOP && gameState.getObjectManager().isShopVisible())
-            activateDialogue(Shop.class);
-        else if (state != PlayingState.BLACKSMITH && gameState.getObjectManager().isBlacksmithVisible())
-            activateDialogue(Blacksmith.class);
+    private void interact() {
+        Optional<? extends Class<? extends GameObject>> object = Optional.ofNullable(gameState.getObjectManager().getIntersectingObject());
+        object.ifPresent(this::activateDialogue);
     }
 
-    private <T extends GameObject> void activateDialogue(Class<T> dialogueClass) {
+    private void activateDialogue(Class<? extends GameObject> objectClass) {
         gameState.setOverlay(PlayingState.DIALOGUE);
-        List<String> dialogues = gameState.getDialogueManager().getDialogues(dialogueClass);
-        gameState.getDialogueManager().setDialogueObject(dialogues);
+        List<String> dialogues = gameState.getDialogueManager().getDialogues(objectClass);
+        gameState.getDialogueManager().setDialogueObject(dialogues, objectClass);
     }
 
     private void saveToDatabase() {

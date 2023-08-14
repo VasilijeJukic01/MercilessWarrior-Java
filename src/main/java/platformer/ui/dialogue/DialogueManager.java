@@ -80,8 +80,8 @@ public class DialogueManager {
         }
     }
 
-    public void setDialogueObject(List<String> dialogues) {
-        overlay.setDialogues(dialogues);
+    public <T extends GameObject> void setDialogueObject(List<String> dialogues, Class<T> dialogueClass) {
+        overlay.setDialogues(dialogues, dialogueClass);
     }
 
     public void updateDialogue() {

@@ -19,15 +19,21 @@ public class IntersectionHandler {
     private final EnemyManager enemyManager;
     private final ObjectManager objectManager;
 
+    private Class<? extends GameObject> intersectingObject;
+
     public IntersectionHandler(EnemyManager enemyManager, ObjectManager objectManager) {
         this.enemyManager = enemyManager;
         this.objectManager = objectManager;
     }
 
     // Checker
-    private <T extends GameObject> void checkPlayerIntersection(Player p, Class<T> objectClass) {
+    private <T extends GameObject> boolean checkPlayerIntersection(Player p, Class<T> objectClass) {
+        boolean check = false;
         for (T object : getObjects(objectClass)) {
             boolean intersect = p.getHitBox().intersects(object.getHitBox());
+            if (intersect) {
+                check = true;
+            }
             if (intersect && (object instanceof Spike || (object instanceof Blocker && object.getAnimIndex() > 2))) {
                 p.kill();
             }
@@ -40,13 +46,17 @@ public class IntersectionHandler {
                 objectManager.setBlacksmithVisible(intersect);
             }
         }
+        return check;
     }
 
     public void checkPlayerIntersection(Player player) {
         checkPlayerIntersection(player, Spike.class);
         checkPlayerIntersection(player, Blocker.class);
-        checkPlayerIntersection(player, Shop.class);
-        checkPlayerIntersection(player, Blacksmith.class);
+        if (checkPlayerIntersection(player, Shop.class))
+            intersectingObject = Shop.class;
+        else if (checkPlayerIntersection(player, Blacksmith.class))
+            intersectingObject = Blacksmith.class;
+        else intersectingObject = null;
     }
 
     public void checkEnemyIntersection(List<Projectile> projectiles) {
@@ -95,4 +105,7 @@ public class IntersectionHandler {
         return objectManager.getObjects(objectType);
     }
 
+    public Class<? extends GameObject> getIntersectingObject() {
+        return intersectingObject;
+    }
 }

@@ -310,4 +310,8 @@ public class ObjectManager {
     public void setBlacksmithVisible(boolean blacksmithVisible) {
         this.blacksmithVisible = blacksmithVisible;
     }
+
+    public Class<? extends GameObject> getIntersectingObject() {
+        return intersectionHandler.getIntersectingObject();
+    }
 }
