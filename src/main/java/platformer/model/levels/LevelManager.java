@@ -57,9 +57,15 @@ public class LevelManager {
     }
 
     private BufferedImage[] getAllLevels(String layer) {
-        BufferedImage[] levels = new BufferedImage[MAX_LEVELS];
+        BufferedImage[] levels = new BufferedImage[3];
         for (int i = 0; i < levels.length; i++) {
-            levels[i] = Utils.getInstance().importImage("/images/levels/level"+(i+1)+"_layer"+layer+".png", -1, -1);
+            BufferedImage levelImg = Utils.getInstance().importImage("/images/levels/level"+(i+1)+".png", -1, -1);
+            if (layer.equals("1")) {
+                levels[i] = levelImg.getSubimage(0, 0, levelImg.getWidth()/2, levelImg.getHeight());
+            }
+            else {
+                levels[i] = levelImg.getSubimage(levelImg.getWidth()/2, 0, levelImg.getWidth()/2, levelImg.getHeight());
+            }
         }
         return levels;
     }
@@ -135,7 +141,7 @@ public class LevelManager {
         g.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);                 // Green ambient layer
         renderDeco(g, xLevelOffset, yLevelOffset, 2);              // Third deco layer
         renderTerrain(g, xLevelOffset, yLevelOffset, true);       // Terrain behind layer
-        renderDeco(g, xLevelOffset, yLevelOffset, 3);              // Fourth deco layer
+        renderDeco(g, xLevelOffset, yLevelOffset, 4);              // Fourth deco layer
         renderTerrain(g, xLevelOffset, yLevelOffset, false);      // Terrain normal layer
         renderParticles(g);
     }

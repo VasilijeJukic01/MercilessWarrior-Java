@@ -48,7 +48,7 @@ public class Utils {
             return resized;
 
         } catch (Exception e) {
-            Logger.getInstance().notify("Importing image failed. "+"Name: " + name + "(w, h) = (" + w + ", " + h + ")", Message.ERROR);
+            Logger.getInstance().notify("Importing image failed. "+"Name: " + name + " (w, h) = (" + w + ", " + h + ")", Message.ERROR);
         }
         return null;
     }

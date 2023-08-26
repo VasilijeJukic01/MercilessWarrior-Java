@@ -164,7 +164,7 @@ public class Level {
             for (int j = 0; j < level.getHeight(); j++) {
                 Color color = new Color(level.getRGB(i, j));
                 int value = layer ? color.getGreen() : color.getBlue();
-                if ((value >= 40 && !layer) || (value >= 4 && layer)) value = -1;
+                if ((value >= 40 && !layer) || (value > 4 && layer)) value = -1;
                 data[i][j] = value;
             }
         }
@@ -175,8 +175,10 @@ public class Level {
         for (int i = 0; i < level.getWidth(); i++) {
             for (int j = 0; j < level.getHeight(); j++) {
                 Color color = new Color(level.getRGB(i, j));
-                int value = color.getGreen();
-                if (value == 100) return new Point(i*TILES_SIZE, j*TILES_SIZE);
+                int R = color.getRed();
+                int G = color.getGreen();
+                int B = color.getBlue();
+                if (R == 100 && G == 100 && B == 100) return new Point(i*TILES_SIZE, j*TILES_SIZE);
             }
         }
         return null;
