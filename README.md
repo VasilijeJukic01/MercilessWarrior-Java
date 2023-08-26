@@ -7,6 +7,7 @@
 
 - [Description](#description)
 - [Features](#features)
+- [Patterns used](#patterns-used)
 - [Gameplay](#gameplay)
 - [Installation](#installation)
 - [Controls](#controls)
@@ -31,6 +32,14 @@ The integration of OpenAL library provides immersive sound effects, enhancing th
 - Destructible objects that yield various items.
 - Immersive sound effects powered by OpenAL.
 - MySQL integration for tracking scores, progress, and player profiles.
+
+## Patterns used
+- Singleton (Thread safe)
+- State
+- Observer
+- Bridge
+- Facade
+- Strategy
 
 ## Gameplay
 
