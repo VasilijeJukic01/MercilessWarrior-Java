@@ -3,6 +3,7 @@ package platformer.utils;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
 import platformer.model.entities.Direction;
+import platformer.model.gameObjects.projectiles.LightningBall;
 import platformer.model.levels.Level;
 import platformer.model.gameObjects.projectiles.Projectile;
 
@@ -40,12 +41,7 @@ public class Utils {
         try {
             BufferedImage image = ImageIO.read(Objects.requireNonNull(getClass().getResource(name)));
             if (w == -1 && h == -1) return image;
-            Image temp = image.getScaledInstance(w, h, Image.SCALE_SMOOTH);
-            BufferedImage resized = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
-            Graphics2D g2 = resized.createGraphics();
-            g2.drawImage(temp, 0, 0, null);
-            g2.dispose();
-            return resized;
+            return resizeImage(image, w, h);
 
         } catch (Exception e) {
             Logger.getInstance().notify("Importing image failed. "+"Name: " + name + " (w, h) = (" + w + ", " + h + ")", Message.ERROR);
@@ -219,7 +215,10 @@ public class Utils {
     }
 
     public boolean isProjectileHitLevel(int[][] lvlData, Projectile projectile) {
-        return isSolid(projectile.getHitBox().x+ARROW_WID, projectile.getHitBox().y+ARROW_HEI, lvlData);
+        double wid = projectile.getHitBox().getWidth();
+        double hei = projectile.getHitBox().getHeight();
+        if (projectile instanceof LightningBall) hei = ARROW_HEI;
+        return isSolid(projectile.getHitBox().x + wid, projectile.getHitBox().y + hei, lvlData);
     }
 
     // Other

@@ -46,7 +46,7 @@ public class ObjectManager {
     private Map<ObjType, List<GameObject>> objectsMap = new HashMap<>();
 
     private BufferedImage projectileArrow;
-    private BufferedImage[] projectileLightningBall, projectileLightningBall2;
+    private BufferedImage[] fireball, projectileLightningBall, projectileLightningBall2;
     private final List<Projectile> projectiles;
 
     private boolean shopVisible, blacksmithVisible;
@@ -64,6 +64,7 @@ public class ObjectManager {
         this.projectileArrow = Utils.getInstance().importImage(ARROW_IMG, ARROW_WID, ARROW_HEI);
         this.projectileLightningBall = Animation.getInstance().loadLightningBall(LIGHTNING_BALL_1_SHEET);
         this.projectileLightningBall2 = Animation.getInstance().loadLightningBall(LIGHTNING_BALL_2_SHEET);
+        this.fireball = Animation.getInstance().loadFireBall();
     }
 
     private void initHandlers() {
@@ -141,6 +142,11 @@ public class ObjectManager {
         Audio.getInstance().getAudioPlayer().playSound(Sound.ARROW);
         Direction direction = (arrowLauncher.getObjType() == ObjType.ARROW_TRAP_RIGHT) ? Direction.LEFT : Direction.RIGHT;
         projectiles.add(new Arrow((int)arrowLauncher.getHitBox().x, (int)arrowLauncher.getHitBox().y, direction));
+    }
+
+    public void shotFireBall(Player player) {
+        Direction direction = (player.getFlipSign() == 1) ? Direction.LEFT : Direction.RIGHT;
+        projectiles.add(new Fireball((int)player.getHitBox().x, (int)player.getHitBox().y, direction));
     }
 
     public void shootLightningBall(SpearWoman spearWoman) {
@@ -235,6 +241,7 @@ public class ObjectManager {
                 else if (Utils.getInstance().isProjectileHitLevel(lvlData, projectile)) {
                     projectile.setAlive(false);
                 }
+                else if (projectile instanceof Fireball) objectBreakHandler.checkProjectileBreak(projectiles);
             }
         }
     }
@@ -256,10 +263,14 @@ public class ObjectManager {
                 p.render(g, xLevelOffset, yLevelOffset, projectileArrow);
             }
             // Lightning Ball
-            else {
+            else if (p instanceof LightningBall) {
                 if (p.getDirection() == Direction.LEFT || p.getDirection() == Direction.RIGHT)
                     p.render(g, xLevelOffset, yLevelOffset, projectileLightningBall);
                 else p.render(g, xLevelOffset, yLevelOffset, projectileLightningBall2);
+            }
+            else {
+                if (p.getDirection() == Direction.LEFT || p.getDirection() == Direction.RIGHT)
+                    p.render(g, xLevelOffset, yLevelOffset, fireball);
             }
         }
     }

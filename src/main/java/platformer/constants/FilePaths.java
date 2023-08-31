@@ -37,6 +37,7 @@ public class FilePaths {
     public static final String FLASH_SHEET = "/images/spells/FlashSprite.png";
     public static final String LIGHTNING_BALL_1_SHEET = "/images/objs/lightningBall.png";
     public static final String LIGHTNING_BALL_2_SHEET = "/images/objs/lightningBall2.png";
+    public static final String FIREBALL_SHEET = "/images/player/fireBallSheet.png";
 
     // Effects
     public static final String DUST_SHEET_1 = "/images/particles/DustSprite.png";

@@ -40,21 +40,22 @@ public class Animation {
 
     // Player
     public BufferedImage[][] loadPlayerAnimations(int w, int h, String sheet) {
-        BufferedImage[][] anim = new BufferedImage[17][17];
+        BufferedImage[][] anim = new BufferedImage[18][18];
 
-        anim[Anim.IDLE.ordinal()] = loadFromSprite(sheet, 8, 0, w, h, 0, PLAYER_W, PLAYER_H);
-        anim[Anim.RUN.ordinal()] = loadFromSprite(sheet, 8, 1, w, h, 0, PLAYER_W, PLAYER_H);
-        anim[Anim.JUMP.ordinal()] = loadFromSprite(sheet, 3, 6, w, h, 0, PLAYER_W, PLAYER_H);
-        anim[Anim.FALL.ordinal()] = loadFromSprite(sheet, 3, 8, w, h, 0, PLAYER_W, PLAYER_H);
-        anim[Anim.ATTACK_1.ordinal()] = loadFromSprite(sheet, 4, 10, w, h, 0, PLAYER_W, PLAYER_H);
-        anim[Anim.ATTACK_2.ordinal()] = loadFromSprite(sheet, 4, 11, w, h, 0, PLAYER_W, PLAYER_H);
-        anim[Anim.ATTACK_3.ordinal()] = loadFromSprite(sheet, 5, 12, w, h, 0, PLAYER_W, PLAYER_H);
-        anim[Anim.BLOCK.ordinal()] = loadFromSprite(sheet, 6, 14, w, h, 0, PLAYER_W, PLAYER_H);
-        anim[Anim.HIT.ordinal()] = loadFromSprite(sheet, 4, 23, w, h, 0, PLAYER_W, PLAYER_H);
-        anim[Anim.DEATH.ordinal()] = loadFromSprite(sheet, 11, 24, w, h, 0, PLAYER_W, PLAYER_H);
-        anim[Anim.WALL.ordinal()] = loadFromSprite(sheet, 4, 21, w, h, 0, PLAYER_W, PLAYER_H);
-        anim[Anim.TRANSFORM.ordinal()] = loadFromSprite(sheet, 12, 20, w, h, 0, PLAYER_W, PLAYER_H);
-        anim[Anim.SPELL_1.ordinal()] = loadFromSprite(sheet, 13, 19, w, h, 0, PLAYER_W, PLAYER_H);
+        anim[Anim.IDLE.ordinal()] = loadFromSprite(sheet,       8, 0, w, h, 0, PLAYER_W, PLAYER_H);
+        anim[Anim.RUN.ordinal()] = loadFromSprite(sheet,        8, 1, w, h, 0, PLAYER_W, PLAYER_H);
+        anim[Anim.JUMP.ordinal()] = loadFromSprite(sheet,       3, 6, w, h, 0, PLAYER_W, PLAYER_H);
+        anim[Anim.FALL.ordinal()] = loadFromSprite(sheet,       3, 8, w, h, 0, PLAYER_W, PLAYER_H);
+        anim[Anim.ATTACK_1.ordinal()] = loadFromSprite(sheet,   4, 10, w, h, 0, PLAYER_W, PLAYER_H);
+        anim[Anim.ATTACK_2.ordinal()] = loadFromSprite(sheet,   4, 11, w, h, 0, PLAYER_W, PLAYER_H);
+        anim[Anim.ATTACK_3.ordinal()] = loadFromSprite(sheet,   5, 12, w, h, 0, PLAYER_W, PLAYER_H);
+        anim[Anim.BLOCK.ordinal()] = loadFromSprite(sheet,      6, 14, w, h, 0, PLAYER_W, PLAYER_H);
+        anim[Anim.HIT.ordinal()] = loadFromSprite(sheet,        4, 23, w, h, 0, PLAYER_W, PLAYER_H);
+        anim[Anim.DEATH.ordinal()] = loadFromSprite(sheet,      11, 24, w, h, 0, PLAYER_W, PLAYER_H);
+        anim[Anim.WALL.ordinal()] = loadFromSprite(sheet,       4, 21, w, h, 0, PLAYER_W, PLAYER_H);
+        anim[Anim.TRANSFORM.ordinal()] = loadFromSprite(sheet,  12, 20, w, h, 0, PLAYER_W, PLAYER_H);
+        anim[Anim.SPELL_1.ordinal()] = loadFromSprite(sheet,    13, 19, w, h, 0, PLAYER_W, PLAYER_H);
+        anim[Anim.SPELL_2.ordinal()] = loadFromSprite(sheet,    5, 18, w, h, 3, PLAYER_W, PLAYER_H);
 
         return anim;
     }
@@ -63,14 +64,14 @@ public class Animation {
     public BufferedImage[][] loadSkeletonAnimations(int w, int h) {
         BufferedImage[][] anim = new BufferedImage[13][13];
 
-        anim[Anim.IDLE.ordinal()] = loadFromSprite(SKELETON_SHEET, 4, 0, w, h, 0, SKELETON_W, SKELETON_H);
-        anim[Anim.RUN.ordinal()] = loadFromSprite(SKELETON_SHEET, 8, 2, w, h, 0, SKELETON_W, SKELETON_H);
-        anim[Anim.FALL.ordinal()] = loadFromSprite(SKELETON_SHEET, 2, 3, w, h, 0, SKELETON_W, SKELETON_H);
-        anim[Anim.ATTACK_1.ordinal()] = loadFromSprite(SKELETON_SHEET, 6, 4, w, h, 0, SKELETON_W, SKELETON_H);
-        anim[Anim.BLOCK.ordinal()] = loadFromSprite(SKELETON_SHEET, 6, 5, w, h, 0, SKELETON_W, SKELETON_H);
-        anim[Anim.HIT.ordinal()] = loadFromSprite(SKELETON_SHEET, 4, 7, w, h, 0, SKELETON_W, SKELETON_H);
-        anim[Anim.DEATH.ordinal()] = loadFromSprite(SKELETON_SHEET, 10, 6, w, h, 0, SKELETON_W, SKELETON_H);
-        anim[Anim.WALK.ordinal()] = loadFromSprite(SKELETON_SHEET, 8, 1, w, h, 0, SKELETON_W, SKELETON_H);
+        anim[Anim.IDLE.ordinal()] = loadFromSprite(SKELETON_SHEET,      4, 0, w, h, 0, SKELETON_W, SKELETON_H);
+        anim[Anim.RUN.ordinal()] = loadFromSprite(SKELETON_SHEET,       8, 2, w, h, 0, SKELETON_W, SKELETON_H);
+        anim[Anim.FALL.ordinal()] = loadFromSprite(SKELETON_SHEET,      2, 3, w, h, 0, SKELETON_W, SKELETON_H);
+        anim[Anim.ATTACK_1.ordinal()] = loadFromSprite(SKELETON_SHEET,  6, 4, w, h, 0, SKELETON_W, SKELETON_H);
+        anim[Anim.BLOCK.ordinal()] = loadFromSprite(SKELETON_SHEET,     6, 5, w, h, 0, SKELETON_W, SKELETON_H);
+        anim[Anim.HIT.ordinal()] = loadFromSprite(SKELETON_SHEET,       4, 7, w, h, 0, SKELETON_W, SKELETON_H);
+        anim[Anim.DEATH.ordinal()] = loadFromSprite(SKELETON_SHEET,     10, 6, w, h, 0, SKELETON_W, SKELETON_H);
+        anim[Anim.WALK.ordinal()] = loadFromSprite(SKELETON_SHEET,      8, 1, w, h, 0, SKELETON_W, SKELETON_H);
 
         return anim;
     }
@@ -78,14 +79,14 @@ public class Animation {
     public BufferedImage[][] loadGhoulAnimation(int w, int h) {
         BufferedImage[][] anim = new BufferedImage[17][20];
 
-        anim[Anim.IDLE.ordinal()] = loadFromSprite(GHOUL_SHEET, 8, 0, w, h, 0, GHOUL_W, GHOUL_H);
-        anim[Anim.RUN.ordinal()] = loadFromSprite(GHOUL_SHEET, 6, 2, w, h, 0, GHOUL_W, GHOUL_H);
+        anim[Anim.IDLE.ordinal()] = loadFromSprite(GHOUL_SHEET,     8, 0, w, h, 0, GHOUL_W, GHOUL_H);
+        anim[Anim.RUN.ordinal()] = loadFromSprite(GHOUL_SHEET,      6, 2, w, h, 0, GHOUL_W, GHOUL_H);
         anim[Anim.ATTACK_1.ordinal()] = loadFromSprite(GHOUL_SHEET, 8, 5, w, h, 0, GHOUL_W, GHOUL_H);
-        anim[Anim.HIT.ordinal()] = loadFromSprite(GHOUL_SHEET, 4, 4, w, h, 0, GHOUL_W, GHOUL_H);
-        anim[Anim.DEATH.ordinal()] = loadFromSprite(GHOUL_SHEET, 8, 7, w, h, 0, GHOUL_W, GHOUL_H);
-        anim[Anim.WALK.ordinal()] = loadFromSprite(GHOUL_SHEET, 6, 1, w, h, 0, GHOUL_W, GHOUL_H);
-        anim[Anim.HIDE.ordinal()] = loadFromSprite(GHOUL_SHEET, 19, 6, w, h, 0, GHOUL_W, GHOUL_H);
-        anim[Anim.REVEAL.ordinal()] = loadFromSprite(GHOUL_SHEET, 19, 6, w, h, 0, GHOUL_W, GHOUL_H);
+        anim[Anim.HIT.ordinal()] = loadFromSprite(GHOUL_SHEET,      4, 4, w, h, 0, GHOUL_W, GHOUL_H);
+        anim[Anim.DEATH.ordinal()] = loadFromSprite(GHOUL_SHEET,    8, 7, w, h, 0, GHOUL_W, GHOUL_H);
+        anim[Anim.WALK.ordinal()] = loadFromSprite(GHOUL_SHEET,     6, 1, w, h, 0, GHOUL_W, GHOUL_H);
+        anim[Anim.HIDE.ordinal()] = loadFromSprite(GHOUL_SHEET,     19, 6, w, h, 0, GHOUL_W, GHOUL_H);
+        anim[Anim.REVEAL.ordinal()] = loadFromSprite(GHOUL_SHEET,   19, 6, w, h, 0, GHOUL_W, GHOUL_H);
         Utils.getInstance().reverseArray(anim[16]);
 
         return anim;
@@ -95,18 +96,18 @@ public class Animation {
     public BufferedImage[][] loadSpearWomanAnimations(int w, int h) {
         BufferedImage[][] anim = new BufferedImage[20][25];
 
-        anim[Anim.IDLE.ordinal()] = loadFromSprite(SW_SHEET, 8, 0, w, h, 0, SW_W, SW_H);
-        anim[Anim.RUN.ordinal()] = loadFromSprite(SW_SHEET, 8, 2, w, h, 0, SW_W, SW_H);
-        anim[Anim.ATTACK_1.ordinal()] = loadFromSprite(SW_SHEET, 5, 10, w, h, 0, SW_W, SW_H);
-        anim[Anim.ATTACK_2.ordinal()] = loadFromSprite(SW_SHEET, 5, 11, w, h, 0, SW_W, SW_H);
-        anim[Anim.ATTACK_3.ordinal()] = loadFromSprite(SW_SHEET, 6, 12, w, h, 0, SW_W, SW_H);
-        anim[Anim.BLOCK.ordinal()] = loadFromSprite(SW_SHEET, 16, 16, w, h, 0, SW_W, SW_H);
-        anim[Anim.HIT.ordinal()] = loadFromSprite(SW_SHEET, 4, 23, w, h, 0, SW_W, SW_H);
-        anim[Anim.DEATH.ordinal()] = loadFromSprite(SW_SHEET, 9, 24, w, h, 0, SW_W, SW_H);
-        anim[Anim.SPELL_1.ordinal()] = loadFromSprite(SW_SHEET, 14, 13, w, h, 0, SW_W, SW_H);
-        anim[Anim.SPELL_2.ordinal()] = loadFromSprite(SW_SHEET, 11, 14, w, h, 0, SW_W, SW_H);
-        anim[Anim.SPELL_3.ordinal()] = loadFromSprite(SW_SHEET, 22, 15, w, h, 0, SW_W, SW_H);
-        anim[Anim.SPELL_4.ordinal()] = loadFromSprite(SW_SHEET, 2, 15, w, h, 1, SW_W, SW_H);
+        anim[Anim.IDLE.ordinal()] = loadFromSprite(SW_SHEET,        8, 0, w, h, 0, SW_W, SW_H);
+        anim[Anim.RUN.ordinal()] = loadFromSprite(SW_SHEET,         8, 2, w, h, 0, SW_W, SW_H);
+        anim[Anim.ATTACK_1.ordinal()] = loadFromSprite(SW_SHEET,    5, 10, w, h, 0, SW_W, SW_H);
+        anim[Anim.ATTACK_2.ordinal()] = loadFromSprite(SW_SHEET,    5, 11, w, h, 0, SW_W, SW_H);
+        anim[Anim.ATTACK_3.ordinal()] = loadFromSprite(SW_SHEET,    6, 12, w, h, 0, SW_W, SW_H);
+        anim[Anim.BLOCK.ordinal()] = loadFromSprite(SW_SHEET,       16, 16, w, h, 0, SW_W, SW_H);
+        anim[Anim.HIT.ordinal()] = loadFromSprite(SW_SHEET,         4, 23, w, h, 0, SW_W, SW_H);
+        anim[Anim.DEATH.ordinal()] = loadFromSprite(SW_SHEET,       9, 24, w, h, 0, SW_W, SW_H);
+        anim[Anim.SPELL_1.ordinal()] = loadFromSprite(SW_SHEET,     14, 13, w, h, 0, SW_W, SW_H);
+        anim[Anim.SPELL_2.ordinal()] = loadFromSprite(SW_SHEET,     11, 14, w, h, 0, SW_W, SW_H);
+        anim[Anim.SPELL_3.ordinal()] = loadFromSprite(SW_SHEET,     22, 15, w, h, 0, SW_W, SW_H);
+        anim[Anim.SPELL_4.ordinal()] = loadFromSprite(SW_SHEET,     2, 15, w, h, 1, SW_W, SW_H);
 
         return anim;
     }
@@ -146,7 +147,11 @@ public class Animation {
     }
 
     public BufferedImage[] loadLightningBall(String sprite) {
-        return Animation.getInstance().loadFromSprite(sprite, 9, 0, LB_WID, LB_HEI, 0, LIGHTNING_BALL_W, LIGHTNING_BALL_H);
+        return loadFromSprite(sprite, 9, 0, LB_WID, LB_HEI, 0, LIGHTNING_BALL_W, LIGHTNING_BALL_H);
+    }
+
+    public BufferedImage[] loadFireBall() {
+        return loadFromSprite(FIREBALL_SHEET, 9, 0, FB_WID, FB_HEI,0, FIREBALL_W, FIREBALL_H);
     }
 
 }

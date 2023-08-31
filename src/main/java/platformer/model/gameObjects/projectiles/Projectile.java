@@ -89,6 +89,7 @@ public abstract class Projectile {
                 updateTrackingProjectile(player);
             else updateOscillationProjectile(X, Y);
         }
+        else updateFireballHitBox(X, Y);
 
         if (animate) updateAnimation();
     }
@@ -96,6 +97,11 @@ public abstract class Projectile {
     private void updateArrowHitBox(double X, double Y) {
         hitBox.x += X * ARROW_SPEED;
         hitBox.y += Y * ARROW_SPEED;
+    }
+
+    private void updateFireballHitBox(double X, double Y) {
+        hitBox.x += X * FIREBALL_SPEED;
+        hitBox.y += Y * FIREBALL_SPEED;
     }
 
     private void updateWaveProjectile() {

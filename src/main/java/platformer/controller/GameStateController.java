@@ -84,9 +84,6 @@ public class GameStateController {
                 if (pressedKeys.contains(key) && player.getSpellState() != 0) return;
                 player.getActionHandler().doSpell();
                 break;
-            case KeyEvent.VK_Z:
-                player.setPlayerAttackState(AttackState.ATTACK_2);
-                break;
             case KeyEvent.VK_V:
                 if (player.canDash()) player.getActionHandler().doDash();
                 break;
@@ -130,6 +127,9 @@ public class GameStateController {
                 break;
             case KeyEvent.VK_X:
                 if (state == PlayingState.DIALOGUE) gameState.getDialogueManager().updateDialogue();
+                break;
+            case KeyEvent.VK_Z:
+                player.getActionHandler().doFireBall();
                 break;
             case KeyEvent.VK_F:
                 interact();

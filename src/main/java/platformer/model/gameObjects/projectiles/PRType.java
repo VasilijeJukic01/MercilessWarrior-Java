@@ -2,7 +2,8 @@ package platformer.model.gameObjects.projectiles;
 
 public enum PRType {
     ARROW(1),               // 0
-    LIGHTNING_BALL(4);      // 1
+    LIGHTNING_BALL(4),      // 1
+    FIREBALL(4);            // 2
 
     private final int sprites;
 

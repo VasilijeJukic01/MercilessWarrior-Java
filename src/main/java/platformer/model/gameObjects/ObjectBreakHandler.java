@@ -5,7 +5,9 @@ import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
 import platformer.model.entities.player.PlayerBonus;
 import platformer.model.gameObjects.objects.Coin;
+import platformer.model.gameObjects.objects.Container;
 import platformer.model.gameObjects.objects.Potion;
+import platformer.model.gameObjects.projectiles.Projectile;
 import platformer.model.spells.Flame;
 
 import java.awt.geom.Rectangle2D;
@@ -21,18 +23,34 @@ public class ObjectBreakHandler {
     }
 
     public void checkObjectBreak(Rectangle2D.Double attackBox, Flame flame) {
-        for (platformer.model.gameObjects.objects.Container container : getObjects(platformer.model.gameObjects.objects.Container.class)) {
+        for (Container container : getObjects(Container.class)) {
+            if (!container.isAlive() || container.animate) continue;
+
             boolean isFlame = flame.getHitBox().intersects(container.getHitBox()) && flame.isActive();
-            if (container.isAlive() && !container.animate && (attackBox.intersects(container.getHitBox()) || isFlame)) {
-                container.setAnimate(true);
-                Audio.getInstance().getAudioPlayer().playCrateSound();
-                Logger.getInstance().notify("Player breaks container.", Message.NOTIFICATION);
-                generateLoot(container);
+            if (attackBox.intersects(container.getHitBox()) || isFlame) breakContainer(container);
+        }
+    }
+
+    public void checkProjectileBreak(List<Projectile> projectiles) {
+        for (Container container : getObjects(Container.class)) {
+            if (!container.isAlive() || container.animate) continue;
+
+            for (Projectile projectile : projectiles) {
+                if (projectile.isAlive()) {
+                    if (projectile.getHitBox().intersects(container.getHitBox())) breakContainer(container);
+                }
             }
         }
     }
 
-    private void generateLoot(platformer.model.gameObjects.objects.Container container) {
+    private void breakContainer(Container container) {
+        container.setAnimate(true);
+        Audio.getInstance().getAudioPlayer().playCrateSound();
+        Logger.getInstance().notify("Player breaks container.", Message.NOTIFICATION);
+        generateLoot(container);
+    }
+
+    private void generateLoot(Container container) {
         Random rand = new Random();
         int value = rand.nextInt(4)-1;
         ObjType obj = null;

@@ -43,7 +43,7 @@ public class Player extends Entity {
     private final double jumpSpeed = -2.25 * SCALE;
     private final double collisionFallSpeed = 0.5 * SCALE;
     // Flags
-    private boolean left, right, jump, moving, attacking, dash, dashHit, hit, block, transform;
+    private boolean left, right, jump, moving, attacking, dash, dashHit, hit, block, transform, fireball;
     private int spellState = 0;
     private boolean doubleJump, onWall, onObject, wallPush, canDash = true, canBlock, canTransform;
     // Status
@@ -63,7 +63,7 @@ public class Player extends Entity {
         loadAnimations();
         initHitBox(PLAYER_HB_WID, PLAYER_HB_HEI);
         initAttackBox();
-        this.cooldown = new double[3];
+        this.cooldown = new double[4];
         this.playerDataManager = new PlayerDataManager(game.getAccount(), this);
         this.effectController = new PlayerEffectController(this);
         this.actionHandler = new PlayerActionHandler(this);
@@ -100,6 +100,9 @@ public class Player extends Entity {
             if (spellState == 1 && animIndex >= animations[entityState.ordinal()].length-5) {
                 animIndex = 2;
             }
+            else if (fireball && animIndex == 3) {
+                objectManager.shotFireBall(this);
+            }
             if (animIndex >= animations[entityState.ordinal()].length) {
                 finishAnimation();
             }
@@ -113,6 +116,7 @@ public class Player extends Entity {
         attacking = attackCheck = false;
         dashHit = false;
         block = canBlock = false;
+        fireball = false;
         if (canTransform) {
             canTransform = false;
             transform = true;
@@ -151,6 +155,7 @@ public class Player extends Entity {
             return;
         }
         if (spellState == 1) entityState = Anim.SPELL_1;
+        else if (fireball) entityState = Anim.SPELL_2;
         else if (canBlock) entityState = Anim.BLOCK;
         else if (hit) entityState = Anim.HIT;
         else if (attacking && !onWall) setAttackAnimation();
@@ -518,6 +523,10 @@ public class Player extends Entity {
 
     public void setDashHit(boolean dashHit) {
         this.dashHit = dashHit;
+    }
+
+    public void setFireball(boolean fireball) {
+        this.fireball = fireball;
     }
 
     public void setSpellState(int spellState) {

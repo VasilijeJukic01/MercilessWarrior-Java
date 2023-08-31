@@ -58,6 +58,14 @@ public class PlayerActionHandler {
         }
     }
 
+    public void doFireBall() {
+        if (!PlayerBonus.getInstance().isFireball()) return;
+        if (player.getCooldown()[Cooldown.SPELL.ordinal()] != 0 || player.getCurrentStamina() < 15) return;
+        player.setFireball(true);
+        player.changeStamina(-15);
+        player.getCooldown()[Cooldown.SPELL.ordinal()] = 1.75;
+    }
+
     public void handleObjectActions(ObjectManager objectManager) {
         handleObjectInteraction(objectManager);
         checkTrapCollide(objectManager);
