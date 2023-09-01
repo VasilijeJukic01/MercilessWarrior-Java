@@ -2,9 +2,12 @@ package platformer.database.bridge;
 
 import platformer.core.Account;
 import platformer.core.LauncherPrompt;
+import platformer.database.BoardDatum;
 import platformer.database.CredentialsLoader;
 import platformer.database.DBSettings;
 import platformer.database.Settings;
+
+import java.util.List;
 
 public class Database {
 
@@ -31,6 +34,10 @@ public class Database {
 
     public Account getData() {
         return storage.loadData(launcherPrompt.getName());
+    }
+
+    public List<BoardDatum> loadLeaderboardData() {
+        return storage.loadLeaderboardData();
     }
 
     public void updateData(Account account) {

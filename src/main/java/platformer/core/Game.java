@@ -2,20 +2,18 @@ package platformer.core;
 
 import platformer.audio.Audio;
 import platformer.audio.Song;
+import platformer.database.BoardDatum;
 import platformer.database.bridge.Database;
-import platformer.state.ControlsState;
-import platformer.state.GameState;
-import platformer.state.OptionsState;
-import platformer.state.StateManager;
+import platformer.state.*;
 import platformer.ui.AudioOptions;
 import platformer.ui.overlays.OverlayLayer;
-import platformer.state.PlayingState;
 import platformer.view.GameFrame;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
+import java.util.List;
 
 @SuppressWarnings({"InfiniteLoopStatement", "FieldCanBeLocal"})
 public class Game implements Runnable {
@@ -26,6 +24,7 @@ public class Game implements Runnable {
     private final Database database;
     private final LauncherPrompt launcherPrompt;
     private Account account;
+    private List<BoardDatum> leaderboard;
 
     private StateManager stateManager;
     private AudioOptions audioOptions;
@@ -46,6 +45,7 @@ public class Game implements Runnable {
 
     private void init() {
         initAccount();
+        initLeaderboard();
         this.gameFrame = new GameFrame(this);
         this.audioOptions = new AudioOptions();
         this.stateManager = new StateManager(this);
@@ -55,6 +55,10 @@ public class Game implements Runnable {
     private void initAccount() {
         this.account = database.getData();
         this.account.setEnableCheats(launcherPrompt.isEnableCheats());
+    }
+
+    private void initLeaderboard() {
+        this.leaderboard = database.loadLeaderboardData();
     }
 
     public void start() {
@@ -157,7 +161,8 @@ public class Game implements Runnable {
     }
 
     public void startMenuState() {
-        if (!(stateManager.getCurrentState() instanceof OptionsState) && !(stateManager.getCurrentState() instanceof ControlsState))
+        State currentState = stateManager.getCurrentState();
+        if (!(currentState instanceof OptionsState) && !(currentState instanceof ControlsState) && !(currentState instanceof LeaderboardState))
             Audio.getInstance().getAudioPlayer().playSong(Song.MENU);
         stateManager.setMenuState();
     }
@@ -173,6 +178,10 @@ public class Game implements Runnable {
 
     public void startControlsState() {
         stateManager.setControlsState();
+    }
+
+    public void startLeaderboardState() {
+        stateManager.setLeaderboardState();
     }
 
     public void startQuitState() {
@@ -196,4 +205,7 @@ public class Game implements Runnable {
         return account;
     }
 
+    public List<BoardDatum> getLeaderboard() {
+        return leaderboard;
+    }
 }

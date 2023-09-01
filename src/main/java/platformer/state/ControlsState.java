@@ -3,7 +3,6 @@ package platformer.state;
 import platformer.core.Game;
 import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.CREButton;
-import platformer.ui.buttons.AbstractButton;
 import platformer.ui.overlays.OverlayLayer;
 import platformer.utils.Utils;
 
@@ -87,10 +86,6 @@ public class ControlsState extends AbstractState implements State {
         g.drawImage(keyboardSprite.getSubimage(0,0, 16, 16),        K10_X, K_ROW8, KEY_SIZE, KEY_SIZE, null);
     }
 
-    private boolean isMouseInButton(MouseEvent e, AbstractButton abstractButton) {
-        return abstractButton.getButtonHitBox().contains(e.getX(), e.getY());
-    }
-
     @Override
     public void mousePressed(MouseEvent e) {
         if (isMouseInButton(e, exitBtn)) exitBtn.setMousePressed(true);
@@ -134,4 +129,5 @@ public class ControlsState extends AbstractState implements State {
     public void reset() {
         exitBtn.resetMouseSet();
     }
+
 }

@@ -11,5 +11,6 @@ public enum ButtonType {
     MUSIC,      // 7
     SFX,        // 8
     BUY,        // 9
-    LEAVE       // 10
+    LEAVE,      // 10
+    L_BOARD     // 11
 }

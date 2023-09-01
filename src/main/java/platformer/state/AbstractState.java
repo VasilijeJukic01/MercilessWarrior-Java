@@ -1,7 +1,7 @@
 package platformer.state;
 
 import platformer.core.Game;
-import platformer.ui.buttons.MenuButton;
+import platformer.ui.buttons.AbstractButton;
 
 import java.awt.event.MouseEvent;
 
@@ -13,8 +13,8 @@ public abstract class AbstractState {
         this.game = game;
     }
 
-    public boolean isMouseInButton(MouseEvent e, MenuButton menuButton) {
-        return menuButton.getButtonHitBox().contains(e.getX(), e.getY());
+    public boolean isMouseInButton(MouseEvent e, AbstractButton abstractButton) {
+        return abstractButton.getButtonHitBox().contains(e.getX(), e.getY());
     }
 
     public Game getGame() {

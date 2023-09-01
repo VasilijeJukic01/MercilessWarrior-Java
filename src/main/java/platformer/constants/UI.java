@@ -16,6 +16,9 @@ public class UI {
     public static final int MENU_LOGO_WID = scale(300);
     public static final int MENU_LOGO_HEI = scale(150);
 
+    public static final int L_BUTTON_X = scale(790);
+    public static final int L_BUTTON_Y = scale(10);
+
     // Controls UI
     public static final int KEY_SIZE = scale(20);
     public static final int CONTROLS_TXT_WID = scale(180);
@@ -44,6 +47,18 @@ public class UI {
     public static final int K8_X = scale(360), K_ROW7 = scale(255);
     public static final int K9_X = scale(370), K_ROW8 = scale(275);
     public static final int K10_X = scale(398);
+
+    // Leaderboards UI
+    public static final int BOARD_TXT_WID = scale(180);
+    public static final int BOARD_TXT_HEI = scale(40);
+    public static final int BOARD_TXT_X = scale(330);
+    public static final int BOARD_TXT_Y = scale(85);
+
+    public static final int BOARD_X1 = scale(335);
+    public static final int BOARD_X2 = scale(430);
+    public static final int BOARD_X3 = scale(485);
+    public static final int BOARD_START_Y = scale(160);
+    public static final int BOARD_SPACING = scale(15);
 
     // HUD
     public static final int HEALTH_WID = 134;

@@ -1,12 +1,15 @@
 package platformer.database.bridge;
 
 import platformer.core.Account;
+import platformer.database.BoardDatum;
 import platformer.database.Settings;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public class SQLStorage implements Storage {
@@ -52,6 +55,42 @@ public class SQLStorage implements Storage {
         }
 
         return new Account();
+    }
+
+    @Override
+    public List<BoardDatum> loadLeaderboardData() {
+        List<BoardDatum> boardData = new ArrayList<>();
+
+        try {
+            databaseConnection.initConnection(settings);
+            Logger.getInstance().notify("Database connection established!", Message.INFORMATION);
+
+            try (PreparedStatement preparedStatement = databaseConnection.getConnection().prepareStatement("SELECT * FROM Accounts")) {
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    while (resultSet.next()) {
+                        int id = resultSet.getInt("Account_ID");
+                        String name = resultSet.getString("Name");
+                        Account account = findSettings(id, name);
+
+                        if (account == null) return  Collections.emptyList();
+                        boardData.add(new BoardDatum(name, account.getLevel(), account.getExp()));
+                    }
+                }
+            }
+            boardData.sort(Comparator.comparing(BoardDatum::getLevel).reversed().thenComparing(Comparator.comparing(BoardDatum::getExp).reversed()));
+
+            return boardData;
+
+        }
+        catch (SQLException e) {
+            Logger.getInstance().notify("Database connection failed!", Message.ERROR);
+        }
+        finally {
+            if (databaseConnection.getConnection() != null)
+                databaseConnection.closeConnection();
+        }
+
+        return Collections.emptyList();
     }
 
     @Override

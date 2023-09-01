@@ -51,6 +51,7 @@ public class FilePaths {
     public static final String AUDIO_BTN_SHEET = "/images/buttons/AudioButtons.png";
     public static final String SLIDE_BTN_SHEET = "/images/buttons/SliderButton.png";
     public static final String SLIDER_IMG = "/images/buttons/Slider.png";
+    public static final String LEADERBOARD_BTN_SHEET = "/images/buttons/LeaderboardButtons.png";
 
     // UI
     public static final String MENU_LOGO = "/images/menu/menuLogo.png";
@@ -71,5 +72,6 @@ public class FilePaths {
     public static final String CONTROLS_TXT = "/images/buttons/ControlsText.png";
     public static final String KEYBOARD_SPRITE = "/images/keyboard.png";
     public static final String OPTIONS_TXT = "/images/buttons/OptionsText.png";
+    public static final String BOARD_TXT = "/images/buttons/BoardText.png";
 
 }

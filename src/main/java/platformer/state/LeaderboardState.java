@@ -1,7 +1,7 @@
 package platformer.state;
 
 import platformer.core.Game;
-import platformer.ui.AudioOptions;
+import platformer.database.BoardDatum;
 import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.CREButton;
 import platformer.ui.overlays.OverlayLayer;
@@ -12,67 +12,68 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
+import java.util.List;
 
-import static platformer.constants.Constants.CRE_BTN_SIZE;
-import static platformer.constants.FilePaths.*;
+import static platformer.constants.Constants.*;
+import static platformer.constants.FilePaths.BOARD_TXT;
 import static platformer.constants.UI.*;
 
-@SuppressWarnings("FieldCanBeLocal")
-public class OptionsState extends AbstractState implements State{
+public class LeaderboardState extends AbstractState implements State {
 
-    private final AudioOptions audioOptions;
-
-    private BufferedImage optionsText;
-    private BufferedImage SFXText, musicText, volumeText;
-
+    private BufferedImage leaderboardText;
     private CREButton exitBtn;
 
-
-    public OptionsState(Game game) {
+    public LeaderboardState(Game game) {
         super(game);
-        this.audioOptions = game.getAudioOptions();
         loadImages();
         loadButtons();
     }
 
     private void loadImages() {
-        this.optionsText = Utils.getInstance().importImage(OPTIONS_TXT, OPTIONS_TEXT_WID, OPTIONS_TEXT_HEI);
-        this.volumeText = Utils.getInstance().importImage(VOLUME_TXT, VOLUME_TEXT_WID, VOLUME_TEXT_HEI);
-        this.SFXText = Utils.getInstance().importImage(SFX_TXT, SFX_TEXT_WID, SFX_TEXT_HEI);
-        this.musicText = Utils.getInstance().importImage(MUSIC_TXT, MUSIC_TEXT_WID, MUSIC_TEXT_HEI);
+        this.leaderboardText = Utils.getInstance().importImage(BOARD_TXT, BOARD_TXT_WID, BOARD_TXT_HEI);
     }
 
     private void loadButtons() {
         this.exitBtn = new CREButton(EXIT_BTN_X, EXIT_BTN_Y, CRE_BTN_SIZE, CRE_BTN_SIZE, ButtonType.EXIT);
     }
 
+    // Core
     @Override
     public void update() {
         OverlayLayer.getInstance().update();
         exitBtn.update();
-        audioOptions.update();
     }
 
     @Override
     public void render(Graphics g) {
         OverlayLayer.getInstance().render(g);
-        renderImages(g);
+        g.drawImage(leaderboardText, BOARD_TXT_X, BOARD_TXT_Y, leaderboardText.getWidth(), leaderboardText.getHeight(), null);
         exitBtn.render(g);
-        audioOptions.render(g);
+        renderLeaderboard(g);
     }
 
     // Render
-    private void renderImages(Graphics g) {
-        g.drawImage(optionsText, OPTIONS_TEXT_X, OPTIONS_TEXT_Y, optionsText.getWidth(), optionsText.getHeight(), null);
-        g.drawImage(volumeText, VOLUME_TEXT_X, VOLUME_TEXT_Y, volumeText.getWidth(), volumeText.getHeight(), null);
-        g.drawImage(SFXText, SFX_TEXT_X, SFX_TEXT_Y, SFXText.getWidth(), SFXText.getHeight(), null);
-        g.drawImage(musicText, MUSIC_TEXT_X, MUSIC_TEXT_Y, musicText.getWidth(), musicText.getHeight(), null);
+    private void renderLeaderboard(Graphics g) {
+        List<BoardDatum> data = game.getLeaderboard();
+        g.setFont(new Font("Arial", Font.BOLD, FONT_MEDIUM));
+        g.setColor(Color.ORANGE);
+        renderHeaders(g);
+        for (int i = 2; i < data.size() + 2; i++) {
+            g.drawString((i-1)+".  "+data.get(i-2).getName(), BOARD_X1, BOARD_START_Y + (i * BOARD_SPACING));
+            g.drawString(data.get(i-2).getLevel(), BOARD_X2, BOARD_START_Y + (i * BOARD_SPACING));
+            g.drawString(data.get(i-2).getExp(), BOARD_X3, BOARD_START_Y + (i * BOARD_SPACING));
+        }
+    }
+
+    private void renderHeaders(Graphics g) {
+        g.drawString("Name", BOARD_X1, BOARD_START_Y);
+        g.drawString("Level", BOARD_X2, BOARD_START_Y);
+        g.drawString("Exp", BOARD_X3, BOARD_START_Y);
     }
 
     @Override
     public void mousePressed(MouseEvent e) {
         if (isMouseInButton(e, exitBtn)) exitBtn.setMousePressed(true);
-        else audioOptions.mousePressed(e);
     }
 
     @Override
@@ -80,7 +81,6 @@ public class OptionsState extends AbstractState implements State{
         if(isMouseInButton(e, exitBtn) && exitBtn.isMousePressed()) {
             game.startMenuState();
         }
-        else audioOptions.mouseReleased(e);
         reset();
     }
 
@@ -88,12 +88,11 @@ public class OptionsState extends AbstractState implements State{
     public void mouseMoved(MouseEvent e) {
         exitBtn.setMouseOver(false);
         if (isMouseInButton(e, exitBtn)) exitBtn.setMouseOver(true);
-        else audioOptions.mouseMoved(e);
     }
 
     @Override
     public void mouseDragged(MouseEvent e) {
-        audioOptions.mouseDragged(e);
+
     }
 
     @Override
@@ -113,8 +112,7 @@ public class OptionsState extends AbstractState implements State{
 
     @Override
     public void reset() {
-        exitBtn.setMouseOver(false);
-        exitBtn.setMousePressed(false);
+        exitBtn.resetMouseSet();
     }
 
 }
