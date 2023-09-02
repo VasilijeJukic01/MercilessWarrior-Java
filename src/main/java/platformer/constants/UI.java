@@ -1,5 +1,7 @@
 package platformer.constants;
 
+import java.awt.*;
+
 import static platformer.constants.Constants.GAME_WIDTH;
 import static platformer.constants.Constants.SCALE;
 
@@ -59,6 +61,11 @@ public class UI {
     public static final int BOARD_X3 = scale(485);
     public static final int BOARD_START_Y = scale(160);
     public static final int BOARD_SPACING = scale(15);
+
+    public static final Color BOARD_COLOR_TOP = new Color(255, 185, 0);
+    public static final Color BOARD_COLOR_SECOND = new Color(145, 145, 145);
+    public static final Color BOARD_COLOR_THIRD = new Color(170, 85, 0);
+    public static final Color BOARD_COLOR_TOP_10 = new Color(165, 0, 95);
 
     // HUD
     public static final int HEALTH_WID = 134;

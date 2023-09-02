@@ -11,7 +11,7 @@ import platformer.utils.Utils;
 
 import java.awt.geom.Rectangle2D;
 
-import static platformer.constants.Constants.TILES_SIZE;
+import static platformer.constants.Constants.*;
 
 public class PlayerActionHandler {
 
@@ -45,7 +45,7 @@ public class PlayerActionHandler {
             dashCount++;
             player.setCanDash(true);
             player.changeStamina(-3);
-            player.getCooldown()[Cooldown.DASH.ordinal()] = 1.75 + PlayerBonus.getInstance().getDashCooldown();
+            player.getCooldown()[Cooldown.DASH.ordinal()] = PLAYER_DASH_CD + PlayerBonus.getInstance().getDashCooldown();
             Audio.getInstance().getAudioPlayer().playSound(Sound.DASH);
         }
     }
@@ -63,7 +63,7 @@ public class PlayerActionHandler {
         if (player.getCooldown()[Cooldown.SPELL.ordinal()] != 0 || player.getCurrentStamina() < 15) return;
         player.setFireball(true);
         player.changeStamina(-15);
-        player.getCooldown()[Cooldown.SPELL.ordinal()] = 1.75;
+        player.getCooldown()[Cooldown.SPELL.ordinal()] = PLAYER_SPELL_CD;
     }
 
     public void handleObjectActions(ObjectManager objectManager) {

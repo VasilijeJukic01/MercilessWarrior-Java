@@ -56,12 +56,22 @@ public class LeaderboardState extends AbstractState implements State {
     private void renderLeaderboard(Graphics g) {
         List<BoardDatum> data = game.getLeaderboard();
         g.setFont(new Font("Arial", Font.BOLD, FONT_MEDIUM));
-        g.setColor(Color.ORANGE);
+        g.setColor(Color.WHITE);
         renderHeaders(g);
         for (int i = 2; i < data.size() + 2; i++) {
+            setGraphicsColor(g, i-2);
             g.drawString((i-1)+".  "+data.get(i-2).getName(), BOARD_X1, BOARD_START_Y + (i * BOARD_SPACING));
             g.drawString(data.get(i-2).getLevel(), BOARD_X2, BOARD_START_Y + (i * BOARD_SPACING));
             g.drawString(data.get(i-2).getExp(), BOARD_X3, BOARD_START_Y + (i * BOARD_SPACING));
+        }
+    }
+
+    private void setGraphicsColor(Graphics g, int index) {
+        switch (index) {
+            case 0: g.setColor(BOARD_COLOR_TOP); break;
+            case 1: g.setColor(BOARD_COLOR_SECOND); break;
+            case 2: g.setColor(BOARD_COLOR_THIRD); break;
+            default: g.setColor(BOARD_COLOR_TOP_10); break;
         }
     }
 

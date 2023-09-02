@@ -3,10 +3,16 @@ package platformer.constants;
 import static launcher.Config.SCALING_FACTOR;
 
 // Vocabulary
+
 /*
 
 HB - Hit Box
 AB - Attack Box
+HP - Health
+ST - Stamina
+CD - Cooldown
+SW - Spear Woman
+LB - Lightning Ball
 
  */
 
@@ -61,6 +67,12 @@ public class Constants {
     public static final double PUSH_LIMIT = -30;
     public static final double PUSH_SPEED = 0.95;
     public static final double COOLDOWN_TICK = 0.1;
+
+    // Cooldown
+    public static final double PLAYER_ATTACK_CD = 0.75;
+    public static final double PLAYER_BLOCK_CD = 1.2;
+    public static final double PLAYER_DASH_CD = 1.75;
+    public static final double PLAYER_SPELL_CD = 1.75;
 
     // Shop
     public static final int HEALTH_COST = 10;

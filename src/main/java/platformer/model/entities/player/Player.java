@@ -502,7 +502,7 @@ public class Player extends Entity {
         if (cooldown[Cooldown.ATTACK.ordinal()] != 0) return;
         this.attackState = playerAttackState;
         this.setAttacking(true);
-        cooldown[Cooldown.ATTACK.ordinal()] = 0.75 + PlayerBonus.getInstance().getBonusCooldown();
+        cooldown[Cooldown.ATTACK.ordinal()] = PLAYER_ATTACK_CD + PlayerBonus.getInstance().getBonusCooldown();
     }
 
     public void setCanDash(boolean canDash) {
@@ -545,7 +545,7 @@ public class Player extends Entity {
         this.canBlock = canBlock;
         if (canBlock) {
             Logger.getInstance().notify("Damage blocked successfully!", Message.INFORMATION);
-            cooldown[Cooldown.BLOCK.ordinal()] = 1.2;
+            cooldown[Cooldown.BLOCK.ordinal()] = PLAYER_BLOCK_CD;
             if (PlayerBonus.getInstance().isRestorePower()) changeStamina(5);
         }
     }
