@@ -4,6 +4,8 @@ import platformer.audio.Audio;
 import platformer.audio.Song;
 import platformer.database.BoardDatum;
 import platformer.database.bridge.Database;
+import platformer.serialization.GameSerializer;
+import platformer.serialization.Serializer;
 import platformer.state.*;
 import platformer.ui.AudioOptions;
 import platformer.ui.overlays.OverlayLayer;
@@ -22,8 +24,9 @@ public class Game implements Runnable {
     private final Thread gameThread;
 
     private final Database database;
+    private final Serializer<Account, List<Account>> serializer;
     private final LauncherPrompt launcherPrompt;
-    private Account account;
+    private Account cloud, account;
     private List<BoardDatum> leaderboard;
 
     private StateManager stateManager;
@@ -37,6 +40,7 @@ public class Game implements Runnable {
     public Game(String cheats, String name) {
         this.launcherPrompt = new LauncherPrompt(name, cheats.equals("Yes"));
         this.database = new Database(launcherPrompt);
+        this.serializer = new GameSerializer();
         init();
         this.gameThread = new Thread(this);
         this.gameThread.start();
@@ -53,8 +57,9 @@ public class Game implements Runnable {
     }
 
     private void initAccount() {
-        this.account = database.getData();
-        this.account.setEnableCheats(launcherPrompt.isEnableCheats());
+        this.cloud = database.getData();
+        this.cloud.setEnableCheats(launcherPrompt.isEnableCheats());
+        this.account = new Account(cloud);
     }
 
     private void initLeaderboard() {
@@ -117,6 +122,20 @@ public class Game implements Runnable {
         }
     }
 
+    // Serializer
+    public void save() {
+        serializer.serialize(account);
+    }
+
+    public List<Account> getAllSaves() {
+        return serializer.deserialize();
+    }
+
+    public void reloadSave() {
+        if (stateManager.getCurrentState() instanceof GameState)
+            ((GameState) stateManager.getCurrentState()).reloadSave();
+    }
+
     // Mediator
     public void keyPressed(KeyEvent e) {
         stateManager.getCurrentState().keyPressed(e);
@@ -162,7 +181,8 @@ public class Game implements Runnable {
 
     public void startMenuState() {
         State currentState = stateManager.getCurrentState();
-        if (!(currentState instanceof OptionsState) && !(currentState instanceof ControlsState) && !(currentState instanceof LeaderboardState))
+        if (!(currentState instanceof OptionsState || currentState instanceof ControlsState || currentState instanceof LeaderboardState
+                || currentState instanceof ChoseGameState))
             Audio.getInstance().getAudioPlayer().playSong(Song.MENU);
         stateManager.setMenuState();
     }
@@ -184,6 +204,10 @@ public class Game implements Runnable {
         stateManager.setLeaderboardState();
     }
 
+    public void startChoseGameState() {
+        stateManager.setChoseGameState();
+    }
+
     public void startQuitState() {
         stateManager.setQuitState();
     }
@@ -199,6 +223,10 @@ public class Game implements Runnable {
 
     public AudioOptions getAudioOptions() {
         return audioOptions;
+    }
+
+    public Account getCloud() {
+        return cloud;
     }
 
     public Account getAccount() {

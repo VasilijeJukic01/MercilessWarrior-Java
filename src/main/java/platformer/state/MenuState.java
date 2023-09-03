@@ -88,7 +88,7 @@ public class MenuState extends AbstractState implements State {
             if (isMouseInButton(e, button) && button.isMousePressed()) {
                 switch (button.getButtonType()) {
                     case PLAY:
-                        game.startPlayingState(); break;
+                        game.startChoseGameState(); break;
                     case OPTIONS:
                         game.startOptionsState(); break;
                     case CONTROLS:

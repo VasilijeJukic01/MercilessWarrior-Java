@@ -5,14 +5,14 @@ import java.util.List;
 
 public class Account {
 
-    private final String name;
-    private final int accountID, settingsID;
+    private final transient String name;
+    private final transient int accountID, settingsID;
     private int spawn;
     private int coins, tokens;
     private int level, exp;
     private List<String> perks = new ArrayList<>();
 
-    private boolean enableCheats;
+    private transient boolean enableCheats;
 
     public Account() {
         this.name = "Default";
@@ -31,6 +31,27 @@ public class Account {
         this.tokens = tokens;
         this.level = level;
         this.exp = exp;
+    }
+
+    public Account(Account account) {
+        this.name = account.name;
+        this.accountID = account.accountID;
+        this.settingsID = account.settingsID;
+        this.spawn = account.spawn;
+        this.coins = account.coins;
+        this.tokens = account.tokens;
+        this.level = account.level;
+        this.exp = account.exp;
+        this.perks = account.getPerks();
+        this.enableCheats = account.enableCheats;
+    }
+
+    // Unload save file
+    public void unload() {
+        this.spawn = 1;
+        this.level = 1;
+        this.coins = this.tokens = this.exp = 0;
+        this.perks = new ArrayList<>();
     }
 
     public String getName() {

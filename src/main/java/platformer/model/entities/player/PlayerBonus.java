@@ -21,6 +21,10 @@ public class PlayerBonus {
         return instance;
     }
 
+    public void reset() {
+        instance = new PlayerBonus();
+    }
+
     public int getBonusAttack() {
         return bonusAttack;
     }

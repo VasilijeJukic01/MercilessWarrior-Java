@@ -74,4 +74,7 @@ public class FilePaths {
     public static final String OPTIONS_TXT = "/images/buttons/OptionsText.png";
     public static final String BOARD_TXT = "/images/buttons/BoardText.png";
 
+    // Serialization
+    public static final String SAVE_PATH = "src/main/resources/saves/";
+
 }

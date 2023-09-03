@@ -624,6 +624,10 @@ public class Player extends Entity {
         return actionHandler;
     }
 
+    public PlayerDataManager getPlayerDataManager() {
+        return playerDataManager;
+    }
+
     @Override
     public void hitBoxRenderer(Graphics g, int xLevelOffset, int yLevelOffset, Color color) {
         renderHitBox(g, xLevelOffset, yLevelOffset, color);

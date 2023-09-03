@@ -8,6 +8,7 @@ import platformer.model.entities.effects.Particle;
 import platformer.model.entities.enemies.EnemyManager;
 import platformer.core.Game;
 import platformer.model.entities.player.Player;
+import platformer.model.entities.player.PlayerBonus;
 import platformer.model.levels.LevelManager;
 import platformer.model.gameObjects.ObjectManager;
 import platformer.model.perks.PerksManager;
@@ -89,6 +90,13 @@ public class GameState extends AbstractState implements State {
 
     public void saveToDatabase() {
         game.getAccount().setPerks(perksManager.getUpgradedPerks());
+    }
+
+    public void reloadSave() {
+        PlayerBonus.getInstance().reset();
+        this.perksManager = new PerksManager();
+        this.perksManager.loadUnlockedPerks(game.getAccount().getPerks());
+        this.player.getPlayerDataManager().loadData();
     }
 
     private void calculateLevelOffset() {

@@ -23,7 +23,7 @@ public class PlayerDataManager {
         loadData();
     }
 
-    private void loadData() {
+    public void loadData() {
         this.coins = account.getCoins();
         this.upgradeTokens = account.getTokens();
         this.level = account.getLevel();
