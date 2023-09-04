@@ -2,6 +2,7 @@ package platformer.view;
 
 import platformer.controller.GameKeyListener;
 import platformer.controller.GameMouseListener;
+import platformer.core.Framework;
 import platformer.core.Game;
 
 import javax.swing.*;
@@ -54,7 +55,7 @@ public class GamePanel extends JPanel {
     private void renderInfo(Graphics g) {
         g.setColor(new Color(255, 255, 255));
         g.setFont(new Font("Arial", Font.BOLD, FONT_MEDIUM));
-        g.drawString(game.getAccount().getName(), (int)(1.5 * SCALE), (int)(10 * SCALE));
+        g.drawString(Framework.getInstance().getAccount().getName(), (int)(1.5 * SCALE), (int)(10 * SCALE));
         g.drawString("FPS: "+game.getCurrentFps(), (int)(1.5 * SCALE), (int)(20 * SCALE));
         g.drawString("UPS: "+game.getCurrentUpdates(), (int)(50 * SCALE), (int)(20 * SCALE));
     }

@@ -1,6 +1,7 @@
 package platformer.controller;
 
 import platformer.core.Account;
+import platformer.core.Framework;
 import platformer.core.Game;
 import platformer.serialization.GameSlot;
 
@@ -28,8 +29,8 @@ public class GameSaveController {
             boolean databaseSlot = (i == 1);
             gameSlots.add(new GameSlot(null, GAME_SLOT_X, GAME_SLOT_Y + i * GAME_SLOT_SPACING, databaseSlot));
         }
-        List<Account> saves = game.getAllSaves();
-        gameSlots.get(0).setAccount(game.getCloud());
+        List<Account> saves = Framework.getInstance().getAllSaves();
+        gameSlots.get(0).setAccount(Framework.getInstance().getCloud());
         for (int i = 0; i < saves.size(); i++) {
             gameSlots.get(i+1).setAccount(saves.get(i));
         }
@@ -56,25 +57,25 @@ public class GameSaveController {
             }
         }
         if (slot == 0) {
-            if (game.getCloud().getName().equals("Default")) return;
-            game.cloudSave();
-            gameSlots.get(0).setAccount(game.getCloud());
+            if (Framework.getInstance().getCloud().getName().equals("Default")) return;
+            Framework.getInstance().cloudSave();
+            gameSlots.get(0).setAccount(Framework.getInstance().getCloud());
         }
         else {
-            game.localSave(slot);
+            Framework.getInstance().localSave(slot);
             initSlots();
         }
     }
 
     private void getSlotAccountData(GameSlot s) {
-        game.getAccount().unload();
+        Framework.getInstance().getAccount().unload();
         if (s.getAccount() == null) return;
-        game.getAccount().setPerks(s.getAccount().getPerks());
-        game.getAccount().setLevel(s.getAccount().getLevel());
-        game.getAccount().setExp(s.getAccount().getExp());
-        game.getAccount().setCoins(s.getAccount().getCoins());
-        game.getAccount().setSpawn(s.getAccount().getSpawn());
-        game.getAccount().setTokens(s.getAccount().getTokens());
+        Framework.getInstance().getAccount().setPerks(s.getAccount().getPerks());
+        Framework.getInstance().getAccount().setLevel(s.getAccount().getLevel());
+        Framework.getInstance().getAccount().setExp(s.getAccount().getExp());
+        Framework.getInstance().getAccount().setCoins(s.getAccount().getCoins());
+        Framework.getInstance().getAccount().setSpawn(s.getAccount().getSpawn());
+        Framework.getInstance().getAccount().setTokens(s.getAccount().getTokens());
     }
 
     public void checkSlotSelection(MouseEvent e) {

@@ -1,7 +1,6 @@
 package platformer.ui.overlays;
 
-import platformer.controller.GameSaveController;
-import platformer.core.Game;
+import platformer.core.Framework;
 import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.MediumButton;
 
@@ -16,10 +15,8 @@ import static platformer.constants.UI.SAVE_BTN_Y;
 public class SaveGameOverlay implements Overlay {
 
     private MediumButton saveBtn;
-    private final GameSaveController saveController;
 
-    public SaveGameOverlay(Game game) {
-        this.saveController = new GameSaveController(game);
+    public SaveGameOverlay() {
         loadButtons();
     }
 
@@ -35,7 +32,7 @@ public class SaveGameOverlay implements Overlay {
     @Override
     public void render(Graphics g) {
         OverlayLayer.getInstance().renderOverlay(g);
-        saveController.getGameSlots().forEach(s -> s.render(g));
+        Framework.getInstance().getSaveController().getGameSlots().forEach(s -> s.render(g));
         saveBtn.render(g);
     }
 
@@ -54,9 +51,9 @@ public class SaveGameOverlay implements Overlay {
     @Override
     public void mouseReleased(MouseEvent e) {
         if (isMouseInButton(e, saveBtn) && saveBtn.isMousePressed()) {
-            saveController.saveSlot();
+            Framework.getInstance().getSaveController().saveSlot();
         }
-        saveController.checkSlotSelection(e);
+        Framework.getInstance().getSaveController().checkSlotSelection(e);
         saveBtn.resetMouseSet();
     }
 

@@ -1,12 +1,12 @@
 package platformer;
 
-import platformer.core.Game;
+import platformer.core.Framework;
 
 public class AppCore {
 
     public static void main(String[] args) {
-        Game game = new Game(args[0], args[1]);
-        game.start();
+        Framework.getInstance().init(args[0], args[1]);
+        Framework.getInstance().start();
     }
 
 }

@@ -1,6 +1,6 @@
 package platformer.state;
 
-import platformer.controller.GameSaveController;
+import platformer.core.Framework;
 import platformer.core.Game;
 import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.CREButton;
@@ -18,11 +18,9 @@ import static platformer.constants.UI.CONTINUE_BTN_Y;
 public class ChoseGameState extends AbstractState implements State {
 
     private CREButton playBtn, exitBtn;
-    private final GameSaveController saveController;
 
     public ChoseGameState(Game game) {
         super(game);
-        this.saveController = new GameSaveController(game);
         loadButtons();
     }
 
@@ -49,7 +47,7 @@ public class ChoseGameState extends AbstractState implements State {
     }
 
     private void renderSlots(Graphics g) {
-        saveController.getGameSlots().forEach(s -> s.render(g));
+        Framework.getInstance().getSaveController().getGameSlots().forEach(s -> s.render(g));
     }
 
     @Override
@@ -64,9 +62,9 @@ public class ChoseGameState extends AbstractState implements State {
             game.startMenuState();
         }
         else if(isMouseInButton(e, playBtn) && playBtn.isMousePressed()) {
-            saveController.loadSlot();
+            Framework.getInstance().getSaveController().loadSlot();
         }
-        saveController.checkSlotSelection(e);
+        Framework.getInstance().getSaveController().checkSlotSelection(e);
         reset();
     }
 

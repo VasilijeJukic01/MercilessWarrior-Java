@@ -1,5 +1,6 @@
 package platformer.controller;
 
+import platformer.core.Framework;
 import platformer.core.Game;
 import platformer.debug.DebugSettings;
 import platformer.debug.logger.Logger;
@@ -164,25 +165,25 @@ public class GameStateController {
     }
 
     private void showHitBox() {
-        if (!game.getAccount().isEnableCheats()) return;
+        if (!Framework.getInstance().getAccount().isEnableCheats()) return;
         DebugSettings.getInstance().setDebugMode(!DebugSettings.getInstance().isDebugMode());
         Logger.getInstance().notify("HitBox functionality changed.", Message.WARNING);
     }
 
     private void activateHealthCheat() {
-        if (!game.getAccount().isEnableCheats()) return;
+        if (!Framework.getInstance().getAccount().isEnableCheats()) return;
         player.changeHealth(100);
         Logger.getInstance().notify("Health cheat activated.", Message.WARNING);
     }
 
     private void activateStaminaCheat() {
-        if (!game.getAccount().isEnableCheats()) return;
+        if (!Framework.getInstance().getAccount().isEnableCheats()) return;
         player.changeStamina(100);
         Logger.getInstance().notify("Stamina cheat activated.", Message.WARNING);
     }
 
     private void activateCoinsCheat() {
-        if (!game.getAccount().isEnableCheats()) return;
+        if (!Framework.getInstance().getAccount().isEnableCheats()) return;
         player.changeCoins(99999);
         player.changeUpgradeTokens(50);
         Logger.getInstance().notify("Coins cheat activated.", Message.WARNING);

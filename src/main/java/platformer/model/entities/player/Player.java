@@ -64,7 +64,7 @@ public class Player extends Entity {
         initHitBox(PLAYER_HB_WID, PLAYER_HB_HEI);
         initAttackBox();
         this.cooldown = new double[4];
-        this.playerDataManager = new PlayerDataManager(game.getAccount(), this);
+        this.playerDataManager = new PlayerDataManager(this);
         this.effectController = new PlayerEffectController(this);
         this.actionHandler = new PlayerActionHandler(this);
     }

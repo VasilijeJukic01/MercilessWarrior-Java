@@ -1,12 +1,12 @@
 package platformer.database;
 
-public class BoardDatum {
+public class BoardItem {
 
     private final String name;
     private final int level;
     private final int exp;
 
-    public BoardDatum(String name, int level, int exp) {
+    public BoardItem(String name, int level, int exp) {
         this.name = name;
         this.level = level;
         this.exp = exp;

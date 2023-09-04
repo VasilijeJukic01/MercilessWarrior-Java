@@ -1,7 +1,7 @@
 package platformer.database.bridge;
 
 import platformer.core.Account;
-import platformer.database.BoardDatum;
+import platformer.database.BoardItem;
 import platformer.database.Settings;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
@@ -58,8 +58,8 @@ public class SQLStorage implements Storage {
     }
 
     @Override
-    public List<BoardDatum> loadLeaderboardData() {
-        List<BoardDatum> boardData = new ArrayList<>();
+    public List<BoardItem> loadLeaderboardData() {
+        List<BoardItem> boardData = new ArrayList<>();
 
         try {
             databaseConnection.initConnection(settings);
@@ -73,11 +73,11 @@ public class SQLStorage implements Storage {
                         Account account = findSettings(id, name);
 
                         if (account == null) return  Collections.emptyList();
-                        boardData.add(new BoardDatum(name, account.getLevel(), account.getExp()));
+                        boardData.add(new BoardItem(name, account.getLevel(), account.getExp()));
                     }
                 }
             }
-            boardData.sort(Comparator.comparing(BoardDatum::getLevel).reversed().thenComparing(Comparator.comparing(BoardDatum::getExp).reversed()));
+            boardData.sort(Comparator.comparing(BoardItem::getLevel).reversed().thenComparing(Comparator.comparing(BoardItem::getExp).reversed()));
 
             return boardData;
 

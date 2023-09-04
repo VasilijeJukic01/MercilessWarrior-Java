@@ -2,6 +2,7 @@ package platformer.state;
 
 import platformer.audio.Audio;
 import platformer.controller.GameStateController;
+import platformer.core.Framework;
 import platformer.debug.logger.Message;
 import platformer.debug.logger.Logger;
 import platformer.model.entities.effects.Particle;
@@ -85,18 +86,18 @@ public class GameState extends AbstractState implements State {
     }
 
     private void loadFromDatabase() {
-        this.perksManager.loadUnlockedPerks(game.getAccount().getPerks());
+        this.perksManager.loadUnlockedPerks(Framework.getInstance().getAccount().getPerks());
     }
 
     public void saveToDatabase() {
-        game.getAccount().setPerks(perksManager.getUpgradedPerks());
+        Framework.getInstance().getAccount().setPerks(perksManager.getUpgradedPerks());
         player.getPlayerDataManager().savePlayerData();
     }
 
     public void reloadSave() {
         PlayerBonus.getInstance().reset();
         this.perksManager = new PerksManager();
-        this.perksManager.loadUnlockedPerks(game.getAccount().getPerks());
+        this.perksManager.loadUnlockedPerks(Framework.getInstance().getAccount().getPerks());
         this.player.getPlayerDataManager().loadPlayerData();
     }
 

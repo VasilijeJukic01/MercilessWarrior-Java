@@ -1,6 +1,7 @@
 package platformer.model.entities.player;
 
 import platformer.core.Account;
+import platformer.core.Framework;
 import platformer.ui.overlays.hud.UserInterface;
 
 import static platformer.constants.Constants.*;
@@ -16,8 +17,8 @@ public class PlayerDataManager {
     private int level = 1;
     private int upgradeTokens = 0;
 
-    public PlayerDataManager(Account account, Player player) {
-        this.account = account;
+    public PlayerDataManager(Player player) {
+        this.account = Framework.getInstance().getAccount();
         this.player = player;
         this.userInterface = new UserInterface(player);
         loadPlayerData();

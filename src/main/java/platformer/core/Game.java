@@ -2,10 +2,6 @@ package platformer.core;
 
 import platformer.audio.Audio;
 import platformer.audio.Song;
-import platformer.database.BoardDatum;
-import platformer.database.bridge.Database;
-import platformer.serialization.GameSerializer;
-import platformer.serialization.Serializer;
 import platformer.state.*;
 import platformer.ui.AudioOptions;
 import platformer.ui.overlays.OverlayLayer;
@@ -15,19 +11,12 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
-import java.util.List;
 
 @SuppressWarnings({"InfiniteLoopStatement", "FieldCanBeLocal"})
 public class Game implements Runnable {
 
     private GameFrame gameFrame;
     private final Thread gameThread;
-
-    private final Database database;
-    private final Serializer<Account, List<Account>> serializer;
-    private final LauncherPrompt launcherPrompt;
-    private Account cloud, account;
-    private List<BoardDatum> leaderboard;
 
     private StateManager stateManager;
     private AudioOptions audioOptions;
@@ -37,10 +26,7 @@ public class Game implements Runnable {
     private int currentFps = 0;
     private int currentUpdates = 0;
 
-    public Game(String cheats, String name) {
-        this.launcherPrompt = new LauncherPrompt(name, cheats.equals("Yes"));
-        this.database = new Database(launcherPrompt);
-        this.serializer = new GameSerializer();
+    public Game() {
         init();
         this.gameThread = new Thread(this);
         this.gameThread.start();
@@ -48,22 +34,10 @@ public class Game implements Runnable {
     }
 
     private void init() {
-        initAccount();
-        initLeaderboard();
         this.gameFrame = new GameFrame(this);
         this.audioOptions = new AudioOptions();
         this.stateManager = new StateManager(this);
         OverlayLayer.getInstance().update(); // Prepare instance
-    }
-
-    private void initAccount() {
-        this.cloud = database.getData();
-        this.cloud.setEnableCheats(launcherPrompt.isEnableCheats());
-        this.account = new Account(cloud);
-    }
-
-    private void initLeaderboard() {
-        this.leaderboard = database.loadLeaderboardData();
     }
 
     public void start() {
@@ -81,8 +55,6 @@ public class Game implements Runnable {
     public void cloudSave() {
         if (stateManager.getCurrentState() instanceof GameState) {
             ((GameState) stateManager.getCurrentState()).saveToDatabase();
-            database.updateData(account);
-            initAccount();
         }
     }
 
@@ -127,14 +99,6 @@ public class Game implements Runnable {
     }
 
     // Serializer
-    public void localSave(int slot) {
-        serializer.serialize(account, slot);
-    }
-
-    public List<Account> getAllSaves() {
-        return serializer.deserialize();
-    }
-
     public void reloadSave() {
         if (stateManager.getCurrentState() instanceof GameState)
             ((GameState) stateManager.getCurrentState()).reloadSave();
@@ -229,15 +193,4 @@ public class Game implements Runnable {
         return audioOptions;
     }
 
-    public Account getCloud() {
-        return cloud;
-    }
-
-    public Account getAccount() {
-        return account;
-    }
-
-    public List<BoardDatum> getLeaderboard() {
-        return leaderboard;
-    }
 }

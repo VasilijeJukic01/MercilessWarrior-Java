@@ -1,7 +1,8 @@
 package platformer.state;
 
+import platformer.core.Framework;
 import platformer.core.Game;
-import platformer.database.BoardDatum;
+import platformer.database.BoardItem;
 import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.CREButton;
 import platformer.ui.overlays.OverlayLayer;
@@ -54,7 +55,7 @@ public class LeaderboardState extends AbstractState implements State {
 
     // Render
     private void renderLeaderboard(Graphics g) {
-        List<BoardDatum> data = game.getLeaderboard();
+        List<BoardItem> data = Framework.getInstance().getLeaderboard();
         g.setFont(new Font("Arial", Font.BOLD, FONT_MEDIUM));
         g.setColor(Color.WHITE);
         renderHeaders(g);

@@ -2,7 +2,7 @@ package platformer.database.bridge;
 
 import platformer.core.Account;
 import platformer.core.LauncherPrompt;
-import platformer.database.BoardDatum;
+import platformer.database.BoardItem;
 import platformer.database.CredentialsLoader;
 import platformer.database.DBSettings;
 import platformer.database.Settings;
@@ -36,7 +36,7 @@ public class Database {
         return storage.loadData(launcherPrompt.getName());
     }
 
-    public List<BoardDatum> loadLeaderboardData() {
+    public List<BoardItem> loadLeaderboardData() {
         return storage.loadLeaderboardData();
     }
 
