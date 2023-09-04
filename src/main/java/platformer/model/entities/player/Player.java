@@ -4,7 +4,6 @@ import platformer.animation.Anim;
 import platformer.animation.Animation;
 import platformer.audio.Audio;
 import platformer.audio.Sound;
-import platformer.core.Game;
 import platformer.debug.logger.Message;
 import platformer.debug.logger.Logger;
 import platformer.model.entities.*;
@@ -27,7 +26,6 @@ import static platformer.constants.FilePaths.PLAYER_TRANSFORM_SHEET;
 @SuppressWarnings("FieldCanBeLocal")
 public class Player extends Entity {
 
-    private final Game game;
     private final EnemyManager enemyManager;
     private final ObjectManager objectManager;
     private int[][] levelData;
@@ -46,6 +44,7 @@ public class Player extends Entity {
     private boolean left, right, jump, moving, attacking, dash, dashHit, hit, block, transform, fireball;
     private int spellState = 0;
     private boolean doubleJump, onWall, onObject, wallPush, canDash = true, canBlock, canTransform;
+    private boolean dying, gameOver;
     // Status
     private int currentJumps = 0;
     private int dashTick = 0;
@@ -55,9 +54,8 @@ public class Player extends Entity {
     // Effect
     private final PlayerEffectController effectController;
 
-    public Player(int xPos, int yPos, int width, int height, EnemyManager enemyManager, ObjectManager objectManager, Game game) {
+    public Player(int xPos, int yPos, int width, int height, EnemyManager enemyManager, ObjectManager objectManager) {
         super(xPos, yPos, width, height, PLAYER_MAX_HP);
-        this.game = game;
         this.enemyManager = enemyManager;
         this.objectManager = objectManager;
         loadAnimations();
@@ -362,11 +360,11 @@ public class Player extends Entity {
         if (entityState != Anim.DEATH) {
             entityState = Anim.DEATH;
             animIndex = animTick = 0;
-            game.setDying();
+            dying = true;
             Logger.getInstance().notify("Player is dead.", Message.NOTIFICATION);
         }
         else if (animIndex == animations[entityState.ordinal()].length-1 && animTick >= animSpeed-1) {
-            game.setGameOver();
+            gameOver = true;
             Audio.getInstance().getAudioPlayer().stopSong();
             Audio.getInstance().getAudioPlayer().playSound(Sound.GAME_OVER);
         }
@@ -467,6 +465,7 @@ public class Player extends Entity {
     }
 
     private void resetFlags() {
+        dying = gameOver = false;
         moving = attacking = inAir = hit = block = false;
         left = right = jump = false;
     }
@@ -590,6 +589,14 @@ public class Player extends Entity {
 
     public boolean isOnObject() {
         return onObject;
+    }
+
+    public boolean isDying() {
+        return dying;
+    }
+
+    public boolean isGameOver() {
+        return gameOver;
     }
 
     public int getSpellState() {

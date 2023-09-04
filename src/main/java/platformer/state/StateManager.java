@@ -34,6 +34,7 @@ public class StateManager {
 
     public void setPlayingState() {
         this.currentState = gameState;
+        this.gameState.reloadSave();
     }
 
     public void setOptionsState() {

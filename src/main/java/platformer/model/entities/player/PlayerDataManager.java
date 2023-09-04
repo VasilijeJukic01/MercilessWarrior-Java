@@ -8,7 +8,6 @@ import static platformer.constants.Constants.*;
 
 public class PlayerDataManager {
 
-    private final Account account;
     private final Player player;
     private final UserInterface userInterface;
 
@@ -18,24 +17,17 @@ public class PlayerDataManager {
     private int upgradeTokens = 0;
 
     public PlayerDataManager(Player player) {
-        this.account = Framework.getInstance().getAccount();
         this.player = player;
         this.userInterface = new UserInterface(player);
         loadPlayerData();
     }
 
     public void loadPlayerData() {
+        Account account = Framework.getInstance().getAccount();
         this.coins = account.getCoins();
         this.upgradeTokens = account.getTokens();
         this.level = account.getLevel();
         this.exp = account.getExp();
-    }
-
-    public void savePlayerData() {
-        account.setCoins(coins);
-        account.setTokens(upgradeTokens);
-        account.setLevel(level);
-        account.setExp(exp);
     }
 
     public void update() {
@@ -53,17 +45,21 @@ public class PlayerDataManager {
             exp = exp % (1000*level);
             level++;
             if (level % 2 == 0) changeUpgradeTokens(1);
+            Framework.getInstance().getAccount().setLevel(level);
         }
+        Framework.getInstance().getAccount().setExp(exp);
     }
 
     public void changeCoins(int value) {
         coins += value;
         coins = Math.max(coins, 0);
+        Framework.getInstance().getAccount().setCoins(coins);
     }
 
     public void changeUpgradeTokens(int value) {
         upgradeTokens += value;
         upgradeTokens = Math.max(upgradeTokens, 0);
+        Framework.getInstance().getAccount().setTokens(upgradeTokens);
     }
 
     public int getCoins() {

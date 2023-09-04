@@ -1,5 +1,6 @@
 package platformer.model.perks;
 
+import platformer.core.Framework;
 import platformer.model.entities.player.PlayerBonus;
 
 import java.util.ArrayList;
@@ -98,6 +99,7 @@ public class PerksManager {
             if (perk.getSlot() == slot && !perk.isLocked()) {
                 if (perk.isUpgraded()) return;
                 perk.setUpgraded(true);
+                Framework.getInstance().getAccount().setPerks(getUpgradedPerks());
                 unlockPerk(perk, unlocks, I, J, n, m);
                 break;
             }

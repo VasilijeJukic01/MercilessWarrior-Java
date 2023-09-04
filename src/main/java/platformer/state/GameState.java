@@ -80,18 +80,14 @@ public class GameState extends AbstractState implements State {
     }
 
     private void initPlayer() {
-        this.player = new Player(PLAYER_X, PLAYER_Y, PLAYER_WIDTH, PLAYER_HEIGHT, enemyManager, objectManager, game);
+        this.player = new Player(PLAYER_X, PLAYER_Y, PLAYER_WIDTH, PLAYER_HEIGHT, enemyManager, objectManager);
         this.player.loadLvlData(levelManager.getCurrentLevel().getLvlData());
         this.player.setSpawn(levelManager.getCurrentLevel().getPlayerSpawn());
     }
 
+    // Save
     private void loadFromDatabase() {
         this.perksManager.loadUnlockedPerks(Framework.getInstance().getAccount().getPerks());
-    }
-
-    public void saveToDatabase() {
-        Framework.getInstance().getAccount().setPerks(perksManager.getUpgradedPerks());
-        player.getPlayerDataManager().savePlayerData();
     }
 
     public void reloadSave() {
@@ -153,6 +149,7 @@ public class GameState extends AbstractState implements State {
     // Core
     @Override
     public void update() {
+        checkPlayerDeath();
         if (state == PlayingState.PAUSE)
             overlayManager.update(PlayingState.PAUSE);
         else if (state == PlayingState.SAVE)
@@ -189,6 +186,11 @@ public class GameState extends AbstractState implements State {
         int exitStatus = Utils.getInstance().isEntityOnExit(levelManager.getCurrentLevel(), player.getHitBox());
         if (exitStatus == 1) goToNextLevel();
         else if (exitStatus == -1) goToPrevLevel();
+    }
+
+    private void checkPlayerDeath() {
+        if (player.isDying()) setOverlay(PlayingState.DYING);
+        if (player.isGameOver()) setOverlay(PlayingState.GAME_OVER);
     }
 
     private void updateParticles() {

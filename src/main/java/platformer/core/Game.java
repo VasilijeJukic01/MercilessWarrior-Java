@@ -52,12 +52,6 @@ public class Game implements Runnable {
         stateManager.getCurrentState().render(g);
     }
 
-    public void cloudSave() {
-        if (stateManager.getCurrentState() instanceof GameState) {
-            ((GameState) stateManager.getCurrentState()).saveToDatabase();
-        }
-    }
-
     // Core
     @Override
     public void run() {
@@ -98,12 +92,6 @@ public class Game implements Runnable {
         }
     }
 
-    // Serializer
-    public void reloadSave() {
-        if (stateManager.getCurrentState() instanceof GameState)
-            ((GameState) stateManager.getCurrentState()).reloadSave();
-    }
-
     // Mediator
     public void keyPressed(KeyEvent e) {
         stateManager.getCurrentState().keyPressed(e);
@@ -131,16 +119,6 @@ public class Game implements Runnable {
 
     public void windowFocusLost(WindowEvent e) {
         stateManager.getCurrentState().windowFocusLost(e);
-    }
-
-    public void setGameOver() {
-        if (!(stateManager.getCurrentState() instanceof GameState)) return;
-            ((GameState) stateManager.getCurrentState()).setOverlay(PlayingState.GAME_OVER);
-    }
-
-    public void setDying() {
-        if (!(stateManager.getCurrentState() instanceof GameState)) return;
-            ((GameState) stateManager.getCurrentState()).setOverlay(PlayingState.DYING);
     }
 
     public void reset() {

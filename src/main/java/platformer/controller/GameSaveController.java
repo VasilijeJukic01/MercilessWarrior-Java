@@ -42,7 +42,6 @@ public class GameSaveController {
             if (s.isSelected()) {
                 getSlotAccountData(s);
                 game.startPlayingState();
-                game.reloadSave();
                 return;
             }
         }

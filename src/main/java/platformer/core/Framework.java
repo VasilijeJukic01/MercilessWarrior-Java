@@ -56,7 +56,6 @@ public class Framework {
 
     // Save
     public void cloudSave() {
-        game.cloudSave();
         database.updateData(account);
         initAccount();
     }
