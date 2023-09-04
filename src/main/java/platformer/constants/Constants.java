@@ -201,6 +201,13 @@ public class Constants {
     public static final int DOG_OFFSET_X = scale(18);
     public static final int DOG_OFFSET_Y = scale(12);
 
+    public static final int SAVE_TOTEM_WID = scale(50);
+    public static final int SAVE_TOTEM_HEI = scale(50);
+    public static final int SAVE_TOTEM_HB_WID = scale(32);
+    public static final int SAVE_TOTEM_HB_HEI = scale(32);
+    public static final int SAVE_TOTEM_OFFSET_X = scale(10);
+    public static final int SAVE_TOTEM_OFFSET_Y = scale(9);
+
     // Projectile Constants
     public static final int ARROW_WID = scale(32);
     public static final int ARROW_HEI = scale(4);

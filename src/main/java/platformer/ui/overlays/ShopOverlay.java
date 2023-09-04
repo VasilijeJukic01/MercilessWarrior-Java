@@ -5,7 +5,7 @@ import platformer.state.GameState;
 import platformer.ui.ShopItem;
 import platformer.ui.buttons.AbstractButton;
 import platformer.ui.buttons.ButtonType;
-import platformer.ui.buttons.ShopButton;
+import platformer.ui.buttons.MediumButton;
 import platformer.utils.Utils;
 
 import java.awt.*;
@@ -25,7 +25,7 @@ public class ShopOverlay implements Overlay {
 
     private BufferedImage overlay;
     private BufferedImage shopText;
-    private final ShopButton[] buttons;
+    private final MediumButton[] buttons;
 
     private BufferedImage slotImage;
     private Rectangle2D.Double selectedSlot;
@@ -36,7 +36,7 @@ public class ShopOverlay implements Overlay {
     public ShopOverlay(GameState gameState) {
         this.gameState = gameState;
         this.shops = gameState.getObjectManager().getObjects(Shop.class);
-        this.buttons = new ShopButton[2];
+        this.buttons = new MediumButton[2];
         initSelectedSlot();
         loadImages();
         loadButtons();
@@ -50,8 +50,8 @@ public class ShopOverlay implements Overlay {
     }
 
     private void loadButtons() {
-        buttons[0] = new ShopButton(BUY_BTN_X, BUY_BTN_Y, SMALL_BTN_WID, SMALL_BTN_HEI, ButtonType.BUY);
-        buttons[1] = new ShopButton(LEAVE_BTN_X, LEAVE_BTN_Y, SMALL_BTN_WID, SMALL_BTN_HEI, ButtonType.LEAVE);
+        buttons[0] = new MediumButton(BUY_BTN_X, BUY_BTN_Y, SMALL_BTN_WID, SMALL_BTN_HEI, ButtonType.BUY);
+        buttons[1] = new MediumButton(LEAVE_BTN_X, LEAVE_BTN_Y, SMALL_BTN_WID, SMALL_BTN_HEI, ButtonType.LEAVE);
     }
 
     private void initSelectedSlot() {
@@ -63,7 +63,7 @@ public class ShopOverlay implements Overlay {
     // Core
     @Override
     public void update() {
-        Arrays.stream(buttons).forEach(ShopButton::update);
+        Arrays.stream(buttons).forEach(MediumButton::update);
     }
 
     @Override
@@ -82,7 +82,7 @@ public class ShopOverlay implements Overlay {
     }
 
     private void renderButtons(Graphics g) {
-        Arrays.stream(buttons).forEach(shopButton -> shopButton.render(g));
+        Arrays.stream(buttons).forEach(mediumButton -> mediumButton.render(g));
     }
 
     private void renderItems(Graphics g) {
@@ -162,7 +162,7 @@ public class ShopOverlay implements Overlay {
 
     @Override
     public void mouseReleased(MouseEvent e) {
-        for (ShopButton button : buttons) {
+        for (MediumButton button : buttons) {
             if (isMouseInButton(e, button) && button.isMousePressed()) {
                 switch (button.getButtonType()) {
                     case BUY:
@@ -181,16 +181,16 @@ public class ShopOverlay implements Overlay {
 
     @Override
     public void mouseMoved(MouseEvent e) {
-        Arrays.stream(buttons).forEach(shopButton -> shopButton.setMouseOver(false));
+        Arrays.stream(buttons).forEach(mediumButton -> mediumButton.setMouseOver(false));
 
         Arrays.stream(buttons)
-                .filter(shopButton -> isMouseInButton(e, shopButton))
+                .filter(mediumButton -> isMouseInButton(e, mediumButton))
                 .findFirst()
-                .ifPresent(shopButton -> shopButton.setMouseOver(true));
+                .ifPresent(mediumButton -> mediumButton.setMouseOver(true));
     }
 
-    private boolean isMouseInButton(MouseEvent e, ShopButton shopButton) {
-        return shopButton.getButtonHitBox().contains(e.getX(), e.getY());
+    private boolean isMouseInButton(MouseEvent e, MediumButton mediumButton) {
+        return mediumButton.getButtonHitBox().contains(e.getX(), e.getY());
     }
 
     public void reset() {

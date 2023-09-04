@@ -63,6 +63,7 @@ public class DialogueOverlay implements Overlay {
     // Core
     @Override
     public void update() {
+        if (dialogues == null || dialogues.isEmpty()) return;
         animTick++;
         if (animTick >= animSpeed) {
             animTick = 0;
@@ -74,6 +75,7 @@ public class DialogueOverlay implements Overlay {
 
     @Override
     public void render(Graphics g) {
+        if (dialogues == null || dialogues.isEmpty()) return;
         Graphics2D g2d = (Graphics2D) g;
         g2d.setColor(new Color(0, 0, 0, 210));
         g2d.fill(dialogueBox);
@@ -128,6 +130,7 @@ public class DialogueOverlay implements Overlay {
 
     // Helper
     private int findRepetitionIndex() {
+        if (dialogues == null || dialogues.isEmpty()) return 0;
         if (firstTime.get(currentObject) != null && !firstTime.get(currentObject)) return 0;
         if (firstTime.get(currentObject) == null) return 0;
         for (int i = 0; i < dialogues.size(); i++) {
@@ -161,6 +164,7 @@ public class DialogueOverlay implements Overlay {
     }
 
     public boolean next() {
+        if (dialogues == null || dialogues.isEmpty()) return false;
         if (currentLetterIndex < dialogues.get(dialogueIndex).length()) {
             currentLetterIndex = dialogues.get(dialogueIndex).length();
             return true;

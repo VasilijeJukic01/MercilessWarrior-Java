@@ -78,8 +78,12 @@ public class Game implements Runnable {
         stateManager.getCurrentState().render(g);
     }
 
-    public void saveProgress() {
-        database.updateData(account);
+    public void cloudSave() {
+        if (stateManager.getCurrentState() instanceof GameState) {
+            ((GameState) stateManager.getCurrentState()).saveToDatabase();
+            database.updateData(account);
+            initAccount();
+        }
     }
 
     // Core
@@ -123,8 +127,8 @@ public class Game implements Runnable {
     }
 
     // Serializer
-    public void save() {
-        serializer.serialize(account);
+    public void localSave(int slot) {
+        serializer.serialize(account, slot);
     }
 
     public List<Account> getAllSaves() {

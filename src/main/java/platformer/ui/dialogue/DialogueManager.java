@@ -2,6 +2,7 @@ package platformer.ui.dialogue;
 
 import platformer.model.gameObjects.GameObject;
 import platformer.model.gameObjects.objects.Blacksmith;
+import platformer.model.gameObjects.objects.SaveTotem;
 import platformer.model.gameObjects.objects.Shop;
 import platformer.state.GameState;
 import platformer.state.PlayingState;
@@ -76,6 +77,7 @@ public class DialogueManager {
         switch (name) {
             case "Blacksmith": return (Class<T>) Blacksmith.class;
             case "Shop": return (Class<T>) Shop.class;
+            case "SaveTotem": return (Class<T>) SaveTotem.class;
             default: return null;
         }
     }
@@ -87,10 +89,12 @@ public class DialogueManager {
     public void updateDialogue() {
         if(!overlay.next()) {
 
-            if (gameState.getObjectManager().isBlacksmithVisible())
+            if (gameState.getObjectManager().getIntersectingObject() == Blacksmith.class)
                 gameState.setOverlay(PlayingState.BLACKSMITH);
-            else if (gameState.getObjectManager().isShopVisible())
+            else if (gameState.getObjectManager().getIntersectingObject() == Shop.class)
                 gameState.setOverlay(PlayingState.SHOP);
+            else if (gameState.getObjectManager().getIntersectingObject() == SaveTotem.class)
+                gameState.setOverlay(PlayingState.SAVE);
 
             overlay.reset();
 

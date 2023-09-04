@@ -20,17 +20,17 @@ public class PlayerDataManager {
         this.account = account;
         this.player = player;
         this.userInterface = new UserInterface(player);
-        loadData();
+        loadPlayerData();
     }
 
-    public void loadData() {
+    public void loadPlayerData() {
         this.coins = account.getCoins();
         this.upgradeTokens = account.getTokens();
         this.level = account.getLevel();
         this.exp = account.getExp();
     }
 
-    public void saveData() {
+    public void savePlayerData() {
         account.setCoins(coins);
         account.setTokens(upgradeTokens);
         account.setLevel(level);

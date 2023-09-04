@@ -21,7 +21,7 @@ public class UI {
     public static final int L_BUTTON_X = scale(790);
     public static final int L_BUTTON_Y = scale(10);
 
-    // Chose Game UI
+    // Load Game UI
     public static final int GAME_SLOT_WID = scale(180);
     public static final int GAME_SLOT_HEI = scale(40);
     public static final int GAME_SLOT_X = scale(330);
@@ -31,6 +31,10 @@ public class UI {
 
     public static final Color DATABASE_SLOT_COLOR = new Color(20, 70, 20, 220);
     public static final Color SAVE_SLOT_COLOR = new Color(20, 20, 20, 220);
+
+    // Save Game UI
+    public static final int SAVE_BTN_X = scale(375);
+    public static final int SAVE_BTN_Y = scale(345);
 
     // Controls UI
     public static final int KEY_SIZE = scale(20);

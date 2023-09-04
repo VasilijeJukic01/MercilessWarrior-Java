@@ -3,7 +3,7 @@ package platformer.ui.overlays;
 import platformer.model.perks.Perk;
 import platformer.state.GameState;
 import platformer.ui.buttons.ButtonType;
-import platformer.ui.buttons.ShopButton;
+import platformer.ui.buttons.MediumButton;
 import platformer.utils.Utils;
 
 import java.awt.*;
@@ -22,7 +22,7 @@ public class BlacksmithOverlay implements Overlay {
 
     private BufferedImage overlay;
     private BufferedImage shopText;
-    private final ShopButton[] buttons;
+    private final MediumButton[] buttons;
 
     private BufferedImage slotImage;
     private Rectangle2D.Double selectedSlot;
@@ -32,7 +32,7 @@ public class BlacksmithOverlay implements Overlay {
 
     public BlacksmithOverlay(GameState gameState) {
         this.gameState = gameState;
-        this.buttons = new ShopButton[2];
+        this.buttons = new MediumButton[2];
         init();
     }
 
@@ -53,8 +53,8 @@ public class BlacksmithOverlay implements Overlay {
     }
 
     private void loadButtons() {
-        buttons[0] = new ShopButton(BUY_PERK_BTN_X, BUY_PERK_BTN_Y, SMALL_BTN_WID, SMALL_BTN_HEI, ButtonType.BUY);
-        buttons[1] = new ShopButton(LEAVE_PERK_BTN_X, LEAVE_PERK_BTN_Y, SMALL_BTN_WID, SMALL_BTN_HEI, ButtonType.LEAVE);
+        buttons[0] = new MediumButton(BUY_PERK_BTN_X, BUY_PERK_BTN_Y, SMALL_BTN_WID, SMALL_BTN_HEI, ButtonType.BUY);
+        buttons[1] = new MediumButton(LEAVE_PERK_BTN_X, LEAVE_PERK_BTN_Y, SMALL_BTN_WID, SMALL_BTN_HEI, ButtonType.LEAVE);
     }
 
     private void initSelectedSlot() {
@@ -66,7 +66,7 @@ public class BlacksmithOverlay implements Overlay {
     // Core
     @Override
     public void update() {
-        Arrays.stream(buttons).forEach(ShopButton::update);
+        Arrays.stream(buttons).forEach(MediumButton::update);
     }
 
     @Override
@@ -87,7 +87,7 @@ public class BlacksmithOverlay implements Overlay {
     }
 
     private void renderButtons(Graphics g) {
-        Arrays.stream(buttons).forEach(shopButton -> shopButton.render(g));
+        Arrays.stream(buttons).forEach(mediumButton -> mediumButton.render(g));
     }
 
     private void renderSlots(Graphics g) {
@@ -209,7 +209,7 @@ public class BlacksmithOverlay implements Overlay {
 
     @Override
     public void mouseReleased(MouseEvent e) {
-        for (ShopButton button : buttons) {
+        for (MediumButton button : buttons) {
             if (isMouseInButton(e, button) && button.isMousePressed()) {
                 switch (button.getButtonType()) {
                     case BUY:
@@ -223,19 +223,19 @@ public class BlacksmithOverlay implements Overlay {
                 break;
             }
         }
-        for (ShopButton button : buttons) {
+        for (MediumButton button : buttons) {
             button.resetMouseSet();
         }
     }
 
     @Override
     public void mouseMoved(MouseEvent e) {
-        Arrays.stream(buttons).forEach(shopButton -> shopButton.setMouseOver(false));
+        Arrays.stream(buttons).forEach(mediumButton -> mediumButton.setMouseOver(false));
 
         Arrays.stream(buttons)
-                .filter(shopButton -> isMouseInButton(e, shopButton))
+                .filter(mediumButton -> isMouseInButton(e, mediumButton))
                 .findFirst()
-                .ifPresent(shopButton -> shopButton.setMouseOver(true));
+                .ifPresent(mediumButton -> mediumButton.setMouseOver(true));
     }
 
     @Override
@@ -243,7 +243,7 @@ public class BlacksmithOverlay implements Overlay {
 
     }
 
-    private boolean isMouseInButton(MouseEvent e, ShopButton shopButton) {
-        return shopButton.getButtonHitBox().contains(e.getX(), e.getY());
+    private boolean isMouseInButton(MouseEvent e, MediumButton mediumButton) {
+        return mediumButton.getButtonHitBox().contains(e.getX(), e.getY());
     }
 }

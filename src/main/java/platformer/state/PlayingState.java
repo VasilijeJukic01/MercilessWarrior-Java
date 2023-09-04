@@ -6,5 +6,6 @@ public enum PlayingState {
     SHOP,
     BLACKSMITH,
     DIALOGUE,
-    DYING
+    DYING,
+    SAVE
 }

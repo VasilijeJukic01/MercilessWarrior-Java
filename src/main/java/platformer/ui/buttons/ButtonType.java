@@ -12,5 +12,6 @@ public enum ButtonType {
     SFX,        // 8
     BUY,        // 9
     LEAVE,      // 10
-    L_BOARD     // 11
+    L_BOARD,    // 11
+    SAVE        // 12
 }

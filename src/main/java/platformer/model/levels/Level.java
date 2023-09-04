@@ -113,6 +113,8 @@ public class Level {
                 addGameObject(new Blacksmith(ObjType.values()[valueB], i*TILES_SIZE, j*TILES_SIZE)); break;
             case DOG:
                 addGameObject(new Dog(ObjType.values()[valueB], i*TILES_SIZE, j*TILES_SIZE)); break;
+            case SAVE_TOTEM:
+                addGameObject(new SaveTotem(ObjType.values()[valueB], i*TILES_SIZE, j*TILES_SIZE)); break;
             default: break;
         }
     }

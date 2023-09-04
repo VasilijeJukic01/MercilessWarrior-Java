@@ -39,24 +39,31 @@ public class IntersectionHandler {
             }
             else if (object instanceof Shop) {
                 ((Shop) object).setActive(intersect);
-                objectManager.setShopVisible(intersect);
             }
             else if (object instanceof Blacksmith) {
                 ((Blacksmith) object).setActive(intersect);
-                objectManager.setBlacksmithVisible(intersect);
+            }
+            else if (object instanceof SaveTotem) {
+                ((SaveTotem) object).setActive(intersect);
             }
         }
         return check;
     }
 
     public void checkPlayerIntersection(Player player) {
-        checkPlayerIntersection(player, Spike.class);
-        checkPlayerIntersection(player, Blocker.class);
-        if (checkPlayerIntersection(player, Shop.class))
+        if (checkPlayerIntersection(player, Shop.class)) {
             intersectingObject = Shop.class;
-        else if (checkPlayerIntersection(player, Blacksmith.class))
+            return;
+        }
+        if (checkPlayerIntersection(player, Blacksmith.class)) {
             intersectingObject = Blacksmith.class;
-        else intersectingObject = null;
+            return;
+        }
+        if (checkPlayerIntersection(player, SaveTotem.class)) {
+            intersectingObject = SaveTotem.class;
+            return;
+        }
+        intersectingObject = null;
     }
 
     public void checkEnemyIntersection(List<Projectile> projectiles) {

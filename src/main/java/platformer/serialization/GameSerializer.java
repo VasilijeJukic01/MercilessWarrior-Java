@@ -3,6 +3,8 @@ package platformer.serialization;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import platformer.core.Account;
+import platformer.debug.logger.Logger;
+import platformer.debug.logger.Message;
 
 import java.io.File;
 import java.io.FileReader;
@@ -19,9 +21,10 @@ public class GameSerializer implements Serializer<Account, List<Account>> {
     private final List<String> saves = List.of("save1", "save2", "save3");
 
     @Override
-    public void serialize(Account account) {
-        try (FileWriter writer = new FileWriter(SAVE_PATH + "save1")) {
+    public void serialize(Account account, int index) {
+        try (FileWriter writer = new FileWriter(SAVE_PATH + "save"+index)) {
             gson.toJson(account, writer);
+            Logger.getInstance().notify("Game saved to slot "+index+".", Message.NOTIFICATION);
         }
         catch (IOException e) {
             e.printStackTrace();

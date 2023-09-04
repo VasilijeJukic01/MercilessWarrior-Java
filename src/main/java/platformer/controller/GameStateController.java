@@ -50,7 +50,7 @@ public class GameStateController {
 
     // Keyboard
     public void keyPressed(KeyEvent e, PlayingState state) {
-        if (isShopState(state) && e.getKeyCode() != KeyEvent.VK_ESCAPE) return;
+        if (isBreakableState(state) && e.getKeyCode() != KeyEvent.VK_ESCAPE) return;
         if (state == PlayingState.GAME_OVER && e.getKeyCode() != KeyEvent.VK_ESCAPE) return;
 
         if (state == PlayingState.GAME_OVER && e.getKeyCode() == KeyEvent.VK_ESCAPE) {
@@ -92,7 +92,7 @@ public class GameStateController {
                 player.setBlock(true);
                 break;
             case KeyEvent.VK_ESCAPE:
-                if (isShopState(state)) gameState.setOverlay(null);
+                if (isBreakableState(state)) gameState.setOverlay(null);
                 else gameState.setOverlay(pause(state));
                 break;
             default: break;
@@ -134,9 +134,6 @@ public class GameStateController {
             case KeyEvent.VK_F:
                 interact();
                 break;
-            case KeyEvent.VK_F6:
-                saveToDatabase();
-                break;
             case KeyEvent.VK_F1:
                 showHitBox();
                 break;
@@ -166,12 +163,6 @@ public class GameStateController {
         gameState.getDialogueManager().setDialogueObject(dialogues, objectClass);
     }
 
-    private void saveToDatabase() {
-        player.getPlayerStatusManager().saveData();
-        gameState.saveToDatabase();
-        game.saveProgress();
-    }
-
     private void showHitBox() {
         if (!game.getAccount().isEnableCheats()) return;
         DebugSettings.getInstance().setDebugMode(!DebugSettings.getInstance().isDebugMode());
@@ -198,8 +189,8 @@ public class GameStateController {
     }
 
     // Helper
-    private boolean isShopState(PlayingState state) {
-        return state == PlayingState.SHOP || state == PlayingState.BLACKSMITH;
+    private boolean isBreakableState(PlayingState state) {
+        return state == PlayingState.SHOP || state == PlayingState.BLACKSMITH || state == PlayingState.DIALOGUE || state == PlayingState.SAVE;
     }
 
     private PlayingState pause(PlayingState state) {

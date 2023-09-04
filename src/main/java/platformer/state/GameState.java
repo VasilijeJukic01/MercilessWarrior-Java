@@ -90,13 +90,14 @@ public class GameState extends AbstractState implements State {
 
     public void saveToDatabase() {
         game.getAccount().setPerks(perksManager.getUpgradedPerks());
+        player.getPlayerDataManager().savePlayerData();
     }
 
     public void reloadSave() {
         PlayerBonus.getInstance().reset();
         this.perksManager = new PerksManager();
         this.perksManager.loadUnlockedPerks(game.getAccount().getPerks());
-        this.player.getPlayerDataManager().loadData();
+        this.player.getPlayerDataManager().loadPlayerData();
     }
 
     private void calculateLevelOffset() {
@@ -153,6 +154,8 @@ public class GameState extends AbstractState implements State {
     public void update() {
         if (state == PlayingState.PAUSE)
             overlayManager.update(PlayingState.PAUSE);
+        else if (state == PlayingState.SAVE)
+            overlayManager.update(PlayingState.SAVE);
         else if (state == PlayingState.GAME_OVER)
             overlayManager.update(PlayingState.GAME_OVER);
         else if (state == PlayingState.DYING)

@@ -9,4 +9,6 @@ Object Shop:
 ~Welcome, adventurer! Looking to buy some gear to enhance your journey?
 ~Take a look at my wares.;
 Object Dog:
-~Wuf!
+~Wuf!;
+Object SaveTotem:
+~Press X to save game or ESC to close.

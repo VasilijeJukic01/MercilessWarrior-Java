@@ -8,15 +8,14 @@ import java.awt.image.BufferedImage;
 import static platformer.constants.AnimConstants.*;
 import static platformer.constants.Constants.SMALL_BTN_HEI;
 import static platformer.constants.Constants.SMALL_BTN_WID;
-import static platformer.constants.FilePaths.BTN_BUY_SHEET;
-import static platformer.constants.FilePaths.BTN_LEAVE_SHEET;
+import static platformer.constants.FilePaths.*;
 
-public class ShopButton extends AbstractButton implements GameButton {
+public class MediumButton extends AbstractButton implements GameButton {
 
     private BufferedImage[] images;
     private int imageIndex;
 
-    public ShopButton(int xPos, int yPos, int width, int height, ButtonType buttonType) {
+    public MediumButton(int xPos, int yPos, int width, int height, ButtonType buttonType) {
         super(xPos, yPos, width, height);
         super.buttonType = buttonType;
         loadButtons();
@@ -31,6 +30,8 @@ public class ShopButton extends AbstractButton implements GameButton {
             case LEAVE:
                 images = Animation.getInstance().loadFromSprite(BTN_LEAVE_SHEET, 3, 0, SMALL_BTN_WID, SMALL_BTN_HEI, 0, BTN_W, BTN_H);
                 break;
+            case SAVE:
+                images = Animation.getInstance().loadFromSprite(BTN_SAVE_SHEET, 3, 0, SMALL_BTN_WID, SMALL_BTN_HEI, 0, BTN_W, BTN_H);
             default: break;
         }
     }

@@ -35,21 +35,20 @@ public class ObjectManager {
     private final BufferedImage[][] objects;
     Class<? extends GameObject>[] classes = new Class[]{
             Coin.class,
-            platformer.model.gameObjects.objects.Container.class,
+            Container.class,
             Potion.class,
             Spike.class,
             Shop.class,
             Blocker.class,
             Blacksmith.class,
-            Dog.class
+            Dog.class,
+            SaveTotem.class
     };
     private Map<ObjType, List<GameObject>> objectsMap = new HashMap<>();
 
     private BufferedImage projectileArrow;
     private BufferedImage[] fireball, projectileLightningBall, projectileLightningBall2;
     private final List<Projectile> projectiles;
-
-    private boolean shopVisible, blacksmithVisible;
 
     public ObjectManager(GameState gameState) {
         this.gameState = gameState;
@@ -304,22 +303,6 @@ public class ObjectManager {
         if (objectsOfType != null) {
             objectsOfType.remove(gameObject);
         }
-    }
-
-    public boolean isShopVisible() {
-        return shopVisible;
-    }
-
-    public boolean isBlacksmithVisible() {
-        return blacksmithVisible;
-    }
-
-    public void setShopVisible(boolean shopVisible) {
-        this.shopVisible = shopVisible;
-    }
-
-    public void setBlacksmithVisible(boolean blacksmithVisible) {
-        this.blacksmithVisible = blacksmithVisible;
     }
 
     public Class<? extends GameObject> getIntersectingObject() {
