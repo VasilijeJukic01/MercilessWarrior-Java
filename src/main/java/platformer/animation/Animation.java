@@ -1,10 +1,8 @@
 package platformer.animation;
 
-import platformer.model.entities.effects.Particle;
 import platformer.model.gameObjects.ObjType;
 import platformer.utils.Utils;
 import java.awt.image.BufferedImage;
-import java.util.Random;
 
 import static platformer.constants.AnimConstants.*;
 import static platformer.constants.Constants.*;
@@ -110,20 +108,6 @@ public class Animation {
         anim[Anim.SPELL_4.ordinal()] = loadFromSprite(SW_SHEET,     2, 15, w, h, 1, SW_W, SW_H);
 
         return anim;
-    }
-
-    // Effects
-    public Particle[] loadParticles() {
-        Particle[] particles = new Particle[PARTICLES_CAP];
-        Random rand = new Random();
-        for (int i = 0; i < particles.length; i++) {
-            int size = (int)((rand.nextInt(15-5) + 5) * SCALE);
-            int xPos = rand.nextInt(GAME_WIDTH-10) + 10;
-            int yPos = rand.nextInt(GAME_HEIGHT-10) + 10;
-            BufferedImage[] images = loadFromSprite(PARTICLE_SHEET, 8, 0, size, size, 0, PARTICLE_W, PARTICLE_H);
-            particles[i] = new Particle(images, xPos, yPos);
-        }
-        return particles;
     }
 
     // Objects

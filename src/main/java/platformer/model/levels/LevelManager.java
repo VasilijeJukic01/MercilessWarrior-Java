@@ -3,18 +3,23 @@ package platformer.model.levels;
 import platformer.animation.Animation;
 import platformer.debug.logger.Message;
 import platformer.debug.logger.Logger;
+import platformer.model.entities.effects.ParticleFactory;
 import platformer.model.entities.effects.Particle;
+import platformer.model.entities.effects.ParticleType;
 import platformer.state.GameState;
 import platformer.utils.Utils;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 
 import static platformer.constants.AnimConstants.*;
 import static platformer.constants.Constants.*;
 import static platformer.constants.FilePaths.FOREST_SPRITE;
+import static platformer.constants.FilePaths.PARTICLE_SHEET;
 
 public class LevelManager {
 
@@ -26,10 +31,12 @@ public class LevelManager {
     private int levelIndex = 0;
 
     private final Particle[] particles;
+    private final ParticleFactory particleFactory;
 
     public LevelManager(GameState gameState) {
         this.gameState = gameState;
-        this.particles = Animation.getInstance().loadParticles();
+        this.particleFactory = new ParticleFactory();
+        this.particles = loadParticles();
         this.levelObjectManager = new LevelObjectManager();
         loadFirstLayerSprite();
         buildLevels();
@@ -68,6 +75,21 @@ public class LevelManager {
             }
         }
         return levels;
+    }
+
+    private Particle[] loadParticles() {
+        Particle[] particles = new Particle[PARTICLES_CAP];
+        Random rand = new Random();
+        for (int i = 0; i < particles.length; i++) {
+            int xPos = rand.nextInt(GAME_WIDTH-10) + 10;
+            int yPos = rand.nextInt(GAME_HEIGHT-10) + 10;
+            int size = (int)((rand.nextInt(15-5) + 5) * SCALE);
+            String key = "DefaultParticle";
+            BufferedImage[] images = Animation.getInstance().loadFromSprite(PARTICLE_SHEET, 8, 0, size, size, 0, PARTICLE_W, PARTICLE_H);
+            ParticleType particleType = particleFactory.getParticleImage(key, images);
+            particles[i] = new Particle(particleType, size, xPos, yPos);
+        }
+        return particles;
     }
 
     // Level flow
@@ -129,9 +151,7 @@ public class LevelManager {
     }
 
     private void renderParticles(Graphics g) {
-        for (Particle particle : particles) {
-            particle.render(g);
-        }
+        Arrays.stream(particles).forEach(p -> p.render(g));
     }
 
     public void render(Graphics g, int xLevelOffset, int yLevelOffset) {
@@ -153,4 +173,5 @@ public class LevelManager {
     public Particle[] getParticles() {
         return particles;
     }
+
 }
