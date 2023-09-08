@@ -1,16 +1,13 @@
 package platformer.model.entities.effects;
 
 import java.awt.*;
-import java.awt.image.BufferedImage;
 import java.util.Random;
 
 import static platformer.constants.AnimConstants.DEFAULT_PARTICLE_FRAMES;
 import static platformer.constants.Constants.PARTICLE_SHIFT;
 
-@SuppressWarnings("FieldCanBeLocal")
 public class Particle {
 
-    private final BufferedImage[] animations;
     private final Random rand = new Random();
     private final int size;
     private double xPos, yPos;
@@ -18,9 +15,11 @@ public class Particle {
     private int animTick = 0, animIndex = 0;
     boolean xDir = rand.nextBoolean(), yDir = rand.nextBoolean();
 
-    public Particle(BufferedImage[] animations, int xPos, int yPos) {
-        this.animations = animations;
-        this.size = animations[0].getWidth();
+    private final ParticleType particleType;
+
+    public Particle(ParticleType particleType, int size, int xPos, int yPos) {
+        this.particleType = particleType;
+        this.size = size;
         this.xPos = xPos;
         this.yPos = yPos;
     }
@@ -44,10 +43,7 @@ public class Particle {
     }
 
     public void render(Graphics g) {
-        try {
-            g.drawImage(animations[animIndex], (int)xPos, (int)yPos, size, size, null);
-        }
-        catch (Exception ignored){}
+        particleType.render(g, animIndex, (int)xPos, (int)yPos, size);
     }
 
 }
