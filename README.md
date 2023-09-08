@@ -31,7 +31,8 @@ The integration of OpenAL library provides immersive sound effects, enhancing th
 - Challenging boss fight for added excitement.
 - Destructible objects that yield various items.
 - Immersive sound effects powered by OpenAL.
-- MySQL integration for tracking scores, progress, and player profiles.
+- Save and load game mechanism, both locally on the computer and in a database.
+- Leaderboard system
 
 ## Patterns used
 - Singleton (Thread safe)
@@ -40,6 +41,7 @@ The integration of OpenAL library provides immersive sound effects, enhancing th
 - Bridge
 - Facade
 - Strategy
+- Flyweight
 
 ## Gameplay
 
@@ -51,8 +53,8 @@ Navigate through various levels, engaging in combat with enemies using a variety
 2. Ensure you have Java Development Kit (JDK 10.0.2) installed.
 3. Install the required dependencies (see [Dependencies](#dependencies)).
 4. Set up the MySQL database using the provided configuration file (contact me for database credentials).
-5. Compile the game using your preferred Java IDE or command line.
-6. Run the compiled game executable.
+5. Add `lib` folder, which contains DLL files, to dependencies.
+6. Compile and run the game using your preferred Java IDE.
 
 ## Controls
 
@@ -72,6 +74,7 @@ Navigate through various levels, engaging in combat with enemies using a variety
 - Java Swing
 - OpenAL library for Java
 - MySQL Connector
+- GSON
 
 ## Contributing
 
