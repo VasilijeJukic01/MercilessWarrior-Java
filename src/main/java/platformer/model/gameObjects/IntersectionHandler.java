@@ -63,6 +63,14 @@ public class IntersectionHandler {
             intersectingObject = SaveTotem.class;
             return;
         }
+        if (checkPlayerIntersection(player, Spike.class)) {
+            intersectingObject = SaveTotem.class;
+            return;
+        }
+        if (checkPlayerIntersection(player, Blocker.class)) {
+            intersectingObject = SaveTotem.class;
+            return;
+        }
         intersectingObject = null;
     }
 

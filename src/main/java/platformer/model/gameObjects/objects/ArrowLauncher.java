@@ -33,7 +33,7 @@ public class ArrowLauncher extends GameObject {
         if (objType == ObjType.ARROW_TRAP_RIGHT) {
             fS = -1;
             fC = ARROW_TRAP_WID;
-            sideOffset = -32;
+            sideOffset = 34;
         }
         int x = (int)hitBox.x - xOffset - xLevelOffset + fC - (int)(sideOffset * SCALE);
         int y = (int)hitBox.y - yOffset - yLevelOffset + (int)(1*SCALE);

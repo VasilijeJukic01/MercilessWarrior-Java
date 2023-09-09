@@ -108,16 +108,26 @@ public class GameState extends AbstractState implements State {
     }
 
     // Level Flow
-    public void goToNextLevel() {
-        levelManager.loadNextLevel();
+    private void goToLevel(int I, int J, String message) {
+        levelManager.loadNextLevel(I, J);
         levelLoadReset();
-        Logger.getInstance().notify("Next level loaded.", Message.NOTIFICATION);
+        Logger.getInstance().notify(message, Message.NOTIFICATION);
     }
 
-    public void goToPrevLevel() {
-        levelManager.loadPrevLevel();
-        levelLoadReset();
-        Logger.getInstance().notify("Previous level loaded.", Message.NOTIFICATION);
+    public void goToRightLevel() {
+        goToLevel(0, 1, "Right level loaded.");
+    }
+
+    public void goToLeftLevel() {
+        goToLevel(0, -1, "Left level loaded.");
+    }
+
+    public void goToUpperLevel() {
+        goToLevel(-1, 0, "Upper level loaded.");
+    }
+
+    public void goToBottomLevel() {
+        goToLevel(1, 0, "Bottom level loaded.");
     }
 
     private void levelLoadReset() {
@@ -184,8 +194,11 @@ public class GameState extends AbstractState implements State {
 
     private void checkLevelExit() {
         int exitStatus = Utils.getInstance().isEntityOnExit(levelManager.getCurrentLevel(), player.getHitBox());
-        if (exitStatus == 1) goToNextLevel();
-        else if (exitStatus == -1) goToPrevLevel();
+
+        if (exitStatus == RIGHT_EXIT) goToRightLevel();
+        else if (exitStatus == LEFT_EXIT) goToLeftLevel();
+        else if (exitStatus == UPPER_EXIT) goToUpperLevel();
+        else if (exitStatus == BOTTOM_EXIT) goToBottomLevel();
     }
 
     private void checkPlayerDeath() {
