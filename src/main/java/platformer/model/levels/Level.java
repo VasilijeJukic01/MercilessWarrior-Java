@@ -1,9 +1,6 @@
 package platformer.model.levels;
 
-import platformer.model.entities.enemies.Enemy;
-import platformer.model.entities.enemies.EnemyType;
-import platformer.model.entities.enemies.Ghoul;
-import platformer.model.entities.enemies.Skeleton;
+import platformer.model.entities.enemies.*;
 import platformer.model.entities.enemies.boss.SpearWoman;
 import platformer.model.gameObjects.*;
 import platformer.model.gameObjects.objects.*;
@@ -83,6 +80,11 @@ public class Level {
                 break;
             case SPEAR_WOMAN:
                 addEnemy(new SpearWoman(i*TILES_SIZE, (j-1)*TILES_SIZE));
+            case KNIGHT:
+                addEnemy(new Knight(i*TILES_SIZE, (j-1)*TILES_SIZE));
+                break;
+            case WRAITH:
+                addEnemy(new Wraith(i*TILES_SIZE, (j-1)*TILES_SIZE));
                 break;
             default: break;
         }

@@ -13,6 +13,8 @@ public class FilePaths {
     // Enemy
     public static final String SKELETON_SHEET = "/images/enemies/SkeletonSprite.png";
     public static final String GHOUL_SHEET = "/images/enemies/GhoulSprite.png";
+    public static final String KNIGHT_SHEET = "/images/enemies/KnightSprite.png";
+    public static final String WRAITH_SHEET = "/images/enemies/WraithSprite.png";
     public static final String SW_SHEET = "/images/enemies/Bosses/SpearWoman.png";
 
     // Objects

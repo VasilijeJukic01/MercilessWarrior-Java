@@ -114,6 +114,24 @@ public class Constants {
     public static final int GHOUL_AB_WID = scale(60);
     public static final int GHOUL_AB_HEI = scale(45);
 
+    public static final int KNIGHT_WIDTH = scale(120);
+    public static final int KNIGHT_HEIGHT = scale(80);
+    public static final int KNIGHT_X_OFFSET = scale(50);
+    public static final int KNIGHT_Y_OFFSET = scale(18);
+    public static final int KNIGHT_HB_WID = scale(21);
+    public static final int KNIGHT_HB_HEI = scale(42);
+    public static final int KNIGHT_AB_WID = scale(60);
+    public static final int KNIGHT_AB_HEI = scale(45);
+
+    public static final int WRAITH_WIDTH = scale(200);
+    public static final int WRAITH_HEIGHT = scale(130);
+    public static final int WRAITH_X_OFFSET = scale(90);
+    public static final int WRAITH_Y_OFFSET = scale(45);
+    public static final int WRAITH_HB_WID = scale(21);
+    public static final int WRAITH_HB_HEI = scale(42);
+    public static final int WRAITH_AB_WID = scale(100);
+    public static final int WRAITH_AB_HEI = scale(45);
+
     public static final int SW_WIDTH = scale(153);
     public static final int SW_HEIGHT = scale(138);
     public static final int SW_X_OFFSET = scale(54);
@@ -126,11 +144,15 @@ public class Constants {
 
     public static final double SKELETON_SPEED_FAST = dScale(0.35);
     public static final double GHOUL_SPEED_FAST = dScale(0.45);
+    public static final double KNIGHT_SPEED_FAST = dScale(0.30);
+    public static final double WRAITH_SPEED_FAST = dScale(0.5);
 
     private static final double RANGE = 1.25 * TILES_SIZE;
     public static final double SIGHT_RANGE = RANGE * 5;
     public static final double SKELETON_ATT_RANGE = RANGE / 1.25;
     public static final double GHOUL_ATT_RANGE = RANGE * 2;
+    public static final double KNIGHT_ATT_RANGE = RANGE;
+    public static final double WRAITH_ATT_RANGE = RANGE;
     public static final double SW_ATT_RANGE = RANGE * 1.8;
     public static final double ENEMY_SPEED_SLOW = dScale(0.2);
 

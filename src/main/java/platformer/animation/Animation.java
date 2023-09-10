@@ -90,6 +90,34 @@ public class Animation {
         return anim;
     }
 
+    public BufferedImage[][] loadKnightAnimation(int w, int h) {
+        BufferedImage[][] anim = new BufferedImage[13][13];
+
+        anim[Anim.IDLE.ordinal()] = loadFromSprite(KNIGHT_SHEET,     8, 0, w, h, 0, KNIGHT_W, KNIGHT_H);
+        anim[Anim.RUN.ordinal()] = loadFromSprite(KNIGHT_SHEET,      8, 2, w, h, 0, KNIGHT_W, KNIGHT_H);
+        anim[Anim.ATTACK_1.ordinal()] = loadFromSprite(KNIGHT_SHEET, 8, 3, w, h, 0, KNIGHT_W, KNIGHT_H);
+        anim[Anim.ATTACK_2.ordinal()] = loadFromSprite(KNIGHT_SHEET, 8, 4, w, h, 0, KNIGHT_W, KNIGHT_H);
+        anim[Anim.HIT.ordinal()] = loadFromSprite(KNIGHT_SHEET,      5, 5, w, h, 0, KNIGHT_W, KNIGHT_H);
+        anim[Anim.DEATH.ordinal()] = loadFromSprite(KNIGHT_SHEET,    12,6, w, h, 0, KNIGHT_W, KNIGHT_H);
+        anim[Anim.WALK.ordinal()] = loadFromSprite(KNIGHT_SHEET,     8, 1, w, h, 0, KNIGHT_W, KNIGHT_H);
+
+        return anim;
+    }
+
+    public BufferedImage[][] loadWraithAnimation(int w, int h) {
+        BufferedImage[][] anim = new BufferedImage[13][17];
+
+        anim[Anim.IDLE.ordinal()] = loadFromSprite(WRAITH_SHEET,     10, 0, w, h, 0, WRAITH_W, WRAITH_H);
+        anim[Anim.RUN.ordinal()] = loadFromSprite(WRAITH_SHEET,      8,  1, w, h, 0, WRAITH_W, WRAITH_H);
+        anim[Anim.ATTACK_1.ordinal()] = loadFromSprite(WRAITH_SHEET, 10, 2, w, h, 0, WRAITH_W, WRAITH_H);
+        anim[Anim.ATTACK_2.ordinal()] = loadFromSprite(WRAITH_SHEET, 10, 3, w, h, 0, WRAITH_W, WRAITH_H);
+        anim[Anim.HIT.ordinal()] = loadFromSprite(WRAITH_SHEET,      5,  4, w, h, 0, WRAITH_W, WRAITH_H);
+        anim[Anim.DEATH.ordinal()] = loadFromSprite(WRAITH_SHEET,    16, 5, w, h, 0, WRAITH_W, WRAITH_H);
+        anim[Anim.WALK.ordinal()] =  anim[Anim.IDLE.ordinal()];
+
+        return anim;
+    }
+
     // Boss
     public BufferedImage[][] loadSpearWomanAnimations(int w, int h) {
         BufferedImage[][] anim = new BufferedImage[20][25];

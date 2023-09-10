@@ -5,7 +5,9 @@ public enum EnemyType {
     SKELETON(25, 15),       // 0
     GHOUL(40, 20),          // 1
     SPEAR_WOMAN(120, 25),   // 2
-    MAX(1, 1);              // 3
+    KNIGHT(50, 30),         // 3
+    WRAITH(50, 40),         // 4
+    MAX(1, 1);              // 5
 
     private final int health;
     private final int damage;

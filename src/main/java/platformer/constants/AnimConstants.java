@@ -6,6 +6,8 @@ public class AnimConstants {
     public static final int PLAYER_W = 144, PLAYER_H = 80;
     public static final int SKELETON_W = 220, SKELETON_H = 160;
     public static final int GHOUL_W = 220, GHOUL_H = 160;
+    public static final int KNIGHT_W = 220, KNIGHT_H = 160;
+    public static final int WRAITH_W = 800, WRAITH_H = 800;
     public static final int SW_W = 128, SW_H = 115;
 
     public static final int POTION_W = 12, POTION_H = 16;
