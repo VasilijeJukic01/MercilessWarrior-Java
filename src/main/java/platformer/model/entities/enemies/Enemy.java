@@ -32,6 +32,8 @@ public abstract class Enemy extends Entity implements Debug {
         this.currentHealth = maxHealth;
     }
 
+    public abstract void update(BufferedImage[][] animations, int[][] levelData, Player player);
+
     protected void updateAnimation(BufferedImage[][] animations) {
         animTick++;
         if (animTick >= animSpeed) {
@@ -77,12 +79,16 @@ public abstract class Enemy extends Entity implements Debug {
 
     protected void directToPlayer(Player player) {
         entityState = Anim.RUN;
+        configureEnemySpeed();
+        if (player.getHitBox().x > hitBox.x) setDirection(Direction.RIGHT);
+        else setDirection(Direction.LEFT);
+    }
+
+    private void configureEnemySpeed() {
         if (enemyType == EnemyType.GHOUL) enemySpeed = GHOUL_SPEED_FAST;
         else if (enemyType == EnemyType.SKELETON) enemySpeed = SKELETON_SPEED_FAST;
         else if (enemyType == EnemyType.KNIGHT) enemySpeed = KNIGHT_SPEED_FAST;
         else if (enemyType == EnemyType.WRAITH) enemySpeed = WRAITH_SPEED_FAST;
-        if (player.getHitBox().x > hitBox.x) setDirection(Direction.RIGHT);
-        else setDirection(Direction.LEFT);
     }
 
     protected boolean isPlayerCloseForAttack(Player player) {

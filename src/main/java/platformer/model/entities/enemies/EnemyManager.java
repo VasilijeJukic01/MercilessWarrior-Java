@@ -46,17 +46,20 @@ public class EnemyManager {
 
     // Init
     private void init() {
-        this.skeletonAnimations = Animation.getInstance().loadSkeletonAnimations(SKELETON_WIDTH, SKELETON_HEIGHT);
-        this.ghoulAnimations = Animation.getInstance().loadGhoulAnimation(GHOUL_WIDTH, GHOUL_HEIGHT);
-        this.knightAnimations = Animation.getInstance().loadKnightAnimation(KNIGHT_WIDTH, KNIGHT_HEIGHT);
-        this.spearWomanAnimations = Animation.getInstance().loadSpearWomanAnimations(SW_WIDTH, SW_HEIGHT);
-        this.wraithAnimations = Animation.getInstance().loadWraithAnimation(WRAITH_WIDTH, WRAITH_HEIGHT);
-
+        initAnimations();
         this.enemyRenderers.put(Skeleton.class, new SkeletonRenderer(skeletonAnimations));
         this.enemyRenderers.put(Ghoul.class, new GhoulRenderer(ghoulAnimations));
         this.enemyRenderers.put(SpearWoman.class, new SpearWomanRenderer(spearWomanAnimations));
         this.enemyRenderers.put(Knight.class, new KnightRenderer(knightAnimations));
         this.enemyRenderers.put(Wraith.class, new WraithRenderer(wraithAnimations));
+    }
+
+    private void initAnimations() {
+        this.skeletonAnimations = Animation.getInstance().loadSkeletonAnimations(SKELETON_WIDTH, SKELETON_HEIGHT);
+        this.ghoulAnimations = Animation.getInstance().loadGhoulAnimation(GHOUL_WIDTH, GHOUL_HEIGHT);
+        this.knightAnimations = Animation.getInstance().loadKnightAnimation(KNIGHT_WIDTH, KNIGHT_HEIGHT);
+        this.spearWomanAnimations = Animation.getInstance().loadSpearWomanAnimations(SW_WIDTH, SW_HEIGHT);
+        this.wraithAnimations = Animation.getInstance().loadWraithAnimation(WRAITH_WIDTH, WRAITH_HEIGHT);
     }
 
     public void loadEnemies(Level level) {
@@ -201,22 +204,17 @@ public class EnemyManager {
     }
 
     // Core
+    private <T extends Enemy> void updateEnemies(Class<T> enemyType, BufferedImage[][] animations, int[][] levelData, Player player) {
+        getEnemies(enemyType).stream()
+                .filter(Enemy::isAlive)
+                .forEach(enemy -> enemy.update(animations, levelData, player));
+    }
+
     public void update(int[][] levelData, Player player) {
-        getEnemies(Skeleton.class).stream()
-                .filter(Skeleton::isAlive)
-                .forEach(skeleton -> skeleton.update(skeletonAnimations, levelData, player));
-
-        getEnemies(Ghoul.class).stream()
-                .filter(Ghoul::isAlive)
-                .forEach(ghoul -> ghoul.update(ghoulAnimations, levelData, player));
-
-        getEnemies(Knight.class).stream()
-                .filter(Knight::isAlive)
-                .forEach(knight -> knight.update(knightAnimations, levelData, player));
-
-        getEnemies(Wraith.class).stream()
-                .filter(Wraith::isAlive)
-                .forEach(wraith -> wraith.update(wraithAnimations, levelData, player));
+        updateEnemies(Skeleton.class, skeletonAnimations, levelData, player);
+        updateEnemies(Ghoul.class, ghoulAnimations, levelData, player);
+        updateEnemies(Knight.class, knightAnimations, levelData, player);
+        updateEnemies(Wraith.class, wraithAnimations, levelData, player);
 
         getEnemies(SpearWoman.class).stream()
                 .filter(SpearWoman::isAlive)

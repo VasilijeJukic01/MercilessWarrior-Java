@@ -142,6 +142,7 @@ public class Skeleton extends Enemy {
     }
 
     // Update
+    @Override
     public void update(BufferedImage[][] animations, int[][] levelData, Player player) {
         updateMove(levelData, player);
         updateAnimation(animations);

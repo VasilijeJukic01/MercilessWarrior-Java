@@ -290,6 +290,9 @@ public class SpearWoman extends Enemy {
     }
 
     // Update
+    @Override
+    public void update(BufferedImage[][] animations, int[][] levelData, Player player) {}
+
     public void update(BufferedImage[][] animations, int[][] levelData, Player player, SpellManager spellManager, ObjectManager objectManager) {
         updateMove(levelData, player, spellManager, objectManager);
         updateAnimation(animations);
