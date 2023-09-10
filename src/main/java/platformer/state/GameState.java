@@ -82,7 +82,7 @@ public class GameState extends AbstractState implements State {
     private void initPlayer() {
         this.player = new Player(PLAYER_X, PLAYER_Y, PLAYER_WIDTH, PLAYER_HEIGHT, enemyManager, objectManager);
         this.player.loadLvlData(levelManager.getCurrentLevel().getLvlData());
-        this.player.setSpawn(levelManager.getCurrentLevel().getPlayerSpawn());
+        this.player.setSpawn(levelManager.getCurrentLevel().getPlayerSpawn("LEFT"));
     }
 
     // Save
@@ -110,7 +110,12 @@ public class GameState extends AbstractState implements State {
     // Level Flow
     private void goToLevel(int I, int J, String message) {
         levelManager.loadNextLevel(I, J);
-        levelLoadReset();
+        String spawn = "";
+        if (I == 0 && J == 1) spawn = "LEFT";
+        else if (I == 0 && J == -1) spawn = "RIGHT";
+        else if (I == -1 && J == 0) spawn = "BOTTOM";
+        else if (I == 1 && J == 0) spawn = "UPPER";
+        levelLoadReset(spawn);
         Logger.getInstance().notify(message, Message.NOTIFICATION);
     }
 
@@ -130,9 +135,9 @@ public class GameState extends AbstractState implements State {
         goToLevel(1, 0, "Bottom level loaded.");
     }
 
-    private void levelLoadReset() {
+    private void levelLoadReset(String spawn) {
         levelReset();
-        player.setSpawn(levelManager.getCurrentLevel().getPlayerSpawn());
+        player.setSpawn(levelManager.getCurrentLevel().getPlayerSpawn(spawn));
         calculateLevelOffset();
         overlayManager.reset();
     }

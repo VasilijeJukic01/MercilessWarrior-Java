@@ -26,7 +26,7 @@ public class LevelManager {
 
     private BufferedImage[] levelSprite;
     private final Level[][] levels = new Level[MAX_LEVELS][MAX_LEVELS];
-    private int levelIndexI = 1, levelIndexJ = 2;
+    private int levelIndexI = 0, levelIndexJ = 0;
 
     // Particle Flyweight
     private final Particle[] particles;

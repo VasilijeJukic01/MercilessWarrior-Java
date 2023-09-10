@@ -35,14 +35,18 @@ public class Level {
     private int levelTilesWidth, levelTilesHeight;
     private int xMaxTilesOffset, xMaxLevelOffset;
     private int yMaxTilesOffset, yMaxLevelOffset;
-    private final Point playerSpawn;
+
+    // Spawns
+    // private final Point playerSpawn;
+    private Point leftSpawn, rightSpawn, upperSpawn, bottomSpawn;
 
     public Level(BufferedImage layer1Img, BufferedImage layer2Img) {
         this.layer1Img = layer1Img;
         this.layer2Img = layer2Img;
         init();
         setOffset();
-        this.playerSpawn = getPlayerSpawn(layer1Img);
+        // this.playerSpawn = getPlayerSpawn(layer1Img);
+        getPlayerSpawns(layer1Img);
     }
 
     // Init
@@ -80,6 +84,7 @@ public class Level {
                 break;
             case SPEAR_WOMAN:
                 addEnemy(new SpearWoman(i*TILES_SIZE, (j-1)*TILES_SIZE));
+                break;
             case KNIGHT:
                 addEnemy(new Knight(i*TILES_SIZE, (j-1)*TILES_SIZE));
                 break;
@@ -175,17 +180,19 @@ public class Level {
         return data;
     }
 
-    private Point getPlayerSpawn(BufferedImage level) {
+    private void getPlayerSpawns(BufferedImage level) {
         for (int i = 0; i < level.getWidth(); i++) {
             for (int j = 0; j < level.getHeight(); j++) {
                 Color color = new Color(level.getRGB(i, j));
                 int R = color.getRed();
                 int G = color.getGreen();
                 int B = color.getBlue();
-                if (R == 100 && G == 100 && B == 100) return new Point(i*TILES_SIZE, j*TILES_SIZE);
+                if (R == 100 && G == 100 && B == 100) this.leftSpawn = new Point(i*TILES_SIZE, j*TILES_SIZE);
+                else if (R == 110 && G == 110 && B == 110) this.rightSpawn = new Point(i*TILES_SIZE, j*TILES_SIZE);
+                else if (R == 120 && G == 120 && B == 120) this.upperSpawn = new Point(i*TILES_SIZE, j*TILES_SIZE);
+                else if (R == 130 && G == 130 && B == 130) this.bottomSpawn = new Point(i*TILES_SIZE, j*TILES_SIZE);
             }
         }
-        return null;
     }
 
     // Other
@@ -229,8 +236,12 @@ public class Level {
         return yMaxLevelOffset;
     }
 
-    public Point getPlayerSpawn() {
-        return playerSpawn;
+    public Point getPlayerSpawn(String location) {
+        if (location.equals("LEFT")) return leftSpawn;
+        if (location.equals("RIGHT")) return rightSpawn;
+        if (location.equals("UPPER")) return upperSpawn;
+        if (location.equals("BOTTOM")) return bottomSpawn;
+        return null;
     }
 
     private List<Spell> getAllSpells() {
