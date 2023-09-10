@@ -37,7 +37,6 @@ public class Level {
     private int yMaxTilesOffset, yMaxLevelOffset;
 
     // Spawns
-    // private final Point playerSpawn;
     private Point leftSpawn, rightSpawn, upperSpawn, bottomSpawn;
 
     public Level(BufferedImage layer1Img, BufferedImage layer2Img) {
@@ -45,8 +44,7 @@ public class Level {
         this.layer2Img = layer2Img;
         init();
         setOffset();
-        // this.playerSpawn = getPlayerSpawn(layer1Img);
-        getPlayerSpawns(layer1Img);
+        loadPlayerSpawns(layer1Img);
     }
 
     // Init
@@ -121,7 +119,8 @@ public class Level {
             case DOG:
                 addGameObject(new Dog(ObjType.values()[valueB], i*TILES_SIZE, j*TILES_SIZE)); break;
             case SAVE_TOTEM:
-                addGameObject(new SaveTotem(ObjType.values()[valueB], i*TILES_SIZE, j*TILES_SIZE)); break;
+                addGameObject(new SaveTotem(ObjType.values()[valueB], i*TILES_SIZE, j*TILES_SIZE));
+                break;
             default: break;
         }
     }
@@ -180,7 +179,7 @@ public class Level {
         return data;
     }
 
-    private void getPlayerSpawns(BufferedImage level) {
+    private void loadPlayerSpawns(BufferedImage level) {
         for (int i = 0; i < level.getWidth(); i++) {
             for (int j = 0; j < level.getHeight(); j++) {
                 Color color = new Color(level.getRGB(i, j));

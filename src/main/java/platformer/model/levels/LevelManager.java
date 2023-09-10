@@ -170,6 +170,18 @@ public class LevelManager {
         return levels[levelIndexI][levelIndexJ];
     }
 
+    public void loadSavePoint(int spawnNumber) {
+        if (spawnNumber == -1) {
+            this.levelIndexI = 0;
+            this.levelIndexJ = 0;
+        }
+        if (spawnNumber == 1) {
+            this.levelIndexI = 0;
+            this.levelIndexJ = 2;
+        }
+        loadLevel();
+    }
+
     public Particle[] getParticles() {
         return particles;
     }
