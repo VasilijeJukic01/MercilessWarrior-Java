@@ -127,9 +127,14 @@ public class LevelManager {
                 if (decorationIndex == -1) continue;
                 int x = TILES_SIZE * i - xLevelOffset;
                 int y = TILES_SIZE * j - yLevelOffset;
-                LevelObject lvlObject = levelObjectManager.getLvlObjects()[decorationIndex];
-                if (layerIndex == layer)
-                    g.drawImage(lvlObject.getObjectModel(), x+lvlObject.getXOffset(), y+lvlObject.getYOffset(), lvlObject.getW(), lvlObject.getH(), null);
+                LvlObjType lvlObj = LvlObjType.values()[decorationIndex];
+                if (layerIndex == layer) {
+                    BufferedImage model = levelObjectManager.getModels()[decorationIndex];
+                    int xPos = x + (int)(lvlObj.getYOffset() * SCALE);
+                    int yPos = y + (int)(lvlObj.getXOffset() * SCALE);
+                    g.drawImage(model, xPos, yPos, lvlObj.getWid(), lvlObj.getHei(), null);
+                }
+
             }
         }
     }
