@@ -84,7 +84,7 @@ public class UserInterface {
         g.drawString("Attack Cooldown: "+Math.round(player.getCooldown()[Cooldown.ATTACK.ordinal()]*100.0)/100.0, xStr, yStr);
         g.drawString("Block Cooldown:  "+Math.round(player.getCooldown()[Cooldown.BLOCK.ordinal()]*100.0)/100.0, xStr, 2*yStr);
         g.drawString("Dash Cooldown:   "+Math.round(player.getCooldown()[Cooldown.DASH.ordinal()]*100.0)/100.0, xStr, 3*yStr);
-        g.drawString("Spell Cooldown:  "+Math.round(player.getCooldown()[Cooldown.SPELL.ordinal()]*100.0)/100.0, xStr, 4*yStr);
+        g.drawString("Spell Cooldown:   "+Math.round(player.getCooldown()[Cooldown.SPELL.ordinal()]*100.0)/100.0, xStr, 4*yStr);
     }
 
 }

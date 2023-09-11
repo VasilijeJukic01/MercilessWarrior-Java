@@ -1,5 +1,15 @@
 package platformer.constants;
 
+// Vocabulary
+
+/*
+
+SW - Spear Woman
+AT - Arrow Trap
+SL - Slider
+
+ */
+
 public class AnimConstants {
 
     // Sprite dimension
