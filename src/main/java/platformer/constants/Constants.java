@@ -232,6 +232,13 @@ public class Constants {
     public static final int SAVE_TOTEM_OFFSET_X = scale(10);
     public static final int SAVE_TOTEM_OFFSET_Y = scale(9);
 
+    public static final int SMASH_TRAP_WID = scale(50);
+    public static final int SMASH_TRAP_HEI = scale(76);
+    public static final int SMASH_TRAP_HB_WID = scale(20);
+    public static final int SMASH_TRAP_HB_HEI = scale(80);
+    public static final int SMASH_TRAP_OFFSET_X = scale(15);
+    public static final int SMASH_TRAP_OFFSET_Y = scale(0);
+
     // Projectile Constants
     public static final int ARROW_WID = scale(32);
     public static final int ARROW_HEI = scale(4);

@@ -28,7 +28,8 @@ public class FilePaths {
     public static final String BS_SHEET = "/images/objs/BlacksmithSprite.png";
     public static final String DOG_SHEET = "/images/objs/DogSprite.png";
     public static final String ARROW_IMG = "/images/objs/arrow.png";
-    public static final String SAVE_OBJ_IMG = "/images/objs/save_game_sprite.png";
+    public static final String TOTEM_SHEET = "/images/objs/save_game_sprite.png";
+    public static final String SMASH_TRAP_SHEET = "/images/objs/smashTrap.png";
 
     public static final String HEALTH_ITEM = "/images/shop/HealthItem.png";
     public static final String STAMINA_ITEM = "/images/shop/StaminaItem.png";

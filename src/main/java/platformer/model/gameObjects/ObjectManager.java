@@ -42,7 +42,8 @@ public class ObjectManager {
             Blocker.class,
             Blacksmith.class,
             Dog.class,
-            SaveTotem.class
+            SaveTotem.class,
+            SmashTrap.class
     };
     private Map<ObjType, List<GameObject>> objectsMap = new HashMap<>();
 

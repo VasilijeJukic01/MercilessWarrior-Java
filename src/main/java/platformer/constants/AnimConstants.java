@@ -6,6 +6,7 @@ package platformer.constants;
 
 SW - Spear Woman
 AT - Arrow Trap
+ST - Smash Trap
 SL - Slider
 
  */
@@ -30,6 +31,7 @@ public class AnimConstants {
     public static final int BLACKSMITH_W = 220, BLACKSMITH_H = 160;
     public static final int DOG_W = 220, DOG_H = 128;
     public static final int TOTEM_W = 64, TOTEM_H = 66;
+    public static final int ST_W = 64, ST_H = 64;
 
     public static final int LIGHTNING_W = 128, LIGHTNING_H = 512;
     public static final int FLASH_W = 192, FLASH_H = 984;

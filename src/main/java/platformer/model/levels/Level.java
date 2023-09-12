@@ -121,6 +121,9 @@ public class Level {
             case SAVE_TOTEM:
                 addGameObject(new SaveTotem(ObjType.values()[valueB], i*TILES_SIZE, j*TILES_SIZE));
                 break;
+            case SMASH_TRAP:
+                addGameObject(new SmashTrap(ObjType.values()[valueB], i*TILES_SIZE, j*TILES_SIZE));
+                break;
             default: break;
         }
     }
