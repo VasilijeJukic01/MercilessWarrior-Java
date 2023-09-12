@@ -1,7 +1,7 @@
 package platformer.utils;
 
-public interface ValueEnum {
+public interface ValueEnum<T> {
 
-    String getValue();
+    T getValue();
 
 }

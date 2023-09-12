@@ -2,7 +2,7 @@ package platformer.audio;
 
 import platformer.utils.ValueEnum;
 
-public enum Sound implements ValueEnum {
+public enum Sound implements ValueEnum<String> {
     SLASH_1("slash1"),                  // 0
     SLASH_2("slash2"),                  // 1
     SLASH_3("slash3"),                  // 2

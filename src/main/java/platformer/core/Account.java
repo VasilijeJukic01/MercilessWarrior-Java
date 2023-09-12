@@ -17,7 +17,7 @@ public class Account {
     public Account() {
         this.name = "Default";
         this.accountID = this.settingsID = -1;
-        this.spawn = 1;
+        this.spawn = -1;
         this.coins = this.tokens = this.exp = 0;
         this.level = 1;
     }
@@ -48,7 +48,7 @@ public class Account {
 
     // Unload save file
     public void unload() {
-        this.spawn = 1;
+        this.spawn = -1;
         this.level = 1;
         this.coins = this.tokens = this.exp = 0;
         this.perks = new ArrayList<>();

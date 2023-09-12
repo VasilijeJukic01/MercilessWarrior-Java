@@ -6,10 +6,7 @@ import platformer.audio.Audio;
 import platformer.debug.logger.Message;
 import platformer.debug.logger.Logger;
 import platformer.model.entities.Direction;
-import platformer.model.entities.enemies.renderer.EnemyRenderer;
-import platformer.model.entities.enemies.renderer.GhoulRenderer;
-import platformer.model.entities.enemies.renderer.SkeletonRenderer;
-import platformer.model.entities.enemies.renderer.SpearWomanRenderer;
+import platformer.model.entities.enemies.renderer.*;
 import platformer.model.entities.player.Player;
 import platformer.model.entities.player.PlayerBonus;
 import platformer.model.entities.enemies.boss.SpearWoman;
@@ -36,7 +33,7 @@ public class EnemyManager {
 
     private final GameState gameState;
 
-    BufferedImage[][] skeletonAnimations, ghoulAnimations, spearWomanAnimations;
+    BufferedImage[][] skeletonAnimations, ghoulAnimations, knightAnimations, wraithAnimations, spearWomanAnimations;
 
     private Map<EnemyType, List<Enemy>> enemies = new HashMap<>();
     private final Map<Class<? extends Enemy>, EnemyRenderer<? extends Enemy>> enemyRenderers = new HashMap<>();
@@ -49,12 +46,20 @@ public class EnemyManager {
 
     // Init
     private void init() {
-        this.skeletonAnimations = Animation.getInstance().loadSkeletonAnimations(SKELETON_WIDTH, SKELETON_HEIGHT);
-        this.ghoulAnimations = Animation.getInstance().loadGhoulAnimation(GHOUL_WIDTH, GHOUL_HEIGHT);
-        this.spearWomanAnimations = Animation.getInstance().loadSpearWomanAnimations(SW_WIDTH, SW_HEIGHT);
+        initAnimations();
         this.enemyRenderers.put(Skeleton.class, new SkeletonRenderer(skeletonAnimations));
         this.enemyRenderers.put(Ghoul.class, new GhoulRenderer(ghoulAnimations));
         this.enemyRenderers.put(SpearWoman.class, new SpearWomanRenderer(spearWomanAnimations));
+        this.enemyRenderers.put(Knight.class, new KnightRenderer(knightAnimations));
+        this.enemyRenderers.put(Wraith.class, new WraithRenderer(wraithAnimations));
+    }
+
+    private void initAnimations() {
+        this.skeletonAnimations = Animation.getInstance().loadSkeletonAnimations(SKELETON_WIDTH, SKELETON_HEIGHT);
+        this.ghoulAnimations = Animation.getInstance().loadGhoulAnimation(GHOUL_WIDTH, GHOUL_HEIGHT);
+        this.knightAnimations = Animation.getInstance().loadKnightAnimation(KNIGHT_WIDTH, KNIGHT_HEIGHT);
+        this.spearWomanAnimations = Animation.getInstance().loadSpearWomanAnimations(SW_WIDTH, SW_HEIGHT);
+        this.wraithAnimations = Animation.getInstance().loadWraithAnimation(WRAITH_WIDTH, WRAITH_HEIGHT);
     }
 
     public void loadEnemies(Level level) {
@@ -92,6 +97,14 @@ public class EnemyManager {
 
     private void renderSpearWoman(Graphics g, int xLevelOffset, int yLevelOffset) {
         renderEnemies(SpearWoman.class, g, xLevelOffset, yLevelOffset);
+    }
+
+    private void renderKnights(Graphics g, int xLevelOffset, int yLevelOffset) {
+        renderEnemies(Knight.class, g, xLevelOffset, yLevelOffset);
+    }
+
+    private void renderWraiths(Graphics g, int xLevelOffset, int yLevelOffset) {
+        renderEnemies(Wraith.class, g, xLevelOffset, yLevelOffset);
     }
 
     // Enemy hit
@@ -137,6 +150,8 @@ public class EnemyManager {
     public void checkEnemyHit(Rectangle2D.Double attackBox, Player player) {
         handleEnemyHit(attackBox, player, Skeleton.class);
         handleEnemyHit(attackBox, player, Ghoul.class);
+        handleEnemyHit(attackBox, player, Knight.class);
+        handleEnemyHit(attackBox, player, Wraith.class);
         handleEnemyHit(attackBox, player, SpearWoman.class);
         if (!player.isDash() && !player.isOnWall()) Audio.getInstance().getAudioPlayer().playSlashSound();
     }
@@ -162,6 +177,8 @@ public class EnemyManager {
     public void checkEnemySpellHit() {
         handleEnemySpellHit(Skeleton.class, 0.08);
         handleEnemySpellHit(Ghoul.class, 0.16);
+        handleEnemySpellHit(Knight.class, 0.08);
+        handleEnemySpellHit(Wraith.class, 0.16);
     }
 
     public void checkEnemyTrapHit(GameObject object) {
@@ -187,14 +204,17 @@ public class EnemyManager {
     }
 
     // Core
-    public void update(int[][] levelData, Player player) {
-        getEnemies(Skeleton.class).stream()
-                .filter(Skeleton::isAlive)
-                .forEach(skeleton -> skeleton.update(skeletonAnimations, levelData, player));
+    private <T extends Enemy> void updateEnemies(Class<T> enemyType, BufferedImage[][] animations, int[][] levelData, Player player) {
+        getEnemies(enemyType).stream()
+                .filter(Enemy::isAlive)
+                .forEach(enemy -> enemy.update(animations, levelData, player));
+    }
 
-        getEnemies(Ghoul.class).stream()
-                .filter(Ghoul::isAlive)
-                .forEach(ghoul -> ghoul.update(ghoulAnimations, levelData, player));
+    public void update(int[][] levelData, Player player) {
+        updateEnemies(Skeleton.class, skeletonAnimations, levelData, player);
+        updateEnemies(Ghoul.class, ghoulAnimations, levelData, player);
+        updateEnemies(Knight.class, knightAnimations, levelData, player);
+        updateEnemies(Wraith.class, wraithAnimations, levelData, player);
 
         getEnemies(SpearWoman.class).stream()
                 .filter(SpearWoman::isAlive)
@@ -205,6 +225,8 @@ public class EnemyManager {
         try {
             renderSkeletons(g, xLevelOffset, yLevelOffset);
             renderGhouls(g, xLevelOffset, yLevelOffset);
+            renderKnights(g, xLevelOffset, yLevelOffset);
+            renderWraiths(g, xLevelOffset, yLevelOffset);
             renderSpearWoman(g, xLevelOffset, yLevelOffset);
         }
         catch (Exception ignored) {}

@@ -90,6 +90,34 @@ public class Animation {
         return anim;
     }
 
+    public BufferedImage[][] loadKnightAnimation(int w, int h) {
+        BufferedImage[][] anim = new BufferedImage[13][13];
+
+        anim[Anim.IDLE.ordinal()] = loadFromSprite(KNIGHT_SHEET,     8, 0, w, h, 0, KNIGHT_W, KNIGHT_H);
+        anim[Anim.RUN.ordinal()] = loadFromSprite(KNIGHT_SHEET,      8, 2, w, h, 0, KNIGHT_W, KNIGHT_H);
+        anim[Anim.ATTACK_1.ordinal()] = loadFromSprite(KNIGHT_SHEET, 8, 3, w, h, 0, KNIGHT_W, KNIGHT_H);
+        anim[Anim.ATTACK_2.ordinal()] = loadFromSprite(KNIGHT_SHEET, 8, 4, w, h, 0, KNIGHT_W, KNIGHT_H);
+        anim[Anim.HIT.ordinal()] = loadFromSprite(KNIGHT_SHEET,      5, 5, w, h, 0, KNIGHT_W, KNIGHT_H);
+        anim[Anim.DEATH.ordinal()] = loadFromSprite(KNIGHT_SHEET,    12,6, w, h, 0, KNIGHT_W, KNIGHT_H);
+        anim[Anim.WALK.ordinal()] = loadFromSprite(KNIGHT_SHEET,     8, 1, w, h, 0, KNIGHT_W, KNIGHT_H);
+
+        return anim;
+    }
+
+    public BufferedImage[][] loadWraithAnimation(int w, int h) {
+        BufferedImage[][] anim = new BufferedImage[13][17];
+
+        anim[Anim.IDLE.ordinal()] = loadFromSprite(WRAITH_SHEET,     10, 0, w, h, 0, WRAITH_W, WRAITH_H);
+        anim[Anim.RUN.ordinal()] = loadFromSprite(WRAITH_SHEET,      8,  1, w, h, 0, WRAITH_W, WRAITH_H);
+        anim[Anim.ATTACK_1.ordinal()] = loadFromSprite(WRAITH_SHEET, 10, 2, w, h, 0, WRAITH_W, WRAITH_H);
+        anim[Anim.ATTACK_2.ordinal()] = loadFromSprite(WRAITH_SHEET, 10, 3, w, h, 0, WRAITH_W, WRAITH_H);
+        anim[Anim.HIT.ordinal()] = loadFromSprite(WRAITH_SHEET,      5,  4, w, h, 0, WRAITH_W, WRAITH_H);
+        anim[Anim.DEATH.ordinal()] = loadFromSprite(WRAITH_SHEET,    16, 5, w, h, 0, WRAITH_W, WRAITH_H);
+        anim[Anim.WALK.ordinal()] =  anim[Anim.IDLE.ordinal()];
+
+        return anim;
+    }
+
     // Boss
     public BufferedImage[][] loadSpearWomanAnimations(int w, int h) {
         BufferedImage[][] anim = new BufferedImage[20][25];
@@ -126,7 +154,8 @@ public class Animation {
         anim[ObjType.BLOCKER.ordinal()] = loadFromSprite(BLOCKER_SHEET, 12, 0, BLOCKER_WID, BLOCKER_HEI, 0, BLOCKER_W, BLOCKER_H);
         anim[ObjType.BLACKSMITH.ordinal()] = loadFromSprite(BS_SHEET, 8, 0, BLACKSMITH_WID, BLACKSMITH_HEI, 0, BLACKSMITH_W, BLACKSMITH_H);
         anim[ObjType.DOG.ordinal()] = loadFromSprite(DOG_SHEET, 8, 0, DOG_WID, DOG_HEI, 0, DOG_W, DOG_H);
-        anim[ObjType.SAVE_TOTEM.ordinal()] = loadFromSprite(SAVE_OBJ_IMG, 7, 0, SAVE_TOTEM_WID, SAVE_TOTEM_HEI, 0, TOTEM_W, TOTEM_H);
+        anim[ObjType.SAVE_TOTEM.ordinal()] = loadFromSprite(TOTEM_SHEET, 7, 0, SAVE_TOTEM_WID, SAVE_TOTEM_HEI, 0, TOTEM_W, TOTEM_H);
+        anim[ObjType.SMASH_TRAP.ordinal()] = loadFromSprite(SMASH_TRAP_SHEET, 14, 0, SMASH_TRAP_WID, SMASH_TRAP_HEI, 0, ST_W, ST_H);
 
         return anim;
     }

@@ -1,11 +1,24 @@
 package platformer.constants;
 
+// Vocabulary
+
+/*
+
+SW - Spear Woman
+AT - Arrow Trap
+ST - Smash Trap
+SL - Slider
+
+ */
+
 public class AnimConstants {
 
     // Sprite dimension
     public static final int PLAYER_W = 144, PLAYER_H = 80;
     public static final int SKELETON_W = 220, SKELETON_H = 160;
     public static final int GHOUL_W = 220, GHOUL_H = 160;
+    public static final int KNIGHT_W = 220, KNIGHT_H = 160;
+    public static final int WRAITH_W = 800, WRAITH_H = 800;
     public static final int SW_W = 128, SW_H = 115;
 
     public static final int POTION_W = 12, POTION_H = 16;
@@ -18,6 +31,7 @@ public class AnimConstants {
     public static final int BLACKSMITH_W = 220, BLACKSMITH_H = 160;
     public static final int DOG_W = 220, DOG_H = 128;
     public static final int TOTEM_W = 64, TOTEM_H = 66;
+    public static final int ST_W = 64, ST_H = 64;
 
     public static final int LIGHTNING_W = 128, LIGHTNING_H = 512;
     public static final int FLASH_W = 192, FLASH_H = 984;

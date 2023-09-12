@@ -1,30 +1,20 @@
 package platformer.model.levels;
 
 import platformer.utils.Utils;
-
 import java.awt.image.BufferedImage;
-import java.util.Arrays;
-import java.util.List;
-
-import static platformer.constants.Constants.SCALE;
 
 public class LevelObjectManager {
 
-    private LevelObject[] lvlObjects;
     private BufferedImage[] models;
 
-    private final List<LvlObjType> objData;
-
     public LevelObjectManager() {
-        this.objData = Arrays.asList(LvlObjType.values());
         loadImages();
-        init();
     }
 
     private void loadImages() {
-        this.models = new BufferedImage[objData.size()];
+        this.models = new BufferedImage[LvlObjType.values().length];
         for (int i = 0; i < models.length; i++) {
-            LvlObjType objType = objData.get(i);
+            LvlObjType objType = LvlObjType.values()[i];
             String id = objType.getId();
             int bigFlag = id.contains("_BIG") ? 4 : 0;
             int reverseFlag = id.contains("_REVERSE") ? 8 : 0;
@@ -34,17 +24,8 @@ public class LevelObjectManager {
         }
     }
 
-    private void init() {
-        this.lvlObjects = new LevelObject[objData.size()];
-        for (int i = 0; i < lvlObjects.length; i++) {
-            LvlObjType lvlObj = objData.get(i);
-            lvlObjects[i] = new LevelObject(models[i], models[i].getWidth(), models[i].getHeight());
-            lvlObjects[i].setYOffset((int)(lvlObj.getXOffset() * SCALE));
-            lvlObjects[i].setXOffset((int)(lvlObj.getYOffset() * SCALE));
-        }
+    public BufferedImage[] getModels() {
+        return models;
     }
 
-    public LevelObject[] getLvlObjects() {
-        return lvlObjects;
-    }
 }

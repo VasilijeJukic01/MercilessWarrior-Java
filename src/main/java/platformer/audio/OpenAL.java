@@ -44,8 +44,8 @@ public class OpenAL implements AudioPlayer {
     }
 
     // Data
-    private void loadAudio(ValueEnum[] audioArray, List<Integer> buffers, List<OpenALSource> sources) {
-        for (ValueEnum audio : audioArray) {
+    private void loadAudio(ValueEnum<String>[] audioArray, List<Integer> buffers, List<OpenALSource> sources) {
+        for (ValueEnum<String> audio : audioArray) {
             String id = audio.getValue();
             buffers.add(loadBuffers("audio/" + id + ".wav"));
             sources.add(new OpenALSource());

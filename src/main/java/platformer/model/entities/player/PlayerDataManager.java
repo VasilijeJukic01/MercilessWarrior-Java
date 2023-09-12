@@ -2,7 +2,10 @@ package platformer.model.entities.player;
 
 import platformer.core.Account;
 import platformer.core.Framework;
+import platformer.model.levels.Spawn;
 import platformer.ui.overlays.hud.UserInterface;
+
+import java.awt.*;
 
 import static platformer.constants.Constants.*;
 
@@ -28,6 +31,25 @@ public class PlayerDataManager {
         this.upgradeTokens = account.getTokens();
         this.level = account.getLevel();
         this.exp = account.getExp();
+        loadSpawnPoint(account);
+    }
+
+    private void loadSpawnPoint(Account account) {
+        if (account.getSpawn() == -1) {
+            setPlayerCoordinates(Spawn.INITIAL.getX(), Spawn.INITIAL.getY());
+            return;
+        }
+
+        for (Spawn spawn : Spawn.values()) {
+            if (spawn.getId() == account.getSpawn()) {
+                setPlayerCoordinates(spawn.getX(), spawn.getY());
+                break;
+            }
+        }
+    }
+
+    private void setPlayerCoordinates(int x, int y) {
+        player.setSpawn(new Point(x * TILES_SIZE, y * TILES_SIZE));
     }
 
     public void update() {

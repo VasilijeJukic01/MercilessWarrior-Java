@@ -82,7 +82,7 @@ public class GameState extends AbstractState implements State {
     private void initPlayer() {
         this.player = new Player(PLAYER_X, PLAYER_Y, PLAYER_WIDTH, PLAYER_HEIGHT, enemyManager, objectManager);
         this.player.loadLvlData(levelManager.getCurrentLevel().getLvlData());
-        this.player.setSpawn(levelManager.getCurrentLevel().getPlayerSpawn());
+        this.player.setSpawn(levelManager.getCurrentLevel().getPlayerSpawn("LEFT"));
     }
 
     // Save
@@ -91,10 +91,13 @@ public class GameState extends AbstractState implements State {
     }
 
     public void reloadSave() {
+        reset();
         PlayerBonus.getInstance().reset();
         this.perksManager = new PerksManager();
         this.perksManager.loadUnlockedPerks(Framework.getInstance().getAccount().getPerks());
         this.player.getPlayerDataManager().loadPlayerData();
+        this.levelManager.loadSavePoint(Framework.getInstance().getAccount().getSpawn());
+        calculateLevelOffset();
     }
 
     private void calculateLevelOffset() {
@@ -108,21 +111,36 @@ public class GameState extends AbstractState implements State {
     }
 
     // Level Flow
-    public void goToNextLevel() {
-        levelManager.loadNextLevel();
-        levelLoadReset();
-        Logger.getInstance().notify("Next level loaded.", Message.NOTIFICATION);
+    private void goToLevel(int I, int J, String message) {
+        levelManager.loadNextLevel(I, J);
+        String spawn = "";
+        if (I == 0 && J == 1) spawn = "LEFT";
+        else if (I == 0 && J == -1) spawn = "RIGHT";
+        else if (I == -1 && J == 0) spawn = "BOTTOM";
+        else if (I == 1 && J == 0) spawn = "UPPER";
+        levelLoadReset(spawn);
+        Logger.getInstance().notify(message, Message.NOTIFICATION);
     }
 
-    public void goToPrevLevel() {
-        levelManager.loadPrevLevel();
-        levelLoadReset();
-        Logger.getInstance().notify("Previous level loaded.", Message.NOTIFICATION);
+    public void goToRightLevel() {
+        goToLevel(0, 1, "Right level loaded.");
     }
 
-    private void levelLoadReset() {
+    public void goToLeftLevel() {
+        goToLevel(0, -1, "Left level loaded.");
+    }
+
+    public void goToUpperLevel() {
+        goToLevel(-1, 0, "Upper level loaded.");
+    }
+
+    public void goToBottomLevel() {
+        goToLevel(1, 0, "Bottom level loaded.");
+    }
+
+    private void levelLoadReset(String spawn) {
         levelReset();
-        player.setSpawn(levelManager.getCurrentLevel().getPlayerSpawn());
+        player.setSpawn(levelManager.getCurrentLevel().getPlayerSpawn(spawn));
         calculateLevelOffset();
         overlayManager.reset();
     }
@@ -184,8 +202,11 @@ public class GameState extends AbstractState implements State {
 
     private void checkLevelExit() {
         int exitStatus = Utils.getInstance().isEntityOnExit(levelManager.getCurrentLevel(), player.getHitBox());
-        if (exitStatus == 1) goToNextLevel();
-        else if (exitStatus == -1) goToPrevLevel();
+
+        if (exitStatus == RIGHT_EXIT) goToRightLevel();
+        else if (exitStatus == LEFT_EXIT) goToLeftLevel();
+        else if (exitStatus == UPPER_EXIT) goToUpperLevel();
+        else if (exitStatus == BOTTOM_EXIT) goToBottomLevel();
     }
 
     private void checkPlayerDeath() {

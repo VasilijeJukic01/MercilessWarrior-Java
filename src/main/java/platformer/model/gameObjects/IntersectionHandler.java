@@ -14,6 +14,7 @@ import java.util.List;
 import static platformer.constants.Constants.HEAL_POTION_VAL;
 import static platformer.constants.Constants.STAMINA_POTION_VAL;
 
+@SuppressWarnings({"unchecked"})
 public class IntersectionHandler {
 
     private final EnemyManager enemyManager;
@@ -21,12 +22,23 @@ public class IntersectionHandler {
 
     private Class<? extends GameObject> intersectingObject;
 
+    private final Class<? extends GameObject>[] classesToCheck = new Class[]{
+            Shop.class, Blacksmith.class, SaveTotem.class, Spike.class, Blocker.class, SmashTrap.class
+    };
+
     public IntersectionHandler(EnemyManager enemyManager, ObjectManager objectManager) {
         this.enemyManager = enemyManager;
         this.objectManager = objectManager;
     }
 
     // Checker
+    private boolean isInstantDeath(GameObject object) {
+        if (object instanceof Spike) return true;
+        if (object instanceof Blocker && object.getAnimIndex() > 2) return true;
+        if (object instanceof SmashTrap && object.getAnimIndex() > 0 && object.getAnimIndex() < 6) return true;
+        return false;
+    }
+
     private <T extends GameObject> boolean checkPlayerIntersection(Player p, Class<T> objectClass) {
         boolean check = false;
         for (T object : getObjects(objectClass)) {
@@ -34,7 +46,7 @@ public class IntersectionHandler {
             if (intersect) {
                 check = true;
             }
-            if (intersect && (object instanceof Spike || (object instanceof Blocker && object.getAnimIndex() > 2))) {
+            if (intersect && isInstantDeath(object)) {
                 p.kill();
             }
             else if (object instanceof Shop) {
@@ -51,17 +63,11 @@ public class IntersectionHandler {
     }
 
     public void checkPlayerIntersection(Player player) {
-        if (checkPlayerIntersection(player, Shop.class)) {
-            intersectingObject = Shop.class;
-            return;
-        }
-        if (checkPlayerIntersection(player, Blacksmith.class)) {
-            intersectingObject = Blacksmith.class;
-            return;
-        }
-        if (checkPlayerIntersection(player, SaveTotem.class)) {
-            intersectingObject = SaveTotem.class;
-            return;
+        for (Class<? extends GameObject> c : classesToCheck) {
+            if (checkPlayerIntersection(player, c)) {
+                intersectingObject = c;
+                return;
+            }
         }
         intersectingObject = null;
     }

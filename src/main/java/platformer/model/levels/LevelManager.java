@@ -11,9 +11,7 @@ import platformer.utils.Utils;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Random;
 
 import static platformer.constants.AnimConstants.*;
@@ -27,9 +25,10 @@ public class LevelManager {
     private final LevelObjectManager levelObjectManager;
 
     private BufferedImage[] levelSprite;
-    private final List<Level> levels = new ArrayList<>();
-    private int levelIndex = 0;
+    private final Level[][] levels = new Level[MAX_LEVELS][MAX_LEVELS];
+    private int levelIndexI = 0, levelIndexJ = 0;
 
+    // Particle Flyweight
     private final Particle[] particles;
     private final ParticleFactory particleFactory;
 
@@ -38,12 +37,12 @@ public class LevelManager {
         this.particleFactory = new ParticleFactory();
         this.particles = loadParticles();
         this.levelObjectManager = new LevelObjectManager();
-        loadFirstLayerSprite();
+        loadForestSprite();
         buildLevels();
     }
 
     // Init
-    private void loadFirstLayerSprite() {
+    private void loadForestSprite() {
         BufferedImage img = Utils.getInstance().importImage(FOREST_SPRITE, -1, -1);
         levelSprite = new BufferedImage[MAX_TILE_VALUE];
         for (int i = 0; i < FOREST_SPRITE_ROW; i++) {
@@ -55,23 +54,31 @@ public class LevelManager {
     }
 
     private void buildLevels() {
-        BufferedImage[] levelsLayer1 = getAllLevels("1");
-        BufferedImage[] levelsLayer2 = getAllLevels("2");
-        for (int i = 0; i < levelsLayer1.length; i++) {
-            levels.add(new Level(levelsLayer1[i], levelsLayer2[i]));
+        BufferedImage[][] levelsLayer1 = getAllLevels("1");
+        BufferedImage[][] levelsLayer2 = getAllLevels("2");
+        for (int i = 0; i < 2; i++) {
+            for (int j = 0; j < levelsLayer1.length; j++) {
+                if (levelsLayer1[i][j] != null)
+                    levels[i][j] = new Level(levelsLayer1[i][j], levelsLayer2[i][j]);
+            }
         }
         Logger.getInstance().notify("Levels built successfully!", Message.NOTIFICATION);
     }
 
-    private BufferedImage[] getAllLevels(String layer) {
-        BufferedImage[] levels = new BufferedImage[3];
-        for (int i = 0; i < levels.length; i++) {
-            BufferedImage levelImg = Utils.getInstance().importImage("/images/levels/level"+(i+1)+".png", -1, -1);
-            if (layer.equals("1")) {
-                levels[i] = levelImg.getSubimage(0, 0, levelImg.getWidth()/2, levelImg.getHeight());
-            }
-            else {
-                levels[i] = levelImg.getSubimage(levelImg.getWidth()/2, 0, levelImg.getWidth()/2, levelImg.getHeight());
+    private BufferedImage[][] getAllLevels(String layer) {
+        BufferedImage[][] levels = new BufferedImage[4][4];
+        for (int i = 0; i < 2; i++) {
+            for (int j = 0; j < levels.length; j++) {
+
+                BufferedImage levelImg = Utils.getInstance().importImage("/images/levels/level"+i+j+".png", -1, -1);
+                if (levelImg == null) continue;
+
+                if (layer.equals("1")) {
+                    levels[i][j] = levelImg.getSubimage(0, 0, levelImg.getWidth()/2, levelImg.getHeight());
+                }
+                else {
+                    levels[i][j] = levelImg.getSubimage(levelImg.getWidth()/2, 0, levelImg.getWidth()/2, levelImg.getHeight());
+                }
             }
         }
         return levels;
@@ -94,51 +101,49 @@ public class LevelManager {
 
     // Level flow
     private void loadLevel() {
-        Level newLevel = levels.get(levelIndex);
+        Level newLevel = levels[levelIndexI][levelIndexJ];
         gameState.getPlayer().loadLvlData(newLevel.getLvlData());
         gameState.getEnemyManager().loadEnemies(newLevel);
         gameState.getObjectManager().loadObjects(newLevel);
         gameState.getSpellManager().initBossSpells();
     }
 
-    public void loadNextLevel() {
-        levelIndex++;
-        if (levelIndex >= levels.size()) {
+    public void loadNextLevel(int dI, int dJ) {
+        levelIndexI += dI;
+        levelIndexJ += dJ;
+        if (levelIndexI < 0 || levelIndexI >= levels.length || levelIndexJ < 0 || levelIndexJ >= levels[0].length) {
             gameState.getGame().startMenuState();
-            return;
         }
-        loadLevel();
-    }
-
-    public void loadPrevLevel() {
-        levelIndex--;
-        if (levelIndex < 0) {
-            gameState.getGame().startMenuState();
-            return;
-        }
-        loadLevel();
+        else loadLevel();
     }
 
     // Render
     private void renderDeco(Graphics g, int xLevelOffset, int yLevelOffset, int layer) {
-        for (int i = 0; i < levels.get(levelIndex).getLvlData().length; i++) {
-            for (int j = 0; j < levels.get(levelIndex).getLvlData()[0].length; j++) {
-                int decorationIndex = levels.get(levelIndex).getDecoSpriteIndex(i, j);
-                int layerIndex = levels.get(levelIndex).getLayerSpriteIndex(i, j);
+        Level level = levels[levelIndexI][levelIndexJ];
+        for (int i = 0; i < level.getLvlData().length; i++) {
+            for (int j = 0; j < level.getLvlData()[0].length; j++) {
+                int decorationIndex = level.getDecoSpriteIndex(i, j);
+                int layerIndex = level.getLayerSpriteIndex(i, j);
                 if (decorationIndex == -1) continue;
                 int x = TILES_SIZE * i - xLevelOffset;
                 int y = TILES_SIZE * j - yLevelOffset;
-                LevelObject lvlObject = levelObjectManager.getLvlObjects()[decorationIndex];
-                if (layerIndex == layer)
-                    g.drawImage(lvlObject.getObjectModel(), x+lvlObject.getXOffset(), y+lvlObject.getYOffset(), lvlObject.getW(), lvlObject.getH(), null);
+                LvlObjType lvlObj = LvlObjType.values()[decorationIndex];
+                if (layerIndex == layer) {
+                    BufferedImage model = levelObjectManager.getModels()[decorationIndex];
+                    int xPos = x + (int)(lvlObj.getYOffset() * SCALE);
+                    int yPos = y + (int)(lvlObj.getXOffset() * SCALE);
+                    g.drawImage(model, xPos, yPos, lvlObj.getWid(), lvlObj.getHei(), null);
+                }
+
             }
         }
     }
 
     private void renderTerrain(Graphics g, int xLevelOffset, int yLevelOffset, boolean behind) {
-        for (int i = 0; i < levels.get(levelIndex).getLvlData().length; i++) {
-            for (int j = 0; j < levels.get(levelIndex).getLvlData()[0].length; j++) {
-                int tileIndex = levels.get(levelIndex).getSpriteIndex(i, j);
+        Level level = levels[levelIndexI][levelIndexJ];
+        for (int i = 0; i < level.getLvlData().length; i++) {
+            for (int j = 0; j < level.getLvlData()[0].length; j++) {
+                int tileIndex = level.getSpriteIndex(i, j);
                 if ((!behind && tileIndex < 255) || tileIndex == -1) continue; // Invalid index
                 if (behind && tileIndex >= 255) continue; // Layer behind
                 if (!behind) tileIndex -= 255;
@@ -167,7 +172,19 @@ public class LevelManager {
     }
 
     public Level getCurrentLevel() {
-        return levels.get(levelIndex);
+        return levels[levelIndexI][levelIndexJ];
+    }
+
+    public void loadSavePoint(int spawnNumber) {
+        if (spawnNumber == -1) {
+            this.levelIndexI = 0;
+            this.levelIndexJ = 0;
+        }
+        if (spawnNumber == 1) {
+            this.levelIndexI = 0;
+            this.levelIndexJ = 2;
+        }
+        loadLevel();
     }
 
     public Particle[] getParticles() {

@@ -32,6 +32,8 @@ public abstract class Enemy extends Entity implements Debug {
         this.currentHealth = maxHealth;
     }
 
+    public abstract void update(BufferedImage[][] animations, int[][] levelData, Player player);
+
     protected void updateAnimation(BufferedImage[][] animations) {
         animTick++;
         if (animTick >= animSpeed) {
@@ -51,7 +53,7 @@ public abstract class Enemy extends Entity implements Debug {
             cooldown[Cooldown.ATTACK.ordinal()] = GHOUL_ATT_CD;
             entityState = Anim.IDLE;
         }
-        else if (entityState == Anim.ATTACK_1 || entityState == Anim.HIT || entityState == Anim.BLOCK || entityState == Anim.REVEAL) {
+        else if (entityState == Anim.ATTACK_1 || entityState == Anim.ATTACK_2 || entityState == Anim.HIT || entityState == Anim.BLOCK || entityState == Anim.REVEAL) {
             entityState = Anim.IDLE;
             fadeCoefficient = 0;
         }
@@ -77,16 +79,24 @@ public abstract class Enemy extends Entity implements Debug {
 
     protected void directToPlayer(Player player) {
         entityState = Anim.RUN;
-        if (enemyType == EnemyType.GHOUL) enemySpeed = GHOUL_SPEED_FAST;
-        else if (enemyType == EnemyType.SKELETON) enemySpeed = SKELETON_SPEED_FAST;
+        configureEnemySpeed();
         if (player.getHitBox().x > hitBox.x) setDirection(Direction.RIGHT);
         else setDirection(Direction.LEFT);
+    }
+
+    private void configureEnemySpeed() {
+        if (enemyType == EnemyType.GHOUL) enemySpeed = GHOUL_SPEED_FAST;
+        else if (enemyType == EnemyType.SKELETON) enemySpeed = SKELETON_SPEED_FAST;
+        else if (enemyType == EnemyType.KNIGHT) enemySpeed = KNIGHT_SPEED_FAST;
+        else if (enemyType == EnemyType.WRAITH) enemySpeed = WRAITH_SPEED_FAST;
     }
 
     protected boolean isPlayerCloseForAttack(Player player) {
         int distance = (int)Math.abs(player.getHitBox().x-hitBox.x);
         if (enemyType == EnemyType.SKELETON) return distance <= SKELETON_ATT_RANGE;
         else if (enemyType == EnemyType.GHOUL) return distance <= GHOUL_ATT_RANGE;
+        else if (enemyType == EnemyType.KNIGHT) return distance <= KNIGHT_ATT_RANGE;
+        else if (enemyType == EnemyType.WRAITH) return distance <= WRAITH_ATT_RANGE;
         else if (enemyType == EnemyType.SPEAR_WOMAN) return distance <= SW_ATT_RANGE;
         return false;
     }

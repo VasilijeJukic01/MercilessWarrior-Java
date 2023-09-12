@@ -41,7 +41,9 @@ public enum LvlObjType {
     BLACK("BLACK",                  TILES_SIZE, TILES_SIZE, 0, 0),
     LEFT_END("LEFT_END",            TILES_SIZE, TILES_SIZE, 0, 0),
     RIGHT_END("RIGHT_END",          TILES_SIZE, TILES_SIZE, 0, 0),
-    LEAF1_REVERSE("LEAF1_REVERSE",  BIG_TILE_SIZE, TILES_SIZE, 0, -5);
+    LEAF1_REVERSE("LEAF1_REVERSE",  BIG_TILE_SIZE, TILES_SIZE, 0, -5),
+    UPPER_END("UPPER_END",          TILES_SIZE, TILES_SIZE, 0, 5),
+    BOTTOM_END("BOTTOM_END",        TILES_SIZE, TILES_SIZE, 0, 5);
 
     private final String id;
     private final int wid, hei;

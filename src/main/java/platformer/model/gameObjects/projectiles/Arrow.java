@@ -26,7 +26,7 @@ public class Arrow extends Projectile {
         int fS = 1, fC = 0;
         if (direction == Direction.LEFT) {
             fS = -1;
-            fC = ARROW_TRAP_WID;
+            fC = (int) (32 * SCALE);
         }
         int x = (int)hitBox.x - xLevelOffset + fC;
         int y = (int)hitBox.y - yLevelOffset;

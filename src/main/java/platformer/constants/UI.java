@@ -5,6 +5,15 @@ import java.awt.*;
 import static platformer.constants.Constants.GAME_WIDTH;
 import static platformer.constants.Constants.SCALE;
 
+// Vocabulary
+
+/*
+
+L - Leaderboard
+PORT - Portrait
+
+ */
+
 public class UI {
 
     // Menu UI

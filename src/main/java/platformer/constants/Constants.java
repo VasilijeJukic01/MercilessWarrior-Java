@@ -66,9 +66,9 @@ public class Constants {
 
     public static final double PUSH_LIMIT = -30;
     public static final double PUSH_SPEED = 0.95;
-    public static final double COOLDOWN_TICK = 0.1;
 
     // Cooldown
+    public static final double COOLDOWN_TICK = 0.1;
     public static final double PLAYER_ATTACK_CD = 0.75;
     public static final double PLAYER_BLOCK_CD = 1.2;
     public static final double PLAYER_DASH_CD = 1.75;
@@ -81,11 +81,13 @@ public class Constants {
     public static final int STAMINA_VAL = 40;
 
     // Level Constants
-    public static final int MAX_LEVELS = 3;
+    public static final int MAX_LEVELS = 4;
     public static final int EMPTY_TILE = -1;
     public static final int MAX_TILE_VALUE = 49;
     public static final int LEFT_EXIT = 35;
     public static final int RIGHT_EXIT = 36;
+    public static final int UPPER_EXIT = 38;
+    public static final int BOTTOM_EXIT = 39;
     public static final int PARTICLES_CAP = 50;
 
     public static final int LEFT_BORDER = (int)(0.2 * GAME_WIDTH);
@@ -112,6 +114,24 @@ public class Constants {
     public static final int GHOUL_AB_WID = scale(60);
     public static final int GHOUL_AB_HEI = scale(45);
 
+    public static final int KNIGHT_WIDTH = scale(120);
+    public static final int KNIGHT_HEIGHT = scale(80);
+    public static final int KNIGHT_X_OFFSET = scale(50);
+    public static final int KNIGHT_Y_OFFSET = scale(18);
+    public static final int KNIGHT_HB_WID = scale(21);
+    public static final int KNIGHT_HB_HEI = scale(42);
+    public static final int KNIGHT_AB_WID = scale(60);
+    public static final int KNIGHT_AB_HEI = scale(45);
+
+    public static final int WRAITH_WIDTH = scale(200);
+    public static final int WRAITH_HEIGHT = scale(130);
+    public static final int WRAITH_X_OFFSET = scale(90);
+    public static final int WRAITH_Y_OFFSET = scale(45);
+    public static final int WRAITH_HB_WID = scale(21);
+    public static final int WRAITH_HB_HEI = scale(42);
+    public static final int WRAITH_AB_WID = scale(100);
+    public static final int WRAITH_AB_HEI = scale(45);
+
     public static final int SW_WIDTH = scale(153);
     public static final int SW_HEIGHT = scale(138);
     public static final int SW_X_OFFSET = scale(54);
@@ -124,11 +144,15 @@ public class Constants {
 
     public static final double SKELETON_SPEED_FAST = dScale(0.35);
     public static final double GHOUL_SPEED_FAST = dScale(0.45);
+    public static final double KNIGHT_SPEED_FAST = dScale(0.30);
+    public static final double WRAITH_SPEED_FAST = dScale(0.5);
 
     private static final double RANGE = 1.25 * TILES_SIZE;
     public static final double SIGHT_RANGE = RANGE * 5;
     public static final double SKELETON_ATT_RANGE = RANGE / 1.25;
     public static final double GHOUL_ATT_RANGE = RANGE * 2;
+    public static final double KNIGHT_ATT_RANGE = RANGE / 1.3;
+    public static final double WRAITH_ATT_RANGE = RANGE;
     public static final double SW_ATT_RANGE = RANGE * 1.8;
     public static final double ENEMY_SPEED_SLOW = dScale(0.2);
 
@@ -208,6 +232,13 @@ public class Constants {
     public static final int SAVE_TOTEM_OFFSET_X = scale(10);
     public static final int SAVE_TOTEM_OFFSET_Y = scale(9);
 
+    public static final int SMASH_TRAP_WID = scale(50);
+    public static final int SMASH_TRAP_HEI = scale(76);
+    public static final int SMASH_TRAP_HB_WID = scale(20);
+    public static final int SMASH_TRAP_HB_HEI = scale(80);
+    public static final int SMASH_TRAP_OFFSET_X = scale(15);
+    public static final int SMASH_TRAP_OFFSET_Y = scale(0);
+
     // Projectile Constants
     public static final int ARROW_WID = scale(32);
     public static final int ARROW_HEI = scale(4);
@@ -232,7 +263,6 @@ public class Constants {
     public static final int FB_OFFSET_X = scale(40);
     public static final int FB_OFFSET_Y = scale(15);
     public static final int FIREBALL_SPEED = scale(1.5);
-
 
     public static final int TRACKING_PROJECTILE_DISTANCE = scale(50);
     public static final int ENEMY_PROJECTILE_DMG = 5;

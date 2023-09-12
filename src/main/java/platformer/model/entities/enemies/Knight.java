@@ -2,7 +2,6 @@ package platformer.model.entities.enemies;
 
 import platformer.animation.Anim;
 import platformer.audio.Audio;
-import platformer.audio.Sound;
 import platformer.model.entities.Direction;
 import platformer.model.entities.player.Player;
 import platformer.utils.Utils;
@@ -14,40 +13,34 @@ import java.util.Random;
 
 import static platformer.constants.Constants.*;
 
-public class Skeleton extends Enemy {
+public class Knight extends Enemy {
 
     private int attackOffset;
 
     // Physics
-    private final double gravity = 0.035 * SCALE;
-    private final double collisionFallSpeed = 0.5 * SCALE;
+    private final double gravity = 0.020 * SCALE;
+    private final double collisionFallSpeed = 0.6 * SCALE;
 
-    public Skeleton(int xPos, int yPos) {
-        super(xPos, yPos, SKELETON_WIDTH, SKELETON_HEIGHT, EnemyType.SKELETON, 25);
-        initHitBox(SKELETON_HB_WID, SKELETON_HB_HEI);
+    public Knight(int xPos, int yPos) {
+        super(xPos, yPos, KNIGHT_WIDTH, KNIGHT_HEIGHT, EnemyType.KNIGHT, 25);
+        initHitBox(KNIGHT_HB_WID, KNIGHT_HB_HEI);
         initAttackBox();
     }
 
     private void initAttackBox() {
-        this.attackBox = new Rectangle2D.Double(xPos, yPos-1, SKELETON_AB_WID, SKELETON_AB_HEI);
+        this.attackBox = new Rectangle2D.Double(xPos, yPos-1, KNIGHT_AB_WID, KNIGHT_AB_HEI);
         this.attackOffset =  (int)(20 * SCALE);
     }
 
     // Attack
     @Override
     public void hit(double damage, boolean enableBlock, boolean hitSound) {
-        if (enableBlock) {
-          blockAttack();
-          if (entityState == Anim.BLOCK) return;
-        }
         currentHealth -= damage;
         if (hitSound) Audio.getInstance().getAudioPlayer().playHitSound();
         if (currentHealth <= 0) {
             checkDeath();
         }
         else setEnemyAction(Anim.HIT);
-        pushOffsetDirection = Direction.UP;
-        pushOffset = 0;
         enemySpeed = ENEMY_SPEED_SLOW;
     }
 
@@ -61,22 +54,11 @@ public class Skeleton extends Enemy {
             if (entityState == Anim.HIT) setEnemyActionNoReset(Anim.HIT);
             else setEnemyAction(Anim.HIT);
         }
-        pushOffsetDirection = Direction.DOWN;
-        pushOffset = 0;
         enemySpeed = 0;
     }
 
-    private void blockAttack() {
-        Random rand = new Random();
-        double x = rand.nextDouble();
-        if (x < 0.3) {
-            entityState = Anim.BLOCK;
-            Audio.getInstance().getAudioPlayer().playBlockSound("Enemy");
-        }
-    }
-
     private void checkDeath() {
-        Audio.getInstance().getAudioPlayer().playSound(Sound.SKELETON_DEATH_1);
+        // TODO: Find audio
         setEnemyAction(Anim.DEATH);
     }
 
@@ -84,17 +66,16 @@ public class Skeleton extends Enemy {
     private void updateBehavior(int[][] levelData, Player player) {
         switch (entityState) {
             case IDLE:
-               idleAction();
-               break;
+                idleAction();
+                break;
             case RUN:
             case WALK:
                 moveAction(levelData, player);
                 break;
             case ATTACK_1:
+            case ATTACK_2:
                 attackAction(player);
                 break;
-            case HIT:
-                hitAction(levelData);
             default: break;
         }
     }
@@ -108,8 +89,10 @@ public class Skeleton extends Enemy {
     private void moveAction(int[][] levelData, Player player) {
         if (canSeePlayer(levelData, player)) directToPlayer(player);
         if (canSeePlayer(levelData, player) && isPlayerCloseForAttack(player)) {
-            setEnemyAction(Anim.ATTACK_1);
-            animSpeed = 18;
+            Random rand = new Random();
+            boolean x = rand.nextBoolean();
+            setEnemyAction(x ? Anim.ATTACK_1 : Anim.ATTACK_2);
+            animSpeed = 20;
         }
         double enemyXSpeed = (direction == Direction.LEFT) ? -enemySpeed : enemySpeed;
         if (Utils.getInstance().canMoveHere(hitBox.x + enemyXSpeed, hitBox.y, hitBox.width, hitBox.height, levelData)) {
@@ -126,19 +109,14 @@ public class Skeleton extends Enemy {
             player.setCanBlock(false);
             attackCheck = false;
         }
-        else if ((animIndex == 1 || animIndex == 2) && player.isBlock()) {
+        else if (entityState == Anim.ATTACK_1 && (animIndex == 1 || animIndex == 2) && player.isBlock()) {
             if ((player.getHitBox().x < hitBox.x && player.getFlipSign() == 1) || (player.getHitBox().x > hitBox.x && player.getFlipSign() == -1)) {
                 player.setCanBlock(true);
                 Audio.getInstance().getAudioPlayer().playBlockSound("Player");
             }
         }
-        else if (animIndex == 3 && !attackCheck) checkPlayerHit(attackBox, player);
+        else if (animIndex == 4 && !attackCheck) checkPlayerHit(attackBox, player);
         player.setBlock(false);
-    }
-
-    private void hitAction(int[][] levelData) {
-        pushBack(pushDirection, levelData, 1.5, enemySpeed);
-        updatePushOffset();
     }
 
     // Update

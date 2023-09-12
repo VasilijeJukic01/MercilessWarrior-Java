@@ -44,6 +44,7 @@ public class Utils {
             return resizeImage(image, w, h);
 
         } catch (Exception e) {
+            if (name.contains("/levels/level")) return null;
             Logger.getInstance().notify("Importing image failed. "+"Name: " + name + " (w, h) = (" + w + ", " + h + ")", Message.ERROR);
         }
         return null;
@@ -208,9 +209,12 @@ public class Utils {
     public int isEntityOnExit(Level level, Rectangle2D.Double hitBox) {
         int xTile = (int)(hitBox.x / TILES_SIZE);
         int yTile = (int)(hitBox.y / TILES_SIZE);
-        int xTileRight = (int)((hitBox.x+ hitBox.width) / TILES_SIZE);
-        if (level.getDecoSpriteIndex(xTile, yTile) == RIGHT_EXIT || level.getDecoSpriteIndex(xTileRight, yTile) == RIGHT_EXIT) return 1;
-        if (level.getDecoSpriteIndex(xTile, yTile) == LEFT_EXIT) return -1;
+        int xTileRight = (int)((hitBox.x + hitBox.width) / TILES_SIZE);
+
+        if (level.getDecoSpriteIndex(xTile, yTile) == RIGHT_EXIT || level.getDecoSpriteIndex(xTileRight, yTile) == RIGHT_EXIT) return RIGHT_EXIT;
+        if (level.getDecoSpriteIndex(xTile, yTile) == LEFT_EXIT) return LEFT_EXIT;
+        if (level.getDecoSpriteIndex(xTile, yTile) == UPPER_EXIT) return UPPER_EXIT;
+        if (level.getDecoSpriteIndex(xTile, yTile + 1) == BOTTOM_EXIT) return BOTTOM_EXIT;
         return 0;
     }
 
