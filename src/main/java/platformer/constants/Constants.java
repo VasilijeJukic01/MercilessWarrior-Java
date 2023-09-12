@@ -151,7 +151,7 @@ public class Constants {
     public static final double SIGHT_RANGE = RANGE * 5;
     public static final double SKELETON_ATT_RANGE = RANGE / 1.25;
     public static final double GHOUL_ATT_RANGE = RANGE * 2;
-    public static final double KNIGHT_ATT_RANGE = RANGE * 1.2;
+    public static final double KNIGHT_ATT_RANGE = RANGE / 1.3;
     public static final double WRAITH_ATT_RANGE = RANGE;
     public static final double SW_ATT_RANGE = RANGE * 1.8;
     public static final double ENEMY_SPEED_SLOW = dScale(0.2);
