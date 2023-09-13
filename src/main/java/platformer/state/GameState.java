@@ -5,6 +5,7 @@ import platformer.controller.GameStateController;
 import platformer.core.Framework;
 import platformer.debug.logger.Message;
 import platformer.debug.logger.Logger;
+import platformer.model.entities.effects.LightManager;
 import platformer.model.entities.effects.Particle;
 import platformer.model.entities.enemies.EnemyManager;
 import platformer.core.Game;
@@ -43,6 +44,7 @@ public class GameState extends AbstractState implements State {
     private PerksManager perksManager;
     private OverlayManager overlayManager;
     private DialogueManager dialogueManager;
+    private LightManager lightManager;
 
     // State
     private PlayingState state;
@@ -77,6 +79,7 @@ public class GameState extends AbstractState implements State {
         this.overlayManager = new OverlayManager(this);
         this.spellManager = new SpellManager(this);
         this.dialogueManager = new DialogueManager(this);
+        this.lightManager = new LightManager(this);
     }
 
     private void initPlayer() {
@@ -189,15 +192,19 @@ public class GameState extends AbstractState implements State {
         this.objectManager.render(g, xLevelOffset, yLevelOffset);
         this.player.render(g, xLevelOffset, yLevelOffset);
         this.enemyManager.render(g, xLevelOffset, yLevelOffset);
+        this.lightManager.render(g, xLevelOffset, yLevelOffset);
         this.spellManager.render(g, xLevelOffset, yLevelOffset);
         this.player.getPlayerStatusManager().getUserInterface().render(g);
         this.overlayManager.render(g);
     }
 
     private void handleGameState() {
-        checkLevelExit();
-        updateParticles();
-        updateManagers();
+        try {
+            checkLevelExit();
+            updateParticles();
+            updateManagers();
+        }
+        catch (Exception ignored) {}
     }
 
     private void checkLevelExit() {

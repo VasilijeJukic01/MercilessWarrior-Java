@@ -307,6 +307,8 @@ public class Constants {
     public static final int PERK_SLOT_MAX_ROW = 4, PERK_SLOT_MAX_COL = 7;
     public static final int SLOT_SPACING = scale(40);
 
+    public static final int PLAYER_LIGHT_RADIUS = scale(35);
+
     // Effect Constants
     public static final double PARTICLE_SHIFT = 0.1;
     public static final double FADE_SPEED = 12;
