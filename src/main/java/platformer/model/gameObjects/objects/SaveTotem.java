@@ -50,7 +50,7 @@ public class SaveTotem extends GameObject {
 
     private void renderText(Graphics g, int xLevelOffset, int yLevelOffset) {
         if (active) {
-            g.setColor(Color.GRAY);
+            g.setColor(Color.WHITE);
             g.setFont(new Font("Arial", Font.BOLD, FONT_MEDIUM));
             int infoX = (int)(hitBox.x - hitBox.width / 3 - xLevelOffset);
             int infoY = (int)(hitBox.y - yLevelOffset - 5 * SCALE);

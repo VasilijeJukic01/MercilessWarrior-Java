@@ -13,9 +13,10 @@ public enum ObjType {
     BLOCKER(10),                    // 9
     BLACKSMITH(8),                  // 10
     DOG(8),                         // 11
-    SAVE_TOTEM(7),                  // 12
+    SAVE_TOTEM(1),                  // 12
     SMASH_TRAP(14),                 // 13
-    MAX(0);                         // 14
+    CANDLE(1),                      // 14
+    MAX(0);                         // 15
 
     private final int sprites;
 

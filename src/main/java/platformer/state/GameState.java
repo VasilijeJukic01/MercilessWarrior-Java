@@ -190,9 +190,9 @@ public class GameState extends AbstractState implements State {
         g.drawImage(background, 0, 0, null);
         this.levelManager.render(g, xLevelOffset, yLevelOffset);
         this.objectManager.render(g, xLevelOffset, yLevelOffset);
-        this.player.render(g, xLevelOffset, yLevelOffset);
         this.enemyManager.render(g, xLevelOffset, yLevelOffset);
         this.lightManager.render(g, xLevelOffset, yLevelOffset);
+        this.player.render(g, xLevelOffset, yLevelOffset);
         this.spellManager.render(g, xLevelOffset, yLevelOffset);
         this.player.getPlayerStatusManager().getUserInterface().render(g);
         this.overlayManager.render(g);
@@ -230,6 +230,7 @@ public class GameState extends AbstractState implements State {
         yBorderUpdate();
         enemyManager.update(levelManager.getCurrentLevel().getLvlData(), player);
         objectManager.update(levelManager.getCurrentLevel().getLvlData(), player);
+        lightManager.update();
         spellManager.update();
         player.update();
         if (state == PlayingState.SHOP) overlayManager.update(PlayingState.SHOP);
@@ -322,6 +323,10 @@ public class GameState extends AbstractState implements State {
 
     public DialogueManager getDialogueManager() {
         return dialogueManager;
+    }
+
+    public LightManager getLightManager() {
+        return lightManager;
     }
 
     public void setOverlay(PlayingState newOverlay) {

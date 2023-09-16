@@ -28,8 +28,9 @@ public class FilePaths {
     public static final String BS_SHEET = "/images/objs/BlacksmithSprite.png";
     public static final String DOG_SHEET = "/images/objs/DogSprite.png";
     public static final String ARROW_IMG = "/images/objs/arrow.png";
-    public static final String TOTEM_SHEET = "/images/objs/save_game_sprite.png";
+    public static final String TOTEM_SHEET = "/images/objs/SaveTotem.png";
     public static final String SMASH_TRAP_SHEET = "/images/objs/smashTrap.png";
+    public static final String CANDLE_IMG = "/images/objs/Candle.png";
 
     public static final String HEALTH_ITEM = "/images/shop/HealthItem.png";
     public static final String STAMINA_ITEM = "/images/shop/StaminaItem.png";
@@ -78,6 +79,10 @@ public class FilePaths {
     public static final String KEYBOARD_SPRITE = "/images/keyboard.png";
     public static final String OPTIONS_TXT = "/images/buttons/OptionsText.png";
     public static final String BOARD_TXT = "/images/buttons/BoardText.png";
+
+    public static final String ORANGE_GLOW = "/images/particles/orangeGlow.png";
+    public static final String WHITE_GLOW = "/images/particles/whiteGlow.png";
+    public static final String WHITE_RADIAL_GLOW = "/images/particles/whiteRadialGlow.png";
 
     // Serialization
     public static final String SAVE_PATH = "src/main/resources/saves/";

@@ -124,6 +124,9 @@ public class Level {
             case SMASH_TRAP:
                 addGameObject(new SmashTrap(ObjType.values()[valueB], i*TILES_SIZE, j*TILES_SIZE));
                 break;
+            case CANDLE:
+                addGameObject(new Candle(ObjType.values()[valueB], i*TILES_SIZE, j*TILES_SIZE));
+                break;
             default: break;
         }
     }
