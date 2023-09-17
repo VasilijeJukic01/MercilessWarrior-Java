@@ -40,11 +40,11 @@ public class ObjectManager {
             SaveTotem.class, SmashTrap.class, Candle.class
     };
     Class<? extends GameObject>[] renderBelow = new Class[] {
-            Coin.class, Container.class, Potion.class, Spike.class,
+            Container.class, Potion.class, Spike.class,
             Blocker.class, Dog.class, SmashTrap.class
     };
     Class<? extends GameObject>[] renderAbove = new Class[] {
-            SaveTotem.class, Shop.class, Blacksmith.class
+            SaveTotem.class, Shop.class, Blacksmith.class, Coin.class
     };
 
     private Map<ObjType, List<GameObject>> objectsMap = new HashMap<>();
@@ -209,7 +209,6 @@ public class ObjectManager {
     public void render(Graphics g, int xLevelOffset, int yLevelOffset) {
         Arrays.stream(renderBelow).forEach(renderClass -> renderObjects(g, xLevelOffset, yLevelOffset, renderClass));
         renderArrowLaunchers(g, xLevelOffset, yLevelOffset);
-        renderProjectiles(g, xLevelOffset, yLevelOffset);
     }
 
     public void candleRender(Graphics g, int xLevelOffset, int yLevelOffset, Candle c) {
@@ -219,6 +218,7 @@ public class ObjectManager {
 
     public void glowingRender(Graphics g, int xLevelOffset, int yLevelOffset) {
         Arrays.stream(renderAbove).forEach(renderClass -> renderObjects(g, xLevelOffset, yLevelOffset, renderClass));
+        renderProjectiles(g, xLevelOffset, yLevelOffset);
     }
 
     private void updateArrowLaunchers(int[][] lvlData, Player player) {

@@ -218,7 +218,7 @@ public class EnemyManager {
 
         getEnemies(SpearWoman.class).stream()
                 .filter(SpearWoman::isAlive)
-                .forEach(spearWoman -> spearWoman.update(spearWomanAnimations, levelData, player, gameState.getSpellManager(), gameState.getObjectManager()));
+                .forEach(spearWoman -> spearWoman.update(spearWomanAnimations, levelData, player, gameState.getSpellManager(), gameState.getObjectManager(), gameState.getBossInterface()));
     }
 
     public void render(Graphics g, int xLevelOffset, int yLevelOffset) {

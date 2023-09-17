@@ -226,7 +226,7 @@ public class Utils {
     }
 
     // Other
-    public <T> void reverseArray(T[] arr) {
+    public <T> T[] reverseArray(T[] arr) {
         int start = 0;
         int end = arr.length - 1;
 
@@ -238,6 +238,8 @@ public class Utils {
             start++;
             end--;
         }
+
+        return arr;
     }
 
     public <T> List<T> getAllItems(Map<?, List<T>> itemMap) {

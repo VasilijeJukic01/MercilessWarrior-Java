@@ -65,7 +65,7 @@ public class Ghoul extends Enemy {
     private void hide() {
         Random rand = new Random();
         double x = rand.nextDouble();
-        if (x < 0.3) {
+        if (x < 0.2) {
             entityState = Anim.HIDE;
             Audio.getInstance().getAudioPlayer().playSound(Sound.GHOUL_HIDE);
         }

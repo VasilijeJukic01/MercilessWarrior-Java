@@ -68,14 +68,14 @@ public class PlayerActionHandler {
 
     public void handleObjectActions(ObjectManager objectManager) {
         handleObjectInteraction(objectManager);
-        checkTrapCollide(objectManager);
+        checkIntersection(objectManager);
     }
 
     private void handleObjectInteraction(ObjectManager objectManager) {
         objectManager.handleObjectInteraction(hitBox, player);
     }
 
-    private void checkTrapCollide(ObjectManager objectManager) {
+    private void checkIntersection(ObjectManager objectManager) {
         objectManager.checkPlayerIntersection(player);
     }
 

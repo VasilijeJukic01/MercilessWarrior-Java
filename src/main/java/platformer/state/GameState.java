@@ -17,6 +17,7 @@ import platformer.model.perks.PerksManager;
 import platformer.model.spells.SpellManager;
 import platformer.ui.dialogue.DialogueManager;
 import platformer.ui.overlays.OverlayManager;
+import platformer.ui.overlays.hud.BossInterface;
 import platformer.utils.Utils;
 
 import java.awt.*;
@@ -55,6 +56,8 @@ public class GameState extends AbstractState implements State {
     private int yLevelOffset;
     private int yMaxLevelOffset;
 
+    private BossInterface bossInterface;
+
     public GameState(Game game) {
         super(game);
         init();
@@ -64,6 +67,7 @@ public class GameState extends AbstractState implements State {
     // Init
     private void init() {
         this.background = Utils.getInstance().importImage(BACKGROUND_1, GAME_WIDTH, GAME_HEIGHT);
+        this.bossInterface = new BossInterface();
         initManagers();
         initPlayer();
         loadStartLevel();
@@ -195,6 +199,7 @@ public class GameState extends AbstractState implements State {
         this.player.render(g, xLevelOffset, yLevelOffset);
         this.spellManager.render(g, xLevelOffset, yLevelOffset);
         this.player.getPlayerStatusManager().getUserInterface().render(g);
+        this.bossInterface.render(g);
         this.overlayManager.render(g);
     }
 
@@ -327,6 +332,10 @@ public class GameState extends AbstractState implements State {
 
     public LightManager getLightManager() {
         return lightManager;
+    }
+
+    public BossInterface getBossInterface() {
+        return bossInterface;
     }
 
     public void setOverlay(PlayingState newOverlay) {

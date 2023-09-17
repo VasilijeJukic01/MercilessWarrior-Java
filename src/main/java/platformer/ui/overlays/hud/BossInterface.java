@@ -11,17 +11,26 @@ import static platformer.constants.UI.*;
 
 public class BossInterface {
 
-    private final SpearWoman spearWoman;
+    private boolean active;
+
     private final BufferedImage bossBar;
 
-    public BossInterface(SpearWoman spearWoman) {
-        this.spearWoman = spearWoman;
+    public BossInterface() {
         this.bossBar = Utils.getInstance().importImage(BOSS_BAR, -1, -1);
     }
 
     public void render(Graphics g) {
-        if (spearWoman.isAlive()) {
+        if (active) {
             g.drawImage(bossBar, BOSS_BAR_X, BOSS_BAR_Y, BOSS_BAR_WID, BOSS_BAR_HEI, null);
         }
     }
+
+    public void setActive(boolean active) {
+        this.active = active;
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
 }

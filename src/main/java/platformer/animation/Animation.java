@@ -85,7 +85,7 @@ public class Animation {
         anim[Anim.WALK.ordinal()] = loadFromSprite(GHOUL_SHEET,     6, 1, w, h, 0, GHOUL_W, GHOUL_H);
         anim[Anim.HIDE.ordinal()] = loadFromSprite(GHOUL_SHEET,     19, 6, w, h, 0, GHOUL_W, GHOUL_H);
         anim[Anim.REVEAL.ordinal()] = loadFromSprite(GHOUL_SHEET,   19, 6, w, h, 0, GHOUL_W, GHOUL_H);
-        Utils.getInstance().reverseArray(anim[16]);
+        anim[Anim.REVEAL.ordinal()] = Utils.getInstance().reverseArray(anim[Anim.REVEAL.ordinal()]);
 
         return anim;
     }

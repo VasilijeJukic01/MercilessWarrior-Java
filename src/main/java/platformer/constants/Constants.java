@@ -316,7 +316,6 @@ public class Constants {
 
     // Effect Constants
     public static final double PARTICLE_SHIFT = 0.1;
-    public static final double FADE_SPEED = 12;
 
     public static final int PLAYER_LIGHT_RADIUS = scale(75);
     public static final int CANDLE_LIGHT_RADIUS = scale(100);
