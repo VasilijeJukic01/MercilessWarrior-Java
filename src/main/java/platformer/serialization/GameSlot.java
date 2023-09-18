@@ -43,8 +43,8 @@ public class GameSlot {
         else {
             g.drawString("Lvl: "+account.getLevel(), xPos + (int)(SCALE * 130), yPos + (int)(SCALE * 15));
             g.drawString("Exp: "+account.getExp(), xPos + (int)(SCALE * 130), yPos + (int)(SCALE * 30));
-            g.drawString("Playtime: /", xPos + (int)(SCALE * 10), yPos + (int)(SCALE * 15));
-            g.drawString("Save time: /", xPos + (int)(SCALE * 10), yPos + (int)(SCALE * 30));
+            g.drawString("Playtime: "+(account.getPlaytime()/3600)+"h", xPos + (int)(SCALE * 10), yPos + (int)(SCALE * 15));
+            g.drawString("Save time: "+account.getLastTimeSaved(), xPos + (int)(SCALE * 10), yPos + (int)(SCALE * 30));
         }
     }
 

@@ -85,7 +85,7 @@ public class Animation {
         anim[Anim.WALK.ordinal()] = loadFromSprite(GHOUL_SHEET,     6, 1, w, h, 0, GHOUL_W, GHOUL_H);
         anim[Anim.HIDE.ordinal()] = loadFromSprite(GHOUL_SHEET,     19, 6, w, h, 0, GHOUL_W, GHOUL_H);
         anim[Anim.REVEAL.ordinal()] = loadFromSprite(GHOUL_SHEET,   19, 6, w, h, 0, GHOUL_W, GHOUL_H);
-        Utils.getInstance().reverseArray(anim[16]);
+        anim[Anim.REVEAL.ordinal()] = Utils.getInstance().reverseArray(anim[Anim.REVEAL.ordinal()]);
 
         return anim;
     }
@@ -154,8 +154,9 @@ public class Animation {
         anim[ObjType.BLOCKER.ordinal()] = loadFromSprite(BLOCKER_SHEET, 12, 0, BLOCKER_WID, BLOCKER_HEI, 0, BLOCKER_W, BLOCKER_H);
         anim[ObjType.BLACKSMITH.ordinal()] = loadFromSprite(BS_SHEET, 8, 0, BLACKSMITH_WID, BLACKSMITH_HEI, 0, BLACKSMITH_W, BLACKSMITH_H);
         anim[ObjType.DOG.ordinal()] = loadFromSprite(DOG_SHEET, 8, 0, DOG_WID, DOG_HEI, 0, DOG_W, DOG_H);
-        anim[ObjType.SAVE_TOTEM.ordinal()] = loadFromSprite(TOTEM_SHEET, 7, 0, SAVE_TOTEM_WID, SAVE_TOTEM_HEI, 0, TOTEM_W, TOTEM_H);
+        anim[ObjType.SAVE_TOTEM.ordinal()] = loadFromSprite(TOTEM_SHEET, 1, 0, SAVE_TOTEM_WID, SAVE_TOTEM_HEI, 0, TOTEM_W, TOTEM_H);
         anim[ObjType.SMASH_TRAP.ordinal()] = loadFromSprite(SMASH_TRAP_SHEET, 14, 0, SMASH_TRAP_WID, SMASH_TRAP_HEI, 0, ST_W, ST_H);
+        anim[ObjType.CANDLE.ordinal()] = loadFromSprite(CANDLE_IMG, 1, 0, CANDLE_WID, CANDLE_HEI, 0, CANDLE_W, CANDLE_H);
 
         return anim;
     }

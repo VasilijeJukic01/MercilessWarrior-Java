@@ -226,7 +226,7 @@ public class Constants {
     public static final int DOG_OFFSET_Y = scale(12);
 
     public static final int SAVE_TOTEM_WID = scale(50);
-    public static final int SAVE_TOTEM_HEI = scale(50);
+    public static final int SAVE_TOTEM_HEI = scale(49);
     public static final int SAVE_TOTEM_HB_WID = scale(32);
     public static final int SAVE_TOTEM_HB_HEI = scale(32);
     public static final int SAVE_TOTEM_OFFSET_X = scale(10);
@@ -238,6 +238,13 @@ public class Constants {
     public static final int SMASH_TRAP_HB_HEI = scale(80);
     public static final int SMASH_TRAP_OFFSET_X = scale(15);
     public static final int SMASH_TRAP_OFFSET_Y = scale(0);
+
+    public static final int CANDLE_WID = scale(25);
+    public static final int CANDLE_HEI = scale(69);
+    public static final int CANDLE_HB_WID = scale(27);
+    public static final int CANDLE_HB_HEI = scale(27);
+    public static final int CANDLE_OFFSET_X = scale(-8);
+    public static final int CANDLE_OFFSET_Y = scale(12);
 
     // Projectile Constants
     public static final int ARROW_WID = scale(32);
@@ -309,7 +316,9 @@ public class Constants {
 
     // Effect Constants
     public static final double PARTICLE_SHIFT = 0.1;
-    public static final double FADE_SPEED = 12;
+
+    public static final int PLAYER_LIGHT_RADIUS = scale(75);
+    public static final int CANDLE_LIGHT_RADIUS = scale(100);
 
     public static final int DUST1_WID = scale(40);
     public static final int DUST1_HEI = scale(80);

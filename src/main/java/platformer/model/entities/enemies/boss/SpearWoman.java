@@ -44,15 +44,12 @@ public class SpearWoman extends Enemy {
     private final double gravity = 0.1 * SCALE;
     private final double collisionFallSpeed = 0.5 * SCALE;
 
-    private final BossInterface bossInterface;
-
     public SpearWoman(int xPos, int yPos) {
         super(xPos, yPos, SW_WIDTH, SW_HEIGHT, EnemyType.SPEAR_WOMAN, 18);
         super.setDirection(Direction.LEFT);
         initHitBox(SW_HB_WID, SW_HB_HEI);
         initAttackBox();
         super.cooldown = new double[1];
-        this.bossInterface = new BossInterface(this);
         this.handler = new BossAttackHandler(this, actions);
     }
 
@@ -293,10 +290,12 @@ public class SpearWoman extends Enemy {
     @Override
     public void update(BufferedImage[][] animations, int[][] levelData, Player player) {}
 
-    public void update(BufferedImage[][] animations, int[][] levelData, Player player, SpellManager spellManager, ObjectManager objectManager) {
+    public void update(BufferedImage[][] animations, int[][] levelData, Player player, SpellManager spellManager, ObjectManager objectManager, BossInterface bossInterface) {
         updateMove(levelData, player, spellManager, objectManager);
         updateAnimation(animations);
         updateAttackBox();
+        if (!bossInterface.isActive() && start) bossInterface.setActive(true);
+        else if (bossInterface.isActive() && !start) bossInterface.setActive(false);
     }
 
     public void updateMove(int[][] levelData, Player player, SpellManager spellManager, ObjectManager objectManager) {
@@ -315,10 +314,6 @@ public class SpearWoman extends Enemy {
     }
 
     // Other
-    public void overlayRender(Graphics g) {
-        if (start) bossInterface.render(g);
-    }
-
     public void prepareForClassicAttack() {
         rapidSlashCount = 0;
         changeAttackBox();
@@ -341,7 +336,7 @@ public class SpearWoman extends Enemy {
     @Override
     public void reset() {
         super.reset();
-        start = false;
+        setStart(false);
         multiShootCount = shootCount  = 0;
         shooting = false;
         multiShootFlag = 0;

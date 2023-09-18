@@ -69,7 +69,7 @@ public class Skeleton extends Enemy {
     private void blockAttack() {
         Random rand = new Random();
         double x = rand.nextDouble();
-        if (x < 0.3) {
+        if (x < 0.2) {
             entityState = Anim.BLOCK;
             Audio.getInstance().getAudioPlayer().playBlockSound("Enemy");
         }
@@ -109,7 +109,7 @@ public class Skeleton extends Enemy {
         if (canSeePlayer(levelData, player)) directToPlayer(player);
         if (canSeePlayer(levelData, player) && isPlayerCloseForAttack(player)) {
             setEnemyAction(Anim.ATTACK_1);
-            animSpeed = 18;
+            animSpeed = 23;
         }
         double enemyXSpeed = (direction == Direction.LEFT) ? -enemySpeed : enemySpeed;
         if (Utils.getInstance().canMoveHere(hitBox.x + enemyXSpeed, hitBox.y, hitBox.width, hitBox.height, levelData)) {
@@ -123,17 +123,15 @@ public class Skeleton extends Enemy {
 
     private void attackAction(Player player) {
         if (animIndex == 0) {
-            player.setCanBlock(false);
             attackCheck = false;
         }
-        else if ((animIndex == 1 || animIndex == 2) && player.isBlock()) {
+        else if ((animIndex == 1 || animIndex == 2) && player.isBlock() && !player.canBlock()) {
             if ((player.getHitBox().x < hitBox.x && player.getFlipSign() == 1) || (player.getHitBox().x > hitBox.x && player.getFlipSign() == -1)) {
                 player.setCanBlock(true);
                 Audio.getInstance().getAudioPlayer().playBlockSound("Player");
             }
         }
         else if (animIndex == 3 && !attackCheck) checkPlayerHit(attackBox, player);
-        player.setBlock(false);
     }
 
     private void hitAction(int[][] levelData) {

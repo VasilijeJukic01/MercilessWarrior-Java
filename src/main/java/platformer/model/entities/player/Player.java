@@ -110,6 +110,7 @@ public class Player extends Entity {
     }
 
     private void finishAnimation() {
+        finishAttackBlock();
         animIndex = 0;
         attacking = attackCheck = false;
         dashHit = false;
@@ -123,6 +124,14 @@ public class Player extends Entity {
         if (hit) {
             hit = false;
             airSpeed = 0;
+        }
+    }
+
+    private void finishAttackBlock() {
+        if (canBlock) {
+            Logger.getInstance().notify("Damage blocked successfully!", Message.INFORMATION);
+            cooldown[Cooldown.BLOCK.ordinal()] = PLAYER_BLOCK_CD;
+            if (PlayerBonus.getInstance().isRestorePower()) changeStamina(5);
         }
     }
 
@@ -391,8 +400,8 @@ public class Player extends Entity {
     }
 
     private void updateMove() {
+        actionHandler.handleObjectActions(objectManager);
         if (moving) {
-            actionHandler.handleObjectActions(objectManager);
             if (dash) {
                 dashTick++;
                 if (dashTick >= 40) {
@@ -542,11 +551,6 @@ public class Player extends Entity {
 
     public void setCanBlock(boolean canBlock) {
         this.canBlock = canBlock;
-        if (canBlock) {
-            Logger.getInstance().notify("Damage blocked successfully!", Message.INFORMATION);
-            cooldown[Cooldown.BLOCK.ordinal()] = PLAYER_BLOCK_CD;
-            if (PlayerBonus.getInstance().isRestorePower()) changeStamina(5);
-        }
     }
 
     public void setCanTransform(boolean canTransform) {

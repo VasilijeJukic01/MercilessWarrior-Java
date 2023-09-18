@@ -33,18 +33,20 @@ public class ObjectManager {
     private ObjectBreakHandler objectBreakHandler;
 
     private final BufferedImage[][] objects;
-    Class<? extends GameObject>[] classes = new Class[]{
-            Coin.class,
-            Container.class,
-            Potion.class,
-            Spike.class,
-            Shop.class,
-            Blocker.class,
-            Blacksmith.class,
-            Dog.class,
-            SaveTotem.class,
-            SmashTrap.class
+
+    Class<? extends GameObject>[] updateClasses = new Class[]{
+            Coin.class, Container.class, Potion.class, Spike.class,
+            Shop.class, Blocker.class, Blacksmith.class, Dog.class,
+            SaveTotem.class, SmashTrap.class, Candle.class
     };
+    Class<? extends GameObject>[] renderBelow = new Class[] {
+            Container.class, Potion.class, Spike.class,
+            Blocker.class, Dog.class, SmashTrap.class
+    };
+    Class<? extends GameObject>[] renderAbove = new Class[] {
+            SaveTotem.class, Shop.class, Blacksmith.class, Coin.class
+    };
+
     private Map<ObjType, List<GameObject>> objectsMap = new HashMap<>();
 
     private BufferedImage projectileArrow;
@@ -197,7 +199,7 @@ public class ObjectManager {
     }
 
     public void update(int[][] lvlData, Player player) {
-        Arrays.stream(classes).forEach(this::updateObjects);
+        Arrays.stream(updateClasses).forEach(this::updateObjects);
         updateArrowLaunchers(lvlData, player);
         checkEnemyIntersection();
         collisionHandler.updateObjectInAir();
@@ -205,8 +207,17 @@ public class ObjectManager {
     }
 
     public void render(Graphics g, int xLevelOffset, int yLevelOffset) {
-        Arrays.stream(classes).forEach(renderClass -> renderObjects(g, xLevelOffset, yLevelOffset, renderClass));
+        Arrays.stream(renderBelow).forEach(renderClass -> renderObjects(g, xLevelOffset, yLevelOffset, renderClass));
         renderArrowLaunchers(g, xLevelOffset, yLevelOffset);
+    }
+
+    public void candleRender(Graphics g, int xLevelOffset, int yLevelOffset, Candle c) {
+        c.render(g, xLevelOffset, yLevelOffset, objects[c.getObjType().ordinal()]);
+
+    }
+
+    public void glowingRender(Graphics g, int xLevelOffset, int yLevelOffset) {
+        Arrays.stream(renderAbove).forEach(renderClass -> renderObjects(g, xLevelOffset, yLevelOffset, renderClass));
         renderProjectiles(g, xLevelOffset, yLevelOffset);
     }
 

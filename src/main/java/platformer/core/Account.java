@@ -1,5 +1,6 @@
 package platformer.core;
 
+import javax.swing.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,6 +13,10 @@ public class Account {
     private int level, exp;
     private List<String> perks = new ArrayList<>();
 
+    private String lastTimeSaved;
+    private long playtime;
+    private transient Timer timer;
+
     private transient boolean enableCheats;
 
     public Account() {
@@ -20,6 +25,7 @@ public class Account {
         this.spawn = -1;
         this.coins = this.tokens = this.exp = 0;
         this.level = 1;
+        this.playtime = 0;
     }
 
     public Account(String name, int accountID, int settingsID, int spawn, int coins, int tokens, int level, int exp) {
@@ -44,6 +50,19 @@ public class Account {
         this.exp = account.exp;
         this.perks = account.getPerks();
         this.enableCheats = account.enableCheats;
+        this.playtime = account.playtime;;
+    }
+
+    // Timer
+    public void startGameTimer() {
+        if (timer == null) {
+            timer = new Timer(1000, e -> playtime += 1);
+            timer.start();
+        }
+    }
+
+    public void stopGameTimer() {
+        if (timer != null) timer.stop();
     }
 
     // Unload save file
@@ -52,6 +71,8 @@ public class Account {
         this.level = 1;
         this.coins = this.tokens = this.exp = 0;
         this.perks = new ArrayList<>();
+        stopGameTimer();
+        this.playtime = 0;
     }
 
     public String getName() {
@@ -88,6 +109,22 @@ public class Account {
 
     public int getSettingsID() {
         return settingsID;
+    }
+
+    public String getLastTimeSaved() {
+        return lastTimeSaved;
+    }
+
+    public long getPlaytime() {
+        return playtime;
+    }
+
+    public void setLastTimeSaved(String lastTimeSaved) {
+        this.lastTimeSaved = lastTimeSaved;
+    }
+
+    public void setPlaytime(long playtime) {
+        this.playtime = playtime;
     }
 
     public void setSpawn(int spawn) {

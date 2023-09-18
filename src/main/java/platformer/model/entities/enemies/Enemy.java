@@ -21,7 +21,6 @@ public abstract class Enemy extends Entity implements Debug {
     protected int originalAnimSpeed, animSpeed, animIndex, animTick = 0;
     protected Direction direction = Direction.RIGHT;
     protected boolean alive = true;
-    protected int fadeCoefficient = 0;
     private boolean criticalHit;
 
     public Enemy(int xPos, int yPos, int width, int height, EnemyType enemyType, int animSpeed) {
@@ -39,7 +38,6 @@ public abstract class Enemy extends Entity implements Debug {
         if (animTick >= animSpeed) {
             animTick = 0;
             animIndex++;
-            updateFade();
             if (animIndex >= animations[entityState.ordinal()].length) {
                 finishAnimation();
             }
@@ -55,17 +53,9 @@ public abstract class Enemy extends Entity implements Debug {
         }
         else if (entityState == Anim.ATTACK_1 || entityState == Anim.ATTACK_2 || entityState == Anim.HIT || entityState == Anim.BLOCK || entityState == Anim.REVEAL) {
             entityState = Anim.IDLE;
-            fadeCoefficient = 0;
         }
         else if (entityState == Anim.HIDE) entityState = Anim.REVEAL;
         else if (entityState == Anim.DEATH) alive = false;
-    }
-
-    private void updateFade() {
-        if ((entityState == Anim.HIDE || entityState == Anim.REVEAL) && fadeCoefficient < 255) {
-            fadeCoefficient += FADE_SPEED;
-            fadeCoefficient = Math.min(fadeCoefficient, 255);
-        }
     }
 
     // Targeting Player
@@ -192,10 +182,6 @@ public abstract class Enemy extends Entity implements Debug {
 
     public Direction getDirection() {
         return direction;
-    }
-
-    public int getFadeCoefficient() {
-        return fadeCoefficient;
     }
 
     public boolean isCriticalHit() {

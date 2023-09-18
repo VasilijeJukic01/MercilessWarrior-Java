@@ -5,6 +5,7 @@ import platformer.controller.GameStateController;
 import platformer.core.Framework;
 import platformer.debug.logger.Message;
 import platformer.debug.logger.Logger;
+import platformer.model.entities.effects.LightManager;
 import platformer.model.entities.effects.Particle;
 import platformer.model.entities.enemies.EnemyManager;
 import platformer.core.Game;
@@ -16,6 +17,7 @@ import platformer.model.perks.PerksManager;
 import platformer.model.spells.SpellManager;
 import platformer.ui.dialogue.DialogueManager;
 import platformer.ui.overlays.OverlayManager;
+import platformer.ui.overlays.hud.BossInterface;
 import platformer.utils.Utils;
 
 import java.awt.*;
@@ -43,6 +45,7 @@ public class GameState extends AbstractState implements State {
     private PerksManager perksManager;
     private OverlayManager overlayManager;
     private DialogueManager dialogueManager;
+    private LightManager lightManager;
 
     // State
     private PlayingState state;
@@ -53,6 +56,8 @@ public class GameState extends AbstractState implements State {
     private int yLevelOffset;
     private int yMaxLevelOffset;
 
+    private BossInterface bossInterface;
+
     public GameState(Game game) {
         super(game);
         init();
@@ -62,6 +67,7 @@ public class GameState extends AbstractState implements State {
     // Init
     private void init() {
         this.background = Utils.getInstance().importImage(BACKGROUND_1, GAME_WIDTH, GAME_HEIGHT);
+        this.bossInterface = new BossInterface();
         initManagers();
         initPlayer();
         loadStartLevel();
@@ -77,6 +83,7 @@ public class GameState extends AbstractState implements State {
         this.overlayManager = new OverlayManager(this);
         this.spellManager = new SpellManager(this);
         this.dialogueManager = new DialogueManager(this);
+        this.lightManager = new LightManager(this);
     }
 
     private void initPlayer() {
@@ -187,17 +194,22 @@ public class GameState extends AbstractState implements State {
         g.drawImage(background, 0, 0, null);
         this.levelManager.render(g, xLevelOffset, yLevelOffset);
         this.objectManager.render(g, xLevelOffset, yLevelOffset);
-        this.player.render(g, xLevelOffset, yLevelOffset);
         this.enemyManager.render(g, xLevelOffset, yLevelOffset);
+        this.lightManager.render(g, xLevelOffset, yLevelOffset);
+        this.player.render(g, xLevelOffset, yLevelOffset);
         this.spellManager.render(g, xLevelOffset, yLevelOffset);
         this.player.getPlayerStatusManager().getUserInterface().render(g);
+        this.bossInterface.render(g);
         this.overlayManager.render(g);
     }
 
     private void handleGameState() {
-        checkLevelExit();
-        updateParticles();
-        updateManagers();
+        try {
+            checkLevelExit();
+            updateParticles();
+            updateManagers();
+        }
+        catch (Exception ignored) {}
     }
 
     private void checkLevelExit() {
@@ -223,6 +235,7 @@ public class GameState extends AbstractState implements State {
         yBorderUpdate();
         enemyManager.update(levelManager.getCurrentLevel().getLvlData(), player);
         objectManager.update(levelManager.getCurrentLevel().getLvlData(), player);
+        lightManager.update();
         spellManager.update();
         player.update();
         if (state == PlayingState.SHOP) overlayManager.update(PlayingState.SHOP);
@@ -315,6 +328,14 @@ public class GameState extends AbstractState implements State {
 
     public DialogueManager getDialogueManager() {
         return dialogueManager;
+    }
+
+    public LightManager getLightManager() {
+        return lightManager;
+    }
+
+    public BossInterface getBossInterface() {
+        return bossInterface;
     }
 
     public void setOverlay(PlayingState newOverlay) {

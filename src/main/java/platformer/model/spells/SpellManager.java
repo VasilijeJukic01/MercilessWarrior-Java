@@ -137,6 +137,7 @@ public class SpellManager {
             bossLightning.setAnimIndex(0);
             bossLightning.setActive(true);
         }
+        gameState.getLightManager().setAlpha(0);
     }
 
     public void activateFlashes() {

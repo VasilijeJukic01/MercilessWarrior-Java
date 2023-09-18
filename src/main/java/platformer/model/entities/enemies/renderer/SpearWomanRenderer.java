@@ -24,6 +24,5 @@ public class SpearWomanRenderer implements EnemyRenderer<SpearWoman> {
         g.drawImage(animations[spearWoman.getEnemyAction().ordinal()][spearWoman.getAnimIndex()], x, y, SW_WIDTH * fS, SW_HEIGHT, null);
         spearWoman.hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.BLUE);
         spearWoman.attackBoxRenderer(g, xLevelOffset, yLevelOffset);
-        spearWoman.overlayRender(g);
     }
 }

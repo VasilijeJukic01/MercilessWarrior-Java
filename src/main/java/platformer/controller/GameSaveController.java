@@ -75,6 +75,8 @@ public class GameSaveController {
         Framework.getInstance().getAccount().setCoins(s.getAccount().getCoins());
         Framework.getInstance().getAccount().setSpawn(s.getAccount().getSpawn());
         Framework.getInstance().getAccount().setTokens(s.getAccount().getTokens());
+        Framework.getInstance().getAccount().setPlaytime(s.getAccount().getPlaytime());
+        Framework.getInstance().getAccount().startGameTimer();
     }
 
     public void checkSlotSelection(MouseEvent e) {
