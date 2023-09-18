@@ -15,6 +15,9 @@ import javax.crypto.spec.SecretKeySpec;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.security.spec.KeySpec;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
@@ -39,6 +42,9 @@ public class GameSerializer implements Serializer<Account, List<Account>> {
 
     @Override
     public void serialize(Account account, int index) {
+        String day = LocalDate.now().getDayOfWeek().toString().substring(0, 3);
+        String time = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm"));
+        account.setLastTimeSaved(day+" "+time);
         try {
             Gson gson = new Gson();
             String jsonCache = gson.toJson(account);
