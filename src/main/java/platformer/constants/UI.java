@@ -30,6 +30,9 @@ public class UI {
     public static final int L_BUTTON_X = scale(790);
     public static final int L_BUTTON_Y = scale(10);
 
+    public static final Color OVERLAY_COLOR = new Color(31, 22, 28, 245);
+    public static final Color OVERLAY_SPACE_COLOR = new Color(50, 50, 50);
+
     // Load Game UI
     public static final int GAME_SLOT_WID = scale(180);
     public static final int GAME_SLOT_HEI = scale(40);
@@ -233,7 +236,7 @@ public class UI {
     public static final int ITEM_SIZE = scale(20);
     public static final int ITEM_OFFSET_X = scale(10);
     public static final int ITEM_OFFSET_Y = scale(8);
-    public static final int ITEM_COUNT_OFFSET_X = scale(18);
+    public static final int ITEM_COUNT_OFFSET_X = scale(15);
     public static final int ITEM_COUNT_OFFSET_Y = scale(26);
 
     public static final int PERKS_OVERLAY_WID = scale(700);
@@ -259,6 +262,33 @@ public class UI {
     public static final int PERK_DESC_Y = scale(275);
 
     public static final int PERK_SLOT_SPACING = scale(60);
+
+    // Inventory UI
+    public static final int INV_OVERLAY_WID = scale(705);
+    public static final int INV_OVERLAY_HEI = scale(380);
+    public static final int INV_OVERLAY_X = scale(65);
+    public static final int INV_OVERLAY_Y = scale(30);
+    public static final int INV_TEXT_WID = scale(220);
+    public static final int INV_TEXT_HEI = scale(40);
+    public static final int INV_TEXT_X = scale(310);
+    public static final int INV_TEXT_Y = scale(45);
+
+    public static final int INV_SPACE_WID = scale(240);
+    public static final int INV_SPACE_HEI = scale(240);
+    public static final int INV_SPACE_X = scale(120);
+    public static final int INV_SPACE_Y = scale(100);
+    public static final int INV_SLOT_X = scale(140);
+    public static final int INV_SLOT_Y = scale(120);
+
+    public static final int INV_EQUIP_WID = scale(150);
+    public static final int INV_EQUIP_HEI = scale(150);
+    public static final int INV_EQUIP_X = scale(360);
+    public static final int INV_EQUIP_Y = scale(100);
+    public static final int INV_EQUIP_SLOT_X = scale(380);
+    public static final int INV_EQUIP_SLOT_Y = scale(120);
+    public static final int INV_EQUIP_SLOT_SPACING = scale(70);
+
+
 
     private static int scale(double value) {
         return (int)(value * SCALE);

@@ -20,7 +20,7 @@ public class BlacksmithOverlay implements Overlay {
 
     private final GameState gameState;
 
-    private BufferedImage overlay;
+    private Rectangle2D overlay;
     private BufferedImage shopText;
     private final MediumButton[] buttons;
 
@@ -47,7 +47,7 @@ public class BlacksmithOverlay implements Overlay {
 
     // Init
     private void loadImages() {
-        this.overlay = Utils.getInstance().importImage(OVERLAY, PERKS_OVERLAY_WID, PERKS_OVERLAY_HEI);
+        this.overlay = new Rectangle2D.Double(PERKS_OVERLAY_X, PERKS_OVERLAY_Y, PERKS_OVERLAY_WID, PERKS_OVERLAY_HEI);
         this.shopText = Utils.getInstance().importImage(PERKS_TXT_IMG, SHOP_TEXT_WID, SHOP_TEXT_HEI);
         this.slotImage = Utils.getInstance().importImage(SLOT_IMG, SLOT_SIZE, SLOT_SIZE);
     }
@@ -71,7 +71,7 @@ public class BlacksmithOverlay implements Overlay {
 
     @Override
     public void render(Graphics g) {
-        renderImages(g);
+        renderOverlay(g);
         renderButtons(g);
         renderSlots(g);
         renderPerks(g);
@@ -81,8 +81,13 @@ public class BlacksmithOverlay implements Overlay {
     }
 
     // Render
-    private void renderImages(Graphics g) {
-        g.drawImage(overlay, PERKS_OVERLAY_X, PERKS_OVERLAY_Y, overlay.getWidth(), overlay.getHeight(), null);
+    private void renderOverlay(Graphics g) {
+        Graphics2D g2d = (Graphics2D) g;
+        g2d.setColor(OVERLAY_COLOR);
+        g2d.fill(overlay);
+        g2d.setColor(Color.WHITE);
+        g2d.setStroke(new BasicStroke(2));
+        g2d.draw(overlay);
         g.drawImage(shopText, PERKS_TEXT_X, PERKS_TEXT_Y, shopText.getWidth(), shopText.getHeight(), null);
     }
 

@@ -13,6 +13,7 @@ import platformer.model.entities.enemies.Enemy;
 import platformer.model.entities.enemies.EnemyManager;
 import platformer.model.gameObjects.ObjectManager;
 import platformer.model.gameObjects.projectiles.Projectile;
+import platformer.model.inventory.Inventory;
 import platformer.utils.Utils;
 
 import java.awt.*;
@@ -51,6 +52,7 @@ public class Player extends Entity {
     private final int attackDmg = 5, transformAttackDmg = 8;
     private double currentStamina = 15;
     private final PlayerDataManager playerDataManager;
+    private final Inventory inventory;
     // Effect
     private final PlayerEffectController effectController;
 
@@ -65,6 +67,7 @@ public class Player extends Entity {
         this.playerDataManager = new PlayerDataManager(this);
         this.effectController = new PlayerEffectController(this);
         this.actionHandler = new PlayerActionHandler(this);
+        this.inventory = new Inventory();
     }
 
     // Init
@@ -637,6 +640,10 @@ public class Player extends Entity {
 
     public PlayerDataManager getPlayerDataManager() {
         return playerDataManager;
+    }
+
+    public Inventory getInventory() {
+        return inventory;
     }
 
     @Override

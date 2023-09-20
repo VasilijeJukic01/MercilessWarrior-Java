@@ -24,6 +24,7 @@ public class OverlayManager {
         this.overlays.put(PlayingState.BLACKSMITH, new BlacksmithOverlay(gameState));
         this.overlays.put(PlayingState.DIALOGUE, new DialogueOverlay());
         this.overlays.put(PlayingState.SAVE, new SaveGameOverlay());
+        this.overlays.put(PlayingState.INVENTORY, new InventoryOverlay(gameState));
     }
 
     // Core

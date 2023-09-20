@@ -104,6 +104,7 @@ public class GameState extends AbstractState implements State {
         this.perksManager.loadUnlockedPerks(Framework.getInstance().getAccount().getPerks());
         this.player.getPlayerDataManager().loadPlayerData();
         this.levelManager.loadSavePoint(Framework.getInstance().getAccount().getSpawn());
+        this.overlayManager.reset();
         calculateLevelOffset();
     }
 
@@ -240,6 +241,7 @@ public class GameState extends AbstractState implements State {
         player.update();
         if (state == PlayingState.SHOP) overlayManager.update(PlayingState.SHOP);
         else if (state == PlayingState.BLACKSMITH) overlayManager.update(PlayingState.BLACKSMITH);
+        else if (state == PlayingState.INVENTORY) overlayManager.update(PlayingState.INVENTORY);
     }
 
     @Override

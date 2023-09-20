@@ -5,6 +5,8 @@ import platformer.audio.Sound;
 import platformer.model.entities.player.Player;
 import platformer.model.gameObjects.GameObject;
 import platformer.model.gameObjects.ObjType;
+import platformer.model.inventory.Inventory;
+import platformer.model.inventory.InventoryItem;
 import platformer.ui.ItemType;
 import platformer.ui.ShopItem;
 import platformer.utils.Utils;
@@ -15,8 +17,7 @@ import java.util.ArrayList;
 import java.util.Random;
 
 import static platformer.constants.Constants.*;
-import static platformer.constants.FilePaths.HEALTH_ITEM;
-import static platformer.constants.FilePaths.STAMINA_ITEM;
+import static platformer.constants.FilePaths.*;
 
 public class Shop extends GameObject {
 
@@ -27,7 +28,7 @@ public class Shop extends GameObject {
         super(objType, xPos, yPos);
         this.shopItems = new ArrayList<>();
         generateHitBox();
-        getItems();
+        initItems();
     }
 
     // Init
@@ -38,13 +39,18 @@ public class Shop extends GameObject {
         super.yOffset = SHOP_OFFSET_Y;
     }
 
-    private void getItems() {
-        int slot = 0;
-        Random rand = new Random();
-        BufferedImage healthItemImg = Utils.getInstance().importImage(HEALTH_ITEM, -1, -1);
-        shopItems.add(new ShopItem(ItemType.HEALTH, healthItemImg, slot++, rand.nextInt(10)+1, HEALTH_COST));
-        BufferedImage staminaItemImg = Utils.getInstance().importImage(STAMINA_ITEM, -1, -1);
-        shopItems.add(new ShopItem(ItemType.STAMINA, staminaItemImg, slot, rand.nextInt(6)+1, STAMINA_COST));
+    private void addShopItem(ItemType type, String imagePath, int minQuantity, int maxQuantity, int cost) {
+        int slot = shopItems.size();
+        BufferedImage itemImg = Utils.getInstance().importImage(imagePath, -1, -1);
+        int randomQuantity = new Random().nextInt(maxQuantity - minQuantity + 1) + minQuantity;
+        shopItems.add(new ShopItem(type, itemImg, slot, randomQuantity, cost));
+    }
+
+    private void initItems() {
+        addShopItem(ItemType.HEALTH,    HEALTH_ITEM, 1, 10, HEALTH_COST);
+        addShopItem(ItemType.STAMINA,   STAMINA_ITEM, 1, 6, STAMINA_COST);
+        addShopItem(ItemType.IRON,      IRON_ORE_ITEM, 16, 25, IRON_COST);
+        addShopItem(ItemType.COPPER,    COPPER_ORE_ITEM, 16, 25, COPPER_COST);
     }
 
     public void buyItem(Player player, int slot) {
@@ -57,11 +63,24 @@ public class Shop extends GameObject {
                     switch(item.getItemType()) {
                         case HEALTH: player.changeHealth(HEALTH_VAL); break;
                         case STAMINA: player.changeStamina(STAMINA_VAL); break;
+                        case IRON:
+                        case COPPER:
+                            addToInventory(player, item.getItemType()); break;
                         default: break;
                     }
                 }
             }
         }
+    }
+
+    private void addToInventory(Player player, ItemType itemType) {
+        Inventory inventory = player.getInventory();
+        inventory.getBackpack().stream()
+                .filter(inventoryItem -> inventoryItem.getItemType() == itemType)
+                .findFirst()
+                .ifPresent(inventoryItem -> inventoryItem.addAmount(1));
+
+        inventory.getBackpack().add(new InventoryItem(itemType, getImageModel(itemType), 1, itemType.getSellValue(), itemType.getDescription()));
     }
 
     // Core
@@ -109,6 +128,14 @@ public class Shop extends GameObject {
 
     public ArrayList<ShopItem> getShopItems() {
         return shopItems;
+    }
+
+    private BufferedImage getImageModel(ItemType type) {
+        return shopItems.stream()
+                .filter(shopItem -> shopItem.getItemType() == type)
+                .map(ShopItem::getItemImage)
+                .findFirst()
+                .orElse(null);
     }
 
 }

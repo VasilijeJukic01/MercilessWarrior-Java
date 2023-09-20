@@ -50,7 +50,7 @@ public class Account {
         this.exp = account.exp;
         this.perks = account.getPerks();
         this.enableCheats = account.enableCheats;
-        this.playtime = account.playtime;;
+        this.playtime = account.playtime;
     }
 
     // Timer

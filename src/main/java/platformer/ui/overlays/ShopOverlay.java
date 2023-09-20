@@ -23,7 +23,7 @@ public class ShopOverlay implements Overlay {
 
     private final GameState gameState;
 
-    private BufferedImage overlay;
+    private Rectangle2D overlay;
     private BufferedImage shopText;
     private final MediumButton[] buttons;
 
@@ -44,7 +44,7 @@ public class ShopOverlay implements Overlay {
 
     // Init
     private void loadImages() {
-        this.overlay = Utils.getInstance().importImage(OVERLAY, SHOP_OVERLAY_WID, SHOP_OVERLAY_HEI);
+        this.overlay = new Rectangle2D.Double(SHOP_OVERLAY_X, SHOP_OVERLAY_Y, SHOP_OVERLAY_WID, SHOP_OVERLAY_HEI);
         this.shopText = Utils.getInstance().importImage(SHOP_TXT, SHOP_TEXT_WID, SHOP_TEXT_HEI);
         this.slotImage = Utils.getInstance().importImage(SLOT_IMG, SLOT_SIZE, SLOT_SIZE);
     }
@@ -68,7 +68,7 @@ public class ShopOverlay implements Overlay {
 
     @Override
     public void render(Graphics g) {
-        renderImages(g);
+        renderOverlay(g);
         renderButtons(g);
         renderSlots(g);
         renderItems(g);
@@ -76,8 +76,13 @@ public class ShopOverlay implements Overlay {
     }
 
     // Render
-    private void renderImages(Graphics g) {
-        g.drawImage(overlay, SHOP_OVERLAY_X, SHOP_OVERLAY_Y, overlay.getWidth(), overlay.getHeight(), null);
+    private void renderOverlay(Graphics g) {
+        Graphics2D g2d = (Graphics2D) g;
+        g2d.setColor(OVERLAY_COLOR);
+        g2d.fill(overlay);
+        g2d.setColor(Color.WHITE);
+        g2d.setStroke(new BasicStroke(2));
+        g2d.draw(overlay);
         g.drawImage(shopText, SHOP_TEXT_X, SHOP_TEXT_Y, shopText.getWidth(), shopText.getHeight(), null);
     }
 

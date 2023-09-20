@@ -80,6 +80,9 @@ public class Constants {
     public static final int HEALTH_VAL = 40;
     public static final int STAMINA_VAL = 40;
 
+    public static final int IRON_COST = 15;
+    public static final int COPPER_COST = 10;
+
     // Level Constants
     public static final int MAX_LEVELS = 4;
     public static final int EMPTY_TILE = -1;
@@ -312,6 +315,7 @@ public class Constants {
     public static final int FONT_SMALL = scale(7);
     public static final int SHOP_SLOT_MAX_ROW = 7, SHOP_SLOT_MAX_COL = 3;
     public static final int PERK_SLOT_MAX_ROW = 4, PERK_SLOT_MAX_COL = 7;
+    public static final int INVENTORY_SLOT_MAX_ROW = 5, INVENTORY_SLOT_MAX_COL = 5;
     public static final int SLOT_SPACING = scale(40);
 
     // Effect Constants

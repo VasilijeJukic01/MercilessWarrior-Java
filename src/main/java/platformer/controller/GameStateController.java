@@ -135,6 +135,9 @@ public class GameStateController {
             case KeyEvent.VK_F:
                 interact();
                 break;
+            case KeyEvent.VK_I:
+                openInventory();
+                break;
             case KeyEvent.VK_F1:
                 showHitBox();
                 break;
@@ -164,6 +167,10 @@ public class GameStateController {
         gameState.getDialogueManager().setDialogueObject(dialogues, objectClass);
     }
 
+    private void openInventory() {
+        gameState.setOverlay(PlayingState.INVENTORY);
+    }
+
     private void showHitBox() {
         if (!Framework.getInstance().getAccount().isEnableCheats()) return;
         DebugSettings.getInstance().setDebugMode(!DebugSettings.getInstance().isDebugMode());
@@ -191,7 +198,7 @@ public class GameStateController {
 
     // Helper
     private boolean isBreakableState(PlayingState state) {
-        return state == PlayingState.SHOP || state == PlayingState.BLACKSMITH || state == PlayingState.DIALOGUE || state == PlayingState.SAVE;
+        return state == PlayingState.SHOP || state == PlayingState.BLACKSMITH || state == PlayingState.DIALOGUE || state == PlayingState.SAVE || state == PlayingState.INVENTORY;
     }
 
     private PlayingState pause(PlayingState state) {
