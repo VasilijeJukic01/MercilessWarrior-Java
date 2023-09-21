@@ -280,14 +280,29 @@ public class UI {
     public static final int INV_SLOT_X = scale(140);
     public static final int INV_SLOT_Y = scale(120);
 
-    public static final int INV_EQUIP_WID = scale(150);
+    public static final int INV_EQUIP_WID = scale(170);
     public static final int INV_EQUIP_HEI = scale(150);
-    public static final int INV_EQUIP_X = scale(360);
+    public static final int INV_EQUIP_X = scale(380);
     public static final int INV_EQUIP_Y = scale(100);
-    public static final int INV_EQUIP_SLOT_X = scale(380);
-    public static final int INV_EQUIP_SLOT_Y = scale(120);
-    public static final int INV_EQUIP_SLOT_SPACING = scale(70);
+    public static final int INV_EQUIP_SLOT_X = scale(400);
+    public static final int INV_EQUIP_SLOT_Y = scale(115);
+    public static final int INV_EQUIP_SLOT_SPACING = scale(95);
 
+    public static final int INV_PLAYER_WID = scale(40);
+    public static final int INV_PLAYER_HEI = scale(70);
+    public static final int INV_PLAYER_X = scale(446);
+    public static final int INV_PLAYER_Y = scale(140);
+
+    public static final int INV_ITEM_NAME_X = scale(380);
+    public static final int INV_ITEM_NAME_Y = scale(270);
+    public static final int INV_ITEM_VALUE_X = scale(500);
+    public static final int INV_ITEM_VALUE_Y = scale(270);
+    public static final int INV_ITEM_DESC_X = scale(380);
+    public static final int INV_ITEM_DESC_Y = scale(290);
+
+    public static final int INV_BONUS_X = scale(600);
+    public static final int INV_BONUS_Y = scale(110);
+    public static final int INV_BONUS_SPACING = scale(20);
 
 
     private static int scale(double value) {

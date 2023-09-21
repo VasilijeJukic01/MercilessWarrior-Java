@@ -25,7 +25,7 @@ public class InventoryOverlay implements Overlay {
     private final MediumButton[] buttons;
 
     private Rectangle2D backpackPanel, equipPanel;
-    private BufferedImage slotImage;
+    private BufferedImage playerImage, slotImage;
     private Rectangle2D.Double selectedSlot;
     private int slotNumber;
     private int SLOT_MAX_ROW, SLOT_MAX_COL;
@@ -51,6 +51,7 @@ public class InventoryOverlay implements Overlay {
         this.equipPanel = new Rectangle2D.Double(INV_EQUIP_X, INV_EQUIP_Y, INV_EQUIP_WID, INV_EQUIP_HEI);
         this.inventoryText = Utils.getInstance().importImage(INVENTORY_TXT, INV_TEXT_WID, INV_TEXT_HEI);
         this.slotImage = Utils.getInstance().importImage(SLOT_INVENTORY, SLOT_SIZE, SLOT_SIZE);
+        this.playerImage = Utils.getInstance().importImage(PLAYER_ICON, -1, -1);
     }
 
     private void loadButtons() {
@@ -75,7 +76,6 @@ public class InventoryOverlay implements Overlay {
             for (int j = 0; j < SLOT_MAX_COL; j++) {
                 if (x >= i*SLOT_SPACING+INV_SLOT_X && x <= i*SLOT_SPACING+INV_SLOT_X+SLOT_SIZE && y >= j*SLOT_SPACING+INV_SLOT_Y && y <= j*SLOT_SPACING+INV_SLOT_Y+SLOT_SIZE) {
                     slotNumber = i + (j * SLOT_MAX_ROW);
-                    System.out.println(slotNumber);
                     setSelectedSlot();
                     break;
                 }
@@ -91,6 +91,7 @@ public class InventoryOverlay implements Overlay {
         renderItemSlots(g);
         renderEquipSpace(g2d);
         renderEquipSlots(g);
+        renderBonusInfo(g);
         g.setColor(Color.RED);
         g.drawRect((int)selectedSlot.x, (int)selectedSlot.y,  (int)selectedSlot.width,  (int)selectedSlot.height);
     }
@@ -124,6 +125,7 @@ public class InventoryOverlay implements Overlay {
                     renderItem(inventory, i, j, g);
             }
         }
+        renderItemInfo(g);
     }
 
     private void renderItem(Inventory inventory, int i, int j, Graphics g) {
@@ -145,6 +147,7 @@ public class InventoryOverlay implements Overlay {
         g2d.setColor(Color.WHITE);
         g2d.setStroke(new BasicStroke(1));
         g2d.draw(equipPanel);
+        g2d.drawImage(playerImage, INV_PLAYER_X, INV_PLAYER_Y, INV_PLAYER_WID, INV_PLAYER_HEI, null);
     }
 
     private void renderEquipSlots(Graphics g) {
@@ -155,6 +158,31 @@ public class InventoryOverlay implements Overlay {
                 g.drawImage(slotImage, xPos, yPos, slotImage.getWidth(), slotImage.getHeight(), null);
             }
         }
+    }
+
+    private void renderItemInfo(Graphics g) {
+        Inventory inventory = gameState.getPlayer().getInventory();
+        if (slotNumber >= inventory.getBackpack().size()) return;
+        InventoryItem item = inventory.getBackpack().get(slotNumber);
+        g.setColor(Color.WHITE);
+        g.setFont(new Font("Arial", Font.BOLD, FONT_MEDIUM));
+        g.drawString(item.getItemType().getName(), INV_ITEM_NAME_X, INV_ITEM_NAME_Y);
+        g.drawString("Value: " + item.getItemType().getSellValue(), INV_ITEM_VALUE_X, INV_ITEM_VALUE_Y);
+        g.setFont(new Font("Arial", Font.PLAIN, FONT_MEDIUM));
+        g.drawString(item.getItemType().getDescription(), INV_ITEM_DESC_X, INV_ITEM_DESC_Y);
+    }
+
+    private void renderBonusInfo(Graphics g) {
+        g.setColor(Color.WHITE);
+        g.setFont(new Font("Arial", Font.PLAIN, FONT_MEDIUM));
+        g.drawString("Active bonuses: ", INV_BONUS_X, INV_BONUS_Y);
+        g.drawString("Health Bonus: +0%", INV_BONUS_X, INV_BONUS_Y + INV_BONUS_SPACING);
+        g.drawString("Defense Bonus: +0%", INV_BONUS_X, INV_BONUS_Y + 2 * INV_BONUS_SPACING);
+        g.drawString("Attack Bonus: +0%", INV_BONUS_X, INV_BONUS_Y + 3 * INV_BONUS_SPACING);
+        g.drawString("Stamina Bonus: +0%", INV_BONUS_X, INV_BONUS_Y + 4 * INV_BONUS_SPACING);
+        g.drawString("Critical Bonus: +0%", INV_BONUS_X, INV_BONUS_Y + 5 * INV_BONUS_SPACING);
+        g.drawString("Spell Bonus: +0%", INV_BONUS_X, INV_BONUS_Y + 6 * INV_BONUS_SPACING);
+        g.drawString("Cooldown Bonus: +0%", INV_BONUS_X, INV_BONUS_Y +  7 * INV_BONUS_SPACING);
     }
 
     @Override

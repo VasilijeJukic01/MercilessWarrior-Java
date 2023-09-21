@@ -88,6 +88,8 @@ public class FilePaths {
     public static final String IRON_ORE_ITEM = "/images/inventory/IronOre.png";
     public static final String COPPER_ORE_ITEM = "/images/inventory/CopperOre.png";
 
+    public static final String PLAYER_ICON = "/images/inventory/Player.png";
+
     // Serialization
     public static final String SAVE_PATH = "src/main/resources/saves/";
 
