@@ -3,18 +3,21 @@ package platformer.ui.overlays;
 import platformer.model.inventory.Inventory;
 import platformer.model.inventory.InventoryItem;
 import platformer.state.GameState;
+import platformer.ui.buttons.AbstractButton;
+import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.MediumButton;
+import platformer.ui.buttons.SmallButton;
 import platformer.utils.Utils;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+import java.util.Arrays;
 
 import static platformer.constants.Constants.*;
 import static platformer.constants.FilePaths.*;
 import static platformer.constants.UI.*;
-import static platformer.constants.UI.SLOT_SIZE;
 
 public class InventoryOverlay implements Overlay {
 
@@ -22,17 +25,20 @@ public class InventoryOverlay implements Overlay {
 
     private Rectangle2D overlay;
     private BufferedImage inventoryText;
-    private final MediumButton[] buttons;
+    private final MediumButton[] mediumButtons;
+    private final SmallButton[] smallButtons;
 
     private Rectangle2D backpackPanel, equipPanel;
     private BufferedImage playerImage, slotImage;
     private Rectangle2D.Double selectedSlot;
+    private int backpackSlot;
     private int slotNumber;
     private int SLOT_MAX_ROW, SLOT_MAX_COL;
 
     public InventoryOverlay(GameState gameState) {
         this.gameState = gameState;
-        this.buttons = new MediumButton[3];
+        this.mediumButtons = new MediumButton[3];
+        this.smallButtons = new SmallButton[2];
         init();
     }
 
@@ -55,7 +61,12 @@ public class InventoryOverlay implements Overlay {
     }
 
     private void loadButtons() {
-        // TODO: Buttons
+        smallButtons[0] = new SmallButton(PREV_BTN_X, INV_SMALL_BTN_Y, SMALL_BTN_SIZE, SMALL_BTN_SIZE, ButtonType.PREV);
+        smallButtons[1] = new SmallButton(NEXT_BTN_X, INV_SMALL_BTN_Y, SMALL_BTN_SIZE, SMALL_BTN_SIZE, ButtonType.NEXT);
+
+        mediumButtons[0] = new MediumButton(USE_BTN_X, INV_MEDIUM_BTN_Y, SMALL_BTN_WID, SMALL_BTN_HEI, ButtonType.USE);
+        mediumButtons[1] = new MediumButton(EQUIP_BTN_X, INV_MEDIUM_BTN_Y, SMALL_BTN_WID, SMALL_BTN_HEI, ButtonType.EQUIP);
+        mediumButtons[2] = new MediumButton(DROP_BTN_X, INV_MEDIUM_BTN_Y, SMALL_BTN_WID, SMALL_BTN_HEI, ButtonType.DROP);
     }
 
     private void initSelectedSlot() {
@@ -94,9 +105,15 @@ public class InventoryOverlay implements Overlay {
         renderBonusInfo(g);
         g.setColor(Color.RED);
         g.drawRect((int)selectedSlot.x, (int)selectedSlot.y,  (int)selectedSlot.width,  (int)selectedSlot.height);
+        renderButtons(g);
     }
 
     // Render
+    private void renderButtons(Graphics g) {
+        Arrays.stream(smallButtons).forEach(button -> button.render(g));
+        Arrays.stream(mediumButtons).forEach(button -> button.render(g));
+    }
+
     private void renderOverlay(Graphics2D g2d) {
         g2d.setColor(OVERLAY_COLOR);
         g2d.fill(overlay);
@@ -121,7 +138,8 @@ public class InventoryOverlay implements Overlay {
                 int xPos = i * SLOT_SPACING + INV_SLOT_X;
                 int yPos = j * SLOT_SPACING + INV_SLOT_Y;
                 g.drawImage(slotImage, xPos, yPos, slotImage.getWidth(), slotImage.getHeight(), null);
-                if (j * SLOT_MAX_ROW + i < inventory.getBackpack().size())
+                int backpack = (j * SLOT_MAX_ROW + i) + backpackSlot * (SLOT_MAX_ROW * SLOT_MAX_COL);
+                if (backpack < inventory.getBackpack().size())
                     renderItem(inventory, i, j, g);
             }
         }
@@ -129,7 +147,7 @@ public class InventoryOverlay implements Overlay {
     }
 
     private void renderItem(Inventory inventory, int i, int j, Graphics g) {
-        int slot = j * SLOT_MAX_ROW + i;
+        int slot = (j * SLOT_MAX_ROW + i) + backpackSlot * (SLOT_MAX_ROW * SLOT_MAX_COL);
         InventoryItem item = inventory.getBackpack().get(slot);
         int xPos = (slot % SLOT_MAX_ROW) * SLOT_SPACING + INV_SLOT_X + ITEM_OFFSET_X;
         int yPos = (slot / SLOT_MAX_ROW) * SLOT_SPACING + INV_SLOT_Y + ITEM_OFFSET_Y;
@@ -156,6 +174,15 @@ public class InventoryOverlay implements Overlay {
                 int xPos = i * INV_EQUIP_SLOT_SPACING + INV_EQUIP_SLOT_X;
                 int yPos = j * SLOT_SPACING + INV_EQUIP_SLOT_Y;
                 g.drawImage(slotImage, xPos, yPos, slotImage.getWidth(), slotImage.getHeight(), null);
+                Inventory inventory = gameState.getPlayer().getInventory();
+                if (inventory.getEquipped()[j * 2 + i] != null) {
+                    InventoryItem item = inventory.getEquipped()[j * 2 + i];
+                    int slot = (i * 2 + j);
+                    int x = (slot % 2) * INV_EQUIP_SLOT_SPACING + INV_EQUIP_SLOT_X + ITEM_OFFSET_X;
+                    int y = (slot / 2) * SLOT_SPACING + INV_EQUIP_SLOT_Y + ITEM_OFFSET_Y;
+                    g.drawImage(item.getModel(), x, y, ITEM_SIZE, ITEM_SIZE, null);
+                }
+
             }
         }
     }
@@ -169,7 +196,13 @@ public class InventoryOverlay implements Overlay {
         g.drawString(item.getItemType().getName(), INV_ITEM_NAME_X, INV_ITEM_NAME_Y);
         g.drawString("Value: " + item.getItemType().getSellValue(), INV_ITEM_VALUE_X, INV_ITEM_VALUE_Y);
         g.setFont(new Font("Arial", Font.PLAIN, FONT_MEDIUM));
-        g.drawString(item.getItemType().getDescription(), INV_ITEM_DESC_X, INV_ITEM_DESC_Y);
+        String[] lines = item.getItemType().getDescription().split("\n");
+        int lineHeight = g.getFontMetrics().getHeight();
+        int y = INV_ITEM_DESC_Y;
+        for (String line : lines) {
+            g.drawString(line, INV_ITEM_DESC_X, y);
+            y += lineHeight;
+        }
     }
 
     private void renderBonusInfo(Graphics g) {
@@ -185,6 +218,15 @@ public class InventoryOverlay implements Overlay {
         g.drawString("Cooldown Bonus: +0%", INV_BONUS_X, INV_BONUS_Y +  7 * INV_BONUS_SPACING);
     }
 
+    // Actions
+    private void prevBackpackSlot() {
+        this.backpackSlot = Math.max(backpackSlot-1, 0);
+    }
+
+    private void nextBackpackSlot() {
+        this.backpackSlot = Math.min(backpackSlot+1, 5);
+    }
+
     @Override
     public void mouseDragged(MouseEvent e) {
 
@@ -192,22 +234,77 @@ public class InventoryOverlay implements Overlay {
 
     @Override
     public void mousePressed(MouseEvent e) {
+        Arrays.stream(smallButtons)
+                .filter(button -> isMouseInButton(e, button))
+                .findFirst()
+                .ifPresent(button -> button.setMousePressed(true));
+
+        Arrays.stream(mediumButtons)
+                .filter(button -> isMouseInButton(e, button))
+                .findFirst()
+                .ifPresent(button -> button.setMousePressed(true));
+
         changeSlot(e);
     }
 
     @Override
     public void mouseReleased(MouseEvent e) {
-
+        for (SmallButton button : smallButtons) {
+            if (isMouseInButton(e, button) && button.isMousePressed()) {
+                switch (button.getButtonType()) {
+                    case PREV:
+                        prevBackpackSlot();
+                        break;
+                    case NEXT:
+                        nextBackpackSlot();
+                        break;
+                    default: break;
+                }
+                break;
+            }
+        }
+        for (MediumButton button : mediumButtons) {
+            if (isMouseInButton(e, button) && button.isMousePressed()) {
+                Inventory inventory = gameState.getPlayer().getInventory();
+                switch (button.getButtonType()) {
+                    case USE:
+                        inventory.useItem(slotNumber); break;
+                    case EQUIP:
+                        inventory.equipItem(slotNumber); break;
+                    case DROP:
+                        inventory.dropItem(slotNumber); break;
+                    default: break;
+                }
+            }
+        }
+        Arrays.stream(smallButtons).forEach(AbstractButton::resetMouseSet);
+        Arrays.stream(mediumButtons).forEach(AbstractButton::resetMouseSet);
     }
 
     @Override
     public void mouseMoved(MouseEvent e) {
+        Arrays.stream(smallButtons).forEach(button -> button.setMouseOver(false));
+        Arrays.stream(mediumButtons).forEach(button -> button.setMouseOver(false));
 
+        Arrays.stream(smallButtons)
+                .filter(button -> isMouseInButton(e, button))
+                .findFirst()
+                .ifPresent(mediumButton -> mediumButton.setMouseOver(true));
+
+        Arrays.stream(mediumButtons)
+                .filter(button -> isMouseInButton(e, button))
+                .findFirst()
+                .ifPresent(mediumButton -> mediumButton.setMouseOver(true));
     }
 
     @Override
     public void update() {
+        Arrays.stream(smallButtons).forEach(SmallButton::update);
+        Arrays.stream(mediumButtons).forEach(MediumButton::update);
+    }
 
+    private boolean isMouseInButton(MouseEvent e, AbstractButton button) {
+        return button.getButtonHitBox().contains(e.getX(), e.getY());
     }
 
     @Override

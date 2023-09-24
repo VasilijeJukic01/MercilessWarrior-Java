@@ -55,6 +55,7 @@ public class FilePaths {
     public static final String SLIDER_IMG = "/images/buttons/Slider.png";
     public static final String LEADERBOARD_BTN_SHEET = "/images/buttons/LeaderboardButtons.png";
     public static final String BTN_SAVE_SHEET = "/images/buttons/SaveButton.png";
+    public static final String INVENTORY_BTN_SHEET = "/images/buttons/InventoryButtons.png";
 
     // UI
     public static final String MENU_LOGO = "/images/menu/menuLogo.png";
@@ -87,6 +88,8 @@ public class FilePaths {
     public static final String STAMINA_ITEM = "/images/inventory/StaminaItem.png";
     public static final String IRON_ORE_ITEM = "/images/inventory/IronOre.png";
     public static final String COPPER_ORE_ITEM = "/images/inventory/CopperOre.png";
+
+    public static final String ARMOR_WARRIOR = "/images/inventory/WarriorArmor.png";
 
     public static final String PLAYER_ICON = "/images/inventory/Player.png";
 

@@ -3,7 +3,7 @@ package platformer.state;
 import platformer.core.Framework;
 import platformer.core.Game;
 import platformer.ui.buttons.ButtonType;
-import platformer.ui.buttons.CREButton;
+import platformer.ui.buttons.SmallButton;
 import platformer.ui.overlays.OverlayLayer;
 
 import java.awt.*;
@@ -17,7 +17,7 @@ import static platformer.constants.UI.CONTINUE_BTN_Y;
 
 public class ChoseGameState extends AbstractState implements State {
 
-    private CREButton playBtn, exitBtn;
+    private SmallButton playBtn, exitBtn;
 
     public ChoseGameState(Game game) {
         super(game);
@@ -26,8 +26,8 @@ public class ChoseGameState extends AbstractState implements State {
 
     // Init
     private void loadButtons() {
-        this.playBtn = new CREButton(CONTINUE_BTN_X, CONTINUE_BTN_Y, CRE_BTN_SIZE, CRE_BTN_SIZE, ButtonType.CONTINUE);
-        this.exitBtn = new CREButton(EXIT_BTN_X, EXIT_BTN_Y, CRE_BTN_SIZE, CRE_BTN_SIZE, ButtonType.EXIT);
+        this.playBtn = new SmallButton(CONTINUE_BTN_X, CONTINUE_BTN_Y, CRE_BTN_SIZE, CRE_BTN_SIZE, ButtonType.CONTINUE);
+        this.exitBtn = new SmallButton(EXIT_BTN_X, EXIT_BTN_Y, CRE_BTN_SIZE, CRE_BTN_SIZE, ButtonType.EXIT);
     }
 
     // Core

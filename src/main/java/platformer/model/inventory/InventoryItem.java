@@ -9,15 +9,11 @@ public class InventoryItem {
     private final ItemType itemType;
     private final BufferedImage model;
     private int amount;
-    private final int sellValue;
-    private final String description;
 
-    public InventoryItem(ItemType itemType, BufferedImage model, int amount, int sellValue, String description) {
+    public InventoryItem(ItemType itemType, BufferedImage model, int amount) {
         this.itemType = itemType;
         this.model = model;
         this.amount = amount;
-        this.sellValue = sellValue;
-        this.description = description;
     }
 
     public void addAmount(int value) {
@@ -34,14 +30,6 @@ public class InventoryItem {
 
     public int getAmount() {
         return amount;
-    }
-
-    public int getSellValue() {
-        return sellValue;
-    }
-
-    public String getDescription() {
-        return description;
     }
 
 }

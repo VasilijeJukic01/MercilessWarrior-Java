@@ -7,8 +7,8 @@ import platformer.ui.buttons.MediumButton;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 
-import static platformer.constants.Constants.SMALL_BTN_HEI;
-import static platformer.constants.Constants.SMALL_BTN_WID;
+import static platformer.constants.Constants.MEDIUM_BTN_HEI;
+import static platformer.constants.Constants.MEDIUM_BTN_WID;
 import static platformer.constants.UI.SAVE_BTN_X;
 import static platformer.constants.UI.SAVE_BTN_Y;
 
@@ -21,7 +21,7 @@ public class SaveGameOverlay implements Overlay {
     }
 
     private void loadButtons() {
-        this.saveBtn = new MediumButton(SAVE_BTN_X, SAVE_BTN_Y, SMALL_BTN_WID, SMALL_BTN_HEI, ButtonType.SAVE);
+        this.saveBtn = new MediumButton(SAVE_BTN_X, SAVE_BTN_Y, MEDIUM_BTN_WID, MEDIUM_BTN_HEI, ButtonType.SAVE);
     }
 
     @Override

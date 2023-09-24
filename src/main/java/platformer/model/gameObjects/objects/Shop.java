@@ -14,6 +14,7 @@ import platformer.utils.Utils;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.Optional;
 import java.util.Random;
 
 import static platformer.constants.Constants.*;
@@ -47,12 +48,14 @@ public class Shop extends GameObject {
     }
 
     private void initItems() {
-        addShopItem(ItemType.HEALTH,    HEALTH_ITEM, 1, 10, HEALTH_COST);
-        addShopItem(ItemType.STAMINA,   STAMINA_ITEM, 1, 6, STAMINA_COST);
-        addShopItem(ItemType.IRON,      IRON_ORE_ITEM, 16, 25, IRON_COST);
-        addShopItem(ItemType.COPPER,    COPPER_ORE_ITEM, 16, 25, COPPER_COST);
+        addShopItem(ItemType.HEALTH,        HEALTH_ITEM, 1, 10, HEALTH_COST);
+        addShopItem(ItemType.STAMINA,       STAMINA_ITEM, 1, 6, STAMINA_COST);
+        addShopItem(ItemType.IRON,          IRON_ORE_ITEM, 16, 25, IRON_COST);
+        addShopItem(ItemType.COPPER,        COPPER_ORE_ITEM, 16, 25, COPPER_COST);
+        addShopItem(ItemType.ARMOR_WARRIOR, ARMOR_WARRIOR, 1, 1, ARMOR_WARRIOR_COST);
     }
 
+    // Actions
     public void buyItem(Player player, int slot) {
         for (ShopItem item : shopItems) {
             if (item.getAmount() > 0 && item.getSlot() == slot) {
@@ -63,24 +66,22 @@ public class Shop extends GameObject {
                     switch(item.getItemType()) {
                         case HEALTH: player.changeHealth(HEALTH_VAL); break;
                         case STAMINA: player.changeStamina(STAMINA_VAL); break;
-                        case IRON:
-                        case COPPER:
-                            addToInventory(player, item.getItemType()); break;
-                        default: break;
+                        default: addToInventory(player, item.getItemType()); break;
                     }
                 }
             }
         }
     }
 
-    private void addToInventory(Player player, ItemType itemType) {
+    private void addToInventory(Player player, ItemType item) {
         Inventory inventory = player.getInventory();
-        inventory.getBackpack().stream()
-                .filter(inventoryItem -> inventoryItem.getItemType() == itemType)
-                .findFirst()
-                .ifPresent(inventoryItem -> inventoryItem.addAmount(1));
 
-        inventory.getBackpack().add(new InventoryItem(itemType, getImageModel(itemType), 1, itemType.getSellValue(), itemType.getDescription()));
+        Optional<InventoryItem> existingItem = inventory.getBackpack().stream()
+                .filter(inventoryItem -> inventoryItem.getItemType() == item)
+                .findFirst();
+
+        if (existingItem.isPresent()) existingItem.get().addAmount(1);
+        else inventory.getBackpack().add(new InventoryItem(item, getImageModel(item), 1));
     }
 
     // Core

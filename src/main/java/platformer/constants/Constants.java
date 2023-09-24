@@ -82,6 +82,7 @@ public class Constants {
 
     public static final int IRON_COST = 15;
     public static final int COPPER_COST = 10;
+    public static final int ARMOR_WARRIOR_COST = 100;
 
     // Level Constants
     public static final int MAX_LEVELS = 4;
@@ -299,10 +300,13 @@ public class Constants {
     // Button Constants
     public static final int BTN_WID = scale(120);
     public static final int BTN_HEI = scale(42);
-    public static final int SMALL_BTN_WID = scale(94);
-    public static final int SMALL_BTN_HEI = scale(34);
+    public static final int MEDIUM_BTN_WID = scale(94);
+    public static final int MEDIUM_BTN_HEI = scale(34);
     public static final int SOUND_BTN_SIZE = scale(30);
     public static final int CRE_BTN_SIZE = scale(30);
+    public static final int SMALL_BTN_SIZE = scale(25);
+    public static final int SMALL_BTN_WID = scale(50);
+    public static final int SMALL_BTN_HEI = scale(20);
 
     public static final int SLIDER_BTN_SIZE = scale(15);
     public static final int SLIDER_WID = scale(215);

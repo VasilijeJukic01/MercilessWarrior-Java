@@ -4,7 +4,7 @@ import platformer.core.Framework;
 import platformer.core.Game;
 import platformer.database.BoardItem;
 import platformer.ui.buttons.ButtonType;
-import platformer.ui.buttons.CREButton;
+import platformer.ui.buttons.SmallButton;
 import platformer.ui.overlays.OverlayLayer;
 import platformer.utils.Utils;
 
@@ -22,7 +22,7 @@ import static platformer.constants.UI.*;
 public class LeaderboardState extends AbstractState implements State {
 
     private BufferedImage leaderboardText;
-    private CREButton exitBtn;
+    private SmallButton exitBtn;
 
     public LeaderboardState(Game game) {
         super(game);
@@ -35,7 +35,7 @@ public class LeaderboardState extends AbstractState implements State {
     }
 
     private void loadButtons() {
-        this.exitBtn = new CREButton(EXIT_BTN_X, EXIT_BTN_Y, CRE_BTN_SIZE, CRE_BTN_SIZE, ButtonType.EXIT);
+        this.exitBtn = new SmallButton(EXIT_BTN_X, EXIT_BTN_Y, CRE_BTN_SIZE, CRE_BTN_SIZE, ButtonType.EXIT);
     }
 
     // Core

@@ -50,8 +50,8 @@ public class ShopOverlay implements Overlay {
     }
 
     private void loadButtons() {
-        buttons[0] = new MediumButton(BUY_BTN_X, BUY_BTN_Y, SMALL_BTN_WID, SMALL_BTN_HEI, ButtonType.BUY);
-        buttons[1] = new MediumButton(LEAVE_BTN_X, LEAVE_BTN_Y, SMALL_BTN_WID, SMALL_BTN_HEI, ButtonType.LEAVE);
+        buttons[0] = new MediumButton(BUY_BTN_X, BUY_BTN_Y, MEDIUM_BTN_WID, MEDIUM_BTN_HEI, ButtonType.BUY);
+        buttons[1] = new MediumButton(LEAVE_BTN_X, LEAVE_BTN_Y, MEDIUM_BTN_WID, MEDIUM_BTN_HEI, ButtonType.LEAVE);
     }
 
     private void initSelectedSlot() {

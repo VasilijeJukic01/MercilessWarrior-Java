@@ -6,8 +6,8 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 
 import static platformer.constants.AnimConstants.*;
-import static platformer.constants.Constants.SMALL_BTN_HEI;
-import static platformer.constants.Constants.SMALL_BTN_WID;
+import static platformer.constants.Constants.MEDIUM_BTN_HEI;
+import static platformer.constants.Constants.MEDIUM_BTN_WID;
 import static platformer.constants.FilePaths.*;
 
 public class MediumButton extends AbstractButton implements GameButton {
@@ -25,13 +25,23 @@ public class MediumButton extends AbstractButton implements GameButton {
     protected void loadButtons() {
         switch (buttonType) {
             case BUY:
-                images = Animation.getInstance().loadFromSprite(BTN_BUY_SHEET, 3, 0, SMALL_BTN_WID, SMALL_BTN_HEI, 0, BTN_W, BTN_H);
+                images = Animation.getInstance().loadFromSprite(BTN_BUY_SHEET, 3, 0, MEDIUM_BTN_WID, MEDIUM_BTN_HEI, 0, BTN_W, BTN_H);
                 break;
             case LEAVE:
-                images = Animation.getInstance().loadFromSprite(BTN_LEAVE_SHEET, 3, 0, SMALL_BTN_WID, SMALL_BTN_HEI, 0, BTN_W, BTN_H);
+                images = Animation.getInstance().loadFromSprite(BTN_LEAVE_SHEET, 3, 0, MEDIUM_BTN_WID, MEDIUM_BTN_HEI, 0, BTN_W, BTN_H);
                 break;
             case SAVE:
-                images = Animation.getInstance().loadFromSprite(BTN_SAVE_SHEET, 3, 0, SMALL_BTN_WID, SMALL_BTN_HEI, 0, BTN_W, BTN_H);
+                images = Animation.getInstance().loadFromSprite(BTN_SAVE_SHEET, 3, 0, MEDIUM_BTN_WID, MEDIUM_BTN_HEI, 0, BTN_W, BTN_H);
+                break;
+            case USE:
+                images = Animation.getInstance().loadFromSprite(INVENTORY_BTN_SHEET, 3, 0, MEDIUM_BTN_WID, MEDIUM_BTN_HEI, 0, BTN_W, BTN_H);
+                break;
+            case EQUIP:
+                images = Animation.getInstance().loadFromSprite(INVENTORY_BTN_SHEET, 3, 1, MEDIUM_BTN_WID, MEDIUM_BTN_HEI, 0, BTN_W, BTN_H);
+                break;
+            case DROP:
+                images = Animation.getInstance().loadFromSprite(INVENTORY_BTN_SHEET, 3, 2, MEDIUM_BTN_WID, MEDIUM_BTN_HEI, 0, BTN_W, BTN_H);
+                break;
             default: break;
         }
     }
@@ -45,7 +55,7 @@ public class MediumButton extends AbstractButton implements GameButton {
 
     @Override
     public void render(Graphics g) {
-        g.drawImage(images[imageIndex], xPos, yPos, SMALL_BTN_WID, SMALL_BTN_HEI, null);
+        g.drawImage(images[imageIndex], xPos, yPos, width, height, null);
     }
 
 }

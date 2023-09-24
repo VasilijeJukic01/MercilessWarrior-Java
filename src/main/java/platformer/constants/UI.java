@@ -302,7 +302,15 @@ public class UI {
 
     public static final int INV_BONUS_X = scale(600);
     public static final int INV_BONUS_Y = scale(110);
-    public static final int INV_BONUS_SPACING = scale(20);
+    public static final int INV_BONUS_SPACING = scale(16);
+
+    public static final int PREV_BTN_X = scale(120);
+    public static final int NEXT_BTN_X = scale(330);
+    public static final int USE_BTN_X = scale(153);
+    public static final int EQUIP_BTN_X = scale(213);
+    public static final int DROP_BTN_X = scale(273);
+    public static final int INV_SMALL_BTN_Y = scale(355);
+    public static final int INV_MEDIUM_BTN_Y = scale(358);
 
 
     private static int scale(double value) {

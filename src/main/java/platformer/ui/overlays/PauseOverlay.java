@@ -23,7 +23,7 @@ public class PauseOverlay implements Overlay {
     private final AudioOptions audioOptions;
     private BufferedImage pauseText;
     private BufferedImage SFXText, musicText, volumeText;
-    private CREButton continueBtn, retryBtn, exitBtn;
+    private SmallButton continueBtn, retryBtn, exitBtn;
 
     public PauseOverlay(Game game, GameState gameState) {
         this.game = game;
@@ -41,9 +41,9 @@ public class PauseOverlay implements Overlay {
     }
 
     private void loadButtons() {
-        this.continueBtn = new CREButton(CONTINUE_BTN_X, CONTINUE_BTN_Y, CRE_BTN_SIZE, CRE_BTN_SIZE, ButtonType.CONTINUE);
-        this.retryBtn = new CREButton(RETRY_BTN_X, RETRY_BTN_Y, CRE_BTN_SIZE, CRE_BTN_SIZE, ButtonType.RETRY);
-        this.exitBtn = new CREButton(EXIT_BTN_X, EXIT_BTN_Y, CRE_BTN_SIZE, CRE_BTN_SIZE, ButtonType.EXIT);
+        this.continueBtn = new SmallButton(CONTINUE_BTN_X, CONTINUE_BTN_Y, CRE_BTN_SIZE, CRE_BTN_SIZE, ButtonType.CONTINUE);
+        this.retryBtn = new SmallButton(RETRY_BTN_X, RETRY_BTN_Y, CRE_BTN_SIZE, CRE_BTN_SIZE, ButtonType.RETRY);
+        this.exitBtn = new SmallButton(EXIT_BTN_X, EXIT_BTN_Y, CRE_BTN_SIZE, CRE_BTN_SIZE, ButtonType.EXIT);
     }
 
     // Core
