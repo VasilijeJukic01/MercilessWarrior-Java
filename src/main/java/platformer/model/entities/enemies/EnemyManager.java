@@ -8,7 +8,7 @@ import platformer.debug.logger.Logger;
 import platformer.model.entities.Direction;
 import platformer.model.entities.enemies.renderer.*;
 import platformer.model.entities.player.Player;
-import platformer.model.entities.player.PlayerBonus;
+import platformer.model.perks.PerksBonus;
 import platformer.model.entities.enemies.boss.SpearWoman;
 import platformer.model.levels.Level;
 import platformer.model.gameObjects.GameObject;
@@ -120,9 +120,9 @@ public class EnemyManager {
     private int[] damage(Player player) {
         int critical = 0;
         int dmg = player.getAttackDmg();
-        dmg += PlayerBonus.getInstance().getBonusAttack();
+        dmg += PerksBonus.getInstance().getBonusAttack();
         Random rand = new Random();
-        int criticalHit = rand.nextInt(100-PlayerBonus.getInstance().getCriticalHitChance());
+        int criticalHit = rand.nextInt(100- PerksBonus.getInstance().getCriticalHitChance());
         if (criticalHit >= 1 && criticalHit <= 10) {
             dmg *= 2;
             critical = 1;

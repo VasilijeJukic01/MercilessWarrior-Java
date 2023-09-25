@@ -7,7 +7,7 @@ import platformer.model.gameObjects.GameObject;
 import platformer.model.gameObjects.ObjType;
 import platformer.model.inventory.Inventory;
 import platformer.model.inventory.InventoryItem;
-import platformer.ui.ItemType;
+import platformer.model.inventory.ItemType;
 import platformer.ui.ShopItem;
 import platformer.utils.Utils;
 

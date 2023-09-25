@@ -14,6 +14,7 @@ import platformer.model.entities.enemies.EnemyManager;
 import platformer.model.gameObjects.ObjectManager;
 import platformer.model.gameObjects.projectiles.Projectile;
 import platformer.model.inventory.Inventory;
+import platformer.model.perks.PerksBonus;
 import platformer.utils.Utils;
 
 import java.awt.*;
@@ -134,7 +135,7 @@ public class Player extends Entity {
         if (canBlock) {
             Logger.getInstance().notify("Damage blocked successfully!", Message.INFORMATION);
             cooldown[Cooldown.BLOCK.ordinal()] = PLAYER_BLOCK_CD;
-            if (PlayerBonus.getInstance().isRestorePower()) changeStamina(5);
+            if (PerksBonus.getInstance().isRestorePower()) changeStamina(5);
         }
     }
 
@@ -339,7 +340,7 @@ public class Player extends Entity {
             else hit = true;
         }
         currentHealth += value;
-        currentHealth = Math.max(Math.min(currentHealth, maxHealth+PlayerBonus.getInstance().getBonusHealth()), 0);
+        currentHealth = Math.max(Math.min(currentHealth, maxHealth+ PerksBonus.getInstance().getBonusHealth()), 0);
     }
 
     public void changeHealth(int value, Object o) {
@@ -356,7 +357,7 @@ public class Player extends Entity {
 
     public void changeStamina(double value) {
         currentStamina += value;
-        currentStamina = Math.max(Math.min(currentStamina, PLAYER_MAX_ST+PlayerBonus.getInstance().getBonusPower()), 0);
+        currentStamina = Math.max(Math.min(currentStamina, PLAYER_MAX_ST+ PerksBonus.getInstance().getBonusPower()), 0);
         if (currentStamina == 0) {
             transform = false;
             if (spellState == 1) spellState = 2;
@@ -468,7 +469,7 @@ public class Player extends Entity {
         setSpellState(0);
         animIndex = animTick = 0;
         entityState = Anim.IDLE;
-        currentHealth = maxHealth+PlayerBonus.getInstance().getBonusHealth();
+        currentHealth = maxHealth+ PerksBonus.getInstance().getBonusHealth();
         currentStamina = 0;
         hitBox.x = xPos;
         hitBox.y = yPos;
@@ -513,7 +514,7 @@ public class Player extends Entity {
         if (cooldown[Cooldown.ATTACK.ordinal()] != 0) return;
         this.attackState = playerAttackState;
         this.setAttacking(true);
-        cooldown[Cooldown.ATTACK.ordinal()] = PLAYER_ATTACK_CD + PlayerBonus.getInstance().getBonusCooldown();
+        cooldown[Cooldown.ATTACK.ordinal()] = PLAYER_ATTACK_CD + PerksBonus.getInstance().getBonusCooldown();
     }
 
     public void setCanDash(boolean canDash) {
@@ -557,7 +558,7 @@ public class Player extends Entity {
     }
 
     public void setCanTransform(boolean canTransform) {
-        if (!PlayerBonus.getInstance().isTransform()) return;
+        if (!PerksBonus.getInstance().isTransform()) return;
         if (transform) transform = false;
         else {
             this.canTransform = canTransform;

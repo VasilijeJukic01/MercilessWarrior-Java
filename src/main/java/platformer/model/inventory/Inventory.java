@@ -7,10 +7,9 @@ public class Inventory {
 
     private final List<InventoryItem> backpack = new ArrayList<>();
     private final InventoryItem[] equipped = new InventoryItem[6];
-    private final ItemsManager itemsManager;
 
     public Inventory() {
-        this.itemsManager = new ItemsManager();
+
     }
 
     public void useItem(int index) {
@@ -21,6 +20,7 @@ public class Inventory {
         if (index >= backpack.size()) return;
         if (!backpack.get(index).getItemType().canEquip()) return;
         addToEquipment(backpack.get(index));
+        applyBonus(backpack.get(index).getItemType());
         dropItem(index);
 
     }
@@ -34,11 +34,29 @@ public class Inventory {
 
     private void addToEquipment(InventoryItem item) {
         if (item.getItemType().getName().contains("Helmet")) equipped[0] = item;
-        if (item.getItemType().getName().contains("Armor")) equipped[1] = item;
-        else if (item.getItemType().getName().contains("Gloves")) equipped[2] = item;
-        else if (item.getItemType().getName().contains("Trousers")) equipped[3] = item;
-        else if (item.getItemType().getName().contains("Amulet")) equipped[4] = item;
+        if (item.getItemType().getName().contains("Armor")) equipped[2] = item;
+        else if (item.getItemType().getName().contains("Gloves")) equipped[4] = item;
+        else if (item.getItemType().getName().contains("Trousers")) equipped[1] = item;
+        else if (item.getItemType().getName().contains("Amulet")) equipped[3] = item;
         else if (item.getItemType().getName().contains("Boots")) equipped[5] = item;
+    }
+
+    private void applyBonus(ItemType itemType) {
+        if (itemType == ItemType.ARMOR_WARRIOR) InventoryBonus.getInstance().applyBonus(ItemBonus.ARMOR_WARRIOR);
+    }
+
+    private void removeBonus(ItemType itemType) {
+        if (itemType == ItemType.ARMOR_WARRIOR) InventoryBonus.getInstance().removeBonus(ItemBonus.ARMOR_WARRIOR);
+    }
+
+    public void reset() {
+        this.backpack.clear();
+        for (int i = 0; i < equipped.length; i++) {
+            if (equipped[i] != null) {
+                removeBonus(equipped[i].getItemType());
+                equipped[i] = null;
+            }
+        }
     }
 
     public List<InventoryItem> getBackpack() {

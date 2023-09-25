@@ -1,7 +1,5 @@
 package platformer.model.inventory;
 
-import platformer.ui.ItemType;
-
 import java.awt.image.BufferedImage;
 
 public class InventoryItem {

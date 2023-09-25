@@ -7,6 +7,7 @@ import platformer.debug.logger.Message;
 import platformer.model.entities.Cooldown;
 import platformer.model.entities.Direction;
 import platformer.model.gameObjects.ObjectManager;
+import platformer.model.perks.PerksBonus;
 import platformer.utils.Utils;
 
 import java.awt.geom.Rectangle2D;
@@ -45,7 +46,7 @@ public class PlayerActionHandler {
             dashCount++;
             player.setCanDash(true);
             player.changeStamina(-3);
-            player.getCooldown()[Cooldown.DASH.ordinal()] = PLAYER_DASH_CD + PlayerBonus.getInstance().getDashCooldown();
+            player.getCooldown()[Cooldown.DASH.ordinal()] = PLAYER_DASH_CD + PerksBonus.getInstance().getDashCooldown();
             Audio.getInstance().getAudioPlayer().playSound(Sound.DASH);
         }
     }
@@ -59,7 +60,7 @@ public class PlayerActionHandler {
     }
 
     public void doFireBall() {
-        if (!PlayerBonus.getInstance().isFireball()) return;
+        if (!PerksBonus.getInstance().isFireball()) return;
         if (player.getCooldown()[Cooldown.SPELL.ordinal()] != 0 || player.getCurrentStamina() < 15) return;
         player.setFireball(true);
         player.changeStamina(-15);

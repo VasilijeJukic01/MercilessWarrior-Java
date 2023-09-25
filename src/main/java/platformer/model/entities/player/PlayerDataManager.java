@@ -3,6 +3,7 @@ package platformer.model.entities.player;
 import platformer.core.Account;
 import platformer.core.Framework;
 import platformer.model.levels.Spawn;
+import platformer.model.perks.PerksBonus;
 import platformer.ui.overlays.hud.UserInterface;
 
 import java.awt.*;
@@ -55,13 +56,13 @@ public class PlayerDataManager {
     public void update() {
         double currentHealth = player.getCurrentHealth();
         double currentStamina = player.getCurrentStamina();
-        double maxHealth = PLAYER_MAX_HP + PlayerBonus.getInstance().getBonusHealth();
-        double maxStamina = PLAYER_MAX_ST + PlayerBonus.getInstance().getBonusPower();
+        double maxHealth = PLAYER_MAX_HP + PerksBonus.getInstance().getBonusHealth();
+        double maxStamina = PLAYER_MAX_ST + PerksBonus.getInstance().getBonusPower();
         userInterface.update(currentHealth, maxHealth, currentStamina, maxStamina, exp, 1000*level);
     }
 
     public void changeExp(double value) {
-        exp += value+PlayerBonus.getInstance().getBonusExp();
+        exp += value+ PerksBonus.getInstance().getBonusExp();
         exp = Math.max(Math.min(exp, XP_CAP), 0);
         if (exp > 1000*level) {
             exp = exp % (1000*level);

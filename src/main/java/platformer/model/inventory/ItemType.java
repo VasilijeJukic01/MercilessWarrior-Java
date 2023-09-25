@@ -1,4 +1,4 @@
-package platformer.ui;
+package platformer.model.inventory;
 
 public enum ItemType {
     HEALTH("Health", 0, "", false),

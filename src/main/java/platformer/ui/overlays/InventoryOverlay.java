@@ -1,6 +1,7 @@
 package platformer.ui.overlays;
 
 import platformer.model.inventory.Inventory;
+import platformer.model.inventory.InventoryBonus;
 import platformer.model.inventory.InventoryItem;
 import platformer.state.GameState;
 import platformer.ui.buttons.AbstractButton;
@@ -32,7 +33,8 @@ public class InventoryOverlay implements Overlay {
     private BufferedImage playerImage, slotImage;
     private Rectangle2D.Double selectedSlot;
     private int backpackSlot;
-    private int slotNumber;
+    private int backpackSlotNumber, equipmentSlotNumber;
+    private boolean isInBackpack = true;
     private int SLOT_MAX_ROW, SLOT_MAX_COL;
 
     public InventoryOverlay(GameState gameState) {
@@ -70,24 +72,40 @@ public class InventoryOverlay implements Overlay {
     }
 
     private void initSelectedSlot() {
-        int xPos = (slotNumber % SLOT_MAX_ROW) * SLOT_SPACING + INV_SLOT_X;
-        int yPos = (slotNumber / SLOT_MAX_ROW) * SLOT_SPACING + INV_SLOT_Y;
+        int xPos = (backpackSlotNumber % SLOT_MAX_ROW) * SLOT_SPACING + INV_SLOT_X;
+        int yPos = (backpackSlotNumber / SLOT_MAX_ROW) * SLOT_SPACING + INV_SLOT_Y;
         this.selectedSlot = new Rectangle2D.Double(xPos, yPos, SLOT_SIZE, SLOT_SIZE);
     }
 
     // Selection
-    private void setSelectedSlot() {
-        this.selectedSlot.x = (slotNumber % SLOT_MAX_ROW) * SLOT_SPACING + INV_SLOT_X;
-        this.selectedSlot.y = (slotNumber / SLOT_MAX_ROW) * SLOT_SPACING + INV_SLOT_Y;
+    private void setSelectedSlotBackpack() {
+        this.selectedSlot.x = (backpackSlotNumber % SLOT_MAX_ROW) * SLOT_SPACING + INV_SLOT_X;
+        this.selectedSlot.y = (backpackSlotNumber / SLOT_MAX_ROW) * SLOT_SPACING + INV_SLOT_Y;
+    }
+
+    private void setSelectedSlotEquipment() {
+        this.selectedSlot.x = (equipmentSlotNumber % 2) * INV_EQUIP_SLOT_SPACING + INV_EQUIP_SLOT_X;
+        this.selectedSlot.y = (equipmentSlotNumber / 2) * SLOT_SPACING + INV_EQUIP_SLOT_Y;
     }
 
     private void changeSlot(MouseEvent e) {
         int x = e.getX(), y = e.getY();
         for (int i = 0; i < SLOT_MAX_ROW; i++) {
             for (int j = 0; j < SLOT_MAX_COL; j++) {
-                if (x >= i*SLOT_SPACING+INV_SLOT_X && x <= i*SLOT_SPACING+INV_SLOT_X+SLOT_SIZE && y >= j*SLOT_SPACING+INV_SLOT_Y && y <= j*SLOT_SPACING+INV_SLOT_Y+SLOT_SIZE) {
-                    slotNumber = i + (j * SLOT_MAX_ROW);
-                    setSelectedSlot();
+                if (x >= i * SLOT_SPACING + INV_SLOT_X && x <= i * SLOT_SPACING + INV_SLOT_X + SLOT_SIZE && y >= j * SLOT_SPACING + INV_SLOT_Y && y <= j * SLOT_SPACING + INV_SLOT_Y + SLOT_SIZE) {
+                    backpackSlotNumber = i + (j * SLOT_MAX_ROW);
+                    setSelectedSlotBackpack();
+                    isInBackpack = true;
+                    break;
+                }
+            }
+        }
+        for (int i = 0; i < 2; i++) {
+            for (int j = 0; j < 3; j++) {
+                if (x >= i * INV_EQUIP_SLOT_SPACING + INV_EQUIP_SLOT_X && x <= i * INV_EQUIP_SLOT_SPACING + INV_EQUIP_SLOT_X + SLOT_SIZE && y >= j * SLOT_SPACING + INV_EQUIP_SLOT_Y && y <= j * SLOT_SPACING + INV_EQUIP_SLOT_Y + SLOT_SIZE) {
+                    equipmentSlotNumber = i + (j * 2);
+                    setSelectedSlotEquipment();
+                    isInBackpack = false;
                     break;
                 }
             }
@@ -177,7 +195,7 @@ public class InventoryOverlay implements Overlay {
                 Inventory inventory = gameState.getPlayer().getInventory();
                 if (inventory.getEquipped()[j * 2 + i] != null) {
                     InventoryItem item = inventory.getEquipped()[j * 2 + i];
-                    int slot = (i * 2 + j);
+                    int slot = (j * 2 + i);
                     int x = (slot % 2) * INV_EQUIP_SLOT_SPACING + INV_EQUIP_SLOT_X + ITEM_OFFSET_X;
                     int y = (slot / 2) * SLOT_SPACING + INV_EQUIP_SLOT_Y + ITEM_OFFSET_Y;
                     g.drawImage(item.getModel(), x, y, ITEM_SIZE, ITEM_SIZE, null);
@@ -185,12 +203,24 @@ public class InventoryOverlay implements Overlay {
 
             }
         }
+        renderItemInfoEquipment(g);
     }
 
     private void renderItemInfo(Graphics g) {
         Inventory inventory = gameState.getPlayer().getInventory();
-        if (slotNumber >= inventory.getBackpack().size()) return;
-        InventoryItem item = inventory.getBackpack().get(slotNumber);
+        if (backpackSlotNumber >= inventory.getBackpack().size()) return;
+        InventoryItem item = inventory.getBackpack().get(backpackSlotNumber);
+        if (item != null && isInBackpack) renderInfoText(g, item);
+    }
+
+    private void renderItemInfoEquipment(Graphics g) {
+        Inventory inventory = gameState.getPlayer().getInventory();
+        if (equipmentSlotNumber >= inventory.getEquipped().length) return;
+        InventoryItem item = inventory.getEquipped()[equipmentSlotNumber];
+        if (item != null && !isInBackpack) renderInfoText(g, item);
+    }
+
+    private void renderInfoText(Graphics g, InventoryItem item) {
         g.setColor(Color.WHITE);
         g.setFont(new Font("Arial", Font.BOLD, FONT_MEDIUM));
         g.drawString(item.getItemType().getName(), INV_ITEM_NAME_X, INV_ITEM_NAME_Y);
@@ -209,13 +239,13 @@ public class InventoryOverlay implements Overlay {
         g.setColor(Color.WHITE);
         g.setFont(new Font("Arial", Font.PLAIN, FONT_MEDIUM));
         g.drawString("Active bonuses: ", INV_BONUS_X, INV_BONUS_Y);
-        g.drawString("Health Bonus: +0%", INV_BONUS_X, INV_BONUS_Y + INV_BONUS_SPACING);
-        g.drawString("Defense Bonus: +0%", INV_BONUS_X, INV_BONUS_Y + 2 * INV_BONUS_SPACING);
-        g.drawString("Attack Bonus: +0%", INV_BONUS_X, INV_BONUS_Y + 3 * INV_BONUS_SPACING);
-        g.drawString("Stamina Bonus: +0%", INV_BONUS_X, INV_BONUS_Y + 4 * INV_BONUS_SPACING);
-        g.drawString("Critical Bonus: +0%", INV_BONUS_X, INV_BONUS_Y + 5 * INV_BONUS_SPACING);
-        g.drawString("Spell Bonus: +0%", INV_BONUS_X, INV_BONUS_Y + 6 * INV_BONUS_SPACING);
-        g.drawString("Cooldown Bonus: +0%", INV_BONUS_X, INV_BONUS_Y +  7 * INV_BONUS_SPACING);
+        g.drawString("Health Bonus: +"+InventoryBonus.getInstance().getHealth()+"%", INV_BONUS_X, INV_BONUS_Y + INV_BONUS_SPACING);
+        g.drawString("Defense Bonus: +"+InventoryBonus.getInstance().getDefense()+"%", INV_BONUS_X, INV_BONUS_Y + 2 * INV_BONUS_SPACING);
+        g.drawString("Attack Bonus: +"+InventoryBonus.getInstance().getAttack()+"%", INV_BONUS_X, INV_BONUS_Y + 3 * INV_BONUS_SPACING);
+        g.drawString("Stamina Bonus: +"+InventoryBonus.getInstance().getStamina()+"%", INV_BONUS_X, INV_BONUS_Y + 4 * INV_BONUS_SPACING);
+        g.drawString("Critical Bonus: +"+InventoryBonus.getInstance().getCritical()+"%", INV_BONUS_X, INV_BONUS_Y + 5 * INV_BONUS_SPACING);
+        g.drawString("Spell Bonus: +"+InventoryBonus.getInstance().getSpell()+"%", INV_BONUS_X, INV_BONUS_Y + 6 * INV_BONUS_SPACING);
+        g.drawString("Cooldown Bonus: +"+InventoryBonus.getInstance().getCooldown()+"%", INV_BONUS_X, INV_BONUS_Y +  7 * INV_BONUS_SPACING);
     }
 
     // Actions
@@ -268,11 +298,11 @@ public class InventoryOverlay implements Overlay {
                 Inventory inventory = gameState.getPlayer().getInventory();
                 switch (button.getButtonType()) {
                     case USE:
-                        inventory.useItem(slotNumber); break;
+                        inventory.useItem(backpackSlotNumber); break;
                     case EQUIP:
-                        inventory.equipItem(slotNumber); break;
+                        inventory.equipItem(backpackSlotNumber); break;
                     case DROP:
-                        inventory.dropItem(slotNumber); break;
+                        inventory.dropItem(backpackSlotNumber); break;
                     default: break;
                 }
             }

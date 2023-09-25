@@ -1,5 +1,7 @@
 package platformer.ui;
 
+import platformer.model.inventory.ItemType;
+
 import java.awt.image.BufferedImage;
 
 public class ShopItem {

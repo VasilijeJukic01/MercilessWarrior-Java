@@ -5,7 +5,7 @@ import platformer.audio.Audio;
 import platformer.audio.Sound;
 import platformer.model.entities.Direction;
 import platformer.model.entities.player.Player;
-import platformer.model.entities.player.PlayerBonus;
+import platformer.model.perks.PerksBonus;
 import platformer.model.entities.enemies.boss.SpearWoman;
 import platformer.model.gameObjects.objects.*;
 import platformer.model.gameObjects.objects.Container;
@@ -117,7 +117,7 @@ public class ObjectManager {
     }
 
     public void checkProjectileDeflect(Rectangle2D.Double attackBox) {
-        if (!PlayerBonus.getInstance().isDeflect()) return;
+        if (!PerksBonus.getInstance().isDeflect()) return;
         projectiles.stream()
                 .filter(projectile -> projectile.isAlive() && attackBox.intersects(projectile.getHitBox()))
                 .forEach(projectile -> projectile.setAlive(false));

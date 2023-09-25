@@ -10,7 +10,7 @@ import platformer.model.entities.effects.Particle;
 import platformer.model.entities.enemies.EnemyManager;
 import platformer.core.Game;
 import platformer.model.entities.player.Player;
-import platformer.model.entities.player.PlayerBonus;
+import platformer.model.perks.PerksBonus;
 import platformer.model.levels.LevelManager;
 import platformer.model.gameObjects.ObjectManager;
 import platformer.model.perks.PerksManager;
@@ -99,10 +99,11 @@ public class GameState extends AbstractState implements State {
 
     public void reloadSave() {
         reset();
-        PlayerBonus.getInstance().reset();
+        PerksBonus.getInstance().reset();
         this.perksManager = new PerksManager();
         this.perksManager.loadUnlockedPerks(Framework.getInstance().getAccount().getPerks());
         this.player.getPlayerDataManager().loadPlayerData();
+        this.player.getInventory().reset();
         this.levelManager.loadSavePoint(Framework.getInstance().getAccount().getSpawn());
         this.overlayManager.reset();
         calculateLevelOffset();
