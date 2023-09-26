@@ -2,7 +2,7 @@ package platformer.ui.overlays;
 
 import platformer.model.gameObjects.objects.Shop;
 import platformer.state.GameState;
-import platformer.ui.ShopItem;
+import platformer.model.inventory.ShopItem;
 import platformer.ui.buttons.AbstractButton;
 import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.MediumButton;
@@ -108,7 +108,7 @@ public class ShopOverlay implements Overlay {
         int yPos = (item.getSlot() / SHOP_SLOT_MAX_ROW) * SLOT_SPACING + SLOT_Y + ITEM_OFFSET_Y;
         g.drawImage(item.getItemImage(), xPos, yPos, ITEM_SIZE, ITEM_SIZE, null);
         g.setColor(Color.WHITE);
-        g.setFont(new Font("Arial", Font.BOLD, 20));
+        g.setFont(new Font("Arial", Font.BOLD, FONT_MEDIUM));
         int countX = xPos + ITEM_COUNT_OFFSET_X, countY =  yPos + ITEM_COUNT_OFFSET_Y;
         g.drawString(String.valueOf(item.getAmount()), countX, countY);
         if (slotNumber == item.getSlot()) {

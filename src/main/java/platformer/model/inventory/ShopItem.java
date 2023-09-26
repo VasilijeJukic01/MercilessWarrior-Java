@@ -1,6 +1,4 @@
-package platformer.ui;
-
-import platformer.model.inventory.ItemType;
+package platformer.model.inventory;
 
 import java.awt.image.BufferedImage;
 

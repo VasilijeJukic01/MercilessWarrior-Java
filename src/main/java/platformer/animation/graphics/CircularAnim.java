@@ -23,8 +23,8 @@ public class CircularAnim implements GraphicsAnimation {
     @Override
     public Point calculatePoint() {
         double theta = (direction == Direction.LEFT) ? angle : -angle;
-        int x1 = (int)(p+radius*Math.cos(theta));
-        int y1 = (int)(q+radius*Math.sin(theta));
+        int x1 = (int)(p + radius * Math.cos(theta));
+        int y1 = (int)(q + radius * Math.sin(theta));
         angle += angularSpeed;
         return new Point(x1, y1);
     }

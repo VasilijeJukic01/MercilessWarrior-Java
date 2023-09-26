@@ -10,12 +10,12 @@ import static platformer.constants.AnimConstants.BTN_W;
 import static platformer.constants.Constants.*;
 import static platformer.constants.FilePaths.MENU_BTN_SHEET;
 
-public class MenuButton extends AbstractButton implements GameButton {
+public class BigButton extends AbstractButton implements GameButton {
 
     private BufferedImage[] images;
     private int imageIndex;
 
-    public MenuButton(int xPos, int yPos, int width, int height, ButtonType buttonType) {
+    public BigButton(int xPos, int yPos, int width, int height, ButtonType buttonType) {
         super(xPos, yPos, width, height);
         super.buttonType = buttonType;
         loadButtons();
@@ -39,7 +39,7 @@ public class MenuButton extends AbstractButton implements GameButton {
                 break;
             default: break;
         }
-        images = Animation.getInstance().loadFromSprite(MENU_BTN_SHEET, 3, r, BTN_WID, BTN_HEI, 0, BTN_W, BTN_H);
+        images = Animation.getInstance().loadFromSprite(MENU_BTN_SHEET, 3, r, BIG_BTN_WID, BIG_BTN_HEI, 0, BTN_W, BTN_H);
     }
 
     @Override
@@ -51,7 +51,7 @@ public class MenuButton extends AbstractButton implements GameButton {
 
     @Override
     public void render(Graphics g) {
-        g.drawImage(images[imageIndex], xPos, yPos, BTN_WID, BTN_HEI, null);
+        g.drawImage(images[imageIndex], xPos, yPos, BIG_BTN_WID, BIG_BTN_HEI, null);
     }
 
 }

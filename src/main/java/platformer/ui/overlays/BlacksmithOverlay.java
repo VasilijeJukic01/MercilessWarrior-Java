@@ -228,9 +228,7 @@ public class BlacksmithOverlay implements Overlay {
                 break;
             }
         }
-        for (MediumButton button : buttons) {
-            button.resetMouseSet();
-        }
+        Arrays.stream(buttons).forEach(MediumButton::resetMouseSet);
     }
 
     @Override

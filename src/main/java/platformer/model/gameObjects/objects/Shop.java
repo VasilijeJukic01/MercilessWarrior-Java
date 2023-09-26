@@ -8,7 +8,7 @@ import platformer.model.gameObjects.ObjType;
 import platformer.model.inventory.Inventory;
 import platformer.model.inventory.InventoryItem;
 import platformer.model.inventory.ItemType;
-import platformer.ui.ShopItem;
+import platformer.model.inventory.ShopItem;
 import platformer.utils.Utils;
 
 import java.awt.*;

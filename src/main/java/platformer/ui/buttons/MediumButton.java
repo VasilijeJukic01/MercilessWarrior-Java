@@ -23,27 +23,31 @@ public class MediumButton extends AbstractButton implements GameButton {
 
     @Override
     protected void loadButtons() {
+        String sheet = "";
+        int row = 3;
+        int column = 0;
+
         switch (buttonType) {
             case BUY:
-                images = Animation.getInstance().loadFromSprite(BTN_BUY_SHEET, 3, 0, MEDIUM_BTN_WID, MEDIUM_BTN_HEI, 0, BTN_W, BTN_H);
-                break;
+                sheet = BTN_BUY_SHEET; break;
             case LEAVE:
-                images = Animation.getInstance().loadFromSprite(BTN_LEAVE_SHEET, 3, 0, MEDIUM_BTN_WID, MEDIUM_BTN_HEI, 0, BTN_W, BTN_H);
-                break;
+                sheet = BTN_LEAVE_SHEET; break;
             case SAVE:
-                images = Animation.getInstance().loadFromSprite(BTN_SAVE_SHEET, 3, 0, MEDIUM_BTN_WID, MEDIUM_BTN_HEI, 0, BTN_W, BTN_H);
-                break;
+                sheet = BTN_SAVE_SHEET; break;
             case USE:
-                images = Animation.getInstance().loadFromSprite(INVENTORY_BTN_SHEET, 3, 0, MEDIUM_BTN_WID, MEDIUM_BTN_HEI, 0, BTN_W, BTN_H);
-                break;
+                sheet = INVENTORY_BTN_SHEET; break;
             case EQUIP:
-                images = Animation.getInstance().loadFromSprite(INVENTORY_BTN_SHEET, 3, 1, MEDIUM_BTN_WID, MEDIUM_BTN_HEI, 0, BTN_W, BTN_H);
+                sheet = INVENTORY_BTN_SHEET;
+                column = 1;
                 break;
             case DROP:
-                images = Animation.getInstance().loadFromSprite(INVENTORY_BTN_SHEET, 3, 2, MEDIUM_BTN_WID, MEDIUM_BTN_HEI, 0, BTN_W, BTN_H);
+                sheet = INVENTORY_BTN_SHEET;
+                column = 2;
                 break;
             default: break;
         }
+        if (!sheet.isEmpty())
+            images = Animation.getInstance().loadFromSprite(sheet, row, column, MEDIUM_BTN_WID, MEDIUM_BTN_HEI, 0, BTN_W, BTN_H);
     }
 
     @Override

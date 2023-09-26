@@ -35,7 +35,6 @@ public class InventoryOverlay implements Overlay {
     private int backpackSlot;
     private int backpackSlotNumber, equipmentSlotNumber;
     private boolean isInBackpack = true;
-    private int SLOT_MAX_ROW, SLOT_MAX_COL;
 
     public InventoryOverlay(GameState gameState) {
         this.gameState = gameState;
@@ -46,8 +45,6 @@ public class InventoryOverlay implements Overlay {
 
     // Init
     private void init() {
-        this.SLOT_MAX_COL = INVENTORY_SLOT_MAX_COL;
-        this.SLOT_MAX_ROW = INVENTORY_SLOT_MAX_ROW;
         loadImages();
         loadButtons();
         initSelectedSlot();
@@ -55,8 +52,8 @@ public class InventoryOverlay implements Overlay {
 
     private void loadImages() {
         this.overlay = new Rectangle2D.Double(INV_OVERLAY_X, INV_OVERLAY_Y, INV_OVERLAY_WID, INV_OVERLAY_HEI);
-        this.backpackPanel = new Rectangle2D.Double(INV_SPACE_X, INV_SPACE_Y, INV_SPACE_WID, INV_SPACE_HEI);
-        this.equipPanel = new Rectangle2D.Double(INV_EQUIP_X, INV_EQUIP_Y, INV_EQUIP_WID, INV_EQUIP_HEI);
+        this.backpackPanel = new Rectangle2D.Double(BACKPACK_X, BACKPACK_Y, BACKPACK_WID, BACKPACK_HEI);
+        this.equipPanel = new Rectangle2D.Double(EQUIPMENT_X, EQUIPMENT_Y, EQUIPMENT_WID, EQUIPMENT_HEI);
         this.inventoryText = Utils.getInstance().importImage(INVENTORY_TXT, INV_TEXT_WID, INV_TEXT_HEI);
         this.slotImage = Utils.getInstance().importImage(SLOT_INVENTORY, SLOT_SIZE, SLOT_SIZE);
         this.playerImage = Utils.getInstance().importImage(PLAYER_ICON, -1, -1);
@@ -72,38 +69,56 @@ public class InventoryOverlay implements Overlay {
     }
 
     private void initSelectedSlot() {
-        int xPos = (backpackSlotNumber % SLOT_MAX_ROW) * SLOT_SPACING + INV_SLOT_X;
-        int yPos = (backpackSlotNumber / SLOT_MAX_ROW) * SLOT_SPACING + INV_SLOT_Y;
+        int xPos = (backpackSlotNumber % INVENTORY_SLOT_MAX_ROW) * SLOT_SPACING + BACKPACK_SLOT_X;
+        int yPos = (backpackSlotNumber / INVENTORY_SLOT_MAX_ROW) * SLOT_SPACING + BACKPACK_SLOT_Y;
         this.selectedSlot = new Rectangle2D.Double(xPos, yPos, SLOT_SIZE, SLOT_SIZE);
     }
 
     // Selection
     private void setSelectedSlotBackpack() {
-        this.selectedSlot.x = (backpackSlotNumber % SLOT_MAX_ROW) * SLOT_SPACING + INV_SLOT_X;
-        this.selectedSlot.y = (backpackSlotNumber / SLOT_MAX_ROW) * SLOT_SPACING + INV_SLOT_Y;
+        this.selectedSlot.x = (backpackSlotNumber % INVENTORY_SLOT_MAX_ROW) * SLOT_SPACING + BACKPACK_SLOT_X;
+        this.selectedSlot.y = (backpackSlotNumber / INVENTORY_SLOT_MAX_ROW) * SLOT_SPACING + BACKPACK_SLOT_Y;
     }
 
     private void setSelectedSlotEquipment() {
-        this.selectedSlot.x = (equipmentSlotNumber % 2) * INV_EQUIP_SLOT_SPACING + INV_EQUIP_SLOT_X;
-        this.selectedSlot.y = (equipmentSlotNumber / 2) * SLOT_SPACING + INV_EQUIP_SLOT_Y;
+        this.selectedSlot.x = (equipmentSlotNumber % EQUIPMENT_SLOT_MAX_ROW) * EQUIPMENT_SLOT_SPACING + EQUIPMENT_SLOT_X;
+        this.selectedSlot.y = (equipmentSlotNumber / EQUIPMENT_SLOT_MAX_ROW) * SLOT_SPACING + EQUIPMENT_SLOT_Y;
     }
 
     private void changeSlot(MouseEvent e) {
         int x = e.getX(), y = e.getY();
-        for (int i = 0; i < SLOT_MAX_ROW; i++) {
-            for (int j = 0; j < SLOT_MAX_COL; j++) {
-                if (x >= i * SLOT_SPACING + INV_SLOT_X && x <= i * SLOT_SPACING + INV_SLOT_X + SLOT_SIZE && y >= j * SLOT_SPACING + INV_SLOT_Y && y <= j * SLOT_SPACING + INV_SLOT_Y + SLOT_SIZE) {
-                    backpackSlotNumber = i + (j * SLOT_MAX_ROW);
+        checkBackpackSelection(x, y);
+        checkEquipmentSelection(x, y);
+    }
+
+    private void checkBackpackSelection(int x, int y) {
+        for (int i = 0; i < INVENTORY_SLOT_MAX_ROW; i++) {
+            for (int j = 0; j < INVENTORY_SLOT_MAX_COL; j++) {
+                int xStart = i * SLOT_SPACING + BACKPACK_SLOT_X;
+                int xEnd = i * SLOT_SPACING + BACKPACK_SLOT_X + SLOT_SIZE;
+                int yStart = j * SLOT_SPACING + BACKPACK_SLOT_Y;
+                int yEnd = j * SLOT_SPACING + BACKPACK_SLOT_Y + SLOT_SIZE;
+
+                if (x >= xStart && x <= xEnd && y >= yStart && y <= yEnd) {
+                    backpackSlotNumber = i + (j * INVENTORY_SLOT_MAX_ROW);
                     setSelectedSlotBackpack();
                     isInBackpack = true;
                     break;
                 }
             }
         }
-        for (int i = 0; i < 2; i++) {
-            for (int j = 0; j < 3; j++) {
-                if (x >= i * INV_EQUIP_SLOT_SPACING + INV_EQUIP_SLOT_X && x <= i * INV_EQUIP_SLOT_SPACING + INV_EQUIP_SLOT_X + SLOT_SIZE && y >= j * SLOT_SPACING + INV_EQUIP_SLOT_Y && y <= j * SLOT_SPACING + INV_EQUIP_SLOT_Y + SLOT_SIZE) {
-                    equipmentSlotNumber = i + (j * 2);
+    }
+
+    private void checkEquipmentSelection(int x, int y) {
+        for (int i = 0; i < EQUIPMENT_SLOT_MAX_ROW; i++) {
+            for (int j = 0; j < EQUIPMENT_SLOT_MAX_COL; j++) {
+                int xStart = i * EQUIPMENT_SLOT_SPACING + EQUIPMENT_SLOT_X;
+                int xEnd = i * EQUIPMENT_SLOT_SPACING + EQUIPMENT_SLOT_X + SLOT_SIZE;
+                int yStart = j * SLOT_SPACING + EQUIPMENT_SLOT_Y;
+                int yEnd = j * SLOT_SPACING + EQUIPMENT_SLOT_Y + SLOT_SIZE;
+
+                if (x >= xStart && x <= xEnd && y >= yStart && y <= yEnd) {
+                    equipmentSlotNumber = i + (j * EQUIPMENT_SLOT_MAX_ROW);
                     setSelectedSlotEquipment();
                     isInBackpack = false;
                     break;
@@ -112,14 +127,15 @@ public class InventoryOverlay implements Overlay {
         }
     }
 
+    // Core
     @Override
     public void render(Graphics g) {
         Graphics2D g2d = (Graphics2D) g;
         renderOverlay(g2d);
-        renderItemsSpace(g2d);
-        renderItemSlots(g);
-        renderEquipSpace(g2d);
-        renderEquipSlots(g);
+        renderBackpackPanel(g2d);
+        renderBackpackSlots(g);
+        renderEquipmentPanel(g2d);
+        renderEquipmentSlots(g);
         renderBonusInfo(g);
         g.setColor(Color.RED);
         g.drawRect((int)selectedSlot.x, (int)selectedSlot.y,  (int)selectedSlot.width,  (int)selectedSlot.height);
@@ -141,7 +157,7 @@ public class InventoryOverlay implements Overlay {
         g2d.drawImage(inventoryText, INV_TEXT_X, INV_TEXT_Y, inventoryText.getWidth(), inventoryText.getHeight(), null);
     }
 
-    private void renderItemsSpace(Graphics2D g2d) {
+    private void renderBackpackPanel(Graphics2D g2d) {
         g2d.setColor(OVERLAY_SPACE_COLOR);
         g2d.fill(backpackPanel);
         g2d.setColor(Color.WHITE);
@@ -149,35 +165,35 @@ public class InventoryOverlay implements Overlay {
         g2d.draw(backpackPanel);
     }
 
-    private void renderItemSlots(Graphics g) {
+    private void renderBackpackSlots(Graphics g) {
         Inventory inventory = gameState.getPlayer().getInventory();
-        for (int i = 0; i < SLOT_MAX_ROW; i++) {
-            for (int j = 0; j < SLOT_MAX_COL; j++) {
-                int xPos = i * SLOT_SPACING + INV_SLOT_X;
-                int yPos = j * SLOT_SPACING + INV_SLOT_Y;
+        for (int i = 0; i < INVENTORY_SLOT_MAX_ROW; i++) {
+            for (int j = 0; j < INVENTORY_SLOT_MAX_COL; j++) {
+                int xPos = i * SLOT_SPACING + BACKPACK_SLOT_X;
+                int yPos = j * SLOT_SPACING + BACKPACK_SLOT_Y;
+
                 g.drawImage(slotImage, xPos, yPos, slotImage.getWidth(), slotImage.getHeight(), null);
-                int backpack = (j * SLOT_MAX_ROW + i) + backpackSlot * (SLOT_MAX_ROW * SLOT_MAX_COL);
-                if (backpack < inventory.getBackpack().size())
-                    renderItem(inventory, i, j, g);
+                int slotNumber = (j * INVENTORY_SLOT_MAX_ROW + i) + backpackSlot * (INVENTORY_SLOT_MAX_ROW * INVENTORY_SLOT_MAX_COL);
+                if (slotNumber < inventory.getBackpack().size())
+                    renderBackpackItem(g, inventory, slotNumber);
             }
         }
-        renderItemInfo(g);
+        renderItemInfoBackpack(g);
     }
 
-    private void renderItem(Inventory inventory, int i, int j, Graphics g) {
-        int slot = (j * SLOT_MAX_ROW + i) + backpackSlot * (SLOT_MAX_ROW * SLOT_MAX_COL);
-        InventoryItem item = inventory.getBackpack().get(slot);
-        int xPos = (slot % SLOT_MAX_ROW) * SLOT_SPACING + INV_SLOT_X + ITEM_OFFSET_X;
-        int yPos = (slot / SLOT_MAX_ROW) * SLOT_SPACING + INV_SLOT_Y + ITEM_OFFSET_Y;
+    private void renderBackpackItem(Graphics g, Inventory inventory, int slotNumber) {
+        InventoryItem item = inventory.getBackpack().get(slotNumber);
+        int xPos = (slotNumber % INVENTORY_SLOT_MAX_ROW) * SLOT_SPACING + BACKPACK_SLOT_X + ITEM_OFFSET_X;
+        int yPos = (slotNumber / INVENTORY_SLOT_MAX_ROW) * SLOT_SPACING + BACKPACK_SLOT_Y + ITEM_OFFSET_Y;
         g.drawImage(item.getModel(), xPos, yPos, ITEM_SIZE, ITEM_SIZE, null);
 
         g.setColor(Color.WHITE);
-        g.setFont(new Font("Arial", Font.BOLD, 20));
+        g.setFont(new Font("Arial", Font.BOLD, FONT_MEDIUM));
         int countX = xPos + ITEM_COUNT_OFFSET_X, countY =  yPos + ITEM_COUNT_OFFSET_Y;
         g.drawString(String.valueOf(item.getAmount()), countX, countY);
     }
 
-    private void renderEquipSpace(Graphics2D g2d) {
+    private void renderEquipmentPanel(Graphics2D g2d) {
         g2d.setColor(OVERLAY_SPACE_COLOR);
         g2d.fill(equipPanel);
         g2d.setColor(Color.WHITE);
@@ -186,41 +202,46 @@ public class InventoryOverlay implements Overlay {
         g2d.drawImage(playerImage, INV_PLAYER_X, INV_PLAYER_Y, INV_PLAYER_WID, INV_PLAYER_HEI, null);
     }
 
-    private void renderEquipSlots(Graphics g) {
-        for (int i = 0; i < 2; i++) {
-            for (int j = 0; j < 3; j++) {
-                int xPos = i * INV_EQUIP_SLOT_SPACING + INV_EQUIP_SLOT_X;
-                int yPos = j * SLOT_SPACING + INV_EQUIP_SLOT_Y;
+    private void renderEquipmentSlots(Graphics g) {
+        for (int i = 0; i < EQUIPMENT_SLOT_MAX_ROW; i++) {
+            for (int j = 0; j < EQUIPMENT_SLOT_MAX_COL; j++) {
+                int xPos = i * EQUIPMENT_SLOT_SPACING + EQUIPMENT_SLOT_X;
+                int yPos = j * SLOT_SPACING + EQUIPMENT_SLOT_Y;
+
                 g.drawImage(slotImage, xPos, yPos, slotImage.getWidth(), slotImage.getHeight(), null);
-                Inventory inventory = gameState.getPlayer().getInventory();
-                if (inventory.getEquipped()[j * 2 + i] != null) {
-                    InventoryItem item = inventory.getEquipped()[j * 2 + i];
-                    int slot = (j * 2 + i);
-                    int x = (slot % 2) * INV_EQUIP_SLOT_SPACING + INV_EQUIP_SLOT_X + ITEM_OFFSET_X;
-                    int y = (slot / 2) * SLOT_SPACING + INV_EQUIP_SLOT_Y + ITEM_OFFSET_Y;
-                    g.drawImage(item.getModel(), x, y, ITEM_SIZE, ITEM_SIZE, null);
-                }
+                renderEquipmentItem(g, i, j);
 
             }
         }
         renderItemInfoEquipment(g);
     }
 
-    private void renderItemInfo(Graphics g) {
+    private void renderEquipmentItem(Graphics g, int i, int j) {
+        Inventory inventory = gameState.getPlayer().getInventory();
+        if (inventory.getEquipped()[j * EQUIPMENT_SLOT_MAX_ROW + i] != null) {
+            InventoryItem item = inventory.getEquipped()[j * EQUIPMENT_SLOT_MAX_ROW + i];
+            int slot = (j * EQUIPMENT_SLOT_MAX_ROW + i);
+            int x = (slot % EQUIPMENT_SLOT_MAX_ROW) * EQUIPMENT_SLOT_SPACING + EQUIPMENT_SLOT_X + ITEM_OFFSET_X;
+            int y = (slot / EQUIPMENT_SLOT_MAX_ROW) * SLOT_SPACING + EQUIPMENT_SLOT_Y + ITEM_OFFSET_Y;
+            g.drawImage(item.getModel(), x, y, ITEM_SIZE, ITEM_SIZE, null);
+        }
+    }
+
+    private void renderItemInfoBackpack(Graphics g) {
         Inventory inventory = gameState.getPlayer().getInventory();
         if (backpackSlotNumber >= inventory.getBackpack().size()) return;
         InventoryItem item = inventory.getBackpack().get(backpackSlotNumber);
-        if (item != null && isInBackpack) renderInfoText(g, item);
+        if (item != null && isInBackpack) renderItemDescription(g, item);
     }
 
     private void renderItemInfoEquipment(Graphics g) {
         Inventory inventory = gameState.getPlayer().getInventory();
         if (equipmentSlotNumber >= inventory.getEquipped().length) return;
         InventoryItem item = inventory.getEquipped()[equipmentSlotNumber];
-        if (item != null && !isInBackpack) renderInfoText(g, item);
+        if (item != null && !isInBackpack) renderItemDescription(g, item);
     }
 
-    private void renderInfoText(Graphics g, InventoryItem item) {
+    private void renderItemDescription(Graphics g, InventoryItem item) {
         g.setColor(Color.WHITE);
         g.setFont(new Font("Arial", Font.BOLD, FONT_MEDIUM));
         g.drawString(item.getItemType().getName(), INV_ITEM_NAME_X, INV_ITEM_NAME_Y);
@@ -264,21 +285,27 @@ public class InventoryOverlay implements Overlay {
 
     @Override
     public void mousePressed(MouseEvent e) {
-        Arrays.stream(smallButtons)
-                .filter(button -> isMouseInButton(e, button))
-                .findFirst()
-                .ifPresent(button -> button.setMousePressed(true));
-
-        Arrays.stream(mediumButtons)
-                .filter(button -> isMouseInButton(e, button))
-                .findFirst()
-                .ifPresent(button -> button.setMousePressed(true));
-
+        setMousePressed(e, smallButtons);
+        setMousePressed(e, mediumButtons);
         changeSlot(e);
+    }
+
+    private void setMousePressed(MouseEvent e, AbstractButton[] buttons) {
+        Arrays.stream(buttons)
+                .filter(button -> isMouseInButton(e, button))
+                .findFirst()
+                .ifPresent(button -> button.setMousePressed(true));
     }
 
     @Override
     public void mouseReleased(MouseEvent e) {
+        releaseSmallButtons(e);
+        releaseMediumButtons(e);
+        Arrays.stream(smallButtons).forEach(AbstractButton::resetMouseSet);
+        Arrays.stream(mediumButtons).forEach(AbstractButton::resetMouseSet);
+    }
+
+    private void releaseSmallButtons(MouseEvent e) {
         for (SmallButton button : smallButtons) {
             if (isMouseInButton(e, button) && button.isMousePressed()) {
                 switch (button.getButtonType()) {
@@ -293,6 +320,9 @@ public class InventoryOverlay implements Overlay {
                 break;
             }
         }
+    }
+
+    private void releaseMediumButtons(MouseEvent e) {
         for (MediumButton button : mediumButtons) {
             if (isMouseInButton(e, button) && button.isMousePressed()) {
                 Inventory inventory = gameState.getPlayer().getInventory();
@@ -307,24 +337,21 @@ public class InventoryOverlay implements Overlay {
                 }
             }
         }
-        Arrays.stream(smallButtons).forEach(AbstractButton::resetMouseSet);
-        Arrays.stream(mediumButtons).forEach(AbstractButton::resetMouseSet);
     }
 
     @Override
     public void mouseMoved(MouseEvent e) {
-        Arrays.stream(smallButtons).forEach(button -> button.setMouseOver(false));
-        Arrays.stream(mediumButtons).forEach(button -> button.setMouseOver(false));
+        setMouseMoved(e, smallButtons);
+        setMouseMoved(e, mediumButtons);
+    }
 
-        Arrays.stream(smallButtons)
+    private void setMouseMoved(MouseEvent e, AbstractButton[] buttons) {
+        Arrays.stream(buttons).forEach(button -> button.setMouseOver(false));
+
+        Arrays.stream(buttons)
                 .filter(button -> isMouseInButton(e, button))
                 .findFirst()
-                .ifPresent(mediumButton -> mediumButton.setMouseOver(true));
-
-        Arrays.stream(mediumButtons)
-                .filter(button -> isMouseInButton(e, button))
-                .findFirst()
-                .ifPresent(mediumButton -> mediumButton.setMouseOver(true));
+                .ifPresent(button -> button.setMouseOver(true));
     }
 
     @Override

@@ -36,7 +36,7 @@ public class Player extends Entity {
     private final int animSpeed = 20;
     private int animTick = 0, animIndex = 0;
     private AttackState attackState;
-    private final PlayerActionHandler actionHandler;
+    private PlayerActionHandler actionHandler;
     // Physics
     private final double gravity = 0.035 * SCALE;
     private final double wallGravity = 0.0005 * SCALE;
@@ -52,10 +52,10 @@ public class Player extends Entity {
     private int dashTick = 0;
     private final int attackDmg = 5, transformAttackDmg = 8;
     private double currentStamina = 15;
-    private final PlayerDataManager playerDataManager;
-    private final Inventory inventory;
+    private PlayerDataManager playerDataManager;
+    private Inventory inventory;
     // Effect
-    private final PlayerEffectController effectController;
+    private PlayerEffectController effectController;
 
     public Player(int xPos, int yPos, int width, int height, EnemyManager enemyManager, ObjectManager objectManager) {
         super(xPos, yPos, width, height, PLAYER_MAX_HP);
@@ -65,15 +65,19 @@ public class Player extends Entity {
         initHitBox(PLAYER_HB_WID, PLAYER_HB_HEI);
         initAttackBox();
         this.cooldown = new double[4];
-        this.playerDataManager = new PlayerDataManager(this);
-        this.effectController = new PlayerEffectController(this);
-        this.actionHandler = new PlayerActionHandler(this);
-        this.inventory = new Inventory();
+        initManagers();
     }
 
     // Init
     private void initAttackBox() {
         this.attackBox = new Rectangle2D.Double(xPos, yPos-1, PLAYER_AB_WID, PLAYER_AB_HEI);
+    }
+
+    private void initManagers() {
+        this.playerDataManager = new PlayerDataManager(this);
+        this.effectController = new PlayerEffectController(this);
+        this.actionHandler = new PlayerActionHandler(this);
+        this.inventory = new Inventory();
     }
 
     private void loadAnimations() {

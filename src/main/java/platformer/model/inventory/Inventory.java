@@ -22,7 +22,6 @@ public class Inventory {
         addToEquipment(backpack.get(index));
         applyBonus(backpack.get(index).getItemType());
         dropItem(index);
-
     }
 
     public void dropItem(int index) {

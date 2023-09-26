@@ -1,6 +1,5 @@
 package platformer.audio;
 
-import org.lwjgl.LWJGLException;
 import org.lwjgl.openal.AL;
 import org.lwjgl.openal.AL10;
 import org.lwjgl.util.WaveData;
@@ -21,8 +20,8 @@ public class OpenAL implements AudioPlayer {
     private final List<Integer> pausedSounds = new ArrayList<>();
 
     private int currentSong;
-    private float musicVolume = 0.5f;
-    private float sfxVolume = 0.5f;
+    private float musicVolume = 0.2f;
+    private float sfxVolume = 0.2f;
     private boolean songMute, soundMute;
     private final Random rand = new Random();
 
@@ -38,9 +37,7 @@ public class OpenAL implements AudioPlayer {
         try {
             AL.create();
         }
-        catch (LWJGLException e) {
-            e.printStackTrace();
-        }
+        catch (Exception ignored) {}
     }
 
     // Data

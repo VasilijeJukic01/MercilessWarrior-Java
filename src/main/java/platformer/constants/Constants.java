@@ -13,6 +13,7 @@ ST - Stamina
 CD - Cooldown
 SW - Spear Woman
 LB - Lightning Ball
+FB - Fireball
 
  */
 
@@ -53,6 +54,10 @@ public class Constants {
     public static final double PLAYER_SPEED = dScale(0.5);
     public static final double PLAYER_BOOST = dScale(0.6);
 
+    public static final double PUSH_LIMIT = -30;
+    public static final double PUSH_SPEED = 0.95;
+
+    // Perks Constants
     public static final int XP_BONUS_AMOUNT = 15;
     public static final double STRONG_ARMS_BONUS_COOLDOWN = -0.225;
     public static final int POWER_PILL_BONUS_POWER = 20;
@@ -64,17 +69,16 @@ public class Constants {
     public static final int GODS_BLOOD_BONUS_HEALTH = 32;
     public static final double FURIOUS_DASH_COOLDOWN = -0.75;
 
-    public static final double PUSH_LIMIT = -30;
-    public static final double PUSH_SPEED = 0.95;
-
-    // Cooldown
+    // Cooldown Constants
     public static final double COOLDOWN_TICK = 0.1;
     public static final double PLAYER_ATTACK_CD = 0.75;
     public static final double PLAYER_BLOCK_CD = 1.2;
     public static final double PLAYER_DASH_CD = 1.75;
     public static final double PLAYER_SPELL_CD = 1.75;
 
-    // Shop
+    public static final double GHOUL_ATT_CD = 10;
+
+    // Shop Constants
     public static final int HEALTH_COST = 10;
     public static final int STAMINA_COST = 12;
     public static final int HEALTH_VAL = 40;
@@ -159,8 +163,6 @@ public class Constants {
     public static final double WRAITH_ATT_RANGE = RANGE;
     public static final double SW_ATT_RANGE = RANGE * 1.8;
     public static final double ENEMY_SPEED_SLOW = dScale(0.2);
-
-    public static final double GHOUL_ATT_CD = 10;
 
     // Object Constants
     public static final int HEAL_POTION_VAL = 15;
@@ -298,15 +300,15 @@ public class Constants {
     public static final int FLASH_OFFSET_X = (int)(FLASH_WIDTH / 2.4);
 
     // Button Constants
-    public static final int BTN_WID = scale(120);
-    public static final int BTN_HEI = scale(42);
+    public static final int BIG_BTN_WID = scale(120);
+    public static final int BIG_BTN_HEI = scale(42);
     public static final int MEDIUM_BTN_WID = scale(94);
     public static final int MEDIUM_BTN_HEI = scale(34);
+    public static final int SMALL_BTN_WID = scale(50);
+    public static final int SMALL_BTN_HEI = scale(20);
     public static final int SOUND_BTN_SIZE = scale(30);
     public static final int CRE_BTN_SIZE = scale(30);
     public static final int SMALL_BTN_SIZE = scale(25);
-    public static final int SMALL_BTN_WID = scale(50);
-    public static final int SMALL_BTN_HEI = scale(20);
 
     public static final int SLIDER_BTN_SIZE = scale(15);
     public static final int SLIDER_WID = scale(215);
@@ -320,6 +322,7 @@ public class Constants {
     public static final int SHOP_SLOT_MAX_ROW = 7, SHOP_SLOT_MAX_COL = 3;
     public static final int PERK_SLOT_MAX_ROW = 4, PERK_SLOT_MAX_COL = 7;
     public static final int INVENTORY_SLOT_MAX_ROW = 5, INVENTORY_SLOT_MAX_COL = 5;
+    public static final int EQUIPMENT_SLOT_MAX_ROW = 2, EQUIPMENT_SLOT_MAX_COL = 3;
     public static final int SLOT_SPACING = scale(40);
 
     // Effect Constants

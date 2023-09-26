@@ -251,7 +251,10 @@ public class SpearWoman extends Enemy {
                 setEnemyAction(Anim.IDLE);
             }
         }
-        else if (entityState == Anim.DEATH) alive = false;
+        else if (entityState == Anim.DEATH) {
+            setStart(false);
+            alive = false;
+        }
         shooting = false;
     }
 

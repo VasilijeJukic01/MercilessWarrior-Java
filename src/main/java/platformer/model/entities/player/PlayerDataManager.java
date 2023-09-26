@@ -62,7 +62,7 @@ public class PlayerDataManager {
     }
 
     public void changeExp(double value) {
-        exp += value+ PerksBonus.getInstance().getBonusExp();
+        exp += (int) (value + PerksBonus.getInstance().getBonusExp());
         exp = Math.max(Math.min(exp, XP_CAP), 0);
         if (exp > 1000*level) {
             exp = exp % (1000*level);

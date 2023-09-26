@@ -26,7 +26,7 @@ public class Spike extends GameObject {
     @Override
     public void render(Graphics g, int xLevelOffset, int yLevelOffset, BufferedImage[] animations) {
         int x = (int)hitBox.x - xOffset - xLevelOffset;
-        int y = (int)hitBox.y - yOffset - yLevelOffset + (int)(12*SCALE);
+        int y = (int)hitBox.y - yOffset - yLevelOffset + (int)(12 * SCALE);
         g.drawImage(animations[4], x, y, SPIKE_WID, SPIKE_HEI, null);
         hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.MAGENTA);
     }
