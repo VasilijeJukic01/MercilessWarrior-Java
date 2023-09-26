@@ -185,6 +185,8 @@ public class InventoryOverlay implements Overlay {
         InventoryItem item = inventory.getBackpack().get(slotNumber);
         int xPos = (slotNumber % INVENTORY_SLOT_MAX_ROW) * SLOT_SPACING + BACKPACK_SLOT_X + ITEM_OFFSET_X;
         int yPos = (slotNumber / INVENTORY_SLOT_MAX_ROW) * SLOT_SPACING + BACKPACK_SLOT_Y + ITEM_OFFSET_Y;
+        g.setColor(item.getItemType().getRarity().getColor());
+        g.fillRect(xPos-(int)(ITEM_OFFSET_X/1.1), yPos-(int)(ITEM_OFFSET_Y/1.1), (int)(SLOT_SIZE/1.06), (int)(SLOT_SIZE/1.06));
         g.drawImage(item.getModel(), xPos, yPos, ITEM_SIZE, ITEM_SIZE, null);
 
         g.setColor(Color.WHITE);
@@ -221,9 +223,11 @@ public class InventoryOverlay implements Overlay {
         if (inventory.getEquipped()[j * EQUIPMENT_SLOT_MAX_ROW + i] != null) {
             InventoryItem item = inventory.getEquipped()[j * EQUIPMENT_SLOT_MAX_ROW + i];
             int slot = (j * EQUIPMENT_SLOT_MAX_ROW + i);
-            int x = (slot % EQUIPMENT_SLOT_MAX_ROW) * EQUIPMENT_SLOT_SPACING + EQUIPMENT_SLOT_X + ITEM_OFFSET_X;
-            int y = (slot / EQUIPMENT_SLOT_MAX_ROW) * SLOT_SPACING + EQUIPMENT_SLOT_Y + ITEM_OFFSET_Y;
-            g.drawImage(item.getModel(), x, y, ITEM_SIZE, ITEM_SIZE, null);
+            int xPos = (slot % EQUIPMENT_SLOT_MAX_ROW) * EQUIPMENT_SLOT_SPACING + EQUIPMENT_SLOT_X + ITEM_OFFSET_X;
+            int yPos = (slot / EQUIPMENT_SLOT_MAX_ROW) * SLOT_SPACING + EQUIPMENT_SLOT_Y + ITEM_OFFSET_Y;
+            g.setColor(item.getItemType().getRarity().getColor());
+            g.fillRect(xPos-(int)(ITEM_OFFSET_X/1.1), yPos-(int)(ITEM_OFFSET_Y/1.1), (int)(SLOT_SIZE/1.06), (int)(SLOT_SIZE/1.06));
+            g.drawImage(item.getModel(), xPos, yPos, ITEM_SIZE, ITEM_SIZE, null);
         }
     }
 

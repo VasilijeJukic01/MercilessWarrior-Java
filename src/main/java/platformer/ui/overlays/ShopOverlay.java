@@ -106,6 +106,8 @@ public class ShopOverlay implements Overlay {
     private void renderItem(Graphics g, ShopItem item) {
         int xPos = (item.getSlot() % SHOP_SLOT_MAX_ROW) * SLOT_SPACING + SLOT_X + ITEM_OFFSET_X;
         int yPos = (item.getSlot() / SHOP_SLOT_MAX_ROW) * SLOT_SPACING + SLOT_Y + ITEM_OFFSET_Y;
+        g.setColor(item.getItemType().getRarity().getColor());
+        g.fillRect(xPos-(int)(ITEM_OFFSET_X/1.1), yPos-(int)(ITEM_OFFSET_Y/1.1), (int)(SLOT_SIZE/1.06), (int)(SLOT_SIZE/1.06));
         g.drawImage(item.getItemImage(), xPos, yPos, ITEM_SIZE, ITEM_SIZE, null);
         g.setColor(Color.WHITE);
         g.setFont(new Font("Arial", Font.BOLD, FONT_MEDIUM));
