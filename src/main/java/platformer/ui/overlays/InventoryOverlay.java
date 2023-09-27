@@ -63,9 +63,9 @@ public class InventoryOverlay implements Overlay {
         smallButtons[0] = new SmallButton(PREV_BTN_X, INV_SMALL_BTN_Y, SMALL_BTN_SIZE, SMALL_BTN_SIZE, ButtonType.PREV);
         smallButtons[1] = new SmallButton(NEXT_BTN_X, INV_SMALL_BTN_Y, SMALL_BTN_SIZE, SMALL_BTN_SIZE, ButtonType.NEXT);
 
-        mediumButtons[0] = new MediumButton(USE_BTN_X, INV_MEDIUM_BTN_Y, SMALL_BTN_WID, SMALL_BTN_HEI, ButtonType.USE);
-        mediumButtons[1] = new MediumButton(EQUIP_BTN_X, INV_MEDIUM_BTN_Y, SMALL_BTN_WID, SMALL_BTN_HEI, ButtonType.EQUIP);
-        mediumButtons[2] = new MediumButton(DROP_BTN_X, INV_MEDIUM_BTN_Y, SMALL_BTN_WID, SMALL_BTN_HEI, ButtonType.DROP);
+        mediumButtons[0] = new MediumButton(USE_BTN_X, INV_MEDIUM_BTN_Y, TINY_BTN_WID, TINY_BTN_HEI, ButtonType.USE);
+        mediumButtons[1] = new MediumButton(EQUIP_BTN_X, INV_MEDIUM_BTN_Y, TINY_BTN_WID, TINY_BTN_HEI, ButtonType.EQUIP);
+        mediumButtons[2] = new MediumButton(DROP_BTN_X, INV_MEDIUM_BTN_Y, TINY_BTN_WID, TINY_BTN_HEI, ButtonType.DROP);
     }
 
     private void initSelectedSlot() {

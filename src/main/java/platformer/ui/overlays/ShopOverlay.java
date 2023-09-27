@@ -203,4 +203,5 @@ public class ShopOverlay implements Overlay {
     public void reset() {
         this.shops = gameState.getObjectManager().getObjects(Shop.class);
     }
+
 }

@@ -52,7 +52,7 @@ public class Shop extends GameObject {
         addShopItem(ItemType.STAMINA,       STAMINA_ITEM, 1, 6, STAMINA_COST);
         addShopItem(ItemType.IRON,          IRON_ORE_ITEM, 16, 25, IRON_COST);
         addShopItem(ItemType.COPPER,        COPPER_ORE_ITEM, 16, 25, COPPER_COST);
-        addShopItem(ItemType.ARMOR_WARRIOR, ARMOR_WARRIOR, 1, 1, ARMOR_WARRIOR_COST);
+        addShopItem(ItemType.ARMOR_WARRIOR, WARRIOR_ARMOR, 1, 1, ARMOR_WARRIOR_COST);
     }
 
     // Actions

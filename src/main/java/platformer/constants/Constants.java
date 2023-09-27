@@ -252,6 +252,13 @@ public class Constants {
     public static final int CANDLE_OFFSET_X = scale(-8);
     public static final int CANDLE_OFFSET_Y = scale(12);
 
+    public static final int LOOT_WID = scale(32);
+    public static final int LOOT_HEI = scale(24);
+    public static final int LOOT_HB_WID = scale(27);
+    public static final int LOOT_HB_HEI = scale(27);
+    public static final int LOOT_OFFSET_X = scale(1);
+    public static final int LOOT_OFFSET_Y = scale(-5);
+
     // Projectile Constants
     public static final int ARROW_WID = scale(32);
     public static final int ARROW_HEI = scale(4);
@@ -304,8 +311,10 @@ public class Constants {
     public static final int BIG_BTN_HEI = scale(42);
     public static final int MEDIUM_BTN_WID = scale(94);
     public static final int MEDIUM_BTN_HEI = scale(34);
-    public static final int SMALL_BTN_WID = scale(50);
-    public static final int SMALL_BTN_HEI = scale(20);
+    public static final int SMALL_BTN_WID = scale(65);
+    public static final int SMALL_BTN_HEI = scale(25);
+    public static final int TINY_BTN_WID = scale(50);
+    public static final int TINY_BTN_HEI = scale(20);
     public static final int SOUND_BTN_SIZE = scale(30);
     public static final int CRE_BTN_SIZE = scale(30);
     public static final int SMALL_BTN_SIZE = scale(25);

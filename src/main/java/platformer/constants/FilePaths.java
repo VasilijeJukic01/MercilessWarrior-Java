@@ -31,6 +31,7 @@ public class FilePaths {
     public static final String TOTEM_SHEET = "/images/objs/SaveTotem.png";
     public static final String SMASH_TRAP_SHEET = "/images/objs/smashTrap.png";
     public static final String CANDLE_IMG = "/images/objs/Candle.png";
+    public static final String LOOT_IMG = "/images/objs/Loot.png";
 
     // Dialogue
     public static final String OBJECT_DIALOGUES = "/dialogues/object_dialogues.txt";
@@ -57,6 +58,7 @@ public class FilePaths {
     public static final String LEADERBOARD_BTN_SHEET = "/images/buttons/LeaderboardButtons.png";
     public static final String BTN_SAVE_SHEET = "/images/buttons/SaveButton.png";
     public static final String INVENTORY_BTN_SHEET = "/images/buttons/InventoryButtons.png";
+    public static final String LOOT_BTN_SHEET = "/images/buttons/LootButtons.png";
 
     // UI
     public static final String MENU_LOGO = "/images/menu/menuLogo.png";
@@ -90,7 +92,7 @@ public class FilePaths {
     public static final String IRON_ORE_ITEM = "/images/inventory/IronOre.png";
     public static final String COPPER_ORE_ITEM = "/images/inventory/CopperOre.png";
 
-    public static final String ARMOR_WARRIOR = "/images/inventory/WarriorArmor.png";
+    public static final String WARRIOR_ARMOR = "/images/inventory/WarriorArmor.png";
 
     public static final String PLAYER_ICON = "/images/inventory/Player.png";
 

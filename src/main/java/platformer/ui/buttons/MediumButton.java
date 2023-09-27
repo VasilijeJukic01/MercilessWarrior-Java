@@ -24,8 +24,8 @@ public class MediumButton extends AbstractButton implements GameButton {
     @Override
     protected void loadButtons() {
         String sheet = "";
-        int row = 3;
-        int column = 0;
+        int frames = 3;
+        int row = 0;
 
         switch (buttonType) {
             case BUY:
@@ -38,16 +38,27 @@ public class MediumButton extends AbstractButton implements GameButton {
                 sheet = INVENTORY_BTN_SHEET; break;
             case EQUIP:
                 sheet = INVENTORY_BTN_SHEET;
-                column = 1;
+                row = 1;
                 break;
             case DROP:
                 sheet = INVENTORY_BTN_SHEET;
-                column = 2;
+                row = 2;
+                break;
+            case TAKE:
+                sheet = LOOT_BTN_SHEET;
+                break;
+            case TAKE_ALL:
+                sheet = LOOT_BTN_SHEET;
+                row = 1;
+                break;
+            case CLOSE:
+                sheet = LOOT_BTN_SHEET;
+                row = 2;
                 break;
             default: break;
         }
         if (!sheet.isEmpty())
-            images = Animation.getInstance().loadFromSprite(sheet, row, column, MEDIUM_BTN_WID, MEDIUM_BTN_HEI, 0, BTN_W, BTN_H);
+            images = Animation.getInstance().loadFromSprite(sheet, frames, row, MEDIUM_BTN_WID, MEDIUM_BTN_HEI, 0, BTN_W, BTN_H);
     }
 
     @Override

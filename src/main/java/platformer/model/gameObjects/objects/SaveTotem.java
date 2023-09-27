@@ -36,7 +36,7 @@ public class SaveTotem extends GameObject {
 
     @Override
     public void update() {
-        if (animate) updateAnimation();
+
     }
 
     @Override

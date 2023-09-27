@@ -1,5 +1,7 @@
 package platformer.model.inventory;
 
+import platformer.model.gameObjects.objects.Loot;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,6 +48,20 @@ public class Inventory {
 
     private void removeBonus(ItemType itemType) {
         if (itemType == ItemType.ARMOR_WARRIOR) InventoryBonus.getInstance().removeBonus(ItemBonus.ARMOR_WARRIOR);
+    }
+
+    public void addItemFromLoot(InventoryItem item) {
+        for (InventoryItem inventoryItem : backpack) {
+            if (inventoryItem.getItemType() == item.getItemType()) {
+                inventoryItem.addAmount(item.getAmount());
+                return;
+            }
+        }
+        backpack.add(item);
+    }
+
+    public void addAllItemsFromLoot(Loot loot) {
+        loot.getItems().forEach(this::addItemFromLoot);
     }
 
     public void reset() {

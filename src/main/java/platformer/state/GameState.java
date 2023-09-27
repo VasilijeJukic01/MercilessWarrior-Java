@@ -243,6 +243,7 @@ public class GameState extends AbstractState implements State {
         if (state == PlayingState.SHOP) overlayManager.update(PlayingState.SHOP);
         else if (state == PlayingState.BLACKSMITH) overlayManager.update(PlayingState.BLACKSMITH);
         else if (state == PlayingState.INVENTORY) overlayManager.update(PlayingState.INVENTORY);
+        else if (state == PlayingState.LOOTING) overlayManager.update(PlayingState.LOOTING);
     }
 
     @Override

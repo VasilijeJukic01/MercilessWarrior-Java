@@ -311,6 +311,14 @@ public class UI {
     public static final int INV_SMALL_BTN_Y = scale(355);
     public static final int INV_MEDIUM_BTN_Y = scale(358);
 
+    // Looting UI
+    public static final int LOOT_SLOT_X = scale(320);
+    public static final int LOOT_SLOT_Y = scale(120);
+
+    public static final int LOOT_BTN_BTN_Y = scale(348);
+    public static final int TAKE_BTN_X = scale(318);
+    public static final int TAKE_ALL_BTN_X = scale(388);
+    public static final int CLOSE_BTN_X = scale(458);
 
     private static int scale(double value) {
         return (int)(value * SCALE);

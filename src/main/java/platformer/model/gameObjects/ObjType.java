@@ -16,7 +16,8 @@ public enum ObjType {
     SAVE_TOTEM(1),                  // 12
     SMASH_TRAP(14),                 // 13
     CANDLE(1),                      // 14
-    MAX(0);                         // 15
+    LOOT(1),                        // 15
+    MAX(0);                         // 16
 
     private final int sprites;
 

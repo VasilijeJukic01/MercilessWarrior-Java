@@ -8,15 +8,13 @@ import platformer.debug.logger.Message;
 import platformer.model.entities.AttackState;
 import platformer.model.entities.player.Player;
 import platformer.model.gameObjects.GameObject;
+import platformer.model.gameObjects.objects.Loot;
 import platformer.state.GameState;
 import platformer.state.PlayingState;
 
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 
 public class GameStateController {
 
@@ -158,7 +156,14 @@ public class GameStateController {
     // Actions
     private void interact() {
         Optional<? extends Class<? extends GameObject>> object = Optional.ofNullable(gameState.getObjectManager().getIntersectingObject());
-        object.ifPresent(this::activateDialogue);
+        object.ifPresent(this::handleInteraction);
+    }
+
+    private void handleInteraction(Class<? extends GameObject> objectClass) {
+        if (objectClass == Loot.class) {
+            gameState.setOverlay(PlayingState.LOOTING);
+        }
+        else activateDialogue(objectClass);
     }
 
     private void activateDialogue(Class<? extends GameObject> objectClass) {
@@ -198,7 +203,16 @@ public class GameStateController {
 
     // Helper
     private boolean isBreakableState(PlayingState state) {
-        return state == PlayingState.SHOP || state == PlayingState.BLACKSMITH || state == PlayingState.DIALOGUE || state == PlayingState.SAVE || state == PlayingState.INVENTORY;
+        PlayingState[] breakableStates = {
+                PlayingState.SHOP,
+                PlayingState.BLACKSMITH,
+                PlayingState.DIALOGUE,
+                PlayingState.SAVE,
+                PlayingState.INVENTORY,
+                PlayingState.LOOTING
+        };
+
+        return Arrays.stream(breakableStates).anyMatch(breakableState -> breakableState == state);
     }
 
     private PlayingState pause(PlayingState state) {
