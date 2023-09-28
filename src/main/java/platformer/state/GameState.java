@@ -283,6 +283,7 @@ public class GameState extends AbstractState implements State {
         player.reset();
         objectManager.reset();
         spellManager.reset();
+        overlayManager.reset();
     }
 
     private void levelReset() {

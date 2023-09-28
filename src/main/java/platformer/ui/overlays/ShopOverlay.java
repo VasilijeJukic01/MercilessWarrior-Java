@@ -1,6 +1,7 @@
 package platformer.ui.overlays;
 
 import platformer.model.gameObjects.objects.Shop;
+import platformer.model.inventory.ItemType;
 import platformer.state.GameState;
 import platformer.model.inventory.ShopItem;
 import platformer.ui.buttons.AbstractButton;
@@ -93,9 +94,11 @@ public class ShopOverlay implements Overlay {
     private void renderItems(Graphics g) {
         for (Shop shop : shops) {
             if (shop.isActive()) {
+                int slot = 0;
                 for (ShopItem item : shop.getShopItems()) {
                     if (item.getAmount() > 0) {
-                        renderItem(g, item);
+                        renderItem(g, item, slot);
+                        slot++;
                         g.setColor(Color.RED);
                     }
                 }
@@ -103,18 +106,33 @@ public class ShopOverlay implements Overlay {
         }
     }
 
-    private void renderItem(Graphics g, ShopItem item) {
-        int xPos = (item.getSlot() % SHOP_SLOT_MAX_ROW) * SLOT_SPACING + SLOT_X + ITEM_OFFSET_X;
-        int yPos = (item.getSlot() / SHOP_SLOT_MAX_ROW) * SLOT_SPACING + SLOT_Y + ITEM_OFFSET_Y;
+    private void renderItem(Graphics g, ShopItem item, int slot) {
+        int xPos = (slot % SHOP_SLOT_MAX_ROW) * SLOT_SPACING + SLOT_X + ITEM_OFFSET_X;
+        int yPos = (slot / SHOP_SLOT_MAX_ROW) * SLOT_SPACING + SLOT_Y + ITEM_OFFSET_Y;
         g.setColor(item.getItemType().getRarity().getColor());
         g.fillRect(xPos-(int)(ITEM_OFFSET_X/1.1), yPos-(int)(ITEM_OFFSET_Y/1.1), (int)(SLOT_SIZE/1.06), (int)(SLOT_SIZE/1.06));
-        g.drawImage(item.getItemImage(), xPos, yPos, ITEM_SIZE, ITEM_SIZE, null);
+        g.drawImage(item.getModel(), xPos, yPos, ITEM_SIZE, ITEM_SIZE, null);
         g.setColor(Color.WHITE);
         g.setFont(new Font("Arial", Font.BOLD, FONT_MEDIUM));
         int countX = xPos + ITEM_COUNT_OFFSET_X, countY =  yPos + ITEM_COUNT_OFFSET_Y;
         g.drawString(String.valueOf(item.getAmount()), countX, countY);
-        if (slotNumber == item.getSlot()) {
+        if (slotNumber == slot) {
             g.drawString("Cost: "+item.getCost(), COST_TEXT_X, COST_TEXT_Y);
+            renderItemDescription(g, item.getItemType());
+        }
+    }
+
+    private void renderItemDescription(Graphics g, ItemType itemType) {
+        g.setColor(Color.WHITE);
+        g.setFont(new Font("Arial", Font.BOLD, FONT_MEDIUM));
+        g.drawString(itemType.getName(), SHOP_ITEM_NAME_X, SHOP_ITEM_NAME_Y);
+        g.setFont(new Font("Arial", Font.PLAIN, FONT_MEDIUM));
+        String[] lines = itemType.getDescription().split("\n");
+        int lineHeight = g.getFontMetrics().getHeight();
+        int y = SHOP_ITEM_DESC_Y;
+        for (String line : lines) {
+            g.drawString(line, SHOP_ITEM_DESC_X, y);
+            y += lineHeight;
         }
     }
 
@@ -122,7 +140,9 @@ public class ShopOverlay implements Overlay {
         g.setColor(Color.RED);
         for (int i = 0; i < SHOP_SLOT_MAX_ROW; i++) {
             for (int j = 0; j < SHOP_SLOT_MAX_COL; j++) {
-                g.drawImage(slotImage, i* SLOT_SPACING + SLOT_X, j* SLOT_SPACING + SLOT_Y, slotImage.getWidth(), slotImage.getHeight(), null);
+                int xPos = i * SLOT_SPACING + SLOT_X;
+                int yPos = j * SLOT_SPACING + SLOT_Y;
+                g.drawImage(slotImage, xPos, yPos, slotImage.getWidth(), slotImage.getHeight(), null);
             }
         }
     }
@@ -130,15 +150,20 @@ public class ShopOverlay implements Overlay {
     // Other
     private void setSelectedSlot() {
         this.selectedSlot.x = (slotNumber % SHOP_SLOT_MAX_ROW) * SLOT_SPACING + SLOT_X;
-        this.selectedSlot.y = (slotNumber / SHOP_SLOT_MAX_ROW) * SLOT_SPACING + SLOT_Y;
+        int offset = slotNumber / SHOP_SLOT_MAX_ROW;
+        this.selectedSlot.y = offset * SLOT_SPACING + SLOT_Y;
     }
 
     private void changeSlot(MouseEvent e) {
         int x = e.getX(), y = e.getY();
         for (int i = 0; i < SHOP_SLOT_MAX_ROW; i++) {
             for (int j = 0; j < SHOP_SLOT_MAX_COL; j++) {
-                if (x >= i*SLOT_SPACING+SLOT_X && x <= i*SLOT_SPACING+SLOT_X+SLOT_SIZE && y >= j*SLOT_SPACING+SLOT_Y && y <= j*SLOT_SPACING+SLOT_Y+SLOT_SIZE) {
-                    slotNumber = i + (j* SHOP_SLOT_MAX_ROW);
+                int xStart = i * SLOT_SPACING + SLOT_X;
+                int xEnd = i * SLOT_SPACING + SLOT_X + SLOT_SIZE;
+                int yStart =  j * SLOT_SPACING + SLOT_Y;
+                int yEnd = j * SLOT_SPACING + SLOT_Y + SLOT_SIZE;
+                if (x >= xStart && x <= xEnd && y >= yStart && y <= yEnd) {
+                    slotNumber = i + (j * SHOP_SLOT_MAX_ROW);
                     setSelectedSlot();
                     break;
                 }

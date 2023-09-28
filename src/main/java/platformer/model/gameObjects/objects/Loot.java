@@ -37,8 +37,14 @@ public class Loot extends GameObject {
         Random rand = new Random();
         for (ItemType itemType : validLoot) {
             int chance = rand.nextInt(100);
-            if (chance < 50) {
-                int amount = rand.nextInt(10);
+            if (chance < 70) {
+                int amount = 0;
+                switch (itemType.getRarity()) {
+                    case COMMON: amount = rand.nextInt(8); break;
+                    case UNCOMMON: amount = rand.nextInt(4); break;
+                    case RARE: amount = rand.nextInt(2); break;
+                    default: break;
+                }
                 if (amount < 1) continue;
                 BufferedImage img = Utils.getInstance().importImage(itemType.getImg(), -1, -1);
                 items.add(new InventoryItem(itemType, img, amount));
@@ -48,7 +54,7 @@ public class Loot extends GameObject {
 
     @Override
     public void update() {
-
+        if (alive && items.isEmpty()) alive = false;
     }
 
     @Override

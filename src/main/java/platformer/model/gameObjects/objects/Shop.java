@@ -18,7 +18,6 @@ import java.util.Optional;
 import java.util.Random;
 
 import static platformer.constants.Constants.*;
-import static platformer.constants.FilePaths.*;
 
 public class Shop extends GameObject {
 
@@ -40,35 +39,32 @@ public class Shop extends GameObject {
         super.yOffset = SHOP_OFFSET_Y;
     }
 
-    private void addShopItem(ItemType type, String imagePath, int minQuantity, int maxQuantity, int cost) {
-        int slot = shopItems.size();
-        BufferedImage itemImg = Utils.getInstance().importImage(imagePath, -1, -1);
+    private void addShopItem(ItemType type, int minQuantity, int maxQuantity, int cost) {
+        BufferedImage itemImg = Utils.getInstance().importImage(type.getImg(), -1, -1);
         int randomQuantity = new Random().nextInt(maxQuantity - minQuantity + 1) + minQuantity;
-        shopItems.add(new ShopItem(type, itemImg, slot, randomQuantity, cost));
+        shopItems.add(new ShopItem(type, itemImg, randomQuantity, cost));
     }
 
     private void initItems() {
-        addShopItem(ItemType.HEALTH,        HEALTH_ITEM, 1, 10, HEALTH_COST);
-        addShopItem(ItemType.STAMINA,       STAMINA_ITEM, 1, 6, STAMINA_COST);
-        addShopItem(ItemType.IRON,          IRON_ORE_ITEM, 16, 25, IRON_COST);
-        addShopItem(ItemType.COPPER,        COPPER_ORE_ITEM, 16, 25, COPPER_COST);
-        addShopItem(ItemType.ARMOR_WARRIOR, WARRIOR_ARMOR, 1, 1, ARMOR_WARRIOR_COST);
+        addShopItem(ItemType.HEALTH,         1, 10, HEALTH_COST);
+        addShopItem(ItemType.STAMINA,        1, 6, STAMINA_COST);
+        addShopItem(ItemType.IRON,           16, 25, IRON_COST);
+        addShopItem(ItemType.COPPER,         16, 25, COPPER_COST);
+        addShopItem(ItemType.ARMOR_WARRIOR,  1, 1, ARMOR_WARRIOR_COST);
     }
 
     // Actions
     public void buyItem(Player player, int slot) {
-        for (ShopItem item : shopItems) {
-            if (item.getAmount() > 0 && item.getSlot() == slot) {
-                if (player.getCoins() >= item.getCost()) {
-                    player.changeCoins(-item.getCost());
-                    item.setAmount(item.getAmount()-1);
-                    Audio.getInstance().getAudioPlayer().playSound(Sound.SHOP_BUY);
-                    switch(item.getItemType()) {
-                        case HEALTH: player.changeHealth(HEALTH_VAL); break;
-                        case STAMINA: player.changeStamina(STAMINA_VAL); break;
-                        default: addToInventory(player, item.getItemType()); break;
-                    }
-                }
+        if (slot >= shopItems.size()) return;
+        ShopItem item = shopItems.get(slot);
+        if (player.getCoins() >= item.getCost()) {
+            player.changeCoins(-item.getCost());
+            item.setAmount(item.getAmount()-1);
+            Audio.getInstance().getAudioPlayer().playSound(Sound.SHOP_BUY);
+            switch(item.getItemType()) {
+                case HEALTH: player.changeHealth(HEALTH_VAL); break;
+                case STAMINA: player.changeStamina(STAMINA_VAL); break;
+                default: addToInventory(player, item.getItemType()); break;
             }
         }
     }
@@ -134,7 +130,7 @@ public class Shop extends GameObject {
     private BufferedImage getImageModel(ItemType type) {
         return shopItems.stream()
                 .filter(shopItem -> shopItem.getItemType() == type)
-                .map(ShopItem::getItemImage)
+                .map(ShopItem::getModel)
                 .findFirst()
                 .orElse(null);
     }

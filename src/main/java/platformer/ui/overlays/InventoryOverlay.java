@@ -77,12 +77,14 @@ public class InventoryOverlay implements Overlay {
     // Selection
     private void setSelectedSlotBackpack() {
         this.selectedSlot.x = (backpackSlotNumber % INVENTORY_SLOT_MAX_ROW) * SLOT_SPACING + BACKPACK_SLOT_X;
-        this.selectedSlot.y = (backpackSlotNumber / INVENTORY_SLOT_MAX_ROW) * SLOT_SPACING + BACKPACK_SLOT_Y;
+        int offset = backpackSlotNumber / INVENTORY_SLOT_MAX_ROW;
+        this.selectedSlot.y = offset * SLOT_SPACING + BACKPACK_SLOT_Y;
     }
 
     private void setSelectedSlotEquipment() {
         this.selectedSlot.x = (equipmentSlotNumber % EQUIPMENT_SLOT_MAX_ROW) * EQUIPMENT_SLOT_SPACING + EQUIPMENT_SLOT_X;
-        this.selectedSlot.y = (equipmentSlotNumber / EQUIPMENT_SLOT_MAX_ROW) * SLOT_SPACING + EQUIPMENT_SLOT_Y;
+        int offset = equipmentSlotNumber / EQUIPMENT_SLOT_MAX_ROW;
+        this.selectedSlot.y = offset * SLOT_SPACING + EQUIPMENT_SLOT_Y;
     }
 
     private void changeSlot(MouseEvent e) {

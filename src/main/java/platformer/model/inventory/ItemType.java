@@ -8,7 +8,7 @@ public enum ItemType {
     STAMINA("Stamina", ItemRarity.COMMON, STAMINA_ITEM, 0, "", false),
     IRON("Iron Ore", ItemRarity.UNCOMMON, IRON_ORE_ITEM, 5, "Ingredient for crafting", false),
     COPPER("Copper Ore", ItemRarity.COMMON, COPPER_ORE_ITEM, 2, "Ingredient for crafting", false),
-    ARMOR_WARRIOR("Warrior Armor", ItemRarity.UNCOMMON, WARRIOR_ARMOR, 40, "Warrior Armor is a rugged combat attire designed \nspecifically for warriors.\n\nHealth Bonus +2%\nSpell Bonus +3%", true);
+    ARMOR_WARRIOR("Warrior Armor", ItemRarity.UNCOMMON, WARRIOR_ARMOR, 40, "Warrior Armor is a rugged combat attire \ndesigned specifically for warriors.\n\nHealth Bonus +2%\nSpell Bonus +3%", true);
 
     private final String name;
     private final ItemRarity rarity;

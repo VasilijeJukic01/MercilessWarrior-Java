@@ -165,7 +165,8 @@ public class BlacksmithOverlay implements Overlay {
 
     private void setSelectedSlot() {
         this.selectedSlot.x = (slotNumber % SLOT_MAX_COL) * PERK_SLOT_SPACING + PERK_SLOT_X;
-        this.selectedSlot.y = (slotNumber / SLOT_MAX_COL) * PERK_SLOT_SPACING + PERK_SLOT_Y;
+        int offset = slotNumber / SLOT_MAX_COL;
+        this.selectedSlot.y = offset * PERK_SLOT_SPACING + PERK_SLOT_Y;
     }
 
     private void changeSlot(MouseEvent e) {

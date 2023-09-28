@@ -213,24 +213,29 @@ public class UI {
     public static final int MENU_TEXT_Y = scale(250);
 
     // Shop UI
-    public static final int SHOP_OVERLAY_WID = scale(400);
+    public static final int SHOP_OVERLAY_WID = scale(550);
     public static final int SHOP_OVERLAY_HEI = scale(340);
     public static final int SHOP_TEXT_WID = scale(180);
     public static final int SHOP_TEXT_HEI = scale(60);
     public static final int SLOT_SIZE = scale(40);
 
-    public static final int SHOP_OVERLAY_X = scale(220);
+    public static final int SHOP_OVERLAY_X = scale(140);
     public static final int SHOP_OVERLAY_Y = scale(50);
     public static final int SHOP_TEXT_X = scale(330);
     public static final int SHOP_TEXT_Y = scale(80);
-    public static final int BUY_BTN_X = scale(300);
+    public static final int BUY_BTN_X = scale(200);
     public static final int BUY_BTN_Y = scale(330);
-    public static final int LEAVE_BTN_X = scale(440);
+    public static final int LEAVE_BTN_X = scale(340);
     public static final int LEAVE_BTN_Y = scale(330);
-    public static final int SLOT_X = scale(290);
+    public static final int SLOT_X = scale(180);
     public static final int SLOT_Y = scale(160);
-    public static final int COST_TEXT_X = scale(530);
-    public static final int COST_TEXT_Y = scale(145);
+
+    public static final int COST_TEXT_X = scale(415);
+    public static final int COST_TEXT_Y = scale(148);
+    public static final int SHOP_ITEM_NAME_X = scale(470);
+    public static final int SHOP_ITEM_NAME_Y = scale(170);
+    public static final int SHOP_ITEM_DESC_X = scale(470);
+    public static final int SHOP_ITEM_DESC_Y = scale(190);
 
     public static final int ITEM_SIZE = scale(20);
     public static final int ITEM_OFFSET_X = scale(10);

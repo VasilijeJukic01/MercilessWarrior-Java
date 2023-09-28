@@ -87,6 +87,10 @@ public class LootingOverlay implements Overlay {
 
     private void renderItems(Graphics g) {
         Loot loot = gameState.getObjectManager().getIntersectinLoot();
+        if (loot == null) {
+            gameState.setOverlay(null);
+            return;
+        }
         int slot = 0;
         for (InventoryItem item : loot.getItems()) {
             if (item.getAmount() > 0) {
@@ -112,9 +116,11 @@ public class LootingOverlay implements Overlay {
         Arrays.stream(buttons).forEach(button -> button.render(g));
     }
 
+    // Selection
     private void setSelectedSlot() {
         this.selectedSlot.x = (slotNumber % INVENTORY_SLOT_MAX_ROW) * SLOT_SPACING + LOOT_SLOT_X;
-        this.selectedSlot.y = (slotNumber / INVENTORY_SLOT_MAX_COL) * SLOT_SPACING + LOOT_SLOT_Y;
+        int offset = slotNumber / INVENTORY_SLOT_MAX_COL;
+        this.selectedSlot.y = offset * SLOT_SPACING + LOOT_SLOT_Y;
     }
 
     private void changeSlot(MouseEvent e) {
@@ -176,6 +182,7 @@ public class LootingOverlay implements Overlay {
         if (slotNumber < loot.getItems().size()) {
             Inventory inventory = gameState.getPlayer().getInventory();
             InventoryItem item = loot.getItems().get(slotNumber);
+
             inventory.addItemFromLoot(item);
             loot.getItems().remove(item);
         }
@@ -184,6 +191,7 @@ public class LootingOverlay implements Overlay {
     private void takeAllItems() {
         Loot loot = gameState.getObjectManager().getIntersectinLoot();
         Inventory inventory = gameState.getPlayer().getInventory();
+
         inventory.addAllItemsFromLoot(loot);
         loot.getItems().clear();
     }
