@@ -22,8 +22,8 @@ public class InventoryBonus {
     public void applyBonus(ItemBonus itemBonus) {
         double[] bonuses = itemBonus.getEquipmentBonus();;
         this.health += bonuses[0];
-        this.attack += bonuses[1];
-        this.defense += bonuses[2];
+        this.defense += bonuses[1];
+        this.attack += bonuses[2];
         this.stamina += bonuses[3];
         this.critical += bonuses[4];
         this.spell += bonuses[5];
@@ -31,10 +31,10 @@ public class InventoryBonus {
     }
 
     public void removeBonus(ItemBonus itemBonus) {
-        double[] bonuses = itemBonus.getEquipmentBonus();;
+        double[] bonuses = itemBonus.getEquipmentBonus();
         this.health -= bonuses[0];
-        this.attack -= bonuses[1];
-        this.defense -= bonuses[2];
+        this.defense -= bonuses[1];
+        this.attack -= bonuses[2];
         this.stamina -= bonuses[3];
         this.critical -= bonuses[4];
         this.spell -= bonuses[5];
@@ -42,30 +42,31 @@ public class InventoryBonus {
     }
 
     public double getHealth() {
-        return health;
+        return health/100;
     }
 
     public double getDefense() {
-        return defense;
+        return defense/100;
     }
 
     public double getAttack() {
-        return attack;
+        return attack/100;
     }
 
     public double getStamina() {
-        return stamina;
+        return stamina/100;
     }
 
     public double getCritical() {
-        return critical;
+        return critical/100;
     }
 
     public double getSpell() {
-        return spell;
+        return spell/100;
     }
 
     public double getCooldown() {
-        return cooldown;
+        return cooldown/100;
     }
+
 }

@@ -8,6 +8,7 @@ import platformer.debug.logger.Logger;
 import platformer.model.entities.Direction;
 import platformer.model.entities.enemies.renderer.*;
 import platformer.model.entities.player.Player;
+import platformer.model.inventory.InventoryBonus;
 import platformer.model.perks.PerksBonus;
 import platformer.model.entities.enemies.boss.SpearWoman;
 import platformer.model.levels.Level;
@@ -117,21 +118,23 @@ public class EnemyManager {
         }
     }
 
-    private int[] damage(Player player) {
-        int critical = 0;
-        int dmg = player.getAttackDmg();
-        dmg += PerksBonus.getInstance().getBonusAttack();
+    private double[] damage(Player player) {
+        double critical = 0;
+        double dmg = player.getAttackDmg() + PerksBonus.getInstance().getBonusAttack();
+        double equipmentBonus = InventoryBonus.getInstance().getAttack() * dmg;
+        dmg += equipmentBonus;
+
         Random rand = new Random();
-        int criticalHit = rand.nextInt(100- PerksBonus.getInstance().getCriticalHitChance());
+        double criticalHit = rand.nextInt(100 - PerksBonus.getInstance().getCriticalHitChance());
         if (criticalHit >= 1 && criticalHit <= 10) {
             dmg *= 2;
             critical = 1;
         }
-        return new int[] {dmg, critical};
+        return new double[] {dmg, critical};
     }
 
     private <T extends Enemy> void handleEnemyHit(Rectangle2D.Double attackBox, Player player, Class<T> enemyClass) {
-        int[] dmg = damage(player);
+        double[] dmg = damage(player);
         for (T enemy : getEnemies(enemyClass)) {
             if (enemy.isAlive() && enemy.getEnemyAction() != Anim.DEATH) {
                 if (attackBox.intersects(enemy.getHitBox())) {
@@ -156,7 +159,7 @@ public class EnemyManager {
         if (!player.isDash() && !player.isOnWall()) Audio.getInstance().getAudioPlayer().playSlashSound();
     }
 
-    private void writeHitLog(Anim anim, int dmg) {
+    private void writeHitLog(Anim anim, double dmg) {
         if (anim == Anim.BLOCK) Logger.getInstance().notify("Enemy blocks player's attack.", Message.NOTIFICATION);
         else Logger.getInstance().notify("Player gives damage to enemy: "+dmg, Message.NOTIFICATION);
     }

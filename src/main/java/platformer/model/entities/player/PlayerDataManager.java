@@ -2,6 +2,7 @@ package platformer.model.entities.player;
 
 import platformer.core.Account;
 import platformer.core.Framework;
+import platformer.model.inventory.InventoryBonus;
 import platformer.model.levels.Spawn;
 import platformer.model.perks.PerksBonus;
 import platformer.ui.overlays.hud.UserInterface;
@@ -57,6 +58,8 @@ public class PlayerDataManager {
         double currentHealth = player.getCurrentHealth();
         double currentStamina = player.getCurrentStamina();
         double maxHealth = PLAYER_MAX_HP + PerksBonus.getInstance().getBonusHealth();
+        double equipmentBonus = InventoryBonus.getInstance().getHealth() * maxHealth;
+        maxHealth += equipmentBonus;
         double maxStamina = PLAYER_MAX_ST + PerksBonus.getInstance().getBonusPower();
         userInterface.update(currentHealth, maxHealth, currentStamina, maxStamina, exp, 1000*level);
     }

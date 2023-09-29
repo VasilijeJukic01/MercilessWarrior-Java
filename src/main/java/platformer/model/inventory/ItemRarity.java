@@ -7,7 +7,7 @@ public enum ItemRarity {
     UNCOMMON(new Color(0, 170, 20, 100)),
     RARE(new Color(0, 90, 170, 100)),
     EPIC(new Color(95, 0, 170, 100)),
-    LEGENDARY(new Color(190, 110, 5, 100)),
+    LEGENDARY(new Color(245, 105, 5, 100)),
     MYTHIC(new Color(125, 0, 0, 100));
 
     private final Color color;

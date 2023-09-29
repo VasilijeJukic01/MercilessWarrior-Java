@@ -86,7 +86,15 @@ public class Constants {
 
     public static final int IRON_COST = 15;
     public static final int COPPER_COST = 10;
+    public static final int AMETHYST_COST = 30;
+    public static final int SONIC_QUARTZ_COST = 45;
+    public static final int ELECTRICITE_COST = 250;
+
+    public static final int HELMET_WARRIOR_COST = 80;
     public static final int ARMOR_WARRIOR_COST = 100;
+    public static final int BRACELETS_WARRIOR_COST = 70;
+    public static final int TROUSERS_WARRIOR_COST = 80;
+    public static final int BOOTS_WARRIOR_COST = 70;
 
     // Level Constants
     public static final int MAX_LEVELS = 4;

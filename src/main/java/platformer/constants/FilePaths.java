@@ -91,8 +91,15 @@ public class FilePaths {
     public static final String STAMINA_ITEM = "/images/inventory/StaminaItem.png";
     public static final String IRON_ORE_ITEM = "/images/inventory/IronOre.png";
     public static final String COPPER_ORE_ITEM = "/images/inventory/CopperOre.png";
+    public static final String AMETHYST_ORE_ITEM = "/images/inventory/AmethystOre.png";
+    public static final String SONIC_QUARTZ_ORE_ITEM = "/images/inventory/SonicQuartzOre.png";
+    public static final String ELECTRICITE_ORE_ITEM = "/images/inventory/ElectriciteOre.png";
 
+    public static final String WARRIOR_HELMET = "/images/inventory/WarriorHelmet.png";
     public static final String WARRIOR_ARMOR = "/images/inventory/WarriorArmor.png";
+    public static final String WARRIOR_BRACELETS = "/images/inventory/WarriorBracelets.png";
+    public static final String WARRIOR_TROUSERS = "/images/inventory/WarriorTrousers.png";
+    public static final String WARRIOR_BOOTS = "/images/inventory/WarriorBoots.png";
 
     public static final String PLAYER_ICON = "/images/inventory/Player.png";
 

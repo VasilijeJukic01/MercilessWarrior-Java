@@ -14,6 +14,7 @@ import platformer.model.entities.enemies.EnemyManager;
 import platformer.model.gameObjects.ObjectManager;
 import platformer.model.gameObjects.projectiles.Projectile;
 import platformer.model.inventory.Inventory;
+import platformer.model.inventory.InventoryBonus;
 import platformer.model.perks.PerksBonus;
 import platformer.utils.Utils;
 
@@ -138,7 +139,10 @@ public class Player extends Entity {
     private void finishAttackBlock() {
         if (canBlock) {
             Logger.getInstance().notify("Damage blocked successfully!", Message.INFORMATION);
-            cooldown[Cooldown.BLOCK.ordinal()] = PLAYER_BLOCK_CD;
+            double cd =  PLAYER_BLOCK_CD;
+            double equipmentBonus = InventoryBonus.getInstance().getCooldown() * cd;
+            cd -= equipmentBonus;
+            cooldown[Cooldown.BLOCK.ordinal()] = cd;
             if (PerksBonus.getInstance().isRestorePower()) changeStamina(5);
         }
     }
@@ -338,18 +342,25 @@ public class Player extends Entity {
     }
 
     // Status Changes
-    public void changeHealth(int value) {
+    public void changeHealth(double value) {
         if (value < 0) {
             if (hit) return;
             else hit = true;
         }
         currentHealth += value;
-        currentHealth = Math.max(Math.min(currentHealth, maxHealth+ PerksBonus.getInstance().getBonusHealth()), 0);
+        double healthCap = maxHealth + PerksBonus.getInstance().getBonusHealth();
+        double equipmentBonus = InventoryBonus.getInstance().getHealth() * healthCap;
+        healthCap += equipmentBonus;
+        currentHealth = Math.max(Math.min(currentHealth, healthCap), 0);
     }
 
-    public void changeHealth(int value, Object o) {
+    public void changeHealth(double value, Object o) {
         if (!(o instanceof Enemy) && !(o instanceof Projectile)) return;
         if (hit) return;
+        if (value < 0) {
+            double defenseBonus = InventoryBonus.getInstance().getDefense() * value * (-1);
+            value += defenseBonus;
+        }
         changeHealth(value);
         pushOffsetDirection = Direction.UP;
         pushOffset = 0;
@@ -361,7 +372,10 @@ public class Player extends Entity {
 
     public void changeStamina(double value) {
         currentStamina += value;
-        currentStamina = Math.max(Math.min(currentStamina, PLAYER_MAX_ST+ PerksBonus.getInstance().getBonusPower()), 0);
+        double staminaCap = PLAYER_MAX_ST + PerksBonus.getInstance().getBonusPower();
+        double equipmentBonus = InventoryBonus.getInstance().getHealth() * staminaCap;
+        staminaCap += equipmentBonus;
+        currentStamina = Math.max(Math.min(currentStamina, staminaCap), 0);
         if (currentStamina == 0) {
             transform = false;
             if (spellState == 1) spellState = 2;
@@ -473,12 +487,18 @@ public class Player extends Entity {
         setSpellState(0);
         animIndex = animTick = 0;
         entityState = Anim.IDLE;
-        currentHealth = maxHealth+ PerksBonus.getInstance().getBonusHealth();
+        resetHealth();
         currentStamina = 0;
         hitBox.x = xPos;
         hitBox.y = yPos;
         initAttackBox();
         if (!Utils.getInstance().isEntityOnFloor(hitBox, levelData)) inAir = true;
+    }
+
+    private void resetHealth() {
+        currentHealth = maxHealth + PerksBonus.getInstance().getBonusHealth();
+        double equipmentBonus = InventoryBonus.getInstance().getHealth() * currentHealth;
+        currentHealth += equipmentBonus;
     }
 
     private void resetFlags() {
@@ -518,7 +538,10 @@ public class Player extends Entity {
         if (cooldown[Cooldown.ATTACK.ordinal()] != 0) return;
         this.attackState = playerAttackState;
         this.setAttacking(true);
-        cooldown[Cooldown.ATTACK.ordinal()] = PLAYER_ATTACK_CD + PerksBonus.getInstance().getBonusCooldown();
+        double cd =  PLAYER_ATTACK_CD + PerksBonus.getInstance().getBonusCooldown();
+        double equipmentBonus = InventoryBonus.getInstance().getCooldown() * cd;
+        cd -= equipmentBonus;
+        cooldown[Cooldown.ATTACK.ordinal()] = cd;
     }
 
     public void setCanDash(boolean canDash) {

@@ -1,7 +1,11 @@
 package platformer.model.inventory;
 
 public enum ItemBonus {
-    ARMOR_WARRIOR(2, 0, 0, 0, 0, 3, 0);
+    HELMET_WARRIOR(     3, 5, 0, 0, 0, 0, 0),
+    ARMOR_WARRIOR(      5, 0, 0, 0, 0, 5, 0),
+    BRACELETS_WARRIOR(  0, 0, 5, 0, 3, 0, 0),
+    TROUSERS_WARRIOR(   0, 3, 0, 5, 0, 0, 0),
+    BOOTS_WARRIOR(      0, 0, 0, 3, 0, 0, 3);
 
     private final double health, defense, attack, stamina, critical, spell, cooldown;
 

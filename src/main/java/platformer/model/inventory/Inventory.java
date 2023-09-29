@@ -36,18 +36,26 @@ public class Inventory {
     private void addToEquipment(InventoryItem item) {
         if (item.getItemType().getName().contains("Helmet")) equipped[0] = item;
         if (item.getItemType().getName().contains("Armor")) equipped[2] = item;
-        else if (item.getItemType().getName().contains("Gloves")) equipped[4] = item;
+        else if (item.getItemType().getName().contains("Bracelets")) equipped[4] = item;
         else if (item.getItemType().getName().contains("Trousers")) equipped[1] = item;
         else if (item.getItemType().getName().contains("Amulet")) equipped[3] = item;
         else if (item.getItemType().getName().contains("Boots")) equipped[5] = item;
     }
 
     private void applyBonus(ItemType itemType) {
-        if (itemType == ItemType.ARMOR_WARRIOR) InventoryBonus.getInstance().applyBonus(ItemBonus.ARMOR_WARRIOR);
+        if (itemType == ItemType.HELMET_WARRIOR) InventoryBonus.getInstance().applyBonus(ItemBonus.HELMET_WARRIOR);
+        else if (itemType == ItemType.ARMOR_WARRIOR) InventoryBonus.getInstance().applyBonus(ItemBonus.ARMOR_WARRIOR);
+        else if (itemType == ItemType.BRACELETS_WARRIOR) InventoryBonus.getInstance().applyBonus(ItemBonus.BRACELETS_WARRIOR);
+        else if (itemType == ItemType.TROUSERS_WARRIOR) InventoryBonus.getInstance().applyBonus(ItemBonus.TROUSERS_WARRIOR);
+        else if (itemType == ItemType.BOOTS_WARRIOR) InventoryBonus.getInstance().applyBonus(ItemBonus.BOOTS_WARRIOR);
     }
 
     private void removeBonus(ItemType itemType) {
-        if (itemType == ItemType.ARMOR_WARRIOR) InventoryBonus.getInstance().removeBonus(ItemBonus.ARMOR_WARRIOR);
+        if (itemType == ItemType.HELMET_WARRIOR) InventoryBonus.getInstance().removeBonus(ItemBonus.HELMET_WARRIOR);
+        else if (itemType == ItemType.ARMOR_WARRIOR) InventoryBonus.getInstance().removeBonus(ItemBonus.ARMOR_WARRIOR);
+        else if (itemType == ItemType.BRACELETS_WARRIOR) InventoryBonus.getInstance().removeBonus(ItemBonus.BRACELETS_WARRIOR);
+        else if (itemType == ItemType.TROUSERS_WARRIOR) InventoryBonus.getInstance().removeBonus(ItemBonus.TROUSERS_WARRIOR);
+        else if (itemType == ItemType.BOOTS_WARRIOR) InventoryBonus.getInstance().removeBonus(ItemBonus.BOOTS_WARRIOR);
     }
 
     public void addItemFromLoot(InventoryItem item) {

@@ -46,11 +46,18 @@ public class Shop extends GameObject {
     }
 
     private void initItems() {
-        addShopItem(ItemType.HEALTH,         1, 10, HEALTH_COST);
-        addShopItem(ItemType.STAMINA,        1, 6, STAMINA_COST);
-        addShopItem(ItemType.IRON,           16, 25, IRON_COST);
-        addShopItem(ItemType.COPPER,         16, 25, COPPER_COST);
-        addShopItem(ItemType.ARMOR_WARRIOR,  1, 1, ARMOR_WARRIOR_COST);
+        addShopItem(ItemType.HEALTH,            1, 10, HEALTH_COST);
+        addShopItem(ItemType.STAMINA,           1, 6, STAMINA_COST);
+        addShopItem(ItemType.IRON,              16, 25, IRON_COST);
+        addShopItem(ItemType.COPPER,            16, 25, COPPER_COST);
+        addShopItem(ItemType.AMETHYST,          1, 5, AMETHYST_COST);
+        addShopItem(ItemType.SONIC_QUARTZ,      1, 3, SONIC_QUARTZ_COST);
+        addShopItem(ItemType.ELECTRICITE,       1, 1, ELECTRICITE_COST);
+        addShopItem(ItemType.HELMET_WARRIOR,    1, 1, HELMET_WARRIOR_COST);
+        addShopItem(ItemType.ARMOR_WARRIOR,     1, 1, ARMOR_WARRIOR_COST);
+        addShopItem(ItemType.BRACELETS_WARRIOR, 1, 1, BRACELETS_WARRIOR_COST);
+        addShopItem(ItemType.TROUSERS_WARRIOR,  1, 1, TROUSERS_WARRIOR_COST);
+        addShopItem(ItemType.BOOTS_WARRIOR,     1, 1, BOOTS_WARRIOR_COST);
     }
 
     // Actions
@@ -60,6 +67,7 @@ public class Shop extends GameObject {
         if (player.getCoins() >= item.getCost()) {
             player.changeCoins(-item.getCost());
             item.setAmount(item.getAmount()-1);
+            if (item.getAmount() == 0) shopItems.remove(item);
             Audio.getInstance().getAudioPlayer().playSound(Sound.SHOP_BUY);
             switch(item.getItemType()) {
                 case HEALTH: player.changeHealth(HEALTH_VAL); break;
@@ -128,11 +136,7 @@ public class Shop extends GameObject {
     }
 
     private BufferedImage getImageModel(ItemType type) {
-        return shopItems.stream()
-                .filter(shopItem -> shopItem.getItemType() == type)
-                .map(ShopItem::getModel)
-                .findFirst()
-                .orElse(null);
+        return Utils.getInstance().importImage(type.getImg(), -1, -1);
     }
 
 }
