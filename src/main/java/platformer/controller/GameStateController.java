@@ -7,16 +7,15 @@ import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
 import platformer.model.entities.AttackState;
 import platformer.model.entities.player.Player;
+import platformer.model.entities.player.PlayerAction;
 import platformer.model.gameObjects.GameObject;
+import platformer.model.gameObjects.objects.Loot;
 import platformer.state.GameState;
 import platformer.state.PlayingState;
 
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 
 public class GameStateController {
 
@@ -65,17 +64,18 @@ public class GameStateController {
         pressedKeys.add(key);
         switch (key) {
             case KeyEvent.VK_UP:
-                if (pressedKeys.contains(key) && player.isOnWall()) {
-                    player.setJump(false);
+                boolean onWall = player.checkAction(PlayerAction.ON_WALL);
+                if (pressedKeys.contains(key) && onWall) {
+                    player.removeAction(PlayerAction.JUMP);
                     return;
                 }
-                player.setJump(true);
+                player.addAction(PlayerAction.JUMP);
                 break;
             case KeyEvent.VK_LEFT:
-                player.setLeft(true);
+                player.addAction(PlayerAction.LEFT);
                 break;
             case KeyEvent.VK_RIGHT:
-                player.setRight(true);
+                player.addAction(PlayerAction.RIGHT);
                 break;
             case KeyEvent.VK_X:
                 if (state != PlayingState.DIALOGUE)
@@ -86,10 +86,12 @@ public class GameStateController {
                 player.getActionHandler().doSpell();
                 break;
             case KeyEvent.VK_V:
-                if (player.canDash()) player.getActionHandler().doDash();
+                boolean canDash = player.checkAction(PlayerAction.CAN_DASH);
+                if (canDash) player.getActionHandler().doDash();
                 break;
             case KeyEvent.VK_S:
-                if (player.isBlock()) return;
+                boolean block = player.checkAction(PlayerAction.BLOCK);
+                if (block) return;
                 player.setBlock(true);
                 break;
             case KeyEvent.VK_ESCAPE:
@@ -106,22 +108,22 @@ public class GameStateController {
         int key = e.getKeyCode();
         switch (key) {
             case KeyEvent.VK_UP:
-                player.setJump(false);
+                player.removeAction(PlayerAction.JUMP);
                 player.setCurrentJumps(player.getCurrentJumps()+1);
                 break;
             case KeyEvent.VK_RIGHT:
-                player.setRight(false);
-                player.setOnWall(false);
+                player.removeAction(PlayerAction.RIGHT);
+                player.removeAction(PlayerAction.ON_WALL);
                 break;
             case KeyEvent.VK_LEFT:
-                player.setLeft(false);
-                player.setOnWall(false);
+                player.removeAction(PlayerAction.LEFT);
+                player.removeAction(PlayerAction.ON_WALL);
                 break;
             case KeyEvent.VK_Q:
                 player.setCanTransform(true);
                 break;
             case KeyEvent.VK_V:
-                player.setCanDash(true);
+                player.addAction(PlayerAction.CAN_DASH);
                 break;
             case KeyEvent.VK_C:
                 if (player.getSpellState() == 1) player.setSpellState(2);
@@ -134,6 +136,9 @@ public class GameStateController {
                 break;
             case KeyEvent.VK_F:
                 interact();
+                break;
+            case KeyEvent.VK_I:
+                openInventory();
                 break;
             case KeyEvent.VK_F1:
                 showHitBox();
@@ -155,13 +160,24 @@ public class GameStateController {
     // Actions
     private void interact() {
         Optional<? extends Class<? extends GameObject>> object = Optional.ofNullable(gameState.getObjectManager().getIntersectingObject());
-        object.ifPresent(this::activateDialogue);
+        object.ifPresent(this::handleInteraction);
+    }
+
+    private void handleInteraction(Class<? extends GameObject> objectClass) {
+        if (objectClass == Loot.class) {
+            gameState.setOverlay(PlayingState.LOOTING);
+        }
+        else activateDialogue(objectClass);
     }
 
     private void activateDialogue(Class<? extends GameObject> objectClass) {
         gameState.setOverlay(PlayingState.DIALOGUE);
         List<String> dialogues = gameState.getDialogueManager().getDialogues(objectClass);
         gameState.getDialogueManager().setDialogueObject(dialogues, objectClass);
+    }
+
+    private void openInventory() {
+        gameState.setOverlay(PlayingState.INVENTORY);
     }
 
     private void showHitBox() {
@@ -191,7 +207,16 @@ public class GameStateController {
 
     // Helper
     private boolean isBreakableState(PlayingState state) {
-        return state == PlayingState.SHOP || state == PlayingState.BLACKSMITH || state == PlayingState.DIALOGUE || state == PlayingState.SAVE;
+        PlayingState[] breakableStates = {
+                PlayingState.SHOP,
+                PlayingState.BLACKSMITH,
+                PlayingState.DIALOGUE,
+                PlayingState.SAVE,
+                PlayingState.INVENTORY,
+                PlayingState.LOOTING
+        };
+
+        return Arrays.stream(breakableStates).anyMatch(breakableState -> breakableState == state);
     }
 
     private PlayingState pause(PlayingState state) {

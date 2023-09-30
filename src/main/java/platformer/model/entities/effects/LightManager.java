@@ -1,5 +1,6 @@
 package platformer.model.entities.effects;
 
+import platformer.model.entities.enemies.Enemy;
 import platformer.model.entities.player.Player;
 import platformer.model.gameObjects.objects.Candle;
 import platformer.model.gameObjects.objects.Shop;
@@ -20,9 +21,7 @@ public class LightManager {
 
     private final GameState gameState;
 
-    private BufferedImage orangeLight;
-    private BufferedImage whiteLight;
-    private BufferedImage whiteRadialLight;
+    private BufferedImage orangeLight, whiteLight, whiteRadialLight;
 
     private Ellipse2D playerLight;
 
@@ -100,13 +99,22 @@ public class LightManager {
     }
 
     private void glowObjects(Graphics2D g2d, int xLevelOffset, int yLevelOffset) {
-        // Player filter
+        playerFilter(g2d, xLevelOffset, yLevelOffset);
+        candleFilter(g2d, xLevelOffset, yLevelOffset);
+        gameState.getObjectManager().glowingRender(g2d, xLevelOffset, yLevelOffset);
+        shopFilter(g2d, xLevelOffset, yLevelOffset);
+        enemyFilter(g2d, xLevelOffset, yLevelOffset);
+    }
+
+    // Filters
+    private void playerFilter(Graphics2D g2d, int xLevelOffset, int yLevelOffset) {
         Player player = gameState.getPlayer();
         int playerX = (int) (player.getHitBox().x + player.getHitBox().width / 2 - xLevelOffset) - PLAYER_LIGHT_RADIUS;
         int playerY = (int) (player.getHitBox().y + player.getHitBox().height / 2 - yLevelOffset) - PLAYER_LIGHT_RADIUS;
         g2d.drawImage(whiteLight, playerX, playerY, null);
+    }
 
-        // Candle filter
+    private void candleFilter(Graphics2D g2d, int xLevelOffset, int yLevelOffset) {
         List<Candle> candles = gameState.getObjectManager().getObjects(Candle.class);
         for (Candle candle : candles) {
             int candleX = (int) (candle.getHitBox().x + candle.getHitBox().width / 2 - xLevelOffset) - CANDLE_LIGHT_RADIUS;
@@ -115,10 +123,9 @@ public class LightManager {
             gameState.getObjectManager().candleRender(g2d, xLevelOffset, yLevelOffset, candle);
             g2d.drawImage(orangeLight, candleX, candleY, null);
         }
+    }
 
-        gameState.getObjectManager().glowingRender(g2d, xLevelOffset, yLevelOffset);
-
-        // Shop filter
+    private void shopFilter(Graphics2D g2d, int xLevelOffset, int yLevelOffset) {
         List<Shop> shops = gameState.getObjectManager().getObjects(Shop.class);
         for (Shop shop : shops) {
             int shopX = (int) (shop.getHitBox().x + shop.getHitBox().width / 2 - xLevelOffset) - CANDLE_LIGHT_RADIUS;
@@ -127,6 +134,17 @@ public class LightManager {
         }
     }
 
+    private void enemyFilter(Graphics2D g2d, int xLevelOffset, int yLevelOffset) {
+        List<Enemy> enemies = gameState.getEnemyManager().getAllEnemies();
+        for (Enemy enemy : enemies) {
+            if (!enemy.isAlive()) continue;
+            int enemyX = (int) (enemy.getHitBox().x + enemy.getHitBox().width / 2 - xLevelOffset) - PLAYER_LIGHT_RADIUS;
+            int enemyY = (int) (enemy.getHitBox().y + enemy.getHitBox().height / 2 - yLevelOffset) - PLAYER_LIGHT_RADIUS;
+            g2d.drawImage(whiteLight, enemyX, enemyY, null);
+        }
+    }
+
+    // Player light
     private void fillWithRadialGradient(Graphics2D g2d, Area area, int radius) {
         RadialGradientPaint gradientPaint = new RadialGradientPaint(
                 new Point(area.getBounds().x + radius, area.getBounds().y + radius),
@@ -158,6 +176,7 @@ public class LightManager {
         return new Area(playerLight);
     }
 
+    // Setters
     public void setAlpha(int alpha) {
         this.alpha = alpha;
     }

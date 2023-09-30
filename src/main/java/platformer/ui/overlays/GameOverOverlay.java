@@ -4,7 +4,7 @@ import platformer.audio.Audio;
 import platformer.audio.Song;
 import platformer.core.Game;
 import platformer.ui.buttons.ButtonType;
-import platformer.ui.buttons.CREButton;
+import platformer.ui.buttons.SmallButton;
 import platformer.ui.buttons.AbstractButton;
 import platformer.utils.Utils;
 
@@ -20,7 +20,7 @@ public class GameOverOverlay implements Overlay {
 
     private final Game game;
     private BufferedImage deadText, menuText, respawnText;
-    private CREButton retryBtn, menuBtn;
+    private SmallButton retryBtn, menuBtn;
 
     public GameOverOverlay(Game game) {
         this.game = game;
@@ -35,8 +35,8 @@ public class GameOverOverlay implements Overlay {
     }
 
     private void loadButtons() {
-        this.retryBtn = new CREButton(RETRY_X, RETRY_Y, CRE_BTN_SIZE, CRE_BTN_SIZE, ButtonType.RETRY);
-        this.menuBtn = new CREButton(MENU_X, MENU_Y, CRE_BTN_SIZE, CRE_BTN_SIZE, ButtonType.EXIT);
+        this.retryBtn = new SmallButton(RETRY_X, RETRY_Y, CRE_BTN_SIZE, CRE_BTN_SIZE, ButtonType.RETRY);
+        this.menuBtn = new SmallButton(MENU_X, MENU_Y, CRE_BTN_SIZE, CRE_BTN_SIZE, ButtonType.EXIT);
     }
 
     // Core

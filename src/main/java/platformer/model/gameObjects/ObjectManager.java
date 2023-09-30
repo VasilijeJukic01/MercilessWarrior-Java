@@ -5,7 +5,7 @@ import platformer.audio.Audio;
 import platformer.audio.Sound;
 import platformer.model.entities.Direction;
 import platformer.model.entities.player.Player;
-import platformer.model.entities.player.PlayerBonus;
+import platformer.model.perks.PerksBonus;
 import platformer.model.entities.enemies.boss.SpearWoman;
 import platformer.model.gameObjects.objects.*;
 import platformer.model.gameObjects.objects.Container;
@@ -37,11 +37,11 @@ public class ObjectManager {
     Class<? extends GameObject>[] updateClasses = new Class[]{
             Coin.class, Container.class, Potion.class, Spike.class,
             Shop.class, Blocker.class, Blacksmith.class, Dog.class,
-            SaveTotem.class, SmashTrap.class, Candle.class
+            SaveTotem.class, SmashTrap.class, Candle.class, Loot.class
     };
     Class<? extends GameObject>[] renderBelow = new Class[] {
             Container.class, Potion.class, Spike.class,
-            Blocker.class, Dog.class, SmashTrap.class
+            Blocker.class, Dog.class, SmashTrap.class, Loot.class
     };
     Class<? extends GameObject>[] renderAbove = new Class[] {
             SaveTotem.class, Shop.class, Blacksmith.class, Coin.class
@@ -113,11 +113,11 @@ public class ObjectManager {
     }
 
     public void generateCoins(Rectangle2D.Double location) {
-        objectBreakHandler.generateCoins(location);
+        objectBreakHandler.generateEnemyLoot(location);
     }
 
     public void checkProjectileDeflect(Rectangle2D.Double attackBox) {
-        if (!PlayerBonus.getInstance().isDeflect()) return;
+        if (!PerksBonus.getInstance().isDeflect()) return;
         projectiles.stream()
                 .filter(projectile -> projectile.isAlive() && attackBox.intersects(projectile.getHitBox()))
                 .forEach(projectile -> projectile.setAlive(false));
@@ -319,5 +319,9 @@ public class ObjectManager {
 
     public Class<? extends GameObject> getIntersectingObject() {
         return intersectionHandler.getIntersectingObject();
+    }
+
+    public Loot getIntersectinLoot() {
+        return intersectionHandler.getIntersectingLoot(gameState.getPlayer());
     }
 }

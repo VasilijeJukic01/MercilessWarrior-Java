@@ -8,7 +8,10 @@ import platformer.debug.logger.Logger;
 import platformer.model.entities.Direction;
 import platformer.model.entities.enemies.renderer.*;
 import platformer.model.entities.player.Player;
-import platformer.model.entities.player.PlayerBonus;
+import platformer.model.entities.player.PlayerAction;
+import platformer.model.gameObjects.projectiles.Fireball;
+import platformer.model.inventory.InventoryBonus;
+import platformer.model.perks.PerksBonus;
 import platformer.model.entities.enemies.boss.SpearWoman;
 import platformer.model.levels.Level;
 import platformer.model.gameObjects.GameObject;
@@ -117,21 +120,23 @@ public class EnemyManager {
         }
     }
 
-    private int[] damage(Player player) {
-        int critical = 0;
-        int dmg = player.getAttackDmg();
-        dmg += PlayerBonus.getInstance().getBonusAttack();
+    private double[] damage(Player player) {
+        double critical = 0;
+        double dmg = player.getAttackDmg() + PerksBonus.getInstance().getBonusAttack();
+        double equipmentBonus = InventoryBonus.getInstance().getAttack() * dmg;
+        dmg += equipmentBonus;
+
         Random rand = new Random();
-        int criticalHit = rand.nextInt(100-PlayerBonus.getInstance().getCriticalHitChance());
+        double criticalHit = rand.nextInt(100 - PerksBonus.getInstance().getCriticalHitChance());
         if (criticalHit >= 1 && criticalHit <= 10) {
             dmg *= 2;
             critical = 1;
         }
-        return new int[] {dmg, critical};
+        return new double[] {dmg, critical};
     }
 
     private <T extends Enemy> void handleEnemyHit(Rectangle2D.Double attackBox, Player player, Class<T> enemyClass) {
-        int[] dmg = damage(player);
+        double[] dmg = damage(player);
         for (T enemy : getEnemies(enemyClass)) {
             if (enemy.isAlive() && enemy.getEnemyAction() != Anim.DEATH) {
                 if (attackBox.intersects(enemy.getHitBox())) {
@@ -140,7 +145,7 @@ public class EnemyManager {
                     enemy.setCriticalHit(dmg[1] == 1);
                     checkEnemyDying(enemy, player);
                     writeHitLog(enemy.getEnemyAction(), dmg[0]);
-                    player.setDashHit(true);
+                    player.addAction(PlayerAction.DASH_HIT);
                     return;
                 }
             }
@@ -153,10 +158,12 @@ public class EnemyManager {
         handleEnemyHit(attackBox, player, Knight.class);
         handleEnemyHit(attackBox, player, Wraith.class);
         handleEnemyHit(attackBox, player, SpearWoman.class);
-        if (!player.isDash() && !player.isOnWall()) Audio.getInstance().getAudioPlayer().playSlashSound();
+        boolean dash = player.checkAction(PlayerAction.DASH);
+        boolean onWall = player.checkAction(PlayerAction.ON_WALL);
+        if (!dash && !onWall) Audio.getInstance().getAudioPlayer().playSlashSound();
     }
 
-    private void writeHitLog(Anim anim, int dmg) {
+    private void writeHitLog(Anim anim, double dmg) {
         if (anim == Anim.BLOCK) Logger.getInstance().notify("Enemy blocks player's attack.", Message.NOTIFICATION);
         else Logger.getInstance().notify("Player gives damage to enemy: "+dmg, Message.NOTIFICATION);
     }
@@ -201,6 +208,13 @@ public class EnemyManager {
                 projectile.setAlive(false);
             }
         }
+        for (SpearWoman spearWoman : getEnemies(SpearWoman.class)) {
+            if (projectile instanceof Fireball && spearWoman.isAlive() && spearWoman.getEnemyAction() != Anim.DEATH) {
+                if (!projectile.getHitBox().intersects(spearWoman.getHitBox())) continue;
+                spearWoman.hit(FIREBALL_PROJECTILE_DMG, false, false);
+                projectile.setAlive(false);
+            }
+        }
     }
 
     // Core
@@ -239,7 +253,7 @@ public class EnemyManager {
                 .forEach(Enemy::reset);
     }
 
-    private List<Enemy> getAllEnemies() {
+    public List<Enemy> getAllEnemies() {
         return Utils.getInstance().getAllItems(enemies);
     }
 

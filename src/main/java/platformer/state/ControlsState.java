@@ -2,7 +2,7 @@ package platformer.state;
 
 import platformer.core.Game;
 import platformer.ui.buttons.ButtonType;
-import platformer.ui.buttons.CREButton;
+import platformer.ui.buttons.SmallButton;
 import platformer.ui.overlays.OverlayLayer;
 import platformer.utils.Utils;
 
@@ -22,7 +22,7 @@ public class ControlsState extends AbstractState implements State {
     private BufferedImage keyboardSprite;
     private BufferedImage controlsText;
 
-    private CREButton exitBtn;
+    private SmallButton exitBtn;
 
     public ControlsState(Game game) {
         super(game);
@@ -36,7 +36,7 @@ public class ControlsState extends AbstractState implements State {
     }
 
     private void loadButtons() {
-        this.exitBtn = new CREButton(EXIT_BTN_X, EXIT_BTN_Y, CRE_BTN_SIZE, CRE_BTN_SIZE, ButtonType.EXIT);
+        this.exitBtn = new SmallButton(EXIT_BTN_X, EXIT_BTN_Y, CRE_BTN_SIZE, CRE_BTN_SIZE, ButtonType.EXIT);
     }
 
     // Core

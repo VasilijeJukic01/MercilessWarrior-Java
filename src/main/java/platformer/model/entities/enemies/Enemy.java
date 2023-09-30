@@ -6,6 +6,7 @@ import platformer.model.entities.Cooldown;
 import platformer.model.entities.Direction;
 import platformer.model.entities.Entity;
 import platformer.model.entities.player.Player;
+import platformer.model.entities.player.PlayerAction;
 import platformer.utils.Utils;
 
 import java.awt.geom.Rectangle2D;
@@ -106,7 +107,8 @@ public abstract class Enemy extends Entity implements Debug {
     // Attack
     protected void checkPlayerHit(Rectangle2D.Double attackBox, Player player) {
         if (attackBox.intersects(player.getHitBox())) {
-            if (!player.canBlock()) player.changeHealth(-enemyType.getDamage(), this);
+            boolean canBlock = player.checkAction(PlayerAction.CAN_BLOCK);
+            if (!canBlock) player.changeHealth(-enemyType.getDamage(), this);
         }
         else if (enemyType == EnemyType.GHOUL || enemyType == EnemyType.SPEAR_WOMAN) return;
         attackCheck = true;

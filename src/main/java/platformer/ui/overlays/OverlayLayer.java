@@ -3,11 +3,11 @@ package platformer.ui.overlays;
 import platformer.utils.Utils;
 
 import java.awt.*;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 
 import static platformer.constants.AnimConstants.MENU_FRAMES;
 import static platformer.constants.Constants.*;
-import static platformer.constants.FilePaths.OVERLAY;
 import static platformer.constants.UI.*;
 
 public class OverlayLayer {
@@ -15,7 +15,7 @@ public class OverlayLayer {
     public static volatile OverlayLayer instance = null;
 
     private BufferedImage[] background;
-    private BufferedImage overlay;
+    private Rectangle2D overlay;
     private final int animSpeed = 20;
     private int animTick = 0, animIndex = 0;
 
@@ -43,7 +43,7 @@ public class OverlayLayer {
 
     private void init() {
         this.background = loadMenuAnimation();
-        this.overlay = Utils.getInstance().importImage(OVERLAY, OVERLAY_WID, OVERLAY_HEI);
+        this.overlay = new Rectangle2D.Double(OVERLAY_X, OVERLAY_Y, OVERLAY_WID, OVERLAY_HEI);
     }
 
     private void updateAnimation() {
@@ -72,7 +72,12 @@ public class OverlayLayer {
     }
 
     public void renderOverlay(Graphics g) {
-        g.drawImage(overlay, OVERLAY_X, OVERLAY_Y, overlay.getWidth(), overlay.getHeight(), null);
+        Graphics2D g2d = (Graphics2D) g;
+        g2d.setColor(OVERLAY_COLOR);
+        g2d.fill(overlay);
+        g2d.setColor(Color.WHITE);
+        g2d.setStroke(new BasicStroke(2));
+        g2d.draw(overlay);
     }
 
 }

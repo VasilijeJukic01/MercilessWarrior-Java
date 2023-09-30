@@ -33,7 +33,7 @@ public class Blacksmith extends GameObject {
     @Override
     public void render(Graphics g, int xLevelOffset, int yLevelOffset, BufferedImage[] animations) {
         int x = (int)hitBox.x - xOffset - xLevelOffset;
-        int y = (int)hitBox.y - yOffset - yLevelOffset + (int)(1*SCALE);
+        int y = (int)hitBox.y - yOffset - yLevelOffset + (int)(1 * SCALE);
         g.drawImage(animations[animIndex], x, y, BLACKSMITH_WID, BLACKSMITH_HEI, null);
         hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.MAGENTA);
         renderText(g, xLevelOffset, yLevelOffset);

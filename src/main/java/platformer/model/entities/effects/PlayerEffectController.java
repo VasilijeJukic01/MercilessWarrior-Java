@@ -3,6 +3,7 @@ package platformer.model.entities.effects;
 import platformer.animation.Animation;
 import platformer.model.entities.Entity;
 import platformer.model.entities.player.Player;
+import platformer.model.entities.player.PlayerAction;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -62,7 +63,8 @@ public class PlayerEffectController {
         if (!(entity instanceof Player)) return;
         if (entity.getEntityEffect() != EffectType.WALL_SLIDE) return;
         Player p = (Player) entity;
-        if (p.isOnWall()) {
+        boolean onWall = p.checkAction(PlayerAction.ON_WALL);
+        if (onWall) {
             int wid = (p.getFlipCoefficient() != 0) ? (0) : (int)(p.getHitBox().width + DUST1_W);
             int flip = (p.getFlipSign() == 1) ? (-1) : (1);
             int xPos = (int)(p.getHitBox().x - DUST1_OFFSET_X) + wid;

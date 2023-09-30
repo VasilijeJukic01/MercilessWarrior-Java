@@ -69,10 +69,8 @@ public class LevelManager {
         BufferedImage[][] levels = new BufferedImage[4][4];
         for (int i = 0; i < 2; i++) {
             for (int j = 0; j < levels.length; j++) {
-
                 BufferedImage levelImg = Utils.getInstance().importImage("/images/levels/level"+i+j+".png", -1, -1);
                 if (levelImg == null) continue;
-
                 if (layer.equals("1")) {
                     levels[i][j] = levelImg.getSubimage(0, 0, levelImg.getWidth()/2, levelImg.getHeight());
                 }

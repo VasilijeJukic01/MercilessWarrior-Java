@@ -1,7 +1,6 @@
 package platformer.model.perks;
 
 import platformer.core.Framework;
-import platformer.model.entities.player.PlayerBonus;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -61,22 +60,22 @@ public class PerksManager {
 
     private Map<String, PerkAction> initPerkActions() {
         Map<String, PerkAction> actions = new HashMap<>();
-        actions.put("XP Bonus", () -> PlayerBonus.getInstance().setBonusExp(XP_BONUS_AMOUNT));
-        actions.put("Strong Arms", () -> PlayerBonus.getInstance().setBonusCooldown(STRONG_ARMS_BONUS_COOLDOWN));
-        actions.put("Ancient Notes", () -> PlayerBonus.getInstance().setFireball(true));
-        actions.put("Power Pills", () -> PlayerBonus.getInstance().setBonusPower(POWER_PILL_BONUS_POWER));
-        actions.put("Lucky Drop", () -> PlayerBonus.getInstance().setBonusCoin(LUCKY_DROP_BONUS_COINS));
-        actions.put("Broken Bones", () -> PlayerBonus.getInstance().setBonusCoin(BROKEN_BONES_BONUS_ATTACK));
-        actions.put("Dark Magic", () -> PlayerBonus.getInstance().setTransform(true));
-        actions.put("Warrior Heart", () -> PlayerBonus.getInstance().setBonusHealth(WARRIOR_HEART_BONUS_HEALTH));
-        actions.put("Furious", () -> PlayerBonus.getInstance().setDashCooldown(FURIOUS_DASH_COOLDOWN));
-        actions.put("Necropolis", () -> PlayerBonus.getInstance().setRestorePower(true));
-        actions.put("Fast Eye", () -> PlayerBonus.getInstance().setDeflect(true));
-        actions.put("Amber", () ->PlayerBonus.getInstance().setLavaWalk(true));
-        actions.put("Dragon Fruit", () -> PlayerBonus.getInstance().setBonusPower(DRAGON_FRUIT_BONUS_POWER));
-        actions.put("Elementary Magic", () -> PlayerBonus.getInstance().setCriticalHitChance(ELEMENTARY_MAGIC_CRITICAL_HIT_CHANCE));
-        actions.put("Unbreakable Bones", () -> PlayerBonus.getInstance().setDashSlash(true));
-        actions.put("God's Blood", () -> PlayerBonus.getInstance().setBonusHealth(GODS_BLOOD_BONUS_HEALTH));
+        actions.put("XP Bonus", () -> PerksBonus.getInstance().setBonusExp(XP_BONUS_AMOUNT));
+        actions.put("Strong Arms", () -> PerksBonus.getInstance().setBonusCooldown(STRONG_ARMS_BONUS_COOLDOWN));
+        actions.put("Ancient Notes", () -> PerksBonus.getInstance().setFireball(true));
+        actions.put("Power Pills", () -> PerksBonus.getInstance().setBonusPower(POWER_PILL_BONUS_POWER));
+        actions.put("Lucky Drop", () -> PerksBonus.getInstance().setBonusCoin(LUCKY_DROP_BONUS_COINS));
+        actions.put("Broken Bones", () -> PerksBonus.getInstance().setBonusCoin(BROKEN_BONES_BONUS_ATTACK));
+        actions.put("Dark Magic", () -> PerksBonus.getInstance().setTransform(true));
+        actions.put("Warrior Heart", () -> PerksBonus.getInstance().setBonusHealth(WARRIOR_HEART_BONUS_HEALTH));
+        actions.put("Furious", () -> PerksBonus.getInstance().setDashCooldown(FURIOUS_DASH_COOLDOWN));
+        actions.put("Necropolis", () -> PerksBonus.getInstance().setRestorePower(true));
+        actions.put("Fast Eye", () -> PerksBonus.getInstance().setDeflect(true));
+        actions.put("Amber", () -> PerksBonus.getInstance().setLavaWalk(true));
+        actions.put("Dragon Fruit", () -> PerksBonus.getInstance().setBonusPower(DRAGON_FRUIT_BONUS_POWER));
+        actions.put("Elementary Magic", () -> PerksBonus.getInstance().setCriticalHitChance(ELEMENTARY_MAGIC_CRITICAL_HIT_CHANCE));
+        actions.put("Unbreakable Bones", () -> PerksBonus.getInstance().setDashSlash(true));
+        actions.put("God's Blood", () -> PerksBonus.getInstance().setBonusHealth(GODS_BLOOD_BONUS_HEALTH));
         return actions;
     }
 

@@ -1,20 +1,20 @@
-package platformer.model.entities.player;
+package platformer.model.perks;
 
-public class PlayerBonus {
+public class PerksBonus {
 
-    private static volatile PlayerBonus instance = null;
+    private static volatile PerksBonus instance = null;
 
     private int bonusAttack, bonusHealth, bonusPower, bonusExp, bonusCoin, criticalHitChance;
     private double bonusCooldown, dashCooldown;
     private boolean fireball, transform, restorePower, deflect, lavaWalk, dashSlash;
 
-    private PlayerBonus() {}
+    private PerksBonus() {}
 
-    public static PlayerBonus getInstance() {
+    public static PerksBonus getInstance() {
         if (instance == null) {
-            synchronized (PlayerBonus.class) {
+            synchronized (PerksBonus.class) {
                 if (instance == null) {
-                    instance = new PlayerBonus();
+                    instance = new PerksBonus();
                 }
             }
         }
@@ -22,7 +22,7 @@ public class PlayerBonus {
     }
 
     public void reset() {
-        instance = new PlayerBonus();
+        instance = new PerksBonus();
     }
 
     public int getBonusAttack() {

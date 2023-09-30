@@ -31,10 +31,9 @@ public class FilePaths {
     public static final String TOTEM_SHEET = "/images/objs/SaveTotem.png";
     public static final String SMASH_TRAP_SHEET = "/images/objs/smashTrap.png";
     public static final String CANDLE_IMG = "/images/objs/Candle.png";
+    public static final String LOOT_IMG = "/images/objs/Loot.png";
 
-    public static final String HEALTH_ITEM = "/images/shop/HealthItem.png";
-    public static final String STAMINA_ITEM = "/images/shop/StaminaItem.png";
-
+    // Dialogue
     public static final String OBJECT_DIALOGUES = "/dialogues/object_dialogues.txt";
 
     // Spells
@@ -58,10 +57,11 @@ public class FilePaths {
     public static final String SLIDER_IMG = "/images/buttons/Slider.png";
     public static final String LEADERBOARD_BTN_SHEET = "/images/buttons/LeaderboardButtons.png";
     public static final String BTN_SAVE_SHEET = "/images/buttons/SaveButton.png";
+    public static final String INVENTORY_BTN_SHEET = "/images/buttons/InventoryButtons.png";
+    public static final String LOOT_BTN_SHEET = "/images/buttons/LootButtons.png";
 
     // UI
     public static final String MENU_LOGO = "/images/menu/menuLogo.png";
-    public static final String OVERLAY = "/images/overlay1.png";
     public static final String BOSS_BAR = "/images/enemies/Bosses/BossBar.png";
     public static final String PLAYER_HUD = "/images/playerHUD.png";
     public static final String PLAYER_PORTRAIT = "/images/portraitHUD.png";
@@ -73,16 +73,35 @@ public class FilePaths {
     public static final String RESPAWN_TXT = "/images/buttons/RespawnText.png";
     public static final String MENU_TXT = "/images/buttons/MenuText.png";
     public static final String SHOP_TXT = "/images/buttons/ShopText.png";
-    public static final String SLOT_IMG = "/images/shop/Slot.png";
+    public static final String SLOT_IMG = "/images/inventory/Slot.png";
+    public static final String SLOT_INVENTORY = "/images/inventory/Slot.png";
     public static final String PERKS_TXT_IMG = "/images/buttons/PerksText.png";
     public static final String CONTROLS_TXT = "/images/buttons/ControlsText.png";
     public static final String KEYBOARD_SPRITE = "/images/keyboard.png";
     public static final String OPTIONS_TXT = "/images/buttons/OptionsText.png";
     public static final String BOARD_TXT = "/images/buttons/BoardText.png";
+    public static final String INVENTORY_TXT = "/images/buttons/InventoryText.png";
 
     public static final String ORANGE_GLOW = "/images/particles/orangeGlow.png";
     public static final String WHITE_GLOW = "/images/particles/whiteGlow.png";
     public static final String WHITE_RADIAL_GLOW = "/images/particles/whiteRadialGlow.png";
+
+    // Inventory / Shop
+    public static final String HEALTH_ITEM = "/images/inventory/HealthItem.png";
+    public static final String STAMINA_ITEM = "/images/inventory/StaminaItem.png";
+    public static final String IRON_ORE_ITEM = "/images/inventory/IronOre.png";
+    public static final String COPPER_ORE_ITEM = "/images/inventory/CopperOre.png";
+    public static final String AMETHYST_ORE_ITEM = "/images/inventory/AmethystOre.png";
+    public static final String SONIC_QUARTZ_ORE_ITEM = "/images/inventory/SonicQuartzOre.png";
+    public static final String ELECTRICITE_ORE_ITEM = "/images/inventory/ElectriciteOre.png";
+
+    public static final String WARRIOR_HELMET = "/images/inventory/WarriorHelmet.png";
+    public static final String WARRIOR_ARMOR = "/images/inventory/WarriorArmor.png";
+    public static final String WARRIOR_BRACELETS = "/images/inventory/WarriorBracelets.png";
+    public static final String WARRIOR_TROUSERS = "/images/inventory/WarriorTrousers.png";
+    public static final String WARRIOR_BOOTS = "/images/inventory/WarriorBoots.png";
+
+    public static final String PLAYER_ICON = "/images/inventory/Player.png";
 
     // Serialization
     public static final String SAVE_PATH = "src/main/resources/saves/";

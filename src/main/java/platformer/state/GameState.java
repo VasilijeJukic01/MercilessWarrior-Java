@@ -10,7 +10,8 @@ import platformer.model.entities.effects.Particle;
 import platformer.model.entities.enemies.EnemyManager;
 import platformer.core.Game;
 import platformer.model.entities.player.Player;
-import platformer.model.entities.player.PlayerBonus;
+import platformer.model.entities.player.PlayerAction;
+import platformer.model.perks.PerksBonus;
 import platformer.model.levels.LevelManager;
 import platformer.model.gameObjects.ObjectManager;
 import platformer.model.perks.PerksManager;
@@ -99,11 +100,13 @@ public class GameState extends AbstractState implements State {
 
     public void reloadSave() {
         reset();
-        PlayerBonus.getInstance().reset();
+        PerksBonus.getInstance().reset();
         this.perksManager = new PerksManager();
         this.perksManager.loadUnlockedPerks(Framework.getInstance().getAccount().getPerks());
         this.player.getPlayerDataManager().loadPlayerData();
+        this.player.getInventory().reset();
         this.levelManager.loadSavePoint(Framework.getInstance().getAccount().getSpawn());
+        this.overlayManager.reset();
         calculateLevelOffset();
     }
 
@@ -194,8 +197,8 @@ public class GameState extends AbstractState implements State {
         g.drawImage(background, 0, 0, null);
         this.levelManager.render(g, xLevelOffset, yLevelOffset);
         this.objectManager.render(g, xLevelOffset, yLevelOffset);
-        this.enemyManager.render(g, xLevelOffset, yLevelOffset);
         this.lightManager.render(g, xLevelOffset, yLevelOffset);
+        this.enemyManager.render(g, xLevelOffset, yLevelOffset);
         this.player.render(g, xLevelOffset, yLevelOffset);
         this.spellManager.render(g, xLevelOffset, yLevelOffset);
         this.player.getPlayerStatusManager().getUserInterface().render(g);
@@ -222,8 +225,10 @@ public class GameState extends AbstractState implements State {
     }
 
     private void checkPlayerDeath() {
-        if (player.isDying()) setOverlay(PlayingState.DYING);
-        if (player.isGameOver()) setOverlay(PlayingState.GAME_OVER);
+        boolean dying = player.checkAction(PlayerAction.DYING);
+        boolean gameOver = player.checkAction(PlayerAction.GAME_OVER);
+        if (dying) setOverlay(PlayingState.DYING);
+        if (gameOver) setOverlay(PlayingState.GAME_OVER);
     }
 
     private void updateParticles() {
@@ -240,6 +245,8 @@ public class GameState extends AbstractState implements State {
         player.update();
         if (state == PlayingState.SHOP) overlayManager.update(PlayingState.SHOP);
         else if (state == PlayingState.BLACKSMITH) overlayManager.update(PlayingState.BLACKSMITH);
+        else if (state == PlayingState.INVENTORY) overlayManager.update(PlayingState.INVENTORY);
+        else if (state == PlayingState.LOOTING) overlayManager.update(PlayingState.LOOTING);
     }
 
     @Override
@@ -279,6 +286,7 @@ public class GameState extends AbstractState implements State {
         player.reset();
         objectManager.reset();
         spellManager.reset();
+        overlayManager.reset();
     }
 
     private void levelReset() {

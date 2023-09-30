@@ -9,7 +9,6 @@ import platformer.state.PlayingState;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
-import java.io.IOException;
 import java.util.*;
 
 import static platformer.constants.FilePaths.OBJECT_DIALOGUES;
@@ -44,9 +43,7 @@ public class DialogueManager {
             extractContent(content);
 
         }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
+        catch (Exception ignored) {}
     }
 
     private void extractContent(StringBuilder content) {

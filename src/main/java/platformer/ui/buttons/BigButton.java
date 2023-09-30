@@ -5,16 +5,17 @@ import platformer.animation.Animation;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
-import static platformer.constants.AnimConstants.*;
+import static platformer.constants.AnimConstants.BTN_H;
+import static platformer.constants.AnimConstants.BTN_W;
 import static platformer.constants.Constants.*;
-import static platformer.constants.FilePaths.*;
+import static platformer.constants.FilePaths.MENU_BTN_SHEET;
 
-public class CREButton extends AbstractButton implements GameButton {
+public class BigButton extends AbstractButton implements GameButton {
 
     private BufferedImage[] images;
     private int imageIndex;
 
-    public CREButton(int xPos, int yPos, int width, int height, ButtonType buttonType) {
+    public BigButton(int xPos, int yPos, int width, int height, ButtonType buttonType) {
         super(xPos, yPos, width, height);
         super.buttonType = buttonType;
         loadButtons();
@@ -24,15 +25,21 @@ public class CREButton extends AbstractButton implements GameButton {
     protected void loadButtons() {
         int r = -1;
         switch (buttonType) {
-            case CONTINUE: r = 0;
+            case PLAY:
+                r = 0;
                 break;
-            case RETRY: r = 1;
+            case OPTIONS:
+                r = 1;
                 break;
-            case EXIT: r = 2;
+            case CONTROLS:
+                r = 2;
+                break;
+            case QUIT:
+                r = 3;
                 break;
             default: break;
         }
-        images = Animation.getInstance().loadFromSprite(CRE_BTN_SHEET, 3, r, CRE_BTN_SIZE, CRE_BTN_SIZE, 0, SMALL_BTN_W, SMALL_BTN_H);
+        images = Animation.getInstance().loadFromSprite(MENU_BTN_SHEET, 3, r, BIG_BTN_WID, BIG_BTN_HEI, 0, BTN_W, BTN_H);
     }
 
     @Override
@@ -44,7 +51,7 @@ public class CREButton extends AbstractButton implements GameButton {
 
     @Override
     public void render(Graphics g) {
-        g.drawImage(images[imageIndex], xPos, yPos, CRE_BTN_SIZE, CRE_BTN_SIZE, null);
+        g.drawImage(images[imageIndex], xPos, yPos, BIG_BTN_WID, BIG_BTN_HEI, null);
     }
 
 }

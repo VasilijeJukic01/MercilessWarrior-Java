@@ -1,19 +1,17 @@
-package platformer.ui;
+package platformer.model.inventory;
 
 import java.awt.image.BufferedImage;
 
 public class ShopItem {
 
     private final ItemType itemType;
-    private final BufferedImage itemImage;
-    private final int slot;
+    private final BufferedImage model;
     private int amount;
     private final int cost;
 
-    public ShopItem(ItemType itemType, BufferedImage itemImage, int slot, int amount, int cost) {
+    public ShopItem(ItemType itemType, BufferedImage model, int amount, int cost) {
         this.itemType = itemType;
-        this.itemImage = itemImage;
-        this.slot = slot;
+        this.model = model;
         this.amount = amount;
         this.cost = cost;
     }
@@ -22,12 +20,8 @@ public class ShopItem {
         if (this.amount - amount >= 0) this.amount -= amount;
     }
 
-    public BufferedImage getItemImage() {
-        return itemImage;
-    }
-
-    public int getSlot() {
-        return slot;
+    public BufferedImage getModel() {
+        return model;
     }
 
     public int getAmount() {

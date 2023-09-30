@@ -13,5 +13,13 @@ public enum ButtonType {
     BUY,        // 9
     LEAVE,      // 10
     L_BOARD,    // 11
-    SAVE        // 12
+    SAVE,       // 12
+    NEXT,       // 13
+    PREV,       // 14
+    USE,        // 15
+    EQUIP,      // 16
+    DROP,       // 17
+    TAKE,       // 18
+    TAKE_ALL,   // 19
+    CLOSE       // 20
 }

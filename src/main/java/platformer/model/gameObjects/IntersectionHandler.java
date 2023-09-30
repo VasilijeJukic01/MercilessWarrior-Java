@@ -23,7 +23,7 @@ public class IntersectionHandler {
     private Class<? extends GameObject> intersectingObject;
 
     private final Class<? extends GameObject>[] classesToCheck = new Class[]{
-            Shop.class, Blacksmith.class, SaveTotem.class, Spike.class, Blocker.class, SmashTrap.class
+            Shop.class, Blacksmith.class, SaveTotem.class, Loot.class, Spike.class, Blocker.class, SmashTrap.class
     };
 
     public IntersectionHandler(EnemyManager enemyManager, ObjectManager objectManager) {
@@ -57,6 +57,9 @@ public class IntersectionHandler {
             }
             else if (object instanceof SaveTotem) {
                 ((SaveTotem) object).setActive(intersect);
+            }
+            else if (object instanceof Loot) {
+                ((Loot) object).setActive(intersect);
             }
         }
         return check;
@@ -121,4 +124,15 @@ public class IntersectionHandler {
     public Class<? extends GameObject> getIntersectingObject() {
         return intersectingObject;
     }
+
+    public Loot getIntersectingLoot(Player player) {
+        Rectangle2D.Double hitBox = player.getHitBox();
+        for (Loot loot : getObjects(Loot.class)) {
+            if (loot.isAlive() && hitBox.intersects(loot.getHitBox())) {
+                return loot;
+            }
+        }
+        return null;
+    }
+
 }

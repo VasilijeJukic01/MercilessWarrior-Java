@@ -1,8 +1,9 @@
 package platformer.ui.overlays;
 
 import platformer.model.gameObjects.objects.Shop;
+import platformer.model.inventory.ItemType;
 import platformer.state.GameState;
-import platformer.ui.ShopItem;
+import platformer.model.inventory.ShopItem;
 import platformer.ui.buttons.AbstractButton;
 import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.MediumButton;
@@ -23,7 +24,7 @@ public class ShopOverlay implements Overlay {
 
     private final GameState gameState;
 
-    private BufferedImage overlay;
+    private Rectangle2D overlay;
     private BufferedImage shopText;
     private final MediumButton[] buttons;
 
@@ -44,14 +45,14 @@ public class ShopOverlay implements Overlay {
 
     // Init
     private void loadImages() {
-        this.overlay = Utils.getInstance().importImage(OVERLAY, SHOP_OVERLAY_WID, SHOP_OVERLAY_HEI);
+        this.overlay = new Rectangle2D.Double(SHOP_OVERLAY_X, SHOP_OVERLAY_Y, SHOP_OVERLAY_WID, SHOP_OVERLAY_HEI);
         this.shopText = Utils.getInstance().importImage(SHOP_TXT, SHOP_TEXT_WID, SHOP_TEXT_HEI);
         this.slotImage = Utils.getInstance().importImage(SLOT_IMG, SLOT_SIZE, SLOT_SIZE);
     }
 
     private void loadButtons() {
-        buttons[0] = new MediumButton(BUY_BTN_X, BUY_BTN_Y, SMALL_BTN_WID, SMALL_BTN_HEI, ButtonType.BUY);
-        buttons[1] = new MediumButton(LEAVE_BTN_X, LEAVE_BTN_Y, SMALL_BTN_WID, SMALL_BTN_HEI, ButtonType.LEAVE);
+        buttons[0] = new MediumButton(BUY_BTN_X, BUY_BTN_Y, MEDIUM_BTN_WID, MEDIUM_BTN_HEI, ButtonType.BUY);
+        buttons[1] = new MediumButton(LEAVE_BTN_X, LEAVE_BTN_Y, MEDIUM_BTN_WID, MEDIUM_BTN_HEI, ButtonType.LEAVE);
     }
 
     private void initSelectedSlot() {
@@ -68,7 +69,7 @@ public class ShopOverlay implements Overlay {
 
     @Override
     public void render(Graphics g) {
-        renderImages(g);
+        renderOverlay(g);
         renderButtons(g);
         renderSlots(g);
         renderItems(g);
@@ -76,8 +77,13 @@ public class ShopOverlay implements Overlay {
     }
 
     // Render
-    private void renderImages(Graphics g) {
-        g.drawImage(overlay, SHOP_OVERLAY_X, SHOP_OVERLAY_Y, overlay.getWidth(), overlay.getHeight(), null);
+    private void renderOverlay(Graphics g) {
+        Graphics2D g2d = (Graphics2D) g;
+        g2d.setColor(OVERLAY_COLOR);
+        g2d.fill(overlay);
+        g2d.setColor(Color.WHITE);
+        g2d.setStroke(new BasicStroke(2));
+        g2d.draw(overlay);
         g.drawImage(shopText, SHOP_TEXT_X, SHOP_TEXT_Y, shopText.getWidth(), shopText.getHeight(), null);
     }
 
@@ -88,9 +94,11 @@ public class ShopOverlay implements Overlay {
     private void renderItems(Graphics g) {
         for (Shop shop : shops) {
             if (shop.isActive()) {
+                int slot = 0;
                 for (ShopItem item : shop.getShopItems()) {
                     if (item.getAmount() > 0) {
-                        renderItem(g, item);
+                        renderItem(g, item, slot);
+                        slot++;
                         g.setColor(Color.RED);
                     }
                 }
@@ -98,16 +106,33 @@ public class ShopOverlay implements Overlay {
         }
     }
 
-    private void renderItem(Graphics g, ShopItem item) {
-        int xPos = (item.getSlot() % SHOP_SLOT_MAX_ROW) * SLOT_SPACING + SLOT_X + ITEM_OFFSET_X;
-        int yPos = (item.getSlot() / SHOP_SLOT_MAX_ROW) * SLOT_SPACING + SLOT_Y + ITEM_OFFSET_Y;
-        g.drawImage(item.getItemImage(), xPos, yPos, ITEM_SIZE, ITEM_SIZE, null);
+    private void renderItem(Graphics g, ShopItem item, int slot) {
+        int xPos = (slot % SHOP_SLOT_MAX_ROW) * SLOT_SPACING + SLOT_X + ITEM_OFFSET_X;
+        int yPos = (slot / SHOP_SLOT_MAX_ROW) * SLOT_SPACING + SLOT_Y + ITEM_OFFSET_Y;
+        g.setColor(item.getItemType().getRarity().getColor());
+        g.fillRect(xPos-(int)(ITEM_OFFSET_X/1.1), yPos-(int)(ITEM_OFFSET_Y/1.1), (int)(SLOT_SIZE/1.06), (int)(SLOT_SIZE/1.06));
+        g.drawImage(item.getModel(), xPos, yPos, ITEM_SIZE, ITEM_SIZE, null);
         g.setColor(Color.WHITE);
-        g.setFont(new Font("Arial", Font.BOLD, 20));
+        g.setFont(new Font("Arial", Font.BOLD, FONT_MEDIUM));
         int countX = xPos + ITEM_COUNT_OFFSET_X, countY =  yPos + ITEM_COUNT_OFFSET_Y;
         g.drawString(String.valueOf(item.getAmount()), countX, countY);
-        if (slotNumber == item.getSlot()) {
+        if (slotNumber == slot) {
             g.drawString("Cost: "+item.getCost(), COST_TEXT_X, COST_TEXT_Y);
+            renderItemDescription(g, item.getItemType());
+        }
+    }
+
+    private void renderItemDescription(Graphics g, ItemType itemType) {
+        g.setColor(Color.WHITE);
+        g.setFont(new Font("Arial", Font.BOLD, FONT_MEDIUM));
+        g.drawString(itemType.getName(), SHOP_ITEM_NAME_X, SHOP_ITEM_NAME_Y);
+        g.setFont(new Font("Arial", Font.PLAIN, FONT_MEDIUM));
+        String[] lines = itemType.getDescription().split("\n");
+        int lineHeight = g.getFontMetrics().getHeight();
+        int y = SHOP_ITEM_DESC_Y;
+        for (String line : lines) {
+            g.drawString(line, SHOP_ITEM_DESC_X, y);
+            y += lineHeight;
         }
     }
 
@@ -115,7 +140,9 @@ public class ShopOverlay implements Overlay {
         g.setColor(Color.RED);
         for (int i = 0; i < SHOP_SLOT_MAX_ROW; i++) {
             for (int j = 0; j < SHOP_SLOT_MAX_COL; j++) {
-                g.drawImage(slotImage, i* SLOT_SPACING + SLOT_X, j* SLOT_SPACING + SLOT_Y, slotImage.getWidth(), slotImage.getHeight(), null);
+                int xPos = i * SLOT_SPACING + SLOT_X;
+                int yPos = j * SLOT_SPACING + SLOT_Y;
+                g.drawImage(slotImage, xPos, yPos, slotImage.getWidth(), slotImage.getHeight(), null);
             }
         }
     }
@@ -123,15 +150,20 @@ public class ShopOverlay implements Overlay {
     // Other
     private void setSelectedSlot() {
         this.selectedSlot.x = (slotNumber % SHOP_SLOT_MAX_ROW) * SLOT_SPACING + SLOT_X;
-        this.selectedSlot.y = (slotNumber / SHOP_SLOT_MAX_ROW) * SLOT_SPACING + SLOT_Y;
+        int offset = slotNumber / SHOP_SLOT_MAX_ROW;
+        this.selectedSlot.y = offset * SLOT_SPACING + SLOT_Y;
     }
 
     private void changeSlot(MouseEvent e) {
         int x = e.getX(), y = e.getY();
         for (int i = 0; i < SHOP_SLOT_MAX_ROW; i++) {
             for (int j = 0; j < SHOP_SLOT_MAX_COL; j++) {
-                if (x >= i*SLOT_SPACING+SLOT_X && x <= i*SLOT_SPACING+SLOT_X+SLOT_SIZE && y >= j*SLOT_SPACING+SLOT_Y && y <= j*SLOT_SPACING+SLOT_Y+SLOT_SIZE) {
-                    slotNumber = i + (j* SHOP_SLOT_MAX_ROW);
+                int xStart = i * SLOT_SPACING + SLOT_X;
+                int xEnd = i * SLOT_SPACING + SLOT_X + SLOT_SIZE;
+                int yStart =  j * SLOT_SPACING + SLOT_Y;
+                int yEnd = j * SLOT_SPACING + SLOT_Y + SLOT_SIZE;
+                if (x >= xStart && x <= xEnd && y >= yStart && y <= yEnd) {
+                    slotNumber = i + (j * SHOP_SLOT_MAX_ROW);
                     setSelectedSlot();
                     break;
                 }
@@ -196,4 +228,5 @@ public class ShopOverlay implements Overlay {
     public void reset() {
         this.shops = gameState.getObjectManager().getObjects(Shop.class);
     }
+
 }

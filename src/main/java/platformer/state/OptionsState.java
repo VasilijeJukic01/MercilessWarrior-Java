@@ -3,7 +3,7 @@ package platformer.state;
 import platformer.core.Game;
 import platformer.ui.AudioOptions;
 import platformer.ui.buttons.ButtonType;
-import platformer.ui.buttons.CREButton;
+import platformer.ui.buttons.SmallButton;
 import platformer.ui.overlays.OverlayLayer;
 import platformer.utils.Utils;
 
@@ -25,8 +25,7 @@ public class OptionsState extends AbstractState implements State{
     private BufferedImage optionsText;
     private BufferedImage SFXText, musicText, volumeText;
 
-    private CREButton exitBtn;
-
+    private SmallButton exitBtn;
 
     public OptionsState(Game game) {
         super(game);
@@ -43,7 +42,7 @@ public class OptionsState extends AbstractState implements State{
     }
 
     private void loadButtons() {
-        this.exitBtn = new CREButton(EXIT_BTN_X, EXIT_BTN_Y, CRE_BTN_SIZE, CRE_BTN_SIZE, ButtonType.EXIT);
+        this.exitBtn = new SmallButton(EXIT_BTN_X, EXIT_BTN_Y, CRE_BTN_SIZE, CRE_BTN_SIZE, ButtonType.EXIT);
     }
 
     @Override
