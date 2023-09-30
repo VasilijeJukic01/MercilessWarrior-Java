@@ -4,6 +4,7 @@ import platformer.animation.Anim;
 import platformer.audio.Audio;
 import platformer.model.entities.Direction;
 import platformer.model.entities.player.Player;
+import platformer.model.entities.player.PlayerAction;
 import platformer.utils.Utils;
 
 import java.awt.*;
@@ -105,18 +106,17 @@ public class Knight extends Enemy {
     }
 
     private void attackAction(Player player) {
+        boolean block = player.checkAction(PlayerAction.BLOCK);
         if (animIndex == 0) {
-            player.setCanBlock(false);
             attackCheck = false;
         }
-        else if (entityState == Anim.ATTACK_1 && (animIndex == 1 || animIndex == 2) && player.isBlock()) {
+        else if (entityState == Anim.ATTACK_1 && (animIndex == 1 || animIndex == 2) && block) {
             if ((player.getHitBox().x < hitBox.x && player.getFlipSign() == 1) || (player.getHitBox().x > hitBox.x && player.getFlipSign() == -1)) {
-                player.setCanBlock(true);
+                player.addAction(PlayerAction.CAN_BLOCK);
                 Audio.getInstance().getAudioPlayer().playBlockSound("Player");
             }
         }
         else if (animIndex == 4 && !attackCheck) checkPlayerHit(attackBox, player);
-        player.setBlock(false);
     }
 
     // Update

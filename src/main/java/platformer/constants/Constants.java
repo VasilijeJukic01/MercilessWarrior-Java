@@ -56,6 +56,9 @@ public class Constants {
 
     public static final double PUSH_LIMIT = -30;
     public static final double PUSH_SPEED = 0.95;
+    public static final double DASH_SPEED = 6;
+    public static final double FLAME_COST = -0.20;
+    public static final double TRANSFORM_COST = -0.025;
 
     // Perks Constants
     public static final int XP_BONUS_AMOUNT = 15;

@@ -10,6 +10,7 @@ import platformer.model.entities.effects.Particle;
 import platformer.model.entities.enemies.EnemyManager;
 import platformer.core.Game;
 import platformer.model.entities.player.Player;
+import platformer.model.entities.player.PlayerAction;
 import platformer.model.perks.PerksBonus;
 import platformer.model.levels.LevelManager;
 import platformer.model.gameObjects.ObjectManager;
@@ -224,8 +225,10 @@ public class GameState extends AbstractState implements State {
     }
 
     private void checkPlayerDeath() {
-        if (player.isDying()) setOverlay(PlayingState.DYING);
-        if (player.isGameOver()) setOverlay(PlayingState.GAME_OVER);
+        boolean dying = player.checkAction(PlayerAction.DYING);
+        boolean gameOver = player.checkAction(PlayerAction.GAME_OVER);
+        if (dying) setOverlay(PlayingState.DYING);
+        if (gameOver) setOverlay(PlayingState.GAME_OVER);
     }
 
     private void updateParticles() {

@@ -7,6 +7,7 @@ import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
 import platformer.model.entities.AttackState;
 import platformer.model.entities.player.Player;
+import platformer.model.entities.player.PlayerAction;
 import platformer.model.gameObjects.GameObject;
 import platformer.model.gameObjects.objects.Loot;
 import platformer.state.GameState;
@@ -63,17 +64,18 @@ public class GameStateController {
         pressedKeys.add(key);
         switch (key) {
             case KeyEvent.VK_UP:
-                if (pressedKeys.contains(key) && player.isOnWall()) {
-                    player.setJump(false);
+                boolean onWall = player.checkAction(PlayerAction.ON_WALL);
+                if (pressedKeys.contains(key) && onWall) {
+                    player.removeAction(PlayerAction.JUMP);
                     return;
                 }
-                player.setJump(true);
+                player.addAction(PlayerAction.JUMP);
                 break;
             case KeyEvent.VK_LEFT:
-                player.setLeft(true);
+                player.addAction(PlayerAction.LEFT);
                 break;
             case KeyEvent.VK_RIGHT:
-                player.setRight(true);
+                player.addAction(PlayerAction.RIGHT);
                 break;
             case KeyEvent.VK_X:
                 if (state != PlayingState.DIALOGUE)
@@ -84,10 +86,12 @@ public class GameStateController {
                 player.getActionHandler().doSpell();
                 break;
             case KeyEvent.VK_V:
-                if (player.canDash()) player.getActionHandler().doDash();
+                boolean canDash = player.checkAction(PlayerAction.CAN_DASH);
+                if (canDash) player.getActionHandler().doDash();
                 break;
             case KeyEvent.VK_S:
-                if (player.isBlock()) return;
+                boolean block = player.checkAction(PlayerAction.BLOCK);
+                if (block) return;
                 player.setBlock(true);
                 break;
             case KeyEvent.VK_ESCAPE:
@@ -104,22 +108,22 @@ public class GameStateController {
         int key = e.getKeyCode();
         switch (key) {
             case KeyEvent.VK_UP:
-                player.setJump(false);
+                player.removeAction(PlayerAction.JUMP);
                 player.setCurrentJumps(player.getCurrentJumps()+1);
                 break;
             case KeyEvent.VK_RIGHT:
-                player.setRight(false);
-                player.setOnWall(false);
+                player.removeAction(PlayerAction.RIGHT);
+                player.removeAction(PlayerAction.ON_WALL);
                 break;
             case KeyEvent.VK_LEFT:
-                player.setLeft(false);
-                player.setOnWall(false);
+                player.removeAction(PlayerAction.LEFT);
+                player.removeAction(PlayerAction.ON_WALL);
                 break;
             case KeyEvent.VK_Q:
                 player.setCanTransform(true);
                 break;
             case KeyEvent.VK_V:
-                player.setCanDash(true);
+                player.addAction(PlayerAction.CAN_DASH);
                 break;
             case KeyEvent.VK_C:
                 if (player.getSpellState() == 1) player.setSpellState(2);

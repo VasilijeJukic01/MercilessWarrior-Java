@@ -8,6 +8,7 @@ import platformer.debug.logger.Logger;
 import platformer.model.entities.Direction;
 import platformer.model.entities.enemies.renderer.*;
 import platformer.model.entities.player.Player;
+import platformer.model.entities.player.PlayerAction;
 import platformer.model.inventory.InventoryBonus;
 import platformer.model.perks.PerksBonus;
 import platformer.model.entities.enemies.boss.SpearWoman;
@@ -143,7 +144,7 @@ public class EnemyManager {
                     enemy.setCriticalHit(dmg[1] == 1);
                     checkEnemyDying(enemy, player);
                     writeHitLog(enemy.getEnemyAction(), dmg[0]);
-                    player.setDashHit(true);
+                    player.addAction(PlayerAction.DASH_HIT);
                     return;
                 }
             }
@@ -156,7 +157,9 @@ public class EnemyManager {
         handleEnemyHit(attackBox, player, Knight.class);
         handleEnemyHit(attackBox, player, Wraith.class);
         handleEnemyHit(attackBox, player, SpearWoman.class);
-        if (!player.isDash() && !player.isOnWall()) Audio.getInstance().getAudioPlayer().playSlashSound();
+        boolean dash = player.checkAction(PlayerAction.DASH);
+        boolean onWall = player.checkAction(PlayerAction.ON_WALL);
+        if (!dash && !onWall) Audio.getInstance().getAudioPlayer().playSlashSound();
     }
 
     private void writeHitLog(Anim anim, double dmg) {

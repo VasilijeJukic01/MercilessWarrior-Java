@@ -36,6 +36,22 @@ public class PlayerDataManager {
         loadSpawnPoint(account);
     }
 
+    // Core
+    public void update() {
+        double currentHealth = player.getCurrentHealth();
+        double maxHealth = PLAYER_MAX_HP + PerksBonus.getInstance().getBonusHealth();
+        double equipmentBonusHealth = InventoryBonus.getInstance().getHealth() * maxHealth;
+        maxHealth += equipmentBonusHealth;
+
+        double currentStamina = player.getCurrentStamina();
+        double maxStamina = PLAYER_MAX_ST + PerksBonus.getInstance().getBonusPower();
+        double equipmentBonusStamina = InventoryBonus.getInstance().getStamina() * maxStamina;
+        maxStamina += equipmentBonusStamina;
+
+        userInterface.update(currentHealth, maxHealth, currentStamina, maxStamina, exp, 1000*level);
+    }
+
+    // Actions
     private void loadSpawnPoint(Account account) {
         if (account.getSpawn() == -1) {
             setPlayerCoordinates(Spawn.INITIAL.getX(), Spawn.INITIAL.getY());
@@ -52,16 +68,6 @@ public class PlayerDataManager {
 
     private void setPlayerCoordinates(int x, int y) {
         player.setSpawn(new Point(x * TILES_SIZE, y * TILES_SIZE));
-    }
-
-    public void update() {
-        double currentHealth = player.getCurrentHealth();
-        double currentStamina = player.getCurrentStamina();
-        double maxHealth = PLAYER_MAX_HP + PerksBonus.getInstance().getBonusHealth();
-        double equipmentBonus = InventoryBonus.getInstance().getHealth() * maxHealth;
-        maxHealth += equipmentBonus;
-        double maxStamina = PLAYER_MAX_ST + PerksBonus.getInstance().getBonusPower();
-        userInterface.update(currentHealth, maxHealth, currentStamina, maxStamina, exp, 1000*level);
     }
 
     public void changeExp(double value) {
@@ -103,4 +109,5 @@ public class PlayerDataManager {
     public UserInterface getUserInterface() {
         return userInterface;
     }
+
 }

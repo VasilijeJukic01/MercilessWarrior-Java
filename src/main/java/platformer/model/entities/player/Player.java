@@ -21,6 +21,8 @@ import platformer.utils.Utils;
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+import java.util.EnumSet;
+import java.util.List;
 
 import static platformer.constants.Constants.*;
 import static platformer.constants.FilePaths.PLAYER_SHEET;
@@ -32,44 +34,56 @@ public class Player extends Entity {
     private final EnemyManager enemyManager;
     private final ObjectManager objectManager;
     private int[][] levelData;
+
     // Core Variables
     private BufferedImage[][] animations, transformAnimations;
     private final int animSpeed = 20;
     private int animTick = 0, animIndex = 0;
     private AttackState attackState;
     private PlayerActionHandler actionHandler;
+    private final EnumSet<PlayerAction> actions = EnumSet.noneOf(PlayerAction.class);
+
     // Physics
     private final double gravity = 0.035 * SCALE;
     private final double wallGravity = 0.0005 * SCALE;
     private final double jumpSpeed = -2.25 * SCALE;
     private final double collisionFallSpeed = 0.5 * SCALE;
-    // Flags
-    private boolean left, right, jump, moving, attacking, dash, dashHit, hit, block, transform, fireball;
-    private int spellState = 0;
-    private boolean doubleJump, onWall, onObject, wallPush, canDash = true, canBlock, canTransform;
-    private boolean dying, gameOver;
+
     // Status
     private int currentJumps = 0;
     private int dashTick = 0;
     private final int attackDmg = 5, transformAttackDmg = 8;
     private double currentStamina = 15;
+    private int spellState = 0;
     private PlayerDataManager playerDataManager;
     private Inventory inventory;
+
     // Effect
     private PlayerEffectController effectController;
+
 
     public Player(int xPos, int yPos, int width, int height, EnemyManager enemyManager, ObjectManager objectManager) {
         super(xPos, yPos, width, height, PLAYER_MAX_HP);
         this.enemyManager = enemyManager;
         this.objectManager = objectManager;
         loadAnimations();
-        initHitBox(PLAYER_HB_WID, PLAYER_HB_HEI);
-        initAttackBox();
-        this.cooldown = new double[4];
-        initManagers();
+        init();
     }
 
     // Init
+    private void loadAnimations() {
+        this.animations = Animation.getInstance().loadPlayerAnimations(width, height, PLAYER_SHEET);
+        this.transformAnimations = Animation.getInstance().loadPlayerAnimations(width, height, PLAYER_TRANSFORM_SHEET);
+    }
+
+    private void init() {
+        this.cooldown = new double[4];
+        addAction(PlayerAction.CAN_DASH);
+        initHitBox(PLAYER_HB_WID, PLAYER_HB_HEI);
+        initAttackBox();
+        initManagers();
+    }
+
     private void initAttackBox() {
         this.attackBox = new Rectangle2D.Double(xPos, yPos-1, PLAYER_AB_WID, PLAYER_AB_HEI);
     }
@@ -79,11 +93,6 @@ public class Player extends Entity {
         this.effectController = new PlayerEffectController(this);
         this.actionHandler = new PlayerActionHandler(this);
         this.inventory = new Inventory();
-    }
-
-    private void loadAnimations() {
-        this.animations = Animation.getInstance().loadPlayerAnimations(width, height, PLAYER_SHEET);
-        this.transformAnimations = Animation.getInstance().loadPlayerAnimations(width, height, PLAYER_TRANSFORM_SHEET);
     }
 
     public void loadLvlData(int[][] levelData) {
@@ -104,12 +113,7 @@ public class Player extends Entity {
         if (animTick >= animSpeed) {
             animTick = 0;
             animIndex++;
-            if (spellState == 1 && animIndex >= animations[entityState.ordinal()].length-5) {
-                animIndex = 2;
-            }
-            else if (fireball && animIndex == 3) {
-                objectManager.shotFireBall(this);
-            }
+            updateFireballAnimation();
             if (animIndex >= animations[entityState.ordinal()].length) {
                 finishAnimation();
             }
@@ -118,36 +122,50 @@ public class Player extends Entity {
         blockWallFlip();
     }
 
+    private void updateFireballAnimation() {
+        boolean fireball = checkAction(PlayerAction.FIREBALL);
+        if (spellState == 1 && animIndex >= animations[entityState.ordinal()].length-5)
+            animIndex = 2;
+        else if (fireball && animIndex == 3)
+            objectManager.shotFireBall(this);
+    }
+
     private void finishAnimation() {
         finishAttackBlock();
         animIndex = 0;
-        attacking = attackCheck = false;
-        dashHit = false;
-        block = canBlock = false;
-        fireball = false;
+        removeActions(PlayerAction.ATTACK, PlayerAction.DASH_HIT, PlayerAction.BLOCK, PlayerAction.FIREBALL, PlayerAction.CAN_BLOCK);
+        attackCheck = false;
+        boolean canTransform = checkAction(PlayerAction.CAN_TRANSFORM);
         if (canTransform) {
-            canTransform = false;
-            transform = true;
+            removeAction(PlayerAction.CAN_TRANSFORM);
+            addAction(PlayerAction.TRANSFORM);
         }
-        setSpellState(0);
+        boolean hit = checkAction(PlayerAction.HIT);
         if (hit) {
-            hit = false;
+            removeAction(PlayerAction.HIT);
             airSpeed = 0;
         }
+        setSpellState(0);
     }
 
     private void finishAttackBlock() {
+        boolean canBlock = checkAction(PlayerAction.CAN_BLOCK);
         if (canBlock) {
             Logger.getInstance().notify("Damage blocked successfully!", Message.INFORMATION);
-            double cd =  PLAYER_BLOCK_CD;
-            double equipmentBonus = InventoryBonus.getInstance().getCooldown() * cd;
-            cd -= equipmentBonus;
-            cooldown[Cooldown.BLOCK.ordinal()] = cd;
+            double blockCooldown =  PLAYER_BLOCK_CD;
+            double equipmentBonus = InventoryBonus.getInstance().getCooldown() * blockCooldown;
+            blockCooldown -= equipmentBonus;
+            cooldown[Cooldown.BLOCK.ordinal()] = blockCooldown;
             if (PerksBonus.getInstance().isRestorePower()) changeStamina(5);
         }
     }
 
     private void blockWallFlip() {
+        boolean left = checkAction(PlayerAction.LEFT);
+        boolean right = checkAction(PlayerAction.RIGHT);
+        boolean moving = checkAction(PlayerAction.MOVE);
+        boolean onWall = checkAction(PlayerAction.ON_WALL);
+
         if (moving && left && !onWall) {
             this.flipCoefficient = (int)(width-hitBox.width-13*SCALE);
             this.flipSign = -1;
@@ -162,17 +180,27 @@ public class Player extends Entity {
         if (spellState == 2) return;
         Anim previousAction = entityState;
 
+        boolean moving = checkAction(PlayerAction.MOVE);
         entityState = (moving) ? Anim.RUN : Anim.IDLE;
 
         if (inAir) {
             if (airSpeed < 0) entityState = Anim.JUMP;
             else if (airSpeed > 0) entityState = Anim.FALL;
         }
+        boolean onWall = checkAction(PlayerAction.ON_WALL);
+        boolean onObject = checkAction(PlayerAction.ON_OBJECT);
         if (onWall && !onObject) setWallSlideAnimation();
+        boolean dash = checkAction(PlayerAction.DASH);
         if (dash) {
             setDashAnimation();
             return;
         }
+        boolean attacking = checkAction(PlayerAction.ATTACK);
+        boolean hit = checkAction(PlayerAction.HIT);
+        boolean fireball = checkAction(PlayerAction.FIREBALL);
+        boolean canTransform = checkAction(PlayerAction.CAN_TRANSFORM);
+        boolean canBlock = checkAction(PlayerAction.CAN_BLOCK);
+
         if (spellState == 1) entityState = Anim.SPELL_1;
         else if (fireball) entityState = Anim.SPELL_2;
         else if (canBlock) entityState = Anim.BLOCK;
@@ -211,19 +239,29 @@ public class Player extends Entity {
 
     // Positioning
     private void updatePosition() {
-        moving = false;
+        removeAction(PlayerAction.MOVE);
         checkOnObject();
+        boolean onObject = checkAction(PlayerAction.ON_OBJECT);
         if (!inAir && !Utils.getInstance().isEntityOnFloor(hitBox, levelData) && !onObject) inAir = true;
 
+        boolean canTransform = checkAction(PlayerAction.CAN_TRANSFORM);
+        boolean canBlock = checkAction(PlayerAction.CAN_BLOCK);
+
         if (spellState != 0 || canBlock || canTransform) return;
+        boolean jump = checkAction(PlayerAction.JUMP);
+        boolean onWall = checkAction(PlayerAction.ON_WALL);
         if (jump) doJump();
         if (!inAir || onWall) actionHandler.setDashCount(0);
+        boolean left = checkAction(PlayerAction.LEFT);
+        boolean right = checkAction(PlayerAction.RIGHT);
+        boolean dash = checkAction(PlayerAction.DASH);
         if (((!left && !right) || (left && right)) && !inAir && !dash) return;
 
         double dx = 0;
 
         updateWallPosition();
 
+        boolean wallPush = checkAction(PlayerAction.WALL_PUSH);
         if (left) dx -= PLAYER_SPEED;
         if (right) dx += PLAYER_SPEED;
         if (right && inAir && wallPush && !dash) dx += PLAYER_BOOST;
@@ -232,16 +270,17 @@ public class Player extends Entity {
         if (dash) {
             if (((!left && !right) || (left && right)) && flipSign == -1) dx = -PLAYER_SPEED;
             else if (((!left && !right) || (left && right)) && flipSign == 1) dx = PLAYER_SPEED;
-            dx *= 6;
+            dx *= DASH_SPEED;
         }
 
         if (inAir && !dash) inAirUpdate();
 
         updateX(dx);
-        moving = true;
+        addAction(PlayerAction.MOVE);
     }
 
     private void inAirUpdate() {
+        boolean onWall = checkAction(PlayerAction.ON_WALL);
         if (Utils.getInstance().canMoveHere(hitBox.x, hitBox.y + airSpeed + 1, hitBox.width, hitBox.height, levelData)) {
             if (onWall && airSpeed > 0) airSpeed += wallGravity;
             else airSpeed += gravity;
@@ -250,34 +289,45 @@ public class Player extends Entity {
         else {
             hitBox.y = Utils.getInstance().getYPosOnTheCeil(hitBox, airSpeed);
             if (airSpeed > 0) {
-                inAir = wallPush = false;
+                removeAction(PlayerAction.WALL_PUSH);
+                inAir = false;
                 airSpeed = 0;
                 currentJumps = 0;
             }
             else {
                 airSpeed = (onWall) ? wallGravity : collisionFallSpeed;
-                doubleJump = false;
+                removeAction(PlayerAction.DOUBLE_JUMP);
             }
         }
     }
 
     private void updateWallPosition() {
-        if (onWall) attacking = false;
+        boolean left = checkAction(PlayerAction.LEFT);
+        boolean right = checkAction(PlayerAction.RIGHT);
+        boolean onWall = checkAction(PlayerAction.ON_WALL);
+
+        if (onWall) removeAction(PlayerAction.ATTACK);
+
         boolean leftSideCheck = Utils.getInstance().isOnWall(hitBox, levelData, Direction.LEFT);
         boolean rightSideCheck = Utils.getInstance().isOnWall(hitBox, levelData, Direction.RIGHT);
+
         if (!onWall && ((left && leftSideCheck) || (right && rightSideCheck)) && !Utils.getInstance().isEntityOnFloor(hitBox, levelData)) {
             if ((flipSign == -1 && rightSideCheck) || (flipSign == 1 && leftSideCheck)) return;
-            onWall = wallPush = true;
+            addActions(PlayerAction.ON_WALL, PlayerAction.WALL_PUSH);
             currentJumps = 1;
             airSpeed = 0.1;
         }
         if (onWall && !leftSideCheck && !rightSideCheck) {
             currentJumps = 0;
-            onWall = false;
+            removeAction(PlayerAction.ON_WALL);
         }
     }
 
     private void updateX(double dx) {
+        boolean dash = checkAction(PlayerAction.DASH);
+        boolean onWall = checkAction(PlayerAction.ON_WALL);
+        boolean onObject = checkAction(PlayerAction.ON_OBJECT);
+
         if (!onObject && !onWall && Utils.getInstance().canMoveHere(hitBox.x+dx, hitBox.y, hitBox.width, hitBox.height, levelData))
             hitBox.x += dx;
         else if (dash && Utils.getInstance().canMoveHere(hitBox.x+dx, hitBox.y, hitBox.width, hitBox.height, levelData))
@@ -285,8 +335,10 @@ public class Player extends Entity {
         else {
             if (onObject) hitBox.x = objectManager.getXObjectBound(hitBox, dx);
             else if (!onWall) hitBox.x = Utils.getInstance().getXPosOnTheWall(hitBox, dx);
+
             if (dash) {
-                dash = dashHit = false;
+                removeAction(PlayerAction.DASH);
+                removeAction(PlayerAction.DASH_HIT);
                 dashTick = 0;
             }
         }
@@ -294,21 +346,33 @@ public class Player extends Entity {
 
     private void updateAttackBox() {
         if (spellState != 0) return;
+
+        boolean left = checkAction(PlayerAction.LEFT);
+        boolean right = checkAction(PlayerAction.RIGHT);
+
         if ((right && left) || (!right && !left)) {
             if (flipSign == 1) attackBox.x = hitBox.x + hitBox.width + (int)(10*SCALE);
             else attackBox.x = hitBox.x - hitBox.width - (int)(10*SCALE);
         }
+
+        boolean dash = checkAction(PlayerAction.DASH);
         if (right || (dash && flipSign == 1)) attackBox.x = hitBox.x + hitBox.width + (int)(10*SCALE);
         else if (left || (dash && flipSign == -1)) attackBox.x = hitBox.x - hitBox.width - (int)(10*SCALE);
+
         attackBox.y = hitBox.y + (int)(10*SCALE);
     }
 
     private void updateAttack() {
+        boolean attacking = checkAction(PlayerAction.ATTACK);
+        boolean dash = checkAction(PlayerAction.DASH);
         if (attacking || dash) checkAttack();
     }
 
     // Checks
     private void checkAttack() {
+        boolean dash = checkAction(PlayerAction.DASH);
+        boolean dashHit = checkAction(PlayerAction.DASH_HIT);
+
         if (attackCheck || animIndex != 1 || dashHit) return;
         attackCheck = !dash;
         enemyManager.checkEnemyHit(attackBox, this);
@@ -317,23 +381,29 @@ public class Player extends Entity {
     }
 
     private void checkOnObject() {
+        boolean onObject = checkAction(PlayerAction.ON_OBJECT);
+
         if (objectManager.isPlayerTouchingObject(this) && !onObject) {
             inAir = !objectManager.isPlayerGlitchedInObject(this);
-            wallPush = false;
+            removeAction(PlayerAction.WALL_PUSH);
             entityEffect = null;
-            airSpeed = 0;
-            currentJumps = 0;
-            onObject = true;
+            airSpeed = currentJumps = 0;
+            addAction(PlayerAction.ON_OBJECT);
         }
-        else if (onObject && !objectManager.isPlayerTouchingObject(this)) onObject = false;
-        if (onObject) wallPush = false;
+        else if (onObject && !objectManager.isPlayerTouchingObject(this)) removeAction(PlayerAction.ON_OBJECT);
+
+        if (onObject) removeAction(PlayerAction.WALL_PUSH);
     }
 
     // Actions
     public void doJump() {
+        boolean left = checkAction(PlayerAction.LEFT);
+        boolean right = checkAction(PlayerAction.RIGHT);
+        boolean doubleJump = checkAction(PlayerAction.DOUBLE_JUMP);
+
         if (!actionHandler.canJump(levelData, left, right, doubleJump)) return;
         if (currentJumps == 1) {
-            doubleJump = true;
+            addAction(PlayerAction.DOUBLE_JUMP);
             animIndex = animTick = 0;
             currentJumps++;
         }
@@ -344,8 +414,9 @@ public class Player extends Entity {
     // Status Changes
     public void changeHealth(double value) {
         if (value < 0) {
+            boolean hit = checkAction(PlayerAction.HIT);
             if (hit) return;
-            else hit = true;
+            else addAction(PlayerAction.HIT);
         }
         currentHealth += value;
         double healthCap = maxHealth + PerksBonus.getInstance().getBonusHealth();
@@ -356,6 +427,7 @@ public class Player extends Entity {
 
     public void changeHealth(double value, Object o) {
         if (!(o instanceof Enemy) && !(o instanceof Projectile)) return;
+        boolean hit = checkAction(PlayerAction.HIT);
         if (hit) return;
         if (value < 0) {
             double defenseBonus = InventoryBonus.getInstance().getDefense() * value * (-1);
@@ -377,7 +449,7 @@ public class Player extends Entity {
         staminaCap += equipmentBonus;
         currentStamina = Math.max(Math.min(currentStamina, staminaCap), 0);
         if (currentStamina == 0) {
-            transform = false;
+            removeAction(PlayerAction.TRANSFORM);
             if (spellState == 1) spellState = 2;
         }
     }
@@ -391,11 +463,11 @@ public class Player extends Entity {
         if (entityState != Anim.DEATH) {
             entityState = Anim.DEATH;
             animIndex = animTick = 0;
-            dying = true;
+            addAction(PlayerAction.DYING);
             Logger.getInstance().notify("Player is dead.", Message.NOTIFICATION);
         }
         else if (animIndex == animations[entityState.ordinal()].length-1 && animTick >= animSpeed-1) {
-            gameOver = true;
+            addAction(PlayerAction.GAME_OVER);
             Audio.getInstance().getAudioPlayer().stopSong();
             Audio.getInstance().getAudioPlayer().playSound(Sound.GAME_OVER);
         }
@@ -403,9 +475,12 @@ public class Player extends Entity {
     }
 
     private void updateHitBlockMove() {
+        boolean hit = checkAction(PlayerAction.HIT);
+        boolean canBlock = checkAction(PlayerAction.CAN_BLOCK);
+
         if (hit) {
             setSpellState(0);
-            dash = dashHit = false;
+            removeActions(PlayerAction.DASH, PlayerAction.DASH_HIT);
             if (animIndex <= animations[entityState.ordinal()].length - 2)
                 pushBack(pushDirection, levelData, 1.2, PLAYER_SPEED);
             updatePushOffset();
@@ -423,12 +498,14 @@ public class Player extends Entity {
 
     private void updateMove() {
         actionHandler.handleObjectActions(objectManager);
+        boolean moving = checkAction(PlayerAction.MOVE);
         if (moving) {
+            boolean dash = checkAction(PlayerAction.DASH);
             if (dash) {
                 dashTick++;
                 if (dashTick >= 40) {
                     dashTick = 0;
-                    dash = dashHit = false;
+                    removeActions(PlayerAction.DASH, PlayerAction.DASH_HIT);
                 }
             }
         }
@@ -436,12 +513,13 @@ public class Player extends Entity {
 
     private void updateSpells() {
         if (spellState == 1) {
-            changeStamina(-0.20);
+            changeStamina(FLAME_COST);
             enemyManager.checkEnemySpellHit();
             objectManager.checkObjectBreak(attackBox);
         }
+        boolean transform = checkAction(PlayerAction.TRANSFORM);
         if (transform) {
-            changeStamina(-0.025);
+            changeStamina(TRANSFORM_COST);
         }
     }
 
@@ -468,6 +546,7 @@ public class Player extends Entity {
             int playerXPos = (int)(hitBox.x-PLAYER_HB_OFFSET_X-xLevelOffset+flipCoefficient);
             int playerYPos = (int)(hitBox.y-PLAYER_HB_OFFSET_Y-yLevelOffset)+(int)pushOffset;
 
+            boolean transform = checkAction(PlayerAction.TRANSFORM);
             if (!transform) g.drawImage(animations[entityState.ordinal()][animIndex], playerXPos, playerYPos, flipSign*width, height, null);
             else g.drawImage(transformAnimations[entityState.ordinal()][animIndex], playerXPos, playerYPos, flipSign*width, height, null);
         }
@@ -478,7 +557,7 @@ public class Player extends Entity {
 
     // Reset
     public void resetDirections() {
-        left = right = false;
+        removeActions(PlayerAction.LEFT, PlayerAction.RIGHT);
         animIndex = animTick = 0;
     }
 
@@ -502,9 +581,10 @@ public class Player extends Entity {
     }
 
     private void resetFlags() {
-        dying = gameOver = false;
-        moving = attacking = inAir = hit = block = false;
-        left = right = jump = false;
+        inAir = false;
+        removeActions(PlayerAction.DYING, PlayerAction.GAME_OVER);
+        removeActions(PlayerAction.HIT, PlayerAction.BLOCK, PlayerAction.ATTACK, PlayerAction.MOVE);
+        removeActions(PlayerAction.LEFT, PlayerAction.RIGHT, PlayerAction.JUMP);
     }
 
     // Facade
@@ -522,16 +602,9 @@ public class Player extends Entity {
 
     // Setters
     public void setAttacking(boolean attacking) {
-        this.attacking = attacking;
+        if (attacking) addAction(PlayerAction.ATTACK);
+        else removeAction(PlayerAction.ATTACK);
         setSpellState(0);
-    }
-
-    public void setRight(boolean right) {
-        this.right = right;
-    }
-
-    public void setLeft(boolean left) {
-        this.left = left;
     }
 
     public void setPlayerAttackState(AttackState playerAttackState) {
@@ -544,28 +617,8 @@ public class Player extends Entity {
         cooldown[Cooldown.ATTACK.ordinal()] = cd;
     }
 
-    public void setCanDash(boolean canDash) {
-        this.canDash = canDash;
-    }
-
-    public void setJump(boolean jump) {
-        this.jump = jump;
-    }
-
     public void setCurrentJumps(int currentJumps) {
         this.currentJumps = currentJumps;
-    }
-
-    public void setOnWall(boolean onWall) {
-        this.onWall = onWall;
-    }
-
-    public void setDashHit(boolean dashHit) {
-        this.dashHit = dashHit;
-    }
-
-    public void setFireball(boolean fireball) {
-        this.fireball = fireball;
     }
 
     public void setSpellState(int spellState) {
@@ -577,27 +630,27 @@ public class Player extends Entity {
 
     public void setBlock(boolean block) {
         if (cooldown[Cooldown.BLOCK.ordinal()] != 0) return;
-        this.block = block;
-    }
-
-    public void setCanBlock(boolean canBlock) {
-        this.canBlock = canBlock;
+        if (block) addAction(PlayerAction.BLOCK);
+        else removeAction(PlayerAction.BLOCK);
     }
 
     public void setCanTransform(boolean canTransform) {
         if (!PerksBonus.getInstance().isTransform()) return;
-        if (transform) transform = false;
+        boolean transform = checkAction(PlayerAction.TRANSFORM);
+        if (transform) removeAction(PlayerAction.TRANSFORM);
         else {
-            this.canTransform = canTransform;
-            dash = dashHit = false;
+            if (canTransform) addAction(PlayerAction.CAN_TRANSFORM);
+            else removeAction(PlayerAction.CAN_TRANSFORM);
+            removeActions(PlayerAction.DASH, PlayerAction.DASH_HIT);
         }
     }
 
-    public void setDash(boolean dash) {
-        this.dash = dash;
+    // Getters
+    public int getAttackDmg() {
+        boolean transform = checkAction(PlayerAction.TRANSFORM);
+        return transform ? transformAttackDmg : attackDmg;
     }
 
-    // Getters
     public double getCurrentStamina() {
         return currentStamina;
     }
@@ -606,44 +659,8 @@ public class Player extends Entity {
         return currentJumps;
     }
 
-    public boolean isBlock() {
-        return block;
-    }
-
-    public boolean isOnWall() {
-        return onWall;
-    }
-
-    public boolean canDash() {
-        return canDash;
-    }
-
-    public boolean isDash() {
-        return dash;
-    }
-
-    public boolean isOnObject() {
-        return onObject;
-    }
-
-    public boolean isDying() {
-        return dying;
-    }
-
-    public boolean isGameOver() {
-        return gameOver;
-    }
-
     public int getSpellState() {
         return spellState;
-    }
-
-    public int getAttackDmg() {
-        return transform ? transformAttackDmg : attackDmg;
-    }
-
-    public boolean canBlock() {
-        return canBlock;
     }
 
     public int getCoins() {
@@ -672,6 +689,27 @@ public class Player extends Entity {
 
     public Inventory getInventory() {
         return inventory;
+    }
+
+    // Action Controller
+    public void addAction(PlayerAction action) {
+        actions.add(action);
+    }
+
+    public void addActions(PlayerAction ... stream) {
+        actions.addAll(List.of(stream));
+    }
+
+    public void removeAction(PlayerAction action) {
+        actions.remove(action);
+    }
+
+    public void removeActions(PlayerAction ... stream) {
+        List.of(stream).forEach(actions::remove);
+    }
+
+    public boolean checkAction(PlayerAction action) {
+        return actions.contains(action);
     }
 
     @Override

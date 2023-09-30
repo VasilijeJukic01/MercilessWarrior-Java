@@ -29,26 +29,33 @@ public class PlayerActionHandler {
     public boolean canJump(int[][] levelData, boolean left, boolean right, boolean doubleJump) {
         if (Utils.getInstance().isOnWall(hitBox, levelData, Direction.LEFT) && left && !right) return false;
         if (Utils.getInstance().isOnWall(hitBox, levelData, Direction.RIGHT) && right && !left) return false;
-        if (player.isInAir() && doubleJump && player.isOnWall()) return false;
+        boolean onWall = player.checkAction(PlayerAction.ON_WALL);
+        if (player.isInAir() && doubleJump && onWall) return false;
         if (player.isInAir() && player.getCurrentJumps() != 1) return false;
         int tileX = (int)(hitBox.x / TILES_SIZE);
         int tileY = (int)((hitBox.y - 5) / TILES_SIZE);
-        return !player.isOnObject() || !Utils.getInstance().isTileSolid(tileX, tileY, levelData);
+        boolean onObject = player.checkAction(PlayerAction.ON_OBJECT);
+        return !onObject || !Utils.getInstance().isTileSolid(tileX, tileY, levelData);
     }
 
     public void doDash() {
         if (player.getCooldown()[Cooldown.DASH.ordinal()] != 0) return;
         if (Utils.getInstance().isTouchingWall(hitBox,Direction.LEFT) || Utils.getInstance().isTouchingWall(hitBox,Direction.RIGHT)) return;
         if (dashCount > 0) return;
-        if (player.isDash() || !player.canDash()) return;
-        if (player.getCurrentStamina() >= 3) {
-            player.setDash(true);
-            dashCount++;
-            player.setCanDash(true);
-            player.changeStamina(-3);
-            player.getCooldown()[Cooldown.DASH.ordinal()] = PLAYER_DASH_CD + PerksBonus.getInstance().getDashCooldown();
-            Audio.getInstance().getAudioPlayer().playSound(Sound.DASH);
-        }
+        boolean dash = player.checkAction(PlayerAction.DASH);
+        boolean canDash = player.checkAction(PlayerAction.CAN_DASH);
+        if (dash || !canDash) return;
+
+        if (player.getCurrentStamina() >= 3) activateDash();
+    }
+
+    private void activateDash() {
+        player.addAction(PlayerAction.DASH);
+        dashCount++;
+        player.addAction(PlayerAction.CAN_DASH);
+        player.changeStamina(-3);
+        player.getCooldown()[Cooldown.DASH.ordinal()] = PLAYER_DASH_CD + PerksBonus.getInstance().getDashCooldown();
+        Audio.getInstance().getAudioPlayer().playSound(Sound.DASH);
     }
 
     public void doSpell() {
@@ -62,7 +69,7 @@ public class PlayerActionHandler {
     public void doFireBall() {
         if (!PerksBonus.getInstance().isFireball()) return;
         if (player.getCooldown()[Cooldown.SPELL.ordinal()] != 0 || player.getCurrentStamina() < 15) return;
-        player.setFireball(true);
+        player.addAction(PlayerAction.FIREBALL);
         player.changeStamina(-15);
         player.getCooldown()[Cooldown.SPELL.ordinal()] = PLAYER_SPELL_CD;
     }

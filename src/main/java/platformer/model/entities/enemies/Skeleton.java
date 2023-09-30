@@ -5,6 +5,7 @@ import platformer.audio.Audio;
 import platformer.audio.Sound;
 import platformer.model.entities.Direction;
 import platformer.model.entities.player.Player;
+import platformer.model.entities.player.PlayerAction;
 import platformer.utils.Utils;
 
 import java.awt.*;
@@ -122,12 +123,14 @@ public class Skeleton extends Enemy {
     }
 
     private void attackAction(Player player) {
+        boolean block = player.checkAction(PlayerAction.BLOCK);
+        boolean canBlock = player.checkAction(PlayerAction.CAN_BLOCK);
         if (animIndex == 0) {
             attackCheck = false;
         }
-        else if ((animIndex == 1 || animIndex == 2) && player.isBlock() && !player.canBlock()) {
+        else if ((animIndex == 1 || animIndex == 2) && block && !canBlock) {
             if ((player.getHitBox().x < hitBox.x && player.getFlipSign() == 1) || (player.getHitBox().x > hitBox.x && player.getFlipSign() == -1)) {
-                player.setCanBlock(true);
+                player.addAction(PlayerAction.CAN_BLOCK);
                 Audio.getInstance().getAudioPlayer().playBlockSound("Player");
             }
         }
