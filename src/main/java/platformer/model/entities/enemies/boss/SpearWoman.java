@@ -105,16 +105,25 @@ public class SpearWoman extends Enemy {
             case DEATH:
                 objectManager.activateBlockers(false);
                 break;
+            case HIT:
+                startFight(objectManager);
+                break;
             default: break;
+        }
+    }
+
+    private void startFight(ObjectManager objectManager) {
+        if (!start) {
+            setStart(true);
+            objectManager.activateBlockers(true);
+            setEnemyAction(Anim.SPELL_3);
         }
     }
 
     // Behavior
     private void idleAction(int[][] levelData, Player player, ObjectManager objectManager) {
         if (!start && isPlayerCloseForAttack(player)) {
-            setStart(true);
-            objectManager.activateBlockers(true);
-            setEnemyAction(Anim.SPELL_3);
+            startFight(objectManager);
             return;
         }
         if (start && cooldown[Cooldown.ATTACK.ordinal()] == 0)

@@ -266,13 +266,13 @@ public class InventoryOverlay implements Overlay {
         g.setColor(Color.WHITE);
         g.setFont(new Font("Arial", Font.PLAIN, FONT_MEDIUM));
         g.drawString("Active bonuses: ", INV_BONUS_X, INV_BONUS_Y);
-        g.drawString("Health Bonus: +"+InventoryBonus.getInstance().getHealth()+"%", INV_BONUS_X, INV_BONUS_Y + INV_BONUS_SPACING);
-        g.drawString("Defense Bonus: +"+InventoryBonus.getInstance().getDefense()+"%", INV_BONUS_X, INV_BONUS_Y + 2 * INV_BONUS_SPACING);
-        g.drawString("Attack Bonus: +"+InventoryBonus.getInstance().getAttack()+"%", INV_BONUS_X, INV_BONUS_Y + 3 * INV_BONUS_SPACING);
-        g.drawString("Stamina Bonus: +"+InventoryBonus.getInstance().getStamina()+"%", INV_BONUS_X, INV_BONUS_Y + 4 * INV_BONUS_SPACING);
-        g.drawString("Critical Bonus: +"+InventoryBonus.getInstance().getCritical()+"%", INV_BONUS_X, INV_BONUS_Y + 5 * INV_BONUS_SPACING);
-        g.drawString("Spell Bonus: +"+InventoryBonus.getInstance().getSpell()+"%", INV_BONUS_X, INV_BONUS_Y + 6 * INV_BONUS_SPACING);
-        g.drawString("Cooldown Bonus: +"+InventoryBonus.getInstance().getCooldown()+"%", INV_BONUS_X, INV_BONUS_Y +  7 * INV_BONUS_SPACING);
+        g.drawString("Health Bonus: +"+InventoryBonus.getInstance().getHealth()*100+"%", INV_BONUS_X, INV_BONUS_Y + INV_BONUS_SPACING);
+        g.drawString("Defense Bonus: +"+InventoryBonus.getInstance().getDefense()*100+"%", INV_BONUS_X, INV_BONUS_Y + 2 * INV_BONUS_SPACING);
+        g.drawString("Attack Bonus: +"+InventoryBonus.getInstance().getAttack()*100+"%", INV_BONUS_X, INV_BONUS_Y + 3 * INV_BONUS_SPACING);
+        g.drawString("Stamina Bonus: +"+InventoryBonus.getInstance().getStamina()*100+"%", INV_BONUS_X, INV_BONUS_Y + 4 * INV_BONUS_SPACING);
+        g.drawString("Critical Bonus: +"+InventoryBonus.getInstance().getCritical()*100+"%", INV_BONUS_X, INV_BONUS_Y + 5 * INV_BONUS_SPACING);
+        g.drawString("Spell Bonus: +"+InventoryBonus.getInstance().getSpell()*100+"%", INV_BONUS_X, INV_BONUS_Y + 6 * INV_BONUS_SPACING);
+        g.drawString("Cooldown Bonus: +"+InventoryBonus.getInstance().getCooldown()*100+"%", INV_BONUS_X, INV_BONUS_Y +  7 * INV_BONUS_SPACING);
     }
 
     // Actions

@@ -9,6 +9,7 @@ import platformer.model.entities.Direction;
 import platformer.model.entities.enemies.renderer.*;
 import platformer.model.entities.player.Player;
 import platformer.model.entities.player.PlayerAction;
+import platformer.model.gameObjects.projectiles.Fireball;
 import platformer.model.inventory.InventoryBonus;
 import platformer.model.perks.PerksBonus;
 import platformer.model.entities.enemies.boss.SpearWoman;
@@ -207,6 +208,13 @@ public class EnemyManager {
                 projectile.setAlive(false);
             }
         }
+        for (SpearWoman spearWoman : getEnemies(SpearWoman.class)) {
+            if (projectile instanceof Fireball && spearWoman.isAlive() && spearWoman.getEnemyAction() != Anim.DEATH) {
+                if (!projectile.getHitBox().intersects(spearWoman.getHitBox())) continue;
+                spearWoman.hit(FIREBALL_PROJECTILE_DMG, false, false);
+                projectile.setAlive(false);
+            }
+        }
     }
 
     // Core
@@ -245,7 +253,7 @@ public class EnemyManager {
                 .forEach(Enemy::reset);
     }
 
-    private List<Enemy> getAllEnemies() {
+    public List<Enemy> getAllEnemies() {
         return Utils.getInstance().getAllItems(enemies);
     }
 
