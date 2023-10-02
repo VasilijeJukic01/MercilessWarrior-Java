@@ -33,6 +33,15 @@ public class Inventory {
             backpack.remove(index);
     }
 
+    public void unequipItem(int index) {
+        if (index >= equipped.length) return;
+        if (equipped[index] == null) return;
+        removeBonus(equipped[index].getItemType());
+        equipped[index].addAmount(1);
+        backpack.add(equipped[index]);
+        equipped[index] = null;
+    }
+
     private void addToEquipment(InventoryItem item) {
         if (item.getItemType().getName().contains("Helmet")) equipped[0] = item;
         if (item.getItemType().getName().contains("Armor")) equipped[2] = item;

@@ -44,6 +44,10 @@ public class MediumButton extends AbstractButton implements GameButton {
                 sheet = INVENTORY_BTN_SHEET;
                 row = 2;
                 break;
+            case UNEQUIP:
+                sheet = INVENTORY_BTN_SHEET;
+                row = 3;
+                break;
             case TAKE:
                 sheet = LOOT_BTN_SHEET;
                 break;

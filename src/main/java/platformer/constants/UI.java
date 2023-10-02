@@ -298,11 +298,11 @@ public class UI {
     public static final int INV_PLAYER_Y = scale(140);
 
     public static final int INV_ITEM_NAME_X = scale(380);
-    public static final int INV_ITEM_NAME_Y = scale(270);
+    public static final int INV_ITEM_NAME_Y = scale(300);
     public static final int INV_ITEM_VALUE_X = scale(500);
-    public static final int INV_ITEM_VALUE_Y = scale(270);
+    public static final int INV_ITEM_VALUE_Y = scale(300);
     public static final int INV_ITEM_DESC_X = scale(380);
-    public static final int INV_ITEM_DESC_Y = scale(290);
+    public static final int INV_ITEM_DESC_Y = scale(320);
 
     public static final int INV_BONUS_X = scale(600);
     public static final int INV_BONUS_Y = scale(110);
@@ -315,6 +315,9 @@ public class UI {
     public static final int DROP_BTN_X = scale(273);
     public static final int INV_SMALL_BTN_Y = scale(355);
     public static final int INV_MEDIUM_BTN_Y = scale(358);
+
+    public static final int UNEQUIP_BTN_X = scale(440);
+    public static final int UNEQUIP_BTN_Y = scale(260);
 
     // Looting UI
     public static final int LOOT_SLOT_X = scale(320);

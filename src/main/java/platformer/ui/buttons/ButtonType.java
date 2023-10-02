@@ -19,7 +19,8 @@ public enum ButtonType {
     USE,        // 15
     EQUIP,      // 16
     DROP,       // 17
-    TAKE,       // 18
-    TAKE_ALL,   // 19
-    CLOSE       // 20
+    UNEQUIP,    // 18
+    TAKE,       // 19
+    TAKE_ALL,   // 20
+    CLOSE       // 21
 }
