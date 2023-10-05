@@ -49,6 +49,7 @@ public class FilePaths {
 
     // Buttons
     public static final String BTN_BUY_SHEET = "/images/buttons/BuyButton.png";
+    public static final String BTN_SELL_SHEET = "/images/buttons/SellButton.png";
     public static final String BTN_LEAVE_SHEET = "/images/buttons/LeaveButton.png";
     public static final String CRE_BTN_SHEET = "/images/buttons/CREButtons.png";
     public static final String MENU_BTN_SHEET = "/images/buttons/MenuButtons.png";

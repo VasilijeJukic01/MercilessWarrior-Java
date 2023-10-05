@@ -30,6 +30,8 @@ public class MediumButton extends AbstractButton implements GameButton {
         switch (buttonType) {
             case BUY:
                 sheet = BTN_BUY_SHEET; break;
+            case SELL:
+                sheet = BTN_SELL_SHEET; break;
             case LEAVE:
                 sheet = BTN_LEAVE_SHEET; break;
             case SAVE:

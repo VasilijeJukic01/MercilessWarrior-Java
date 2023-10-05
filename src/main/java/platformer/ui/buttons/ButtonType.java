@@ -11,16 +11,17 @@ public enum ButtonType {
     MUSIC,      // 7
     SFX,        // 8
     BUY,        // 9
-    LEAVE,      // 10
-    L_BOARD,    // 11
-    SAVE,       // 12
-    NEXT,       // 13
-    PREV,       // 14
-    USE,        // 15
-    EQUIP,      // 16
-    DROP,       // 17
-    UNEQUIP,    // 18
-    TAKE,       // 19
-    TAKE_ALL,   // 20
-    CLOSE       // 21
+    SELL,       // 10
+    LEAVE,      // 11
+    L_BOARD,    // 12
+    SAVE,       // 13
+    NEXT,       // 14
+    PREV,       // 15
+    USE,        // 16
+    EQUIP,      // 17
+    DROP,       // 18
+    UNEQUIP,    // 19
+    TAKE,       // 20
+    TAKE_ALL,   // 21
+    CLOSE       // 22
 }
