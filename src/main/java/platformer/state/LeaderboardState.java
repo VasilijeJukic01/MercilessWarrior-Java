@@ -2,7 +2,7 @@ package platformer.state;
 
 import platformer.core.Framework;
 import platformer.core.Game;
-import platformer.database.BoardItem;
+import platformer.model.BoardItem;
 import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.SmallButton;
 import platformer.ui.overlays.OverlayLayer;

@@ -1,4 +1,4 @@
-package platformer.serialization;
+package platformer.ui;
 
 import platformer.core.Account;
 

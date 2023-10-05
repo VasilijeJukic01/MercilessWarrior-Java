@@ -2,7 +2,7 @@ package platformer.database.bridge;
 
 import platformer.core.Account;
 import platformer.core.LauncherPrompt;
-import platformer.database.BoardItem;
+import platformer.model.BoardItem;
 import platformer.database.CredentialsLoader;
 import platformer.database.DBSettings;
 import platformer.database.Settings;

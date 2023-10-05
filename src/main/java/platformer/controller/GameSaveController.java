@@ -3,7 +3,7 @@ package platformer.controller;
 import platformer.core.Account;
 import platformer.core.Framework;
 import platformer.core.Game;
-import platformer.serialization.GameSlot;
+import platformer.ui.GameSlot;
 
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
