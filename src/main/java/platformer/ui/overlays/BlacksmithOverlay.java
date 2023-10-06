@@ -1,5 +1,7 @@
 package platformer.ui.overlays;
 
+import platformer.audio.Audio;
+import platformer.audio.Sound;
 import platformer.model.perks.Perk;
 import platformer.state.GameState;
 import platformer.ui.buttons.ButtonType;
@@ -220,6 +222,7 @@ public class BlacksmithOverlay implements Overlay {
                 switch (button.getButtonType()) {
                     case BUY:
                         upgrade();
+                        Audio.getInstance().getAudioPlayer().playSound(Sound.SHOP_BUY);
                         break;
                     case LEAVE:
                         gameState.setOverlay(null);

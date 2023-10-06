@@ -71,6 +71,7 @@ public class PlayerActionHandler {
         if (player.getCooldown()[Cooldown.SPELL.ordinal()] != 0 || player.getCurrentStamina() < 15) return;
         player.addAction(PlayerAction.FIREBALL);
         player.changeStamina(-15);
+        Audio.getInstance().getAudioPlayer().playSound(Sound.FIREBALL);
         player.getCooldown()[Cooldown.SPELL.ordinal()] = PLAYER_SPELL_CD;
     }
 

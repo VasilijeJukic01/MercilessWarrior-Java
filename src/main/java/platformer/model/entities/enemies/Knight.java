@@ -2,6 +2,7 @@ package platformer.model.entities.enemies;
 
 import platformer.animation.Anim;
 import platformer.audio.Audio;
+import platformer.audio.Sound;
 import platformer.model.entities.Direction;
 import platformer.model.entities.player.Player;
 import platformer.model.entities.player.PlayerAction;
@@ -59,7 +60,7 @@ public class Knight extends Enemy {
     }
 
     private void checkDeath() {
-        // TODO: Find audio
+        Audio.getInstance().getAudioPlayer().playSound(Sound.SKELETON_DEATH_1);
         setEnemyAction(Anim.DEATH);
     }
 
