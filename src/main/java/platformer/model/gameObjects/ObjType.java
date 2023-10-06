@@ -17,7 +17,8 @@ public enum ObjType {
     SMASH_TRAP(14),                 // 13
     CANDLE(1),                      // 14
     LOOT(1),                        // 15
-    MAX(0);                         // 16
+    TABLE(1),                       // 16
+    MAX(0);                         // 17
 
     private final int sprites;
 

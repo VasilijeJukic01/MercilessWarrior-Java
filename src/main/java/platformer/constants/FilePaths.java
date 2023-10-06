@@ -32,6 +32,7 @@ public class FilePaths {
     public static final String SMASH_TRAP_SHEET = "/images/objs/smashTrap.png";
     public static final String CANDLE_IMG = "/images/objs/Candle.png";
     public static final String LOOT_IMG = "/images/objs/Loot.png";
+    public static final String TABLE_IMG = "/images/objs/Table.png";
 
     // Dialogue
     public static final String OBJECT_DIALOGUES = "/dialogues/object_dialogues.txt";

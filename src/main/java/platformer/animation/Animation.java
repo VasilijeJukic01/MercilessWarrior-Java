@@ -158,6 +158,7 @@ public class Animation {
         anim[ObjType.SMASH_TRAP.ordinal()] = loadFromSprite(SMASH_TRAP_SHEET, 14, 0, SMASH_TRAP_WID, SMASH_TRAP_HEI, 0, ST_W, ST_H);
         anim[ObjType.CANDLE.ordinal()] = loadFromSprite(CANDLE_IMG, 1, 0, CANDLE_WID, CANDLE_HEI, 0, CANDLE_W, CANDLE_H);
         anim[ObjType.LOOT.ordinal()] = loadFromSprite(LOOT_IMG, 1, 0, LOOT_WID, LOOT_HEI, 0, LOOT_W, LOOT_H);
+        anim[ObjType.TABLE.ordinal()] = loadFromSprite(TABLE_IMG, 1, 0, TABLE_WID, TABLE_HEI, 0, TABLE_W, TABLE_H);
 
         return anim;
     }
