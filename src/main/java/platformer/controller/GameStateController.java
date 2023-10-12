@@ -10,6 +10,7 @@ import platformer.model.entities.player.Player;
 import platformer.model.entities.player.PlayerAction;
 import platformer.model.gameObjects.GameObject;
 import platformer.model.gameObjects.objects.Loot;
+import platformer.model.gameObjects.objects.Table;
 import platformer.state.GameState;
 import platformer.state.PlayingState;
 
@@ -167,6 +168,9 @@ public class GameStateController {
         if (objectClass == Loot.class) {
             gameState.setOverlay(PlayingState.LOOTING);
         }
+        else if (objectClass == Table.class) {
+            gameState.setOverlay(PlayingState.CRAFTING);
+        }
         else activateDialogue(objectClass);
     }
 
@@ -213,6 +217,7 @@ public class GameStateController {
                 PlayingState.DIALOGUE,
                 PlayingState.SAVE,
                 PlayingState.INVENTORY,
+                PlayingState.CRAFTING,
                 PlayingState.LOOTING
         };
 

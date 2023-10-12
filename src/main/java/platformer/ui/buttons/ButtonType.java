@@ -23,5 +23,6 @@ public enum ButtonType {
     UNEQUIP,    // 19
     TAKE,       // 20
     TAKE_ALL,   // 21
-    CLOSE       // 22
+    CLOSE,      // 22
+    CRAFT       // 23
 }

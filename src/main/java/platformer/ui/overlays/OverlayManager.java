@@ -25,6 +25,7 @@ public class OverlayManager {
         this.overlays.put(PlayingState.DIALOGUE, new DialogueOverlay());
         this.overlays.put(PlayingState.SAVE, new SaveGameOverlay());
         this.overlays.put(PlayingState.INVENTORY, new InventoryOverlay(gameState));
+        this.overlays.put(PlayingState.CRAFTING, new CraftingOverlay(gameState));
         this.overlays.put(PlayingState.LOOTING, new LootingOverlay(gameState));
     }
 
@@ -73,6 +74,7 @@ public class OverlayManager {
 
     public void reset() {
         overlays.get(PlayingState.SHOP).reset();
+        overlays.get(PlayingState.CRAFTING).reset();
         overlays.get(PlayingState.DIALOGUE).reset();
     }
 

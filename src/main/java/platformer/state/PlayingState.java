@@ -9,5 +9,6 @@ public enum PlayingState {
     DYING,
     SAVE,
     INVENTORY,
+    CRAFTING,
     LOOTING
 }

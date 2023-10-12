@@ -29,6 +29,12 @@ public abstract class AbstractItem {
         else amount += value;
     }
 
+    public void removeAmount(int value) {
+        if (amount + value >= 0) {
+            amount += value;
+        }
+    }
+
     public BufferedImage getModel() {
         return model;
     }

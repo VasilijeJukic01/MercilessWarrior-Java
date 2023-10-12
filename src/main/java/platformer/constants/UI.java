@@ -342,6 +342,14 @@ public class UI {
     public static final int TAKE_ALL_BTN_X = scale(388);
     public static final int CLOSE_BTN_X = scale(458);
 
+    // Crafting UI
+    public static final int CRAFT_VAL_TEXT_X = scale(400);
+    public static final int CRAFT_VAL_TEXT_Y = scale(150);
+    public static final int CRAFT_VAL_ITEM_NAME_X = scale(400);
+    public static final int CRAFT_VAL_ITEM_NAME_Y = scale(130);
+    public static final int CRAFT_VAL_ITEM_DESC_X = scale(400);
+    public static final int CRAFT_VAL_ITEM_DESC_Y = scale(170);
+
     private static int scale(double value) {
         return (int)(value * SCALE);
     }

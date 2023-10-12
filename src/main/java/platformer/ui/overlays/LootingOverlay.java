@@ -183,7 +183,7 @@ public class LootingOverlay implements Overlay {
             Inventory inventory = gameState.getPlayer().getInventory();
             InventoryItem item = loot.getItems().get(slotNumber);
 
-            inventory.addItemFromLoot(item);
+            inventory.addItemToBackpack(item);
             loot.getItems().remove(item);
         }
     }

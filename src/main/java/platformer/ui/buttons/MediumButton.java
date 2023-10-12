@@ -61,6 +61,9 @@ public class MediumButton extends AbstractButton implements GameButton {
                 sheet = LOOT_BTN_SHEET;
                 row = 2;
                 break;
+                case CRAFT:
+                sheet = CRAFT_BTN_SHEET;
+                break;
             default: break;
         }
         if (!sheet.isEmpty())

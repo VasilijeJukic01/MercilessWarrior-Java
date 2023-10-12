@@ -2,19 +2,26 @@ package platformer.model.gameObjects.objects;
 
 import platformer.model.gameObjects.GameObject;
 import platformer.model.gameObjects.ObjType;
+import platformer.model.inventory.InventoryItem;
+import platformer.model.inventory.ItemType;
+import platformer.utils.Utils;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.util.HashMap;
+import java.util.Map;
 
 import static platformer.constants.Constants.*;
 
 public class Table extends GameObject {
 
     private boolean active;
+    private final Map<InventoryItem, Map<ItemType, Integer>> recipes = new HashMap<>();
 
     public Table(ObjType objType, int xPos, int yPos) {
         super(objType, xPos, yPos);
         generateHitBox();
+        initCraftingItems();
     }
 
     // Init
@@ -23,6 +30,16 @@ public class Table extends GameObject {
         initHitBox(TABLE_HB_WID, TABLE_HB_HEI);
         super.xOffset = TABLE_OFFSET_X;
         super.yOffset = TABLE_OFFSET_Y;
+    }
+
+    private void initCraftingItems() {
+        recipes.put(createItem(ItemType.ARMOR_GUARDIAN), new HashMap<>(Map.of(ItemType.IRON, 3, ItemType.SONIC_QUARTZ, 1, ItemType.ELECTRICITE, 1)));
+        recipes.put(createItem(ItemType.RING_AMETHYST), new HashMap<>(Map.of(ItemType.COPPER, 4, ItemType.AMETHYST, 3)));
+    }
+
+    private InventoryItem createItem(ItemType type) {
+        BufferedImage image = Utils.getInstance().importImage(type.getImg(), -1, -1);
+        return new InventoryItem(type, image, 1);
     }
 
     @Override
@@ -68,4 +85,7 @@ public class Table extends GameObject {
         this.active = active;
     }
 
+    public Map<InventoryItem, Map<ItemType, Integer>> getRecipes() {
+        return recipes;
+    }
 }
