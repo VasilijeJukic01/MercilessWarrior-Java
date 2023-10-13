@@ -1,7 +1,7 @@
 # Merciless Warrior: Java Swing 2D Platformer Game
 
-<img src="https://i.ibb.co/qnrqcmL/Gif1.gif" alt="Game Screenshot" width="100%">
-<img src="https://i.ibb.co/0BvhLKH/Gif2.gif" alt="Game Screenshot" width="100%">
+<img src="https://i.ibb.co/7WswRM9/Img1.png" alt="Game Screenshot" width="100%">
+<img src="https://i.ibb.co/ZKDzS9W/Img2.png" alt="Game Screenshot" width="100%">
 
 ## Table of Contents
 
