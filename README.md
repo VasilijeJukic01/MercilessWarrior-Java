@@ -1,18 +1,17 @@
 # Merciless Warrior: Java Swing 2D Platformer Game
 
-<img src="https://i.ibb.co/pLcKdr4/Fight.gif" alt="Game Screenshot" width="100%">
-<img src="https://i.ibb.co/92CN7kQ/Boss.gif" alt="Game Screenshot" width="100%">
+<img src="https://i.ibb.co/qnrqcmL/Gif1.gif" alt="Game Screenshot" width="100%">
+<img src="https://i.ibb.co/0BvhLKH/Gif2.gif" alt="Game Screenshot" width="100%">
 
 ## Table of Contents
 
 - [Description](#description)
 - [Features](#features)
-- [Patterns used](#patterns-used)
+- [Design patterns used](#design-patterns-used)
 - [Gameplay](#gameplay)
 - [Installation](#installation)
 - [Controls](#controls)
 - [Dependencies](#dependencies)
-- [Contributing](#contributing)
 - [License](#license)
 
 ## Description
@@ -27,6 +26,7 @@ The integration of OpenAL library provides immersive sound effects, enhancing th
 - Engaging 2D platformer gameplay.
 - Diverse enemy interactions and multiple methods for eliminating them.
 - Coin and token collection mechanics for upgrades.
+- Buying, selling, crafting and collecting items.
 - Open-world design enabling exploration of previous levels.
 - Challenging boss fight for added excitement.
 - Destructible objects that yield various items.
@@ -34,7 +34,7 @@ The integration of OpenAL library provides immersive sound effects, enhancing th
 - Save and load game mechanism, both locally on the computer and in a database.
 - Leaderboard system
 
-## Patterns used
+## Design Patterns used
 - Singleton (Thread safe)
 - State
 - Observer
@@ -67,6 +67,7 @@ Navigate through various levels, engaging in combat with enemies using a variety
 - **V:** Dash.
 - **Q:** Transform.
 - **F:** Interact.
+- **I:** Inventory.
 - **ESC:** Pause menu.
 
 ## Dependencies
@@ -76,19 +77,8 @@ Navigate through various levels, engaging in combat with enemies using a variety
 - MySQL Connector
 - GSON
 
-## Contributing
-
-Contributions are welcome! If you'd like to contribute to the project, feel free to...
-
-- Fork the repository.
-- Create a new branch.
-- Make your enhancements or bug fixes.
-- Submit a pull request.
-
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
 
 ---
-
-For additional questions or inquiries, please contact [vasilijejukic@gmail.com](mailto:vasilijejukic@gmail.com).
