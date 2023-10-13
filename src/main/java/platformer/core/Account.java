@@ -12,6 +12,7 @@ public class Account {
     private int coins, tokens;
     private int level, exp;
     private List<String> perks = new ArrayList<>();
+    private List<String> items = new ArrayList<>();
 
     private String lastTimeSaved;
     private long playtime;
@@ -49,6 +50,7 @@ public class Account {
         this.level = account.level;
         this.exp = account.exp;
         this.perks = account.getPerks();
+        this.items = account.getItems();
         this.enableCheats = account.enableCheats;
         this.playtime = account.playtime;
     }
@@ -71,6 +73,7 @@ public class Account {
         this.level = 1;
         this.coins = this.tokens = this.exp = 0;
         this.perks = new ArrayList<>();
+        this.items = new ArrayList<>();
         stopGameTimer();
         this.playtime = 0;
     }
@@ -101,6 +104,10 @@ public class Account {
 
     public List<String> getPerks() {
         return perks;
+    }
+
+    public List<String> getItems() {
+        return items;
     }
 
     public int getAccountID() {
@@ -149,6 +156,10 @@ public class Account {
 
     public void setPerks(List<String> perks) {
         this.perks = perks;
+    }
+
+    public void setItems(List<String> items) {
+        this.items = items;
     }
 
     public boolean isEnableCheats() {

@@ -104,7 +104,7 @@ public class GameState extends AbstractState implements State {
         this.perksManager = new PerksManager();
         this.perksManager.loadUnlockedPerks(Framework.getInstance().getAccount().getPerks());
         this.player.getPlayerDataManager().loadPlayerData();
-        this.player.getInventory().reset();
+        this.player.getInventory().fillItems(Framework.getInstance().getAccount().getItems());
         this.levelManager.loadSavePoint(Framework.getInstance().getAccount().getSpawn());
         this.overlayManager.reset();
         calculateLevelOffset();

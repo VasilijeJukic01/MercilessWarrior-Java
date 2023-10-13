@@ -1,10 +1,11 @@
 package platformer.model.inventory;
 
+import platformer.core.Framework;
 import platformer.model.gameObjects.objects.Loot;
+import platformer.utils.Utils;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.awt.image.BufferedImage;
+import java.util.*;
 
 public class Inventory {
 
@@ -32,6 +33,7 @@ public class Inventory {
         backpack.get(index).removeAmount(-1);
         if (backpack.get(index).getAmount() <= 0)
             backpack.remove(index);
+        refreshAccountItems();
     }
 
     public void unequipItem(int index) {
@@ -76,20 +78,24 @@ public class Inventory {
         for (InventoryItem inventoryItem : backpack) {
             if (inventoryItem.getItemType() == item.getItemType()) {
                 inventoryItem.addAmount(item.getAmount());
+                refreshAccountItems();
                 return;
             }
         }
         backpack.add(item);
+        refreshAccountItems();
     }
 
     private void addItemAmountToBackpack(InventoryItem item, int amount) {
         for (InventoryItem inventoryItem : backpack) {
             if (inventoryItem.getItemType() == item.getItemType()) {
                 inventoryItem.addAmount(amount);
+                refreshAccountItems();
                 return;
             }
         }
         backpack.add(item);
+        refreshAccountItems();
     }
 
     public void addAllItemsFromLoot(Loot loot) {
@@ -113,7 +119,7 @@ public class Inventory {
         addItemToBackpack(item);
     }
 
-    public void reset() {
+    private void reset() {
         this.backpack.clear();
         for (int i = 0; i < equipped.length; i++) {
             if (equipped[i] != null) {
@@ -130,4 +136,42 @@ public class Inventory {
     public InventoryItem[] getEquipped() {
         return equipped;
     }
+
+    public void fillItems(List<String> values) {
+        reset();
+        for (String value : values) {
+            String[] indexes = value.split(",");
+            ItemType type = findItemTypeByName(indexes[0]);
+            if (type == null) continue;
+            BufferedImage img = Utils.getInstance().importImage(type.getImg(), -1, -1);
+            InventoryItem item = new InventoryItem(type, img, Integer.parseInt(indexes[1]));
+            backpack.add(item);
+            if (indexes[2].equals("1")) {
+                addItemAmountToBackpack(item, 1);
+                equipItem(backpack.size()-1);
+            }
+        }
+    }
+
+    private ItemType findItemTypeByName(String name) {
+        ItemType[] itemTypes = ItemType.values();
+        Optional<ItemType> optional = Arrays.stream(itemTypes)
+                .filter(item -> item.getName().equalsIgnoreCase(name))
+                .findFirst();
+        return optional.orElse(null);
+    }
+
+    private List<String> getFormattedItems() {
+        List<String> values = new ArrayList<>();
+        backpack.forEach(item -> values.add(item + ",0"));
+        Arrays.stream(equipped)
+                .filter(Objects::nonNull)
+                .forEach(item -> values.add(item + ",1"));
+        return values;
+    }
+
+    private void refreshAccountItems() {
+        Framework.getInstance().getAccount().setItems(getFormattedItems());
+    }
+
 }

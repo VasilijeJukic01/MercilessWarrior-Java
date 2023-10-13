@@ -55,4 +55,8 @@ public abstract class AbstractItem {
         this.amount = amount;
     }
 
+    @Override
+    public String toString() {
+        return itemType.getName() + "," + amount;
+    }
 }
