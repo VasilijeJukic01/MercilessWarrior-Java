@@ -1,7 +1,7 @@
 package platformer.core;
 
 import platformer.controller.GameSaveController;
-import platformer.database.BoardItem;
+import platformer.model.BoardItem;
 import platformer.database.bridge.Database;
 import platformer.serialization.GameSerializer;
 import platformer.serialization.Serializer;

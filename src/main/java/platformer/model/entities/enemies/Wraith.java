@@ -2,6 +2,7 @@ package platformer.model.entities.enemies;
 
 import platformer.animation.Anim;
 import platformer.audio.Audio;
+import platformer.audio.Sound;
 import platformer.model.entities.Direction;
 import platformer.model.entities.player.Player;
 import platformer.utils.Utils;
@@ -58,7 +59,7 @@ public class Wraith extends Enemy {
     }
 
     private void checkDeath() {
-        // TODO: Find audio
+        Audio.getInstance().getAudioPlayer().playSound(Sound.GHOUL_DEATH);
         setEnemyAction(Anim.DEATH);
     }
 

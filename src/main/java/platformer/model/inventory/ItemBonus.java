@@ -5,7 +5,9 @@ public enum ItemBonus {
     ARMOR_WARRIOR(      5, 0, 0, 0, 0, 5, 0),
     BRACELETS_WARRIOR(  0, 0, 5, 0, 3, 0, 0),
     TROUSERS_WARRIOR(   0, 3, 0, 5, 0, 0, 0),
-    BOOTS_WARRIOR(      0, 0, 0, 3, 0, 0, 3);
+    BOOTS_WARRIOR(      0, 0, 0, 3, 0, 0, 3),
+    ARMOR_GUARDIAN(     10,0, 5, 0, 0, 0, 0),
+    RING_AMETHYST(      0, 0, 0, 8, 0, 8, 5);
 
     private final double health, defense, attack, stamina, critical, spell, cooldown;
 

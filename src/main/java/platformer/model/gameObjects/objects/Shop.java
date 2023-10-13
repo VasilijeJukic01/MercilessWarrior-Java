@@ -77,6 +77,19 @@ public class Shop extends GameObject {
         }
     }
 
+    public void sellItem(Player player, int slot) {
+        Inventory inventory = player.getInventory();
+        if (slot >= inventory.getBackpack().size()) return;
+        InventoryItem item = inventory.getBackpack().get(slot);
+        if (item.getAmount() > 0) {
+            player.changeCoins(item.getItemType().getSellValue());
+            item.setAmount(item.getAmount()-1);
+            if (item.getAmount() == 0) inventory.getBackpack().remove(item);
+            Audio.getInstance().getAudioPlayer().playSound(Sound.SHOP_BUY);
+            addToShop(item);
+        }
+    }
+
     private void addToInventory(Player player, ItemType item) {
         Inventory inventory = player.getInventory();
 
@@ -86,6 +99,15 @@ public class Shop extends GameObject {
 
         if (existingItem.isPresent()) existingItem.get().addAmount(1);
         else inventory.getBackpack().add(new InventoryItem(item, getImageModel(item), 1));
+    }
+
+    private void addToShop(InventoryItem inventoryItem) {
+        Optional<ShopItem> existingItem = shopItems.stream()
+                .filter(shopItem -> shopItem.getItemType() == inventoryItem.getItemType())
+                .findFirst();
+
+        if (existingItem.isPresent()) existingItem.get().addAmount(1);
+        else shopItems.add(new ShopItem(inventoryItem.getItemType(), inventoryItem.getModel(), 1, inventoryItem.getItemType().getSellValue()));
     }
 
     // Core

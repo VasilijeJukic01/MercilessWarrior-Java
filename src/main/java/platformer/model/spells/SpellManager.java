@@ -101,9 +101,9 @@ public class SpellManager {
     }
 
     private void updateSpells(List<? extends Spell> spells) {
-        for (Spell spell : spells) {
-            if (spell.isActive()) spell.updateAnimation();
-        }
+        spells.stream()
+                .filter(Spell::isActive)
+                .forEach(Spell::updateAnimation);
     }
 
     // Core
@@ -157,9 +157,7 @@ public class SpellManager {
     }
 
     private void resetSpells(List<? extends Spell> spells) {
-        for (Spell spell : spells) {
-            spell.reset();
-        }
+        spells.forEach(Spell::reset);
     }
 
     public Flame getFlames() {

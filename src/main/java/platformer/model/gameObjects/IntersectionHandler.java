@@ -23,7 +23,8 @@ public class IntersectionHandler {
     private Class<? extends GameObject> intersectingObject;
 
     private final Class<? extends GameObject>[] classesToCheck = new Class[]{
-            Shop.class, Blacksmith.class, SaveTotem.class, Loot.class, Spike.class, Blocker.class, SmashTrap.class
+            Shop.class, Blacksmith.class, SaveTotem.class, Loot.class, Spike.class,
+            Blocker.class, SmashTrap.class, Table.class
     };
 
     public IntersectionHandler(EnemyManager enemyManager, ObjectManager objectManager) {
@@ -60,6 +61,9 @@ public class IntersectionHandler {
             }
             else if (object instanceof Loot) {
                 ((Loot) object).setActive(intersect);
+            }
+            else if (object instanceof Table) {
+                ((Table) object).setActive(intersect);
             }
         }
         return check;

@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-public class OpenAL implements AudioPlayer {
+public class OpenAL implements AudioPlayer<Song, Sound>  {
 
     private final List<Integer> songs = new ArrayList<>();
     private final List<OpenALSource> songSources = new ArrayList<>();

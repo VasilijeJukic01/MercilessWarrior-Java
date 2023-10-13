@@ -30,6 +30,8 @@ public class MediumButton extends AbstractButton implements GameButton {
         switch (buttonType) {
             case BUY:
                 sheet = BTN_BUY_SHEET; break;
+            case SELL:
+                sheet = BTN_SELL_SHEET; break;
             case LEAVE:
                 sheet = BTN_LEAVE_SHEET; break;
             case SAVE:
@@ -44,6 +46,10 @@ public class MediumButton extends AbstractButton implements GameButton {
                 sheet = INVENTORY_BTN_SHEET;
                 row = 2;
                 break;
+            case UNEQUIP:
+                sheet = INVENTORY_BTN_SHEET;
+                row = 3;
+                break;
             case TAKE:
                 sheet = LOOT_BTN_SHEET;
                 break;
@@ -54,6 +60,9 @@ public class MediumButton extends AbstractButton implements GameButton {
             case CLOSE:
                 sheet = LOOT_BTN_SHEET;
                 row = 2;
+                break;
+                case CRAFT:
+                sheet = CRAFT_BTN_SHEET;
                 break;
             default: break;
         }

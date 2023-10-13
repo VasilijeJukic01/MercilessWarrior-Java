@@ -1,4 +1,4 @@
-package platformer.database;
+package platformer.model;
 
 public class BoardItem {
 

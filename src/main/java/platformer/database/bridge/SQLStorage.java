@@ -1,7 +1,7 @@
 package platformer.database.bridge;
 
 import platformer.core.Account;
-import platformer.database.BoardItem;
+import platformer.model.BoardItem;
 import platformer.database.Settings;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
@@ -20,9 +20,15 @@ public class SQLStorage implements Storage {
     private static final String FIND_ACCOUNT_QUERY = "SELECT * FROM Accounts WHERE Name LIKE ?";
     private static final String FIND_SETTINGS_QUERY = "SELECT * FROM Settings WHERE account_id = ?";
     private static final String FIND_PERKS_QUERY = "SELECT * FROM Perks WHERE settings_id = ?";
+    private static final String FIND_ITEMS_QUERY = "SELECT * FROM Items WHERE settings_id = ?";
     private static final String UPDATE_SETTINGS_QUERY = "UPDATE Settings SET spawn = ?, coins = ?, tokens = ?, level = ?, exp = ? WHERE account_id = ?";
     private static final String DELETE_PERKS_QUERY = "DELETE FROM Perks WHERE settings_id = ?";
-    private static final String INSERT_PERK_QUERY = "INSERT INTO Perks (settings_id, name) VALUES (?, ?)";
+    private static final String INSERT_PERK_QUERY = "INSERT INTO Perks (perk_id, settings_id, name) VALUES (?, ?, ?)";
+    private static final String DELETE_ITEMS_QUERY = "DELETE FROM Items WHERE settings_id = ?";
+    private static final String INSERT_ITEM_QUERY = "INSERT INTO Items (item_id, settings_id, name, amount, equiped) VALUES (?, ?, ?, ?, ?)";
+
+    private static final String MAX_PERK_ID_QUERY = "SELECT MAX(perk_id) FROM Perks";
+    private static final String MAX_ITEM_ID_QUERY = "SELECT MAX(item_id) FROM Items";
 
     public SQLStorage(Settings settings) {
         this.settings = settings;
@@ -42,7 +48,9 @@ public class SQLStorage implements Storage {
             if (account != null) {
                 int settingsId = account.getSettingsID();
                 List<String> perks = findPerks(settingsId);
+                List<String> items = findItems(settingsId);
                 account.setPerks(perks);
+                account.setItems(items);
             }
             return account;
         }
@@ -51,7 +59,7 @@ public class SQLStorage implements Storage {
         }
         finally {
             if (databaseConnection.getConnection() != null)
-                databaseConnection.closeConnection();
+                databaseConnection.closeConnection(true);
         }
 
         return new Account();
@@ -63,7 +71,6 @@ public class SQLStorage implements Storage {
 
         try {
             databaseConnection.initConnection(settings);
-            Logger.getInstance().notify("Database connection established!", Message.INFORMATION);
 
             try (PreparedStatement preparedStatement = databaseConnection.getConnection().prepareStatement("SELECT * FROM Accounts")) {
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
@@ -82,12 +89,10 @@ public class SQLStorage implements Storage {
             return boardData;
 
         }
-        catch (SQLException e) {
-            Logger.getInstance().notify("Database connection failed!", Message.ERROR);
-        }
+        catch (Exception ignored) {}
         finally {
             if (databaseConnection.getConnection() != null)
-                databaseConnection.closeConnection();
+                databaseConnection.closeConnection(false);
         }
 
         return Collections.emptyList();
@@ -101,17 +106,20 @@ public class SQLStorage implements Storage {
 
             updateSettings(account);
             deletePerks(account.getSettingsID());
+            deleteItems(account.getSettingsID());
             insertPerks(account);
+            insertItems(account);
         }
         catch (SQLException e) {
             Logger.getInstance().notify("Databased connection failed!", Message.ERROR);
         }
         finally {
             if (databaseConnection.getConnection() != null)
-                databaseConnection.closeConnection();
+                databaseConnection.closeConnection(true);
         }
     }
 
+    // Operations
     private Account findAccount(String user) throws SQLException {
         try (PreparedStatement preparedStatement = databaseConnection.getConnection().prepareStatement(FIND_ACCOUNT_QUERY)) {
             preparedStatement.setString(1, "%" + user + "%");
@@ -143,17 +151,29 @@ public class SQLStorage implements Storage {
         return null;
     }
 
-    private List<String> findPerks(int settingsId) throws SQLException {
-        List<String> perks = new ArrayList<>();
-        try (PreparedStatement perksPreparedStatement = databaseConnection.getConnection().prepareStatement(FIND_PERKS_QUERY)) {
-            perksPreparedStatement.setInt(1, settingsId);
-            try (ResultSet perksResultSet = perksPreparedStatement.executeQuery()) {
-                while (perksResultSet.next()) {
-                    perks.add(perksResultSet.getString("name"));
+    private List<String> findData(int settingsId, String query, String... columnNames) throws SQLException {
+        List<String> data = new ArrayList<>();
+        try (PreparedStatement preparedStatement = databaseConnection.getConnection().prepareStatement(query)) {
+            preparedStatement.setInt(1, settingsId);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    StringBuilder rowData = new StringBuilder();
+                    for (String columnName : columnNames) {
+                        rowData.append(resultSet.getString(columnName)).append(",");
+                    }
+                    data.add(rowData.substring(0, rowData.length() - 1));
                 }
             }
         }
-        return perks;
+        return data;
+    }
+
+    private List<String> findPerks(int settingsId) throws SQLException {
+        return findData(settingsId, FIND_PERKS_QUERY, "name");
+    }
+
+    private List<String> findItems(int settingsId) throws SQLException {
+        return findData(settingsId, FIND_ITEMS_QUERY, "name", "amount", "equiped");
     }
 
     private void updateSettings(Account account) throws SQLException {
@@ -168,21 +188,56 @@ public class SQLStorage implements Storage {
         }
     }
 
-    private void deletePerks(int settingsId) throws SQLException {
-        try (PreparedStatement preparedStatement = databaseConnection.getConnection().prepareStatement(DELETE_PERKS_QUERY)) {
+    private void deleteData(int settingsId, String query) throws SQLException {
+        try (PreparedStatement preparedStatement = databaseConnection.getConnection().prepareStatement(query)) {
             preparedStatement.setInt(1, settingsId);
             preparedStatement.executeUpdate();
         }
     }
 
-    private void insertPerks(Account account) throws SQLException {
-        try (PreparedStatement preparedStatement = databaseConnection.getConnection().prepareStatement(INSERT_PERK_QUERY)) {
+    private void deletePerks(int settingsId) throws SQLException {
+        deleteData(settingsId, DELETE_PERKS_QUERY);
+    }
+
+    private void deleteItems(int settingsId) throws SQLException {
+        deleteData(settingsId, DELETE_ITEMS_QUERY);
+    }
+
+    private void insertData(Account account, String query, String maxIdQuery, List<String> itemData, String[] itemDataColumns) throws SQLException {
+        try (PreparedStatement preparedStatement = databaseConnection.getConnection().prepareStatement(query)) {
             int settingsId = account.getSettingsID();
-            for (String perk : account.getPerks()) {
-                preparedStatement.setInt(1, settingsId);
-                preparedStatement.setString(2, perk);
+            int maxId = findMaxID(maxIdQuery) + 1;
+            for (String item : itemData) {
+                String[] itemValues = item.split(",");
+                preparedStatement.setInt(1, maxId++);
+                preparedStatement.setInt(2, settingsId);
+                for (int i = 0; i < itemDataColumns.length; i++) {
+                    preparedStatement.setObject(i + 3, itemValues[i]);
+                }
                 preparedStatement.executeUpdate();
             }
         }
     }
+
+    private void insertPerks(Account account) throws SQLException {
+        insertData(account, INSERT_PERK_QUERY, MAX_PERK_ID_QUERY, account.getPerks(), new String[]{"name"});
+    }
+
+    private void insertItems(Account account) throws SQLException {
+        insertData(account, INSERT_ITEM_QUERY, MAX_ITEM_ID_QUERY, account.getItems(), new String[]{"name", "amount", "equiped"});
+    }
+
+    // Other
+    private int findMaxID(String query) {
+        int maxId = 0;
+        try (Statement statement = databaseConnection.getConnection().createStatement()) {
+            ResultSet resultSet = statement.executeQuery(query);
+            if (resultSet.next()) {
+                maxId = resultSet.getInt(1);
+            }
+        }
+        catch (Exception ignored) {}
+        return maxId;
+    }
+
 }

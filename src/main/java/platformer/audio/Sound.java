@@ -30,7 +30,8 @@ public enum Sound implements ValueEnum<String> {
     LIGHTNING_3("lightning3"),          // 24
     SW_ROAR_1("swRoar1"),               // 25
     SW_ROAR_2("swRoar2"),               // 26
-    SW_ROAR_3("swRoar3");               // 27
+    SW_ROAR_3("swRoar3"),               // 27
+    FIREBALL("fireball");               // 28
 
     private final String value;
 

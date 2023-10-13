@@ -65,11 +65,11 @@ public class PlayerEffectController {
         Player p = (Player) entity;
         boolean onWall = p.checkAction(PlayerAction.ON_WALL);
         if (onWall) {
-            int wid = (p.getFlipCoefficient() != 0) ? (0) : (int)(p.getHitBox().width + DUST1_W);
             int flip = (p.getFlipSign() == 1) ? (-1) : (1);
-            int xPos = (int)(p.getHitBox().x - DUST1_OFFSET_X) + wid;
-            int yPos = (int)(p.getHitBox().y - DUST1_OFFSET_Y);
-            g.drawImage(effects[EffectType.WALL_SLIDE.ordinal()][effectIndex], xPos-xLevelOffset, yPos-yLevelOffset, flip*DUST1_WID, DUST1_HEI, null);
+            int wid = (flip == 1) ? (0) : (int)((p.getHitBox().width + (28 * SCALE)));
+            int xPos = (int)(p.getHitBox().x - DUST1_OFFSET_X) + wid - xLevelOffset;
+            int yPos = (int)(p.getHitBox().y - DUST1_OFFSET_Y) - yLevelOffset;
+            g.drawImage(effects[EffectType.WALL_SLIDE.ordinal()][effectIndex], xPos, yPos, (int)(flip*DUST1_WID), (int)DUST1_HEI, null);
         }
     }
 

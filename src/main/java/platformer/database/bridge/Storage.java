@@ -1,7 +1,7 @@
 package platformer.database.bridge;
 
 import platformer.core.Account;
-import platformer.database.BoardItem;
+import platformer.model.BoardItem;
 
 import java.util.List;
 

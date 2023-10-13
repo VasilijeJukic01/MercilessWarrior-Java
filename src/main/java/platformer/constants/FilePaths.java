@@ -32,6 +32,7 @@ public class FilePaths {
     public static final String SMASH_TRAP_SHEET = "/images/objs/smashTrap.png";
     public static final String CANDLE_IMG = "/images/objs/Candle.png";
     public static final String LOOT_IMG = "/images/objs/Loot.png";
+    public static final String TABLE_IMG = "/images/objs/Table.png";
 
     // Dialogue
     public static final String OBJECT_DIALOGUES = "/dialogues/object_dialogues.txt";
@@ -49,6 +50,7 @@ public class FilePaths {
 
     // Buttons
     public static final String BTN_BUY_SHEET = "/images/buttons/BuyButton.png";
+    public static final String BTN_SELL_SHEET = "/images/buttons/SellButton.png";
     public static final String BTN_LEAVE_SHEET = "/images/buttons/LeaveButton.png";
     public static final String CRE_BTN_SHEET = "/images/buttons/CREButtons.png";
     public static final String MENU_BTN_SHEET = "/images/buttons/MenuButtons.png";
@@ -59,6 +61,7 @@ public class FilePaths {
     public static final String BTN_SAVE_SHEET = "/images/buttons/SaveButton.png";
     public static final String INVENTORY_BTN_SHEET = "/images/buttons/InventoryButtons.png";
     public static final String LOOT_BTN_SHEET = "/images/buttons/LootButtons.png";
+    public static final String CRAFT_BTN_SHEET = "/images/buttons/CraftButton.png";
 
     // UI
     public static final String MENU_LOGO = "/images/menu/menuLogo.png";
@@ -81,6 +84,7 @@ public class FilePaths {
     public static final String OPTIONS_TXT = "/images/buttons/OptionsText.png";
     public static final String BOARD_TXT = "/images/buttons/BoardText.png";
     public static final String INVENTORY_TXT = "/images/buttons/InventoryText.png";
+    public static final String CRAFTING_TXT = "/images/buttons/CraftingText.png";
 
     public static final String ORANGE_GLOW = "/images/particles/orangeGlow.png";
     public static final String WHITE_GLOW = "/images/particles/whiteGlow.png";
@@ -100,6 +104,9 @@ public class FilePaths {
     public static final String WARRIOR_BRACELETS = "/images/inventory/WarriorBracelets.png";
     public static final String WARRIOR_TROUSERS = "/images/inventory/WarriorTrousers.png";
     public static final String WARRIOR_BOOTS = "/images/inventory/WarriorBoots.png";
+
+    public static final String GUARDIAN_ARMOR = "/images/inventory/GuardianArmor.png";
+    public static final String AMETHYST_RING = "/images/inventory/AmethystRing.png";
 
     public static final String PLAYER_ICON = "/images/inventory/Player.png";
 

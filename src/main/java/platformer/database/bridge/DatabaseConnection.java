@@ -20,13 +20,15 @@ public class DatabaseConnection {
         this.connection = DriverManager.getConnection("jdbc:mysql://"+ip+"/"+database,username,password);
     }
 
-    public void closeConnection(){
+    public void closeConnection(boolean log){
         try{
             connection.close();
-            Logger.getInstance().notify("Database connection closed successfully!", Message.INFORMATION);
+            if (log)
+                Logger.getInstance().notify("Database connection closed successfully!", Message.INFORMATION);
         }
         catch (SQLException e){
-            Logger.getInstance().notify("Failed to close database connection!", Message.ERROR);
+            if (log)
+                Logger.getInstance().notify("Failed to close database connection!", Message.ERROR);
         }
         finally {
             connection = null;

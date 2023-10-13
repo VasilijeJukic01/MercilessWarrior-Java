@@ -4,7 +4,7 @@ public class Audio {
 
     private static volatile Audio instance = null;
 
-    private AudioPlayer audioPlayer;
+    private AudioPlayer<Song, Sound> audioPlayer;
 
     private Audio() {
         init();
@@ -26,7 +26,7 @@ public class Audio {
     }
 
 
-    public AudioPlayer getAudioPlayer() {
+    public AudioPlayer<Song, Sound>  getAudioPlayer() {
         return audioPlayer;
     }
 }

@@ -270,18 +270,25 @@ public class Constants {
     public static final int LOOT_OFFSET_X = scale(1);
     public static final int LOOT_OFFSET_Y = scale(-5);
 
+    public static final int TABLE_WID = scale(48);
+    public static final int TABLE_HEI = scale(32);
+    public static final int TABLE_HB_WID = scale(40);
+    public static final int TABLE_HB_HEI = scale(32);
+    public static final int TABLE_OFFSET_X = scale(5);
+    public static final int TABLE_OFFSET_Y = scale(-5);
+
     // Projectile Constants
     public static final int ARROW_WID = scale(32);
     public static final int ARROW_HEI = scale(4);
-    public static final int ARROW_SPEED = scale(0.9);
+    public static final double ARROW_SPEED = dScale(0.9);
     public static final int ARROW_OFFSET_X_RIGHT = scale(-20);
     public static final int ARROW_OFFSET_X_LEFT = scale(10);
     public static final int ARROW_OFFSET_Y = scale(20);
 
     public static final int LB_WID = scale(60);
     public static final int LB_HEI = scale(60);
-    public static final int LB_SPEED_FAST = scale(1);
-    public static final int LB_SPEED_SLOW = scale(0.5);
+    public static final double LB_SPEED_FAST = dScale(1);
+    public static final double LB_SPEED_SLOW = dScale(0.5);
     public static final int LB_OFFSET_X = scale(40);
     public static final int LB_OFFSET_Y = scale(15);
 
@@ -293,7 +300,7 @@ public class Constants {
     public static final int FB_HEI = scale(50);
     public static final int FB_OFFSET_X = scale(40);
     public static final int FB_OFFSET_Y = scale(15);
-    public static final int FIREBALL_SPEED = scale(1.5);
+    public static final double FIREBALL_SPEED = dScale(1.5);
 
     public static final int TRACKING_PROJECTILE_DISTANCE = scale(50);
     public static final int ENEMY_PROJECTILE_DMG = 5;
@@ -306,16 +313,12 @@ public class Constants {
     public static final int FLAME_OFFSET_X = scale(55);
     public static final int FLAME_OFFSET_Y = scale(1);
 
-    public static final int LIGHTNING_DEFAULT_WIDTH = (int)(0.75 * TILES_SIZE);
-    public static final int LIGHTNING_DEFAULT_HEIGHT = 4 * TILES_SIZE;
-    public static final int LIGHTNING_WIDTH = scale(LIGHTNING_DEFAULT_WIDTH);
-    public static final int LIGHTNING_HEIGHT = scale(LIGHTNING_DEFAULT_HEIGHT);
+    public static final int LIGHTNING_WIDTH = scale(48);
+    public static final int LIGHTNING_HEIGHT = scale(256);
     public static final int LIGHTNING_OFFSET_X = (int)(LIGHTNING_WIDTH / 3.8);
 
-    public static final int FLASH_DEFAULT_WIDTH = (int)(0.75 * TILES_SIZE);
-    public static final int FLASH_DEFAULT_HEIGHT = 3 * TILES_SIZE;
-    public static final int FLASH_WIDTH = scale(FLASH_DEFAULT_WIDTH);
-    public static final int FLASH_HEIGHT = scale(FLASH_DEFAULT_HEIGHT);
+    public static final int FLASH_WIDTH = scale(48);
+    public static final int FLASH_HEIGHT = scale(192);
     public static final int FLASH_OFFSET_X = (int)(FLASH_WIDTH / 2.4);
 
     // Button Constants
@@ -340,7 +343,7 @@ public class Constants {
     public static final int FONT_DIALOGUE = scale(12);
     public static final int FONT_MEDIUM = scale(10);
     public static final int FONT_SMALL = scale(7);
-    public static final int SHOP_SLOT_MAX_ROW = 7, SHOP_SLOT_MAX_COL = 3;
+    public static final int SHOP_SLOT_MAX_ROW = 4, SHOP_SLOT_MAX_COL = 5;
     public static final int PERK_SLOT_MAX_ROW = 4, PERK_SLOT_MAX_COL = 7;
     public static final int INVENTORY_SLOT_MAX_ROW = 5, INVENTORY_SLOT_MAX_COL = 5;
     public static final int EQUIPMENT_SLOT_MAX_ROW = 2, EQUIPMENT_SLOT_MAX_COL = 3;
@@ -352,10 +355,10 @@ public class Constants {
     public static final int PLAYER_LIGHT_RADIUS = scale(75);
     public static final int CANDLE_LIGHT_RADIUS = scale(100);
 
-    public static final int DUST1_WID = scale(40);
-    public static final int DUST1_HEI = scale(80);
-    public static final int DUST1_OFFSET_X = scale(15);
-    public static final int DUST1_OFFSET_Y = scale(10);
+    public static final double DUST1_WID = dScale(40);
+    public static final double DUST1_HEI = dScale(80);
+    public static final double DUST1_OFFSET_X = dScale(15);
+    public static final double DUST1_OFFSET_Y = dScale(10);
 
     private static int scale(double value) {
         return (int)(value * SCALE);
