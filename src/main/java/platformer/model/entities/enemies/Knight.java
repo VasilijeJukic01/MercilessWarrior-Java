@@ -11,7 +11,6 @@ import platformer.utils.Utils;
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
-import java.util.Random;
 
 import static platformer.constants.Constants.*;
 
@@ -75,7 +74,6 @@ public class Knight extends Enemy {
                 moveAction(levelData, player);
                 break;
             case ATTACK_1:
-            case ATTACK_2:
                 attackAction(player);
                 break;
             default: break;
@@ -91,9 +89,7 @@ public class Knight extends Enemy {
     private void moveAction(int[][] levelData, Player player) {
         if (canSeePlayer(levelData, player)) directToPlayer(player);
         if (canSeePlayer(levelData, player) && isPlayerCloseForAttack(player)) {
-            Random rand = new Random();
-            boolean x = rand.nextBoolean();
-            setEnemyAction(x ? Anim.ATTACK_1 : Anim.ATTACK_2);
+            setEnemyAction(Anim.ATTACK_1);
             animSpeed = 20;
         }
         double enemyXSpeed = (direction == Direction.LEFT) ? -enemySpeed : enemySpeed;

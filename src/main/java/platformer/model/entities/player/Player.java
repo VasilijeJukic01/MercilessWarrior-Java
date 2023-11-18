@@ -413,6 +413,7 @@ public class Player extends Entity {
 
     // Status Changes
     public void changeHealth(double value) {
+        if (checkAction(PlayerAction.DYING)) return;
         if (value < 0) {
             boolean hit = checkAction(PlayerAction.HIT);
             if (hit) return;
