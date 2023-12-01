@@ -2,12 +2,13 @@ package platformer.model.gameObjects;
 
 import platformer.debug.Debug;
 import platformer.debug.DebugSettings;
+import platformer.model.AdvancedRenderable;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 
-public abstract class GameObject implements Debug {
+public abstract class GameObject implements AdvancedRenderable<Graphics>, Debug<Graphics> {
 
     protected ObjType objType;
     protected int xPos, yPos;
@@ -43,6 +44,7 @@ public abstract class GameObject implements Debug {
 
     public abstract void update();
 
+    @Override
     public abstract void render(Graphics g, int xLevelOffset, int yLevelOffset, BufferedImage[] animations);
 
     private void finishAnimation() {
@@ -59,6 +61,7 @@ public abstract class GameObject implements Debug {
         }
     }
 
+    @Override
     public void renderHitBox(Graphics g, int xLevelOffset, int yLevelOffset, Color color) {
         if (!DebugSettings.getInstance().isDebugMode()) return;
         g.setColor(color);

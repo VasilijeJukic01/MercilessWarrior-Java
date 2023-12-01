@@ -4,13 +4,13 @@ import platformer.model.entities.Direction;
 
 import java.awt.*;
 
-public class CircularAnim implements GraphicsAnimation {
+public class CircularAnim implements GraphicsAnimation<Point> {
 
     private Direction direction;
-    private double angle; // Radians
+    private double angle;           // Radians
     private double angularSpeed;
     private double radius;
-    private int p, q; // Center
+    private int p, q;               // Center
 
     public CircularAnim(double angle, double angularSpeed, double radius, int p, int q) {
         this.angle = angle;
@@ -27,19 +27,6 @@ public class CircularAnim implements GraphicsAnimation {
         int y1 = (int)(q + radius * Math.sin(theta));
         angle += angularSpeed;
         return new Point(x1, y1);
-    }
-
-    @Override
-    public void movementRender(Graphics g, boolean viewMovement) {
-        Point curve = calculatePoint();
-
-        if (viewMovement) {
-            g.setColor(Color.GREEN);
-            g.drawLine(p, q, curve.x, curve.y);
-            int diameter = (int)(2 * radius);
-            g.setColor(Color.BLUE);
-            g.drawOval((int)(p - radius), (int)(q - radius), diameter, diameter);
-        }
     }
 
     public void setDirection(Direction direction) {

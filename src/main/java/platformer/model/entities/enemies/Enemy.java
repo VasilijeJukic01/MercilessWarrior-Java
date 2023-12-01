@@ -9,13 +9,14 @@ import platformer.model.entities.player.Player;
 import platformer.model.entities.player.PlayerAction;
 import platformer.utils.Utils;
 
+import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 
 import static platformer.constants.Constants.*;
 
 @SuppressWarnings("FieldCanBeLocal")
-public abstract class Enemy extends Entity implements Debug {
+public abstract class Enemy extends Entity implements Debug<Graphics> {
 
     private final EnemyType enemyType;
     protected double enemySpeed = ENEMY_SPEED_SLOW;

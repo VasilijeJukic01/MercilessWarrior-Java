@@ -17,7 +17,7 @@ FB - Fireball
 
  */
 
-public class Constants {
+public final class Constants {
 
     // Resolution Settings
     public static final int TILES_DEFAULT_SIZE = 32;

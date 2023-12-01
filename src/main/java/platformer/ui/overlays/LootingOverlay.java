@@ -20,7 +20,7 @@ import static platformer.constants.FilePaths.*;
 import static platformer.constants.UI.*;
 import static platformer.constants.UI.SLOT_SIZE;
 
-public class LootingOverlay implements Overlay {
+public class LootingOverlay implements Overlay<MouseEvent, Graphics> {
 
     private final GameState gameState;
     private final MediumButton[] buttons;

@@ -2,10 +2,10 @@ package platformer.debug;
 
 import java.awt.*;
 
-public interface Debug {
+public interface Debug<G> {
 
-    void hitBoxRenderer(Graphics g, int xLevelOffset, int yLevelOffset, Color color);
+    void hitBoxRenderer(G g, int xLevelOffset, int yLevelOffset, Color color);
 
-    void attackBoxRenderer(Graphics g, int xLevelOffset, int yLevelOffset);
+    void attackBoxRenderer(G g, int xLevelOffset, int yLevelOffset);
 
 }

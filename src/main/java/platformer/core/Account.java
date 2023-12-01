@@ -55,6 +55,18 @@ public class Account {
         this.playtime = account.playtime;
     }
 
+    public void copyFromSlot(Account slotData) {
+        if (slotData == null) return;
+        setPerks(slotData.getPerks());
+        setItems(slotData.getItems());
+        setLevel(slotData.getLevel());
+        setExp(slotData.getExp());
+        setCoins(slotData.getCoins());
+        setSpawn(slotData.getSpawn());
+        setTokens(slotData.getTokens());
+        setPlaytime(slotData.getPlaytime());
+    }
+
     // Timer
     public void startGameTimer() {
         if (timer == null) {

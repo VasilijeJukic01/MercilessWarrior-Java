@@ -1,11 +1,9 @@
 package platformer.ui.buttons;
 
-import java.awt.*;
-
-public interface GameButton {
+public interface GameButton<G> {
 
     void update();
 
-    void render(Graphics g);
+    void render(G g);
 
 }

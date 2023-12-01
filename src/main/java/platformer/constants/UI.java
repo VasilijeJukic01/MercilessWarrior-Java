@@ -14,7 +14,7 @@ PORT - Portrait
 
  */
 
-public class UI {
+public final class UI {
 
     // Menu UI
     public static final int MENU_BTN_X = (int)(GAME_WIDTH / 2.3);

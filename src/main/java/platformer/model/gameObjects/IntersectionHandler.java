@@ -131,12 +131,10 @@ public class IntersectionHandler {
 
     public Loot getIntersectingLoot(Player player) {
         Rectangle2D.Double hitBox = player.getHitBox();
-        for (Loot loot : getObjects(Loot.class)) {
-            if (loot.isAlive() && hitBox.intersects(loot.getHitBox())) {
-                return loot;
-            }
-        }
-        return null;
+        return getObjects(Loot.class).stream()
+                .filter(loot -> loot.isAlive() && hitBox.intersects(loot.getHitBox()))
+                .findFirst()
+                .orElse(null);
     }
 
 }

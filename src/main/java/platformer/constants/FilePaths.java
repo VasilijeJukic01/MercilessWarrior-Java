@@ -1,6 +1,6 @@
 package platformer.constants;
 
-public class FilePaths {
+public final class FilePaths {
 
     // Player
     public static final String PLAYER_SHEET = "/images/player/playerSheet.png";

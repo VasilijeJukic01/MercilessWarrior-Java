@@ -648,8 +648,7 @@ public class Player extends Entity {
 
     // Getters
     public int getAttackDmg() {
-        boolean transform = checkAction(PlayerAction.TRANSFORM);
-        return transform ? transformAttackDmg : attackDmg;
+        return checkAction(PlayerAction.TRANSFORM) ? transformAttackDmg : attackDmg;
     }
 
     public double getCurrentStamina() {

@@ -11,7 +11,7 @@ import java.awt.geom.Rectangle2D;
 
 import static platformer.constants.Constants.*;
 
-public abstract class Entity implements Debug {
+public abstract class Entity implements Debug<Graphics> {
 
     protected int xPos, yPos;
     protected int width, height;

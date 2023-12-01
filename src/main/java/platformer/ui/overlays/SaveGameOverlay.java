@@ -12,7 +12,7 @@ import static platformer.constants.Constants.MEDIUM_BTN_WID;
 import static platformer.constants.UI.SAVE_BTN_X;
 import static platformer.constants.UI.SAVE_BTN_Y;
 
-public class SaveGameOverlay implements Overlay {
+public class SaveGameOverlay implements Overlay<MouseEvent, Graphics> {
 
     private MediumButton saveBtn;
 

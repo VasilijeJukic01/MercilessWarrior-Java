@@ -1,11 +1,7 @@
 package platformer.animation.graphics;
 
-import java.awt.*;
+public interface GraphicsAnimation<P> {
 
-public interface GraphicsAnimation {
-
-    Point calculatePoint();
-
-    void movementRender(Graphics g, boolean viewMovement);
+    P calculatePoint();
 
 }

@@ -1,21 +1,18 @@
 package platformer.ui.overlays;
 
-import java.awt.*;
-import java.awt.event.MouseEvent;
+public interface Overlay<E, G> {
 
-public interface Overlay {
+    void mouseDragged(E e);
 
-    void mouseDragged(MouseEvent e);
+    void mousePressed(E e);
 
-    void mousePressed(MouseEvent e);
+    void mouseReleased(E e);
 
-    void mouseReleased(MouseEvent e);
-
-    void mouseMoved(MouseEvent e);
+    void mouseMoved(E e);
 
     void update();
 
-    void render(Graphics g);
+    void render(G g);
 
     void reset();
 

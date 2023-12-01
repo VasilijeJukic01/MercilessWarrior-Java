@@ -85,7 +85,6 @@ public class DialogueManager {
 
     public void updateDialogue() {
         if(!overlay.next()) {
-
             if (gameState.getObjectManager().getIntersectingObject() == Blacksmith.class)
                 gameState.setOverlay(PlayingState.BLACKSMITH);
             else if (gameState.getObjectManager().getIntersectingObject() == Shop.class)
@@ -94,7 +93,6 @@ public class DialogueManager {
                 gameState.setOverlay(PlayingState.SAVE);
 
             overlay.reset();
-
         }
     }
 
