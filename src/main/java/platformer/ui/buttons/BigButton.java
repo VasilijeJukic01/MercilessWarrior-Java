@@ -10,7 +10,7 @@ import static platformer.constants.AnimConstants.BTN_W;
 import static platformer.constants.Constants.*;
 import static platformer.constants.FilePaths.MENU_BTN_SHEET;
 
-public class BigButton extends AbstractButton implements GameButton {
+public class BigButton extends AbstractButton {
 
     private BufferedImage[] images;
     private int imageIndex;

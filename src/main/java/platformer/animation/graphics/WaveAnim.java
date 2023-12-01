@@ -3,22 +3,19 @@ package platformer.animation.graphics;
 import platformer.model.entities.Direction;
 
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.List;
 
 import static platformer.constants.Constants.GAME_WIDTH;
 import static platformer.constants.Constants.SCALE;
 
-public class WaveAnim implements GraphicsAnimation {
+public class WaveAnim implements GraphicsAnimation<Point> {
 
     private Direction direction;
-    private int x, y; // Current point
-    private int xOffset, yOffset; // Starting point
+    private int x, y;                   // Current point
+    private int xOffset, yOffset;       // Starting point
     private int dx;
     private int amplitudeY;
     private int periodY;
     private double time;
-    private final List<Point> points = new ArrayList<>();
 
     public WaveAnim(int xOffset, int yOffset, int dx, int amplitudeY, int periodY, double time) {
         this.xOffset = this.x = xOffset;
@@ -36,20 +33,9 @@ public class WaveAnim implements GraphicsAnimation {
         this.y = (int)(yOffset + amplitudeY * Math.sin(2 * Math.PI * time / periodY));
         if (x > GAME_WIDTH) {
             x = xOffset;
-            points.clear();
         }
-        time += 0.5*SCALE;
+        time += 0.5 * SCALE;
         return new Point(x, y);
-    }
-
-    @Override
-    public void movementRender(Graphics g, boolean viewMovement) {
-        if (viewMovement) {
-            if (!points.contains(new Point(x, y))) points.add(new Point(x, y));
-            for (Point point : points) {
-                g.drawRect(point.x, point.y, 3, 3);
-            }
-        }
     }
 
     public void setDx(int dx) {

@@ -11,7 +11,7 @@ SL - Slider
 
  */
 
-public class AnimConstants {
+public final class AnimConstants {
 
     // Sprite dimension
     public static final int PLAYER_W = 144, PLAYER_H = 80;

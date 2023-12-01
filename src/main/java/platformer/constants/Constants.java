@@ -17,7 +17,7 @@ FB - Fireball
 
  */
 
-public class Constants {
+public final class Constants {
 
     // Resolution Settings
     public static final int TILES_DEFAULT_SIZE = 32;
@@ -163,7 +163,7 @@ public class Constants {
 
     public static final double SKELETON_SPEED_FAST = dScale(0.35);
     public static final double GHOUL_SPEED_FAST = dScale(0.45);
-    public static final double KNIGHT_SPEED_FAST = dScale(0.30);
+    public static final double KNIGHT_SPEED_FAST = dScale(0.4);
     public static final double WRAITH_SPEED_FAST = dScale(0.5);
 
     private static final double RANGE = 1.25 * TILES_SIZE;

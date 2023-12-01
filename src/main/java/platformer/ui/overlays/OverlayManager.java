@@ -12,8 +12,9 @@ import java.util.Map;
 public class OverlayManager {
 
     private final GameState gameState;
-    private final Map<PlayingState, Overlay> overlays;
+    private final Map<PlayingState, Overlay<MouseEvent, Graphics>> overlays;
 
+    @SuppressWarnings("unchecked")
     public OverlayManager(GameState gameState) {
         this.gameState = gameState;
         this.overlays = new HashMap<>();
@@ -31,7 +32,7 @@ public class OverlayManager {
 
     // Core
     public void update(PlayingState playingState) {
-        Overlay overlay = overlays.get(playingState);
+        Overlay<MouseEvent, Graphics> overlay = overlays.get(playingState);
         if (overlay != null) {
             overlay.update();
         }
@@ -78,7 +79,7 @@ public class OverlayManager {
         overlays.get(PlayingState.DIALOGUE).reset();
     }
 
-    public Map<PlayingState, Overlay> getOverlays() {
+    public Map<PlayingState, Overlay<MouseEvent, Graphics>> getOverlays() {
         return overlays;
     }
 }

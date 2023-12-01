@@ -2,16 +2,14 @@ package platformer.model.perks;
 
 import platformer.core.Framework;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static platformer.constants.Constants.*;
 
 public class PerksManager {
 
+    @FunctionalInterface
     private interface PerkAction {
         void performAction();
     }
@@ -95,17 +93,16 @@ public class PerksManager {
         ArrayList<Integer> unlocks = new ArrayList<>();
         int I = slot / n, J = slot % n;
         for (Perk perk : perks) {
-            if (perk.getSlot() == slot && !perk.isLocked()) {
-                if (perk.isUpgraded()) return;
+            if (perk.getSlot() == slot && !perk.isLocked() && !perk.isUpgraded()) {
                 perk.setUpgraded(true);
                 Framework.getInstance().getAccount().setPerks(getUpgradedPerks());
                 unlockPerk(perk, unlocks, I, J, n, m);
                 break;
             }
         }
-        for (Perk perk : perks) {
-            if (unlocks.contains(perk.getSlot())) perk.setLocked(false);
-        }
+        perks.stream()
+                .filter(perk -> unlocks.contains(perk.getSlot()))
+                .forEach(perk -> perk.setLocked(false));
     }
 
     private void unlockPerk(Perk perk, List<Integer> unlocks, int i, int j, int n, int m) {
@@ -123,11 +120,9 @@ public class PerksManager {
     }
 
     public void loadUnlockedPerks(List<String> p) {
-        for (Perk perk : perks) {
-            if (p.contains(perk.getName())) {
-                upgrade(PERK_SLOT_MAX_COL, PERK_SLOT_MAX_ROW, perk.getSlot());
-            }
-        }
+        perks.stream()
+                .filter(perk -> p.contains(perk.getName()))
+                .forEach(perk -> upgrade(PERK_SLOT_MAX_COL, PERK_SLOT_MAX_ROW, perk.getSlot()));
     }
 
     public List<String> getUpgradedPerks() {

@@ -1,6 +1,5 @@
 package platformer.ui.overlays.hud;
 
-import platformer.model.entities.enemies.boss.SpearWoman;
 import platformer.utils.Utils;
 
 import java.awt.*;

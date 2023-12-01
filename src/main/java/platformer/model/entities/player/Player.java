@@ -413,6 +413,7 @@ public class Player extends Entity {
 
     // Status Changes
     public void changeHealth(double value) {
+        if (checkAction(PlayerAction.DYING)) return;
         if (value < 0) {
             boolean hit = checkAction(PlayerAction.HIT);
             if (hit) return;
@@ -647,8 +648,7 @@ public class Player extends Entity {
 
     // Getters
     public int getAttackDmg() {
-        boolean transform = checkAction(PlayerAction.TRANSFORM);
-        return transform ? transformAttackDmg : attackDmg;
+        return checkAction(PlayerAction.TRANSFORM) ? transformAttackDmg : attackDmg;
     }
 
     public double getCurrentStamina() {

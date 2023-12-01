@@ -23,7 +23,7 @@ import static platformer.constants.FilePaths.*;
 import static platformer.constants.UI.*;
 import static platformer.constants.UI.SLOT_SIZE;
 
-public class CraftingOverlay implements Overlay {
+public class CraftingOverlay implements Overlay<MouseEvent, Graphics> {
 
     private final GameState gameState;
 

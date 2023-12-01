@@ -10,7 +10,7 @@ import static platformer.constants.AnimConstants.SMALL_BTN_W;
 import static platformer.constants.Constants.CRE_BTN_SIZE;
 import static platformer.constants.FilePaths.LEADERBOARD_BTN_SHEET;
 
-public class LeaderboardButton extends AbstractButton implements GameButton {
+public class LeaderboardButton extends AbstractButton {
 
     private BufferedImage[] images;
     private int imageIndex;

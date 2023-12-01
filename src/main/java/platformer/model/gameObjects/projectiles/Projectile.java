@@ -13,7 +13,7 @@ import static platformer.constants.Constants.*;
 
 public abstract class Projectile {
 
-    protected GraphicsAnimation waveMovement;
+    protected GraphicsAnimation<Point> waveMovement;
 
     protected final PRType prType;
     protected Rectangle2D.Double hitBox;

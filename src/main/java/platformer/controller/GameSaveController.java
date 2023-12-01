@@ -70,14 +70,7 @@ public class GameSaveController {
     private void getSlotAccountData(GameSlot s) {
         Framework.getInstance().getAccount().unload();
         if (s.getAccount() == null) return;
-        Framework.getInstance().getAccount().setPerks(s.getAccount().getPerks());
-        Framework.getInstance().getAccount().setItems(s.getAccount().getItems());
-        Framework.getInstance().getAccount().setLevel(s.getAccount().getLevel());
-        Framework.getInstance().getAccount().setExp(s.getAccount().getExp());
-        Framework.getInstance().getAccount().setCoins(s.getAccount().getCoins());
-        Framework.getInstance().getAccount().setSpawn(s.getAccount().getSpawn());
-        Framework.getInstance().getAccount().setTokens(s.getAccount().getTokens());
-        Framework.getInstance().getAccount().setPlaytime(s.getAccount().getPlaytime());
+        Framework.getInstance().getAccount().copyFromSlot(s.getAccount());
         Framework.getInstance().getAccount().startGameTimer();
     }
 

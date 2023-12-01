@@ -18,7 +18,7 @@ import static platformer.constants.Constants.*;
 import static platformer.constants.FilePaths.*;
 import static platformer.constants.UI.*;
 
-public class BlacksmithOverlay implements Overlay {
+public class BlacksmithOverlay implements Overlay<MouseEvent, Graphics> {
 
     private final GameState gameState;
 
@@ -196,7 +196,11 @@ public class BlacksmithOverlay implements Overlay {
     }
 
     public void upgrade() {
+        for (Perk perk : gameState.getPerksManager().getPerks()) {
+            if (slotNumber == perk.getSlot() && perk.isUpgraded()) return;
+        }
         if (!checkTokens()) return;
+        Audio.getInstance().getAudioPlayer().playSound(Sound.SHOP_BUY);
         gameState.getPerksManager().upgrade(SLOT_MAX_COL, SLOT_MAX_ROW, slotNumber);
     }
 
@@ -222,7 +226,6 @@ public class BlacksmithOverlay implements Overlay {
                 switch (button.getButtonType()) {
                     case BUY:
                         upgrade();
-                        Audio.getInstance().getAudioPlayer().playSound(Sound.SHOP_BUY);
                         break;
                     case LEAVE:
                         gameState.setOverlay(null);

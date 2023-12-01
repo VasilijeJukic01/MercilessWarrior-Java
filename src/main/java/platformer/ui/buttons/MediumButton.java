@@ -10,7 +10,7 @@ import static platformer.constants.Constants.MEDIUM_BTN_HEI;
 import static platformer.constants.Constants.MEDIUM_BTN_WID;
 import static platformer.constants.FilePaths.*;
 
-public class MediumButton extends AbstractButton implements GameButton {
+public class MediumButton extends AbstractButton {
 
     private BufferedImage[] images;
     private int imageIndex;

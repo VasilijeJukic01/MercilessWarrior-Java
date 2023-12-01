@@ -2,7 +2,7 @@ package platformer.ui.buttons;
 
 import java.awt.*;
 
-public abstract class AbstractButton implements GameButton {
+public abstract class AbstractButton implements GameButton<Graphics> {
 
     protected ButtonType buttonType;
     protected int xPos, yPos;

@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>groupId</groupId>
+    <groupId>com.games.mw</groupId>
     <artifactId>Platformer</artifactId>
     <version>1.0-SNAPSHOT</version>
 
@@ -13,9 +13,7 @@
         <maven.compiler.target>10</maven.compiler.target>
     </properties>
 
-
     <dependencies>
-
         <dependency>
             <groupId>org.lwjgl.lwjgl</groupId>
             <artifactId>lwjgl</artifactId>
@@ -45,7 +43,6 @@
             <artifactId>gson</artifactId>
             <version>2.10</version>
         </dependency>
-
     </dependencies>
     
 </project>

@@ -22,7 +22,6 @@ public class LightManager {
     private final GameState gameState;
 
     private BufferedImage orangeLight, whiteLight, whiteRadialLight;
-
     private Ellipse2D playerLight;
 
     private Color[] gradient;

@@ -4,12 +4,13 @@ import platformer.audio.Audio;
 import platformer.audio.Sound;
 import platformer.debug.Debug;
 import platformer.debug.DebugSettings;
+import platformer.model.Renderable;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
 
 @SuppressWarnings("FieldCanBeLocal")
-public abstract class Spell implements Debug {
+public abstract class Spell implements Renderable<Graphics>, Debug<Graphics> {
 
     protected final SpellType spellType;
     protected int xPos, yPos;
@@ -51,11 +52,13 @@ public abstract class Spell implements Debug {
         }
     }
 
-    protected void render(Graphics g, int xLevelOffset, int yLevelOffset) {
+    @Override
+    public void render(Graphics g, int xLevelOffset, int yLevelOffset) {
         hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.CYAN);
     }
 
-    protected void renderHitBox(Graphics g, int xLevelOffset, int yLevelOffset, Color color) {
+    @Override
+    public void renderHitBox(Graphics g, int xLevelOffset, int yLevelOffset, Color color) {
         if (!DebugSettings.getInstance().isDebugMode()) return;
         g.setColor(color);
         g.drawRect((int)hitBox.x-xLevelOffset, (int)hitBox.y-yLevelOffset, (int)hitBox.width, (int)hitBox.height);

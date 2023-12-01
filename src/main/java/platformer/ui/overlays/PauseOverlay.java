@@ -16,7 +16,7 @@ import static platformer.constants.Constants.*;
 import static platformer.constants.FilePaths.*;
 import static platformer.constants.UI.*;
 
-public class PauseOverlay implements Overlay {
+public class PauseOverlay implements Overlay<MouseEvent, Graphics> {
 
     private final Game game;
     private final GameState gameState;

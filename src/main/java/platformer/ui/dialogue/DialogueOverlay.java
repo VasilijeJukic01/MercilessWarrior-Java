@@ -15,7 +15,7 @@ import static platformer.constants.Constants.FONT_DIALOGUE;
 import static platformer.constants.Constants.SCALE;
 import static platformer.constants.UI.*;
 
-public class DialogueOverlay implements Overlay {
+public class DialogueOverlay implements Overlay<MouseEvent, Graphics> {
 
     private RoundRectangle2D dialogueBox;
     private List<String> dialogues;

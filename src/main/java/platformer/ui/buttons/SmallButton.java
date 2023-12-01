@@ -10,7 +10,7 @@ import static platformer.constants.AnimConstants.*;
 import static platformer.constants.Constants.*;
 import static platformer.constants.FilePaths.*;
 
-public class SmallButton extends AbstractButton implements GameButton {
+public class SmallButton extends AbstractButton {
 
     private BufferedImage[] images;
     private int imageIndex;

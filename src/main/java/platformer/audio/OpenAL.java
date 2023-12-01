@@ -8,6 +8,7 @@ import platformer.debug.logger.Message;
 import platformer.utils.ValueEnum;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
@@ -42,11 +43,11 @@ public class OpenAL implements AudioPlayer<Song, Sound>  {
 
     // Data
     private void loadAudio(ValueEnum<String>[] audioArray, List<Integer> buffers, List<OpenALSource> sources) {
-        for (ValueEnum<String> audio : audioArray) {
+        Arrays.stream(audioArray).forEach(audio -> {
             String id = audio.getValue();
             buffers.add(loadBuffers("audio/" + id + ".wav"));
             sources.add(new OpenALSource());
-        }
+        });
     }
 
     private void loadSongs() {
