@@ -96,7 +96,7 @@ public class Animation {
         anim[Anim.IDLE.ordinal()] = loadFromSprite(KNIGHT_SHEET,     8, 0, w, h, 0, KNIGHT_W, KNIGHT_H);
         anim[Anim.RUN.ordinal()] = loadFromSprite(KNIGHT_SHEET,      8, 2, w, h, 0, KNIGHT_W, KNIGHT_H);
         anim[Anim.ATTACK_1.ordinal()] = loadFromSprite(KNIGHT_SHEET, 7, 3, w, h, 0, KNIGHT_W, KNIGHT_H);
-        anim[Anim.HIT.ordinal()] = loadFromSprite(KNIGHT_SHEET,      4, 5, w, h, 0, KNIGHT_W, KNIGHT_H);
+        anim[Anim.HIT.ordinal()] = loadFromSprite(KNIGHT_SHEET,      3, 5, w, h, 0, KNIGHT_W, KNIGHT_H);
         anim[Anim.DEATH.ordinal()] = loadFromSprite(KNIGHT_SHEET,    12,6, w, h, 0, KNIGHT_W, KNIGHT_H);
         anim[Anim.WALK.ordinal()] = loadFromSprite(KNIGHT_SHEET,     8, 1, w, h, 0, KNIGHT_W, KNIGHT_H);
 

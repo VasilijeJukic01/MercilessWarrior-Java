@@ -18,6 +18,7 @@ import static platformer.constants.Constants.*;
 public class Ghoul extends Enemy {
 
     private int attackOffset;
+    private boolean blocker;
 
     // Physics
     private final double gravity = 0.025 * SCALE;
@@ -27,7 +28,7 @@ public class Ghoul extends Enemy {
         super(xPos, yPos, GHOUL_WIDTH, GHOUL_HEIGHT, EnemyType.GHOUL, 25);
         initHitBox(GHOUL_HB_WID, GHOUL_HB_HEI);
         initAttackBox();
-        super.cooldown = new double[1];
+        super.cooldown = new double[3];
     }
 
     private void initAttackBox() {
@@ -98,14 +99,23 @@ public class Ghoul extends Enemy {
 
     // Behavior
     private void idleAction() {
-        if (cooldown[Cooldown.ATTACK.ordinal()] == 0) setEnemyAction(Anim.WALK);
+        if (blocker && cooldown[Cooldown.DASH.ordinal()] == 0) {
+            setEnemyAction(Anim.ATTACK_1);
+            return;
+        }
+        if (!blocker && cooldown[Cooldown.ATTACK.ordinal()] == 0) setEnemyAction(Anim.WALK);
         animSpeed = 25;
     }
 
     private void moveAction(int[][] levelData, Player player) {
+        if (blocker || entityState == Anim.ATTACK_1) return;
         if (canSeePlayer(levelData, player)) directToPlayer(player);
         if (canSeePlayer(levelData, player) && isPlayerCloseForAttack(player) && cooldown[Cooldown.ATTACK.ordinal()] == 0) {
-            setEnemyAction(Anim.ATTACK_1);
+            if (!blocker) {
+                cooldown[Cooldown.DASH.ordinal()] = GHOUL_DASH_CD;
+                setEnemyAction(Anim.IDLE);
+                blocker = true;
+            }
             animSpeed = 15;
         }
         double enemyXSpeed = (direction == Direction.LEFT) ? -enemySpeed : enemySpeed;
@@ -135,6 +145,7 @@ public class Ghoul extends Enemy {
         if (Utils.getInstance().canMoveHere(hitBox.x + xSpeed * 12, hitBox.y, hitBox.width, hitBox.height, levelData))
             if (Utils.getInstance().isFloor(hitBox, xSpeed * 12, levelData, direction)) {
                 hitBox.x += xSpeed * 12;
+                blocker = false;
                 return;
             }
         entityState = Anim.IDLE;

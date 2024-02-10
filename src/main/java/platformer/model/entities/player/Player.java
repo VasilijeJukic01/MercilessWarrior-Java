@@ -44,7 +44,7 @@ public class Player extends Entity {
     private final EnumSet<PlayerAction> actions = EnumSet.noneOf(PlayerAction.class);
 
     // Physics
-    private final double gravity = 0.035 * SCALE;
+    private final double gravity = 0.028 * SCALE;
     private final double wallGravity = 0.0005 * SCALE;
     private final double jumpSpeed = -2.25 * SCALE;
     private final double collisionFallSpeed = 0.5 * SCALE;

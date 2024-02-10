@@ -51,8 +51,8 @@ public final class Constants {
     public static final int XP_CAP = 10000;
     public static final int PLAYER_MAX_HP = 100;
     public static final int PLAYER_MAX_ST = 100;
-    public static final double PLAYER_SPEED = dScale(0.5);
-    public static final double PLAYER_BOOST = dScale(0.6);
+    public static final double PLAYER_SPEED = dScale(0.6);
+    public static final double PLAYER_BOOST = dScale(0.65);
 
     public static final double PUSH_LIMIT = -30;
     public static final double PUSH_SPEED = 0.95;
@@ -80,6 +80,7 @@ public final class Constants {
     public static final double PLAYER_SPELL_CD = 1.75;
 
     public static final double GHOUL_ATT_CD = 10;
+    public static final double GHOUL_DASH_CD = 6;
 
     // Shop Constants
     public static final int HEALTH_COST = 10;
