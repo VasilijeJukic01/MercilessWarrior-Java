@@ -1,14 +1,28 @@
-Object Blacksmith:
-Perk upgrades are a way to enhance your character's abilities and skills. As you gain experience and progress in the game, you'll earn tokens.
+Object Blacksmith0:
+Perk upgrades are a way to enhance your abilities and skills. As you gain experience and progress in the game, you'll earn tokens.
 These tokens can be used to unlock various perks.
-You earn tokens by completing quests, defeating enemies, and generally making progress in the game. The tougher the challenge, the more tokens you'll earn.
+You earn tokens by completing quests, defeating enemies, and making progress in the game. The tougher the challenge, the more you'll earn.
 To upgrade a perk, you need to spend tokens.
 I've got a selection of powerful perks that can give you the edge you need in your journey.
 ~Take a look and let me know what catches your eye.;
-Object Shop:
+Object Shop0:
 ~Welcome, adventurer! Looking to buy some gear to enhance your journey?
 ~Take a look at my wares.;
-Object Dog:
+Object Shop1:
+~Hey there, adventurer! Looking for something to give you an edge? Or maybe just a new pair of socks?
+~Check out my inventory, but be warned, my prices are as steep as the mountains around here!;
+Object Shop2:
+~Welcome, adventurer! I've got the best gear in town. And if you believe that, I've got a bridge to sell you too!
+~Have a look around, just don't break anything. You break it, you buy it!;
+Object Dog1:
 ~Wuf!;
-Object SaveTotem:
-~Press X to save game or ESC to close.
+Object Dog2:
+~Grrr... Be careful!;
+Object SaveTotem0:
+~Press X to save game or ESC to close.;
+Object Board0:
+~Welcome, adventurer! This is your tutorial board. Here you can learn the basics of the game.
+~Use the up arrow key to jump.
+~The X key is for attack.
+~Remember, your journey is filled with challenges. Use your commands wisely.
+~Good luck on your journey, adventurer!

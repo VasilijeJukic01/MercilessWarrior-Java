@@ -1,9 +1,7 @@
 package platformer.ui.dialogue;
 
 import platformer.model.gameObjects.GameObject;
-import platformer.model.gameObjects.objects.Blacksmith;
-import platformer.model.gameObjects.objects.SaveTotem;
-import platformer.model.gameObjects.objects.Shop;
+import platformer.model.gameObjects.objects.*;
 import platformer.state.GameState;
 import platformer.state.PlayingState;
 
@@ -19,7 +17,7 @@ public class DialogueManager {
     private final GameState gameState;
     private final DialogueOverlay overlay;
 
-    private final Map<Class<? extends GameObject>, List<String>> dialogues;
+    private final Map<Class<? extends GameObject>, List<List<String>>> dialogues;
 
     public DialogueManager(GameState gameState) {
         this.gameState = gameState;
@@ -53,7 +51,7 @@ public class DialogueManager {
             String object = "";
             for (String s : parts) {
                 if (s.contains("Object")) {
-                    object = s.substring(7).trim();
+                    object = s.substring(7).trim().replaceAll("[0-9]", "");
                     continue;
                 }
                 String[] sentences = s.split("\n");
@@ -67,7 +65,14 @@ public class DialogueManager {
     private <T extends GameObject> void addDialogue(List<String> dialogue, Class<T> objectClass) {
         if (objectClass == null) return;
         dialogue.remove(0);
-        dialogues.put(objectClass, dialogue);
+        if (dialogues.containsKey(objectClass)) {
+            dialogues.get(objectClass).add(dialogue);
+        }
+        else {
+            List<List<String>> dialogues = new ArrayList<>();
+            dialogues.add(dialogue);
+            this.dialogues.put(objectClass, dialogues);
+        }
     }
 
     private <T extends GameObject> Class<T> getObjectByName(String name) {
@@ -75,6 +80,8 @@ public class DialogueManager {
             case "Blacksmith": return (Class<T>) Blacksmith.class;
             case "Shop": return (Class<T>) Shop.class;
             case "SaveTotem": return (Class<T>) SaveTotem.class;
+            case "Dog": return (Class<T>) Dog.class;
+            case "Board": return (Class<T>) Board.class;
             default: return null;
         }
     }
@@ -91,12 +98,13 @@ public class DialogueManager {
                 gameState.setOverlay(PlayingState.SHOP);
             else if (gameState.getObjectManager().getIntersectingObject() == SaveTotem.class)
                 gameState.setOverlay(PlayingState.SAVE);
+            else gameState.setOverlay(null);
 
             overlay.reset();
         }
     }
 
-    public List<String> getDialogues(Class<? extends GameObject> objectClass) {
+    public List<List<String>> getDialogues(Class<? extends GameObject> objectClass) {
         return dialogues.get(objectClass);
     }
 

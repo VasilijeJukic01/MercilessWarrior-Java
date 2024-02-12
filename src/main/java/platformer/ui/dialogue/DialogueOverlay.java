@@ -107,13 +107,22 @@ public class DialogueOverlay implements Overlay<MouseEvent, Graphics> {
             g.drawString(""+visibleText.charAt(i), x, y);
             x += g.getFontMetrics().charWidth(visibleText.charAt(i));
         }
-        if (currentLetterIndex == dialogue.length()) renderArrow(g);
+        if (currentLetterIndex == dialogue.length()) {
+            renderArrow(g);
+            renderContinueText(g);
+        }
     }
 
     private void renderArrow(Graphics g) {
         int xPos = DIALOGUE_BOX_X + DIALOGUE_BOX_WID - (int)(20 * SCALE);
         int yPos = DIALOGUE_Y + DIALOGUE_BOX_HEI - (int)(30 * SCALE);
         g.drawString("▼", xPos, yPos);
+    }
+
+    private void renderContinueText(Graphics g) {
+        int xPos = DIALOGUE_BOX_X + (int)(20 * SCALE);
+        int yPos = DIALOGUE_Y + DIALOGUE_BOX_HEI - (int)(30 * SCALE);
+        g.drawString("[Press X to continue]", xPos, yPos);
     }
 
     // Reset

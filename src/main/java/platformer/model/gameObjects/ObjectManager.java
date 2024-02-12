@@ -38,7 +38,7 @@ public class ObjectManager {
             Coin.class, Container.class, Potion.class, Spike.class,
             Shop.class, Blocker.class, Blacksmith.class, Dog.class,
             SaveTotem.class, SmashTrap.class, Candle.class, Loot.class,
-            Table.class
+            Table.class, Board.class
     };
     Class<? extends GameObject>[] renderBelow = new Class[] {
             Container.class, Potion.class, Spike.class,
@@ -46,7 +46,7 @@ public class ObjectManager {
     };
     Class<? extends GameObject>[] renderAbove = new Class[] {
             SaveTotem.class, Shop.class, Blacksmith.class, Coin.class,
-            Table.class
+            Table.class, Board.class
     };
 
     private Map<ObjType, List<GameObject>> objectsMap = new HashMap<>();

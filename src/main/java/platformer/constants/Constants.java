@@ -278,6 +278,13 @@ public final class Constants {
     public static final int TABLE_OFFSET_X = scale(5);
     public static final int TABLE_OFFSET_Y = scale(-5);
 
+    public static final int BOARD_WID = scale(64);
+    public static final int BOARD_HEI = scale(64);
+    public static final int BOARD_HB_WID = scale(56);
+    public static final int BOARD_HB_HEI = scale(60);
+    public static final int BOARD_OFFSET_X = scale(5);
+    public static final int BOARD_OFFSET_Y = scale(-5);
+
     // Projectile Constants
     public static final int ARROW_WID = scale(32);
     public static final int ARROW_HEI = scale(4);

@@ -18,7 +18,8 @@ public enum ObjType {
     CANDLE(1),                      // 14
     LOOT(1),                        // 15
     TABLE(1),                       // 16
-    MAX(0);                         // 17
+    BOARD(1),                       // 17
+    MAX(0);                         // 18
 
     private final int sprites;
 

@@ -130,6 +130,9 @@ public class Level {
             case TABLE:
                 addGameObject(new Table(ObjType.values()[valueB], i*TILES_SIZE, j*TILES_SIZE));
                 break;
+            case BOARD:
+                addGameObject(new Board(ObjType.values()[valueB], i*TILES_SIZE, j*TILES_SIZE));
+                break;
             default: break;
         }
     }

@@ -33,6 +33,7 @@ public final class FilePaths {
     public static final String CANDLE_IMG = "/images/objs/Candle.png";
     public static final String LOOT_IMG = "/images/objs/Loot.png";
     public static final String TABLE_IMG = "/images/objs/Table.png";
+    public static final String BOARD_IMG = "/images/objs/Board.png";
 
     // Dialogue
     public static final String OBJECT_DIALOGUES = "/dialogues/object_dialogues.txt";

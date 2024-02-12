@@ -156,10 +156,12 @@ public class GameStateController {
             default: break;
         }
         pressedKeys.remove(key);
+        gameState.getOverlayManager().keyPressed(e);
     }
 
     // Actions
     private void interact() {
+        if (gameState.getActiveState() == PlayingState.DIALOGUE) return;
         Optional<? extends Class<? extends GameObject>> object = Optional.ofNullable(gameState.getObjectManager().getIntersectingObject());
         object.ifPresent(this::handleInteraction);
     }
@@ -176,7 +178,9 @@ public class GameStateController {
 
     private void activateDialogue(Class<? extends GameObject> objectClass) {
         gameState.setOverlay(PlayingState.DIALOGUE);
-        List<String> dialogues = gameState.getDialogueManager().getDialogues(objectClass);
+        Random random = new Random();
+        int index = random.nextInt(gameState.getDialogueManager().getDialogues(objectClass).size());
+        List<String> dialogues = gameState.getDialogueManager().getDialogues(objectClass).get(index);
         gameState.getDialogueManager().setDialogueObject(dialogues, objectClass);
     }
 

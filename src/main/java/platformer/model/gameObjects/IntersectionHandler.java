@@ -24,7 +24,7 @@ public class IntersectionHandler {
 
     private final Class<? extends GameObject>[] classesToCheck = new Class[]{
             Shop.class, Blacksmith.class, SaveTotem.class, Loot.class, Spike.class,
-            Blocker.class, SmashTrap.class, Table.class
+            Blocker.class, SmashTrap.class, Table.class, Board.class, Dog.class
     };
 
     public IntersectionHandler(EnemyManager enemyManager, ObjectManager objectManager) {
@@ -64,6 +64,12 @@ public class IntersectionHandler {
             }
             else if (object instanceof Table) {
                 ((Table) object).setActive(intersect);
+            }
+            else if (object instanceof Board) {
+                ((Board) object).setActive(intersect);
+            }
+            else if (object instanceof Dog) {
+                ((Dog) object).setActive(intersect);
             }
         }
         return check;

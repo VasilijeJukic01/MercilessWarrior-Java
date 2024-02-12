@@ -5,6 +5,7 @@ import platformer.state.PlayingState;
 import platformer.ui.dialogue.DialogueOverlay;
 
 import java.awt.*;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.util.HashMap;
 import java.util.Map;
@@ -14,7 +15,6 @@ public class OverlayManager {
     private final GameState gameState;
     private final Map<PlayingState, Overlay<MouseEvent, Graphics>> overlays;
 
-    @SuppressWarnings("unchecked")
     public OverlayManager(GameState gameState) {
         this.gameState = gameState;
         this.overlays = new HashMap<>();
@@ -70,6 +70,13 @@ public class OverlayManager {
         PlayingState overlay = gameState.getActiveState();
         if (overlay != null) {
             overlays.get(overlay).mouseDragged(e);
+        }
+    }
+
+    public void keyPressed(KeyEvent e) {
+        PlayingState overlay = gameState.getActiveState();
+        if (overlay == PlayingState.LOOTING) {
+            ((LootingOverlay) overlays.get(overlay)).keyPressed(e);
         }
     }
 
