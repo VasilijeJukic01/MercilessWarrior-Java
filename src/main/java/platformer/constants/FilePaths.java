@@ -35,6 +35,10 @@ public final class FilePaths {
     public static final String TABLE_IMG = "/images/objs/Table.png";
     public static final String BOARD_IMG = "/images/objs/Board.png";
 
+    // NPC
+    public static final String ANITA_SHEET = "/images/objs/npc/AnitaSprite.png";
+    public static final String NIKOLAS_SHEET = "/images/objs/npc/NikolasSprite.png";
+
     // Dialogue
     public static final String OBJECT_DIALOGUES = "/dialogues/object_dialogues.txt";
 

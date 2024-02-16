@@ -3,6 +3,8 @@ package platformer.model.levels;
 import platformer.model.entities.enemies.*;
 import platformer.model.entities.enemies.boss.SpearWoman;
 import platformer.model.gameObjects.*;
+import platformer.model.gameObjects.npc.Npc;
+import platformer.model.gameObjects.npc.NpcType;
 import platformer.model.gameObjects.objects.*;
 import platformer.model.gameObjects.objects.Container;
 import platformer.model.spells.Flash;
@@ -23,6 +25,9 @@ import static platformer.constants.Constants.*;
 public class Level {
 
     // Data
+    private String name;
+    private static final Map<String, List<NpcType>> npcMap = new HashMap<>();
+    private int npcIndicator = 0;
     private final BufferedImage layer1Img, layer2Img;
     private int[][] lvlData, decoData, layerData;
 
@@ -39,7 +44,13 @@ public class Level {
     // Spawns
     private Point leftSpawn, rightSpawn, upperSpawn, bottomSpawn;
 
-    public Level(BufferedImage layer1Img, BufferedImage layer2Img) {
+    static {
+        npcMap.put("level02", List.of(NpcType.ANITA));
+        npcMap.put("level11", List.of(NpcType.NIKOLAS));
+    }
+
+    public Level(String name, BufferedImage layer1Img, BufferedImage layer2Img) {
+        this.name = name;
         this.layer1Img = layer1Img;
         this.layer2Img = layer2Img;
         init();
@@ -49,6 +60,7 @@ public class Level {
 
     // Init
     private void init() {
+
         this.lvlData = getLevelData(layer1Img);
         this.decoData = getDecoData(layer2Img, false);
         this.layerData = getDecoData(layer2Img, true);
@@ -132,6 +144,12 @@ public class Level {
                 break;
             case BOARD:
                 addGameObject(new Board(ObjType.values()[valueB], i*TILES_SIZE, j*TILES_SIZE));
+                break;
+            case NPC:
+                if (npcMap.containsKey(name)) {
+                    List<NpcType> npcTypes = npcMap.get(name);
+                    addGameObject(new Npc(ObjType.values()[valueB], i*TILES_SIZE, j*TILES_SIZE, npcTypes.get(npcIndicator++)));
+                }
                 break;
             default: break;
         }
@@ -217,6 +235,7 @@ public class Level {
     }
 
     private void reset() {
+        this.npcIndicator = 0;
         enemiesMap.clear();
         objectsMap.clear();
         spellsMap.clear();

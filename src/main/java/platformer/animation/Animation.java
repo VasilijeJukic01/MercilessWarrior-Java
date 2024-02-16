@@ -1,6 +1,7 @@
 package platformer.animation;
 
 import platformer.model.gameObjects.ObjType;
+import platformer.model.gameObjects.npc.NpcType;
 import platformer.utils.Utils;
 import java.awt.image.BufferedImage;
 
@@ -159,6 +160,16 @@ public class Animation {
         anim[ObjType.LOOT.ordinal()] = loadFromSprite(LOOT_IMG, 1, 0, LOOT_WID, LOOT_HEI, 0, LOOT_W, LOOT_H);
         anim[ObjType.TABLE.ordinal()] = loadFromSprite(TABLE_IMG, 1, 0, TABLE_WID, TABLE_HEI, 0, TABLE_W, TABLE_H);
         anim[ObjType.BOARD.ordinal()] = loadFromSprite(BOARD_IMG, 1, 0, BOARD_WID, BOARD_HEI, 0, BOARD_W, BOARD_H);
+
+        return anim;
+    }
+
+    // NPC
+    public BufferedImage[][] loadNpcs() {
+        BufferedImage[][] anim = new BufferedImage[2][4];
+
+        anim[NpcType.ANITA.ordinal()] = loadFromSprite(ANITA_SHEET, 4, 0, NPC_WID, NPC_HEI, 0, ANITA_W, ANITA_H);
+        anim[NpcType.NIKOLAS.ordinal()] = loadFromSprite(NIKOLAS_SHEET, 4, 0, NPC_WID, NPC_HEI, 0, ANITA_W, ANITA_H);
 
         return anim;
     }

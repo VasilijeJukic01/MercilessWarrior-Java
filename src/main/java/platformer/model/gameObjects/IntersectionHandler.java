@@ -4,6 +4,8 @@ import platformer.audio.Audio;
 import platformer.audio.Sound;
 import platformer.model.entities.enemies.EnemyManager;
 import platformer.model.entities.player.Player;
+import platformer.model.gameObjects.npc.Npc;
+import platformer.model.gameObjects.npc.NpcType;
 import platformer.model.gameObjects.objects.*;
 import platformer.model.gameObjects.projectiles.Projectile;
 
@@ -20,11 +22,9 @@ public class IntersectionHandler {
     private final EnemyManager enemyManager;
     private final ObjectManager objectManager;
 
-    private Class<? extends GameObject> intersectingObject;
-
     private final Class<? extends GameObject>[] classesToCheck = new Class[]{
             Shop.class, Blacksmith.class, SaveTotem.class, Loot.class, Spike.class,
-            Blocker.class, SmashTrap.class, Table.class, Board.class, Dog.class
+            Blocker.class, SmashTrap.class, Table.class, Board.class, Dog.class, Npc.class
     };
 
     public IntersectionHandler(EnemyManager enemyManager, ObjectManager objectManager) {
@@ -46,6 +46,7 @@ public class IntersectionHandler {
             boolean intersect = p.getHitBox().intersects(object.getHitBox());
             if (intersect) {
                 check = true;
+                objectManager.setIntersection(object);
             }
             if (intersect && isInstantDeath(object)) {
                 p.kill();
@@ -78,11 +79,10 @@ public class IntersectionHandler {
     public void checkPlayerIntersection(Player player) {
         for (Class<? extends GameObject> c : classesToCheck) {
             if (checkPlayerIntersection(player, c)) {
-                intersectingObject = c;
                 return;
             }
         }
-        intersectingObject = null;
+        objectManager.setIntersection(null);
     }
 
     public void checkEnemyIntersection(List<Projectile> projectiles) {
@@ -131,8 +131,19 @@ public class IntersectionHandler {
         return objectManager.getObjects(objectType);
     }
 
-    public Class<? extends GameObject> getIntersectingObject() {
-        return intersectingObject;
+    public String getIntersectingObject() {
+        GameObject object = objectManager.getIntersection();
+        if (object == null) return null;
+        if (object instanceof Shop) return "Shop";
+        if (object instanceof Blacksmith) return "Blacksmith";
+        if (object instanceof SaveTotem) return "SaveTotem";
+        if (object instanceof Loot) return "Loot";
+        if (object instanceof Table) return "Table";
+        if (object instanceof Board) return "Board";
+        if (object instanceof Dog) return "Dog";
+        if (object instanceof Npc && ((Npc)object).getNpcType() == NpcType.ANITA) return "NpcAnita";
+        if (object instanceof Npc && ((Npc)object).getNpcType() == NpcType.NIKOLAS) return "NpcNikolas";
+        return null;
     }
 
     public Loot getIntersectingLoot(Player player) {

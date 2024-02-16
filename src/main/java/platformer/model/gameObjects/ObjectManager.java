@@ -5,6 +5,7 @@ import platformer.audio.Audio;
 import platformer.audio.Sound;
 import platformer.model.entities.Direction;
 import platformer.model.entities.player.Player;
+import platformer.model.gameObjects.npc.Npc;
 import platformer.model.perks.PerksBonus;
 import platformer.model.entities.enemies.boss.SpearWoman;
 import platformer.model.gameObjects.objects.*;
@@ -32,17 +33,20 @@ public class ObjectManager {
     private IntersectionHandler intersectionHandler;
     private ObjectBreakHandler objectBreakHandler;
 
+    private GameObject intersection;
+
     private final BufferedImage[][] objects;
+    private final BufferedImage[][] npcs;
 
     Class<? extends GameObject>[] updateClasses = new Class[]{
             Coin.class, Container.class, Potion.class, Spike.class,
             Shop.class, Blocker.class, Blacksmith.class, Dog.class,
             SaveTotem.class, SmashTrap.class, Candle.class, Loot.class,
-            Table.class, Board.class
+            Table.class, Board.class, Npc.class
     };
     Class<? extends GameObject>[] renderBelow = new Class[] {
             Container.class, Potion.class, Spike.class,
-            Blocker.class, Dog.class, SmashTrap.class, Loot.class
+            Blocker.class, Dog.class, SmashTrap.class, Loot.class,
     };
     Class<? extends GameObject>[] renderAbove = new Class[] {
             SaveTotem.class, Shop.class, Blacksmith.class, Coin.class,
@@ -59,6 +63,7 @@ public class ObjectManager {
         this.gameState = gameState;
         initHandlers();
         this.objects = Animation.getInstance().loadObjects();
+        this.npcs = Animation.getInstance().loadNpcs();
         this.projectiles = new ArrayList<>();
         loadImages();
     }
@@ -220,7 +225,17 @@ public class ObjectManager {
 
     public void glowingRender(Graphics g, int xLevelOffset, int yLevelOffset) {
         Arrays.stream(renderAbove).forEach(renderClass -> renderObjects(g, xLevelOffset, yLevelOffset, renderClass));
+        renderNpcs(g, xLevelOffset, yLevelOffset);
         renderProjectiles(g, xLevelOffset, yLevelOffset);
+    }
+
+    private void renderNpcs(Graphics g, int xLevelOffset, int yLevelOffset) {
+        for (Npc npc : getObjects(Npc.class)) {
+            if (npc.isAlive()) {
+                BufferedImage[] anims = npcs[npc.getNpcType().ordinal()];
+                npc.render(g, xLevelOffset, yLevelOffset, anims);
+            }
+        }
     }
 
     private void updateArrowLaunchers(int[][] lvlData, Player player) {
@@ -319,11 +334,19 @@ public class ObjectManager {
         }
     }
 
-    public Class<? extends GameObject> getIntersectingObject() {
+    public String getIntersectingObject() {
         return intersectionHandler.getIntersectingObject();
     }
 
     public Loot getIntersectinLoot() {
         return intersectionHandler.getIntersectingLoot(gameState.getPlayer());
+    }
+
+    public void setIntersection(GameObject object) {
+        this.intersection = object;
+    }
+
+    public GameObject getIntersection() {
+        return intersection;
     }
 }

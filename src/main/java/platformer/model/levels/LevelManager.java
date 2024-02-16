@@ -59,7 +59,7 @@ public class LevelManager {
         for (int i = 0; i < 2; i++) {
             for (int j = 0; j < levelsLayer1.length; j++) {
                 if (levelsLayer1[i][j] != null)
-                    levels[i][j] = new Level(levelsLayer1[i][j], levelsLayer2[i][j]);
+                    levels[i][j] = new Level("level"+i+j, levelsLayer1[i][j], levelsLayer2[i][j]);
             }
         }
         Logger.getInstance().notify("Levels built successfully!", Message.NOTIFICATION);

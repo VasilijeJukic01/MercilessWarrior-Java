@@ -17,7 +17,7 @@ public abstract class GameObject implements AdvancedRenderable<Graphics>, Debug<
 
     protected boolean animate;
     protected boolean alive = true;
-    private final int animSpeed = 20;
+    protected int animSpeed = 20;
     protected int animTick, animIndex;
     protected boolean isOnGround;
 

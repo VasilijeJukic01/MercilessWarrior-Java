@@ -52,6 +52,9 @@ public final class AnimConstants {
     public static final int FOREST_SPRITE_W = 274, FOREST_SPRITE_H = 274;
     public static final int FOREST_SPRITE_ROW = 7, FOREST_SPRITE_COL = 7;
 
+    // NPC
+    public static final int ANITA_W = 32, ANITA_H = 32;
+
     // Frames
     public static final int MENU_FRAMES = 24;
     public static final int DEFAULT_PARTICLE_FRAMES = 8;

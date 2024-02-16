@@ -9,8 +9,7 @@ import platformer.model.entities.AttackState;
 import platformer.model.entities.player.Player;
 import platformer.model.entities.player.PlayerAction;
 import platformer.model.gameObjects.GameObject;
-import platformer.model.gameObjects.objects.Loot;
-import platformer.model.gameObjects.objects.Table;
+import platformer.model.gameObjects.npc.Npc;
 import platformer.state.GameState;
 import platformer.state.PlayingState;
 
@@ -162,26 +161,31 @@ public class GameStateController {
     // Actions
     private void interact() {
         if (gameState.getActiveState() == PlayingState.DIALOGUE) return;
-        Optional<? extends Class<? extends GameObject>> object = Optional.ofNullable(gameState.getObjectManager().getIntersectingObject());
+        Optional<String> object = Optional.ofNullable(gameState.getObjectManager().getIntersectingObject());
         object.ifPresent(this::handleInteraction);
     }
 
-    private void handleInteraction(Class<? extends GameObject> objectClass) {
-        if (objectClass == Loot.class) {
+    private void handleInteraction(String id) {
+        if (Objects.equals(id, "Loot")) {
             gameState.setOverlay(PlayingState.LOOTING);
         }
-        else if (objectClass == Table.class) {
+        else if (Objects.equals(id, "Table")) {
             gameState.setOverlay(PlayingState.CRAFTING);
         }
-        else activateDialogue(objectClass);
+        else activateDialogue(id);
     }
 
-    private void activateDialogue(Class<? extends GameObject> objectClass) {
+    private void activateDialogue(String id) {
         gameState.setOverlay(PlayingState.DIALOGUE);
         Random random = new Random();
-        int index = random.nextInt(gameState.getDialogueManager().getDialogues(objectClass).size());
-        List<String> dialogues = gameState.getDialogueManager().getDialogues(objectClass).get(index);
-        gameState.getDialogueManager().setDialogueObject(dialogues, objectClass);
+        int index = random.nextInt(gameState.getDialogueManager().getDialogues(id).size());
+        GameObject object = gameState.getObjectManager().getIntersection();
+        if (object instanceof Npc) {
+            int newIndex = ((Npc) object).getDialogueIndicator();
+            index = newIndex == -1 ? index : newIndex;
+        }
+        List<String> dialogues = gameState.getDialogueManager().getDialogues(id).get(index);
+        gameState.getDialogueManager().setDialogueObject(dialogues, object);
     }
 
     private void openInventory() {
