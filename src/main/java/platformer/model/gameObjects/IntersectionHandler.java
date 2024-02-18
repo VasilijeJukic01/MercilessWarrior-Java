@@ -2,6 +2,7 @@ package platformer.model.gameObjects;
 
 import platformer.audio.Audio;
 import platformer.audio.Sound;
+import platformer.model.entities.Direction;
 import platformer.model.entities.enemies.EnemyManager;
 import platformer.model.entities.player.Player;
 import platformer.model.gameObjects.npc.Npc;
@@ -71,6 +72,14 @@ public class IntersectionHandler {
             }
             else if (object instanceof Dog) {
                 ((Dog) object).setActive(intersect);
+            }
+            else if (object instanceof Npc) {
+               if (p.getHitBox().x < object.getHitBox().x - object.getXOffset()) {
+                   ((Npc) object).setDirection(Direction.RIGHT);
+               }
+               else {
+                   ((Npc) object).setDirection(Direction.LEFT);
+               }
             }
         }
         return check;

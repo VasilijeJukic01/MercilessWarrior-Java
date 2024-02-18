@@ -1,9 +1,12 @@
 package platformer.model.gameObjects.npc;
 
+import platformer.model.entities.Direction;
 import platformer.model.gameObjects.GameObject;
 import platformer.model.gameObjects.ObjType;
 
 import java.awt.*;
+import java.awt.geom.AffineTransform;
+import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.util.List;
 
@@ -16,9 +19,10 @@ public class Npc extends GameObject {
     private final NpcType npcType;
     private int progression = 1;
     private int dialogueIndicator = 0;
+    private Direction direction = Direction.RIGHT;
 
     public Npc(ObjType objType, int xPos, int yPos, NpcType npcType) {
-        super(objType, xPos, yPos + (int)(10*SCALE));
+        super(objType, xPos - (int)(35*SCALE), yPos + (int)(10*SCALE));
         super.animSpeed = 34;
         this.npcType = npcType;
         generateHitBox();
@@ -41,7 +45,16 @@ public class Npc extends GameObject {
     public void render(Graphics g, int xLevelOffset, int yLevelOffset, BufferedImage[] animations) {
         int x = (int)hitBox.x - xOffset - xLevelOffset;
         int y = (int)hitBox.y - yOffset - yLevelOffset;
-        g.drawImage(animations[animIndex], x, y, NPC_WID, NPC_HEI, null);
+        BufferedImage image = animations[animIndex];
+
+        if (direction == Direction.RIGHT) {
+            AffineTransform tx = AffineTransform.getScaleInstance(-1, 1);
+            tx.translate(-image.getWidth(null), 0);
+            AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
+            image = op.filter(image, null);
+        }
+
+        g.drawImage(image, x, y, NPC_WID, NPC_HEI, null);
         hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.MAGENTA);
     }
 
@@ -71,6 +84,10 @@ public class Npc extends GameObject {
 
     public int getProgression() {
         return progression;
+    }
+
+    public void setDirection(Direction direction) {
+        this.direction = direction;
     }
 
     public NpcType getNpcType() {
