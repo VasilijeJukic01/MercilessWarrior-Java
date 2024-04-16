@@ -1,14 +1,15 @@
-package launcher.controller;
+package platformer.launcher.controller;
 
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.PasswordField;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextField;
-import launcher.view.LauncherView;
+import platformer.launcher.view.LauncherView;
 import platformer.AppCore;
 
-import static launcher.Config.SCALING_FACTOR;
+import static platformer.launcher.Config.SCALING_FACTOR;
 
 public class LaunchController implements EventHandler<ActionEvent> {
 
@@ -17,19 +18,21 @@ public class LaunchController implements EventHandler<ActionEvent> {
     private String scale = "1";
 
     private final TextField tfName;
+    private final PasswordField passwordField;
     private final RadioButton rbYes;
     private final ComboBox<String> cbResolution;
 
-    public LaunchController(LauncherView launcherView, TextField tfName, RadioButton rbYes, ComboBox<String> cbResolution) {
+    public LaunchController(LauncherView launcherView, TextField tfName, PasswordField passwordField, RadioButton rbYes, ComboBox<String> cbResolution) {
         this.launcherView = launcherView;
         this.tfName = tfName;
+        this.passwordField = passwordField;
         this.rbYes = rbYes;
         this.cbResolution = cbResolution;
     }
 
     @Override
     public void handle(ActionEvent event) {
-        String[] args = new String[2];
+        String[] args = new String[3];
         switch (cbResolution.getSelectionModel().getSelectedIndex()) {
             case 0:
                 scale = "1";
@@ -45,6 +48,7 @@ public class LaunchController implements EventHandler<ActionEvent> {
         SCALING_FACTOR = Float.parseFloat(scale);
         args[0] = rbYes.isSelected() ? "Yes" : "No";
         args[1] = tfName.getText();
+        args[2] = passwordField.getText();
         launcherView.close();
         AppCore.main(args);
     }

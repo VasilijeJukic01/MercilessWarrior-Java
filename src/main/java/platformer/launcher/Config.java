@@ -1,4 +1,4 @@
-package launcher;
+package platformer.launcher;
 
 public class Config {
 

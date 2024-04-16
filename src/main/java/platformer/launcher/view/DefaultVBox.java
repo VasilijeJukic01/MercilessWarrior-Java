@@ -1,4 +1,4 @@
-package launcher.view;
+package platformer.launcher.view;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;

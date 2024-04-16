@@ -32,16 +32,20 @@ public class Database {
         settings.addParameter("PASSWORD", credentialsLoader.getDatabasePassword());
     }
 
+    public int createAccount(String username, String password) {
+        return storage.createAccount(username, password);
+    }
+
     public Account getData() {
-        return storage.loadData(launcherPrompt.getName());
+        return storage.loadAccountData(launcherPrompt.getName(), launcherPrompt.getPassword());
     }
 
     public List<BoardItem> loadLeaderboardData() {
         return storage.loadLeaderboardData();
     }
 
-    public void updateData(Account account) {
-        storage.updateData(account);
+    public void updateAccountData(Account account) {
+        storage.updateAccountData(account);
     }
 
 }

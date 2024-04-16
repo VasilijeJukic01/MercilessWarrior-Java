@@ -1,6 +1,6 @@
-package launcher;
+package platformer.launcher;
 
-import launcher.core.LauncherCore;
+import platformer.launcher.core.LauncherCore;
 
 public class Launcher {
 

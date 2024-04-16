@@ -1,6 +1,6 @@
 package platformer.constants;
 
-import static launcher.Config.SCALING_FACTOR;
+import static platformer.launcher.Config.SCALING_FACTOR;
 
 // Vocabulary
 

@@ -1,4 +1,4 @@
-package launcher.view;
+package platformer.launcher.view;
 
 import javafx.collections.FXCollections;
 import javafx.geometry.Pos;
@@ -7,12 +7,17 @@ import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
-import launcher.controller.LaunchController;
-import launcher.view.styler.FXStyler;
-import launcher.view.styler.Styler;
+import platformer.launcher.controller.LaunchController;
+import platformer.launcher.view.styler.FXStyler;
+import platformer.launcher.view.styler.Styler;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
+
+import static platformer.launcher.constants.LauncherConstants.*;
 
 @SuppressWarnings({"FieldCanBeLocal"})
 public class LauncherView extends Stage {
@@ -22,9 +27,11 @@ public class LauncherView extends Stage {
 
     private final Label lbLogo = new Label("Merciless Warrior Launcher");
     private final Label lbSpacing1 = new Label();
-    private final Label lbName = new Label("Name: ");
+    private final Label lbName = new Label("Name:      ");
+    private final Label lbPassword = new Label("Password: ");
 
     private final TextField tfName = new TextField();
+    private final PasswordField tfPassword = new PasswordField();
     private final Label lnEnableCheats = new Label("Enable cheats: ");
     private final Label lbYes = new Label("Yes");
     private final RadioButton rbEnableCheatsYes = new RadioButton();
@@ -35,14 +42,10 @@ public class LauncherView extends Stage {
 
     private final Label lbSpacing2 = new Label();
     private final Button btnLaunch = new Button("Launch");
+    private final Button btnRegister = new Button("Register");
     private final Button btnExit = new Button("Exit");
 
     private final ToggleGroup tgCheats = new ToggleGroup();
-
-    // Size
-    private final int BG_WID = 100, BG_HEI = 800;
-    private final int LOGO_WID = 200, LOGO_HEI = 100;
-    private final int SCENE_WID = 300, SCENE_HEI = 400;
 
     // Images
     private Image launcherIcon;
@@ -52,6 +55,7 @@ public class LauncherView extends Stage {
     private Image logo;
 
     public LauncherView() {
+        initModality(Modality.APPLICATION_MODAL);
         loadImages();
         init();
     }
@@ -64,7 +68,7 @@ public class LauncherView extends Stage {
                 BackgroundRepeat.NO_REPEAT,
                 BackgroundRepeat.NO_REPEAT,
                 BackgroundPosition.CENTER,
-                new BackgroundSize(BG_WID,BG_HEI, true, true,true,true)
+                new BackgroundSize(BG_WID, BG_HEI, true, true,true,true)
         );
         this.launcherBackground = new Background(background);
         this.logo = new Image(Objects.requireNonNull(getClass().getResource("/images/menu/menuLogo.png")).toExternalForm());
@@ -82,12 +86,8 @@ public class LauncherView extends Stage {
         scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/styles/style.css")).toExternalForm());
 
         Styler styler = new FXStyler();
-        styler.setBoldStyle(lbLogo);
-        styler.setBoldStyle(lbName);
-        styler.setBoldStyle(lbYes);
-        styler.setBoldStyle(lbNo);
-        styler.setBoldStyle(lnEnableCheats);
-        styler.setBoldStyle(lbResolution);
+        List<Label> labels = Arrays.asList(lbLogo, lbName, lbPassword, lbYes, lbNo, lnEnableCheats, lbResolution);
+        labels.forEach(styler::setBoldStyle);
     }
 
     private void initComponents() {
@@ -104,12 +104,15 @@ public class LauncherView extends Stage {
 
     private void initRoot() {
         root.getChildren().addAll(lbSpacing1, new DefaultHBox(Pos.CENTER, lbName, tfName),
+                new DefaultHBox(Pos.CENTER, lbPassword, tfPassword),
                 new DefaultHBox(Pos.CENTER, lnEnableCheats, lbYes, rbEnableCheatsYes, lbNo, rbEnableCheatsNo));
-        root.getChildren().addAll(new DefaultHBox(Pos.CENTER, lbResolution, cbResolution), lbSpacing2, btnLaunch, btnExit);
+        root.getChildren().addAll(new DefaultHBox(Pos.CENTER, lbResolution, cbResolution), lbSpacing2,
+                new DefaultHBox(Pos.CENTER, btnLaunch, btnRegister), btnExit);
     }
 
     private void initButtons() {
-        btnLaunch.setOnAction(new LaunchController(this, tfName, rbEnableCheatsYes, cbResolution));
+        btnLaunch.setOnAction(new LaunchController(this, tfName, tfPassword, rbEnableCheatsYes, cbResolution));
+        btnRegister.setOnAction(e -> new RegisterView(this).show());
         btnExit.setOnAction(e -> System.exit(0));
     }
 
@@ -121,4 +124,9 @@ public class LauncherView extends Stage {
         super.setResizable(false);
         super.setScene(scene);
     }
+
+    public Background getLauncherBackground() {
+        return launcherBackground;
+    }
+
 }

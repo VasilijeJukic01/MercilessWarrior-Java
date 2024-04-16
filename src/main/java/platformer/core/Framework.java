@@ -34,8 +34,8 @@ public class Framework {
     }
 
     // Init
-    public void init(String cheats, String name) {
-        this.launcherPrompt = new LauncherPrompt(name, cheats.equals("Yes"));
+    public void init(String cheats, String name, String password) {
+        this.launcherPrompt = new LauncherPrompt(name, password, cheats.equals("Yes"));
         this.database = new Database(launcherPrompt);
         this.serializer = new GameSerializer();
         initAccount();
@@ -56,7 +56,7 @@ public class Framework {
 
     // Save
     public void cloudSave() {
-        database.updateData(account);
+        database.updateAccountData(account);
         initAccount();
     }
 

@@ -1,8 +1,8 @@
-package launcher.core;
+package platformer.launcher.core;
 
 import javafx.application.Application;
 import javafx.stage.Stage;
-import launcher.view.LauncherView;
+import platformer.launcher.view.LauncherView;
 
 public class LauncherCore extends Application {
 
