@@ -1,5 +1,9 @@
 package platformer.audio;
 
+/**
+ * Singleton class that is responsible for creating an instance of the AudioPlayer.
+ * The AudioPlayer is responsible for playing the audio in the game.
+ */
 public class Audio {
 
     private static volatile Audio instance = null;

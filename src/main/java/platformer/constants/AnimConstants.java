@@ -11,6 +11,9 @@ SL - Slider
 
  */
 
+/**
+ * Constants for sprite dimensions.
+ */
 public final class AnimConstants {
 
     // Sprite dimension

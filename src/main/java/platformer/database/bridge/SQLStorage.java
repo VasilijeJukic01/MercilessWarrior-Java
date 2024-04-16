@@ -16,6 +16,10 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.stream.IntStream;
 
+/**
+ The SQLStorage class is a bridge between the game and the SQL database.
+ It is responsible for executing SQL queries and operations on the database.
+ */
 public class SQLStorage implements Storage {
 
     private final Settings settings;
@@ -42,7 +46,10 @@ public class SQLStorage implements Storage {
         this.databaseConnection = new DatabaseConnection();
     }
 
-    // Execution
+    /**
+     * Executes a given action on the database.
+     * @param action the action to be executed
+     */
     private void execute(Consumer<Connection> action) {
         try {
             databaseConnection.initConnection(settings);

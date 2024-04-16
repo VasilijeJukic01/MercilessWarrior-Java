@@ -17,6 +17,13 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.util.*;
 
+/**
+ * The GameStateController class is responsible for handling game state changes.
+ * It provides functionality to handle mouse and keyboard events, and perform actions based on these events.
+ * It also interacts with the GameState, Game, and Player classes to manage the game state.
+ * <p>
+ * The class maintains a set of pressed keys to track which keys are currently pressed.
+ */
 public class GameStateController {
 
     private final Set<Integer> pressedKeys = new TreeSet<>();

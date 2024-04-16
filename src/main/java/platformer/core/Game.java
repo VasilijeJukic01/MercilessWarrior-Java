@@ -12,6 +12,12 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
 
+/**
+ * Entry point for the game.
+ * It initializes and manages the game's core components such as the GameFrame, StateManager, and AudioOptions.
+ * <p>
+ * The class interacts with the StateManager and Audio.
+ */
 @SuppressWarnings({"InfiniteLoopStatement", "FieldCanBeLocal"})
 public class Game implements Runnable {
 
@@ -53,6 +59,16 @@ public class Game implements Runnable {
     }
 
     // Core
+    /**
+     * Controlling the game's frame rate (FPS) and update speed (UPS).
+     * It ensures that the game updates and renders at a consistent speed on different hardware.
+     * <p>
+     * The method calculates the time it should take for each frame and update based on the FPS_LOCK and UPS_LOCK values.
+     * It then enters an infinite loop where it continuously checks the elapsed time, and if enough time has passed, it calls the update or render methods.
+     * This loop continues until the game is closed.
+     * <p>
+     * This method is run in a separate thread when the game is started.
+     */
     @Override
     public void run() {
         final double timePerFrame = 1000000000.0 / FPS_LOCK;

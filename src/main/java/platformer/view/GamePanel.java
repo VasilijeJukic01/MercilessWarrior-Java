@@ -10,6 +10,9 @@ import java.awt.*;
 
 import static platformer.constants.Constants.*;
 
+/**
+ * Responsible for rendering the game.
+ */
 @SuppressWarnings("FieldCanBeLocal")
 public class GamePanel extends JPanel {
 

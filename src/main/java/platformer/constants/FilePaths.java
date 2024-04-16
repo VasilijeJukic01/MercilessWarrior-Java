@@ -1,5 +1,9 @@
 package platformer.constants;
 
+/**
+ * This class contains all the file paths for the game's assets.
+ * It is used to keep all the paths in one place for easy access.
+ */
 public final class FilePaths {
 
     // Player

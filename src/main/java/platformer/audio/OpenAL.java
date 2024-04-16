@@ -12,6 +12,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
+/**
+ * OpenAL class that implements the AudioPlayer interface.
+ * It is responsible for loading and playing audio files.
+ * It uses the OpenAL library to play audio files.
+ */
 public class OpenAL implements AudioPlayer<Song, Sound>  {
 
     private final List<Integer> songs = new ArrayList<>();

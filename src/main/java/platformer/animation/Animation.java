@@ -27,6 +27,20 @@ public class Animation {
     }
 
     // Animation loader
+    /**
+     * Load animation from sprite sheet
+     *
+     * @param basePath path to sprite sheet
+     * @param frames number of frames in animation
+     * @param row row of animation
+     * @param width width of frame
+     * @param height height of frame
+     * @param offset offset of animation
+     * @param x width of sprite
+     * @param y height of sprite
+     *
+     * @return animation
+     */
     public BufferedImage[] loadFromSprite(String basePath, int frames, int row, int width, int height, int offset, int x, int y) {
         BufferedImage sprite = Utils.getInstance().importImage(basePath, -1, -1);
         BufferedImage[] animation = new BufferedImage[frames];

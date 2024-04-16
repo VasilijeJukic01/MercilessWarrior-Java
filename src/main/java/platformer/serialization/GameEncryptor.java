@@ -10,6 +10,11 @@ import java.nio.charset.StandardCharsets;
 import java.security.spec.KeySpec;
 import java.util.Base64;
 
+/**
+ * This class implements the Encryptor interface for encrypting and decrypting game data.
+ * <p>
+ * It uses AES encryption with PBKDF2 key derivation algorithm.
+ */
 public class GameEncryptor implements Encryptor {
 
     private static final String SECRET_KEY = "HPLXBALYYYZWNX";
@@ -25,6 +30,12 @@ public class GameEncryptor implements Encryptor {
             (byte) 0x76, (byte) 0x54, (byte) 0x32, (byte) 0x10
     };
 
+    /**
+     * Encrypts the provided data using AES encryption.
+     * <p>
+     * @param data The data to be encrypted.
+     * @return The encrypted data as a Base64-encoded string.
+     */
     @Override
     public String encrypt(String data) {
         try {
@@ -53,6 +64,12 @@ public class GameEncryptor implements Encryptor {
         return null;
     }
 
+    /**
+     * Decrypts the provided data using AES decryption.
+     * <p>
+     * @param data The data to be decrypted (Base64-encoded string).
+     * @return The decrypted data as a string.
+     */
     @Override
     public String decrypt(String data) {
         try {

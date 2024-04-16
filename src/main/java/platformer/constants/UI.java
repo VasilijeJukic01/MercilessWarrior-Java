@@ -14,6 +14,9 @@ PORT - Portrait
 
  */
 
+/**
+ * This class contains all the constants related to the UI.
+ */
 public final class UI {
 
     // Menu UI

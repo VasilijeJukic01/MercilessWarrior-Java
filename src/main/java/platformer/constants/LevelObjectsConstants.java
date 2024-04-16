@@ -3,6 +3,9 @@ package platformer.constants;
 import static platformer.constants.Constants.SCALE;
 import static platformer.constants.Constants.TILES_DEFAULT_SIZE;
 
+/**
+ * Constants for level objects sizes.
+ */
 public final class LevelObjectsConstants {
 
     public static final int TILE_SIZE_1HALF = scale(TILES_DEFAULT_SIZE*1.5);

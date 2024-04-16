@@ -15,6 +15,11 @@ import java.util.List;
 
 import static platformer.constants.FilePaths.SAVE_PATH;
 
+/**
+ * The GameSerializer class implements the Serializer interface for serializing and deserializing game data.
+ * <p>
+ * It provides methods to save game data to files and load game data from files.
+ */
 public class GameSerializer implements Serializer<Account, List<Account>> {
 
     private final Encryptor encryptor;
@@ -25,6 +30,12 @@ public class GameSerializer implements Serializer<Account, List<Account>> {
 
     private final List<String> saves = List.of("save1", "save2", "save3");
 
+    /**
+     * Serializes the provided account data and saves it to the specified index file.
+     * <p>
+     * @param account The account object to be serialized and saved.
+     * @param index The index of the save file.
+     */
     @Override
     public void serialize(Account account, int index) {
         String day = LocalDate.now().getDayOfWeek().toString().substring(0, 3);
@@ -47,6 +58,11 @@ public class GameSerializer implements Serializer<Account, List<Account>> {
         }
     }
 
+    /**
+     * Deserializes the game data from save files and returns a list of account objects.
+     * <p>
+     * @return A list of account objects deserialized from save files.
+     */
     @Override
     public List<Account> deserialize() {
         List<Account> savedFilesData = new ArrayList<>();

@@ -7,6 +7,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
 
+/**
+ * This class is responsible for loading the credentials from the database.config file.
+ */
 public class CredentialsLoader {
 
     private final Properties properties;

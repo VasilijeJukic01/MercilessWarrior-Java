@@ -17,6 +17,9 @@ FB - Fireball
 
  */
 
+/**
+ * Constants class contains all the constants used in the game.
+ */
 public final class Constants {
 
     // Resolution Settings

@@ -8,6 +8,12 @@ import platformer.serialization.Serializer;
 
 import java.util.List;
 
+/**
+ * Singleton that serves as the main entry point for the game.
+ * It initializes and manages the game's core components such as the Game, Account, and GameSaveController.
+ * <p>
+ * The class interacts with the Database, Serializer and Leaderboard.
+ */
 public class Framework {
 
     private Game game;

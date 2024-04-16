@@ -1,5 +1,8 @@
 package platformer.core;
 
+/**
+ * Represents the prompt that the launcher will propagate to the game core.
+ */
 public class LauncherPrompt {
 
     private final String name;
