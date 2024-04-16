@@ -1,4 +1,4 @@
-package launcher.view.styler;
+package platformer.launcher.view.styler;
 
 public interface Styler {
 

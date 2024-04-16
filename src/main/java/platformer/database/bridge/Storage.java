@@ -7,10 +7,12 @@ import java.util.List;
 
 public interface Storage {
 
-    Account loadData(String name);
+    int createAccount(String username, String password);
+
+    Account loadAccountData(String name, String password);
 
     List<BoardItem> loadLeaderboardData();
 
-    void updateData(Account account);
+    void updateAccountData(Account account);
 
 }
