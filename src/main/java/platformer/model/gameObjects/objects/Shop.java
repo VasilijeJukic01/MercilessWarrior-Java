@@ -49,10 +49,15 @@ public class Shop extends GameObject {
         addShopItem(ItemType.HEALTH,            1, 10, HEALTH_COST);
         addShopItem(ItemType.STAMINA,           1, 6, STAMINA_COST);
         addShopItem(ItemType.IRON,              16, 25, IRON_COST);
+        addShopItem(ItemType.SILVER,            16, 25, SILVER_COST);
         addShopItem(ItemType.COPPER,            16, 25, COPPER_COST);
         addShopItem(ItemType.AMETHYST,          1, 5, AMETHYST_COST);
         addShopItem(ItemType.SONIC_QUARTZ,      1, 3, SONIC_QUARTZ_COST);
+        addShopItem(ItemType.MAGMA,             1, 4, MAGMA_COST);
+        addShopItem(ItemType.AZURELITE,         1, 2, AZURELITE_COST);
         addShopItem(ItemType.ELECTRICITE,       1, 1, ELECTRICITE_COST);
+        addShopItem(ItemType.ROSALLIUM,         1, 1, ROSALLIUM_COST);
+
         addShopItem(ItemType.HELMET_WARRIOR,    1, 1, HELMET_WARRIOR_COST);
         addShopItem(ItemType.ARMOR_WARRIOR,     1, 1, ARMOR_WARRIOR_COST);
         addShopItem(ItemType.BRACELETS_WARRIOR, 1, 1, BRACELETS_WARRIOR_COST);

@@ -25,6 +25,7 @@ public class EquipmentHandler {
         equipment.put("Bracelets", 4);
         equipment.put("Trousers", 1);
         equipment.put("Ring", 3);
+        equipment.put("Charm", 3);
         equipment.put("Boots", 5);
     }
 

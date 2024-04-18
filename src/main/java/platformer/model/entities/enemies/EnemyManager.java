@@ -114,7 +114,7 @@ public class EnemyManager {
     private void checkEnemyDying(Enemy e, Player player) {
         Random rand = new Random();
         if (e.getEnemyAction() == Anim.DEATH) {
-            gameState.getObjectManager().generateCoins(e.getHitBox());
+            gameState.getObjectManager().generateLoot(e);
             player.changeStamina(rand.nextInt(5));
             player.changeExp(rand.nextInt(50)+100);
         }

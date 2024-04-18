@@ -4,6 +4,7 @@ import platformer.animation.Animation;
 import platformer.audio.Audio;
 import platformer.audio.Sound;
 import platformer.model.entities.Direction;
+import platformer.model.entities.enemies.Enemy;
 import platformer.model.entities.player.Player;
 import platformer.model.gameObjects.npc.Npc;
 import platformer.model.perks.PerksBonus;
@@ -119,8 +120,9 @@ public class ObjectManager {
         objectBreakHandler.checkObjectBreak(attackBox, gameState.getSpellManager().getFlames());
     }
 
-    public void generateCoins(Rectangle2D.Double location) {
-        objectBreakHandler.generateEnemyLoot(location);
+    public void generateLoot(Enemy e) {
+        Rectangle2D.Double location = e.getHitBox();
+        objectBreakHandler.generateEnemyLoot(location, e.getEnemyType());
     }
 
     public void checkProjectileDeflect(Rectangle2D.Double attackBox) {

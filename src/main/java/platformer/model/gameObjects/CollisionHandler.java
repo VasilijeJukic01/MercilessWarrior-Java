@@ -4,6 +4,7 @@ import platformer.model.entities.Direction;
 import platformer.model.entities.Entity;
 import platformer.model.gameObjects.objects.Blacksmith;
 import platformer.model.gameObjects.objects.Container;
+import platformer.model.gameObjects.objects.Loot;
 import platformer.model.levels.LevelManager;
 import platformer.utils.Utils;
 
@@ -140,6 +141,7 @@ public class CollisionHandler {
     public void updateObjectInAir() {
         updateObjectInAir(Container.class);
         updateObjectInAir(Blacksmith.class);
+        updateObjectInAir(Loot.class);
     }
 
     // Helper

@@ -1,5 +1,6 @@
 package platformer.model.gameObjects.objects;
 
+import platformer.model.entities.enemies.EnemyType;
 import platformer.model.gameObjects.GameObject;
 import platformer.model.gameObjects.ObjType;
 import platformer.model.inventory.InventoryItem;
@@ -20,10 +21,10 @@ public class Loot extends GameObject {
     private final List<InventoryItem> items = new ArrayList<>();
     private final List<ItemType> validLoot = List.of(ItemType.COPPER, ItemType.IRON);
 
-    public Loot(ObjType objType, int xPos, int yPos) {
+    public Loot(ObjType objType, int xPos, int yPos, EnemyType enemyType) {
         super(objType, xPos, yPos);
         generateHitBox();
-        randomizeItems();
+        randomizeItems(enemyType);
     }
 
     private void generateHitBox() {
@@ -33,7 +34,13 @@ public class Loot extends GameObject {
         super.yOffset = LOOT_OFFSET_Y;
     }
 
-    private void randomizeItems() {
+    private void randomizeItems(EnemyType enemyType) {
+        if (enemyType == EnemyType.SPEAR_WOMAN) generateBossLoot();
+        else generateStandardLoot();
+
+    }
+
+    private void generateStandardLoot() {
         Random rand = new Random();
         for (ItemType itemType : validLoot) {
             int chance = rand.nextInt(100);
@@ -50,6 +57,11 @@ public class Loot extends GameObject {
                 items.add(new InventoryItem(itemType, img, amount));
             }
         }
+    }
+
+    private void generateBossLoot() {
+        BufferedImage img = Utils.getInstance().importImage(ItemType.CHARM_THUNDERBOLT.getImg(), -1, -1);
+        items.add(new InventoryItem(ItemType.CHARM_THUNDERBOLT, img, 1));
     }
 
     @Override

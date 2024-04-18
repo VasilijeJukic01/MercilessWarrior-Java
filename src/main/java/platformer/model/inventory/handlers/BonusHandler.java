@@ -24,6 +24,7 @@ public class BonusHandler {
         bonuses.put(ItemType.BOOTS_WARRIOR, ItemBonus.BOOTS_WARRIOR);
         bonuses.put(ItemType.ARMOR_GUARDIAN, ItemBonus.ARMOR_GUARDIAN);
         bonuses.put(ItemType.RING_AMETHYST, ItemBonus.RING_AMETHYST);
+        bonuses.put(ItemType.CHARM_THUNDERBOLT, ItemBonus.RING_THUNDERBOLT_CHARM);
     }
 
     public void applyBonus(ItemType itemType) {

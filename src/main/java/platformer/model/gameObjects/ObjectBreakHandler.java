@@ -3,6 +3,7 @@ package platformer.model.gameObjects;
 import platformer.audio.Audio;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
+import platformer.model.entities.enemies.EnemyType;
 import platformer.model.gameObjects.objects.Loot;
 import platformer.model.perks.PerksBonus;
 import platformer.model.gameObjects.objects.Coin;
@@ -64,9 +65,9 @@ public class ObjectBreakHandler {
         }
     }
 
-    public void generateEnemyLoot(Rectangle2D.Double location) {
+    public void generateEnemyLoot(Rectangle2D.Double location, EnemyType enemyType) {
        generateCoins(location);
-       generateLoot(location);
+       generateLoot(location, enemyType);
     }
 
     private void generateCoins(Rectangle2D.Double location) {
@@ -80,10 +81,10 @@ public class ObjectBreakHandler {
         }
     }
 
-    private void generateLoot(Rectangle2D.Double location) {
+    private void generateLoot(Rectangle2D.Double location, EnemyType enemyType) {
         int x = (int)(location.width / 4) + (int)location.x;
         int y = (int)(location.height / 2.3) + (int)location.y;
-        Loot loot = new Loot(ObjType.LOOT, x, y);
+        Loot loot = new Loot(ObjType.LOOT, x, y, enemyType);
         objectManager.addGameObject(loot);
     }
 
