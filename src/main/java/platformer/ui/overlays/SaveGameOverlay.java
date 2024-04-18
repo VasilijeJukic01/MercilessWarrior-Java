@@ -13,6 +13,10 @@ import static platformer.constants.Constants.MEDIUM_BTN_WID;
 import static platformer.constants.UI.SAVE_BTN_X;
 import static platformer.constants.UI.SAVE_BTN_Y;
 
+/**
+ * This class manages the save game overlay in the game.
+ * It lets the player interact with the save game mechanics.
+ */
 public class SaveGameOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
 
     private MediumButton saveBtn;

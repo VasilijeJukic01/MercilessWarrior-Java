@@ -10,6 +10,9 @@ import static platformer.constants.AnimConstants.MENU_FRAMES;
 import static platformer.constants.Constants.*;
 import static platformer.constants.UI.*;
 
+/**
+ * This class is responsible for rendering the surface for overlay of the game.
+ */
 public class OverlayLayer {
 
     public static volatile OverlayLayer instance = null;

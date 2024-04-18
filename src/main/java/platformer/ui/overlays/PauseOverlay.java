@@ -17,6 +17,10 @@ import static platformer.constants.Constants.*;
 import static platformer.constants.FilePaths.*;
 import static platformer.constants.UI.*;
 
+/**
+ * PauseOverlay class is an overlay that is displayed when the game is paused.
+ * It allows the player to interact with pause game options.
+ */
 public class PauseOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
 
     private final Game game;

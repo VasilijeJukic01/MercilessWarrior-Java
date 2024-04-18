@@ -8,6 +8,10 @@ import static platformer.constants.Constants.FONT_MEDIUM;
 import static platformer.constants.Constants.SCALE;
 import static platformer.constants.UI.*;
 
+/**
+ * The GameSlot class represents a save slot in the game where a player's account information is stored.
+ * It can be either a local save slot or a database slot.
+ */
 public class GameSlot {
 
     private final boolean databaseSlot;
@@ -65,6 +69,7 @@ public class GameSlot {
         return (x >= xPos && x <= xPos + GAME_SLOT_WID && y >= yPos && y <= yPos + GAME_SLOT_HEI);
     }
 
+    // Getters and Setters
     public void setSelected(boolean value) {
         this.selected = value;
     }

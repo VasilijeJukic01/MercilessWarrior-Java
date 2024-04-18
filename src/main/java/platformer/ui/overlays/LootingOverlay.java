@@ -21,6 +21,9 @@ import static platformer.constants.FilePaths.*;
 import static platformer.constants.UI.*;
 import static platformer.constants.UI.SLOT_SIZE;
 
+/**
+ * Class that represents the overlay that is displayed when the player is looting.
+ */
 public class LootingOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
 
     private final GameState gameState;

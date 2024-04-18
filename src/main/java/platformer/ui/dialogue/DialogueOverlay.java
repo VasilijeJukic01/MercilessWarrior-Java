@@ -17,6 +17,12 @@ import static platformer.constants.Constants.FONT_DIALOGUE;
 import static platformer.constants.Constants.SCALE;
 import static platformer.constants.UI.*;
 
+/**
+ * This class handles the display of dialogues in the game, including the animation of text appearing and the interaction with the user.
+ * <p>
+ * The class implements the Overlay interface, which means it has methods for handling mouse and keyboard events, as well as updating and
+ * rendering the overlay.
+ */
 public class DialogueOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
 
     private RoundRectangle2D dialogueBox;

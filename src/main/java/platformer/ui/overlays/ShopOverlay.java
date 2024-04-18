@@ -21,6 +21,10 @@ import static platformer.constants.Constants.*;
 import static platformer.constants.FilePaths.*;
 import static platformer.constants.UI.*;
 
+/**
+ * ShopOverlay class is responsible for rendering the shop overlay.
+ * It allows the player to buy and sell items from the shop.
+ */
 public class ShopOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
 
     private final GameState gameState;

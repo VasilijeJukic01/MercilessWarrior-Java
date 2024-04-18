@@ -10,6 +10,12 @@ import java.awt.event.MouseEvent;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Manages the overlays that are displayed on top of the game screen.
+ * <p>
+ * Overlays are used to display additional information or options to the player.
+ * The overlay that is displayed is determined by the current playing state.
+ */
 public class OverlayManager {
 
     private final GameState gameState;

@@ -10,6 +10,10 @@ import java.util.function.Consumer;
 import static platformer.constants.Constants.SOUND_BTN_SIZE;
 import static platformer.constants.UI.*;
 
+/**
+ * The AudioOptions class is responsible for updating and rendering the audio options in the game.
+ * This includes sound effects (SFX) and music.
+ */
 public class AudioOptions {
 
     private AudioButton sfxBtn, musicBtn;

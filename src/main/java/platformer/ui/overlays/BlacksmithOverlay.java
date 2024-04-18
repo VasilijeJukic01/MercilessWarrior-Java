@@ -19,6 +19,10 @@ import static platformer.constants.Constants.*;
 import static platformer.constants.FilePaths.*;
 import static platformer.constants.UI.*;
 
+/**
+ * BlacksmithOverlay is a class that is responsible for rendering the blacksmith overlay.
+ * The blacksmith overlay is a screen that allows the player to interact with the blacksmith mechanics.
+ */
 public class BlacksmithOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
 
     private final GameState gameState;

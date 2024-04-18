@@ -17,6 +17,9 @@ import static platformer.constants.Constants.*;
 import static platformer.constants.FilePaths.*;
 import static platformer.constants.UI.*;
 
+/**
+ * Class that represents the overlay that is displayed when the player dies.
+ */
 public class GameOverOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
 
     private final Game game;

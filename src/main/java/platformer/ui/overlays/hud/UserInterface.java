@@ -12,6 +12,10 @@ import static platformer.constants.FilePaths.PLAYER_HUD;
 import static platformer.constants.FilePaths.PLAYER_PORTRAIT;
 import static platformer.constants.UI.*;
 
+/**
+ * This class is responsible for rendering the player's HUD.
+ * It displays the player's health, stamina, experience, portrait, coins, level and cooldowns.
+ */
 public class UserInterface {
 
     private final Player player;

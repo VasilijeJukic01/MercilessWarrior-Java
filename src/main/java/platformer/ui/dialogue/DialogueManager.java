@@ -11,6 +11,12 @@ import java.util.*;
 
 import static platformer.constants.FilePaths.OBJECT_DIALOGUES;
 
+/**
+ * This class manages all dialogues in the game.
+ * It reads dialogues from a file and stores them in a map.
+ * <p>
+ * The class also propagate the dialogues to the dialogue overlay and updates the dialogues.
+ */
 public class DialogueManager {
 
     private final GameState gameState;

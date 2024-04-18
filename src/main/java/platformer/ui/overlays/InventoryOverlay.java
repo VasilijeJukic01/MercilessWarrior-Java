@@ -21,6 +21,9 @@ import static platformer.constants.Constants.*;
 import static platformer.constants.FilePaths.*;
 import static platformer.constants.UI.*;
 
+/**
+ * Class that represents the overlay that is displayed when the player opens the inventory.
+ */
 public class InventoryOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
 
     private final GameState gameState;

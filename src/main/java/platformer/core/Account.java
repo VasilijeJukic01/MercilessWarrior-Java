@@ -21,6 +21,9 @@ public class Account {
 
     private transient boolean enableCheats;
 
+    /**
+     * No account constructor
+     */
     public Account() {
         this.name = "Default";
         this.password = "";
@@ -31,6 +34,9 @@ public class Account {
         this.playtime = 0;
     }
 
+    /**
+     * Standard constructor
+     */
     public Account(String name, String password, int accountID, int settingsID, int spawn, int coins, int tokens, int level, int exp) {
         this.name = name;
         this.password = password;
@@ -43,6 +49,11 @@ public class Account {
         this.exp = exp;
     }
 
+    /**
+     * Prototype constructor
+     * <p>
+     * @param account Account to copy
+     */
     public Account(Account account) {
         this.name = account.name;
         this.password = account.password;
@@ -94,6 +105,7 @@ public class Account {
         this.playtime = 0;
     }
 
+    // Getters and Setters
     public String getName() {
         return name;
     }

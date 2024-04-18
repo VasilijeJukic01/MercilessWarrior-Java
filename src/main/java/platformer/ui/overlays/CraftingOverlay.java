@@ -24,6 +24,10 @@ import static platformer.constants.FilePaths.*;
 import static platformer.constants.UI.*;
 import static platformer.constants.UI.SLOT_SIZE;
 
+/**
+ * CraftingOverlay is a class that is responsible for rendering the crafting overlay.
+ * The crafting overlay is a screen that allows the player to interact with the crafting mechanics.
+ */
 public class CraftingOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
 
     private final GameState gameState;
