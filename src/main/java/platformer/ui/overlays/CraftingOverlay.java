@@ -12,6 +12,7 @@ import platformer.ui.buttons.SmallButton;
 import platformer.utils.Utils;
 
 import java.awt.*;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
@@ -23,7 +24,7 @@ import static platformer.constants.FilePaths.*;
 import static platformer.constants.UI.*;
 import static platformer.constants.UI.SLOT_SIZE;
 
-public class CraftingOverlay implements Overlay<MouseEvent, Graphics> {
+public class CraftingOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
 
     private final GameState gameState;
 
@@ -292,6 +293,52 @@ public class CraftingOverlay implements Overlay<MouseEvent, Graphics> {
     public void mouseMoved(MouseEvent e) {
         setMouseMoved(e, smallButtons);
         setMouseMoved(e, mediumButtons);
+    }
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+        switch (e.getKeyCode()) {
+            case KeyEvent.VK_UP:
+                moveUp();
+                break;
+            case KeyEvent.VK_DOWN:
+                moveDown();
+                break;
+            case KeyEvent.VK_LEFT:
+                moveLeft();
+                break;
+            case KeyEvent.VK_RIGHT:
+                moveRight();
+                break;
+            case KeyEvent.VK_C:
+                releaseCraftButton();
+                break;
+            default: break;
+        }
+    }
+
+    private void moveUp() {
+        int y = slotNumber / INVENTORY_SLOT_MAX_ROW;
+        if (y > 0) slotNumber -= INVENTORY_SLOT_MAX_ROW;
+        setSelectedSlot();
+    }
+
+    private void moveDown() {
+        int y = slotNumber / INVENTORY_SLOT_MAX_ROW;
+        if (y < INVENTORY_SLOT_MAX_COL - 1) slotNumber += INVENTORY_SLOT_MAX_ROW;
+        setSelectedSlot();
+    }
+
+    private void moveLeft() {
+        int x = slotNumber % INVENTORY_SLOT_MAX_ROW;
+        if (x > 0) slotNumber--;
+        setSelectedSlot();
+    }
+
+    private void moveRight() {
+        int x = slotNumber % INVENTORY_SLOT_MAX_ROW;
+        if (x < INVENTORY_SLOT_MAX_ROW - 1) slotNumber++;
+        setSelectedSlot();
     }
 
     private void setMouseMoved(MouseEvent e, AbstractButton[] buttons) {

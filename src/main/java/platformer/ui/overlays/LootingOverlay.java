@@ -21,7 +21,7 @@ import static platformer.constants.FilePaths.*;
 import static platformer.constants.UI.*;
 import static platformer.constants.UI.SLOT_SIZE;
 
-public class LootingOverlay implements Overlay<MouseEvent, Graphics> {
+public class LootingOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
 
     private final GameState gameState;
     private final MediumButton[] buttons;
@@ -211,6 +211,7 @@ public class LootingOverlay implements Overlay<MouseEvent, Graphics> {
         return mediumButton.getButtonHitBox().contains(e.getX(), e.getY());
     }
 
+    @Override
     public void keyPressed(KeyEvent e) {
         if (e.getKeyCode() == KeyEvent.VK_UP) {
             slotNumber -= INVENTORY_SLOT_MAX_ROW;

@@ -11,6 +11,7 @@ import platformer.ui.buttons.SmallButton;
 import platformer.utils.Utils;
 
 import java.awt.*;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
@@ -20,7 +21,7 @@ import static platformer.constants.Constants.*;
 import static platformer.constants.FilePaths.*;
 import static platformer.constants.UI.*;
 
-public class InventoryOverlay implements Overlay<MouseEvent, Graphics> {
+public class InventoryOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
 
     private final GameState gameState;
 
@@ -371,6 +372,82 @@ public class InventoryOverlay implements Overlay<MouseEvent, Graphics> {
         setMouseMoved(e, mediumButtons);
         setMouseMoved(e, new AbstractButton[]{unequipBtn});
     }
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+        switch (e.getKeyCode()) {
+            case KeyEvent.VK_UP:
+                moveUp();
+                break;
+            case KeyEvent.VK_DOWN:
+                moveDown();
+                break;
+            case KeyEvent.VK_LEFT:
+                moveLeft();
+                break;
+            case KeyEvent.VK_RIGHT:
+                moveRight();
+                break;
+            case KeyEvent.VK_X:
+                useItem();
+                break;
+            default: break;
+        }
+    }
+
+    private void moveUp() {
+        if (isInBackpack) {
+            backpackSlotNumber -= INVENTORY_SLOT_MAX_ROW;
+            backpackSlotNumber = Math.max(0, backpackSlotNumber);
+            setSelectedSlotBackpack();
+        } else {
+            equipmentSlotNumber -= EQUIPMENT_SLOT_MAX_ROW;
+            equipmentSlotNumber = Math.max(0, equipmentSlotNumber);
+            setSelectedSlotEquipment();
+        }
+    }
+
+    private void moveDown() {
+        if (isInBackpack) {
+            backpackSlotNumber += INVENTORY_SLOT_MAX_ROW;
+            backpackSlotNumber = Math.min(INVENTORY_SLOT_MAX_ROW * INVENTORY_SLOT_MAX_COL - 1, backpackSlotNumber);
+            setSelectedSlotBackpack();
+        } else {
+            equipmentSlotNumber += EQUIPMENT_SLOT_MAX_ROW;
+            equipmentSlotNumber = Math.min(EQUIPMENT_SLOT_MAX_ROW * EQUIPMENT_SLOT_MAX_COL - 1, equipmentSlotNumber);
+            setSelectedSlotEquipment();
+        }
+    }
+
+    private void moveLeft() {
+        if (isInBackpack) {
+            backpackSlotNumber--;
+            backpackSlotNumber = Math.max(0, backpackSlotNumber);
+            setSelectedSlotBackpack();
+        } else {
+            equipmentSlotNumber--;
+            equipmentSlotNumber = Math.max(0, equipmentSlotNumber);
+            setSelectedSlotEquipment();
+        }
+    }
+
+    private void moveRight() {
+        if (isInBackpack) {
+            backpackSlotNumber++;
+            backpackSlotNumber = Math.min(INVENTORY_SLOT_MAX_ROW * INVENTORY_SLOT_MAX_COL - 1, backpackSlotNumber);
+            setSelectedSlotBackpack();
+        } else {
+            equipmentSlotNumber++;
+            equipmentSlotNumber = Math.min(EQUIPMENT_SLOT_MAX_ROW * EQUIPMENT_SLOT_MAX_COL - 1, equipmentSlotNumber);
+            setSelectedSlotEquipment();
+        }
+    }
+
+    private void useItem() {
+        Inventory inventory = gameState.getPlayer().getInventory();
+        inventory.useItem(backpackSlotNumber);
+    }
+
 
     private void setMouseMoved(MouseEvent e, AbstractButton[] buttons) {
         Arrays.stream(buttons).forEach(button -> button.setMouseOver(false));

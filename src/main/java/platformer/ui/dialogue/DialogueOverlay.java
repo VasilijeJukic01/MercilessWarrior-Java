@@ -5,6 +5,7 @@ import platformer.model.gameObjects.npc.Npc;
 import platformer.ui.overlays.Overlay;
 
 import java.awt.*;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.geom.RoundRectangle2D;
 import java.util.ArrayList;
@@ -16,7 +17,7 @@ import static platformer.constants.Constants.FONT_DIALOGUE;
 import static platformer.constants.Constants.SCALE;
 import static platformer.constants.UI.*;
 
-public class DialogueOverlay implements Overlay<MouseEvent, Graphics> {
+public class DialogueOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
 
     private RoundRectangle2D dialogueBox;
     private List<String> dialogues;
@@ -58,6 +59,11 @@ public class DialogueOverlay implements Overlay<MouseEvent, Graphics> {
 
     @Override
     public void mouseMoved(MouseEvent e) {
+
+    }
+
+    @Override
+    public void keyPressed(KeyEvent e) {
 
     }
 

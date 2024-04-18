@@ -9,6 +9,7 @@ import platformer.ui.buttons.MediumButton;
 import platformer.utils.Utils;
 
 import java.awt.*;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
@@ -18,7 +19,7 @@ import static platformer.constants.Constants.*;
 import static platformer.constants.FilePaths.*;
 import static platformer.constants.UI.*;
 
-public class BlacksmithOverlay implements Overlay<MouseEvent, Graphics> {
+public class BlacksmithOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
 
     private final GameState gameState;
 
@@ -246,6 +247,11 @@ public class BlacksmithOverlay implements Overlay<MouseEvent, Graphics> {
                 .filter(mediumButton -> isMouseInButton(e, mediumButton))
                 .findFirst()
                 .ifPresent(mediumButton -> mediumButton.setMouseOver(true));
+    }
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+
     }
 
     @Override

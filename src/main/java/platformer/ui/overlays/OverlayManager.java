@@ -13,7 +13,7 @@ import java.util.Map;
 public class OverlayManager {
 
     private final GameState gameState;
-    private final Map<PlayingState, Overlay<MouseEvent, Graphics>> overlays;
+    private final Map<PlayingState, Overlay<MouseEvent, KeyEvent, Graphics>> overlays;
 
     public OverlayManager(GameState gameState) {
         this.gameState = gameState;
@@ -32,7 +32,7 @@ public class OverlayManager {
 
     // Core
     public void update(PlayingState playingState) {
-        Overlay<MouseEvent, Graphics> overlay = overlays.get(playingState);
+        Overlay<MouseEvent, KeyEvent, Graphics> overlay = overlays.get(playingState);
         if (overlay != null) {
             overlay.update();
         }
@@ -75,9 +75,7 @@ public class OverlayManager {
 
     public void keyPressed(KeyEvent e) {
         PlayingState overlay = gameState.getActiveState();
-        if (overlay == PlayingState.LOOTING) {
-            ((LootingOverlay) overlays.get(overlay)).keyPressed(e);
-        }
+        if (overlay != null) overlays.get(overlay).keyPressed(e);
     }
 
     public void reset() {
@@ -86,7 +84,7 @@ public class OverlayManager {
         overlays.get(PlayingState.DIALOGUE).reset();
     }
 
-    public Map<PlayingState, Overlay<MouseEvent, Graphics>> getOverlays() {
+    public Map<PlayingState, Overlay<MouseEvent, KeyEvent, Graphics>> getOverlays() {
         return overlays;
     }
 }

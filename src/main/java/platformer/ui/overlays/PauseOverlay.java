@@ -9,6 +9,7 @@ import platformer.ui.buttons.*;
 import platformer.utils.Utils;
 
 import java.awt.*;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 
@@ -16,7 +17,7 @@ import static platformer.constants.Constants.*;
 import static platformer.constants.FilePaths.*;
 import static platformer.constants.UI.*;
 
-public class PauseOverlay implements Overlay<MouseEvent, Graphics> {
+public class PauseOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
 
     private final Game game;
     private final GameState gameState;
@@ -122,6 +123,11 @@ public class PauseOverlay implements Overlay<MouseEvent, Graphics> {
         else if (isMouseInButton(e, retryBtn)) retryBtn.setMouseOver(true);
         else if (isMouseInButton(e, exitBtn)) exitBtn.setMouseOver(true);
         else audioOptions.mouseMoved(e);
+    }
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+
     }
 
     private boolean isMouseInButton(MouseEvent e, AbstractButton abstractButton) {
