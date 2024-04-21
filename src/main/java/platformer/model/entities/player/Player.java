@@ -262,8 +262,8 @@ public class Player extends Entity {
         updateWallPosition();
 
         boolean wallPush = checkAction(PlayerAction.WALL_PUSH);
-        if (left) dx -= PLAYER_SPEED;
-        if (right) dx += PLAYER_SPEED;
+        if (left) dx -= checkAction(PlayerAction.LAVA) ? LAVA_PLAYER_SPEED : PLAYER_SPEED;
+        if (right) dx += checkAction(PlayerAction.LAVA) ? LAVA_PLAYER_SPEED : PLAYER_SPEED;
         if (right && inAir && wallPush && !dash) dx += PLAYER_BOOST;
         if (left && inAir && wallPush && !dash) dx -= PLAYER_BOOST;
 
@@ -443,6 +443,14 @@ public class Player extends Entity {
         else pushDirection = Direction.LEFT;
     }
 
+    private void changeHealthNoKnockback(double value) {
+        currentHealth += value;
+        double healthCap = maxHealth + PerksBonus.getInstance().getBonusHealth();
+        double equipmentBonus = InventoryBonus.getInstance().getHealth() * healthCap;
+        healthCap += equipmentBonus;
+        currentHealth = Math.max(Math.min(currentHealth, healthCap), 0);
+    }
+
     public void changeStamina(double value) {
         currentStamina += value;
         double staminaCap = PLAYER_MAX_ST + PerksBonus.getInstance().getBonusPower();
@@ -524,6 +532,10 @@ public class Player extends Entity {
         }
     }
 
+    private void updateStatus() {
+        if (checkAction(PlayerAction.LAVA)) changeHealthNoKnockback(-LAVA_DMG);
+    }
+
     // Core
     public void update() {
         playerDataManager.update();
@@ -538,6 +550,7 @@ public class Player extends Entity {
         updateSpells();
         updateAttack();
         updateAnimation();
+        updateStatus();
         effectController.update();
     }
 

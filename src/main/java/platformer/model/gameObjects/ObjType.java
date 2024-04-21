@@ -20,7 +20,9 @@ public enum ObjType {
     TABLE(1),                       // 16
     BOARD(1),                       // 17
     NPC(4),                         // 18
-    MAX(0);                         // 19
+    LAVA(16),                       // 19
+    BRICK(8),                       // 20
+    MAX(0);                         // 21
 
     private final int sprites;
 

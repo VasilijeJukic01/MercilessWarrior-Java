@@ -173,14 +173,18 @@ public class LevelManager {
         return levels[levelIndexI][levelIndexJ];
     }
 
+    /**
+     * Loads the spawn point of the player
+     * @param spawnNumber the spawn number
+     */
     public void loadSavePoint(int spawnNumber) {
         if (spawnNumber == -1) {
             this.levelIndexI = 0;
             this.levelIndexJ = 0;
         }
         if (spawnNumber == 1) {
-            this.levelIndexI = 0;
-            this.levelIndexJ = 2;
+            this.levelIndexI = 1;
+            this.levelIndexJ = 0;
         }
         loadLevel();
     }

@@ -55,6 +55,7 @@ public final class Constants {
     public static final int PLAYER_MAX_HP = 100;
     public static final int PLAYER_MAX_ST = 100;
     public static final double PLAYER_SPEED = dScale(0.6);
+    public static final double LAVA_PLAYER_SPEED = dScale(0.3);
     public static final double PLAYER_BOOST = dScale(0.65);
 
     public static final double PUSH_LIMIT = -30;
@@ -62,6 +63,8 @@ public final class Constants {
     public static final double DASH_SPEED = 6;
     public static final double FLAME_COST = -0.20;
     public static final double TRANSFORM_COST = -0.025;
+
+    public static final double LAVA_DMG = 0.5;
 
     // Perks Constants
     public static final int XP_BONUS_AMOUNT = 15;
@@ -298,6 +301,20 @@ public final class Constants {
     public static final int NPC_HB_HEI = scale(50);
     public static final int NPC_OFFSET_X = scale(-25);
     public static final int NPC_OFFSET_Y = scale(-7);
+
+    public static final int LAVA_WID = scale(32);
+    public static final int LAVA_HEI = scale(32);
+    public static final int LAVA_HB_WID = scale(32);
+    public static final int LAVA_HB_HEI = scale(25);
+    public static final int LAVA_OFFSET_X = scale(0);
+    public static final int LAVA_OFFSET_Y = scale(10);
+
+    public static final int BRICK_WID = scale(68);
+    public static final int BRICK_HEI = scale(73);
+    public static final int BRICK_HB_WID = scale(36);
+    public static final int BRICK_HB_HEI = scale(68);
+    public static final int BRICK_OFFSET_X = scale(16);
+    public static final int BRICK_OFFSET_Y = scale(32);
 
     // Projectile Constants
     public static final int ARROW_WID = scale(32);

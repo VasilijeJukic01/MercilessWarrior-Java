@@ -40,6 +40,7 @@ public class SQLStorage implements Storage {
     private static final String MAX_USER_ID_QUERY = "SELECT MAX(id) FROM Users";
     private static final String MAX_PERK_ID_QUERY = "SELECT MAX(id) FROM Perks";
     private static final String MAX_ITEM_ID_QUERY = "SELECT MAX(id) FROM Items";
+    private static final String MAX_SETTINGS_ID_QUERY = "SELECT MAX(id) FROM Settings";
 
     public SQLStorage(Settings settings) {
         this.settings = settings;
@@ -250,7 +251,7 @@ public class SQLStorage implements Storage {
 
     private void insertSettings(int userId, Connection connection) throws SQLException {
         try (PreparedStatement settingsStatement = connection.prepareStatement(INSERT_SETTINGS_QUERY)) {
-            settingsStatement.setInt(1, findMaxID("SELECT MAX(id) FROM Settings") + 1);
+            settingsStatement.setInt(1, findMaxID(MAX_SETTINGS_ID_QUERY) + 1);
             settingsStatement.setInt(2, userId);
             settingsStatement.setInt(3, 0);
             settingsStatement.setInt(4, 0);

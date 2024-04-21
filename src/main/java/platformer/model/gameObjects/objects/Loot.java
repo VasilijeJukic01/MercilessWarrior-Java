@@ -11,6 +11,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 import static platformer.constants.Constants.*;
@@ -19,7 +20,12 @@ public class Loot extends GameObject {
 
     private boolean active;
     private final List<InventoryItem> items = new ArrayList<>();
-    private final List<ItemType> validLoot = List.of(ItemType.COPPER, ItemType.IRON);
+    private static final Map<EnemyType, List<ItemType>> lootMap = Map.of(
+            EnemyType.SKELETON, List.of(ItemType.COPPER, ItemType.IRON),
+            EnemyType.GHOUL, List.of(ItemType.COPPER, ItemType.SILVER, ItemType.WRAITH_ESSENCE),
+            EnemyType.KNIGHT, List.of(ItemType.SONIC_QUARTZ, ItemType.IRON),
+            EnemyType.WRAITH, List.of(ItemType.COPPER, ItemType.SILVER, ItemType.WRAITH_ESSENCE)
+    );
 
     public Loot(ObjType objType, int xPos, int yPos, EnemyType enemyType) {
         super(objType, xPos, yPos);
@@ -36,13 +42,13 @@ public class Loot extends GameObject {
 
     private void randomizeItems(EnemyType enemyType) {
         if (enemyType == EnemyType.SPEAR_WOMAN) generateBossLoot();
-        else generateStandardLoot();
+        else generateStandardLoot(enemyType);
 
     }
 
-    private void generateStandardLoot() {
+    private void generateStandardLoot(EnemyType enemyType) {
         Random rand = new Random();
-        for (ItemType itemType : validLoot) {
+        for (ItemType itemType : lootMap.get(enemyType)) {
             int chance = rand.nextInt(100);
             if (chance < 70) {
                 int amount = 0;

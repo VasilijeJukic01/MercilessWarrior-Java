@@ -5,6 +5,7 @@ import platformer.audio.Sound;
 import platformer.model.entities.Direction;
 import platformer.model.entities.enemies.EnemyManager;
 import platformer.model.entities.player.Player;
+import platformer.model.entities.player.PlayerAction;
 import platformer.model.gameObjects.npc.Npc;
 import platformer.model.gameObjects.npc.NpcType;
 import platformer.model.gameObjects.objects.*;
@@ -25,7 +26,8 @@ public class IntersectionHandler {
 
     private final Class<? extends GameObject>[] classesToCheck = new Class[]{
             Shop.class, Blacksmith.class, SaveTotem.class, Loot.class, Spike.class,
-            Blocker.class, SmashTrap.class, Table.class, Board.class, Dog.class, Npc.class
+            Blocker.class, SmashTrap.class, Table.class, Board.class, Dog.class, Npc.class,
+            Lava.class
     };
 
     public IntersectionHandler(EnemyManager enemyManager, ObjectManager objectManager) {
@@ -80,6 +82,9 @@ public class IntersectionHandler {
                else {
                    ((Npc) object).setDirection(Direction.LEFT);
                }
+            }
+            else if (object instanceof Lava) {
+                handleLavaIntersection(p);
             }
         }
         return check;
@@ -152,6 +157,7 @@ public class IntersectionHandler {
         if (object instanceof Dog) return "Dog";
         if (object instanceof Npc && ((Npc)object).getNpcType() == NpcType.ANITA) return "NpcAnita";
         if (object instanceof Npc && ((Npc)object).getNpcType() == NpcType.NIKOLAS) return "NpcNikolas";
+        if (object instanceof Npc && ((Npc)object).getNpcType() == NpcType.SIR_DEJANOVIC) return "NpcSirDejanovic";
         return null;
     }
 
@@ -161,6 +167,15 @@ public class IntersectionHandler {
                 .filter(loot -> loot.isAlive() && hitBox.intersects(loot.getHitBox()))
                 .findFirst()
                 .orElse(null);
+    }
+
+    // Helper
+    private void handleLavaIntersection(Player player) {
+        getObjects(Lava.class).stream()
+                .filter(Lava::isAlive)
+                .filter(lava -> player.getHitBox().intersects(lava.getHitBox()))
+                .findFirst()
+                .ifPresentOrElse(lava -> player.addAction(PlayerAction.LAVA), () -> player.removeAction(PlayerAction.LAVA));
     }
 
 }

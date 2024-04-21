@@ -40,3 +40,7 @@ Do you know who I am? I am Nikolas the best fighter in the world.
 You will never be strong like me. I'm the best!!!
 You know what they say "If you cant win a fight, it's only your fault" hue-hue-hue.
 I train every day to become the best fighter in the world !!!;
+Object NpcSirDejanovic0:
+Hello, young warrior! What brings you to this fire pit?
+Be careful, this place is dangerous. I've heard that there are some flying creatures around here.
+Drink beer with me and I'll tell you a secret about this place.;

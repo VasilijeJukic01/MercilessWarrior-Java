@@ -8,6 +8,7 @@ import static platformer.constants.FilePaths.*;
 public enum ItemType {
     HEALTH("Health", ItemRarity.COMMON, HEALTH_ITEM, 0, "", false),
     STAMINA("Stamina", ItemRarity.COMMON, STAMINA_ITEM, 0, "", false),
+    // Ores
     COPPER("Copper Ore", ItemRarity.COMMON, COPPER_ORE_ITEM, 2, "Ingredient for crafting", false),
     IRON("Iron Ore", ItemRarity.UNCOMMON, IRON_ORE_ITEM, 5, "Ingredient for crafting", false),
     SILVER("Silver Ore", ItemRarity.UNCOMMON, SILVER_ORE_ITEM, 7, "Ingredient for crafting", false),
@@ -17,7 +18,9 @@ public enum ItemType {
     ELECTRICITE("Electricite Ore", ItemRarity.LEGENDARY, ELECTRICITE_ORE_ITEM, 80, "Ingredient for crafting", false),
     ROSALLIUM("Rosallium Ore", ItemRarity.LEGENDARY, ROSALLIUM_ORE_ITEM, 100, "Ingredient for crafting", false),
     AZURELITE("Azurelite Ore", ItemRarity.EPIC, AZURELITE_ORE_ITEM, 50, "Ingredient for crafting", false),
-
+    // Materials
+    WRAITH_ESSENCE("Wraith Essence", ItemRarity.RARE, WRAITH_ESSENCE_ITEM, 18, "Essence of a wraith", false),
+    // Equipment
     HELMET_WARRIOR("Warrior Helmet", ItemRarity.UNCOMMON, WARRIOR_HELMET, 30, "Helmet designed specifically for warriors \nwhich provides solid protection during combat. \n\nHealth Bonus +3%\nDefense Bonus +5%", true),
     ARMOR_WARRIOR("Warrior Armor", ItemRarity.UNCOMMON, WARRIOR_ARMOR, 40, "Warrior Armor is a rugged combat attire \ndesigned specifically for warriors.\n\nHealth Bonus +5%\nSpell Bonus +5%", true),
     BRACELETS_WARRIOR("Warrior Bracelets", ItemRarity.UNCOMMON, WARRIOR_BRACELETS, 20, "These Warrior Bracelets are wristbands\ntailored for warriors, enhancing their \nprotection in battle. \n\nAttack Bonus +5%\nCritical Bonus +3%", true),

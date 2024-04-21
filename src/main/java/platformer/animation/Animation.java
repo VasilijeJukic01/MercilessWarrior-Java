@@ -154,7 +154,7 @@ public class Animation {
 
     // Objects
     public BufferedImage[][] loadObjects() {
-        BufferedImage[][] anim = new BufferedImage[18][17];
+        BufferedImage[][] anim = new BufferedImage[21][17];
 
         anim[ObjType.STAMINA_POTION.ordinal()] = loadFromSprite(POTIONS_SHEET, 7, 0, POTION_WID, POTION_HEI, 0, POTION_W, POTION_H);
         anim[ObjType.HEAL_POTION.ordinal()] = loadFromSprite(POTIONS_SHEET, 7, 1, POTION_WID, POTION_HEI, 0, POTION_W, POTION_H);
@@ -174,16 +174,19 @@ public class Animation {
         anim[ObjType.LOOT.ordinal()] = loadFromSprite(LOOT_IMG, 1, 0, LOOT_WID, LOOT_HEI, 0, LOOT_W, LOOT_H);
         anim[ObjType.TABLE.ordinal()] = loadFromSprite(TABLE_IMG, 1, 0, TABLE_WID, TABLE_HEI, 0, TABLE_W, TABLE_H);
         anim[ObjType.BOARD.ordinal()] = loadFromSprite(BOARD_IMG, 1, 0, BOARD_WID, BOARD_HEI, 0, BOARD_W, BOARD_H);
+        anim[ObjType.LAVA.ordinal()] = loadFromSprite(LAVA_SHEET, 16, 0, LAVA_WID, LAVA_HEI, 0, LAVA_W, LAVA_H);
+        anim[ObjType.BRICK.ordinal()] = loadFromSprite(BRICK_SHEET, 8, 0, BRICK_WID, BRICK_HEI, 0, BRICK_W, BRICK_H);
 
         return anim;
     }
 
     // NPC
     public BufferedImage[][] loadNpcs() {
-        BufferedImage[][] anim = new BufferedImage[2][4];
+        BufferedImage[][] anim = new BufferedImage[3][4];
 
         anim[NpcType.ANITA.ordinal()] = loadFromSprite(ANITA_SHEET, 4, 0, NPC_WID, NPC_HEI, 0, ANITA_W, ANITA_H);
         anim[NpcType.NIKOLAS.ordinal()] = loadFromSprite(NIKOLAS_SHEET, 4, 0, NPC_WID, NPC_HEI, 0, ANITA_W, ANITA_H);
+        anim[NpcType.SIR_DEJANOVIC.ordinal()] = loadFromSprite(SIR_DEJANOVIC_SHEET, 4, 0, NPC_WID, NPC_HEI, 0, ANITA_W, ANITA_H);
 
         return anim;
     }

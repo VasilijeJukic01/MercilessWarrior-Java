@@ -3,6 +3,7 @@ package platformer.model.gameObjects;
 import platformer.model.entities.Direction;
 import platformer.model.entities.Entity;
 import platformer.model.gameObjects.objects.Blacksmith;
+import platformer.model.gameObjects.objects.Brick;
 import platformer.model.gameObjects.objects.Container;
 import platformer.model.gameObjects.objects.Loot;
 import platformer.model.levels.LevelManager;
@@ -10,6 +11,7 @@ import platformer.utils.Utils;
 
 import java.awt.geom.Rectangle2D;
 import java.util.List;
+import java.util.stream.Stream;
 
 public class CollisionHandler {
 
@@ -34,7 +36,10 @@ public class CollisionHandler {
     }
 
     public double getXObjectBound(Rectangle2D.Double hitBox, double dx) {
-        return getObjects(Container.class).stream()
+        return Stream.concat(
+                        getObjects(Container.class).stream(),
+                        getObjects(Brick.class).stream()
+                )
                 .filter(o -> o.isAlive() && (checkTouch(o, hitBox, "X", 0) || checkTouch(o, hitBox, "Y", 0)))
                 .mapToDouble(o -> checkTouch(o, hitBox, "X", 0) ? hittingObjectBySide(o, hitBox, dx) : standingOnObject(hitBox, dx))
                 .findFirst().orElse(hitBox.x);
@@ -81,8 +86,14 @@ public class CollisionHandler {
     }
 
     private double standingOnObject(Rectangle2D.Double hitBox, double dx) {
-        GameObject left = getCollidingObject(Direction.LEFT, hitBox, Container.class);
-        GameObject right = getCollidingObject(Direction.RIGHT, hitBox, Container.class);
+        GameObject leftContainer = getCollidingObject(Direction.LEFT, hitBox, Container.class);
+        GameObject rightContainer = getCollidingObject(Direction.RIGHT, hitBox, Container.class);
+
+        GameObject leftBrick = getCollidingObject(Direction.LEFT, hitBox, Brick.class);
+        GameObject rightBrick = getCollidingObject(Direction.RIGHT, hitBox, Brick.class);
+
+        GameObject left = leftContainer != null ? leftContainer : leftBrick;
+        GameObject right = rightContainer != null ? rightContainer : rightBrick;
 
         if (dx < 0 && left == null) {
             if (canMove(hitBox.x-1, hitBox.y, hitBox.width, hitBox.height)) return hitBox.x-1;

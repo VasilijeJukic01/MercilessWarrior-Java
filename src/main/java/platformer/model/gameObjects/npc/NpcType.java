@@ -4,7 +4,8 @@ import java.awt.*;
 
 public enum NpcType {
     ANITA(4, new Color(0xd491ed), "Anita Manita"),
-    NIKOLAS(4, new Color(0xe06b51), "Nikolas The Red Itch");
+    NIKOLAS(4, new Color(0xe06b51), "Nikolas The Red Itch"),
+    SIR_DEJANOVIC(4, new Color(0x67abeb), "Sir Dejanovic");
 
     private final int sprites;
     private final String name;

@@ -4,11 +4,8 @@ import platformer.audio.Audio;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
 import platformer.model.entities.enemies.EnemyType;
-import platformer.model.gameObjects.objects.Loot;
+import platformer.model.gameObjects.objects.*;
 import platformer.model.perks.PerksBonus;
-import platformer.model.gameObjects.objects.Coin;
-import platformer.model.gameObjects.objects.Container;
-import platformer.model.gameObjects.objects.Potion;
 import platformer.model.gameObjects.projectiles.Projectile;
 import platformer.model.spells.Flame;
 
@@ -43,6 +40,16 @@ public class ObjectBreakHandler {
                 }
             }
         }
+
+        for (Brick brick : getObjects(Brick.class)) {
+            if (!brick.isAlive() || brick.animate) continue;
+
+            for (Projectile projectile : projectiles) {
+                if (projectile.isAlive()) {
+                    if (projectile.getHitBox().intersects(brick.getHitBox())) breakBrick(brick);
+                }
+            }
+        }
     }
 
     private void breakContainer(Container container) {
@@ -50,6 +57,12 @@ public class ObjectBreakHandler {
         Audio.getInstance().getAudioPlayer().playCrateSound();
         Logger.getInstance().notify("Player breaks container.", Message.NOTIFICATION);
         generateCrateLoot(container);
+    }
+
+    private void breakBrick(Brick brick) {
+        brick.setAnimate(true);
+        // TODO: Add sound
+        Logger.getInstance().notify("Player breaks brick.", Message.NOTIFICATION);
     }
 
     private void generateCrateLoot(Container container) {

@@ -43,15 +43,18 @@ public class ObjectManager {
             Coin.class, Container.class, Potion.class, Spike.class,
             Shop.class, Blocker.class, Blacksmith.class, Dog.class,
             SaveTotem.class, SmashTrap.class, Candle.class, Loot.class,
-            Table.class, Board.class, Npc.class
+            Table.class, Board.class, Npc.class, Lava.class, Brick.class
     };
     Class<? extends GameObject>[] renderBelow = new Class[] {
             Container.class, Potion.class, Spike.class,
-            Blocker.class, Dog.class, SmashTrap.class, Loot.class,
+            Blocker.class, Dog.class, SmashTrap.class, Loot.class, Brick.class
     };
     Class<? extends GameObject>[] renderAbove = new Class[] {
             SaveTotem.class, Shop.class, Blacksmith.class, Coin.class,
             Table.class, Board.class
+    };
+    Class<? extends GameObject>[] renderBehind = new Class[] {
+            Lava.class
     };
 
     private Map<ObjType, List<GameObject>> objectsMap = new HashMap<>();
@@ -104,7 +107,7 @@ public class ObjectManager {
 
     // Collision Handler
     public boolean isPlayerTouchingObject(Player player) {
-        return collisionHandler.isTouchingObject(Container.class, player);
+        return (collisionHandler.isTouchingObject(Container.class, player) || collisionHandler.isTouchingObject(Brick.class, player));
     }
 
     public boolean isPlayerGlitchedInObject(Player player) {
@@ -218,6 +221,10 @@ public class ObjectManager {
     public void render(Graphics g, int xLevelOffset, int yLevelOffset) {
         Arrays.stream(renderBelow).forEach(renderClass -> renderObjects(g, xLevelOffset, yLevelOffset, renderClass));
         renderArrowLaunchers(g, xLevelOffset, yLevelOffset);
+    }
+
+    public void secondRender(Graphics g, int xLevelOffset, int yLevelOffset) {
+        Arrays.stream(renderBehind).forEach(renderClass -> renderObjects(g, xLevelOffset, yLevelOffset, renderClass));
     }
 
     public void candleRender(Graphics g, int xLevelOffset, int yLevelOffset, Candle c) {

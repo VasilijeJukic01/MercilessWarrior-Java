@@ -38,10 +38,13 @@ public final class FilePaths {
     public static final String LOOT_IMG = "/images/objs/Loot.png";
     public static final String TABLE_IMG = "/images/objs/Table.png";
     public static final String BOARD_IMG = "/images/objs/Board.png";
+    public static final String LAVA_SHEET = "/images/objs/Lava.png";
+    public static final String BRICK_SHEET = "/images/objs/Brick.png";
 
     // NPC
     public static final String ANITA_SHEET = "/images/objs/npc/AnitaSprite.png";
     public static final String NIKOLAS_SHEET = "/images/objs/npc/NikolasSprite.png";
+    public static final String SIR_DEJANOVIC_SHEET = "/images/objs/npc/SirDejanovicSprite.png";
 
     // Dialogue
     public static final String OBJECT_DIALOGUES = "/dialogues/object_dialogues.txt";
@@ -111,6 +114,7 @@ public final class FilePaths {
     public static final String ELECTRICITE_ORE_ITEM = "/images/inventory/ElectriciteOre.png";
     public static final String MAGMA_ORE_ITEM = "/images/inventory/MagmaOre.png";
     public static final String ROSALLIUM_ORE_ITEM = "/images/inventory/RosalliumOre.png";
+    public static final String WRAITH_ESSENCE_ITEM = "/images/inventory/WraithEssence.png";
 
     public static final String WARRIOR_HELMET = "/images/inventory/WarriorHelmet.png";
     public static final String WARRIOR_ARMOR = "/images/inventory/WarriorArmor.png";

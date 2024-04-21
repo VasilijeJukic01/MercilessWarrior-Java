@@ -47,6 +47,7 @@ public class Level {
     static {
         npcMap.put("level02", List.of(NpcType.ANITA));
         npcMap.put("level11", List.of(NpcType.NIKOLAS));
+        npcMap.put("level10", List.of(NpcType.SIR_DEJANOVIC));
     }
 
     public Level(String name, BufferedImage layer1Img, BufferedImage layer2Img) {
@@ -150,6 +151,12 @@ public class Level {
                     List<NpcType> npcTypes = npcMap.get(name);
                     addGameObject(new Npc(ObjType.values()[valueB], i*TILES_SIZE, j*TILES_SIZE, npcTypes.get(npcIndicator++)));
                 }
+                break;
+            case LAVA:
+                addGameObject(new Lava(ObjType.values()[valueB], i*TILES_SIZE, j*TILES_SIZE));
+                break;
+            case BRICK:
+                addGameObject(new Brick(ObjType.values()[valueB], i*TILES_SIZE, j*TILES_SIZE));
                 break;
             default: break;
         }

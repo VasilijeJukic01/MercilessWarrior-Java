@@ -200,6 +200,7 @@ public class GameState extends AbstractState implements State {
         this.lightManager.render(g, xLevelOffset, yLevelOffset);
         this.enemyManager.render(g, xLevelOffset, yLevelOffset);
         this.player.render(g, xLevelOffset, yLevelOffset);
+        this.objectManager.secondRender(g, xLevelOffset, yLevelOffset);
         this.spellManager.render(g, xLevelOffset, yLevelOffset);
         this.player.getPlayerStatusManager().getUserInterface().render(g);
         this.bossInterface.render(g);
