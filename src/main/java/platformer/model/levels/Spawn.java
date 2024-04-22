@@ -1,5 +1,8 @@
 package platformer.model.levels;
 
+/**
+ * Enum representing the spawn points of the player.
+ */
 public enum Spawn {
     INITIAL(0, 5, 10),
     SPAWN_1(1, 14, 16);

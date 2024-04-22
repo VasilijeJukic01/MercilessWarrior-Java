@@ -19,6 +19,10 @@ import static platformer.constants.Constants.*;
 import static platformer.constants.FilePaths.BOARD_TXT;
 import static platformer.constants.UI.*;
 
+/**
+ * State of the game when the player is viewing the leaderboard.
+ * In this state, the player can view the leaderboard which displays the top players based on their level and experience.
+ */
 public class LeaderboardState extends AbstractState implements State {
 
     private BufferedImage leaderboardText;

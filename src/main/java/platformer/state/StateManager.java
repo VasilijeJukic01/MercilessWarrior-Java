@@ -2,6 +2,10 @@ package platformer.state;
 
 import platformer.core.Game;
 
+/**
+ * This class is managing the different states of the game.
+ * It holds references to all the game states and a reference to the current state.
+ */
 public class StateManager {
 
     private State currentState;

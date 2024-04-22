@@ -4,6 +4,11 @@ import platformer.utils.Utils;
 
 import java.awt.image.BufferedImage;
 
+/**
+ * Perk model that can be unlocked and upgraded in the game.
+ * Each perk has a slot, image, description, cost, and name.
+ * Perks can be locked or upgraded.
+ */
 public class Perk {
 
     private final int slot;

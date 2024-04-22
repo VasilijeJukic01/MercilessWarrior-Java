@@ -3,6 +3,10 @@ package platformer.model.levels;
 import platformer.utils.Utils;
 import java.awt.image.BufferedImage;
 
+/**
+ * This class is responsible for managing the level objects in the game.
+ * It holds references to all the level objects and provides methods for loading their images.
+ */
 public class LevelObjectManager {
 
     private BufferedImage[] models;

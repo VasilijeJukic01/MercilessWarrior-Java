@@ -17,6 +17,10 @@ import static platformer.constants.FilePaths.CONTROLS_TXT;
 import static platformer.constants.FilePaths.KEYBOARD_SPRITE;
 import static platformer.constants.UI.*;
 
+/**
+ * State of the game when the player is viewing the controls.
+ * It includes displaying the controls to the user and handling user interactions within this state.
+ */
 public class ControlsState extends AbstractState implements State {
 
     private BufferedImage keyboardSprite;

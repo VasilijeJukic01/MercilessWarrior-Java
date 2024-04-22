@@ -7,6 +7,10 @@ import java.util.stream.Collectors;
 
 import static platformer.constants.Constants.*;
 
+/**
+ * Class that is responsible for managing all the perks in the game.
+ * It holds references to all the perks and provides methods for upgrading and unlocking them.
+ */
 public class PerksManager {
 
     @FunctionalInterface

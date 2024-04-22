@@ -14,6 +14,10 @@ import static platformer.constants.Constants.*;
 import static platformer.constants.FilePaths.FLASH_SHEET;
 import static platformer.constants.FilePaths.LIGHTNING_SHEET;
 
+/**
+ * This class is responsible for managing all the spells in the game.
+ * It holds references to all the spells and provides methods for updating and rendering them.
+ */
 public class SpellManager {
 
     private final GameState gameState;

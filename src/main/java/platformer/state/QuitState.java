@@ -10,6 +10,10 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
 
+/**
+ * The QuitState class represents the state of the game when the player decides to quit.
+ * In this state, the audio player is destroyed, a warning message is logged, and the game is exited.
+ */
 public class QuitState extends AbstractState implements State {
 
     public QuitState(Game game) {

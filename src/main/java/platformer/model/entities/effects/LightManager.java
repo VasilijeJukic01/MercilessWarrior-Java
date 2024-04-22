@@ -17,6 +17,11 @@ import java.util.List;
 import static platformer.constants.Constants.*;
 import static platformer.constants.FilePaths.*;
 
+/**
+ * Manages the light effects in the game.
+ * <p>
+ * The light effects are used to create a dark atmosphere in the game. Effects are created by using gradients and images.
+ */
 public class LightManager {
 
     private final GameState gameState;
@@ -47,6 +52,11 @@ public class LightManager {
         this.whiteRadialLight = rescaleOp.filter(whiteRadialGlow, null);
     }
 
+    /**
+     * Initializes the gradient used for the light effects.
+     * <p>
+     * The gradient is used to create a smooth transition between the light and the dark areas.
+     */
     private void initGradient() {
         this.gradient = new Color[5];
         this.gradientFraction = new float[5];
@@ -81,6 +91,14 @@ public class LightManager {
     }
 
     // Render
+    /**
+     * Renders the light effects in the game. This includes the player's light, the light from candles, shops, and enemies.
+     * It also handles the fading effect of the light.
+     *
+     * @param g Graphics object used for drawing the light effects.
+     * @param xLevelOffset The horizontal offset of the level.
+     * @param yLevelOffset The vertical offset of the level.
+     */
     public void render(Graphics g, int xLevelOffset, int yLevelOffset) {
         gradient[4] = new Color(0, 0, 0, alpha);
         try {
@@ -97,6 +115,13 @@ public class LightManager {
         catch (Exception ignored) {}
     }
 
+    /**
+     * Applies light effects to various game objects such as the player, candles, shops, and enemies.
+     *
+     * @param g2d Graphics2D object used for drawing the light effects.
+     * @param xLevelOffset The horizontal offset of the level.
+     * @param yLevelOffset The vertical offset of the level.
+     */
     private void glowObjects(Graphics2D g2d, int xLevelOffset, int yLevelOffset) {
         playerFilter(g2d, xLevelOffset, yLevelOffset);
         candleFilter(g2d, xLevelOffset, yLevelOffset);
@@ -144,6 +169,13 @@ public class LightManager {
     }
 
     // Player light
+    /**
+     * Fills a given area with a radial gradient to create a light effect.
+     *
+     * @param g2d Graphics2D object used for drawing the light effects.
+     * @param area The area to be filled with the radial gradient.
+     * @param radius The radius of the radial gradient.
+     */
     private void fillWithRadialGradient(Graphics2D g2d, Area area, int radius) {
         RadialGradientPaint gradientPaint = new RadialGradientPaint(
                 new Point(area.getBounds().x + radius, area.getBounds().y + radius),
@@ -154,6 +186,13 @@ public class LightManager {
         g2d.fill(area);
     }
 
+    /**
+     * Creates the area of the player's light based on the player's position and the level offsets.
+     *
+     * @param xLevelOffset The horizontal offset of the level.
+     * @param yLevelOffset The vertical offset of the level.
+     * @return The area of the player's light.
+     */
     private Area getPlayerLightArea(int xLevelOffset, int yLevelOffset) {
         Area playerArea = calculatePlayerLight(xLevelOffset, yLevelOffset);
 
@@ -167,6 +206,13 @@ public class LightManager {
         return new Area(playerArea);
     }
 
+    /**
+     * Calculates the area of the player's light based on the player's position and the level offsets.
+     *
+     * @param xLevelOffset The horizontal offset of the level.
+     * @param yLevelOffset The vertical offset of the level.
+     * @return The area of the player's light.
+     */
     private Area calculatePlayerLight(int xLevelOffset, int yLevelOffset) {
         Player player = gameState.getPlayer();
         int playerX = (int) (player.getHitBox().x + player.getHitBox().width / 2 - xLevelOffset);

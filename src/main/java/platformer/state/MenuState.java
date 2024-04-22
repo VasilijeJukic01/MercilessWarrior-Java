@@ -19,6 +19,10 @@ import static platformer.constants.Constants.*;
 import static platformer.constants.FilePaths.MENU_LOGO;
 import static platformer.constants.UI.*;
 
+/**
+ * State of the game when the player is in the main menu.
+ * In this state, the player can navigate to different parts of the game such as play, options, controls, leaderboard, and quit.
+ */
 @SuppressWarnings("FieldCanBeLocal")
 public class MenuState extends AbstractState implements State {
 

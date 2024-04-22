@@ -19,6 +19,13 @@ import static platformer.constants.Constants.*;
 import static platformer.constants.FilePaths.FOREST_SPRITE;
 import static platformer.constants.FilePaths.PARTICLE_SHEET;
 
+/**
+ * This class is managing the levels in the game.
+ * It holds references to all the levels and provides methods for loading and rendering them.
+ * <p>
+ * It uses the Flyweight pattern for managing Particle objects to save memory.
+ * The ParticleFactory class is used to create and manage Particle objects.
+ */
 public class LevelManager {
 
     private final GameState gameState;
@@ -53,6 +60,11 @@ public class LevelManager {
         }
     }
 
+    /**
+     * This method builds all the levels in the game.
+     * It loads the images for each level and creates a new Level object for each one.
+     * The Level objects are stored in a 2D array.
+     */
     private void buildLevels() {
         BufferedImage[][] levelsLayer1 = getAllLevels("1");
         BufferedImage[][] levelsLayer2 = getAllLevels("2");
@@ -82,6 +94,12 @@ public class LevelManager {
         return levels;
     }
 
+    /**
+     * This method creates and initializes the particles used in the game.
+     * It uses the Flyweight pattern to manage the particles, which helps to save memory.
+     * The ParticleFactory is used to create and manage the Particle objects.
+     * @return An array of Particle objects.
+     */
     private Particle[] loadParticles() {
         Particle[] particles = new Particle[PARTICLES_CAP];
         Random rand = new Random();
@@ -157,6 +175,25 @@ public class LevelManager {
         Arrays.stream(particles).forEach(p -> p.render(g));
     }
 
+    /**
+     * This method is responsible for rendering the game level.
+     * It renders the decorations, terrain, and particles of the level.
+     * The rendering order is carefully managed to ensure correct layering of the game elements.
+     * <p>
+     * The rendering process is as follows:
+     * 1. Render the first decoration layer. This includes any background elements that should appear behind all other game elements.
+     * 2. Render the second decoration layer. This includes any elements that should appear behind the terrain but in front of the first decoration layer.
+     * 3. Draw a green ambient layer over the entire game area. This gives the game a greenish tint.
+     * 4. Render the third decoration layer. This includes any elements that should appear in front of the terrain but behind the player and enemies.
+     * 5. Render the terrain layer that is behind the player and enemies. This includes any ground, walls, or other static elements that the player and enemies can interact with.
+     * 6. Render the fourth decoration layer. This includes any elements that should appear in front of the player and enemies but behind the particles.
+     * 7. Render the terrain layer that is in front of the player and enemies. This includes any ground, walls, or other static elements that the player and enemies can interact with.
+     * 8. Render the particles. These are small, dynamic elements that add visual interest to the game, such as sparks or dust.
+     *
+     * @param g The Graphics object used for rendering. This is a standard Java Graphics object that provides methods for drawing onto the screen.
+     * @param xLevelOffset The horizontal offset of the level. This is used for scrolling the level horizontally when the player moves.
+     * @param yLevelOffset The vertical offset of the level. This is used for scrolling the level vertically when the player jumps or falls.
+     */
     public void render(Graphics g, int xLevelOffset, int yLevelOffset) {
         renderDeco(g, xLevelOffset, yLevelOffset, 0);               // First deco layer
         renderDeco(g, xLevelOffset, yLevelOffset, 1);               // Second deco layer
@@ -183,8 +220,8 @@ public class LevelManager {
             this.levelIndexJ = 0;
         }
         if (spawnNumber == 1) {
-            this.levelIndexI = 1;
-            this.levelIndexJ = 0;
+            this.levelIndexI = 0;
+            this.levelIndexJ = 2;
         }
         loadLevel();
     }
