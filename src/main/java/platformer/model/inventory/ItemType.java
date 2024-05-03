@@ -5,6 +5,16 @@ import platformer.constants.FilePaths;
 
 import static platformer.constants.FilePaths.*;
 
+/**
+ * Enum for different types of items in the game.
+ * Each item type has properties:
+ * - `name`:        A string representing the name of the item.
+ * - `rarity`:      An instance of the ItemRarity enum, indicating the rarity of the item.
+ * - `img`:         A string representing the path to the image file for the item.
+ * - `sellValue`:   An integer representing the value of the item when sold.
+ * - `description`: A string providing a description of the item.
+ * - `canEquip`:    A boolean indicating whether the item can be equipped by the player.
+ */
 public enum ItemType {
     HEALTH("Health", ItemRarity.COMMON, HEALTH_ITEM, 0, "", false),
     STAMINA("Stamina", ItemRarity.COMMON, STAMINA_ITEM, 0, "", false),

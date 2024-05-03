@@ -21,12 +21,14 @@ import java.util.stream.Collectors;
 
 import static platformer.constants.Constants.*;
 
+/**
+ * Represents a model for level in the game.
+ */
 @SuppressWarnings("FieldCanBeLocal")
 public class Level {
 
     // Data
     private String name;
-    private static final Map<String, List<NpcType>> npcMap = new HashMap<>();
     private int npcIndicator = 0;
     private final BufferedImage layer1Img, layer2Img;
     private int[][] lvlData, decoData, layerData;
@@ -35,8 +37,9 @@ public class Level {
     private final Map<EnemyType, List<Enemy>> enemiesMap = new HashMap<>();
     private final Map<ObjType, List<GameObject>> objectsMap = new HashMap<>();
     private final Map<SpellType, List<Spell>> spellsMap = new HashMap<>();
+    private static final Map<String, List<NpcType>> npcMap = new HashMap<>();
 
-    // Other
+    // Configuration
     private int levelTilesWidth, levelTilesHeight;
     private int xMaxTilesOffset, xMaxLevelOffset;
     private int yMaxTilesOffset, yMaxLevelOffset;
@@ -61,7 +64,6 @@ public class Level {
 
     // Init
     private void init() {
-
         this.lvlData = getLevelData(layer1Img);
         this.decoData = getDecoData(layer2Img, false);
         this.layerData = getDecoData(layer2Img, true);
@@ -188,6 +190,13 @@ public class Level {
     }
 
     // Data Gatherer
+    /**
+     * Gathers data about the level from the level image.
+     * It scans the image and assigns a value to each pixel based on its red color value.
+     *
+     * @param level The BufferedImage of the level from which the data is to be gathered.
+     * @return A 2D array representing the level data.
+     */
     private int[][] getLevelData(BufferedImage level) {
         int[][] lvlData = new int[level.getWidth()][level.getHeight()];
         for (int i = 0; i < level.getWidth(); i++) {
@@ -202,6 +211,14 @@ public class Level {
         return lvlData;
     }
 
+    /**
+     * Gathers decoration data from the level image.
+     * It scans the image and assigns a value to each pixel based on its green or blue color value.
+     *
+     * @param level The BufferedImage of the level from which the data is to be gathered.
+     * @param layer A boolean value indicating whether to gather layer data (true) or object data (false).
+     * @return A 2D array representing the decoration data.
+     */
     // layer = true -> Layer data;  layer = false -> Object data
     private int[][] getDecoData(BufferedImage level, boolean layer) {
         int[][] data = new int[level.getWidth()][level.getHeight()];
@@ -216,6 +233,12 @@ public class Level {
         return data;
     }
 
+    /**
+     * Loads the spawn points for the player from the level image.
+     * It scans the image for specific color codes that represent different spawn points.
+     *
+     * @param level The BufferedImage of the level from which the spawn points are to be loaded.
+     */
     private void loadPlayerSpawns(BufferedImage level) {
         for (int i = 0; i < level.getWidth(); i++) {
             for (int j = 0; j < level.getHeight(); j++) {
@@ -232,6 +255,9 @@ public class Level {
     }
 
     // Other
+    /**
+     * Sets the offset values for the level based on the width and height of the level image.
+     */
     public void setOffset() {
         this.levelTilesWidth = layer1Img.getWidth();
         this.xMaxTilesOffset = levelTilesWidth - TILES_WIDTH;
@@ -273,6 +299,12 @@ public class Level {
         return yMaxLevelOffset;
     }
 
+    /**
+     * Returns the spawn point for the player based on the given location.
+     *
+     * @param location The location ("LEFT", "RIGHT", "UPPER", "BOTTOM").
+     * @return The spawn point for the player.
+     */
     public Point getPlayerSpawn(String location) {
         if (location.equals("LEFT")) return leftSpawn;
         if (location.equals("RIGHT")) return rightSpawn;

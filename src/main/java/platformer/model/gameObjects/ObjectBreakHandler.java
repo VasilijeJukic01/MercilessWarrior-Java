@@ -13,6 +13,9 @@ import java.awt.geom.Rectangle2D;
 import java.util.List;
 import java.util.Random;
 
+/**
+ * Class that handles breaking of objects.
+ */
 public class ObjectBreakHandler {
 
     private final ObjectManager objectManager;
@@ -21,6 +24,12 @@ public class ObjectBreakHandler {
         this.objectManager = objectManager;
     }
 
+    /**
+     * Checks if an object should be broken by an attack or flame.
+     *
+     * @param attackBox The attack box.
+     * @param flame The flame.
+     */
     public void checkObjectBreak(Rectangle2D.Double attackBox, Flame flame) {
         for (Container container : getObjects(Container.class)) {
             if (!container.isAlive() || container.animate) continue;
@@ -30,6 +39,11 @@ public class ObjectBreakHandler {
         }
     }
 
+    /**
+     * Checks if a projectile should break an object.
+     *
+     * @param projectiles The list of projectiles.
+     */
     public void checkProjectileBreak(List<Projectile> projectiles) {
         for (Container container : getObjects(Container.class)) {
             if (!container.isAlive() || container.animate) continue;
@@ -65,6 +79,11 @@ public class ObjectBreakHandler {
         Logger.getInstance().notify("Player breaks brick.", Message.NOTIFICATION);
     }
 
+    /**
+     * Generates loot from a broken container.
+     *
+     * @param container The broken container.
+     */
     private void generateCrateLoot(Container container) {
         Random rand = new Random();
         int value = rand.nextInt(4)-1;
@@ -78,6 +97,12 @@ public class ObjectBreakHandler {
         }
     }
 
+    /**
+     * Generates loot from a defeated enemy.
+     *
+     * @param location The location of the defeated enemy.
+     * @param enemyType The type of the defeated enemy.
+     */
     public void generateEnemyLoot(Rectangle2D.Double location, EnemyType enemyType) {
        generateCoins(location);
        generateLoot(location, enemyType);

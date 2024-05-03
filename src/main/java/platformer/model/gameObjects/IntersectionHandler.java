@@ -18,6 +18,9 @@ import java.util.List;
 import static platformer.constants.Constants.HEAL_POTION_VAL;
 import static platformer.constants.Constants.STAMINA_POTION_VAL;
 
+/**
+ * Handles intersections between game objects and entities.
+ */
 @SuppressWarnings({"unchecked"})
 public class IntersectionHandler {
 
@@ -36,6 +39,12 @@ public class IntersectionHandler {
     }
 
     // Checker
+    /**
+     * Checks if a GameObject causes instant death upon intersection.
+     *
+     * @param object The GameObject to check.
+     * @return true if the GameObject causes instant death, false otherwise.
+     */
     private boolean isInstantDeath(GameObject object) {
         if (object instanceof Spike) return true;
         if (object instanceof Blocker && object.getAnimIndex() > 2) return true;
@@ -43,6 +52,13 @@ public class IntersectionHandler {
         return false;
     }
 
+    /**
+     * Checks if the player intersects with a specific type of GameObject.
+     *
+     * @param p The player to check.
+     * @param objectClass The class of the GameObject to check.
+     * @return true if the player intersects with the GameObject, false otherwise.
+     */
     private <T extends GameObject> boolean checkPlayerIntersection(Player p, Class<T> objectClass) {
         boolean check = false;
         for (T object : getObjects(objectClass)) {
@@ -90,6 +106,11 @@ public class IntersectionHandler {
         return check;
     }
 
+    /**
+     * Checks if the player intersects with any GameObject.
+     *
+     * @param player The player to check.
+     */
     public void checkPlayerIntersection(Player player) {
         for (Class<? extends GameObject> c : classesToCheck) {
             if (checkPlayerIntersection(player, c)) {
@@ -99,6 +120,11 @@ public class IntersectionHandler {
         objectManager.setIntersection(null);
     }
 
+    /**
+     * Checks if any enemy intersects with a projectile.
+     *
+     * @param projectiles The list of projectiles to check.
+     */
     public void checkEnemyIntersection(List<Projectile> projectiles) {
         getObjects(Spike.class).forEach(enemyManager::checkEnemyTrapHit);
 
@@ -108,6 +134,13 @@ public class IntersectionHandler {
     }
 
     // Handle
+    /**
+     * Handles the interaction between a player and a GameObject.
+     *
+     * @param hitBox The hitbox of the player.
+     * @param objectType The type of the GameObject.
+     * @param player The player to handle the interaction for.
+     */
     private <T extends GameObject> void handleObjectInteraction(Rectangle2D.Double hitBox, Class<T> objectType, Player player) {
         ArrayList<T> objects = new ArrayList<>(getObjects(objectType));
         for (T object : objects) {
@@ -125,6 +158,12 @@ public class IntersectionHandler {
         }
     }
 
+    /**
+     * Handles the interaction between a player and any GameObject.
+     *
+     * @param hitBox The hitbox of the player.
+     * @param player The player to handle the interaction for.
+     */
     public void handleObjectInteraction(Rectangle2D.Double hitBox, Player player) {
         handleObjectInteraction(hitBox, Potion.class, player);
         handleObjectInteraction(hitBox, Coin.class, player);

@@ -8,6 +8,9 @@ import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 
+/**
+ * Abstract class representing a game object in the game.
+ */
 public abstract class GameObject implements AdvancedRenderable<Graphics>, Debug<Graphics> {
 
     protected ObjType objType;

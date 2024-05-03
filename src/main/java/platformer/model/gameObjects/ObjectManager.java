@@ -26,6 +26,10 @@ import java.util.stream.Collectors;
 import static platformer.constants.Constants.*;
 import static platformer.constants.FilePaths.*;
 
+/**
+ * This class manages all the game objects in the game.
+ * It handles the loading, updating, rendering and interactions between game objects and the player.
+ */
 @SuppressWarnings({"unchecked", "SameParameterValue"})
 public class ObjectManager {
 
@@ -93,6 +97,11 @@ public class ObjectManager {
     }
 
     // Intersection Handler
+    /**
+     * Checks if the player intersects with any object.
+     *
+     * @param player The player whose intersection is to be checked.
+     */
     public void checkPlayerIntersection(Player player) {
         intersectionHandler.checkPlayerIntersection(player);
     }
@@ -101,28 +110,65 @@ public class ObjectManager {
         intersectionHandler.checkEnemyIntersection(projectiles);
     }
 
+    /**
+     * Handles the interaction of a player with an object.
+     *
+     * @param hitBox The hitbox of the player.
+     * @param player The player whose interaction is to be handled.
+     */
     public void handleObjectInteraction(Rectangle2D.Double hitBox, Player player) {
         intersectionHandler.handleObjectInteraction(hitBox, player);
     }
 
     // Collision Handler
+    /**
+     * Checks if the player is touching an object.
+     *
+     * @param player The player whose position is to be checked.
+     * @return true if the player is touching an object, false otherwise.
+     */
     public boolean isPlayerTouchingObject(Player player) {
         return (collisionHandler.isTouchingObject(Container.class, player) || collisionHandler.isTouchingObject(Brick.class, player));
     }
 
+    /**
+     * Checks if the player is glitched inside an object.
+     * This method is used to prevent the player from getting stuck inside game objects.
+     *
+     * @param player The player whose position is to be checked.
+     * @return true if the player is glitched inside an object, false otherwise.
+     */
     public boolean isPlayerGlitchedInObject(Player player) {
         return collisionHandler.isGlitchedInObject(Container.class, player);
     }
 
+    /**
+     * Gets the X coordinate of the boundary of an object that the player is colliding with.
+     * This method is used to prevent the player from moving through game objects.
+     *
+     * @param hitBox The hitbox of the player.
+     * @param dx The desired change in the player's X coordinate.
+     * @return The X coordinate of the object's boundary.
+     */
     public double getXObjectBound(Rectangle2D.Double hitBox, double dx) {
         return collisionHandler.getXObjectBound(hitBox, dx);
     }
 
     // Object Break Handler
+    /**
+     * Checks if an object is broken.
+     *
+     * @param attackBox The attack box of the player.
+     */
     public void checkObjectBreak(Rectangle2D.Double attackBox) {
         objectBreakHandler.checkObjectBreak(attackBox, gameState.getSpellManager().getFlames());
     }
 
+    /**
+     * Generates loot for a defeated enemy.
+     *
+     * @param e The enemy for which the loot is to be generated.
+     */
     public void generateLoot(Enemy e) {
         Rectangle2D.Double location = e.getHitBox();
         objectBreakHandler.generateEnemyLoot(location, e.getEnemyType());
@@ -229,7 +275,6 @@ public class ObjectManager {
 
     public void candleRender(Graphics g, int xLevelOffset, int yLevelOffset, Candle c) {
         c.render(g, xLevelOffset, yLevelOffset, objects[c.getObjType().ordinal()]);
-
     }
 
     public void glowingRender(Graphics g, int xLevelOffset, int yLevelOffset) {

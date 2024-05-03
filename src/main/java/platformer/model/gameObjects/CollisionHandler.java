@@ -13,6 +13,9 @@ import java.awt.geom.Rectangle2D;
 import java.util.List;
 import java.util.stream.Stream;
 
+/**
+ * Handles collisions between game objects and entities.
+ */
 public class CollisionHandler {
 
     private final LevelManager levelManager;
@@ -23,18 +26,39 @@ public class CollisionHandler {
         this.objectManager = objectManager;
     }
 
+    /**
+     * Checks if an entity is touching a specific type of game object.
+     *
+     * @param objectClass The class of the game object.
+     * @param entity The entity.
+     * @return true if the entity is touching the game object, false otherwise.
+     */
     public <T extends GameObject> boolean isTouchingObject(Class<T> objectClass, Entity entity) {
         if (entity == null) return false;
         return getObjects(objectClass).stream()
                 .anyMatch(o -> o.isAlive() && o.getAnimIndex() < 1 && o.getHitBox().intersects(entity.getHitBox()));
     }
 
+    /**
+     * Checks if an entity is glitched inside a specific type of game object.
+     *
+     * @param objectClass The class of the game object.
+     * @param entity The entity.
+     * @return true if the entity is glitched inside the game object, false otherwise.
+     */
     public <T extends GameObject> boolean isGlitchedInObject(Class<T> objectClass, Entity entity) {
         if (entity == null) return false;
         return getObjects(objectClass).stream()
                 .anyMatch(o -> o.isAlive() && o.getAnimIndex() < 1 && checkTouch(o, entity.getHitBox(), "Y", 2));
     }
 
+    /**
+     * Gets the X coordinate of the boundary of an object that the player is colliding with.
+     *
+     * @param hitBox The hitbox of the player.
+     * @param dx The desired change in the player's X coordinate.
+     * @return The X coordinate of the object's boundary.
+     */
     public double getXObjectBound(Rectangle2D.Double hitBox, double dx) {
         return Stream.concat(
                         getObjects(Container.class).stream(),
@@ -45,6 +69,15 @@ public class CollisionHandler {
                 .findFirst().orElse(hitBox.x);
     }
 
+    /**
+     * Checks if an entity is touching a specific game object.
+     *
+     * @param o The game object.
+     * @param hitBox The hitbox of the entity.
+     * @param axis The axis ("X" or "Y") to check.
+     * @param offset The offset to apply to the hitbox's position.
+     * @return true if the entity is touching the game object, false otherwise.
+     */
     private boolean checkTouch(GameObject o, Rectangle2D.Double hitBox, String axis, double offset) {
         int x = (int)hitBox.x, y = (int)hitBox.y;
         int width = (int)hitBox.width, height = (int)hitBox.height;
@@ -65,6 +98,14 @@ public class CollisionHandler {
         return false;
     }
 
+    /**
+     * Returns the game object that the player is colliding with.
+     *
+     * @param direction The direction of the player's movement.
+     * @param hitBox The hitbox of the player.
+     * @param objectClass The class of the game object.
+     * @return The game object that the player is colliding with.
+     */
     private <T extends GameObject> GameObject getCollidingObject(Direction direction, Rectangle2D.Double hitBox, Class<T> objectClass) {
         for (T o : getObjects(objectClass)) {
             if (o.isAlive() && checkTouch(o, hitBox, "X", 0)) {
@@ -75,6 +116,14 @@ public class CollisionHandler {
         return null;
     }
 
+    /**
+     * Determines the new X coordinate of the player when they are hitting an object.
+     *
+     * @param o The game object that the player is hitting.
+     * @param hitBox The hitbox of the player.
+     * @param dx The desired change in the player's X coordinate.
+     * @return The new X coordinate of the player.
+     */
     private double hittingObjectBySide(GameObject o, Rectangle2D.Double hitBox, double dx) {
         if (o.getHitBox().x < hitBox.x && dx > 0) {
             if (canMove(hitBox.x+1, hitBox.y, hitBox.width, hitBox.height)) return hitBox.x+1;
@@ -85,6 +134,13 @@ public class CollisionHandler {
         return hitBox.x;
     }
 
+    /**
+     * Determines the new X coordinate of the player when they are standing on an object.
+     *
+     * @param hitBox The hitbox of the player.
+     * @param dx The desired change in the player's X coordinate.
+     * @return The new X coordinate of the player.
+     */
     private double standingOnObject(Rectangle2D.Double hitBox, double dx) {
         GameObject leftContainer = getCollidingObject(Direction.LEFT, hitBox, Container.class);
         GameObject rightContainer = getCollidingObject(Direction.RIGHT, hitBox, Container.class);
@@ -113,6 +169,13 @@ public class CollisionHandler {
     }
 
     // In Air Check
+    /**
+     * Checks if a game object is in the air.
+     *
+     * @param object The game object to check.
+     * @param objectClass The class of the game object.
+     * @return true if the game object is in the air, false otherwise.
+     */
     private <T extends GameObject> boolean isObjectInAir(T object, Class<T> objectClass) {
         for (T obj : getObjects(objectClass)) {
             if (obj.isAlive() && obj instanceof Container && obj != object) {
@@ -124,6 +187,12 @@ public class CollisionHandler {
         return canMove(xPos, yPos, object.getHitBox().width, object.getHitBox().height);
     }
 
+    /**
+     * Lands a game object that is in the air.
+     *
+     * @param gameObject The game object to land.
+     * @param objectClass The class of the game object.
+     */
     private <T extends GameObject> void landObject(T gameObject, Class<T> objectClass) {
         boolean isSafe = true;
         while(isSafe) {
@@ -142,6 +211,11 @@ public class CollisionHandler {
         }
     }
 
+    /**
+     * Updates the state of all game objects of a specific type that are in the air.
+     *
+     * @param objectClass The class of the game objects to update.
+     */
     private <T extends GameObject> void updateObjectInAir(Class<T> objectClass) {
         for (T object : getObjects(objectClass)) {
             if (isObjectInAir(object, objectClass)) object.setOnGround(false);

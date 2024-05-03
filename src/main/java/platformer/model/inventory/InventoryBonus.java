@@ -1,5 +1,9 @@
 package platformer.model.inventory;
 
+/**
+ * Class that represents the cumulative bonuses of all items in the inventory.
+ * It provides methods to apply and remove bonuses from items.
+ */
 public class InventoryBonus {
 
     private static volatile InventoryBonus instance = null;
@@ -19,6 +23,10 @@ public class InventoryBonus {
         return instance;
     }
 
+    /**
+     * Applies the bonuses from an item to the inventory.
+     * @param itemBonus the item whose bonuses are to be applied
+     */
     public void applyBonus(ItemBonus itemBonus) {
         double[] bonuses = itemBonus.getEquipmentBonus();;
         this.health += bonuses[0];
@@ -30,6 +38,10 @@ public class InventoryBonus {
         this.cooldown += bonuses[6];
     }
 
+    /**
+     * Removes the bonuses from an item from the inventory.
+     * @param itemBonus the item whose bonuses are to be removed
+     */
     public void removeBonus(ItemBonus itemBonus) {
         double[] bonuses = itemBonus.getEquipmentBonus();
         this.health -= bonuses[0];

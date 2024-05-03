@@ -15,6 +15,10 @@ import java.awt.image.BufferedImage;
 
 import static platformer.constants.Constants.*;
 
+/**
+ * Abstract base class for all enemies in the game.
+ * An enemy is a type of entity that can interact with the player and the game world.
+ */
 @SuppressWarnings("FieldCanBeLocal")
 public abstract class Enemy extends Entity implements Debug<Graphics> {
 
@@ -33,6 +37,13 @@ public abstract class Enemy extends Entity implements Debug<Graphics> {
         this.currentHealth = maxHealth;
     }
 
+    /**
+     * Updates the enemy's state.
+     *
+     * @param animations The animations for the enemy.
+     * @param levelData The level data.
+     * @param player The player.
+     */
     public abstract void update(BufferedImage[][] animations, int[][] levelData, Player player);
 
     protected void updateAnimation(BufferedImage[][] animations) {
