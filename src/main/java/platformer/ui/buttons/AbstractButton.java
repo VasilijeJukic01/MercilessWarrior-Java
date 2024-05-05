@@ -1,5 +1,8 @@
 package platformer.ui.buttons;
 
+import platformer.audio.Audio;
+import platformer.audio.Sound;
+
 import java.awt.*;
 
 /**
@@ -46,6 +49,9 @@ public abstract class AbstractButton implements GameButton<Graphics> {
     }
 
     public void setMousePressed(boolean mousePressed) {
+        if (mousePressed){
+            Audio.getInstance().getAudioPlayer().playSound(Sound.BTN_CLICK);
+        }
         this.mousePressed = mousePressed;
     }
 

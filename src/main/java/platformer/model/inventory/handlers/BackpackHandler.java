@@ -1,5 +1,7 @@
 package platformer.model.inventory.handlers;
 
+import platformer.audio.Audio;
+import platformer.audio.Sound;
 import platformer.core.Framework;
 import platformer.model.inventory.InventoryItem;
 import platformer.model.inventory.ItemType;
@@ -46,6 +48,7 @@ public class BackpackHandler {
 
     public void craftItem(InventoryItem item, Map<ItemType, Integer> resources) {
         if (!hasEnoughResources(resources)) return;
+        Audio.getInstance().getAudioPlayer().playSound(Sound.CRAFTING);
         useResources(resources);
         addItemToBackpack(item);
     }

@@ -8,7 +8,7 @@ public class Audio {
 
     private static volatile Audio instance = null;
 
-    private AudioPlayer<Song, Sound> audioPlayer;
+    private AudioPlayer<Song, Sound, Ambience> audioPlayer;
 
     private Audio() {
         init();
@@ -30,7 +30,7 @@ public class Audio {
     }
 
 
-    public AudioPlayer<Song, Sound>  getAudioPlayer() {
+    public AudioPlayer<Song, Sound, Ambience>  getAudioPlayer() {
         return audioPlayer;
     }
 }

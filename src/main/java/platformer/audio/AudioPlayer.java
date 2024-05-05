@@ -4,8 +4,9 @@ package platformer.audio;
  * Interface for the AudioPlayer class.
  * @param <U> The type of the song.
  * @param <V> The type of the sound.
+ * @param <W> The type of the ambience.
  */
-public interface AudioPlayer<U, V> {
+public interface AudioPlayer<U, V, W> {
 
     /**
      * Plays the song.
@@ -39,6 +40,17 @@ public interface AudioPlayer<U, V> {
      * Unpauses the sounds.
      */
     void unpauseSounds();
+
+    /**
+     * Plays the ambience.
+     * @param ambience The ambience to play.
+     */
+    void playAmbience(W ambience);
+
+    /**
+     * Stops the ambience.
+     */
+    void stopAmbience();
 
     /**
      * Pauses the song.

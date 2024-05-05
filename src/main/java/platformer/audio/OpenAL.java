@@ -17,13 +17,15 @@ import java.util.Random;
  * It is responsible for loading and playing audio files.
  * It uses the OpenAL library to play audio files.
  */
-public class OpenAL implements AudioPlayer<Song, Sound>  {
+public class OpenAL implements AudioPlayer<Song, Sound, Ambience>  {
 
     private final List<Integer> songs = new ArrayList<>();
     private final List<OpenALSource> songSources = new ArrayList<>();
     private final List<Integer> sounds = new ArrayList<>();
     private final List<OpenALSource> soundSources = new ArrayList<>();
     private final List<Integer> pausedSounds = new ArrayList<>();
+    private final List<OpenALSource> ambienceSources = new ArrayList<>();
+    private final List<Integer> ambiences = new ArrayList<>();
 
     private int currentSong;
     private float musicVolume = 0.2f;
@@ -35,6 +37,7 @@ public class OpenAL implements AudioPlayer<Song, Sound>  {
         initAL();
         loadSongs();
         loadSounds();
+        loadAmbiences();
         setListenerData();
         Logger.getInstance().notify("Audio loaded successfully!", Message.INFORMATION);
     }
@@ -67,6 +70,11 @@ public class OpenAL implements AudioPlayer<Song, Sound>  {
         updateSoundVolume();
     }
 
+    private void loadAmbiences() {
+        Ambience[] ambienceArray = Ambience.values();
+        loadAudio(ambienceArray, ambiences, ambienceSources);
+    }
+
     // Core
     private int loadBuffers(String file) {
         int buffer = AL10.alGenBuffers();
@@ -89,6 +97,9 @@ public class OpenAL implements AudioPlayer<Song, Sound>  {
         if (!songMute) setMusicVolume(musicVolume);
         songSources.get(currentSong).play(songs.get(currentSong));
         songSources.get(currentSong).loop(true);
+
+        if (song == Song.FOREST_1) playAmbience(Ambience.FOREST);
+        else stopAmbience();
     }
 
     @Override
@@ -133,6 +144,19 @@ public class OpenAL implements AudioPlayer<Song, Sound>  {
                 soundSources.get(sounds.indexOf(sound)).unpause();
         }
         pausedSounds.clear();
+    }
+
+    @Override
+    public void playAmbience(Ambience ambience) {
+        int index = ambience.ordinal();
+        if (!soundMute) soundSources.get(index).changeVolume(sfxVolume);
+        ambienceSources.get(index).play(ambiences.get(index));
+        ambienceSources.get(index).loop(true);
+    }
+
+    @Override
+    public void stopAmbience() {
+        ambienceSources.forEach(OpenALSource::stop);
     }
 
     @Override
@@ -193,6 +217,7 @@ public class OpenAL implements AudioPlayer<Song, Sound>  {
     public void soundMute() {
         soundMute = !soundMute;
         muteSource(sounds, soundSources, soundMute);
+        muteSource(ambiences, ambienceSources, soundMute);
     }
 
     // Volume
@@ -203,9 +228,10 @@ public class OpenAL implements AudioPlayer<Song, Sound>  {
 
     private void updateSoundVolume() {
         if (soundMute) return;
-        for (Integer sound : sounds) {
-            soundSources.get(sounds.indexOf(sound)).changeVolume(sfxVolume);
-        }
+        sounds.forEach(sound -> soundSources.get(sounds.indexOf(sound))
+                .changeVolume(sfxVolume));
+        ambiences.forEach(ambience -> ambienceSources.get(ambiences.indexOf(ambience))
+                .changeVolume(sfxVolume));
     }
 
     @Override
@@ -224,6 +250,7 @@ public class OpenAL implements AudioPlayer<Song, Sound>  {
     public void destroy() {
         songs.forEach(AL10::alDeleteBuffers);
         sounds.forEach(AL10::alDeleteBuffers);
+        ambiences.forEach(AL10::alDeleteBuffers);
         AL.destroy();
     }
 

@@ -75,7 +75,6 @@ public class ObjectBreakHandler {
 
     private void breakBrick(Brick brick) {
         brick.setAnimate(true);
-        // TODO: Add sound
         Logger.getInstance().notify("Player breaks brick.", Message.NOTIFICATION);
     }
 
