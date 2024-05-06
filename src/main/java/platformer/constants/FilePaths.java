@@ -92,7 +92,6 @@ public final class FilePaths {
     public static final String SLOT_INVENTORY = "/images/inventory/Slot.png";
     public static final String PERKS_TXT_IMG = "/images/buttons/PerksText.png";
     public static final String CONTROLS_TXT = "/images/buttons/ControlsText.png";
-    public static final String KEYBOARD_SPRITE = "/images/keyboard.png";
     public static final String OPTIONS_TXT = "/images/buttons/OptionsText.png";
     public static final String BOARD_TXT = "/images/buttons/BoardText.png";
     public static final String INVENTORY_TXT = "/images/buttons/InventoryText.png";

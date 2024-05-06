@@ -1,5 +1,7 @@
 package platformer.state;
 
+import platformer.controller.KeyboardController;
+import platformer.core.Framework;
 import platformer.core.Game;
 import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.SmallButton;
@@ -11,10 +13,14 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import static platformer.constants.Constants.*;
 import static platformer.constants.FilePaths.CONTROLS_TXT;
-import static platformer.constants.FilePaths.KEYBOARD_SPRITE;
 import static platformer.constants.UI.*;
 
 /**
@@ -23,20 +29,20 @@ import static platformer.constants.UI.*;
  */
 public class ControlsState extends AbstractState implements State {
 
-    private BufferedImage keyboardSprite;
+    private final KeyboardController kc;
     private BufferedImage controlsText;
 
     private SmallButton exitBtn;
 
     public ControlsState(Game game) {
         super(game);
+        this.kc = Framework.getInstance().getKeyboardController();
         loadImages();
         loadButtons();
     }
 
     private void loadImages() {
         this.controlsText = Utils.getInstance().importImage(CONTROLS_TXT, CONTROLS_TXT_WID, CONTROLS_TXT_HEI);
-        this.keyboardSprite = Utils.getInstance().importImage(KEYBOARD_SPRITE, -1, -1);
     }
 
     private void loadButtons() {
@@ -61,33 +67,23 @@ public class ControlsState extends AbstractState implements State {
     // Render
     private void renderControls(Graphics g) {
         renderTexts(g);
-        renderKeys(g);
     }
 
     private void renderTexts(Graphics g) {
         g.setColor(Color.WHITE);
         g.setFont(new Font("Arial", Font.BOLD, FONT_MEDIUM));
-        g.drawString("Move/Wall Slide:",    CTRL_ROW_TXT_X, CTRL_ROW1_TXT_Y);
-        g.drawString("Jump:",               CTRL_ROW_TXT_X, CTRL_ROW2_TXT_Y);
-        g.drawString("Attack:",             CTRL_ROW_TXT_X, CTRL_ROW3_TXT_Y);
-        g.drawString("Flames:",             CTRL_ROW_TXT_X, CTRL_ROW4_TXT_Y);
-        g.drawString("Block Attack:",       CTRL_ROW_TXT_X, CTRL_ROW5_TXT_Y);
-        g.drawString("Dash:",               CTRL_ROW_TXT_X, CTRL_ROW6_TXT_Y);
-        g.drawString("Transform:",          CTRL_ROW_TXT_X, CTRL_ROW7_TXT_Y);
-        g.drawString("Double Jump:",        CTRL_ROW_TXT_X, CTRL_ROW8_TXT_Y);
-    }
 
-    private void renderKeys(Graphics g) {
-        g.drawImage(keyboardSprite.getSubimage(16*2,0, 16, 16),     K1_X, K_ROW1, KEY_SIZE, KEY_SIZE, null);
-        g.drawImage(keyboardSprite.getSubimage(16*3,0, 16, 16),     K2_X, K_ROW1, KEY_SIZE, KEY_SIZE, null);
-        g.drawImage(keyboardSprite.getSubimage(0,0, 16, 16),        K3_X, K_ROW2, KEY_SIZE, KEY_SIZE, null);
-        g.drawImage(keyboardSprite.getSubimage(16*7,16*4, 16, 16),  K4_X, K_ROW3, KEY_SIZE, KEY_SIZE, null);
-        g.drawImage(keyboardSprite.getSubimage(16*2,16*2, 16, 16),  K5_X, K_ROW4, KEY_SIZE, KEY_SIZE, null);
-        g.drawImage(keyboardSprite.getSubimage(16*2,16*4, 16, 16),  K6_X, K_ROW5, KEY_SIZE, KEY_SIZE, null);
-        g.drawImage(keyboardSprite.getSubimage(16*5,16*4, 16, 16),  K7_X, K_ROW6, KEY_SIZE, KEY_SIZE, null);
-        g.drawImage(keyboardSprite.getSubimage(0,16*4, 16, 16),     K8_X, K_ROW7, KEY_SIZE, KEY_SIZE, null);
-        g.drawImage(keyboardSprite.getSubimage(0,0, 16, 16),        K9_X, K_ROW8, KEY_SIZE, KEY_SIZE, null);
-        g.drawImage(keyboardSprite.getSubimage(0,0, 16, 16),        K10_X, K_ROW8, KEY_SIZE, KEY_SIZE, null);
+        Map<String, String> commands = createCommands();
+
+        AtomicInteger i = new AtomicInteger();
+        commands.forEach((description, command) -> {
+            String text = description + ": " + Arrays.stream(command.split("&"))
+                    .map(String::trim)
+                    .map(kc::getKeyName)
+                    .collect(Collectors.joining(" & "));
+            g.drawString(text, CTRL_ROW_TXT_X, CTRL_ROW_TXT_Y + i.get() * CTRL_TXT_Y_SPACING);
+            i.incrementAndGet();
+        });
     }
 
     @Override
@@ -132,6 +128,21 @@ public class ControlsState extends AbstractState implements State {
     @Override
     public void reset() {
         exitBtn.resetMouseSet();
+    }
+
+    private static Map<String, String> createCommands() {
+        Map<String, String> commands = new LinkedHashMap<>();
+        commands.put("Move/Wall Slide", "Move Left & Move Right");
+        commands.put("Jump", "Jump");
+        commands.put("Dash", "Dash");
+        commands.put("Attack", "Attack");
+        commands.put("Shield", "Shield");
+        commands.put("Flames", "Flames");
+        commands.put("Fireball", "Fireball");
+        commands.put("Transform", "Transform");
+        commands.put("Interact", "Interact");
+        commands.put("Inventory", "Inventory");
+        return commands;
     }
 
 }
