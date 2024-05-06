@@ -6,9 +6,19 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextField;
+import javafx.scene.input.KeyCode;
+import platformer.debug.logger.Logger;
+import platformer.debug.logger.Message;
+import platformer.launcher.core.KeyboardConfigurator;
 import platformer.launcher.view.LauncherView;
 import platformer.AppCore;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.Map;
+
+import static platformer.constants.FilePaths.KEYBOARD_CONFIG_PATH;
 import static platformer.launcher.Config.SCALING_FACTOR;
 
 public class LaunchController implements EventHandler<ActionEvent> {
@@ -30,9 +40,24 @@ public class LaunchController implements EventHandler<ActionEvent> {
         this.cbResolution = cbResolution;
     }
 
+    private void writeMapToFile(Map<String, KeyCode> map) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(KEYBOARD_CONFIG_PATH))) {
+            for (Map.Entry<String, KeyCode> entry : map.entrySet()) {
+                writer.write(entry.getKey() + "=" + entry.getValue());
+                writer.newLine();
+            }
+        } catch (IOException e) {
+            Logger.getInstance().notify("Saving keyboard configuration failed!", Message.ERROR);
+        }
+    }
+
     @Override
     public void handle(ActionEvent event) {
         String[] args = new String[3];
+
+        Map<String, KeyCode> commandKeyMap = KeyboardConfigurator.getInstance().getCommandKeyMap();
+        writeMapToFile(commandKeyMap);
+
         switch (cbResolution.getSelectionModel().getSelectedIndex()) {
             case 0:
                 scale = "1";

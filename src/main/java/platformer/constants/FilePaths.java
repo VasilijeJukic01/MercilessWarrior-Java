@@ -130,5 +130,6 @@ public final class FilePaths {
 
     // Serialization
     public static final String SAVE_PATH = "src/main/resources/saves/";
+    public static final String KEYBOARD_CONFIG_PATH = "src/main/resources/keyboard.config";
 
 }

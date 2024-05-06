@@ -23,6 +23,7 @@ public class GamePanel extends JPanel {
         initListeners();
         initFocus();
         initPanelSize();
+        setFocusTraversalKeysEnabled(false);
     }
 
     private void initListeners() {

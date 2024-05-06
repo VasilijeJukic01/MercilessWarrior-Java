@@ -59,4 +59,7 @@ public class KeyboardConfigurator {
         commandKeyMap.putAll(originalCommandKeyMap);
     }
 
+    public Map<String, KeyCode> getCommandKeyMap() {
+        return commandKeyMap;
+    }
 }
