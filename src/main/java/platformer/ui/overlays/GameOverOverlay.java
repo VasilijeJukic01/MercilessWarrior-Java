@@ -9,6 +9,7 @@ import platformer.ui.buttons.AbstractButton;
 import platformer.utils.Utils;
 
 import java.awt.*;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 
@@ -16,7 +17,10 @@ import static platformer.constants.Constants.*;
 import static platformer.constants.FilePaths.*;
 import static platformer.constants.UI.*;
 
-public class GameOverOverlay implements Overlay<MouseEvent, Graphics> {
+/**
+ * Class that represents the overlay that is displayed when the player dies.
+ */
+public class GameOverOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
 
     private final Game game;
     private BufferedImage deadText, menuText, respawnText;
@@ -101,6 +105,11 @@ public class GameOverOverlay implements Overlay<MouseEvent, Graphics> {
         retryBtn.setMouseOver(false);
         if (isMouseInButton(e, retryBtn)) retryBtn.setMouseOver(true);
         if (isMouseInButton(e, menuBtn)) menuBtn.setMouseOver(true);
+    }
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+
     }
 
     private boolean isMouseInButton(MouseEvent e, AbstractButton abstractButton) {

@@ -1,5 +1,9 @@
 package platformer.model.perks;
 
+/**
+ * Singleton that holds the bonuses provided by the perks.
+ * It includes bonuses to attack, health, power, experience, and coins, as well as special abilities.
+ */
 public class PerksBonus {
 
     private static volatile PerksBonus instance = null;

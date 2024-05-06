@@ -4,7 +4,9 @@ import platformer.animation.Animation;
 import platformer.audio.Audio;
 import platformer.audio.Sound;
 import platformer.model.entities.Direction;
+import platformer.model.entities.enemies.Enemy;
 import platformer.model.entities.player.Player;
+import platformer.model.gameObjects.npc.Npc;
 import platformer.model.perks.PerksBonus;
 import platformer.model.entities.enemies.boss.SpearWoman;
 import platformer.model.gameObjects.objects.*;
@@ -24,6 +26,10 @@ import java.util.stream.Collectors;
 import static platformer.constants.Constants.*;
 import static platformer.constants.FilePaths.*;
 
+/**
+ * This class manages all the game objects in the game.
+ * It handles the loading, updating, rendering and interactions between game objects and the player.
+ */
 @SuppressWarnings({"unchecked", "SameParameterValue"})
 public class ObjectManager {
 
@@ -32,21 +38,27 @@ public class ObjectManager {
     private IntersectionHandler intersectionHandler;
     private ObjectBreakHandler objectBreakHandler;
 
+    private GameObject intersection;
+
     private final BufferedImage[][] objects;
+    private final BufferedImage[][] npcs;
 
     Class<? extends GameObject>[] updateClasses = new Class[]{
             Coin.class, Container.class, Potion.class, Spike.class,
             Shop.class, Blocker.class, Blacksmith.class, Dog.class,
             SaveTotem.class, SmashTrap.class, Candle.class, Loot.class,
-            Table.class
+            Table.class, Board.class, Npc.class, Lava.class, Brick.class
     };
     Class<? extends GameObject>[] renderBelow = new Class[] {
             Container.class, Potion.class, Spike.class,
-            Blocker.class, Dog.class, SmashTrap.class, Loot.class
+            Blocker.class, Dog.class, SmashTrap.class, Loot.class, Brick.class
     };
     Class<? extends GameObject>[] renderAbove = new Class[] {
             SaveTotem.class, Shop.class, Blacksmith.class, Coin.class,
-            Table.class
+            Table.class, Board.class
+    };
+    Class<? extends GameObject>[] renderBehind = new Class[] {
+            Lava.class
     };
 
     private Map<ObjType, List<GameObject>> objectsMap = new HashMap<>();
@@ -59,6 +71,7 @@ public class ObjectManager {
         this.gameState = gameState;
         initHandlers();
         this.objects = Animation.getInstance().loadObjects();
+        this.npcs = Animation.getInstance().loadNpcs();
         this.projectiles = new ArrayList<>();
         loadImages();
     }
@@ -84,6 +97,11 @@ public class ObjectManager {
     }
 
     // Intersection Handler
+    /**
+     * Checks if the player intersects with any object.
+     *
+     * @param player The player whose intersection is to be checked.
+     */
     public void checkPlayerIntersection(Player player) {
         intersectionHandler.checkPlayerIntersection(player);
     }
@@ -92,30 +110,68 @@ public class ObjectManager {
         intersectionHandler.checkEnemyIntersection(projectiles);
     }
 
+    /**
+     * Handles the interaction of a player with an object.
+     *
+     * @param hitBox The hitbox of the player.
+     * @param player The player whose interaction is to be handled.
+     */
     public void handleObjectInteraction(Rectangle2D.Double hitBox, Player player) {
         intersectionHandler.handleObjectInteraction(hitBox, player);
     }
 
     // Collision Handler
+    /**
+     * Checks if the player is touching an object.
+     *
+     * @param player The player whose position is to be checked.
+     * @return true if the player is touching an object, false otherwise.
+     */
     public boolean isPlayerTouchingObject(Player player) {
-        return collisionHandler.isTouchingObject(Container.class, player);
+        return (collisionHandler.isTouchingObject(Container.class, player) || collisionHandler.isTouchingObject(Brick.class, player));
     }
 
+    /**
+     * Checks if the player is glitched inside an object.
+     * This method is used to prevent the player from getting stuck inside game objects.
+     *
+     * @param player The player whose position is to be checked.
+     * @return true if the player is glitched inside an object, false otherwise.
+     */
     public boolean isPlayerGlitchedInObject(Player player) {
         return collisionHandler.isGlitchedInObject(Container.class, player);
     }
 
+    /**
+     * Gets the X coordinate of the boundary of an object that the player is colliding with.
+     * This method is used to prevent the player from moving through game objects.
+     *
+     * @param hitBox The hitbox of the player.
+     * @param dx The desired change in the player's X coordinate.
+     * @return The X coordinate of the object's boundary.
+     */
     public double getXObjectBound(Rectangle2D.Double hitBox, double dx) {
         return collisionHandler.getXObjectBound(hitBox, dx);
     }
 
     // Object Break Handler
+    /**
+     * Checks if an object is broken.
+     *
+     * @param attackBox The attack box of the player.
+     */
     public void checkObjectBreak(Rectangle2D.Double attackBox) {
         objectBreakHandler.checkObjectBreak(attackBox, gameState.getSpellManager().getFlames());
     }
 
-    public void generateCoins(Rectangle2D.Double location) {
-        objectBreakHandler.generateEnemyLoot(location);
+    /**
+     * Generates loot for a defeated enemy.
+     *
+     * @param e The enemy for which the loot is to be generated.
+     */
+    public void generateLoot(Enemy e) {
+        Rectangle2D.Double location = e.getHitBox();
+        objectBreakHandler.generateEnemyLoot(location, e.getEnemyType());
     }
 
     public void checkProjectileDeflect(Rectangle2D.Double attackBox) {
@@ -213,14 +269,27 @@ public class ObjectManager {
         renderArrowLaunchers(g, xLevelOffset, yLevelOffset);
     }
 
+    public void secondRender(Graphics g, int xLevelOffset, int yLevelOffset) {
+        Arrays.stream(renderBehind).forEach(renderClass -> renderObjects(g, xLevelOffset, yLevelOffset, renderClass));
+    }
+
     public void candleRender(Graphics g, int xLevelOffset, int yLevelOffset, Candle c) {
         c.render(g, xLevelOffset, yLevelOffset, objects[c.getObjType().ordinal()]);
-
     }
 
     public void glowingRender(Graphics g, int xLevelOffset, int yLevelOffset) {
         Arrays.stream(renderAbove).forEach(renderClass -> renderObjects(g, xLevelOffset, yLevelOffset, renderClass));
+        renderNpcs(g, xLevelOffset, yLevelOffset);
         renderProjectiles(g, xLevelOffset, yLevelOffset);
+    }
+
+    private void renderNpcs(Graphics g, int xLevelOffset, int yLevelOffset) {
+        for (Npc npc : getObjects(Npc.class)) {
+            if (npc.isAlive()) {
+                BufferedImage[] anims = npcs[npc.getNpcType().ordinal()];
+                npc.render(g, xLevelOffset, yLevelOffset, anims);
+            }
+        }
     }
 
     private void updateArrowLaunchers(int[][] lvlData, Player player) {
@@ -319,11 +388,19 @@ public class ObjectManager {
         }
     }
 
-    public Class<? extends GameObject> getIntersectingObject() {
+    public String getIntersectingObject() {
         return intersectionHandler.getIntersectingObject();
     }
 
     public Loot getIntersectinLoot() {
         return intersectionHandler.getIntersectingLoot(gameState.getPlayer());
+    }
+
+    public void setIntersection(GameObject object) {
+        this.intersection = object;
+    }
+
+    public GameObject getIntersection() {
+        return intersection;
     }
 }

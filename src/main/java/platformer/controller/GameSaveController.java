@@ -12,6 +12,13 @@ import java.util.List;
 import static platformer.constants.UI.*;
 import static platformer.constants.UI.GAME_SLOT_SPACING;
 
+/**
+ * The GameSaveController class is responsible for managing the game's save slots.
+ * It provides functionality to initialize slots, load and save game data to slots, and check slot selection based on mouse events.
+ * <p>
+ * Each slot is represented by a GameSlot object, and all slots are stored in a list.
+ * The class also interacts with the Framework and Account classes to handle game data.
+ */
 public class GameSaveController {
 
     private final Game game;

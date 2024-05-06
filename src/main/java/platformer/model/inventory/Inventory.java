@@ -8,6 +8,10 @@ import platformer.utils.Utils;
 import java.awt.image.BufferedImage;
 import java.util.*;
 
+/**
+ * Class that represents the player's inventory.
+ * It provides methods to manage items in the inventory.
+ */
 public class Inventory {
 
     private final EquipmentHandler equipmentHandler;
@@ -18,30 +22,66 @@ public class Inventory {
         this.backpackHandler = new BackpackHandler(equipmentHandler);
     }
 
+    /**
+     * Uses an item from the backpack.
+     *
+     * @param index the index of the item in the backpack
+     */
     public void useItem(int index) {
         backpackHandler.useItem(index);
     }
 
+    /**
+     * Equips an item from the backpack.
+     *
+     * @param index the index of the item in the backpack
+     */
     public void equipItem(int index) {
         equipmentHandler.equipItem(backpackHandler, index);
     }
 
+    /**
+     * Drops an item from the backpack.
+     *
+     * @param index the index of the item in the backpack
+     */
     public void dropItem(int index) {
         backpackHandler.dropItem(index);
     }
 
+    /**
+     * Unequips an item from the equipment.
+     *
+     * @param index the index of the item in the equipment
+     */
     public void unequipItem(int index) {
         equipmentHandler.unequipItem(index, backpackHandler);
     }
 
+    /**
+     * Adds an item to the backpack.
+     *
+     * @param item the item to be added
+     */
     public void addItemToBackpack(InventoryItem item) {
         backpackHandler.addItemToBackpack(item);
     }
 
+    /**
+     * Adds all items from a loot to the backpack.
+     *
+     * @param loot the loot whose items are to be added
+     */
     public void addAllItemsFromLoot(Loot loot) {
         loot.getItems().forEach(this::addItemToBackpack);
     }
 
+    /**
+     * Crafts an item and adds it to the backpack.
+     *
+     * @param item the item to be crafted
+     * @param resources the resources required to craft the item
+     */
     public void craftItem(InventoryItem item, Map<ItemType, Integer> resources) {
         backpackHandler.craftItem(item, resources);
     }
@@ -59,6 +99,12 @@ public class Inventory {
         return equipmentHandler.getEquipped();
     }
 
+    /**
+     * Fills the inventory with items.
+     * Used to load the inventory from a save file.
+     *
+     * @param values the values used to fill the inventory
+     */
     public void fillItems(List<String> values) {
         reset();
         for (String value : values) {

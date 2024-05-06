@@ -9,6 +9,13 @@ import platformer.database.Settings;
 
 import java.util.List;
 
+/**
+ * Managing the database operations in the game.
+ * It uses the Storage interface to perform these operations.
+ * <p>
+ * The class uses a LauncherPrompt object to get the launcher's input, a CredentialsLoader object to load the database credentials,
+ * a Settings object to store these credentials, and a Storage object to perform the database operations.
+ */
 public class Database {
 
     private final LauncherPrompt launcherPrompt;
@@ -32,16 +39,20 @@ public class Database {
         settings.addParameter("PASSWORD", credentialsLoader.getDatabasePassword());
     }
 
+    public int createAccount(String username, String password) {
+        return storage.createAccount(username, password);
+    }
+
     public Account getData() {
-        return storage.loadData(launcherPrompt.getName());
+        return storage.loadAccountData(launcherPrompt.getName(), launcherPrompt.getPassword());
     }
 
     public List<BoardItem> loadLeaderboardData() {
         return storage.loadLeaderboardData();
     }
 
-    public void updateData(Account account) {
-        storage.updateData(account);
+    public void updateAccountData(Account account) {
+        storage.updateAccountData(account);
     }
 
 }

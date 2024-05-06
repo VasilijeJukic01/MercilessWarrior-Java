@@ -15,6 +15,10 @@ import static platformer.constants.Constants.CRE_BTN_SIZE;
 import static platformer.constants.UI.*;
 import static platformer.constants.UI.CONTINUE_BTN_Y;
 
+/**
+ * State of the game when the player is choosing a game slot to play.
+ * It includes displaying the game slots to the user and handling user interactions within this state.
+ */
 public class ChoseGameState extends AbstractState implements State {
 
     private SmallButton playBtn, exitBtn;

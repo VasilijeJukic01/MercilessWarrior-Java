@@ -5,16 +5,22 @@ import platformer.state.PlayingState;
 import platformer.ui.dialogue.DialogueOverlay;
 
 import java.awt.*;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Manages the overlays that are displayed on top of the game screen.
+ * <p>
+ * Overlays are used to display additional information or options to the player.
+ * The overlay that is displayed is determined by the current playing state.
+ */
 public class OverlayManager {
 
     private final GameState gameState;
-    private final Map<PlayingState, Overlay<MouseEvent, Graphics>> overlays;
+    private final Map<PlayingState, Overlay<MouseEvent, KeyEvent, Graphics>> overlays;
 
-    @SuppressWarnings("unchecked")
     public OverlayManager(GameState gameState) {
         this.gameState = gameState;
         this.overlays = new HashMap<>();
@@ -32,7 +38,7 @@ public class OverlayManager {
 
     // Core
     public void update(PlayingState playingState) {
-        Overlay<MouseEvent, Graphics> overlay = overlays.get(playingState);
+        Overlay<MouseEvent, KeyEvent, Graphics> overlay = overlays.get(playingState);
         if (overlay != null) {
             overlay.update();
         }
@@ -73,13 +79,18 @@ public class OverlayManager {
         }
     }
 
+    public void keyPressed(KeyEvent e) {
+        PlayingState overlay = gameState.getActiveState();
+        if (overlay != null) overlays.get(overlay).keyPressed(e);
+    }
+
     public void reset() {
         overlays.get(PlayingState.SHOP).reset();
         overlays.get(PlayingState.CRAFTING).reset();
         overlays.get(PlayingState.DIALOGUE).reset();
     }
 
-    public Map<PlayingState, Overlay<MouseEvent, Graphics>> getOverlays() {
+    public Map<PlayingState, Overlay<MouseEvent, KeyEvent, Graphics>> getOverlays() {
         return overlays;
     }
 }

@@ -1,5 +1,9 @@
 package platformer.constants;
 
+/**
+ * This class contains all the file paths for the game's assets.
+ * It is used to keep all the paths in one place for easy access.
+ */
 public final class FilePaths {
 
     // Player
@@ -33,6 +37,14 @@ public final class FilePaths {
     public static final String CANDLE_IMG = "/images/objs/Candle.png";
     public static final String LOOT_IMG = "/images/objs/Loot.png";
     public static final String TABLE_IMG = "/images/objs/Table.png";
+    public static final String BOARD_IMG = "/images/objs/Board.png";
+    public static final String LAVA_SHEET = "/images/objs/Lava.png";
+    public static final String BRICK_SHEET = "/images/objs/Brick.png";
+
+    // NPC
+    public static final String ANITA_SHEET = "/images/objs/npc/AnitaSprite.png";
+    public static final String NIKOLAS_SHEET = "/images/objs/npc/NikolasSprite.png";
+    public static final String SIR_DEJANOVIC_SHEET = "/images/objs/npc/SirDejanovicSprite.png";
 
     // Dialogue
     public static final String OBJECT_DIALOGUES = "/dialogues/object_dialogues.txt";
@@ -80,7 +92,6 @@ public final class FilePaths {
     public static final String SLOT_INVENTORY = "/images/inventory/Slot.png";
     public static final String PERKS_TXT_IMG = "/images/buttons/PerksText.png";
     public static final String CONTROLS_TXT = "/images/buttons/ControlsText.png";
-    public static final String KEYBOARD_SPRITE = "/images/keyboard.png";
     public static final String OPTIONS_TXT = "/images/buttons/OptionsText.png";
     public static final String BOARD_TXT = "/images/buttons/BoardText.png";
     public static final String INVENTORY_TXT = "/images/buttons/InventoryText.png";
@@ -94,10 +105,15 @@ public final class FilePaths {
     public static final String HEALTH_ITEM = "/images/inventory/HealthItem.png";
     public static final String STAMINA_ITEM = "/images/inventory/StaminaItem.png";
     public static final String IRON_ORE_ITEM = "/images/inventory/IronOre.png";
+    public static final String SILVER_ORE_ITEM = "/images/inventory/SilverOre.png";
     public static final String COPPER_ORE_ITEM = "/images/inventory/CopperOre.png";
     public static final String AMETHYST_ORE_ITEM = "/images/inventory/AmethystOre.png";
     public static final String SONIC_QUARTZ_ORE_ITEM = "/images/inventory/SonicQuartzOre.png";
+    public static final String AZURELITE_ORE_ITEM = "/images/inventory/AzureliteOre.png";
     public static final String ELECTRICITE_ORE_ITEM = "/images/inventory/ElectriciteOre.png";
+    public static final String MAGMA_ORE_ITEM = "/images/inventory/MagmaOre.png";
+    public static final String ROSALLIUM_ORE_ITEM = "/images/inventory/RosalliumOre.png";
+    public static final String WRAITH_ESSENCE_ITEM = "/images/inventory/WraithEssence.png";
 
     public static final String WARRIOR_HELMET = "/images/inventory/WarriorHelmet.png";
     public static final String WARRIOR_ARMOR = "/images/inventory/WarriorArmor.png";
@@ -107,10 +123,12 @@ public final class FilePaths {
 
     public static final String GUARDIAN_ARMOR = "/images/inventory/GuardianArmor.png";
     public static final String AMETHYST_RING = "/images/inventory/AmethystRing.png";
+    public static final String THUNDERBOLT_CHARM = "/images/inventory/ThunderboltCharm.png";
 
     public static final String PLAYER_ICON = "/images/inventory/Player.png";
 
     // Serialization
     public static final String SAVE_PATH = "src/main/resources/saves/";
+    public static final String KEYBOARD_CONFIG_PATH = "src/main/resources/keyboard.config";
 
 }

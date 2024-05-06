@@ -4,6 +4,11 @@ import org.lwjgl.openal.AL10;
 
 import static org.lwjgl.openal.AL10.*;
 
+/**
+ * Represents an OpenAL source.
+ * <p>
+ * A source is an object that plays a sound. It can be paused, stopped, and have its volume changed.
+ */
 public class OpenALSource {
 
     private final int sourceID;

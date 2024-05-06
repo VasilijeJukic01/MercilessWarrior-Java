@@ -1,5 +1,9 @@
 package platformer.model;
 
+/**
+ * This class represents a single item in the leaderboard.
+ * It contains the name of the player, the level they are on, and the amount of experience they have.
+ */
 public class BoardItem {
 
     private final String name;

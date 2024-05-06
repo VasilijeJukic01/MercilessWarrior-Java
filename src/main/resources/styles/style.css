@@ -1,3 +1,7 @@
 .bold {
     -fx-font-weight: bold;
 }
+
+.black {
+    -fx-text-fill: black;
+}

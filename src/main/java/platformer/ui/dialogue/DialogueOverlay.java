@@ -1,9 +1,11 @@
 package platformer.ui.dialogue;
 
 import platformer.model.gameObjects.GameObject;
+import platformer.model.gameObjects.npc.Npc;
 import platformer.ui.overlays.Overlay;
 
 import java.awt.*;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.geom.RoundRectangle2D;
 import java.util.ArrayList;
@@ -15,7 +17,13 @@ import static platformer.constants.Constants.FONT_DIALOGUE;
 import static platformer.constants.Constants.SCALE;
 import static platformer.constants.UI.*;
 
-public class DialogueOverlay implements Overlay<MouseEvent, Graphics> {
+/**
+ * This class handles the display of dialogues in the game, including the animation of text appearing and the interaction with the user.
+ * <p>
+ * The class implements the Overlay interface, which means it has methods for handling mouse and keyboard events, as well as updating and
+ * rendering the overlay.
+ */
+public class DialogueOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
 
     private RoundRectangle2D dialogueBox;
     private List<String> dialogues;
@@ -27,7 +35,7 @@ public class DialogueOverlay implements Overlay<MouseEvent, Graphics> {
     private String visibleText = "";
     private boolean changeText = true;
 
-    private Class<? extends GameObject> currentObject;
+    private GameObject intersectionObject;
     private Map<Class<? extends GameObject>, Boolean> firstTime;
 
     public DialogueOverlay() {
@@ -57,6 +65,11 @@ public class DialogueOverlay implements Overlay<MouseEvent, Graphics> {
 
     @Override
     public void mouseMoved(MouseEvent e) {
+
+    }
+
+    @Override
+    public void keyPressed(KeyEvent e) {
 
     }
 
@@ -94,6 +107,13 @@ public class DialogueOverlay implements Overlay<MouseEvent, Graphics> {
 
         if (changeText) visibleText = createCurrentText(g, dialogue);
 
+        if (intersectionObject instanceof Npc) {
+            Npc npc = (Npc) intersectionObject;
+            g.setColor(npc.getNpcType().getNameColor());
+            g.drawString(npc.getNpcType().getName(), DIALOGUE_X - (int)(5 * SCALE), DIALOGUE_Y - (int)(25 * SCALE));
+        }
+        g.setColor(Color.WHITE);
+
         int x = DIALOGUE_X;
         int y = DIALOGUE_Y;
         int lineHeight = g.getFontMetrics().getHeight();
@@ -107,13 +127,22 @@ public class DialogueOverlay implements Overlay<MouseEvent, Graphics> {
             g.drawString(""+visibleText.charAt(i), x, y);
             x += g.getFontMetrics().charWidth(visibleText.charAt(i));
         }
-        if (currentLetterIndex == dialogue.length()) renderArrow(g);
+        if (currentLetterIndex == dialogue.length()) {
+            renderArrow(g);
+            renderContinueText(g);
+        }
     }
 
     private void renderArrow(Graphics g) {
         int xPos = DIALOGUE_BOX_X + DIALOGUE_BOX_WID - (int)(20 * SCALE);
         int yPos = DIALOGUE_Y + DIALOGUE_BOX_HEI - (int)(30 * SCALE);
         g.drawString("▼", xPos, yPos);
+    }
+
+    private void renderContinueText(Graphics g) {
+        int xPos = DIALOGUE_BOX_X + (int)(20 * SCALE);
+        int yPos = DIALOGUE_Y + DIALOGUE_BOX_HEI - (int)(30 * SCALE);
+        g.drawString("[Press X to continue]", xPos, yPos);
     }
 
     // Reset
@@ -131,8 +160,8 @@ public class DialogueOverlay implements Overlay<MouseEvent, Graphics> {
     // Helper
     private int findRepetitionIndex() {
         if (dialogues == null || dialogues.isEmpty()) return 0;
-        if (firstTime.get(currentObject) != null && !firstTime.get(currentObject)) return 0;
-        if (firstTime.get(currentObject) == null) return 0;
+        if (firstTime.get(intersectionObject.getClass()) != null && !firstTime.get(intersectionObject.getClass())) return 0;
+        if (firstTime.get(intersectionObject.getClass()) == null) return 0;
         for (int i = 0; i < dialogues.size(); i++) {
             if (dialogues.get(i).startsWith("~")) return i;
         }
@@ -175,10 +204,10 @@ public class DialogueOverlay implements Overlay<MouseEvent, Graphics> {
         return true;
     }
 
-    public <T extends GameObject> void setDialogues(List<String> dialogues, Class<T> objectClass) {
+    public void setDialogues(List<String> dialogues, GameObject intersectionObject) {
         this.dialogues = dialogues;
-        currentObject = objectClass;
+        this.intersectionObject = intersectionObject;
         reset();
-        this.firstTime.put(objectClass, true);
+        this.firstTime.put(intersectionObject.getClass(), true);
     }
 }

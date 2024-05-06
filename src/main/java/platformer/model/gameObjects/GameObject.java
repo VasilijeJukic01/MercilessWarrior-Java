@@ -8,6 +8,9 @@ import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 
+/**
+ * Abstract class representing a game object in the game.
+ */
 public abstract class GameObject implements AdvancedRenderable<Graphics>, Debug<Graphics> {
 
     protected ObjType objType;
@@ -17,7 +20,7 @@ public abstract class GameObject implements AdvancedRenderable<Graphics>, Debug<
 
     protected boolean animate;
     protected boolean alive = true;
-    private final int animSpeed = 20;
+    protected int animSpeed = 20;
     protected int animTick, animIndex;
     protected boolean isOnGround;
 
@@ -49,7 +52,7 @@ public abstract class GameObject implements AdvancedRenderable<Graphics>, Debug<
 
     private void finishAnimation() {
         animIndex = 0;
-        if (objType == ObjType.BARREL || objType == ObjType.BOX) {
+        if (objType == ObjType.BARREL || objType == ObjType.BOX || objType == ObjType.BRICK) {
             animate = alive = false;
         }
         else if (objType == ObjType.ARROW_TRAP_LEFT || objType == ObjType.ARROW_TRAP_RIGHT) {
@@ -76,7 +79,7 @@ public abstract class GameObject implements AdvancedRenderable<Graphics>, Debug<
     }
 
     private boolean shouldAnimate() {
-        ObjType[] nonAnimatingTypes = {ObjType.BARREL, ObjType.BOX, ObjType.ARROW_TRAP_LEFT, ObjType.ARROW_TRAP_RIGHT};
+        ObjType[] nonAnimatingTypes = {ObjType.BARREL, ObjType.BOX, ObjType.ARROW_TRAP_LEFT, ObjType.ARROW_TRAP_RIGHT, ObjType.BRICK};
         for (ObjType type : nonAnimatingTypes) {
             if (objType == type) return false;
         }

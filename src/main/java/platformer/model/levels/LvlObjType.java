@@ -3,6 +3,9 @@ package platformer.model.levels;
 import static platformer.constants.Constants.TILES_SIZE;
 import static platformer.constants.LevelObjectsConstants.*;
 
+/**
+ * Enum class that represents the different types of level objects that can be placed in the level.
+ */
 public enum LvlObjType {
     BIG_STONE1("BIG_STONE1",        TILE_SIZE_4, TILE_SIZE_2, 8, 0),
     BIG_STONE2("BIG_STONE2",        TILE_SIZE_4, TILE_SIZE_2, 8, 0),

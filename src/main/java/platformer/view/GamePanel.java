@@ -10,6 +10,9 @@ import java.awt.*;
 
 import static platformer.constants.Constants.*;
 
+/**
+ * Responsible for rendering the game.
+ */
 @SuppressWarnings("FieldCanBeLocal")
 public class GamePanel extends JPanel {
 
@@ -20,6 +23,7 @@ public class GamePanel extends JPanel {
         initListeners();
         initFocus();
         initPanelSize();
+        setFocusTraversalKeysEnabled(false);
     }
 
     private void initListeners() {

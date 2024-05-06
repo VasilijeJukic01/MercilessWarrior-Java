@@ -10,6 +10,7 @@ import platformer.ui.buttons.SmallButton;
 import platformer.utils.Utils;
 
 import java.awt.*;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
@@ -20,7 +21,11 @@ import static platformer.constants.Constants.*;
 import static platformer.constants.FilePaths.*;
 import static platformer.constants.UI.*;
 
-public class ShopOverlay implements Overlay<MouseEvent, Graphics> {
+/**
+ * ShopOverlay class is responsible for rendering the shop overlay.
+ * It allows the player to buy and sell items from the shop.
+ */
+public class ShopOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
 
     private final GameState gameState;
 
@@ -353,6 +358,83 @@ public class ShopOverlay implements Overlay<MouseEvent, Graphics> {
     public void mouseMoved(MouseEvent e) {
         setMouseMoved(e, smallButtons);
         setMouseMoved(e, mediumButtons);
+    }
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+        switch (e.getKeyCode()) {
+            case KeyEvent.VK_UP:
+                moveUp();
+                break;
+            case KeyEvent.VK_DOWN:
+                moveDown();
+                break;
+            case KeyEvent.VK_LEFT:
+                moveLeft();
+                break;
+            case KeyEvent.VK_RIGHT:
+                moveRight();
+                break;
+            case KeyEvent.VK_B:
+                buyItem();
+                break;
+            case KeyEvent.VK_S:
+                sellItem();
+                break;
+            default: break;
+        }
+    }
+
+    private void moveUp() {
+        if (isSelling) {
+            sellSlotNumber -= SHOP_SLOT_MAX_ROW;
+            sellSlotNumber = Math.max(0, sellSlotNumber);
+            setSelectedSlotSell();
+        }
+        else {
+            buySlotNumber -= SHOP_SLOT_MAX_ROW;
+            buySlotNumber = Math.max(0, buySlotNumber);
+            setSelectedSlotBuy();
+        }
+    }
+
+    private void moveDown() {
+        if (isSelling) {
+            sellSlotNumber += SHOP_SLOT_MAX_ROW;
+            sellSlotNumber = Math.min(SHOP_SLOT_MAX_ROW * SHOP_SLOT_MAX_COL - 1, sellSlotNumber);
+            setSelectedSlotSell();
+        }
+        else {
+            buySlotNumber += SHOP_SLOT_MAX_ROW;
+            buySlotNumber = Math.min(SHOP_SLOT_MAX_ROW * SHOP_SLOT_MAX_COL - 1, buySlotNumber);
+            setSelectedSlotBuy();
+        }
+    }
+
+    private void moveLeft() {
+        if (isSelling) {
+            sellSlotNumber--;
+            sellSlotNumber = Math.max(0, sellSlotNumber);
+            setSelectedSlotSell();
+        }
+        else {
+            buySlotNumber--;
+            buySlotNumber = Math.max(0, buySlotNumber);
+            setSelectedSlotBuy();
+        }
+    }
+
+    private void moveRight() {
+        if (isSelling) {
+            sellSlotNumber++;
+            sellSlotNumber = Math.min(SHOP_SLOT_MAX_ROW * SHOP_SLOT_MAX_COL - 1, sellSlotNumber);
+            setSelectedSlotSell();
+        }
+        else {
+            buySlotNumber++;
+            buySlotNumber = Math.min(SHOP_SLOT_MAX_ROW * SHOP_SLOT_MAX_COL - 1, buySlotNumber);
+            setSelectedSlotBuy();
+        }
     }
 
     private void setMouseMoved(MouseEvent e, AbstractButton[] buttons) {

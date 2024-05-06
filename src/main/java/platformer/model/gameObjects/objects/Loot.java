@@ -1,5 +1,6 @@
 package platformer.model.gameObjects.objects;
 
+import platformer.model.entities.enemies.EnemyType;
 import platformer.model.gameObjects.GameObject;
 import platformer.model.gameObjects.ObjType;
 import platformer.model.inventory.InventoryItem;
@@ -10,6 +11,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 import static platformer.constants.Constants.*;
@@ -18,12 +20,17 @@ public class Loot extends GameObject {
 
     private boolean active;
     private final List<InventoryItem> items = new ArrayList<>();
-    private final List<ItemType> validLoot = List.of(ItemType.COPPER, ItemType.IRON);
+    private static final Map<EnemyType, List<ItemType>> lootMap = Map.of(
+            EnemyType.SKELETON, List.of(ItemType.COPPER, ItemType.IRON),
+            EnemyType.GHOUL, List.of(ItemType.COPPER, ItemType.SILVER, ItemType.WRAITH_ESSENCE),
+            EnemyType.KNIGHT, List.of(ItemType.SONIC_QUARTZ, ItemType.IRON),
+            EnemyType.WRAITH, List.of(ItemType.COPPER, ItemType.SILVER, ItemType.WRAITH_ESSENCE)
+    );
 
-    public Loot(ObjType objType, int xPos, int yPos) {
+    public Loot(ObjType objType, int xPos, int yPos, EnemyType enemyType) {
         super(objType, xPos, yPos);
         generateHitBox();
-        randomizeItems();
+        randomizeItems(enemyType);
     }
 
     private void generateHitBox() {
@@ -33,9 +40,15 @@ public class Loot extends GameObject {
         super.yOffset = LOOT_OFFSET_Y;
     }
 
-    private void randomizeItems() {
+    private void randomizeItems(EnemyType enemyType) {
+        if (enemyType == EnemyType.SPEAR_WOMAN) generateBossLoot();
+        else generateStandardLoot(enemyType);
+
+    }
+
+    private void generateStandardLoot(EnemyType enemyType) {
         Random rand = new Random();
-        for (ItemType itemType : validLoot) {
+        for (ItemType itemType : lootMap.get(enemyType)) {
             int chance = rand.nextInt(100);
             if (chance < 70) {
                 int amount = 0;
@@ -50,6 +63,11 @@ public class Loot extends GameObject {
                 items.add(new InventoryItem(itemType, img, amount));
             }
         }
+    }
+
+    private void generateBossLoot() {
+        BufferedImage img = Utils.getInstance().importImage(ItemType.CHARM_THUNDERBOLT.getImg(), -1, -1);
+        items.add(new InventoryItem(ItemType.CHARM_THUNDERBOLT, img, 1));
     }
 
     @Override

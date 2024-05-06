@@ -7,6 +7,10 @@ import java.util.stream.Collectors;
 
 import static platformer.constants.Constants.*;
 
+/**
+ * Class that is responsible for managing all the perks in the game.
+ * It holds references to all the perks and provides methods for upgrading and unlocking them.
+ */
 public class PerksManager {
 
     @FunctionalInterface
@@ -56,6 +60,11 @@ public class PerksManager {
         perks.add(new Perk(27, "Perk15", "Increase max health by 10%", 3, "God's Blood"));
     }
 
+    /**
+     * Initializes the actions associated with each perk.
+     *
+     * @return A map of perk names to their associated actions.
+     */
     private Map<String, PerkAction> initPerkActions() {
         Map<String, PerkAction> actions = new HashMap<>();
         actions.put("XP Bonus", () -> PerksBonus.getInstance().setBonusExp(XP_BONUS_AMOUNT));
@@ -77,6 +86,9 @@ public class PerksManager {
         return actions;
     }
 
+    /**
+     * Initializes the starting unlocked perks.
+     */
     private void initLock() {
         for (int lock : startUnlocks) {
             for (Perk perk : perks) {
@@ -89,6 +101,13 @@ public class PerksManager {
     }
 
     // Upgrade
+    /**
+     * Upgrades a perk and unlocks adjacent perks.
+     *
+     * @param n The number of columns in the perk grid.
+     * @param m The number of rows in the perk grid.
+     * @param slot The slot of the perk to upgrade.
+     */
     public void upgrade(int n, int m, int slot) {
         ArrayList<Integer> unlocks = new ArrayList<>();
         int I = slot / n, J = slot % n;
@@ -105,6 +124,16 @@ public class PerksManager {
                 .forEach(perk -> perk.setLocked(false));
     }
 
+    /**
+     * Unlocks a perk and checks for adjacent perks to unlock.
+     *
+     * @param perk The perk to unlock.
+     * @param unlocks A list of perks to unlock.
+     * @param i The row of the perk in the grid.
+     * @param j The column of the perk in the grid.
+     * @param n The number of columns in the perk grid.
+     * @param m The number of rows in the perk grid.
+     */
     private void unlockPerk(Perk perk, List<Integer> unlocks, int i, int j, int n, int m) {
         if (perkActions.containsKey(perk.getName())) {
             perkActions.get(perk.getName()).performAction();
@@ -112,6 +141,16 @@ public class PerksManager {
         }
     }
 
+    /**
+     * Checks for adjacent perks to unlock.
+     *
+     * @param slot The slot of the perk.
+     * @param unlocks A list of perks to unlock.
+     * @param I The row of the perk in the grid.
+     * @param J The column of the perk in the grid.
+     * @param n The number of columns in the perk grid.
+     * @param m The number of rows in the perk grid.
+     */
     private void checkAdjacentSlots(int slot, List<Integer> unlocks, int I, int J, int n, int m) {
         if (isSafe(I+1, J, n, m) && placeHolders[I+1][J] == 1 && !unlocked.contains(slot+n)) unlocks.add(slot+n);
         if (isSafe(I-1, J, n, m) && placeHolders[I-1][J] == 1 && !unlocked.contains(slot-n)) unlocks.add(slot-n);
@@ -119,6 +158,11 @@ public class PerksManager {
         if (isSafe(I, J-1, n, m) && placeHolders[I][J-1] == 1 && !unlocked.contains(slot-1)) unlocks.add(slot-1);
     }
 
+    /**
+     * Loads the unlocked perks from a list of perk names.
+     *
+     * @param p A list of perk names to unlock.
+     */
     public void loadUnlockedPerks(List<String> p) {
         perks.stream()
                 .filter(perk -> p.contains(perk.getName()))

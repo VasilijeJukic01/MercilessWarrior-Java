@@ -8,6 +8,10 @@ import java.awt.image.BufferedImage;
 import static platformer.constants.FilePaths.BOSS_BAR;
 import static platformer.constants.UI.*;
 
+/**
+ * This class is responsible for rendering the boss HUD.
+ * It is a simple image that is displayed at the top of the screen when the boss is active.
+ */
 public class BossInterface {
 
     private boolean active;

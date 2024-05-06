@@ -31,6 +31,10 @@ import java.util.Arrays;
 import static platformer.constants.Constants.*;
 import static platformer.constants.FilePaths.BACKGROUND_1;
 
+/**
+ * State of the game when the player is actively playing the game.
+ * In this state, the player can move around the game world, interact with objects, fight enemies, and perform other game actions.
+ */
 public class GameState extends AbstractState implements State {
 
     private Player player;
@@ -132,19 +136,19 @@ public class GameState extends AbstractState implements State {
         Logger.getInstance().notify(message, Message.NOTIFICATION);
     }
 
-    public void goToRightLevel() {
+    private void goToRightLevel() {
         goToLevel(0, 1, "Right level loaded.");
     }
 
-    public void goToLeftLevel() {
+    private void goToLeftLevel() {
         goToLevel(0, -1, "Left level loaded.");
     }
 
-    public void goToUpperLevel() {
+    private void goToUpperLevel() {
         goToLevel(-1, 0, "Upper level loaded.");
     }
 
-    public void goToBottomLevel() {
+    private void goToBottomLevel() {
         goToLevel(1, 0, "Bottom level loaded.");
     }
 
@@ -200,6 +204,7 @@ public class GameState extends AbstractState implements State {
         this.lightManager.render(g, xLevelOffset, yLevelOffset);
         this.enemyManager.render(g, xLevelOffset, yLevelOffset);
         this.player.render(g, xLevelOffset, yLevelOffset);
+        this.objectManager.secondRender(g, xLevelOffset, yLevelOffset);
         this.spellManager.render(g, xLevelOffset, yLevelOffset);
         this.player.getPlayerStatusManager().getUserInterface().render(g);
         this.bossInterface.render(g);

@@ -1,5 +1,7 @@
 package platformer.model.inventory.handlers;
 
+import platformer.audio.Audio;
+import platformer.audio.Sound;
 import platformer.core.Framework;
 import platformer.model.inventory.InventoryItem;
 import platformer.model.inventory.ItemType;
@@ -7,6 +9,9 @@ import platformer.model.inventory.ItemType;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * Handles the operations related to the backpack in the inventory system.
+ */
 public class BackpackHandler {
 
     private final List<InventoryItem> backpack;
@@ -43,6 +48,7 @@ public class BackpackHandler {
 
     public void craftItem(InventoryItem item, Map<ItemType, Integer> resources) {
         if (!hasEnoughResources(resources)) return;
+        Audio.getInstance().getAudioPlayer().playSound(Sound.CRAFTING);
         useResources(resources);
         addItemToBackpack(item);
     }
@@ -59,6 +65,14 @@ public class BackpackHandler {
         return true;
     }
 
+    /**
+     * Uses the resources required to craft an item.
+     * It iterates over the resources map, and for each entry, it retrieves the corresponding item from the inventory.
+     * If the item exists and its amount is greater than or equal to the required amount, it reduces the item's amount.
+     * If the item's amount drops to zero or less, it removes the item from the backpack.
+     *
+     * @param resources A map where the key is the ItemType of the resource and the value is the amount required.
+     */
     private void useResources(Map<ItemType, Integer> resources) {
         Map<ItemType, InventoryItem> inventoryMap = getInventoryMap();
         for (Map.Entry<ItemType, Integer> entry : resources.entrySet()) {
@@ -86,6 +100,13 @@ public class BackpackHandler {
         refreshAccountItems();
     }
 
+    /**
+     * Formats the items in the backpack and equipped items for saving to the account.
+     * It creates a list of strings where each string represents an item in the format "item,0" for backpack items
+     * and "item,1" for equipped items.
+     *
+     * @return A list of strings representing the formatted items.
+     */
     private List<String> getFormattedItems() {
         List<String> values = backpack.stream()
                 .map(item -> item + ",0")

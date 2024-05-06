@@ -9,8 +9,7 @@ import platformer.model.entities.AttackState;
 import platformer.model.entities.player.Player;
 import platformer.model.entities.player.PlayerAction;
 import platformer.model.gameObjects.GameObject;
-import platformer.model.gameObjects.objects.Loot;
-import platformer.model.gameObjects.objects.Table;
+import platformer.model.gameObjects.npc.Npc;
 import platformer.state.GameState;
 import platformer.state.PlayingState;
 
@@ -18,7 +17,17 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.util.*;
 
+/**
+ * The GameStateController class is responsible for handling game state changes.
+ * It provides functionality to handle mouse and keyboard events, and perform actions based on these events.
+ * It also interacts with the GameState, Game, and Player classes to manage the game state.
+ * <p>
+ * The class maintains a set of pressed keys to track which keys are currently pressed.
+ */
 public class GameStateController {
+
+    private final ActionManager<Integer> pressActions = new ActionManager<>();
+    private final ActionManager<Integer> releaseActions = new ActionManager<>();
 
     private final Set<Integer> pressedKeys = new TreeSet<>();
 
@@ -30,6 +39,77 @@ public class GameStateController {
         this.gameState = gameState;
         this.player = gameState.getPlayer();
         this.game = gameState.getGame();
+        initPressActions();
+        initReleaseActions();
+    }
+
+    // Init
+    private void initAction(ActionManager<Integer> actionManager, String command, Runnable action) {
+        KeyboardController kc = Framework.getInstance().getKeyboardController();
+        actionManager.addAction(kc.getKeyForCommand(command), action);
+    }
+
+    private void initPressActions() {
+        KeyboardController kc = Framework.getInstance().getKeyboardController();
+
+        initAction(pressActions, "Move Left", () -> player.addAction(PlayerAction.LEFT));
+        initAction(pressActions, "Move Right", () -> player.addAction(PlayerAction.RIGHT));
+        initAction(pressActions, "Jump", () -> {
+            boolean onWall = player.checkAction(PlayerAction.ON_WALL);
+            if (pressedKeys.contains(kc.getKeyForCommand("Jump")) && onWall) {
+                player.removeAction(PlayerAction.JUMP);
+                return;
+            }
+            player.addAction(PlayerAction.JUMP);
+        });
+        initAction(pressActions, "Dash", () -> {
+            boolean canDash = player.checkAction(PlayerAction.CAN_DASH);
+            if (canDash) player.getActionHandler().doDash();
+        });
+        initAction(pressActions, "Attack", () -> {
+            if (gameState.getActiveState() != PlayingState.DIALOGUE)
+                player.setPlayerAttackState(AttackState.ATTACK_1);
+        });
+        initAction(pressActions, "Flames", () -> {
+            if (pressedKeys.contains(kc.getKeyForCommand("Flames")) && player.getSpellState() != 0) return;
+            player.getActionHandler().doSpell();
+        });
+        initAction(pressActions, "Fireball", () -> player.getActionHandler().doFireBall());
+        initAction(pressActions, "Shield", () -> {
+            boolean block = player.checkAction(PlayerAction.BLOCK);
+            if (block) return;
+            player.setBlock(true);
+        });
+        initAction(pressActions, "Pause", () -> {
+            if (isBreakableState(gameState.getActiveState())) gameState.setOverlay(null);
+            else gameState.setOverlay(pause(gameState.getActiveState()));
+        });
+    }
+
+    private void initReleaseActions() {
+        initAction(releaseActions, "Move Left", () -> {
+            player.removeAction(PlayerAction.LEFT);
+            player.removeAction(PlayerAction.ON_WALL);
+        });
+        initAction(releaseActions, "Move Right", () -> {
+            player.removeAction(PlayerAction.RIGHT);
+            player.removeAction(PlayerAction.ON_WALL);
+        });
+        initAction(releaseActions, "Jump", () -> {
+            player.removeAction(PlayerAction.JUMP);
+            player.setCurrentJumps(player.getCurrentJumps()+1);
+        });
+        initAction(releaseActions, "Dash", () -> player.addAction(PlayerAction.CAN_DASH));
+        initAction(releaseActions, "Transform", () -> player.setCanTransform(true));
+        initAction(releaseActions, "Flames", () -> {
+            if (player.getSpellState() == 1) player.setSpellState(2);
+        });
+        initAction(releaseActions, "Attack", () -> {
+            if (gameState.getActiveState() == PlayingState.DIALOGUE) gameState.getDialogueManager().updateDialogue();
+        });
+        initAction(releaseActions, "Fireball", () -> player.getActionHandler().doFireBall());
+        initAction(releaseActions, "Interact", this::interact);
+        initAction(releaseActions, "Inventory", this::openInventory);
     }
 
     // Mouse
@@ -63,84 +143,18 @@ public class GameStateController {
         int key = e.getKeyCode();
         if (pressedKeys.contains(key)) return;
         pressedKeys.add(key);
-        switch (key) {
-            case KeyEvent.VK_UP:
-                boolean onWall = player.checkAction(PlayerAction.ON_WALL);
-                if (pressedKeys.contains(key) && onWall) {
-                    player.removeAction(PlayerAction.JUMP);
-                    return;
-                }
-                player.addAction(PlayerAction.JUMP);
-                break;
-            case KeyEvent.VK_LEFT:
-                player.addAction(PlayerAction.LEFT);
-                break;
-            case KeyEvent.VK_RIGHT:
-                player.addAction(PlayerAction.RIGHT);
-                break;
-            case KeyEvent.VK_X:
-                if (state != PlayingState.DIALOGUE)
-                    player.setPlayerAttackState(AttackState.ATTACK_1);
-                break;
-            case KeyEvent.VK_C:
-                if (pressedKeys.contains(key) && player.getSpellState() != 0) return;
-                player.getActionHandler().doSpell();
-                break;
-            case KeyEvent.VK_V:
-                boolean canDash = player.checkAction(PlayerAction.CAN_DASH);
-                if (canDash) player.getActionHandler().doDash();
-                break;
-            case KeyEvent.VK_S:
-                boolean block = player.checkAction(PlayerAction.BLOCK);
-                if (block) return;
-                player.setBlock(true);
-                break;
-            case KeyEvent.VK_ESCAPE:
-                if (isBreakableState(state)) gameState.setOverlay(null);
-                else gameState.setOverlay(pause(state));
-                break;
-            default: break;
-        }
+
+        pressActions.execute(key);
     }
 
     public void keyReleased(KeyEvent e, PlayingState state) {
         if (state == PlayingState.GAME_OVER) return;
 
         int key = e.getKeyCode();
+
+        releaseActions.execute(key);
+
         switch (key) {
-            case KeyEvent.VK_UP:
-                player.removeAction(PlayerAction.JUMP);
-                player.setCurrentJumps(player.getCurrentJumps()+1);
-                break;
-            case KeyEvent.VK_RIGHT:
-                player.removeAction(PlayerAction.RIGHT);
-                player.removeAction(PlayerAction.ON_WALL);
-                break;
-            case KeyEvent.VK_LEFT:
-                player.removeAction(PlayerAction.LEFT);
-                player.removeAction(PlayerAction.ON_WALL);
-                break;
-            case KeyEvent.VK_Q:
-                player.setCanTransform(true);
-                break;
-            case KeyEvent.VK_V:
-                player.addAction(PlayerAction.CAN_DASH);
-                break;
-            case KeyEvent.VK_C:
-                if (player.getSpellState() == 1) player.setSpellState(2);
-                break;
-            case KeyEvent.VK_X:
-                if (state == PlayingState.DIALOGUE) gameState.getDialogueManager().updateDialogue();
-                break;
-            case KeyEvent.VK_Z:
-                player.getActionHandler().doFireBall();
-                break;
-            case KeyEvent.VK_F:
-                interact();
-                break;
-            case KeyEvent.VK_I:
-                openInventory();
-                break;
             case KeyEvent.VK_F1:
                 showHitBox();
                 break;
@@ -156,28 +170,37 @@ public class GameStateController {
             default: break;
         }
         pressedKeys.remove(key);
+        gameState.getOverlayManager().keyPressed(e);
     }
 
     // Actions
     private void interact() {
-        Optional<? extends Class<? extends GameObject>> object = Optional.ofNullable(gameState.getObjectManager().getIntersectingObject());
+        if (gameState.getActiveState() == PlayingState.DIALOGUE) return;
+        Optional<String> object = Optional.ofNullable(gameState.getObjectManager().getIntersectingObject());
         object.ifPresent(this::handleInteraction);
     }
 
-    private void handleInteraction(Class<? extends GameObject> objectClass) {
-        if (objectClass == Loot.class) {
+    private void handleInteraction(String id) {
+        if (Objects.equals(id, "Loot")) {
             gameState.setOverlay(PlayingState.LOOTING);
         }
-        else if (objectClass == Table.class) {
+        else if (Objects.equals(id, "Table")) {
             gameState.setOverlay(PlayingState.CRAFTING);
         }
-        else activateDialogue(objectClass);
+        else activateDialogue(id);
     }
 
-    private void activateDialogue(Class<? extends GameObject> objectClass) {
+    private void activateDialogue(String id) {
         gameState.setOverlay(PlayingState.DIALOGUE);
-        List<String> dialogues = gameState.getDialogueManager().getDialogues(objectClass);
-        gameState.getDialogueManager().setDialogueObject(dialogues, objectClass);
+        Random random = new Random();
+        int index = random.nextInt(gameState.getDialogueManager().getDialogues(id).size());
+        GameObject object = gameState.getObjectManager().getIntersection();
+        if (object instanceof Npc) {
+            int newIndex = ((Npc) object).getDialogueIndicator();
+            index = newIndex == -1 ? index : newIndex;
+        }
+        List<String> dialogues = gameState.getDialogueManager().getDialogues(id).get(index);
+        gameState.getDialogueManager().setDialogueObject(dialogues, object);
     }
 
     private void openInventory() {

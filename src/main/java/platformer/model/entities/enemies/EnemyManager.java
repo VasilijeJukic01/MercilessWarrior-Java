@@ -31,6 +31,9 @@ import java.util.stream.Collectors;
 
 import static platformer.constants.Constants.*;
 
+/**
+ * Manages all the enemies in the game.
+ */
 @SuppressWarnings("unchecked")
 public class EnemyManager {
 
@@ -50,11 +53,7 @@ public class EnemyManager {
     // Init
     private void init() {
         initAnimations();
-        this.enemyRenderers.put(Skeleton.class, new SkeletonRenderer(skeletonAnimations));
-        this.enemyRenderers.put(Ghoul.class, new GhoulRenderer(ghoulAnimations));
-        this.enemyRenderers.put(SpearWoman.class, new SpearWomanRenderer(spearWomanAnimations));
-        this.enemyRenderers.put(Knight.class, new KnightRenderer(knightAnimations));
-        this.enemyRenderers.put(Wraith.class, new WraithRenderer(wraithAnimations));
+        initRenderers();
     }
 
     private void initAnimations() {
@@ -65,11 +64,27 @@ public class EnemyManager {
         this.wraithAnimations = Animation.getInstance().loadWraithAnimation(WRAITH_WIDTH, WRAITH_HEIGHT);
     }
 
+    private void initRenderers() {
+        this.enemyRenderers.put(Skeleton.class, new SkeletonRenderer(skeletonAnimations));
+        this.enemyRenderers.put(Ghoul.class, new GhoulRenderer(ghoulAnimations));
+        this.enemyRenderers.put(SpearWoman.class, new SpearWomanRenderer(spearWomanAnimations));
+        this.enemyRenderers.put(Knight.class, new KnightRenderer(knightAnimations));
+        this.enemyRenderers.put(Wraith.class, new WraithRenderer(wraithAnimations));
+    }
+
     public void loadEnemies(Level level) {
         this.enemies = level.getEnemiesMap();
         reset();
     }
 
+    /**
+     * Renders the critical hit indicator for an enemy.
+     *
+     * @param g The graphics object to draw on.
+     * @param xLevelOffset The x offset for rendering.
+     * @param yLevelOffset The y offset for rendering.
+     * @param e The enemy to render the critical hit indicator for.
+     */
     private void renderCriticalHit(Graphics g, int xLevelOffset, int yLevelOffset, Enemy e) {
         if (e.isCriticalHit()) {
             int xCritical = (int)(e.getHitBox().x - xLevelOffset);
@@ -80,6 +95,15 @@ public class EnemyManager {
     }
 
     // Render
+    /**
+     * Renders all enemies of a specific type in the game.
+     *
+     * @param <T> The specific type of enemy to render. This type must extend from the Enemy class.
+     * @param enemyClass The Class object representing the type of enemy to render.
+     * @param g The graphics object to draw on.
+     * @param xLevelOffset The x offset for rendering.
+     * @param yLevelOffset The y offset for rendering.
+     */
     private <T extends Enemy> void renderEnemies(Class<T> enemyClass, Graphics g, int xLevelOffset, int yLevelOffset) {
         for (T enemy : getEnemies(enemyClass)) {
             if (enemy.isAlive()) {
@@ -111,10 +135,16 @@ public class EnemyManager {
     }
 
     // Enemy hit
+    /**
+     * Checks if an enemy is dying and handles the event of an enemy's death.
+     *
+     * @param e The enemy to check.
+     * @param player The Player object representing the player in the game.
+     */
     private void checkEnemyDying(Enemy e, Player player) {
         Random rand = new Random();
         if (e.getEnemyAction() == Anim.DEATH) {
-            gameState.getObjectManager().generateCoins(e.getHitBox());
+            gameState.getObjectManager().generateLoot(e);
             player.changeStamina(rand.nextInt(5));
             player.changeExp(rand.nextInt(50)+100);
         }
@@ -135,6 +165,14 @@ public class EnemyManager {
         return new double[] {dmg, critical};
     }
 
+    /**
+     * Handles the event of an enemy being hit by the player's attack.
+     *
+     * @param <T> The specific type of enemy that was hit. This type must extend from the Enemy class.
+     * @param attackBox The hitbox of the player's attack.
+     * @param player The Player object representing the player in the game.
+     * @param enemyClass The Class object representing the type of enemy that was hit.
+     */
     private <T extends Enemy> void handleEnemyHit(Rectangle2D.Double attackBox, Player player, Class<T> enemyClass) {
         double[] dmg = damage(player);
         for (T enemy : getEnemies(enemyClass)) {
@@ -219,6 +257,16 @@ public class EnemyManager {
     }
 
     // Core
+    /**
+     * Updates the state of all enemies of a specific type in the game.
+     * This includes updating their animations, checking for collisions, and handling their behavior.
+     *
+     * @param <T> The specific type of enemy to update. This type must extend from the Enemy class.
+     * @param enemyType The Class object representing the type of enemy to update.
+     * @param animations The 2D array of BufferedImages representing the animations for the enemy type.
+     * @param levelData The 2D array representing the current level's layout.
+     * @param player The Player object representing the player in the game.
+     */
     private <T extends Enemy> void updateEnemies(Class<T> enemyType, BufferedImage[][] animations, int[][] levelData, Player player) {
         getEnemies(enemyType).stream()
                 .filter(Enemy::isAlive)

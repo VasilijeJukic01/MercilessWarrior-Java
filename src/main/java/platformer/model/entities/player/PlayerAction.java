@@ -20,5 +20,6 @@ public enum PlayerAction {
     CAN_BLOCK,
     CAN_TRANSFORM,
     DYING,
-    GAME_OVER
+    GAME_OVER,
+    LAVA
 }

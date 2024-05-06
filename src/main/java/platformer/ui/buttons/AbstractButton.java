@@ -1,7 +1,18 @@
 package platformer.ui.buttons;
 
+import platformer.audio.Audio;
+import platformer.audio.Sound;
+
 import java.awt.*;
 
+/**
+ * Abstract class for all buttons in the game.
+ * <p>
+ * This class contains the basic functionality for all buttons in the game.
+ * It contains the basic properties of a button such as its position, width, height, and hitbox.
+ * <p>
+ * AbstractButton class is extended by all the buttons in the game.
+ */
 public abstract class AbstractButton implements GameButton<Graphics> {
 
     protected ButtonType buttonType;
@@ -38,6 +49,9 @@ public abstract class AbstractButton implements GameButton<Graphics> {
     }
 
     public void setMousePressed(boolean mousePressed) {
+        if (mousePressed){
+            Audio.getInstance().getAudioPlayer().playSound(Sound.BTN_CLICK);
+        }
         this.mousePressed = mousePressed;
     }
 

@@ -11,6 +11,11 @@ import java.awt.geom.Rectangle2D;
 
 import static platformer.constants.Constants.*;
 
+/**
+ * This is the abstract base class for all entities in the game.
+ * An entity represents any object that can interact with the game world in some way.
+ * This includes player characters, and enemies.
+ */
 public abstract class Entity implements Debug<Graphics> {
 
     protected int xPos, yPos;
@@ -56,6 +61,9 @@ public abstract class Entity implements Debug<Graphics> {
     }
 
     // Cooldown
+    /**
+     * Updates the cooldown for the entity's abilities.
+     */
     protected void coolDownTickUpdate() {
         for (int i = 0; i < cooldown.length; i++) {
             if (cooldown[i] > 0) {
@@ -77,6 +85,14 @@ public abstract class Entity implements Debug<Graphics> {
         }
     }
 
+    /**
+     * Pushes the entity back in the specified direction.
+     *
+     * @param pushDirection The direction to push the entity.
+     * @param lvlData The level data.
+     * @param speed The speed of the push.
+     * @param enemySpeed The speed of the enemy.
+     */
     protected void pushBack(Direction pushDirection, int[][] lvlData, double speed, double enemySpeed) {
         double xSpeed = (pushDirection == Direction.LEFT) ? -enemySpeed : enemySpeed;
         if (Utils.getInstance().canMoveHere(hitBox.x + xSpeed * speed, hitBox.y, hitBox.width, hitBox.height, lvlData)) {
@@ -85,6 +101,13 @@ public abstract class Entity implements Debug<Graphics> {
     }
 
     // Update
+    /**
+     * Updates the entity's in-air status.
+     *
+     * @param levelData The level data.
+     * @param gravity The gravity affecting the entity.
+     * @param collisionFallSpeed The fall speed when the entity collides with something.
+     */
     protected void updateInAir(int[][] levelData, double gravity, double collisionFallSpeed) {
         if (Utils.getInstance().canMoveHere(hitBox.x, hitBox.y + airSpeed, hitBox.width, hitBox.height, levelData)) {
             hitBox.y += airSpeed;

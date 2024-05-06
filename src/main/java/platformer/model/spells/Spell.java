@@ -9,6 +9,10 @@ import platformer.model.Renderable;
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
 
+/**
+ * Abstract class for all spells.
+ * Contains common fields and methods for all spells.
+ */
 @SuppressWarnings("FieldCanBeLocal")
 public abstract class Spell implements Renderable<Graphics>, Debug<Graphics> {
 

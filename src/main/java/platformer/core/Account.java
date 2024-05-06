@@ -7,6 +7,7 @@ import java.util.List;
 public class Account {
 
     private final transient String name;
+    private final transient String password;
     private final transient int accountID, settingsID;
     private int spawn;
     private int coins, tokens;
@@ -20,8 +21,12 @@ public class Account {
 
     private transient boolean enableCheats;
 
+    /**
+     * No account constructor
+     */
     public Account() {
         this.name = "Default";
+        this.password = "";
         this.accountID = this.settingsID = -1;
         this.spawn = -1;
         this.coins = this.tokens = this.exp = 0;
@@ -29,8 +34,12 @@ public class Account {
         this.playtime = 0;
     }
 
-    public Account(String name, int accountID, int settingsID, int spawn, int coins, int tokens, int level, int exp) {
+    /**
+     * Standard constructor
+     */
+    public Account(String name, String password, int accountID, int settingsID, int spawn, int coins, int tokens, int level, int exp) {
         this.name = name;
+        this.password = password;
         this.accountID = accountID;
         this.settingsID = settingsID;
         this.spawn = spawn;
@@ -40,8 +49,14 @@ public class Account {
         this.exp = exp;
     }
 
+    /**
+     * Prototype constructor
+     * <p>
+     * @param account Account to copy
+     */
     public Account(Account account) {
         this.name = account.name;
+        this.password = account.password;
         this.accountID = account.accountID;
         this.settingsID = account.settingsID;
         this.spawn = account.spawn;
@@ -90,8 +105,13 @@ public class Account {
         this.playtime = 0;
     }
 
+    // Getters and Setters
     public String getName() {
         return name;
+    }
+
+    public String getPassword() {
+        return password;
     }
 
     public int getSpawn() {

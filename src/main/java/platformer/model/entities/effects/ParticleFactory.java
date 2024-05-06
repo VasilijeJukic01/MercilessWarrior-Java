@@ -4,6 +4,11 @@ import java.awt.image.BufferedImage;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Factory class for creating ParticleType objects.
+ * <p>
+ * Part of the Flyweight design pattern.
+ */
 public class ParticleFactory {
 
     private final Map<String, ParticleType> cache = new HashMap<>();

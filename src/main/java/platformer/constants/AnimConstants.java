@@ -11,6 +11,9 @@ SL - Slider
 
  */
 
+/**
+ * Constants for sprite dimensions.
+ */
 public final class AnimConstants {
 
     // Sprite dimension
@@ -35,6 +38,9 @@ public final class AnimConstants {
     public static final int CANDLE_W = 23, CANDLE_H = 57;
     public static final int LOOT_W = 210, LOOT_H = 122;
     public static final int TABLE_W = 46, TABLE_H = 25;
+    public static final int BOARD_W = 68, BOARD_H = 61;
+    public static final int LAVA_W = 32, LAVA_H = 32;
+    public static final int BRICK_W = 32, BRICK_H = 32;
 
     public static final int LIGHTNING_W = 128, LIGHTNING_H = 512;
     public static final int FLASH_W = 192, FLASH_H = 984;
@@ -50,6 +56,9 @@ public final class AnimConstants {
 
     public static final int FOREST_SPRITE_W = 274, FOREST_SPRITE_H = 274;
     public static final int FOREST_SPRITE_ROW = 7, FOREST_SPRITE_COL = 7;
+
+    // NPC
+    public static final int ANITA_W = 32, ANITA_H = 32;
 
     // Frames
     public static final int MENU_FRAMES = 24;

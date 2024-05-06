@@ -17,6 +17,10 @@ import static platformer.constants.Constants.CRE_BTN_SIZE;
 import static platformer.constants.FilePaths.*;
 import static platformer.constants.UI.*;
 
+/**
+ * State of the game when the player is in the options menu.
+ * In this state, the player can adjust various settings such as audio options.
+ */
 @SuppressWarnings("FieldCanBeLocal")
 public class OptionsState extends AbstractState implements State{
 

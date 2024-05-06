@@ -3,11 +3,9 @@ package platformer.model.gameObjects;
 import platformer.audio.Audio;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
-import platformer.model.gameObjects.objects.Loot;
+import platformer.model.entities.enemies.EnemyType;
+import platformer.model.gameObjects.objects.*;
 import platformer.model.perks.PerksBonus;
-import platformer.model.gameObjects.objects.Coin;
-import platformer.model.gameObjects.objects.Container;
-import platformer.model.gameObjects.objects.Potion;
 import platformer.model.gameObjects.projectiles.Projectile;
 import platformer.model.spells.Flame;
 
@@ -15,6 +13,9 @@ import java.awt.geom.Rectangle2D;
 import java.util.List;
 import java.util.Random;
 
+/**
+ * Class that handles breaking of objects.
+ */
 public class ObjectBreakHandler {
 
     private final ObjectManager objectManager;
@@ -23,6 +24,12 @@ public class ObjectBreakHandler {
         this.objectManager = objectManager;
     }
 
+    /**
+     * Checks if an object should be broken by an attack or flame.
+     *
+     * @param attackBox The attack box.
+     * @param flame The flame.
+     */
     public void checkObjectBreak(Rectangle2D.Double attackBox, Flame flame) {
         for (Container container : getObjects(Container.class)) {
             if (!container.isAlive() || container.animate) continue;
@@ -32,6 +39,11 @@ public class ObjectBreakHandler {
         }
     }
 
+    /**
+     * Checks if a projectile should break an object.
+     *
+     * @param projectiles The list of projectiles.
+     */
     public void checkProjectileBreak(List<Projectile> projectiles) {
         for (Container container : getObjects(Container.class)) {
             if (!container.isAlive() || container.animate) continue;
@@ -39,6 +51,16 @@ public class ObjectBreakHandler {
             for (Projectile projectile : projectiles) {
                 if (projectile.isAlive()) {
                     if (projectile.getHitBox().intersects(container.getHitBox())) breakContainer(container);
+                }
+            }
+        }
+
+        for (Brick brick : getObjects(Brick.class)) {
+            if (!brick.isAlive() || brick.animate) continue;
+
+            for (Projectile projectile : projectiles) {
+                if (projectile.isAlive()) {
+                    if (projectile.getHitBox().intersects(brick.getHitBox())) breakBrick(brick);
                 }
             }
         }
@@ -51,6 +73,16 @@ public class ObjectBreakHandler {
         generateCrateLoot(container);
     }
 
+    private void breakBrick(Brick brick) {
+        brick.setAnimate(true);
+        Logger.getInstance().notify("Player breaks brick.", Message.NOTIFICATION);
+    }
+
+    /**
+     * Generates loot from a broken container.
+     *
+     * @param container The broken container.
+     */
     private void generateCrateLoot(Container container) {
         Random rand = new Random();
         int value = rand.nextInt(4)-1;
@@ -64,9 +96,15 @@ public class ObjectBreakHandler {
         }
     }
 
-    public void generateEnemyLoot(Rectangle2D.Double location) {
+    /**
+     * Generates loot from a defeated enemy.
+     *
+     * @param location The location of the defeated enemy.
+     * @param enemyType The type of the defeated enemy.
+     */
+    public void generateEnemyLoot(Rectangle2D.Double location, EnemyType enemyType) {
        generateCoins(location);
-       generateLoot(location);
+       generateLoot(location, enemyType);
     }
 
     private void generateCoins(Rectangle2D.Double location) {
@@ -80,10 +118,10 @@ public class ObjectBreakHandler {
         }
     }
 
-    private void generateLoot(Rectangle2D.Double location) {
+    private void generateLoot(Rectangle2D.Double location, EnemyType enemyType) {
         int x = (int)(location.width / 4) + (int)location.x;
         int y = (int)(location.height / 2.3) + (int)location.y;
-        Loot loot = new Loot(ObjType.LOOT, x, y);
+        Loot loot = new Loot(ObjType.LOOT, x, y, enemyType);
         objectManager.addGameObject(loot);
     }
 

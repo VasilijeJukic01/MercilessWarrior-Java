@@ -6,6 +6,9 @@ import platformer.core.Game;
 import javax.swing.*;
 import java.net.URL;
 
+/**
+ * The main frame of the game.
+ */
 @SuppressWarnings("FieldCanBeLocal")
 public class GameFrame extends JFrame {
 

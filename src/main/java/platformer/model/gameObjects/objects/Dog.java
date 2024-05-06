@@ -10,6 +10,8 @@ import static platformer.constants.Constants.*;
 
 public class Dog extends GameObject {
 
+    private boolean active;
+
     public Dog(ObjType objType, int xPos, int yPos) {
         super(objType, xPos, yPos);
         generateHitBox();
@@ -46,4 +48,7 @@ public class Dog extends GameObject {
 
     }
 
+    public void setActive(boolean active) {
+        this.active = active;
+    }
 }

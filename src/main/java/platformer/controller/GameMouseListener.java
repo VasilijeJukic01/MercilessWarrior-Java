@@ -6,6 +6,9 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 
+/**
+ * The GameMouseListener class is responsible for handling mouse events in the game.
+ */
 public class GameMouseListener implements MouseListener, MouseMotionListener {
 
     private final GamePanel gamePanel;

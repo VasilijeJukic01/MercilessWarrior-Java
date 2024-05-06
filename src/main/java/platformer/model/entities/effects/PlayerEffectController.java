@@ -13,6 +13,10 @@ import static platformer.constants.AnimConstants.DUST1_W;
 import static platformer.constants.Constants.*;
 import static platformer.constants.FilePaths.DUST_SHEET_1;
 
+/**
+ * This class is controlling the effects related to the player in the game.
+ * It handles the loading, updating, and rendering of these effects.
+ */
 public class PlayerEffectController {
 
     private final Entity entity;

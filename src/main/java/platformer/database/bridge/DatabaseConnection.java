@@ -8,6 +8,11 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
+/**
+ * This class is responsible for establishing a connection to the database.
+ * <p>
+ * It uses the settings provided by the user to connect to the database.
+ */
 public class DatabaseConnection {
 
     private Connection connection;

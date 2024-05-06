@@ -2,6 +2,9 @@ package platformer.model.inventory;
 
 import java.awt.image.BufferedImage;
 
+/**
+ * Class that represents an item in the inventory or shop.
+ */
 public abstract class AbstractItem {
 
     private final ItemType itemType;
@@ -22,6 +25,13 @@ public abstract class AbstractItem {
         this.amount = amount;
     }
 
+    /**
+     * Adds a specified value to the item's amount.
+     * If the value is negative and the resulting amount is non-negative, the amount is decreased.
+     * Otherwise, the amount is increased.
+     *
+     * @param value the value to be added
+     */
     public void addAmount(int value) {
         if (value < 0 && amount - value >= 0) {
              amount -= value;
@@ -29,6 +39,12 @@ public abstract class AbstractItem {
         else amount += value;
     }
 
+    /**
+     * Removes a specified value from the item's amount.
+     * If the resulting amount is non-negative, the amount is increased.
+     *
+     * @param value the value to be removed
+     */
     public void removeAmount(int value) {
         if (amount + value >= 0) {
             amount += value;

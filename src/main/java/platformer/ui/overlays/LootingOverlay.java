@@ -10,6 +10,7 @@ import platformer.ui.buttons.MediumButton;
 import platformer.utils.Utils;
 
 import java.awt.*;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
@@ -20,7 +21,10 @@ import static platformer.constants.FilePaths.*;
 import static platformer.constants.UI.*;
 import static platformer.constants.UI.SLOT_SIZE;
 
-public class LootingOverlay implements Overlay<MouseEvent, Graphics> {
+/**
+ * Class that represents the overlay that is displayed when the player is looting.
+ */
+public class LootingOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
 
     private final GameState gameState;
     private final MediumButton[] buttons;
@@ -208,6 +212,33 @@ public class LootingOverlay implements Overlay<MouseEvent, Graphics> {
 
     private boolean isMouseInButton(MouseEvent e, MediumButton mediumButton) {
         return mediumButton.getButtonHitBox().contains(e.getX(), e.getY());
+    }
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+        if (e.getKeyCode() == KeyEvent.VK_UP) {
+            slotNumber -= INVENTORY_SLOT_MAX_ROW;
+            if (slotNumber < 0) slotNumber = 0;
+            setSelectedSlot();
+        }
+        else if (e.getKeyCode() == KeyEvent.VK_DOWN) {
+            slotNumber += INVENTORY_SLOT_MAX_ROW;
+            if (slotNumber >= INVENTORY_SLOT_MAX_ROW * INVENTORY_SLOT_MAX_COL) slotNumber = INVENTORY_SLOT_MAX_ROW * INVENTORY_SLOT_MAX_COL - 1;
+            setSelectedSlot();
+        }
+        else if (e.getKeyCode() == KeyEvent.VK_LEFT) {
+            slotNumber--;
+            if (slotNumber < 0) slotNumber = 0;
+            setSelectedSlot();
+        }
+        else if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
+            slotNumber++;
+            if (slotNumber >= INVENTORY_SLOT_MAX_ROW * INVENTORY_SLOT_MAX_COL) slotNumber = INVENTORY_SLOT_MAX_ROW * INVENTORY_SLOT_MAX_COL - 1;
+            setSelectedSlot();
+        }
+        else if (e.getKeyCode() == KeyEvent.VK_X) {
+            takeCurrentItem();
+        }
     }
 
     @Override
