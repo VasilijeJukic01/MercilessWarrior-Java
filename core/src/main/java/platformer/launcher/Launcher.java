@@ -8,6 +8,10 @@ import platformer.launcher.core.LauncherCore;
 public class Launcher {
 
     public static void main(String[] args) {
+        String currentDir = System.getProperty("user.dir");
+        String libPath = currentDir + "/../lib";
+        System.setProperty("java.library.path", libPath);
+
         LauncherCore.launch(LauncherCore.class, args);
     }
 
