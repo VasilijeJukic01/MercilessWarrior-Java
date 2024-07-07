@@ -20,9 +20,7 @@ dependencies {
 	implementation("org.lwjgl.lwjgl:lwjgl:2.9.3")
 	implementation("net.java.jutils:jutils:1.0.0")
 	implementation("org.lwjgl.lwjgl:lwjgl_util:2.9.3")
-	implementation("mysql:mysql-connector-java:8.0.29")
 	implementation("com.google.code.gson:gson:2.10")
-	implementation("org.mindrot:jbcrypt:0.4")
 	compileOnly("org.projectlombok:lombok:1.18.20")
 	annotationProcessor("org.projectlombok:lombok:1.18.20")
 }

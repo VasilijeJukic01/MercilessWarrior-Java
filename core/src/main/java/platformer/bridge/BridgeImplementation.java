@@ -1,8 +1,14 @@
 package platformer.bridge;
 
-import platformer.bridge.client.AuthServiceClient;
 import platformer.bridge.client.GameServiceClient;
+import platformer.bridge.mapper.AccountMapper;
+import platformer.bridge.mapper.LeaderboardMapper;
+import platformer.bridge.mapper.Mapper;
+import platformer.bridge.requests.AccountDataDTO;
+import platformer.bridge.requests.BoardItemDTO;
 import platformer.core.Account;
+import platformer.debug.logger.Logger;
+import platformer.debug.logger.Message;
 import platformer.model.BoardItem;
 
 import java.io.IOException;
@@ -13,59 +19,59 @@ import java.util.List;
  The SQLStorage class is a bridge between the game and the SQL database.
  It is responsible for executing SQL queries and operations on the database.
  */
-// TODO: Refactor
 public class BridgeImplementation implements Bridge {
 
-    private AuthServiceClient authServiceClient;
     private GameServiceClient gameServiceClient;
+    private Mapper<Account, AccountDataDTO> accountMapper;
+    private Mapper<BoardItem, BoardItemDTO> leaderboardMapper;
 
     public BridgeImplementation() {
         init();
     }
 
     private void init() {
-        this.authServiceClient = new AuthServiceClient();
         this.gameServiceClient = new GameServiceClient();
+        this.accountMapper = new AccountMapper();
+        this.leaderboardMapper = new LeaderboardMapper();
     }
 
     // Operations
     @Override
     public int createAccount(String username, String password) {
         try {
-            return authServiceClient.createAccount(username, password);
+            return gameServiceClient.createAccount(username, password);
         } catch (IOException e) {
+            Logger.getInstance().notify("Account creation failed!", Message.ERROR);
             return 1;
         }
     }
 
     @Override
     public Account loadAccountData(String user, String password) {
-        Mapper accountMapper = new Mapper();
         try {
-            return accountMapper.mapToAccount(authServiceClient.loadAccountData(user, password));
+            return accountMapper.toEntity().apply(gameServiceClient.loadAccountData(user, password));
         } catch (IOException e) {
+            Logger.getInstance().notify("Loading data from database failed. Switching to Default profile.", Message.ERROR);
             return new Account();
         }
     }
 
     @Override
     public List<BoardItem> loadLeaderboardData() {
-        Mapper boardItemMapper = new Mapper();
         try {
-            return boardItemMapper.mapToBoardItem(gameServiceClient.loadLeaderboardData());
+            return leaderboardMapper.toEntityList(gameServiceClient.loadLeaderboardData());
         } catch (IOException e) {
+            Logger.getInstance().notify("Leaderboard fetch failed!", Message.ERROR);
             return new ArrayList<>();
         }
     }
 
     @Override
     public void updateAccountData(Account account) {
-        Mapper accountMapper = new Mapper();
         try {
-            // Called update
-            gameServiceClient.updateAccountData(accountMapper.mapToAccountDataDTO(account));
+            gameServiceClient.updateAccountData(accountMapper.toDto().apply(account));
         } catch (IOException e) {
-            return;
+            Logger.getInstance().notify("Failed to update account data!", Message.ERROR);
         }
     }
 }

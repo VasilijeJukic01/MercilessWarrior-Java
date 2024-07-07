@@ -16,6 +16,7 @@ public class Connector {
         this.bridge = new BridgeImplementation();
     }
 
+    // Connector methods
     public int createAccount(String username, String password) {
         return bridge.createAccount(username, password);
     }

@@ -6,7 +6,7 @@ import platformer.model.BoardItem;
 import java.util.List;
 
 /**
- * Interface for the storage bridge.
+ * Interface for the connector between the game and services.
  */
 public interface Bridge {
 
