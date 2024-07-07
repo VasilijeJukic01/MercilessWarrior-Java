@@ -41,6 +41,7 @@ dependencies {
 	implementation("com.google.guava:guava:30.1-jre")
 	implementation("com.github.vladimir-bukhtoyarov:bucket4j-core:4.10.0")
 	implementation("com.github.vladimir-bukhtoyarov:bucket4j-jcache:4.10.0")
+	implementation("org.springframework.cloud:spring-cloud-starter-netflix-eureka-client")
 	runtimeOnly("javax.cache:cache-api:1.1.1")
 	runtimeOnly("io.jsonwebtoken:jjwt-impl:0.11.5")
 	runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.11.5")

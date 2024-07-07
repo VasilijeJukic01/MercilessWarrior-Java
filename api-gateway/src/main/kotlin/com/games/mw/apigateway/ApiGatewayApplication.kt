@@ -1,4 +1,4 @@
-package com.games.mw.authservice
+package com.games.mw.apigateway
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
@@ -6,8 +6,8 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient
 
 @SpringBootApplication
 @EnableDiscoveryClient
-open class AuthServiceApplication
+class ApiGatewayApplication
 
 fun main(args: Array<String>) {
-	runApplication<AuthServiceApplication>(*args)
+    runApplication<ApiGatewayApplication>(*args)
 }

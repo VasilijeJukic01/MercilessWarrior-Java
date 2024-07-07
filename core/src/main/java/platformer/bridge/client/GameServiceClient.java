@@ -13,13 +13,11 @@ import java.util.List;
 
 public class GameServiceClient {
 
-    // TODO: Use API Gateway
-    private static final String AUTH_SERVICE_URL = "http://localhost:8081";
-    private static final String GAME_SERVICE_URL = "http://localhost:8082";
+    private static final String API_GATEWAY_URL = "http://localhost:8080";
     private final Gson gson = new Gson();
 
     public int createAccount(String username, String password) throws IOException {
-        String url = AUTH_SERVICE_URL + "/auth/register";
+        String url = API_GATEWAY_URL + "/auth/register";
         HttpURLConnection conn = HttpRequestHandler.createPostConnection(url, "application/json");
 
         String jsonInputString = gson.toJson(new RegistrationRequest(username, password, List.of("USER")));
@@ -43,7 +41,7 @@ public class GameServiceClient {
     }
 
     public void createSettingsForUser(int userId) throws IOException {
-        String url = GAME_SERVICE_URL + "/settings/empty/" + userId;
+        String url = API_GATEWAY_URL + "/settings/empty/" + userId;
         HttpURLConnection conn = HttpRequestHandler.createPostConnection(url, "application/json");
 
         int responseCode = conn.getResponseCode();
@@ -55,7 +53,7 @@ public class GameServiceClient {
     public AccountDataDTO loadAccountData(String username, String password) throws IOException {
         AuthenticationRequest authRequest = new AuthenticationRequest(username, password);
 
-        String authUrl = AUTH_SERVICE_URL + "/auth/login";
+        String authUrl = API_GATEWAY_URL + "/auth/login";
         HttpURLConnection authConn = HttpRequestHandler.createPostConnection(authUrl, "application/json");
         String jsonAuthInputString = gson.toJson(authRequest);
         HttpRequestHandler.sendJsonPayload(authConn, jsonAuthInputString);
@@ -73,7 +71,7 @@ public class GameServiceClient {
             throw new IOException("Failed to authenticate: " + authResponseCode);
         }
 
-        String gameUrl = GAME_SERVICE_URL + "/game/account/" + username;
+        String gameUrl = API_GATEWAY_URL + "/game/account/" + username;
         HttpURLConnection gameConn = HttpRequestHandler.createGetConnection(gameUrl, token);
 
         int gameResponseCode = gameConn.getResponseCode();
@@ -88,7 +86,7 @@ public class GameServiceClient {
     }
 
     public List<BoardItemDTO> loadLeaderboardData() throws IOException {
-        String url = GAME_SERVICE_URL + "/leaderboard";
+        String url = API_GATEWAY_URL + "/leaderboard";
         HttpURLConnection conn = HttpRequestHandler.createGetConnection(url, TokenStorage.getToken());
 
         int responseCode = conn.getResponseCode();
@@ -104,7 +102,7 @@ public class GameServiceClient {
     }
 
     public void updateAccountData(AccountDataDTO accountDataDTO) throws IOException {
-        String url = GAME_SERVICE_URL + "/game/account";
+        String url = API_GATEWAY_URL + "/game/account";
         HttpURLConnection conn = HttpRequestHandler.createPutConnection(url, "application/json");
 
         String jsonInputString = gson.toJson(accountDataDTO);
