@@ -2,12 +2,6 @@ package com.games.mw.authservice.controller
 
 import com.games.mw.authservice.model.User
 import com.games.mw.authservice.model.UserRole
-import com.games.mw.authservice.repository.RoleRepository
-import com.games.mw.authservice.repository.UserRepository
-import com.games.mw.authservice.repository.UserRoleRepository
-import com.games.mw.authservice.request.AuthenticationRequest
-import com.games.mw.authservice.request.AuthenticationResponse
-import com.games.mw.authservice.request.RegisterRequest
 import com.games.mw.authservice.security.JwtService
 import com.games.mw.authservice.service.LoginAttemptService
 import com.games.mw.authservice.service.UserDetailsServiceImpl
@@ -18,8 +12,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.web.bind.annotation.*
-
-// TODO: Secure the endpoints
+import com.games.mw.authservice.request.*
+import com.games.mw.authservice.repository.*
 
 @RestController
 @RequestMapping("/auth")
@@ -35,7 +29,7 @@ class AuthController(
 ) {
 
     @PostMapping("/register")
-    fun registerUser(@RequestBody request: RegisterRequest): ResponseEntity<Long> {
+    fun registerUser(@RequestBody request: RegistrationRequest): ResponseEntity<Long> {
         if (userRepository.findByUsername(request.username).isPresent) {
             return ResponseEntity.badRequest().body(-1)
         }
@@ -91,7 +85,7 @@ class AuthController(
     }
 
     @GetMapping("/usernames")
-    fun getAllUsernames(): List<String> {
+    fun getAllUsernames(@RequestHeader("Authorization") token: String): List<String> {
         return userRepository.findAll().map { it.username }
     }
 }

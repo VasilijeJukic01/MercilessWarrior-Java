@@ -12,7 +12,8 @@ class SettingsController (
 ) {
 
     @GetMapping("/{userId}")
-    fun getSettingsByUserId(@PathVariable userId: Long): ResponseEntity<Settings> {
+    fun getSettingsByUserId(@PathVariable userId: Long,
+                            @RequestHeader("Authorization") token: String): ResponseEntity<Settings> {
         val settings = settingsService.getSettingsByUserId(userId)
 
         return if (settings != null) {
@@ -22,33 +23,26 @@ class SettingsController (
         }
     }
 
-    @GetMapping("/maxId")
-    fun getMaxId(): ResponseEntity<Long> {
-        val maxId = settingsService.getMaxId()
-
-        return if (maxId != null) {
-            ResponseEntity.ok(maxId)
-        } else {
-            ResponseEntity.notFound().build()
-        }
-    }
-
     @PostMapping("/")
-    fun insertSettings(@RequestBody settings: Settings): ResponseEntity<Settings> {
+    fun insertSettings(@RequestBody settings: Settings,
+                       @RequestHeader("Authorization") token: String): ResponseEntity<Settings> {
         val newSettings = settingsService.insertSettings(settings)
 
         return ResponseEntity.ok(newSettings)
     }
 
     @PostMapping("/empty/{userId}")
-    fun insertEmptySettings(@PathVariable userId: Long): ResponseEntity<Settings> {
+    fun insertEmptySettings(@PathVariable userId: Long,
+                            @RequestHeader("Authorization") token: String): ResponseEntity<Settings> {
         val newSettings = settingsService.insertSettings(Settings(userId = userId))
 
         return ResponseEntity.ok(newSettings)
     }
 
     @PutMapping("/{userId}")
-    fun updateSettings(@PathVariable userId: Long, @RequestBody settings: Settings): ResponseEntity<Settings> {
+    fun updateSettings(@PathVariable userId: Long,
+                       @RequestBody settings: Settings,
+                       @RequestHeader("Authorization") token: String): ResponseEntity<Settings> {
         val updatedSettings = settingsService.updateSettings(userId, settings)
 
         return if (updatedSettings != null) {

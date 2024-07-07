@@ -2,7 +2,7 @@ package com.games.mw.authservice
 
 import com.games.mw.authservice.controller.AuthController
 import com.games.mw.authservice.request.AuthenticationRequest
-import com.games.mw.authservice.request.RegisterRequest
+import com.games.mw.authservice.request.RegistrationRequest
 import com.games.mw.authservice.security.JwtService
 import com.games.mw.authservice.service.UserDetailsServiceImpl
 import org.junit.jupiter.api.Assertions
@@ -47,7 +47,7 @@ class AuthControllerTests {
     @Test
     fun registerUser_success_test() {
         // Arrange
-        val request = RegisterRequest("testuser", "password", setOf("USER"))
+        val request = RegistrationRequest("testuser", "password", setOf("USER"))
 
         `when`(userRepository.findByUsername(request.username)).thenReturn(Optional.empty())
         `when`(roleRepository.findByName("USER")).thenReturn(Optional.of(Role(1, "USER")))
@@ -70,7 +70,7 @@ class AuthControllerTests {
     @Test
     fun registerUser_username_taken_test() {
         // Arrange
-        val request = RegisterRequest("testuser", "password", setOf("USER"))
+        val request = RegistrationRequest("testuser", "password", setOf("USER"))
 
         `when`(userRepository.findByUsername(request.username)).thenReturn(Optional.of(User(1, "testuser", "password")))
 
@@ -85,7 +85,7 @@ class AuthControllerTests {
     @Test
     fun registerUser_role_not_found_test() {
         // Arrange
-        val request = RegisterRequest("testuser", "password", setOf("USER"))
+        val request = RegistrationRequest("testuser", "password", setOf("USER"))
 
         `when`(userRepository.findByUsername(request.username)).thenReturn(Optional.empty())
         `when`(roleRepository.findByName("USER")).thenReturn(Optional.empty())

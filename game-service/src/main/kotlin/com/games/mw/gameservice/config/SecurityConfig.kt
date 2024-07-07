@@ -1,18 +1,15 @@
-package com.games.mw.authservice.config
+package com.games.mw.gameservice.config
 
-import com.games.mw.authservice.security.JwtAuthenticationFilter
+import com.games.mw.gameservice.security.JwtAuthenticationFilter
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.security.authentication.AuthenticationManager
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.http.SessionCreationPolicy
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
-import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 
+// TODO: Handle permissions
 @Configuration
 @EnableWebSecurity
 open class SecurityConfig(
@@ -20,24 +17,16 @@ open class SecurityConfig(
 ) {
 
     @Bean
-    open fun passwordEncoder(): PasswordEncoder {
-        return BCryptPasswordEncoder()
-    }
-
-    @Bean
-    open fun authenticationManager(authenticationConfiguration: AuthenticationConfiguration): AuthenticationManager {
-        return authenticationConfiguration.authenticationManager
-    }
-
-    @Bean
     open fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
         http
             .csrf { csrf -> csrf.disable() }
             .authorizeHttpRequests { authorizeRequests ->
                 authorizeRequests
-                    .requestMatchers("/auth/account").hasAnyRole("ADMIN", "USER")
-                    .requestMatchers("/auth/usernames").hasAnyRole("ADMIN", "USER")
-                    .requestMatchers("/auth/**").permitAll()
+                    .requestMatchers("/game/**").permitAll()
+                    .requestMatchers("/items/**").permitAll()
+                    .requestMatchers("/leaderboard/**").permitAll()
+                    .requestMatchers("/perks/**").permitAll()
+                    .requestMatchers("/settings/**").permitAll()
                     .anyRequest().authenticated()
             }
             .headers { headers ->

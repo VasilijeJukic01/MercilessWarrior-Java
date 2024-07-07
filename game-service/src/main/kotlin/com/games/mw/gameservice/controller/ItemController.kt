@@ -12,32 +12,25 @@ class ItemController(
 ) {
 
     @GetMapping("/settings/{settingsId}")
-    fun getItemsBySettingsId(@PathVariable settingsId: Long): ResponseEntity<List<Item>> {
+    fun getItemsBySettingsId(@PathVariable settingsId: Long,
+                             @RequestHeader("Authorization") token: String): ResponseEntity<List<Item>> {
         val items = itemService.getItemsBySettingsId(settingsId)
 
         return ResponseEntity.ok(items)
     }
 
-    @GetMapping("/maxId")
-    fun getMaxId(): ResponseEntity<Long> {
-        val maxId = itemService.getMaxId()
-
-        return if (maxId != null) {
-            ResponseEntity.ok(maxId)
-        } else {
-            ResponseEntity.notFound().build()
-        }
-    }
-
     @PostMapping("/")
-    fun insertItem(@RequestBody item: Item): ResponseEntity<Item> {
+    fun insertItem(@RequestBody item: Item,
+                   @RequestHeader("Authorization") token: String): ResponseEntity<Item> {
         val newItem = itemService.insertItem(item)
 
         return ResponseEntity.ok(newItem)
     }
 
     @PutMapping("/{itemId}")
-    fun updateItem(@PathVariable itemId: Long, @RequestBody item: Item): ResponseEntity<Item> {
+    fun updateItem(@PathVariable itemId: Long,
+                   @RequestBody item: Item,
+                   @RequestHeader("Authorization") token: String): ResponseEntity<Item> {
         val updatedItem = itemService.updateItem(itemId, item)
 
         return if (updatedItem != null) {
@@ -48,7 +41,8 @@ class ItemController(
     }
 
     @DeleteMapping("/settings/{settingsId}")
-    fun deleteBySettingsId(@PathVariable settingsId: Long): ResponseEntity<Void> {
+    fun deleteBySettingsId(@PathVariable settingsId: Long,
+                           @RequestHeader("Authorization") token: String): ResponseEntity<Void> {
         itemService.deleteBySettingsId(settingsId)
 
         return ResponseEntity.ok().build()

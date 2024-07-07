@@ -13,10 +13,6 @@ class PerkService(
         return perkRepository.findBySettingsId(settingsId)
     }
 
-    fun getMaxId(): Long? {
-        return perkRepository.findMaxId()
-    }
-
     fun insertPerk(perk: Perk): Perk {
         return perkRepository.save(perk)
     }

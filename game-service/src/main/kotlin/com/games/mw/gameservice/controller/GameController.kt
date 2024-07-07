@@ -20,8 +20,8 @@ class GameController(
     }
 
     @PutMapping("/account")
-    fun updateAccountData(@RequestBody accountDataDTO: AccountDataDTO): ResponseEntity<Void> {
-        println("CONTROLLER Updating account data: $accountDataDTO")
+    fun updateAccountData(@RequestBody accountDataDTO: AccountDataDTO,
+                          @RequestHeader("Authorization") token: String): ResponseEntity<Void> {
         gameService.updateAccountData(accountDataDTO)
 
         return ResponseEntity.ok().build()

@@ -13,10 +13,6 @@ class SettingsService(
         return settingsRepository.findByUserId(userId)
     }
 
-    fun getMaxId(): Long? {
-        return settingsRepository.findMaxId()
-    }
-
     fun insertSettings(settings: Settings): Settings {
         return settingsRepository.save(settings)
     }

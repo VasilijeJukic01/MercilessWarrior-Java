@@ -13,10 +13,6 @@ class ItemService(
         return itemRepository.findBySettingsId(settingsId)
     }
 
-    fun getMaxId(): Long? {
-        return itemRepository.findMaxId()
-    }
-
     fun insertItem(item: Item): Item {
         return itemRepository.save(item)
     }
