@@ -1,5 +1,6 @@
 plugins {
 	kotlin("jvm") version "1.8.22"
+	id("io.freefair.lombok") version "5.3.3.3"
 }
 
 group = "com.games.mw"
@@ -22,4 +23,6 @@ dependencies {
 	implementation("mysql:mysql-connector-java:8.0.29")
 	implementation("com.google.code.gson:gson:2.10")
 	implementation("org.mindrot:jbcrypt:0.4")
+	compileOnly("org.projectlombok:lombok:1.18.20")
+	annotationProcessor("org.projectlombok:lombok:1.18.20")
 }

@@ -5,7 +5,7 @@ import javafx.event.EventHandler;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import platformer.core.LauncherPrompt;
-import platformer.database.bridge.Database;
+import platformer.bridge.Connector;
 import platformer.launcher.view.RegisterView;
 import platformer.launcher.view.alert.AlertHelper;
 
@@ -34,8 +34,8 @@ public class RegisterController implements EventHandler<ActionEvent> {
             return;
         }
 
-        Database database = new Database(new LauncherPrompt(tfName.getText(), tfPassword.getText(), false));
-        int status = database.createAccount(tfName.getText(), tfPassword.getText());
+        Connector connector = new Connector(new LauncherPrompt(tfName.getText(), tfPassword.getText(), false));
+        int status = connector.createAccount(tfName.getText(), tfPassword.getText());
 
         switch (status) {
             case 0:

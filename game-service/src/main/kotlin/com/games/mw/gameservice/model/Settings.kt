@@ -11,15 +11,15 @@ data class Settings (
     @Column(unique = true, nullable = false)
     val userId: Long = 0,
 
-    var spawnId: Long = 0,
+    var spawnId: Int = 0,
 
-    var coins: Long = 0,
+    var coins: Int = 0,
 
-    var tokens: Long = 0,
+    var tokens: Int = 0,
 
-    var exp: Long = 0,
+    var exp: Int = 0,
 
-    var level: Long = 1,
+    var level: Int = 1,
 
-    var playtime: Long = 0,
+    var playtime: Int = 0,
 )

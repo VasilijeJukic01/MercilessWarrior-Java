@@ -40,6 +40,13 @@ class SettingsController (
         return ResponseEntity.ok(newSettings)
     }
 
+    @PostMapping("/empty/{userId}")
+    fun insertEmptySettings(@PathVariable userId: Long): ResponseEntity<Settings> {
+        val newSettings = settingsService.insertSettings(Settings(userId = userId))
+
+        return ResponseEntity.ok(newSettings)
+    }
+
     @PutMapping("/{userId}")
     fun updateSettings(@PathVariable userId: Long, @RequestBody settings: Settings): ResponseEntity<Settings> {
         val updatedSettings = settingsService.updateSettings(userId, settings)

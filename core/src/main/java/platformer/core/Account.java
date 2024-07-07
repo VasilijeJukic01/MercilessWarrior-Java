@@ -1,9 +1,14 @@
 package platformer.core;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import javax.swing.*;
 import java.util.ArrayList;
 import java.util.List;
 
+@Getter
+@Setter
 public class Account {
 
     private final transient String name;
@@ -105,100 +110,24 @@ public class Account {
         this.playtime = 0;
     }
 
-    // Getters and Setters
-    public String getName() {
-        return name;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public int getSpawn() {
-        return spawn;
-    }
-
-    public int getCoins() {
-        return coins;
-    }
-
-    public int getTokens() {
-        return tokens;
-    }
-
-    public int getLevel() {
-        return level;
-    }
-
-    public int getExp() {
-        return exp;
-    }
-
-    public List<String> getPerks() {
-        return perks;
-    }
-
-    public List<String> getItems() {
-        return items;
-    }
-
-    public int getAccountID() {
-        return accountID;
-    }
-
-    public int getSettingsID() {
-        return settingsID;
-    }
-
-    public String getLastTimeSaved() {
-        return lastTimeSaved;
-    }
-
-    public long getPlaytime() {
-        return playtime;
-    }
-
-    public void setLastTimeSaved(String lastTimeSaved) {
-        this.lastTimeSaved = lastTimeSaved;
-    }
-
-    public void setPlaytime(long playtime) {
-        this.playtime = playtime;
-    }
-
-    public void setSpawn(int spawn) {
-        this.spawn = spawn;
-    }
-
-    public void setCoins(int coins) {
-        this.coins = coins;
-    }
-
-    public void setTokens(int tokens) {
-        this.tokens = tokens;
-    }
-
-    public void setLevel(int level) {
-        this.level = level;
-    }
-
-    public void setExp(int exp) {
-        this.exp = exp;
-    }
-
-    public void setPerks(List<String> perks) {
-        this.perks = perks;
-    }
-
-    public void setItems(List<String> items) {
-        this.items = items;
-    }
-
-    public boolean isEnableCheats() {
-        return enableCheats;
-    }
-
-    public void setEnableCheats(boolean enableCheats) {
-        this.enableCheats = enableCheats;
+    @Override
+    public String toString() {
+        return "Account{" +
+                "name='" + name + '\'' +
+                ", password='" + password + '\'' +
+                ", accountID=" + accountID +
+                ", settingsID=" + settingsID +
+                ", spawn=" + spawn +
+                ", coins=" + coins +
+                ", tokens=" + tokens +
+                ", level=" + level +
+                ", exp=" + exp +
+                ", perks=" + perks +
+                ", items=" + items +
+                ", lastTimeSaved='" + lastTimeSaved + '\'' +
+                ", playtime=" + playtime +
+                ", timer=" + timer +
+                ", enableCheats=" + enableCheats +
+                '}';
     }
 }

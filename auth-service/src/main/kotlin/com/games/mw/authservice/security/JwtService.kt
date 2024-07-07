@@ -43,8 +43,9 @@ class JwtService {
     }
 
     private fun extractAllClaims(token: String): Claims {
+        val actualToken = token.replace("Bearer", "").trim()
         return Jwts.parser()
             .setSigningKey(secretKey)
-            .parseClaimsJws(token).body
+            .parseClaimsJws(actualToken).body
     }
 }

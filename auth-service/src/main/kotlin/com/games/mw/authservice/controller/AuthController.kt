@@ -19,6 +19,8 @@ import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.web.bind.annotation.*
 
+// TODO: Secure the endpoints
+
 @RestController
 @RequestMapping("/auth")
 class AuthController(
@@ -33,9 +35,9 @@ class AuthController(
 ) {
 
     @PostMapping("/register")
-    fun registerUser(@RequestBody request: RegisterRequest): ResponseEntity<String> {
+    fun registerUser(@RequestBody request: RegisterRequest): ResponseEntity<Long> {
         if (userRepository.findByUsername(request.username).isPresent) {
-            return ResponseEntity.badRequest().body("Username is already taken")
+            return ResponseEntity.badRequest().body(-1)
         }
 
         val roles = request.roles.map {
@@ -54,7 +56,7 @@ class AuthController(
             userRoleRepository.save(userRole)
         }
 
-        return ResponseEntity.ok("User registered successfully")
+        return ResponseEntity.ok(savedUser.id)
     }
 
     @PostMapping("/login")
@@ -79,5 +81,17 @@ class AuthController(
         loginAttemptService.loginSucceeded(key)
 
         return ResponseEntity.ok(AuthenticationResponse(jwt))
+    }
+
+    @GetMapping("/account/{username}")
+    fun getUserIdByName(@PathVariable username: String, @RequestHeader("Authorization") token: String): ResponseEntity<Long> {
+        val user = userRepository.findByUsername(username).orElseThrow { RuntimeException("User not found") }
+
+        return ResponseEntity.ok(user.id)
+    }
+
+    @GetMapping("/usernames")
+    fun getAllUsernames(): List<String> {
+        return userRepository.findAll().map { it.username }
     }
 }

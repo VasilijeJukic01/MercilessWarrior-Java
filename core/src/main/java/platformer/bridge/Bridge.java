@@ -1,4 +1,4 @@
-package platformer.database.bridge;
+package platformer.bridge;
 
 import platformer.core.Account;
 import platformer.model.BoardItem;
@@ -8,7 +8,7 @@ import java.util.List;
 /**
  * Interface for the storage bridge.
  */
-public interface Storage {
+public interface Bridge {
 
     /**
      * Creates a new account with the given username and password.

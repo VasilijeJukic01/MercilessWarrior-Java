@@ -45,6 +45,7 @@ public class GameSaveController {
     // Operations
     public void loadSlot() {
         for (GameSlot s : gameSlots) {
+            System.out.println("Loading slot: " + s.getAccount());
             if (s.isSelected()) {
                 getSlotAccountData(s);
                 game.startPlayingState();
@@ -75,8 +76,11 @@ public class GameSaveController {
 
     private void getSlotAccountData(GameSlot s) {
         Framework.getInstance().getAccount().unload();
+        System.out.println("After unload: Getting slot account data: " + s.getAccount());
         if (s.getAccount() == null) return;
+        System.out.println("Passed");
         Framework.getInstance().getAccount().copyFromSlot(s.getAccount());
+        System.out.println("After copy: Getting slot account data: " + s.getAccount());
         Framework.getInstance().getAccount().startGameTimer();
     }
 

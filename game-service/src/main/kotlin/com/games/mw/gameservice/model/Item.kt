@@ -11,7 +11,7 @@ data class Item (
     @Column(nullable = false)
     var name: String = "",
 
-    var amount: Long = 0,
+    var amount: Int = 0,
 
     var equipped: Int = 0,
 

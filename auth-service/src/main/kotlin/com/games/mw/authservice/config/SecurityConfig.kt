@@ -35,8 +35,8 @@ open class SecurityConfig(
             .csrf { csrf -> csrf.disable() }
             .authorizeHttpRequests { authorizeRequests ->
                 authorizeRequests
+                    .requestMatchers("/auth/account").hasAnyRole("ADMIN", "USER")
                     .requestMatchers("/auth/**").permitAll()
-                    .requestMatchers("/test/protected").hasRole("ADMIN")
                     .anyRequest().authenticated()
             }
             .headers { headers ->

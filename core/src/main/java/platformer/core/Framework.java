@@ -2,7 +2,7 @@ package platformer.core;
 
 import platformer.controller.GameSaveController;
 import platformer.controller.KeyboardController;
-import platformer.database.bridge.Database;
+import platformer.bridge.Connector;
 import platformer.model.BoardItem;
 import platformer.serialization.GameSerializer;
 import platformer.serialization.Serializer;
@@ -20,7 +20,7 @@ public class Framework {
     private Game game;
     private LauncherPrompt launcherPrompt;
     private KeyboardController keyboardController;
-    private Database database;
+    private Connector connector;
     private Serializer<Account, List<Account>> serializer;
     private Account cloud, account;
     private GameSaveController saveController;
@@ -45,7 +45,7 @@ public class Framework {
     public void init(String cheats, String name, String password) {
         this.launcherPrompt = new LauncherPrompt(name, password, cheats.equals("Yes"));
         this.keyboardController = new KeyboardController();
-        this.database = new Database(launcherPrompt);
+        this.connector = new Connector(launcherPrompt);
         this.serializer = new GameSerializer();
         initAccount();
         initLeaderboard();
@@ -54,18 +54,18 @@ public class Framework {
     }
 
     private void initAccount() {
-        this.cloud = database.getData();
+        this.cloud = connector.getData();
         this.cloud.setEnableCheats(launcherPrompt.isEnableCheats());
         this.account = new Account(cloud);
     }
 
     private void initLeaderboard() {
-        this.leaderboard = database.loadLeaderboardData();
+        this.leaderboard = connector.loadLeaderboardData();
     }
 
     // Save
     public void cloudSave() {
-        database.updateAccountData(account);
+        connector.updateAccountData(account);
         initAccount();
     }
 
