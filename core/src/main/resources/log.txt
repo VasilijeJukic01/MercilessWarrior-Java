@@ -1,0 +1,11 @@
+[WARNING]        [2023-04-28 10:42:54] Stamina cheat activated.
+[NOTIFICATION]   [2023-04-28 10:42:58] Player gives damage to enemy: 5
+[NOTIFICATION]   [2023-04-28 10:42:59] Player gives damage to enemy: 5
+[NOTIFICATION]   [2023-04-28 10:43:00] Player gives damage to enemy: 5
+[INFORMATION]    [2023-04-28 10:43:01] Damage blocked successfully!
+[INFORMATION]    [2023-04-28 10:43:01] Damage blocked successfully!
+[INFORMATION]    [2023-04-28 10:43:02] Damage blocked successfully!
+[INFORMATION]    [2023-04-28 10:43:02] Damage blocked successfully!
+[NOTIFICATION]   [2023-04-28 10:43:03] Player gives damage to enemy: 5
+[INFORMATION]    [2023-04-28 10:43:04] Player has used FLAME spell!
+[WARNING]        [2023-04-28 10:43:08] Destroying.

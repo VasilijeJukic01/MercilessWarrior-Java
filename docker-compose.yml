@@ -1,0 +1,49 @@
+version: '3'
+
+services:
+
+  db-auth:
+    image: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: mw-user-service
+    ports:
+      - "5432:5432"
+
+  db-game:
+    image: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: mw-game-service
+    ports:
+      - "5434:5432"
+
+  service-registry:
+    build: ./service-registry
+    ports:
+      - "8761:8761"
+
+  api-gateway:
+    build: ./api-gateway
+    ports:
+      - "8080:8080"
+    depends_on:
+      - service-registry
+
+  auth-service:
+    build: ./auth-service
+    ports:
+      - "8081:8081"
+    depends_on:
+      - service-registry
+      - db-auth
+
+  game-service:
+    build: ./game-service
+    ports:
+      - "8082:8082"
+    depends_on:
+      - service-registry
+      - db-game
