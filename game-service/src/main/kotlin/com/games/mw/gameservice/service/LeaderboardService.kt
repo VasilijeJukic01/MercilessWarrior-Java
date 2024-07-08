@@ -12,7 +12,7 @@ class LeaderboardService(
 ) {
 
     fun getLeaderboard(token: String): List<BoardItemDTO> {
-        val authServiceClient = webClientBuilder.baseUrl("http://localhost:8081").build()
+        val authServiceClient = webClientBuilder.baseUrl("http://auth-service:8081").build()
 
         val usernames = authServiceClient.get()
             .uri("/auth/usernames")

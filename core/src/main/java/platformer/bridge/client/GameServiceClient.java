@@ -25,8 +25,6 @@ public class GameServiceClient {
 
         int responseCode = conn.getResponseCode();
         if (responseCode == 200) {
-            int userId = Integer.parseInt(HttpRequestHandler.getResponse(conn));
-            createSettingsForUser(userId);
             Logger.getInstance().notify("Account creation successful!", Message.INFORMATION);
             return 0;
         }
@@ -38,16 +36,6 @@ public class GameServiceClient {
             Logger.getInstance().notify("Account creation failed, unknown error!", Message.ERROR);
             return 1;
         }
-    }
-
-    public void createSettingsForUser(int userId) throws IOException {
-        String url = API_GATEWAY_URL + "/settings/empty/" + userId;
-        HttpURLConnection conn = HttpRequestHandler.createPostConnection(url, "application/json");
-
-        int responseCode = conn.getResponseCode();
-
-        if (responseCode != 200) Logger.getInstance().notify("Account settings initialization failed!", Message.ERROR);
-        else Logger.getInstance().notify("Account settings initialization successful!", Message.INFORMATION);
     }
 
     public AccountDataDTO loadAccountData(String username, String password) throws IOException {
@@ -104,6 +92,8 @@ public class GameServiceClient {
     public void updateAccountData(AccountDataDTO accountDataDTO) throws IOException {
         String url = API_GATEWAY_URL + "/game/account";
         HttpURLConnection conn = HttpRequestHandler.createPutConnection(url, "application/json");
+
+        conn.setRequestProperty("Authorization", "Bearer " + TokenStorage.getToken());
 
         String jsonInputString = gson.toJson(accountDataDTO);
         HttpRequestHandler.sendJsonPayload(conn, jsonInputString);

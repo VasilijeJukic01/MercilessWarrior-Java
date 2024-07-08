@@ -2,6 +2,7 @@ package com.games.mw.gameservice.service
 
 import com.games.mw.gameservice.model.Item
 import com.games.mw.gameservice.model.Perk
+import com.games.mw.gameservice.model.Settings
 import com.games.mw.gameservice.requests.AccountDataDTO
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
@@ -16,7 +17,7 @@ class GameService(
 ) {
 
     fun getAccountData(username: String, token: String): AccountDataDTO {
-        val authServiceClient = webClientBuilder.baseUrl("http://localhost:8081").build()
+        val authServiceClient = webClientBuilder.baseUrl("http://auth-service:8081").build()
 
         val userId = authServiceClient.get()
             .uri("/auth/account/$username")
@@ -25,14 +26,18 @@ class GameService(
             .bodyToMono(Long::class.java)
             .block()
 
-        val settings = settingsService.getSettingsByUserId(userId!!)
-        val items = itemService.getItemsBySettingsId(settings?.id!!)
-        val perks = perkService.getPerksBySettingsId(settings.id)
+        var settings = settingsService.getSettingsByUserId(userId!!)
+        if (settings == null) {
+            settings = settingsService.insertSettings(Settings(userId = userId))
+        }
+
+        val items = itemService.getItemsBySettingsId(settings.id!!)
+        val perks = perkService.getPerksBySettingsId(settings.id!!)
 
         return AccountDataDTO(
             username,
             userId,
-            settings.id,
+            settings.id!!,
             settings.spawnId,
             settings.coins,
             settings.tokens,

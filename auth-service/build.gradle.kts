@@ -10,7 +10,7 @@ version = "0.0.1-SNAPSHOT"
 
 java {
 	toolchain {
-		languageVersion = JavaLanguageVersion.of(17)
+		languageVersion.set(JavaLanguageVersion.of(17))
 	}
 }
 
@@ -55,11 +55,4 @@ dependencies {
 
 tasks.withType<Test> {
 	useJUnitPlatform()
-}
-
-tasks.withType<Jar> {
-	manifest {
-		attributes["Main-Class"] = "com.games.mw.authservice.AuthServiceApplicationKt"
-	}
-	archiveFileName.set("${project.name}-${project.version}.jar")
 }
