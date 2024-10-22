@@ -1,0 +1,24 @@
+[
+  {
+    "name": "Kill Skeletons",
+    "description": "Kill 5 skeletons",
+    "goal": 5,
+    "itemRewards": {
+      "IRON": 5
+    },
+    "coinReward": 10,
+    "expReward": 100,
+    "levelRequirement": 1
+  },
+  {
+    "name": "Kill Ghouls",
+    "description": "Kill 5 skeletons",
+    "goal": 5,
+    "itemRewards": {
+      "WRAITH_ESSENCE": 5
+    },
+    "coinReward": 20,
+    "expReward": 150,
+    "levelRequirement": 1
+  }
+]

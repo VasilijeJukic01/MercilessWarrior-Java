@@ -15,6 +15,7 @@ import platformer.model.gameObjects.ObjectManager;
 import platformer.model.levels.LevelManager;
 import platformer.model.perks.PerksBonus;
 import platformer.model.perks.PerksManager;
+import platformer.model.quests.QuestManager;
 import platformer.model.spells.SpellManager;
 import platformer.ui.dialogue.DialogueManager;
 import platformer.ui.overlays.OverlayManager;
@@ -48,6 +49,7 @@ public class GameState extends AbstractState implements State {
     private EnemyManager enemyManager;
     private SpellManager spellManager;
     private PerksManager perksManager;
+    private QuestManager questManager;
     private OverlayManager overlayManager;
     private DialogueManager dialogueManager;
     private LightManager lightManager;
@@ -89,6 +91,7 @@ public class GameState extends AbstractState implements State {
         this.spellManager = new SpellManager(this);
         this.dialogueManager = new DialogueManager(this);
         this.lightManager = new LightManager(this);
+        this.questManager = new QuestManager(enemyManager);
     }
 
     private void initPlayer() {

@@ -110,6 +110,7 @@ public class GameStateController {
         initAction(releaseActions, "Fireball", () -> player.getActionHandler().doFireBall());
         initAction(releaseActions, "Interact", this::interact);
         initAction(releaseActions, "Inventory", this::openInventory);
+        initAction(releaseActions, "Quest", this::openQuests);
     }
 
     // Mouse
@@ -207,6 +208,10 @@ public class GameStateController {
         gameState.setOverlay(PlayingState.INVENTORY);
     }
 
+    private void openQuests() {
+        gameState.setOverlay(PlayingState.QUEST);
+    }
+
     private void showHitBox() {
         if (!Framework.getInstance().getAccount().isEnableCheats()) return;
         DebugSettings.getInstance().setDebugMode(!DebugSettings.getInstance().isDebugMode());
@@ -240,6 +245,7 @@ public class GameStateController {
                 PlayingState.DIALOGUE,
                 PlayingState.SAVE,
                 PlayingState.INVENTORY,
+                PlayingState.QUEST,
                 PlayingState.CRAFTING,
                 PlayingState.LOOTING
         };

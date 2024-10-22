@@ -1,7 +1,7 @@
 package platformer.debug.logger;
 
-import platformer.debug.logger.observer.Publisher;
-import platformer.debug.logger.observer.Subscriber;
+import platformer.observer.Publisher;
+import platformer.observer.Subscriber;
 
 import java.util.ArrayList;
 import java.util.List;

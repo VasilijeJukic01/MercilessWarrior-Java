@@ -127,6 +127,9 @@ public final class FilePaths {
 
     public static final String PLAYER_ICON = "/images/inventory/Player.png";
 
+    // Quests
+    public static final String QUESTS_PATH = "src/main/resources/quests/quests.json";
+
     // Serialization
     public static final String SAVE_PATH = "src/main/resources/saves/";
     public static final String KEYBOARD_CONFIG_PATH = "src/main/resources/keyboard.config";

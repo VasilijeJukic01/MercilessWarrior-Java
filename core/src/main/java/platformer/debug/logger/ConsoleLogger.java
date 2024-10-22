@@ -1,6 +1,6 @@
 package platformer.debug.logger;
 
-import platformer.debug.logger.observer.Subscriber;
+import platformer.observer.Subscriber;
 
 import java.time.LocalDate;
 import java.time.LocalTime;

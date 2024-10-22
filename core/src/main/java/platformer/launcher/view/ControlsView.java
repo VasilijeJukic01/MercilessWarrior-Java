@@ -33,14 +33,14 @@ public class ControlsView extends BaseView {
     private void init() {
         initCommandComponents();
         configureTextFields();
-        super.initScene(root, 350, 650, "Controls");
+        super.initScene(root, 350, 685, "Controls");
         initRoot();
         initButtons();
         initStyles(super.getScene());
     }
 
     private void initCommandComponents() {
-        String[] commands = {"Move Left", "Move Right", "Jump", "Dash", "Attack", "Flames", "Fireball", "Shield", "Interact", "Transform", "Inventory", "Pause"};
+        String[] commands = {"Move Left", "Move Right", "Jump", "Dash", "Attack", "Flames", "Fireball", "Shield", "Interact", "Quest", "Transform", "Inventory", "Pause"};
         KeyboardConfigurator configurator = KeyboardConfigurator.getInstance();
 
         for (String command : commands) {

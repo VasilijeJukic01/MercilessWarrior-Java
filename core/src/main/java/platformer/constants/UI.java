@@ -50,6 +50,16 @@ public final class UI {
     public static final int SAVE_BTN_X = scale(375);
     public static final int SAVE_BTN_Y = scale(345);
 
+    // Quest UI
+    public static final int QUEST_SLOT_WID = scale(180);
+    public static final int QUEST_SLOT_HEI = scale(60);
+    public static final int QUEST_SLOT_X = scale(330);
+    public static final int QUEST_SLOT_Y = scale(45);
+    public static final int QUEST_SLOT_SPACING = scale(80);
+    public static final int QUEST_SLOT_CAP = 3;
+
+    public static final Color QUEST_SLOT_COLOR = new Color(20, 20, 20, 220);
+
     // Controls UI
     public static final int CONTROLS_TXT_WID = scale(180);
     public static final int CONTROLS_TXT_HEI = scale(40);

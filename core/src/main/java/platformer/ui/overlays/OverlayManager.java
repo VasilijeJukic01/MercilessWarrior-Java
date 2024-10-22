@@ -34,6 +34,7 @@ public class OverlayManager {
         this.overlays.put(PlayingState.INVENTORY, new InventoryOverlay(gameState));
         this.overlays.put(PlayingState.CRAFTING, new CraftingOverlay(gameState));
         this.overlays.put(PlayingState.LOOTING, new LootingOverlay(gameState));
+        this.overlays.put(PlayingState.QUEST, new QuestOverlay(gameState));
     }
 
     // Core
