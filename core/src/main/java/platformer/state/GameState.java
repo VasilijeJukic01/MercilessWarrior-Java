@@ -91,7 +91,7 @@ public class GameState extends AbstractState implements State {
         this.spellManager = new SpellManager(this);
         this.dialogueManager = new DialogueManager(this);
         this.lightManager = new LightManager(this);
-        this.questManager = new QuestManager(enemyManager);
+        this.questManager = new QuestManager(this);
     }
 
     private void initPlayer() {
@@ -256,6 +256,7 @@ public class GameState extends AbstractState implements State {
         else if (state == PlayingState.INVENTORY) overlayManager.update(PlayingState.INVENTORY);
         else if (state == PlayingState.CRAFTING) overlayManager.update(PlayingState.CRAFTING);
         else if (state == PlayingState.LOOTING) overlayManager.update(PlayingState.LOOTING);
+        else if (state == PlayingState.QUEST) overlayManager.update(PlayingState.QUEST);
     }
 
     @Override
@@ -337,6 +338,10 @@ public class GameState extends AbstractState implements State {
 
     public PerksManager getPerksManager() {
         return perksManager;
+    }
+
+    public QuestManager getQuestManager() {
+        return questManager;
     }
 
     public OverlayManager getOverlayManager() {

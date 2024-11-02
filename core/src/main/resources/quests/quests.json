@@ -1,7 +1,7 @@
 [
   {
     "name": "Kill Skeletons",
-    "description": "Kill 5 skeletons",
+    "description": "Kill 5 Skeletons",
     "goal": 5,
     "itemRewards": {
       "IRON": 5
@@ -12,13 +12,24 @@
   },
   {
     "name": "Kill Ghouls",
-    "description": "Kill 5 skeletons",
+    "description": "Kill 5 Ghouls",
     "goal": 5,
     "itemRewards": {
       "WRAITH_ESSENCE": 5
     },
     "coinReward": 20,
     "expReward": 150,
+    "levelRequirement": 1
+  },
+  {
+    "name": "Upgrade Sword",
+    "description": "Buy sword upgrade",
+    "goal": 1,
+    "itemRewards": {
+      "IRON": 10
+    },
+    "coinReward": 50,
+    "expReward": 200,
     "levelRequirement": 1
   }
 ]

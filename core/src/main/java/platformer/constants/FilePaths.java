@@ -96,6 +96,7 @@ public final class FilePaths {
     public static final String BOARD_TXT = "/images/buttons/BoardText.png";
     public static final String INVENTORY_TXT = "/images/buttons/InventoryText.png";
     public static final String CRAFTING_TXT = "/images/buttons/CraftingText.png";
+    public static final String QUESTS_TXT = "/images/buttons/QuestsText.png";
 
     public static final String ORANGE_GLOW = "/images/particles/orangeGlow.png";
     public static final String WHITE_GLOW = "/images/particles/whiteGlow.png";

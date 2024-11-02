@@ -52,11 +52,19 @@ public final class UI {
 
     // Quest UI
     public static final int QUEST_SLOT_WID = scale(180);
-    public static final int QUEST_SLOT_HEI = scale(60);
+    public static final int QUEST_SLOT_HEI = scale(50);
     public static final int QUEST_SLOT_X = scale(330);
     public static final int QUEST_SLOT_Y = scale(45);
     public static final int QUEST_SLOT_SPACING = scale(80);
     public static final int QUEST_SLOT_CAP = 3;
+
+    public static final int QUEST_TXT_WID = scale(180);
+    public static final int QUEST_TXT_HEI = scale(40);
+    public static final int QUEST_TEXT_X = scale(330);
+    public static final int QUEST_TEXT_Y = scale(65);
+
+    public static final int QUEST_BTN_X = scale(385);
+    public static final int QUEST_BTN_Y = scale(350);
 
     public static final Color QUEST_SLOT_COLOR = new Color(20, 20, 20, 220);
 

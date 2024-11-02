@@ -381,6 +381,7 @@ public final class Constants {
     public static final int FONT_BIG = scale(20);
     public static final int FONT_DIALOGUE = scale(12);
     public static final int FONT_MEDIUM = scale(10);
+    public static final int FONT_LIGHT = scale(8);
     public static final int FONT_SMALL = scale(7);
     public static final int SHOP_SLOT_MAX_ROW = 4, SHOP_SLOT_MAX_COL = 5;
     public static final int PERK_SLOT_MAX_ROW = 4, PERK_SLOT_MAX_COL = 7;
