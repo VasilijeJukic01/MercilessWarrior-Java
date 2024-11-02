@@ -17,7 +17,8 @@ public class Quest {
     private String name;
     private String description;
     private int goal;
-    private Map<ItemType, Integer> itemReward;
+    private int progress;
+    private Map<ItemType, Integer> itemRewards;
     private int coinReward;
     private int expReward;
     private int levelRequirement;
@@ -25,8 +26,13 @@ public class Quest {
     private boolean completed = false;
 
     public void progress() {
-        goal--;
-        if (goal == 0) completed = true;
+        progress++;
+        if (progress == goal) completed = true;
+    }
+
+    public void reset() {
+        progress = 0;
+        completed = false;
     }
 
 }

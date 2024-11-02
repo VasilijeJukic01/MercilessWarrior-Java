@@ -5,28 +5,32 @@ import com.google.gson.reflect.TypeToken;
 import lombok.Getter;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
-import platformer.model.entities.enemies.EnemyManager;
 import platformer.model.inventory.ItemType;
 import platformer.observer.Subscriber;
+import platformer.state.GameState;
+import platformer.ui.QuestSlot;
 
 import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.Type;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 import static platformer.constants.FilePaths.QUESTS_PATH;
+import static platformer.constants.UI.*;
 
 @Getter
 public class QuestManager implements Subscriber {
 
-    private List<Quest> quests;
+    private final GameState gameState;
 
-    public QuestManager(EnemyManager enemyManager) {
+    private List<Quest> quests;
+    private List<QuestSlot> slots;
+
+    public QuestManager(GameState gameState) {
+        this.gameState = gameState;
         loadQuests(QUESTS_PATH);
-        enemyManager.addSubscriber(this);
+        initSlots();
+        gameState.getEnemyManager().addSubscriber(this);
     }
 
     public void loadQuests(String filePath) {
@@ -42,9 +46,17 @@ public class QuestManager implements Subscriber {
         }
     }
 
+    private void initSlots() {
+        this.slots = new ArrayList<>();
+        for (int i = 1; i <= QUEST_SLOT_CAP; i++) {
+            slots.add(new QuestSlot(quests.get(i-1), QUEST_SLOT_X, QUEST_SLOT_Y + i * QUEST_SLOT_SPACING));
+        }
+    }
+
     // Accept Events
     @Override
-    public <T> void update(T... o) {
+    @SafeVarargs
+    public final <T> void update(T... o) {
         if (o[0].equals("Kill Skeletons")) {
             Optional<Quest> q = quests.stream()
                     .filter(quest -> quest.getName().equals("Kill Skeletons"))
@@ -52,13 +64,15 @@ public class QuestManager implements Subscriber {
             if (!q.isPresent()) return;
             q.get().progress();
             if (q.get().isCompleted()) {
+                completeQuest(q.get());
                 Logger.getInstance().notify("Quest Completed: " + q.get().getName(), Message.INFORMATION);
             }
         }
     }
 
-    public void rewardPlayer(Quest quest) {
-        //TODO: Implement reward system
+    public void completeQuest(Quest quest) {
+        gameState.getPlayer().getInventory().completeQuestFill(quest.getItemRewards());
+        quest.reset();
     }
 
     // Custom Deserializer for ItemType Map
