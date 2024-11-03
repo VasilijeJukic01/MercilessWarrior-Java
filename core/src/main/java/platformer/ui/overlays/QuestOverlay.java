@@ -18,6 +18,10 @@ import static platformer.constants.Constants.SMALL_BTN_WID;
 import static platformer.constants.FilePaths.QUESTS_TXT;
 import static platformer.constants.UI.*;
 
+/**
+ * QuestOverlay class is an overlay that is displayed when the player opens the quest log.
+ * It allows the player to interact with their quests.
+ */
 public class QuestOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
 
     private final GameState gameState;

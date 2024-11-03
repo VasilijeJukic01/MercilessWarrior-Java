@@ -1,4 +1,4 @@
-package platformer.audio;
+package platformer.audio.types;
 
 import platformer.utils.ValueEnum;
 

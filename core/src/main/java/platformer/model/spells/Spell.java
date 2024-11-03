@@ -1,7 +1,7 @@
 package platformer.model.spells;
 
 import platformer.audio.Audio;
-import platformer.audio.Sound;
+import platformer.audio.types.Sound;
 import platformer.debug.Debug;
 import platformer.debug.DebugSettings;
 import platformer.model.Renderable;

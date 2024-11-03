@@ -1,7 +1,7 @@
 package platformer.ui.overlays;
 
 import platformer.audio.Audio;
-import platformer.audio.Song;
+import platformer.audio.types.Song;
 import platformer.core.Game;
 import platformer.state.GameState;
 import platformer.ui.AudioOptions;

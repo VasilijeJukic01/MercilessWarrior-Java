@@ -2,8 +2,8 @@ package platformer.model.entities.enemies.boss;
 
 import platformer.animation.Anim;
 import platformer.audio.Audio;
-import platformer.audio.Song;
-import platformer.audio.Sound;
+import platformer.audio.types.Song;
+import platformer.audio.types.Sound;
 import platformer.model.entities.Cooldown;
 import platformer.model.entities.Direction;
 import platformer.model.entities.enemies.Enemy;

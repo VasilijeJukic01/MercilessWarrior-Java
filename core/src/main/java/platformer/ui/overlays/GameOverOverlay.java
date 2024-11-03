@@ -1,7 +1,7 @@
 package platformer.ui.overlays;
 
 import platformer.audio.Audio;
-import platformer.audio.Song;
+import platformer.audio.types.Song;
 import platformer.core.Game;
 import platformer.ui.buttons.AbstractButton;
 import platformer.ui.buttons.ButtonType;

@@ -11,6 +11,10 @@ import java.awt.*;
 
 import static platformer.constants.Constants.*;
 
+/**
+ * Manages the player's data (health, stamina, experience, coins, and tokens).
+ * Handles loading player data from the account and updating the user interface.
+ */
 public class PlayerDataManager {
 
     private final Player player;

@@ -7,6 +7,9 @@ import java.awt.*;
 import static platformer.constants.Constants.*;
 import static platformer.constants.UI.*;
 
+/**
+ * The QuestSlot class represents a slot in the quest log where a player's quests are stored.
+ */
 public class QuestSlot {
 
     private Quest quest;
@@ -48,6 +51,7 @@ public class QuestSlot {
         return (x >= xPos && x <= xPos + QUEST_SLOT_WID && y >= yPos && y <= yPos + QUEST_SLOT_HEI);
     }
 
+    // Getters and Setters
     public void setSelected(boolean selected) {
         this.selected = selected;
     }

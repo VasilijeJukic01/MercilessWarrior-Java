@@ -1,7 +1,7 @@
 package platformer.ui.overlays;
 
 import platformer.audio.Audio;
-import platformer.audio.Sound;
+import platformer.audio.types.Sound;
 import platformer.model.perks.Perk;
 import platformer.state.GameState;
 import platformer.ui.buttons.ButtonType;

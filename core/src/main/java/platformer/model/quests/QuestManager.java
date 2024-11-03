@@ -18,6 +18,9 @@ import java.util.*;
 import static platformer.constants.FilePaths.QUESTS_PATH;
 import static platformer.constants.UI.*;
 
+/**
+ * Manages the quests in the game, loading quests from a file, initializing quest slots.
+ */
 @Getter
 public class QuestManager implements Subscriber {
 
@@ -53,7 +56,12 @@ public class QuestManager implements Subscriber {
         }
     }
 
-    // Accept Events
+    /**
+     * Updates the quest progress based on game events.
+     * <p>
+     * @param o the event parameters
+     * @param <T> the type of the event parameters
+     */
     @Override
     @SafeVarargs
     public final <T> void update(T... o) {

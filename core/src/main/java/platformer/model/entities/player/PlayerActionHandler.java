@@ -1,7 +1,7 @@
 package platformer.model.entities.player;
 
 import platformer.audio.Audio;
-import platformer.audio.Sound;
+import platformer.audio.types.Sound;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
 import platformer.model.entities.Cooldown;
@@ -14,6 +14,9 @@ import java.awt.geom.Rectangle2D;
 
 import static platformer.constants.Constants.*;
 
+/**
+ * Handles player actions and object interaction.
+ */
 public class PlayerActionHandler {
 
     private final Player player;

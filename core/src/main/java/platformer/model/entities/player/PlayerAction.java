@@ -1,5 +1,8 @@
 package platformer.model.entities.player;
 
+/**
+ * Possible actions that player can perform.
+ */
 public enum PlayerAction {
     LEFT,
     RIGHT,

@@ -2,7 +2,7 @@ package platformer.model.gameObjects;
 
 import platformer.animation.Animation;
 import platformer.audio.Audio;
-import platformer.audio.Sound;
+import platformer.audio.types.Sound;
 import platformer.model.entities.Direction;
 import platformer.model.entities.enemies.Enemy;
 import platformer.model.entities.enemies.boss.SpearWoman;

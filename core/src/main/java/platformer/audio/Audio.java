@@ -1,5 +1,9 @@
 package platformer.audio;
 
+import platformer.audio.types.Ambience;
+import platformer.audio.types.Song;
+import platformer.audio.types.Sound;
+
 /**
  * Singleton class that is responsible for creating an instance of the AudioPlayer.
  * The AudioPlayer is responsible for playing the audio in the game.

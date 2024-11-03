@@ -3,7 +3,7 @@ package platformer.model.entities.player;
 import platformer.animation.Anim;
 import platformer.animation.Animation;
 import platformer.audio.Audio;
-import platformer.audio.Sound;
+import platformer.audio.types.Sound;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
 import platformer.model.entities.AttackState;
