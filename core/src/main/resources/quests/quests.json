@@ -1,6 +1,8 @@
 [
   {
     "name": "Kill Skeletons",
+    "type": "REPEATABLE",
+    "id": -1,
     "description": "Kill 5 Skeletons",
     "goal": 5,
     "itemRewards": {
@@ -12,6 +14,8 @@
   },
   {
     "name": "Kill Ghouls",
+    "type": "REPEATABLE",
+    "id": -1,
     "description": "Kill 5 Ghouls",
     "goal": 5,
     "itemRewards": {
@@ -22,8 +26,36 @@
     "levelRequirement": 1
   },
   {
+    "name": "Break Crates",
+    "type": "REPEATABLE",
+    "id": -1,
+    "description": "Break 5 Crates",
+    "goal": 5,
+    "itemRewards": {
+      "SONIC_QUARTZ": 3
+    },
+    "coinReward": 20,
+    "expReward": 150,
+    "levelRequirement": 1
+  },
+  {
     "name": "Upgrade Sword",
+    "type": "PROGRESSIVE",
+    "id": 1000,
     "description": "Buy sword upgrade",
+    "goal": 1,
+    "itemRewards": {
+      "IRON": 10
+    },
+    "coinReward": 50,
+    "expReward": 200,
+    "levelRequirement": 1
+  },
+  {
+    "name": "Buy Armor",
+    "type": "PROGRESSIVE",
+    "id": 2000,
+    "description": "Buy armor",
     "goal": 1,
     "itemRewards": {
       "IRON": 10

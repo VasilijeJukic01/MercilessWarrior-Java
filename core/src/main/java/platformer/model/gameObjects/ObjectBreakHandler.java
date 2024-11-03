@@ -12,6 +12,7 @@ import platformer.model.spells.Flame;
 import java.awt.geom.Rectangle2D;
 import java.util.List;
 import java.util.Random;
+import java.util.function.Consumer;
 
 /**
  * Class that handles breaking of objects.
@@ -29,13 +30,17 @@ public class ObjectBreakHandler {
      *
      * @param attackBox The attack box.
      * @param flame The flame.
+     * @param notify The observer notification method.
      */
-    public void checkObjectBreak(Rectangle2D.Double attackBox, Flame flame) {
+    public void checkObjectBreak(Rectangle2D.Double attackBox, Flame flame, Consumer<String> notify) {
         for (Container container : getObjects(Container.class)) {
             if (!container.isAlive() || container.animate) continue;
 
             boolean isFlame = flame.getHitBox().intersects(container.getHitBox()) && flame.isActive();
-            if (attackBox.intersects(container.getHitBox()) || isFlame) breakContainer(container);
+            if (attackBox.intersects(container.getHitBox()) || isFlame) {
+                notify.accept("Break Crates");
+                breakContainer(container);
+            }
         }
     }
 

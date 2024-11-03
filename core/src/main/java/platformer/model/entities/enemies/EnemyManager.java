@@ -41,7 +41,7 @@ public class EnemyManager implements Publisher {
 
     private final GameState gameState;
 
-    BufferedImage[][] skeletonAnimations, ghoulAnimations, knightAnimations, wraithAnimations, spearWomanAnimations;
+    private BufferedImage[][] skeletonAnimations, ghoulAnimations, knightAnimations, wraithAnimations, spearWomanAnimations;
 
     private Map<EnemyType, List<Enemy>> enemies = new HashMap<>();
     private final Map<Class<? extends Enemy>, EnemyRenderer<? extends Enemy>> enemyRenderers = new HashMap<>();
@@ -150,8 +150,13 @@ public class EnemyManager implements Publisher {
             gameState.getObjectManager().generateLoot(e);
             player.changeStamina(rand.nextInt(5));
             player.changeExp(rand.nextInt(50)+100);
-            if (e.getEnemyType() == EnemyType.SKELETON) notify("Kill Skeletons");
+            checkForEvent(e);
         }
+    }
+
+    private void checkForEvent(Enemy e) {
+        if (e.getEnemyType() == EnemyType.SKELETON) notify("Kill Skeletons");
+        else if (e.getEnemyType() == EnemyType.GHOUL) notify("Kill Ghouls");
     }
 
     private double[] damage(Player player) {

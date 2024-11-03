@@ -7,6 +7,7 @@ import lombok.Setter;
 import platformer.model.inventory.ItemType;
 
 import java.util.Map;
+import java.util.Objects;
 
 @Getter
 @Setter
@@ -15,6 +16,8 @@ import java.util.Map;
 public class Quest {
 
     private String name;
+    private int id;
+    private QuestType type;
     private String description;
     private int goal;
     private int progress;
@@ -35,4 +38,26 @@ public class Quest {
         completed = false;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Quest quest = (Quest) o;
+        return id == quest.id &&
+                goal == quest.goal &&
+                progress == quest.progress &&
+                coinReward == quest.coinReward &&
+                expReward == quest.expReward &&
+                levelRequirement == quest.levelRequirement &&
+                completed == quest.completed &&
+                Objects.equals(name, quest.name) &&
+                type == quest.type &&
+                Objects.equals(description, quest.description) &&
+                Objects.equals(itemRewards, quest.itemRewards);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, id, type, description, goal, progress, itemRewards, coinReward, expReward, levelRequirement, completed);
+    }
 }

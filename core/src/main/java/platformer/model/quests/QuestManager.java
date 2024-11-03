@@ -14,19 +14,19 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static platformer.constants.FilePaths.QUESTS_PATH;
 import static platformer.constants.UI.*;
 
-/**
- * Manages the quests in the game, loading quests from a file, initializing quest slots.
- */
 @Getter
 public class QuestManager implements Subscriber {
 
     private final GameState gameState;
 
     private List<Quest> quests;
+    private List<Quest> progressiveQuests, repeatableQuests;
+
     private List<QuestSlot> slots;
 
     public QuestManager(GameState gameState) {
@@ -34,16 +34,25 @@ public class QuestManager implements Subscriber {
         loadQuests(QUESTS_PATH);
         initSlots();
         gameState.getEnemyManager().addSubscriber(this);
+        gameState.getObjectManager().addSubscriber(this);
     }
 
     public void loadQuests(String filePath) {
         GsonBuilder gsonBuilder = new GsonBuilder();
         gsonBuilder.registerTypeAdapter(new TypeToken<Map<ItemType, Integer>>() {}.getType(), new ItemTypeMapDeserializer());
+        gsonBuilder.registerTypeAdapter(QuestType.class, new QuestTypeDeserializer());
         Gson gson = gsonBuilder.create();
 
         try (FileReader reader = new FileReader(filePath)) {
             Type questListType = new TypeToken<List<Quest>>() {}.getType();
             quests = gson.fromJson(reader, questListType);
+            progressiveQuests = quests.stream()
+                    .filter(quest -> quest.getType() == QuestType.PROGRESSIVE)
+                    .sorted(Comparator.comparingInt(Quest::getId))
+                    .collect(Collectors.toList());
+            repeatableQuests = quests.stream()
+                    .filter(quest -> quest.getType() == QuestType.REPEATABLE)
+                    .collect(Collectors.toList());
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -51,39 +60,88 @@ public class QuestManager implements Subscriber {
 
     private void initSlots() {
         this.slots = new ArrayList<>();
-        for (int i = 1; i <= QUEST_SLOT_CAP; i++) {
-            slots.add(new QuestSlot(quests.get(i-1), QUEST_SLOT_X, QUEST_SLOT_Y + i * QUEST_SLOT_SPACING));
+
+        repeatableQuests.forEach(q -> System.out.println(q.getName()));
+
+        if (!repeatableQuests.isEmpty()) {
+            Quest randomRepeatableQuest = repeatableQuests.get(new Random().nextInt(repeatableQuests.size()));
+            slots.add(new QuestSlot(randomRepeatableQuest, QUEST_SLOT_X, QUEST_SLOT_Y + QUEST_SLOT_SPACING));
+        }
+
+        for (int i = 0; i < QUEST_SLOT_CAP-1 && i < progressiveQuests.size(); i++) {
+            slots.add(new QuestSlot(progressiveQuests.get(i), QUEST_SLOT_X, QUEST_SLOT_Y + (i + 2) * QUEST_SLOT_SPACING));
         }
     }
 
-    /**
-     * Updates the quest progress based on game events.
-     * <p>
-     * @param o the event parameters
-     * @param <T> the type of the event parameters
-     */
     @Override
     @SafeVarargs
     public final <T> void update(T... o) {
-        if (o[0].equals("Kill Skeletons")) {
-            Optional<Quest> q = quests.stream()
-                    .filter(quest -> quest.getName().equals("Kill Skeletons"))
-                    .findFirst();
-            if (!q.isPresent()) return;
-            q.get().progress();
-            if (q.get().isCompleted()) {
-                completeQuest(q.get());
-                Logger.getInstance().notify("Quest Completed: " + q.get().getName(), Message.INFORMATION);
+        System.out.println("QuestManager update");
+        if (o[0] instanceof String) {
+            String event = (String) o[0];
+            switch (event) {
+                case "Kill Skeletons":
+                    updateQuestProgress("Kill Skeletons");
+                    break;
+                case "Kill Ghouls":
+                    updateQuestProgress("Kill Ghouls");
+                    break;
+                case "Break Crates":
+                    updateQuestProgress("Break Crates");
+                    break;
+                default: break;
             }
+        }
+    }
+
+    private void updateQuestProgress(String questName) {
+        Optional<Quest> quest = quests.stream()
+                .filter(q -> q.getName().equals(questName))
+                .findFirst();
+        if (!quest.isPresent()) return;
+        quest.get().progress();
+        Logger.getInstance().notify("Quest Progress: " + quest.get().getName(), Message.INFORMATION);
+        if (quest.get().isCompleted()) {
+            completeQuest(quest.get());
+            Logger.getInstance().notify("Quest Completed: " + quest.get().getName(), Message.INFORMATION);
         }
     }
 
     public void completeQuest(Quest quest) {
         gameState.getPlayer().getInventory().completeQuestFill(quest.getItemRewards());
-        quest.reset();
+        switchQuest(quest);
     }
 
-    // Custom Deserializer for ItemType Map
+    private void switchQuest(Quest quest) {
+        Quest newQuest = findNextQuest(quest);
+
+        if (newQuest != null) {
+            slots.stream()
+                    .filter(slot -> slot.getQuest().equals(quest))
+                    .findFirst()
+                    .ifPresent(slot -> slot.setQuest(newQuest));
+        }
+    }
+
+    private Quest findNextQuest(Quest quest) {
+        if (quest.getType() == QuestType.REPEATABLE) {
+            quest.reset();
+            quest.setProgress(0);
+            return repeatableQuests.stream()
+                    .filter(q -> !q.equals(quest))
+                    .findAny()
+                    .orElse(null);
+        }
+        else if (quest.getType() == QuestType.PROGRESSIVE) {
+            return progressiveQuests.stream()
+                    .filter(q -> q.getId() == quest.getId() + 1)
+                    .findFirst()
+                    .orElse(null);
+        }
+        return null;
+    }
+
+    // Deserializers
     private static class ItemTypeMapDeserializer implements JsonDeserializer<Map<ItemType, Integer>> {
         @Override
         public Map<ItemType, Integer> deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
@@ -97,6 +155,13 @@ public class QuestManager implements Subscriber {
             }
 
             return itemMap;
+        }
+    }
+
+    private static class QuestTypeDeserializer implements JsonDeserializer<QuestType> {
+        @Override
+        public QuestType deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+            return QuestType.valueOf(json.getAsString().toUpperCase());
         }
     }
 }

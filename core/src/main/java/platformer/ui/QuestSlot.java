@@ -40,7 +40,6 @@ public class QuestSlot {
             g.setFont(new Font("Arial", Font.PLAIN, FONT_DIALOGUE));
             g.drawString(quest.getDescription(), xPos + (int)(SCALE * 10), yPos + (int)(SCALE * 19));
             g.setFont(new Font("Arial", Font.PLAIN, FONT_LIGHT));
-            System.out.println((quest.getProgress() / (double) quest.getGoal()) * 100);
             g.drawString("Progress: " + (quest.getProgress() / (double) quest.getGoal()) * 100 + "%", xPos + (int)(SCALE * 115), yPos + (int)(SCALE * 37));
             quest.getItemRewards()
                     .forEach((item, amount) -> g.drawString("Reward: "+amount+"x "+item.getName(), xPos + (int)(SCALE * 10), yPos + (int)(SCALE * 37)));
@@ -62,5 +61,9 @@ public class QuestSlot {
 
     public void setQuest(Quest quest) {
         this.quest = quest;
+    }
+
+    public Quest getQuest() {
+        return quest;
     }
 }
