@@ -10,7 +10,8 @@
     },
     "coinReward": 10,
     "expReward": 100,
-    "levelRequirement": 1
+    "levelRequirement": 1,
+    "parentId": null
   },
   {
     "name": "Kill Ghouls",
@@ -23,7 +24,8 @@
     },
     "coinReward": 20,
     "expReward": 150,
-    "levelRequirement": 1
+    "levelRequirement": 1,
+    "parentId": null
   },
   {
     "name": "Break Crates",
@@ -36,12 +38,13 @@
     },
     "coinReward": 20,
     "expReward": 150,
-    "levelRequirement": 1
+    "levelRequirement": 1,
+    "parentId": null
   },
   {
     "name": "Upgrade Sword",
     "type": "PROGRESSIVE",
-    "id": 1000,
+    "id": 1,
     "description": "Buy sword upgrade",
     "goal": 1,
     "itemRewards": {
@@ -49,12 +52,13 @@
     },
     "coinReward": 50,
     "expReward": 200,
-    "levelRequirement": 1
+    "levelRequirement": 1,
+    "parentId": null
   },
   {
     "name": "Buy Armor",
     "type": "PROGRESSIVE",
-    "id": 2000,
+    "id": 2,
     "description": "Buy armor",
     "goal": 1,
     "itemRewards": {
@@ -62,6 +66,21 @@
     },
     "coinReward": 50,
     "expReward": 200,
-    "levelRequirement": 1
+    "levelRequirement": 1,
+    "parentId": 1
+  },
+  {
+    "name": "Kill Lancer",
+    "type": "PROGRESSIVE",
+    "id": 3,
+    "description": "Kill Lancer",
+    "goal": 1,
+    "itemRewards": {
+      "ELECTRICITE": 1
+    },
+    "coinReward": 500,
+    "expReward": 1000,
+    "levelRequirement": 1,
+    "parentId": null
   }
 ]

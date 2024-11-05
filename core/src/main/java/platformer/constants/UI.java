@@ -63,8 +63,11 @@ public final class UI {
     public static final int QUEST_TEXT_X = scale(330);
     public static final int QUEST_TEXT_Y = scale(65);
 
-    public static final int QUEST_BTN_X = scale(385);
+    public static final int QUEST_BTN_X = scale(388);
     public static final int QUEST_BTN_Y = scale(350);
+
+    public static final int QUEST_BTN_PREV_X = scale(330);
+    public static final int QUEST_BTN_NEXT_X = scale(485);
 
     public static final Color QUEST_SLOT_COLOR = new Color(20, 20, 20, 220);
     public static final Color QUEST_SLOT_REPEATABLE_COLOR = new Color(20, 70, 68, 220);

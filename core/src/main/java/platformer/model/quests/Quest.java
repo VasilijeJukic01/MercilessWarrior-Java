@@ -17,6 +17,7 @@ public class Quest {
 
     private String name;
     private int id;
+    private int parentId;
     private QuestType type;
     private String description;
     private int goal;
@@ -44,6 +45,7 @@ public class Quest {
         if (o == null || getClass() != o.getClass()) return false;
         Quest quest = (Quest) o;
         return id == quest.id &&
+                parentId == quest.parentId &&
                 goal == quest.goal &&
                 progress == quest.progress &&
                 coinReward == quest.coinReward &&
@@ -58,6 +60,6 @@ public class Quest {
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, id, type, description, goal, progress, itemRewards, coinReward, expReward, levelRequirement, completed);
+        return Objects.hash(name, id, parentId, type, description, goal, progress, itemRewards, coinReward, expReward, levelRequirement, completed);
     }
 }

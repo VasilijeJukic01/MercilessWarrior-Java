@@ -1,6 +1,7 @@
 package platformer.ui;
 
 import platformer.model.quests.Quest;
+import platformer.model.quests.QuestType;
 
 import java.awt.*;
 
@@ -23,7 +24,7 @@ public class QuestSlot {
     }
 
     public void render(Graphics g) {
-        g.setColor(QUEST_SLOT_COLOR);
+        g.setColor(quest.getType() == QuestType.PROGRESSIVE ? QUEST_SLOT_COLOR : QUEST_SLOT_REPEATABLE_COLOR);
         g.fillRect(xPos, yPos, QUEST_SLOT_WID, QUEST_SLOT_HEI);
 
         renderQuestInfo(g);
@@ -46,7 +47,11 @@ public class QuestSlot {
         }
     }
 
-    public boolean isPointInSlot(int x, int y) {
+    public void checkSelected(int x, int y) {
+        this.selected = isPointInSlot(x, y);
+    }
+
+    private boolean isPointInSlot(int x, int y) {
         return (x >= xPos && x <= xPos + QUEST_SLOT_WID && y >= yPos && y <= yPos + QUEST_SLOT_HEI);
     }
 

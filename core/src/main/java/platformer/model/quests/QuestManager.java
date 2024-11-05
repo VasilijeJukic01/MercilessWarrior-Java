@@ -24,6 +24,7 @@ public class QuestManager implements Subscriber {
 
     private final GameState gameState;
 
+    // TODO: Logic for quest slots and quest progression
     private List<Quest> quests;
     private List<Quest> progressiveQuests, repeatableQuests;
 
@@ -61,22 +62,21 @@ public class QuestManager implements Subscriber {
     private void initSlots() {
         this.slots = new ArrayList<>();
 
-        repeatableQuests.forEach(q -> System.out.println(q.getName()));
-
         if (!repeatableQuests.isEmpty()) {
             Quest randomRepeatableQuest = repeatableQuests.get(new Random().nextInt(repeatableQuests.size()));
             slots.add(new QuestSlot(randomRepeatableQuest, QUEST_SLOT_X, QUEST_SLOT_Y + QUEST_SLOT_SPACING));
         }
 
-        for (int i = 0; i < QUEST_SLOT_CAP-1 && i < progressiveQuests.size(); i++) {
-            slots.add(new QuestSlot(progressiveQuests.get(i), QUEST_SLOT_X, QUEST_SLOT_Y + (i + 2) * QUEST_SLOT_SPACING));
+        int k = 2;
+        for (int i = 0; i < progressiveQuests.size(); i++, k++) {
+            slots.add(new QuestSlot(progressiveQuests.get(i), QUEST_SLOT_X, QUEST_SLOT_Y + k * QUEST_SLOT_SPACING));
+            if (k == 3) k = 0;
         }
     }
 
     @Override
     @SafeVarargs
     public final <T> void update(T... o) {
-        System.out.println("QuestManager update");
         if (o[0] instanceof String) {
             String event = (String) o[0];
             switch (event) {
