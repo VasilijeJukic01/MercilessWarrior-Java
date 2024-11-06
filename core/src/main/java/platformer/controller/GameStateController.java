@@ -12,6 +12,7 @@ import platformer.model.gameObjects.GameObject;
 import platformer.model.gameObjects.npc.Npc;
 import platformer.state.GameState;
 import platformer.state.PlayingState;
+import platformer.ui.dialogue.Dialogue;
 
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
@@ -200,7 +201,7 @@ public class GameStateController {
             int newIndex = ((Npc) object).getDialogueIndicator();
             index = newIndex == -1 ? index : newIndex;
         }
-        List<String> dialogues = gameState.getDialogueManager().getDialogues(id).get(index);
+        List<String> dialogues = gameState.getDialogueManager().getDialogues(id).get(index).getLines();
         gameState.getDialogueManager().setDialogueObject(dialogues, object);
     }
 

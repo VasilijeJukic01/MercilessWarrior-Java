@@ -1,5 +1,7 @@
 package platformer.ui.dialogue;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import platformer.model.gameObjects.GameObject;
 import platformer.model.gameObjects.npc.Npc;
 import platformer.state.GameState;
@@ -7,22 +9,18 @@ import platformer.state.PlayingState;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.lang.reflect.Type;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static platformer.constants.FilePaths.OBJECT_DIALOGUES;
 
-/**
- * This class manages all dialogues in the game.
- * It reads dialogues from a file and stores them in a map.
- * <p>
- * The class also propagate the dialogues to the dialogue overlay and updates the dialogues.
- */
 public class DialogueManager {
 
     private final GameState gameState;
     private final DialogueOverlay overlay;
 
-    private final Map<String, List<List<String>>> dialogues;
+    private final Map<String, List<Dialogue>> dialogues;
 
     public DialogueManager(GameState gameState) {
         this.gameState = gameState;
@@ -35,48 +33,18 @@ public class DialogueManager {
         try {
             String file = Objects.requireNonNull(getClass().getResource(OBJECT_DIALOGUES)).getFile();
             BufferedReader reader = new BufferedReader(new FileReader(file));
-            String line;
-            StringBuilder content = new StringBuilder();
-
-            while ((line = reader.readLine()) != null) {
-                content.append(line).append("\n");
-            }
+            Gson gson = new Gson();
+            Type dialogueFileType = new TypeToken<DialogueFile>() {}.getType();
+            DialogueFile dialogueFile = gson.fromJson(reader, dialogueFileType);
             reader.close();
 
-            extractContent(content);
-
-        }
-        catch (Exception ignored) {}
-    }
-
-    private void extractContent(StringBuilder content) {
-        String[] objects = content.toString().split(";");
-        for (String segment : objects) {
-            String[] parts = segment.split(":");
-            String object = "";
-            for (String s : parts) {
-                if (s.contains("Object")) {
-                    object = s.substring(7).trim().replaceAll("[0-9]", "");
-                    continue;
-                }
-                String[] sentences = s.split("\n");
-                List<String> dialogues = new ArrayList<>(Arrays.asList(sentences));
-                addDialogue(dialogues, object);
+            for (Dialogue dialogue : dialogueFile.getDialogues()) {
+                String key = dialogue.getObject();
+                dialogues.putIfAbsent(key, new ArrayList<>());
+                dialogues.get(key).add(dialogue);
             }
-
-        }
-    }
-
-    private void addDialogue(List<String> dialogue, String id) {
-        if (id == null) return;
-        dialogue.remove(0);
-        if (dialogues.containsKey(id)) {
-            dialogues.get(id).add(dialogue);
-        }
-        else {
-            List<List<String>> dialogues = new ArrayList<>();
-            dialogues.add(dialogue);
-            this.dialogues.put(id, dialogues);
+        } catch (Exception ignored) {
+            System.out.println(ignored);
         }
     }
 
@@ -103,8 +71,17 @@ public class DialogueManager {
         }
     }
 
-    public List<List<String>> getDialogues(String id) {
-        return dialogues.get(id);
+    public List<Dialogue> getDialogues(String id) {
+        return dialogues.get(id).stream()
+                .filter(d -> !d.isActivated())
+                .collect(Collectors.toList());
+    }
+
+    public void setActivated(Dialogue dialogue) {
+        dialogues.get(dialogue.getObject()).stream()
+                .filter(d -> d.getId().equals(dialogue.getId()))
+                .findFirst()
+                .ifPresent(d -> d.setActivated(true));
     }
 
 }

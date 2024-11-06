@@ -47,7 +47,7 @@ public final class FilePaths {
     public static final String SIR_DEJANOVIC_SHEET = "/images/objs/npc/SirDejanovicSprite.png";
 
     // Dialogue
-    public static final String OBJECT_DIALOGUES = "/dialogues/object_dialogues.txt";
+    public static final String OBJECT_DIALOGUES = "/dialogues/dialogues.json";
 
     // Spells
     public static final String LIGHTNING_SHEET = "/images/spells/LightningSprite.png";
