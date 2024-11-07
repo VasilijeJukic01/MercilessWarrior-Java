@@ -114,6 +114,7 @@ public class GameState extends AbstractState implements State {
         this.player.getInventory().fillItems(Framework.getInstance().getAccount().getItems());
         this.levelManager.loadSavePoint(Framework.getInstance().getAccount().getSpawn());
         this.overlayManager.reset();
+        this.questManager.reset();
         calculateLevelOffset();
     }
 
@@ -160,6 +161,7 @@ public class GameState extends AbstractState implements State {
         player.setSpawn(levelManager.getCurrentLevel().getPlayerSpawn(spawn));
         calculateLevelOffset();
         overlayManager.reset();
+        questManager.reset();
     }
 
     // Level Borders

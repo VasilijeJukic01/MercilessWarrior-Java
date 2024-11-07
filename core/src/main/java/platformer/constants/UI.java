@@ -71,6 +71,8 @@ public final class UI {
 
     public static final Color QUEST_SLOT_COLOR = new Color(20, 20, 20, 220);
     public static final Color QUEST_SLOT_REPEATABLE_COLOR = new Color(20, 70, 68, 220);
+    public static final Color QUEST_SLOT_COMPLETE = new Color(22, 70, 20, 220);
+
 
     // Controls UI
     public static final int CONTROLS_TXT_WID = scale(180);

@@ -81,7 +81,7 @@ public class DialogueManager {
         dialogues.get(dialogue.getObject()).stream()
                 .filter(d -> d.getId().equals(dialogue.getId()))
                 .findFirst()
-                .ifPresent(d -> d.setActivated(true));
+                .ifPresent(Dialogue::setActivated);
     }
 
 }

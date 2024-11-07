@@ -9,23 +9,31 @@ import platformer.model.inventory.Inventory;
 import platformer.model.inventory.InventoryItem;
 import platformer.model.inventory.ItemType;
 import platformer.model.inventory.ShopItem;
+import platformer.model.quests.QuestManager;
+import platformer.observer.Publisher;
+import platformer.observer.Subscriber;
 import platformer.utils.Utils;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 
 import static platformer.constants.Constants.*;
 
-public class Shop extends GameObject {
+@SuppressWarnings("unchecked")
+public class Shop extends GameObject implements Publisher {
+
+    private final List<Subscriber> subscribers;
 
     private boolean active;
     private final ArrayList<ShopItem> shopItems;
 
     public Shop(ObjType objType, int xPos, int yPos) {
         super(objType, xPos, yPos);
+        this.subscribers = new ArrayList<>();
         this.shopItems = new ArrayList<>();
         generateHitBox();
         initItems();
@@ -102,6 +110,8 @@ public class Shop extends GameObject {
                 .filter(inventoryItem -> inventoryItem.getItemType() == item)
                 .findFirst();
 
+        if (item == ItemType.ARMOR_WARRIOR) notify("Buy Armor");
+
         if (existingItem.isPresent()) existingItem.get().addAmount(1);
         else inventory.getBackpack().add(new InventoryItem(item, getImageModel(item), 1));
     }
@@ -166,4 +176,22 @@ public class Shop extends GameObject {
         return Utils.getInstance().importImage(type.getImg(), -1, -1);
     }
 
+    @Override
+    public void addSubscriber(Subscriber s) {
+        this.subscribers.add(s);
+    }
+
+    @Override
+    public void removeSubscriber(Subscriber s) {
+        this.subscribers.remove(s);
+    }
+
+    @Override
+    public <T> void notify(T... o) {
+        System.out.println(subscribers);
+        subscribers.stream()
+                .filter(s -> s instanceof QuestManager)
+                .findFirst()
+                .ifPresent(s -> s.update(o[0]));
+    }
 }

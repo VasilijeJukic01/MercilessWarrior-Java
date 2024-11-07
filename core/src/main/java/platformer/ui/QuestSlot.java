@@ -1,5 +1,7 @@
 package platformer.ui;
 
+import lombok.Getter;
+import lombok.Setter;
 import platformer.model.quests.Quest;
 import platformer.model.quests.QuestType;
 
@@ -11,10 +13,12 @@ import static platformer.constants.UI.*;
 /**
  * The QuestSlot class represents a slot in the quest log where a player's quests are stored.
  */
+@Getter
+@Setter
 public class QuestSlot {
 
     private Quest quest;
-    private final int xPos, yPos;
+    private int xPos, yPos;
     private boolean selected;
 
     public QuestSlot(Quest quest, int xPos, int yPos) {
@@ -25,6 +29,7 @@ public class QuestSlot {
 
     public void render(Graphics g) {
         g.setColor(quest.getType() == QuestType.PROGRESSIVE ? QUEST_SLOT_COLOR : QUEST_SLOT_REPEATABLE_COLOR);
+        if (quest.isCompleted()) g.setColor(QUEST_SLOT_COMPLETE);
         g.fillRect(xPos, yPos, QUEST_SLOT_WID, QUEST_SLOT_HEI);
 
         renderQuestInfo(g);
@@ -53,22 +58,5 @@ public class QuestSlot {
 
     private boolean isPointInSlot(int x, int y) {
         return (x >= xPos && x <= xPos + QUEST_SLOT_WID && y >= yPos && y <= yPos + QUEST_SLOT_HEI);
-    }
-
-    // Getters and Setters
-    public void setSelected(boolean selected) {
-        this.selected = selected;
-    }
-
-    public boolean isSelected() {
-        return selected;
-    }
-
-    public void setQuest(Quest quest) {
-        this.quest = quest;
-    }
-
-    public Quest getQuest() {
-        return quest;
     }
 }

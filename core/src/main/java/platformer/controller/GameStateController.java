@@ -201,7 +201,9 @@ public class GameStateController {
             int newIndex = ((Npc) object).getDialogueIndicator();
             index = newIndex == -1 ? index : newIndex;
         }
-        List<String> dialogues = gameState.getDialogueManager().getDialogues(id).get(index).getLines();
+        Dialogue dialogue = gameState.getDialogueManager().getDialogues(id).get(index);
+        List<String> dialogues = dialogue.getLines();
+        if (id.contains("Npc")) dialogue.setActivated();
         gameState.getDialogueManager().setDialogueObject(dialogues, object);
     }
 

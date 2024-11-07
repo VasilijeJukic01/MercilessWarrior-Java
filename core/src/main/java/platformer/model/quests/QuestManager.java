@@ -5,6 +5,7 @@ import com.google.gson.reflect.TypeToken;
 import lombok.Getter;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
+import platformer.model.gameObjects.objects.Shop;
 import platformer.model.inventory.ItemType;
 import platformer.observer.Subscriber;
 import platformer.state.GameState;
@@ -24,18 +25,24 @@ public class QuestManager implements Subscriber {
 
     private final GameState gameState;
 
-    // TODO: Logic for quest slots and quest progression
     private List<Quest> quests;
     private List<Quest> progressiveQuests, repeatableQuests;
-
     private List<QuestSlot> slots;
+
+    private final Map<String, Runnable> eventActions = new HashMap<>();
 
     public QuestManager(GameState gameState) {
         this.gameState = gameState;
         loadQuests(QUESTS_PATH);
         initSlots();
+        initObservers();
+        initEventActions();
+    }
+
+    private void initObservers() {
         gameState.getEnemyManager().addSubscriber(this);
         gameState.getObjectManager().addSubscriber(this);
+        gameState.getPerksManager().addSubscriber(this);
     }
 
     public void loadQuests(String filePath) {
@@ -61,17 +68,28 @@ public class QuestManager implements Subscriber {
 
     private void initSlots() {
         this.slots = new ArrayList<>();
+        List<Quest> availableProgressiveQuests = progressiveQuests.stream()
+                .filter(quest -> quest.getParentId() == 0)
+                .collect(Collectors.toList());
 
         if (!repeatableQuests.isEmpty()) {
             Quest randomRepeatableQuest = repeatableQuests.get(new Random().nextInt(repeatableQuests.size()));
             slots.add(new QuestSlot(randomRepeatableQuest, QUEST_SLOT_X, QUEST_SLOT_Y + QUEST_SLOT_SPACING));
         }
 
-        int k = 2;
-        for (int i = 0; i < progressiveQuests.size(); i++, k++) {
-            slots.add(new QuestSlot(progressiveQuests.get(i), QUEST_SLOT_X, QUEST_SLOT_Y + k * QUEST_SLOT_SPACING));
-            if (k == 3) k = 0;
+        int k = QUEST_SLOT_CAP - 1;
+        for (int i = 0; i < availableProgressiveQuests.size(); i++, k++) {
+            slots.add(new QuestSlot(availableProgressiveQuests.get(i), QUEST_SLOT_X, QUEST_SLOT_Y + k * QUEST_SLOT_SPACING));
+            if (k == QUEST_SLOT_CAP) k = 0;
         }
+    }
+
+    private void initEventActions() {
+        eventActions.put("Kill Skeletons", () -> updateQuestProgress("Kill Skeletons"));
+        eventActions.put("Kill Ghouls", () -> updateQuestProgress("Kill Ghouls"));
+        eventActions.put("Break Crates", () -> updateQuestProgress("Break Crates"));
+        eventActions.put("Upgrade Sword", () -> updateQuestProgress("Upgrade Sword"));
+        eventActions.put("Buy Armor", () -> updateQuestProgress("Buy Armor"));
     }
 
     @Override
@@ -79,18 +97,8 @@ public class QuestManager implements Subscriber {
     public final <T> void update(T... o) {
         if (o[0] instanceof String) {
             String event = (String) o[0];
-            switch (event) {
-                case "Kill Skeletons":
-                    updateQuestProgress("Kill Skeletons");
-                    break;
-                case "Kill Ghouls":
-                    updateQuestProgress("Kill Ghouls");
-                    break;
-                case "Break Crates":
-                    updateQuestProgress("Break Crates");
-                    break;
-                default: break;
-            }
+            Runnable action = eventActions.get(event);
+            if (action != null) action.run();
         }
     }
 
@@ -110,12 +118,17 @@ public class QuestManager implements Subscriber {
     public void completeQuest(Quest quest) {
         gameState.getPlayer().getInventory().completeQuestFill(quest.getItemRewards());
         switchQuest(quest);
+        sortAndRepositionSlots();
     }
 
     private void switchQuest(Quest quest) {
         Quest newQuest = findNextQuest(quest);
 
         if (newQuest != null) {
+            if (quest.getType() == QuestType.PROGRESSIVE) {
+                int position = slots.size() % QUEST_SLOT_CAP - 1;
+                slots.add(new QuestSlot(quest, QUEST_SLOT_X, QUEST_SLOT_Y + position * QUEST_SLOT_SPACING));
+            }
             slots.stream()
                     .filter(slot -> slot.getQuest().equals(quest))
                     .findFirst()
@@ -134,11 +147,29 @@ public class QuestManager implements Subscriber {
         }
         else if (quest.getType() == QuestType.PROGRESSIVE) {
             return progressiveQuests.stream()
-                    .filter(q -> q.getId() == quest.getId() + 1)
-                    .findFirst()
+                    .filter(q -> q.getParentId() == quest.getId())
+                    .findAny()
                     .orElse(null);
         }
         return null;
+    }
+
+    private void sortAndRepositionSlots() {
+        slots.sort(Comparator.comparing((QuestSlot slot) -> slot.getQuest().getType() == QuestType.REPEATABLE)
+                .reversed()
+                .thenComparing(slot -> slot.getQuest().isCompleted()));
+
+        int k = 1;
+        for (int i = 0; i < slots.size(); i++, k++) {
+            slots.get(i).setXPos(QUEST_SLOT_X);
+            slots.get(i).setYPos(QUEST_SLOT_Y + k * QUEST_SLOT_SPACING);
+            if (k == QUEST_SLOT_CAP) k = 0;
+        }
+    }
+
+    public void reset() {
+        gameState.getObjectManager().getObjects(Shop.class)
+                .forEach(shop -> shop.addSubscriber(this));
     }
 
     // Deserializers

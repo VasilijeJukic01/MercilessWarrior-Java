@@ -14,7 +14,7 @@ public class Dialogue {
 
     private boolean activated;
 
-    public void setActivated(boolean activated) {
-        if (once) this.activated = activated;
+    public void setActivated() {
+        if (once && !activated) this.activated = true;
     }
 }
