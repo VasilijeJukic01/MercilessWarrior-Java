@@ -109,9 +109,9 @@ public class GameState extends AbstractState implements State {
         reset();
         PerksBonus.getInstance().reset();
         this.perksManager = new PerksManager();
-        this.perksManager.loadUnlockedPerks(Framework.getInstance().getAccount().getPerks());
         this.player.getPlayerDataManager().loadPlayerData();
         this.player.getInventory().fillItems(Framework.getInstance().getAccount().getItems());
+        this.perksManager.loadUnlockedPerks(Framework.getInstance().getAccount().getPerks());
         this.levelManager.loadSavePoint(Framework.getInstance().getAccount().getSpawn());
         this.overlayManager.reset();
         this.questManager.reset();

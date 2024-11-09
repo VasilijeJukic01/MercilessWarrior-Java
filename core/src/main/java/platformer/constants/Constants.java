@@ -83,7 +83,7 @@ public final class Constants {
     public static final double PLAYER_ATTACK_CD = 0.75;
     public static final double PLAYER_BLOCK_CD = 1.2;
     public static final double PLAYER_DASH_CD = 1.75;
-    public static final double PLAYER_SPELL_CD = 1.75;
+    public static final double PLAYER_SPELL_CD = 2.5;
 
     public static final double GHOUL_ATT_CD = 10;
     public static final double GHOUL_DASH_CD = 6;

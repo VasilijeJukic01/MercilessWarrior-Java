@@ -129,7 +129,7 @@ public class Inventory {
             ItemType type = entry.getKey();
             BufferedImage img = Utils.getInstance().importImage(type.getImg(), -1, -1);
             InventoryItem item = new InventoryItem(type, img, entry.getValue());
-            backpackHandler.addItemToBackpack(item);
+            addItemToBackpack(item);
         }
 
     }

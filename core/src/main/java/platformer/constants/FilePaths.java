@@ -9,6 +9,7 @@ public final class FilePaths {
     // Player
     public static final String PLAYER_SHEET = "/images/player/playerSheet.png";
     public static final String PLAYER_TRANSFORM_SHEET = "/images/player/transformSheet.png";
+    public static final String PLAYER_ABILITY_SHEET = "/images/player/abilitiesSheet.png";
 
     // Levels
     public static final String BACKGROUND_1 = "/images/background1.jpg";
@@ -79,6 +80,7 @@ public final class FilePaths {
     public static final String MENU_LOGO = "/images/menu/menuLogo.png";
     public static final String BOSS_BAR = "/images/enemies/Bosses/BossBar.png";
     public static final String PLAYER_HUD = "/images/playerHUD.png";
+    public static final String ABILITY_HUD = "/images/abilityHUD.png";
     public static final String PLAYER_PORTRAIT = "/images/portraitHUD.png";
     public static final String PAUSE_TXT = "/images/buttons/PauseText.png";
     public static final String MUSIC_TXT = "/images/buttons/MusicText.png";

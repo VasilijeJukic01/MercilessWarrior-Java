@@ -20,6 +20,9 @@ import java.util.stream.Collectors;
 import static platformer.constants.FilePaths.QUESTS_PATH;
 import static platformer.constants.UI.*;
 
+/**
+ * Manages the quests in the game.
+ */
 @Getter
 public class QuestManager implements Subscriber {
 
@@ -92,6 +95,12 @@ public class QuestManager implements Subscriber {
         eventActions.put("Buy Armor", () -> updateQuestProgress("Buy Armor"));
     }
 
+    /**
+     * Updates the quest progress based on the event.
+     *
+     * @param o The event data.
+     * @param <T> The type of the event data.
+     */
     @Override
     @SafeVarargs
     public final <T> void update(T... o) {
@@ -124,15 +133,16 @@ public class QuestManager implements Subscriber {
     private void switchQuest(Quest quest) {
         Quest newQuest = findNextQuest(quest);
 
-        if (newQuest != null) {
+        if (newQuest != null && slots.stream().noneMatch(slot -> slot.getQuest().equals(newQuest))) {
             if (quest.getType() == QuestType.PROGRESSIVE) {
                 int position = slots.size() % QUEST_SLOT_CAP - 1;
-                slots.add(new QuestSlot(quest, QUEST_SLOT_X, QUEST_SLOT_Y + position * QUEST_SLOT_SPACING));
+                slots.stream()
+                        .filter(slot -> slot.getQuest().equals(quest))
+                        .findFirst()
+                        .ifPresent(slot -> slot.setQuest(newQuest));
+                QuestSlot newSlot = new QuestSlot(quest, QUEST_SLOT_X, QUEST_SLOT_Y + position * QUEST_SLOT_SPACING);
+                if (slots.stream().noneMatch(s -> s.getQuest().equals(quest))) slots.add(newSlot);
             }
-            slots.stream()
-                    .filter(slot -> slot.getQuest().equals(quest))
-                    .findFirst()
-                    .ifPresent(slot -> slot.setQuest(newQuest));
         }
     }
 

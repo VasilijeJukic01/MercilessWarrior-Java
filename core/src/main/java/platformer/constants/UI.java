@@ -73,7 +73,6 @@ public final class UI {
     public static final Color QUEST_SLOT_REPEATABLE_COLOR = new Color(20, 70, 68, 220);
     public static final Color QUEST_SLOT_COMPLETE = new Color(22, 70, 20, 220);
 
-
     // Controls UI
     public static final int CONTROLS_TXT_WID = scale(180);
     public static final int CONTROLS_TXT_HEI = scale(40);
@@ -115,6 +114,11 @@ public final class UI {
     public static final int PORT_X = scale(18);
     public static final int PORT_Y = scale(22);
 
+    public static final int ABILITY_HUD_WID = scale(270);
+    public static final int ABILITY_HUD_HEI = scale(55);
+    public static final int ABILITY_HUD_X = scale(620);
+    public static final int ABILITY_HUD_Y = scale(0);
+
     public static final int COINS_X = scale(90);
     public static final int COINS_Y = scale(82);
     public static final int LVL_X = scale(170);
@@ -131,8 +135,10 @@ public final class UI {
     public static final int ST_HEI = scale(12);
     public static final int XP_HEI = scale(7);
 
-    public static final int COOLDOWN_TXT_X = scale(710);
-    public static final int COOLDOWN_TXT_Y = scale(10);
+    public static final int COOLDOWN_SLOT_SIZE = scale(30);
+    public static final int COOLDOWN_SLOT_Y = scale(10);
+    public static final int COOLDOWN_SLOT_X = scale(670);
+    public static final int COOLDOWN_SLOT_SPACING = scale(40);
 
     public static final int BOSS_BAR_WID = scale(500);
     public static final int BOSS_BAR_HEI = scale(50);

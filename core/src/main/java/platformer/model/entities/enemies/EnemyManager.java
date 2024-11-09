@@ -190,7 +190,7 @@ public class EnemyManager implements Publisher {
                     if (enemy.getEnemyAction() == Anim.HIDE || enemy.getEnemyAction() == Anim.REVEAL) return;
                     enemy.hit(dmg[0], true, true);
                     enemy.setCriticalHit(dmg[1] == 1);
-                    player.changeStamina(new Random().nextInt(5) + 7);
+                    player.changeStamina(new Random().nextInt(3) + 1);
                     checkEnemyDying(enemy, player);
                     writeHitLog(enemy.getEnemyAction(), dmg[0]);
                     player.addAction(PlayerAction.DASH_HIT);
