@@ -109,25 +109,4 @@ public class Account {
         stopGameTimer();
         this.playtime = 0;
     }
-
-    @Override
-    public String toString() {
-        return "Account{" +
-                "name='" + name + '\'' +
-                ", password='" + password + '\'' +
-                ", accountID=" + accountID +
-                ", settingsID=" + settingsID +
-                ", spawn=" + spawn +
-                ", coins=" + coins +
-                ", tokens=" + tokens +
-                ", level=" + level +
-                ", exp=" + exp +
-                ", perks=" + perks +
-                ", items=" + items +
-                ", lastTimeSaved='" + lastTimeSaved + '\'' +
-                ", playtime=" + playtime +
-                ", timer=" + timer +
-                ", enableCheats=" + enableCheats +
-                '}';
-    }
 }

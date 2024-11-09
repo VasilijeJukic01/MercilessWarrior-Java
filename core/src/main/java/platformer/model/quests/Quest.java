@@ -30,6 +30,7 @@ public class Quest {
     private boolean completed = false;
 
     public void progress() {
+        if (completed) return;
         progress++;
         if (progress == goal) completed = true;
     }

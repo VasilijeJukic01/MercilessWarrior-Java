@@ -9,10 +9,8 @@ import platformer.model.entities.AttackState;
 import platformer.model.entities.player.Player;
 import platformer.model.entities.player.PlayerAction;
 import platformer.model.gameObjects.GameObject;
-import platformer.model.gameObjects.npc.Npc;
 import platformer.state.GameState;
 import platformer.state.PlayingState;
-import platformer.ui.dialogue.Dialogue;
 
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
@@ -193,18 +191,8 @@ public class GameStateController {
     }
 
     private void activateDialogue(String id) {
-        gameState.setOverlay(PlayingState.DIALOGUE);
-        Random random = new Random();
-        int index = random.nextInt(gameState.getDialogueManager().getDialogues(id).size());
         GameObject object = gameState.getObjectManager().getIntersection();
-        if (object instanceof Npc) {
-            int newIndex = ((Npc) object).getDialogueIndicator();
-            index = newIndex == -1 ? index : newIndex;
-        }
-        Dialogue dialogue = gameState.getDialogueManager().getDialogues(id).get(index);
-        List<String> dialogues = dialogue.getLines();
-        if (id.contains("Npc")) dialogue.setActivated();
-        gameState.getDialogueManager().setDialogueObject(dialogues, object);
+        gameState.getDialogueManager().activateDialogue(id, object);
     }
 
     private void openInventory() {

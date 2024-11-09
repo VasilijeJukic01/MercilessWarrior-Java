@@ -51,7 +51,7 @@ public class GameServiceClient {
         if (authResponseCode == 200) {
             AuthenticationResponse authResponse = gson.fromJson(HttpRequestHandler.getResponse(authConn), AuthenticationResponse.class);
             token = authResponse.getJwt();
-            TokenStorage.setToken(token);
+            TokenStorage.getInstance().setToken(token);
             Logger.getInstance().notify("Login successful!", Message.INFORMATION);
         }
         else {
@@ -75,7 +75,7 @@ public class GameServiceClient {
 
     public List<BoardItemDTO> loadLeaderboardData() throws IOException {
         String url = API_GATEWAY_URL + "/leaderboard";
-        HttpURLConnection conn = HttpRequestHandler.createGetConnection(url, TokenStorage.getToken());
+        HttpURLConnection conn = HttpRequestHandler.createGetConnection(url, TokenStorage.getInstance().getToken());
 
         int responseCode = conn.getResponseCode();
         if (responseCode == 200) {
@@ -93,7 +93,7 @@ public class GameServiceClient {
         String url = API_GATEWAY_URL + "/game/account";
         HttpURLConnection conn = HttpRequestHandler.createPutConnection(url, "application/json");
 
-        conn.setRequestProperty("Authorization", "Bearer " + TokenStorage.getToken());
+        conn.setRequestProperty("Authorization", "Bearer " + TokenStorage.getInstance().getToken());
 
         String jsonInputString = gson.toJson(accountDataDTO);
         HttpRequestHandler.sendJsonPayload(conn, jsonInputString);

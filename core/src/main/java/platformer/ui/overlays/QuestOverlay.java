@@ -157,7 +157,15 @@ public class QuestOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
 
     @Override
     public void keyPressed(KeyEvent e) {
-
+        switch (e.getKeyCode()) {
+            case KeyEvent.VK_LEFT:
+                if (currentPage > 0) currentPage--;
+                break;
+            case KeyEvent.VK_RIGHT:
+                if ((currentPage + 1) * QUEST_SLOT_CAP < gameState.getQuestManager().getQuests().size()) currentPage++;
+                break;
+            default: break;
+        }
     }
 
     private void renderButtons(Graphics g) {

@@ -5,13 +5,19 @@ import platformer.controller.KeyboardController;
 import platformer.core.Framework;
 import platformer.model.entities.Cooldown;
 import platformer.model.entities.player.Player;
+import platformer.utils.Utils;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
 import static platformer.constants.Constants.FONT_MEDIUM;
+import static platformer.constants.Constants.SCALE;
 import static platformer.constants.UI.COOLDOWN_SLOT_SIZE;
 
+/**
+ * Represents a slot in the HUD for displaying an ability's icon and its cooldown status.
+ * It handles rendering the ability icon, cooldown overlay, and associated key bindings.
+ */
 @Getter
 public class AbilitySlot {
 
@@ -21,7 +27,7 @@ public class AbilitySlot {
     private double maxCooldown = 0;
 
     public AbilitySlot(BufferedImage image, Cooldown cooldownType, int xPos, int yPos) {
-        this.image = image;
+        this.image = Utils.getInstance().resizeImage(image, COOLDOWN_SLOT_SIZE, COOLDOWN_SLOT_SIZE);
         this.cooldownType = cooldownType;
         this.xPos = xPos;
         this.yPos = yPos;
@@ -45,7 +51,7 @@ public class AbilitySlot {
             int arcAngle = (int) (360 * cooldownPercentage);
             g.setColor(new Color(0, 0, 0, 150));
             g.setClip(xPos, yPos, COOLDOWN_SLOT_SIZE, COOLDOWN_SLOT_SIZE);
-            g.fillArc(xPos - 20, yPos - 20, 110, 110, 90, -arcAngle);
+            g.fillArc(xPos - (int)(10 * SCALE), yPos - (int)(10 * SCALE), (int)(55 * SCALE), (int)(55 * SCALE), 90, -arcAngle);
             g.setClip(null);
         }
         else maxCooldown = 0;

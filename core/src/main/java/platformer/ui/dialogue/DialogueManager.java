@@ -2,6 +2,8 @@ package platformer.ui.dialogue;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import platformer.debug.logger.Logger;
+import platformer.debug.logger.Message;
 import platformer.model.gameObjects.GameObject;
 import platformer.model.gameObjects.npc.Npc;
 import platformer.state.GameState;
@@ -15,6 +17,10 @@ import java.util.stream.Collectors;
 
 import static platformer.constants.FilePaths.OBJECT_DIALOGUES;
 
+/**
+ * This class is responsible for managing dialogues in the game.
+ * It reads dialogue data, activates dialogues for game objects, and updates the dialogue state.
+ */
 public class DialogueManager {
 
     private final GameState gameState;
@@ -44,14 +50,38 @@ public class DialogueManager {
                 dialogues.get(key).add(dialogue);
             }
         } catch (Exception ignored) {
-            System.out.println(ignored);
+            Logger.getInstance().notify("Reading dialogue file failed!", Message.ERROR);
         }
     }
 
-    public void setDialogueObject(List<String> dialogues, GameObject object) {
+    /**
+     * Activates a dialogue for the specified game object.
+     *
+     * @param id the dialogue ID
+     * @param object the game object
+     */
+    public void activateDialogue(String id, GameObject object) {
+        gameState.setOverlay(PlayingState.DIALOGUE);
+        Random random = new Random();
+        int index = random.nextInt(getDialogues(id).size());
+        if (object instanceof Npc) {
+            int newIndex = ((Npc) object).getDialogueIndicator();
+            index = newIndex == -1 ? index : newIndex;
+        }
+        Dialogue dialogue = getDialogues(id).get(index);
+        List<String> dialogues = dialogue.getLines();
+        dialogue.setActivated();
+        setDialogueObject(dialogues, object);
+    }
+
+    private void setDialogueObject(List<String> dialogues, GameObject object) {
         overlay.setDialogues(dialogues, object);
     }
 
+    /**
+     * Updates the dialogue state.
+     * If the dialogue is finished, it sets the appropriate overlay based on the intersecting object.
+     */
     public void updateDialogue() {
         if(!overlay.next()) {
             if (Objects.equals(gameState.getObjectManager().getIntersectingObject(), "Blacksmith"))
@@ -71,17 +101,10 @@ public class DialogueManager {
         }
     }
 
-    public List<Dialogue> getDialogues(String id) {
+    private List<Dialogue> getDialogues(String id) {
         return dialogues.get(id).stream()
                 .filter(d -> !d.isActivated())
                 .collect(Collectors.toList());
-    }
-
-    public void setActivated(Dialogue dialogue) {
-        dialogues.get(dialogue.getObject()).stream()
-                .filter(d -> d.getId().equals(dialogue.getId()))
-                .findFirst()
-                .ifPresent(Dialogue::setActivated);
     }
 
 }

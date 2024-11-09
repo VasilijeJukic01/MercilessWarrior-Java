@@ -10,6 +10,8 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 
+import static platformer.constants.AnimConstants.ABILITY_SLOT_H;
+import static platformer.constants.AnimConstants.ABILITY_SLOT_W;
 import static platformer.constants.Constants.*;
 import static platformer.constants.FilePaths.*;
 import static platformer.constants.UI.*;
@@ -51,10 +53,10 @@ public class UserInterface {
 
     private void loadAbilities() {
         BufferedImage sheet = Utils.getInstance().importImage(PLAYER_ABILITY_SHEET,240,60);
-        this.abilities.add(new AbilitySlot(sheet.getSubimage(0, 0, 60, 60), Cooldown.ATTACK, COOLDOWN_SLOT_X, COOLDOWN_SLOT_Y));
-        this.abilities.add(new AbilitySlot(sheet.getSubimage(60, 0, 60, 60), Cooldown.BLOCK, COOLDOWN_SLOT_X + COOLDOWN_SLOT_SPACING, COOLDOWN_SLOT_Y));
-        this.abilities.add(new AbilitySlot(sheet.getSubimage(120, 0, 60, 60), Cooldown.DASH, COOLDOWN_SLOT_X + 2 * COOLDOWN_SLOT_SPACING, COOLDOWN_SLOT_Y));
-        this.abilities.add(new AbilitySlot(sheet.getSubimage(180, 0, 60, 60), Cooldown.SPELL, COOLDOWN_SLOT_X + 3 * COOLDOWN_SLOT_SPACING, COOLDOWN_SLOT_Y));
+        this.abilities.add(new AbilitySlot(sheet.getSubimage(0, 0, ABILITY_SLOT_W, ABILITY_SLOT_H), Cooldown.ATTACK, COOLDOWN_SLOT_X, COOLDOWN_SLOT_Y));
+        this.abilities.add(new AbilitySlot(sheet.getSubimage(ABILITY_SLOT_W, 0, ABILITY_SLOT_W, ABILITY_SLOT_H), Cooldown.BLOCK, COOLDOWN_SLOT_X + COOLDOWN_SLOT_SPACING, COOLDOWN_SLOT_Y));
+        this.abilities.add(new AbilitySlot(sheet.getSubimage(2*ABILITY_SLOT_W, 0, ABILITY_SLOT_W, ABILITY_SLOT_H), Cooldown.DASH, COOLDOWN_SLOT_X + 2 * COOLDOWN_SLOT_SPACING, COOLDOWN_SLOT_Y));
+        this.abilities.add(new AbilitySlot(sheet.getSubimage(3*ABILITY_SLOT_W, 0, ABILITY_SLOT_W, ABILITY_SLOT_H), Cooldown.SPELL, COOLDOWN_SLOT_X + 3 * COOLDOWN_SLOT_SPACING, COOLDOWN_SLOT_Y));
     }
 
     private void updateBars(double currentHealth, double maxHealth, double currentStamina, double maxStamina, double currentExp, double expCap) {
