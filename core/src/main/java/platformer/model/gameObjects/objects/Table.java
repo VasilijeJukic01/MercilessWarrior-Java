@@ -9,6 +9,7 @@ import platformer.utils.Utils;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import static platformer.constants.Constants.*;
@@ -33,8 +34,8 @@ public class Table extends GameObject {
     }
 
     private void initCraftingItems() {
-        recipes.put(createItem(ItemType.ARMOR_GUARDIAN), new HashMap<>(Map.of(ItemType.IRON, 3, ItemType.SONIC_QUARTZ, 1, ItemType.ELECTRICITE, 1)));
-        recipes.put(createItem(ItemType.RING_AMETHYST), new HashMap<>(Map.of(ItemType.COPPER, 4, ItemType.AMETHYST, 3)));
+        recipes.put(createItem(ItemType.ARMOR_GUARDIAN), new LinkedHashMap<>(Map.of(ItemType.IRON, 3, ItemType.SONIC_QUARTZ, 1, ItemType.ELECTRICITE, 1)));
+        recipes.put(createItem(ItemType.RING_AMETHYST), new LinkedHashMap<>(Map.of(ItemType.COPPER, 4, ItemType.AMETHYST, 3)));
     }
 
     private InventoryItem createItem(ItemType type) {

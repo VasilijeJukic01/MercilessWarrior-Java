@@ -117,6 +117,16 @@ public class ShopOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
         g2d.setStroke(new BasicStroke(1));
         g2d.draw(buyPanel);
         g2d.draw(sellPanel);
+
+        g2d.setFont(new Font("Arial", Font.BOLD, FONT_MEDIUM));
+        g2d.setColor(Color.WHITE);
+        g2d.drawString("Merchant", (int) buyPanel.getX(), (int) buyPanel.getY() - 10);
+        g2d.drawString("Backpack", (int) sellPanel.getX(), (int) sellPanel.getY() - 10);
+
+        int buyPageNumber = buySelectedSlot + 1;
+        g2d.drawString("Page: " + buyPageNumber, (int) (buyPanel.getX() + buyPanel.getWidth() - 40 * SCALE), (int) buyPanel.getY() - 10);
+        int sellPageNumber = sellSelectedSlot + 1;
+        g2d.drawString("Page: " + sellPageNumber, (int) (sellPanel.getX() + sellPanel.getWidth() - 40 * SCALE), (int) sellPanel.getY() - 10);
     }
 
     private void renderButtons(Graphics g) {
@@ -170,10 +180,15 @@ public class ShopOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
     private void renderText(Graphics g, AbstractItem item, int slot, boolean isInventory) {
         if ((buySlotNumber == slot) && !isSelling && !isInventory) {
             g.drawString("Value: "+item.getCost(), COST_TEXT_X, COST_TEXT_Y);
+            int totalCoins = gameState.getPlayer().getCoins();
+            g.drawString("Coins: " + totalCoins, POCKET_TEXT_X, COST_TEXT_Y);
             renderItemDescription(g, item.getItemType());
+
         }
         else if ((sellSlotNumber == slot) && isSelling && isInventory) {
             g.drawString("Value: "+item.getItemType().getSellValue(), COST_TEXT_X, COST_TEXT_Y);
+            int totalCoins = gameState.getPlayer().getCoins();
+            g.drawString("Coins: " + totalCoins, POCKET_TEXT_X, COST_TEXT_Y);
             renderItemDescription(g, item.getItemType());
         }
     }
@@ -278,16 +293,16 @@ public class ShopOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
 
     private void prevBackpackSlot(SmallButton button) {
         if (button == smallButtons[0])
-            this.buySelectedSlot = Math.max(buySelectedSlot -1, 0);
+            this.buySelectedSlot = Math.max(buySelectedSlot-1, 0);
         else if (button == smallButtons[2])
-            this.sellSelectedSlot = Math.max(sellSelectedSlot -1, 0);
+            this.sellSelectedSlot = Math.max(sellSelectedSlot-1, 0);
     }
 
     private void nextBackpackSlot(SmallButton button) {
         if (button == smallButtons[1])
-            this.buySelectedSlot = Math.min(buySelectedSlot +1, 5);
+            this.buySelectedSlot = Math.min(buySelectedSlot+1, SHOP_SLOT_CAP);
         else if (button == smallButtons[3])
-            this.sellSelectedSlot = Math.min(sellSelectedSlot +1, 5);
+            this.sellSelectedSlot = Math.min(sellSelectedSlot+1, SHOP_SLOT_CAP);
     }
 
     @Override

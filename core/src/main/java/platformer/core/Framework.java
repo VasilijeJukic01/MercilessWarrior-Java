@@ -73,6 +73,10 @@ public class Framework {
         serializer.serialize(account, slot);
     }
 
+    public void localDelete(int slot) {
+        serializer.delete(slot);
+    }
+
     public List<Account> getAllSaves() {
         return serializer.deserialize();
     }

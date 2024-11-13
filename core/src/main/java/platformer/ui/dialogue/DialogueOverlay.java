@@ -30,7 +30,8 @@ public class DialogueOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
     private int dialogueIndex = 0;
     private int currentLetterIndex = 0;
     private final int animSpeed = 8;
-    private int animTick;
+    private int animTick, arrowAnimTick;
+    private final int arrowAnimSpeed = 20;
 
     private String visibleText = "";
     private boolean changeText = true;
@@ -78,6 +79,7 @@ public class DialogueOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
     public void update() {
         if (dialogues == null || dialogues.isEmpty()) return;
         animTick++;
+        arrowAnimTick++;
         if (animTick >= animSpeed) {
             animTick = 0;
             if (currentLetterIndex < dialogues.get(dialogueIndex).length()) {
@@ -136,7 +138,8 @@ public class DialogueOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
     private void renderArrow(Graphics g) {
         int xPos = DIALOGUE_BOX_X + DIALOGUE_BOX_WID - (int)(20 * SCALE);
         int yPos = DIALOGUE_Y + DIALOGUE_BOX_HEI - (int)(30 * SCALE);
-        g.drawString("▼", xPos, yPos);
+        int bounce = (int) (Math.sin(arrowAnimTick / (double) arrowAnimSpeed) * 5);
+        g.drawString("▼", xPos, yPos + bounce);
     }
 
     private void renderContinueText(Graphics g) {

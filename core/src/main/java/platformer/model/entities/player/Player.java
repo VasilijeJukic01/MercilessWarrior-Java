@@ -457,7 +457,7 @@ public class Player extends Entity {
     public void changeStamina(double value) {
         currentStamina += value;
         double staminaCap = PLAYER_MAX_ST + PerksBonus.getInstance().getBonusPower();
-        double equipmentBonus = InventoryBonus.getInstance().getHealth() * staminaCap;
+        double equipmentBonus = InventoryBonus.getInstance().getStamina() * staminaCap;
         staminaCap += equipmentBonus;
         currentStamina = Math.max(Math.min(currentStamina, staminaCap), 0);
         if (currentStamina == 0) {

@@ -17,7 +17,6 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
 import static platformer.constants.Constants.CRE_BTN_SIZE;
 import static platformer.constants.Constants.FONT_MEDIUM;
@@ -28,6 +27,7 @@ import static platformer.constants.UI.*;
  * State of the game when the player is viewing the controls.
  * It includes displaying the controls to the user and handling user interactions within this state.
  */
+// TODO: Implement more pages for controls
 public class ControlsState extends AbstractState implements State {
 
     private final KeyboardController kc;
@@ -71,18 +71,26 @@ public class ControlsState extends AbstractState implements State {
     }
 
     private void renderTexts(Graphics g) {
-        g.setColor(Color.WHITE);
         g.setFont(new Font("Arial", Font.BOLD, FONT_MEDIUM));
 
         Map<String, String> commands = createCommands();
 
         AtomicInteger i = new AtomicInteger();
         commands.forEach((description, command) -> {
-            String text = description + ": " + Arrays.stream(command.split("&"))
+            String[] commandParts = Arrays.stream(command.split("&"))
                     .map(String::trim)
                     .map(kc::getKeyName)
-                    .collect(Collectors.joining(" & "));
-            g.drawString(text, CTRL_ROW_TXT_X, CTRL_ROW_TXT_Y + i.get() * CTRL_TXT_Y_SPACING);
+                    .toArray(String[]::new);
+
+            String descriptionText = description + ": ";
+            String commandText = String.join(" & ", commandParts);
+
+            g.setColor(Color.WHITE);
+            g.drawString(descriptionText, CTRL_ROW_TXT_X, CTRL_ROW_TXT_Y + i.get() * CTRL_TXT_Y_SPACING);
+
+            g.setColor(Color.YELLOW);
+            g.drawString(commandText, CTRL_ROW_TXT_X + g.getFontMetrics().stringWidth(descriptionText), CTRL_ROW_TXT_Y + i.get() * CTRL_TXT_Y_SPACING);
+
             i.incrementAndGet();
         });
     }

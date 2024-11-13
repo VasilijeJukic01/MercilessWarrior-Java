@@ -19,12 +19,14 @@ public class GameSlot {
     private Account account;
     private final int xPos, yPos;
     private boolean selected;
+    private final int index;
 
-    public GameSlot(Account account, int xPos, int yPos, boolean databaseSlot) {
+    public GameSlot(Account account, int xPos, int yPos, boolean databaseSlot, int index) {
         this.account = account;
         this.xPos = xPos;
         this.yPos = yPos;
         this.databaseSlot = databaseSlot;
+        this.index = index;
     }
 
     public void render(Graphics g) {
@@ -48,7 +50,7 @@ public class GameSlot {
             g.drawString("Lvl: "+account.getLevel(), xPos + (int)(SCALE * 130), yPos + (int)(SCALE * 15));
             g.drawString("Exp: "+account.getExp(), xPos + (int)(SCALE * 130), yPos + (int)(SCALE * 30));
             g.drawString("Playtime: "+(account.getPlaytime()/3600)+"h", xPos + (int)(SCALE * 10), yPos + (int)(SCALE * 15));
-            g.drawString("Save time: "+account.getLastTimeSaved(), xPos + (int)(SCALE * 10), yPos + (int)(SCALE * 30));
+            g.drawString(account.getLastTimeSaved(), xPos + (int)(SCALE * 10), yPos + (int)(SCALE * 30));
         }
     }
 
@@ -86,4 +88,7 @@ public class GameSlot {
         this.account = account;
     }
 
+    public int getIndex() {
+        return index;
+    }
 }

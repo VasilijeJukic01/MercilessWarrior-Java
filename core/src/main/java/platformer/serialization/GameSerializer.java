@@ -41,9 +41,9 @@ public class GameSerializer implements Serializer<Account, List<Account>> {
      */
     @Override
     public void serialize(Account account, int index) {
-        String day = LocalDate.now().getDayOfWeek().toString().substring(0, 3);
-        String time = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm"));
-        account.setLastTimeSaved(day+" "+time);
+        String date = LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+        String time = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"));
+        account.setLastTimeSaved(date+" "+time);
         try {
             Gson gson = new Gson();
             String jsonCache = gson.toJson(account);
@@ -96,8 +96,20 @@ public class GameSerializer implements Serializer<Account, List<Account>> {
                     Logger.getInstance().notify("Game at "+ save +" corrupted.", Message.ERROR);
                 }
             }
+            else savedFilesData.add(null);
         }
         return savedFilesData;
+    }
+
+    @Override
+    public void delete(int index) {
+        File file = new File(SAVE_PATH + "save" + index);
+        if (file.delete()) {
+            Logger.getInstance().notify("Game at slot " + index + " deleted.", Message.NOTIFICATION);
+        }
+        else {
+            Logger.getInstance().notify("Game at slot " + index + " deletion failed.", Message.ERROR);
+        }
     }
 
 }

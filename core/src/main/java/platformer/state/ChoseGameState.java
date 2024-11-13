@@ -3,15 +3,19 @@ package platformer.state;
 import platformer.core.Framework;
 import platformer.core.Game;
 import platformer.ui.buttons.ButtonType;
-import platformer.ui.buttons.SmallButton;
+import platformer.ui.buttons.MediumButton;
 import platformer.ui.overlays.OverlayLayer;
+import platformer.utils.Utils;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
+import java.awt.image.BufferedImage;
+import java.util.Arrays;
 
-import static platformer.constants.Constants.CRE_BTN_SIZE;
+import static platformer.constants.Constants.*;
+import static platformer.constants.FilePaths.LOAD_TXT;
 import static platformer.constants.UI.*;
 
 /**
@@ -20,33 +24,40 @@ import static platformer.constants.UI.*;
  */
 public class ChoseGameState extends AbstractState implements State {
 
-    private SmallButton playBtn, exitBtn;
+    private BufferedImage loadText;
+    private final MediumButton[] buttons;
 
     public ChoseGameState(Game game) {
         super(game);
+        this.buttons = new MediumButton[3];
+        loadImages();
         loadButtons();
     }
 
     // Init
+    private void loadImages() {
+        this.loadText = Utils.getInstance().importImage(LOAD_TXT, SAVE_LOAD_TEXT_WID, SAVE_LOAD_TEXT_HEI);
+    }
+
     private void loadButtons() {
-        this.playBtn = new SmallButton(CONTINUE_BTN_X, CONTINUE_BTN_Y, CRE_BTN_SIZE, CRE_BTN_SIZE, ButtonType.CONTINUE);
-        this.exitBtn = new SmallButton(EXIT_BTN_X, EXIT_BTN_Y, CRE_BTN_SIZE, CRE_BTN_SIZE, ButtonType.EXIT);
+        buttons[0] = new MediumButton(LOAD_SAVE_BTN_X, LOAD_BTN_Y, TINY_BTN_WID, TINY_BTN_HEI, ButtonType.LOAD);
+        buttons[1] = new MediumButton(DELETE_SAVE_BTN_X, LOAD_BTN_Y, TINY_BTN_WID, TINY_BTN_HEI, ButtonType.DELETE);
+        buttons[2] = new MediumButton(CLOSE_SAVE_BTN_X, LOAD_BTN_Y, TINY_BTN_WID, TINY_BTN_HEI, ButtonType.CLOSE);
     }
 
     // Core
     @Override
     public void update() {
         OverlayLayer.getInstance().update();
-        playBtn.update();
-        exitBtn.update();
+        Arrays.stream(buttons).forEach(MediumButton::update);
     }
 
     @Override
     public void render(Graphics g) {
         OverlayLayer.getInstance().render(g);
+        g.drawImage(loadText, SAVE_LOAD_TEXT_X, SAVE_LOAD_TEXT_Y, loadText.getWidth(), loadText.getHeight(), null);
         renderSlots(g);
-        playBtn.render(g);
-        exitBtn.render(g);
+        Arrays.stream(buttons).forEach(b -> b.render(g));
     }
 
     private void renderSlots(Graphics g) {
@@ -55,17 +66,29 @@ public class ChoseGameState extends AbstractState implements State {
 
     @Override
     public void mousePressed(MouseEvent e) {
-        if (isMouseInButton(e, exitBtn)) exitBtn.setMousePressed(true);
-        else if (isMouseInButton(e, playBtn)) playBtn.setMousePressed(true);
+        Arrays.stream(buttons)
+                .filter(button -> isMouseInButton(e, button))
+                .findFirst()
+                .ifPresent(button -> button.setMousePressed(true));
     }
 
     @Override
     public void mouseReleased(MouseEvent e) {
-        if(isMouseInButton(e, exitBtn) && exitBtn.isMousePressed()) {
-            game.startMenuState();
-        }
-        else if(isMouseInButton(e, playBtn) && playBtn.isMousePressed()) {
-            Framework.getInstance().getSaveController().loadSlot();
+        for (MediumButton button : buttons) {
+            if (isMouseInButton(e, button) && button.isMousePressed()) {
+                switch (button.getButtonType()) {
+                    case LOAD:
+                        Framework.getInstance().getSaveController().loadSlot();
+                        break;
+                    case DELETE:
+                        Framework.getInstance().getSaveController().deleteSlot();
+                        break;
+                    case CLOSE:
+                        game.startMenuState();
+                        break;
+                    default: break;
+                }
+            }
         }
         Framework.getInstance().getSaveController().checkSlotSelection(e);
         reset();
@@ -73,10 +96,12 @@ public class ChoseGameState extends AbstractState implements State {
 
     @Override
     public void mouseMoved(MouseEvent e) {
-        exitBtn.setMouseOver(false);
-        playBtn.setMouseOver(false);
-        if (isMouseInButton(e, exitBtn)) exitBtn.setMouseOver(true);
-        else if (isMouseInButton(e, playBtn)) playBtn.setMouseOver(true);
+        Arrays.stream(buttons).forEach(button -> button.setMouseOver(false));
+
+        Arrays.stream(buttons)
+                .filter(button -> isMouseInButton(e, button))
+                .findFirst()
+                .ifPresent(button -> button.setMouseOver(true));
     }
 
     @Override
@@ -101,8 +126,7 @@ public class ChoseGameState extends AbstractState implements State {
 
     @Override
     public void reset() {
-        playBtn.resetMouseSet();
-        exitBtn.resetMouseSet();
+        Arrays.stream(buttons).forEach(MediumButton::resetMouseSet);
     }
 
 }

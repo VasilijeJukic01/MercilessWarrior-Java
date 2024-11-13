@@ -33,12 +33,13 @@ public class GameSaveController {
         this.gameSlots = new ArrayList<>();
         for (int i = 1; i <= GAME_SLOT_CAP; i++) {
             boolean databaseSlot = (i == 1);
-            gameSlots.add(new GameSlot(null, GAME_SLOT_X, GAME_SLOT_Y + i * GAME_SLOT_SPACING, databaseSlot));
+            gameSlots.add(new GameSlot(null, GAME_SLOT_X, GAME_SLOT_Y + i * GAME_SLOT_SPACING, databaseSlot, i));
         }
         List<Account> saves = Framework.getInstance().getAllSaves();
         gameSlots.get(0).setAccount(Framework.getInstance().getCloud());
         for (int i = 0; i < saves.size(); i++) {
-            gameSlots.get(i+1).setAccount(saves.get(i));
+            if (saves.get(i) != null)
+                gameSlots.get(i+1).setAccount(saves.get(i));
         }
     }
 
@@ -48,6 +49,17 @@ public class GameSaveController {
             if (s.isSelected()) {
                 getSlotAccountData(s);
                 game.startPlayingState();
+                return;
+            }
+        }
+    }
+
+    public void deleteSlot() {
+        for (GameSlot s : gameSlots) {
+            if (s.isSelected()) {
+                if (s.getAccount() == null) return;
+                Framework.getInstance().localDelete(s.getIndex() - 1);
+                initSlots();
                 return;
             }
         }
@@ -90,8 +102,10 @@ public class GameSaveController {
                 selectedSlot = s;
             }
         }
-        for (GameSlot s : gameSlots) {
-            if (s != selectedSlot) s.setSelected(false);
+        if (selectedSlot != null) {
+            for (GameSlot s : gameSlots) {
+                if (s != selectedSlot) s.setSelected(false);
+            }
         }
     }
 

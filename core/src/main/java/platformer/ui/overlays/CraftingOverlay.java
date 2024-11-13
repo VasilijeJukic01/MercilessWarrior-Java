@@ -144,6 +144,8 @@ public class CraftingOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
         g2d.setColor(Color.WHITE);
         g2d.setStroke(new BasicStroke(1));
         g2d.draw(craftingPanel);
+        int pageNumber = craftingSlot + 1;
+        g2d.drawString("Page: " + pageNumber, (int) (craftingPanel.getX() + craftingPanel.getWidth() - 40 * SCALE), (int) craftingPanel.getY() - 10);
     }
 
     private void renderCraftingSlots(Graphics g) {
@@ -211,6 +213,14 @@ public class CraftingOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
         int lineHeight = g.getFontMetrics().getHeight();
         int y = yPos;
         for (String line : lines) {
+            if (line.startsWith("Required Resources:")) {
+                g.setColor(Color.WHITE);
+            }
+            else if (!line.isEmpty()) {
+                String itemName = line.split(":")[0];
+                ItemType itemType = ItemType.valueOf(itemName.toUpperCase().replace(" ", "_").replace("_ORE", ""));
+                g.setColor(itemType.getRarity().getColor());
+            }
             g.drawString(line, CRAFT_VAL_ITEM_DESC_X, y);
             y += lineHeight;
         }

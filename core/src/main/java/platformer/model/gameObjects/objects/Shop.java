@@ -188,7 +188,6 @@ public class Shop extends GameObject implements Publisher {
 
     @Override
     public <T> void notify(T... o) {
-        System.out.println(subscribers);
         subscribers.stream()
                 .filter(s -> s instanceof QuestManager)
                 .findFirst()

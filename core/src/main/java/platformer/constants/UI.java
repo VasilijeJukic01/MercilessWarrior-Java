@@ -37,6 +37,15 @@ public final class UI {
     public static final Color OVERLAY_SPACE_COLOR = new Color(50, 50, 50);
 
     // Load/Save Game UI
+    public static final int LOAD_SAVE_BTN_X = scale(330);
+    public static final int DELETE_SAVE_BTN_X = scale(395);
+    public static final int CLOSE_SAVE_BTN_X = scale(460);
+
+    public static final int SAVE_LOAD_TEXT_WID = scale(130);
+    public static final int SAVE_LOAD_TEXT_HEI = scale(45);
+    public static final int SAVE_LOAD_TEXT_X = scale(360);
+    public static final int SAVE_LOAD_TEXT_Y = scale(70);
+
     public static final int GAME_SLOT_WID = scale(180);
     public static final int GAME_SLOT_HEI = scale(40);
     public static final int GAME_SLOT_X = scale(330);
@@ -47,8 +56,10 @@ public final class UI {
     public static final Color DATABASE_SLOT_COLOR = new Color(20, 70, 20, 220);
     public static final Color SAVE_SLOT_COLOR = new Color(20, 20, 20, 220);
 
-    public static final int SAVE_BTN_X = scale(375);
+    public static final int SAVE_BTN_X = scale(345);
+    public static final int SAVE_CLOSE_BTN_X = scale(430);
     public static final int SAVE_BTN_Y = scale(345);
+    public static final int LOAD_BTN_Y = scale(350);
 
     // Quest UI
     public static final int QUEST_SLOT_WID = scale(180);
@@ -259,6 +270,7 @@ public final class UI {
     public static final int SHOP_SELL_SLOT_Y = scale(120);
 
     public static final int COST_TEXT_X = scale(310);
+    public static final int POCKET_TEXT_X = scale(470);
     public static final int COST_TEXT_Y = scale(150);
     public static final int SHOP_ITEM_NAME_X = scale(310);
     public static final int SHOP_ITEM_NAME_Y = scale(170);
@@ -294,6 +306,8 @@ public final class UI {
     public static final int PERK_DESC_Y = scale(275);
 
     public static final int PERK_SLOT_SPACING = scale(60);
+
+    public static final int SHOP_SLOT_CAP = 5;
 
     // Inventory UI
     public static final int INV_OVERLAY_WID = scale(705);

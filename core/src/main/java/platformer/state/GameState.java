@@ -106,7 +106,6 @@ public class GameState extends AbstractState implements State {
     }
 
     public void reloadSave() {
-        reset();
         PerksBonus.getInstance().reset();
         this.perksManager = new PerksManager();
         this.player.getPlayerDataManager().loadPlayerData();
@@ -115,6 +114,7 @@ public class GameState extends AbstractState implements State {
         this.levelManager.loadSavePoint(Framework.getInstance().getAccount().getSpawn());
         this.overlayManager.reset();
         this.questManager.reset();
+        reset();
         calculateLevelOffset();
     }
 

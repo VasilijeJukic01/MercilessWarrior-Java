@@ -15,14 +15,16 @@ public enum ButtonType {
     LEAVE,      // 11
     L_BOARD,    // 12
     SAVE,       // 13
-    NEXT,       // 14
-    PREV,       // 15
-    USE,        // 16
-    EQUIP,      // 17
-    DROP,       // 18
-    UNEQUIP,    // 19
-    TAKE,       // 20
-    TAKE_ALL,   // 21
-    CLOSE,      // 22
-    CRAFT       // 23
+    LOAD,       // 14
+    DELETE,     // 15
+    NEXT,       // 16
+    PREV,       // 17
+    USE,        // 18
+    EQUIP,      // 19
+    DROP,       // 20
+    UNEQUIP,    // 21
+    TAKE,       // 22
+    TAKE_ALL,   // 23
+    CLOSE,      // 24
+    CRAFT       // 25
 }
