@@ -31,8 +31,8 @@ public class SliderButton extends AbstractButton {
         this.buttonX = xPos+width/2;
         this.xPos = xPos;
         this.width = width;
-        this.minValue = (int)(320 * SCALE);
-        this.maxValue = (int)(525 * SCALE);
+        this.minValue = SLIDER_MIN_VALUE;
+        this.maxValue = SLIDER_MAX_VALUE;
         loadButtons();
     }
 
