@@ -10,9 +10,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.geom.RoundRectangle2D;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static platformer.constants.Constants.FONT_DIALOGUE;
 import static platformer.constants.Constants.SCALE;
@@ -40,7 +38,6 @@ public class DialogueOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
     private boolean onLastQuestion;
 
     private GameObject intersectionObject;
-    private Map<Class<? extends GameObject>, Boolean> firstTime;
 
     public DialogueOverlay() {
         init();
@@ -49,7 +46,6 @@ public class DialogueOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
     private void init() {
         this.dialogueBox = new RoundRectangle2D.Double(DIALOGUE_BOX_X, DIALOGUE_BOX_Y, DIALOGUE_BOX_WID, DIALOGUE_BOX_HEI, 25, 25);
         this.dialogues = new ArrayList<>();
-        this.firstTime = new HashMap<>();
     }
 
     @Override
@@ -78,6 +74,9 @@ public class DialogueOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
     }
 
     // Core
+    /**
+     * Updates the dialogue overlay state and handles the animation of dialogue text.
+     */
     @Override
     public void update() {
         if (dialogues == null || dialogues.isEmpty()) return;
@@ -161,7 +160,7 @@ public class DialogueOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
     // Reset
     @Override
     public void reset() {
-        dialogueIndex = findRepetitionIndex();
+        dialogueIndex = 0;
         resetAnimation();
     }
 
@@ -171,16 +170,6 @@ public class DialogueOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
     }
 
     // Helper
-    private int findRepetitionIndex() {
-        if (dialogues == null || dialogues.isEmpty()) return 0;
-        if (firstTime.get(intersectionObject.getClass()) != null && !firstTime.get(intersectionObject.getClass())) return 0;
-        if (firstTime.get(intersectionObject.getClass()) == null) return 0;
-        for (int i = 0; i < dialogues.size(); i++) {
-            if (dialogues.get(i).startsWith("~")) return i;
-        }
-        return 0;
-    }
-
     private String createCurrentText(Graphics g, String dialogue) {
         StringBuilder text = new StringBuilder();
         StringBuilder currentLine = new StringBuilder();
@@ -213,6 +202,11 @@ public class DialogueOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
         return false;
     }
 
+    /**
+     * Advances to the next dialogue.
+     *
+     * @return true if there is a next dialogue, false otherwise
+     */
     public boolean next() {
         if (dialogues == null || dialogues.isEmpty()) return false;
         if (skipLetterAnim()) return true;
@@ -233,14 +227,20 @@ public class DialogueOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
         return true;
     }
 
+    /**
+     * Sets the dialogues and intersection object.
+     *
+     * @param dialogue the dialogue
+     * @param intersectionObject the intersection object
+     */
     public void setDialogues(Dialogue dialogue, GameObject intersectionObject) {
         this.dialogues = dialogue.getLines();
         this.question = dialogue.getQuestion();
         this.intersectionObject = intersectionObject;
         reset();
-        this.firstTime.put(intersectionObject.getClass(), true);
     }
 
+    // Getters
     public Question getQuestion() {
         return question;
     }

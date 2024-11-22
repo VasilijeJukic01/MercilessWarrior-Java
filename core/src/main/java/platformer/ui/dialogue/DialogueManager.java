@@ -73,16 +73,28 @@ public class DialogueManager {
         setDialogueObject(dialogue, object);
     }
 
+    /**
+     * Sets the dialogue object in the overlay.
+     *
+     * @param dialogue the dialogue
+     * @param object the game object
+     */
     private void setDialogueObject(Dialogue dialogue, GameObject object) {
         overlay.setDialogues(dialogue, object);
     }
 
+    /**
+     * Accepts the current question in the dialogue.
+     */
     public void acceptQuestion() {
         if (overlay.getQuestion() == null || !overlay.isOnLastQuestion()) return;
         gameState.getQuestManager().startNPCQuest(overlay.getQuestion().getAnswers().get(0).getNext().replace("Quest: ", ""));
         updateDialogue("QUESTION");
     }
 
+    /**
+     * Declines the current question in the dialogue.
+     */
     public void declineQuestion() {
         if (overlay.getQuestion() == null || !overlay.isOnLastQuestion()) return;
         overlay.next();

@@ -21,13 +21,13 @@ import static platformer.constants.FilePaths.QUESTS_PATH;
 import static platformer.constants.UI.*;
 
 /**
- * Manages the quests in the game.
+ * This class manages quests in the game.
+ * It handles quest loading, initializing quest slots, updating quest progress and managing quest events.
  */
 @Getter
 public class QuestManager implements Subscriber {
 
     private final GameState gameState;
-
     private List<Quest> quests;
     private List<Quest> progressiveQuests, repeatableQuests;
     private List<QuestSlot> slots;
@@ -57,24 +57,32 @@ public class QuestManager implements Subscriber {
         try (FileReader reader = new FileReader(filePath)) {
             Type questListType = new TypeToken<List<Quest>>() {}.getType();
             quests = gson.fromJson(reader, questListType);
-            progressiveQuests = quests.stream()
-                    .filter(quest -> quest.getType() == QuestType.PROGRESSIVE)
-                    .sorted(Comparator.comparingInt(Quest::getId))
-                    .collect(Collectors.toList());
-            repeatableQuests = quests.stream()
-                    .filter(quest -> quest.getType() == QuestType.REPEATABLE)
-                    .collect(Collectors.toList());
+            progressiveQuests = filterAndSortQuests(QuestType.PROGRESSIVE);
+            repeatableQuests = filterAndSortQuests(QuestType.REPEATABLE);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
+    /**
+     * Filters and sorts quests by the specified type.
+     *
+     * @param type the quest type
+     * @return a list of filtered and sorted quests
+     */
+    private List<Quest> filterAndSortQuests(QuestType type) {
+        return quests.stream()
+                .filter(quest -> quest.getType() == type)
+                .sorted(Comparator.comparingInt(Quest::getId))
+                .collect(Collectors.toList());
+    }
+
     private void initSlots() {
         this.slots = new ArrayList<>();
         List<Quest> availableProgressiveQuests = progressiveQuests.stream()
-                .filter(quest -> quest.getParentId() == 0)
-                .filter(quest -> quest.getNpcRequest() == 0)
+                .filter(quest -> quest.getParentId() == 0 && quest.getNpcRequest() == 0)
                 .collect(Collectors.toList());
+
         if (!repeatableQuests.isEmpty()) {
             Quest randomRepeatableQuest = repeatableQuests.get(new Random().nextInt(repeatableQuests.size()));
             slots.add(new QuestSlot(randomRepeatableQuest, QUEST_SLOT_X, QUEST_SLOT_Y + QUEST_SLOT_SPACING));
@@ -98,41 +106,52 @@ public class QuestManager implements Subscriber {
     /**
      * Updates the quest progress based on the event.
      *
-     * @param o The event data.
-     * @param <T> The type of the event data.
+     * @param o the event parameters
+     * @param <T> the type of the event parameters
      */
     @Override
     @SafeVarargs
     public final <T> void update(T... o) {
         if (o[0] instanceof String) {
             String event = (String) o[0];
-            Runnable action = eventActions.get(event);
-            if (action != null) action.run();
+            Optional.ofNullable(eventActions.get(event)).ifPresent(Runnable::run);
         }
     }
 
+    /**
+     * Updates the progress of the specified quest.
+     *
+     * @param questName the name of the quest
+     */
     private void updateQuestProgress(String questName) {
-        Optional<Quest> quest = quests.stream()
-                .filter(q -> q.getName().equals(questName))
-                .findFirst();
-        if (!quest.isPresent()) return;
-        quest.get().progress();
-        Logger.getInstance().notify("Quest Progress: " + quest.get().getName(), Message.INFORMATION);
-        if (quest.get().isCompleted()) {
-            completeQuest(quest.get());
-            Logger.getInstance().notify("Quest Completed: " + quest.get().getName(), Message.INFORMATION);
-        }
+        findQuestByName(questName).ifPresent(quest -> {
+            quest.progress();
+            Logger.getInstance().notify("Quest Progress: " + quest.getName(), Message.INFORMATION);
+            if (quest.isCompleted()) {
+                completeQuest(quest);
+                Logger.getInstance().notify("Quest Completed: " + quest.getName(), Message.INFORMATION);
+            }
+        });
     }
 
+    /**
+     * Completes the specified quest and updates the quest slots.
+     *
+     * @param quest the quest to complete
+     */
     public void completeQuest(Quest quest) {
         gameState.getPlayer().getInventory().completeQuestFill(quest.getItemRewards());
         switchQuest(quest);
         sortAndRepositionSlots();
     }
 
+    /**
+     * Switches the completed quest with the next quest in the sequence.
+     *
+     * @param quest the completed quest
+     */
     private void switchQuest(Quest quest) {
         Quest newQuest = findNextQuest(quest);
-
         if (newQuest != null && slots.stream().noneMatch(slot -> slot.getQuest().equals(newQuest))) {
             if (quest.getType() == QuestType.PROGRESSIVE) {
                 int position = slots.size() % QUEST_SLOT_CAP - 1;
@@ -146,16 +165,20 @@ public class QuestManager implements Subscriber {
         }
     }
 
+    /**
+     * Finds the next quest in the sequence for the specified quest.
+     *
+     * @param quest the current quest
+     * @return the next quest, or null if no next quest is found
+     */
     private Quest findNextQuest(Quest quest) {
         if (quest.getType() == QuestType.REPEATABLE) {
             quest.reset();
-            quest.setProgress(0);
             return repeatableQuests.stream()
                     .filter(q -> !q.equals(quest))
                     .findAny()
                     .orElse(null);
-        }
-        else if (quest.getType() == QuestType.PROGRESSIVE) {
+        } else if (quest.getType() == QuestType.PROGRESSIVE) {
             return progressiveQuests.stream()
                     .filter(q -> q.getParentId() == quest.getId())
                     .findAny()
@@ -178,24 +201,23 @@ public class QuestManager implements Subscriber {
     }
 
     public void startNPCQuest(String questName) {
-        Optional<Quest> quest = quests.stream()
+        findQuestByName(questName).ifPresent(quest -> {
+            if (slots.stream().noneMatch(slot -> slot.getQuest().equals(quest))) {
+                int position = slots.size() % QUEST_SLOT_CAP - 1;
+                QuestSlot newSlot = new QuestSlot(quest, QUEST_SLOT_X, QUEST_SLOT_Y + position * QUEST_SLOT_SPACING);
+                slots.add(newSlot);
+                sortAndRepositionSlots();
+                Logger.getInstance().notify("Quest Started: " + questName, Message.INFORMATION);
+            } else {
+                Logger.getInstance().notify("Quest already started: " + questName, Message.WARNING);
+            }
+        });
+    }
+
+    private Optional<Quest> findQuestByName(String questName) {
+        return quests.stream()
                 .filter(q -> q.getName().equals(questName))
                 .findFirst();
-        if (!quest.isPresent()) {
-            Logger.getInstance().notify("Quest not found: " + questName, Message.ERROR);
-            return;
-        }
-        Quest foundQuest = quest.get();
-        if (slots.stream().noneMatch(slot -> slot.getQuest().equals(foundQuest))) {
-            int position = slots.size() % QUEST_SLOT_CAP - 1;
-            QuestSlot newSlot = new QuestSlot(foundQuest, QUEST_SLOT_X, QUEST_SLOT_Y + position * QUEST_SLOT_SPACING);
-            slots.add(newSlot);
-            sortAndRepositionSlots();
-            Logger.getInstance().notify("Quest Started: " + questName, Message.INFORMATION);
-        }
-        else {
-            Logger.getInstance().notify("Quest already started: " + questName, Message.WARNING);
-        }
     }
 
     public void reset() {
@@ -203,7 +225,9 @@ public class QuestManager implements Subscriber {
                 .forEach(shop -> shop.addSubscriber(this));
     }
 
-    // Deserializers
+    /**
+     * Custom deserializer for ItemType map.
+     */
     private static class ItemTypeMapDeserializer implements JsonDeserializer<Map<ItemType, Integer>> {
         @Override
         public Map<ItemType, Integer> deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
@@ -220,6 +244,9 @@ public class QuestManager implements Subscriber {
         }
     }
 
+    /**
+     * Custom deserializer for QuestType.
+     */
     private static class QuestTypeDeserializer implements JsonDeserializer<QuestType> {
         @Override
         public QuestType deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {

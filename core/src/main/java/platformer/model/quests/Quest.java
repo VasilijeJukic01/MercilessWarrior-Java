@@ -29,6 +29,9 @@ public class Quest {
 
     private boolean completed = false;
 
+    /**
+     * Progresses the quest by one step.
+     */
     public void progress() {
         if (completed) return;
         progress++;
