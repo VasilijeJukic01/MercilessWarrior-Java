@@ -2,6 +2,7 @@ package platformer.ui.dialogue;
 
 import platformer.model.gameObjects.GameObject;
 import platformer.model.gameObjects.npc.Npc;
+import platformer.ui.dialogue.question.Question;
 import platformer.ui.overlays.Overlay;
 
 import java.awt.*;
@@ -27,6 +28,7 @@ public class DialogueOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
 
     private RoundRectangle2D dialogueBox;
     private List<String> dialogues;
+    private Question question;
     private int dialogueIndex = 0;
     private int currentLetterIndex = 0;
     private final int animSpeed = 8;
@@ -35,6 +37,7 @@ public class DialogueOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
 
     private String visibleText = "";
     private boolean changeText = true;
+    private boolean onLastQuestion;
 
     private GameObject intersectionObject;
     private Map<Class<? extends GameObject>, Boolean> firstTime;
@@ -131,7 +134,8 @@ public class DialogueOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
         }
         if (currentLetterIndex == dialogue.length()) {
             renderArrow(g);
-            renderContinueText(g);
+            if (question != null && dialogueIndex == dialogues.size()-1) renderYesOrNoText(g);
+            else renderContinueText(g);
         }
     }
 
@@ -146,6 +150,12 @@ public class DialogueOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
         int xPos = DIALOGUE_BOX_X + (int)(20 * SCALE);
         int yPos = DIALOGUE_Y + DIALOGUE_BOX_HEI - (int)(30 * SCALE);
         g.drawString("[Press X to continue]", xPos, yPos);
+    }
+
+    private void renderYesOrNoText(Graphics g) {
+        int xPos = DIALOGUE_BOX_X + (int)(20 * SCALE);
+        int yPos = DIALOGUE_Y + DIALOGUE_BOX_HEI - (int)(30 * SCALE);
+        g.drawString("[Press Y/N to answer]", xPos, yPos);
     }
 
     // Reset
@@ -195,22 +205,47 @@ public class DialogueOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
         return text.toString();
     }
 
-    public boolean next() {
-        if (dialogues == null || dialogues.isEmpty()) return false;
+    public boolean skipLetterAnim() {
         if (currentLetterIndex < dialogues.get(dialogueIndex).length()) {
             currentLetterIndex = dialogues.get(dialogueIndex).length();
             return true;
         }
-        if (dialogueIndex >= dialogues.size()-1) return false;
+        return false;
+    }
+
+    public boolean next() {
+        if (dialogues == null || dialogues.isEmpty()) return false;
+        if (skipLetterAnim()) return true;
+        if (question != null && dialogueIndex == dialogues.size()-2) {
+            onLastQuestion = true;
+        }
+        // Dialogue finished
+        if (dialogueIndex >= dialogues.size()-1) {
+            if (onLastQuestion) {
+                onLastQuestion = false;
+                return false;
+
+            }
+            return false;
+        }
         dialogueIndex++;
         resetAnimation();
         return true;
     }
 
-    public void setDialogues(List<String> dialogues, GameObject intersectionObject) {
-        this.dialogues = dialogues;
+    public void setDialogues(Dialogue dialogue, GameObject intersectionObject) {
+        this.dialogues = dialogue.getLines();
+        this.question = dialogue.getQuestion();
         this.intersectionObject = intersectionObject;
         reset();
         this.firstTime.put(intersectionObject.getClass(), true);
+    }
+
+    public Question getQuestion() {
+        return question;
+    }
+
+    public boolean isOnLastQuestion() {
+        return onLastQuestion;
     }
 }

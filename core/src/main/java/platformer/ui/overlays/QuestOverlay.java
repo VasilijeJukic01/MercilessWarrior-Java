@@ -121,7 +121,7 @@ public class QuestOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
                         if (currentPage > 0) currentPage--;
                         break;
                     case NEXT:
-                        if ((currentPage + 1) * QUEST_SLOT_CAP < gameState.getQuestManager().getQuests().size()) currentPage++;
+                        if ((currentPage + 1) * QUEST_SLOT_CAP < gameState.getQuestManager().getSlots().size()) currentPage++;
                         break;
                 }
                 break;
@@ -162,7 +162,7 @@ public class QuestOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
                 if (currentPage > 0) currentPage--;
                 break;
             case KeyEvent.VK_RIGHT:
-                if ((currentPage + 1) * QUEST_SLOT_CAP < gameState.getQuestManager().getQuests().size()) currentPage++;
+                if ((currentPage + 1) * QUEST_SLOT_CAP < gameState.getQuestManager().getSlots().size()) currentPage++;
                 break;
             default: break;
         }

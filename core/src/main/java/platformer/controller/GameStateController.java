@@ -104,12 +104,15 @@ public class GameStateController {
             if (player.getSpellState() == 1) player.setSpellState(2);
         });
         initAction(releaseActions, "Attack", () -> {
-            if (gameState.getActiveState() == PlayingState.DIALOGUE) gameState.getDialogueManager().updateDialogue();
+            if (gameState.getActiveState() == PlayingState.DIALOGUE)
+                gameState.getDialogueManager().updateDialogue("STANDARD");
         });
         initAction(releaseActions, "Fireball", () -> player.getActionHandler().doFireBall());
         initAction(releaseActions, "Interact", this::interact);
         initAction(releaseActions, "Inventory", this::openInventory);
         initAction(releaseActions, "Quest", this::openQuests);
+        initAction(releaseActions, "Accept", () -> gameState.getDialogueManager().acceptQuestion());
+        initAction(releaseActions, "Decline", () -> gameState.getDialogueManager().declineQuestion());
     }
 
     // Mouse

@@ -23,9 +23,9 @@ public class Quest {
     private int goal;
     private int progress;
     private Map<ItemType, Integer> itemRewards;
-    private int coinReward;
-    private int expReward;
+    private int coinReward, expReward;
     private int levelRequirement;
+    private int npcRequest;
 
     private boolean completed = false;
 

@@ -69,20 +69,38 @@ public class DialogueManager {
             index = newIndex == -1 ? index : newIndex;
         }
         Dialogue dialogue = getDialogues(id).get(index);
-        List<String> dialogues = dialogue.getLines();
         dialogue.setActivated();
-        setDialogueObject(dialogues, object);
+        setDialogueObject(dialogue, object);
     }
 
-    private void setDialogueObject(List<String> dialogues, GameObject object) {
-        overlay.setDialogues(dialogues, object);
+    private void setDialogueObject(Dialogue dialogue, GameObject object) {
+        overlay.setDialogues(dialogue, object);
+    }
+
+    public void acceptQuestion() {
+        if (overlay.getQuestion() == null || !overlay.isOnLastQuestion()) return;
+        gameState.getQuestManager().startNPCQuest(overlay.getQuestion().getAnswers().get(0).getNext().replace("Quest: ", ""));
+        updateDialogue("QUESTION");
+    }
+
+    public void declineQuestion() {
+        if (overlay.getQuestion() == null || !overlay.isOnLastQuestion()) return;
+        overlay.next();
+        gameState.setOverlay(null);
+        overlay.reset();
     }
 
     /**
      * Updates the dialogue state.
      * If the dialogue is finished, it sets the appropriate overlay based on the intersecting object.
+     * <p>
+     * @param type the dialogue type
      */
-    public void updateDialogue() {
+    public void updateDialogue(String type) {
+        if (overlay.isOnLastQuestion() && type.equals("STANDARD")) {
+            overlay.skipLetterAnim();
+            return;
+        }
         if(!overlay.next()) {
             if (Objects.equals(gameState.getObjectManager().getIntersectingObject(), "Blacksmith"))
                 gameState.setOverlay(PlayingState.BLACKSMITH);

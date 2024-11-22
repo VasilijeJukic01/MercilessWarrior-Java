@@ -73,8 +73,8 @@ public class QuestManager implements Subscriber {
         this.slots = new ArrayList<>();
         List<Quest> availableProgressiveQuests = progressiveQuests.stream()
                 .filter(quest -> quest.getParentId() == 0)
+                .filter(quest -> quest.getNpcRequest() == 0)
                 .collect(Collectors.toList());
-
         if (!repeatableQuests.isEmpty()) {
             Quest randomRepeatableQuest = repeatableQuests.get(new Random().nextInt(repeatableQuests.size()));
             slots.add(new QuestSlot(randomRepeatableQuest, QUEST_SLOT_X, QUEST_SLOT_Y + QUEST_SLOT_SPACING));
@@ -174,6 +174,27 @@ public class QuestManager implements Subscriber {
             slots.get(i).setXPos(QUEST_SLOT_X);
             slots.get(i).setYPos(QUEST_SLOT_Y + k * QUEST_SLOT_SPACING);
             if (k == QUEST_SLOT_CAP) k = 0;
+        }
+    }
+
+    public void startNPCQuest(String questName) {
+        Optional<Quest> quest = quests.stream()
+                .filter(q -> q.getName().equals(questName))
+                .findFirst();
+        if (!quest.isPresent()) {
+            Logger.getInstance().notify("Quest not found: " + questName, Message.ERROR);
+            return;
+        }
+        Quest foundQuest = quest.get();
+        if (slots.stream().noneMatch(slot -> slot.getQuest().equals(foundQuest))) {
+            int position = slots.size() % QUEST_SLOT_CAP - 1;
+            QuestSlot newSlot = new QuestSlot(foundQuest, QUEST_SLOT_X, QUEST_SLOT_Y + position * QUEST_SLOT_SPACING);
+            slots.add(newSlot);
+            sortAndRepositionSlots();
+            Logger.getInstance().notify("Quest Started: " + questName, Message.INFORMATION);
+        }
+        else {
+            Logger.getInstance().notify("Quest already started: " + questName, Message.WARNING);
         }
     }
 

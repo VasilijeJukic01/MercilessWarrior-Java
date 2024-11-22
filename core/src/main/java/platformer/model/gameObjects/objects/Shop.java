@@ -26,14 +26,13 @@ import static platformer.constants.Constants.*;
 @SuppressWarnings("unchecked")
 public class Shop extends GameObject implements Publisher {
 
-    private final List<Subscriber> subscribers;
+    private static final List<Subscriber> subscribers = new ArrayList<>();
 
     private boolean active;
     private final ArrayList<ShopItem> shopItems;
 
     public Shop(ObjType objType, int xPos, int yPos) {
         super(objType, xPos, yPos);
-        this.subscribers = new ArrayList<>();
         this.shopItems = new ArrayList<>();
         generateHitBox();
         initItems();
@@ -178,12 +177,12 @@ public class Shop extends GameObject implements Publisher {
 
     @Override
     public void addSubscriber(Subscriber s) {
-        this.subscribers.add(s);
+        subscribers.add(s);
     }
 
     @Override
     public void removeSubscriber(Subscriber s) {
-        this.subscribers.remove(s);
+        subscribers.remove(s);
     }
 
     @Override

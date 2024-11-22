@@ -35,6 +35,9 @@ public class KeyboardController {
                     keyConfig.put(parts[0], getKeyCode(parts[1]));
                 }
             }
+            // TODO: For debug purposes, remove later
+            keyConfig.put("Accept", KeyEvent.VK_Y);
+            keyConfig.put("Decline", KeyEvent.VK_N);
         } catch (IOException e) {
             Logger.getInstance().notify("Failed to load key config file: " + KEYBOARD_CONFIG_PATH, Message.ERROR);
         }

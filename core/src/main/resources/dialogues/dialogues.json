@@ -88,7 +88,19 @@
         "I don't know what to do. I'm so lost.",
         "Can you help me to get rid of them?",
         "If you do, I'll give you a reward. I promise."
-      ]
+      ],
+      "question": {
+        "answers": [
+          {
+            "answer": "Yes",
+            "next": "Quest: Kill Bandits"
+          },
+          {
+            "answer": "No",
+            "next": ""
+          }
+        ]
+      }
     },
     {
       "object": "NpcAnita",

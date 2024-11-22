@@ -59,7 +59,7 @@
     "name": "Buy Armor",
     "type": "PROGRESSIVE",
     "id": 2,
-    "description": "Buy armor",
+    "description": "Buy Armor",
     "goal": 1,
     "itemRewards": {
       "IRON": 10
@@ -82,5 +82,24 @@
     "expReward": 1000,
     "levelRequirement": 1,
     "parentId": null
+  },
+  {
+    "name": "Kill Bandits",
+    "type": "PROGRESSIVE",
+    "id": 4,
+    "description": "Kill Bandits",
+    "goal": 1,
+    "levelRequirement": 1,
+    "npcRequest": 1,
+    "parentId": null
+  },
+  {
+    "name": "Talk to Anita",
+    "type": "PROGRESSIVE",
+    "id": 5,
+    "description": "Talk to Anita",
+    "goal": 1,
+    "levelRequirement": 1,
+    "parentId": 4
   }
 ]

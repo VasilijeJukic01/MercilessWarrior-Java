@@ -1,6 +1,7 @@
 package platformer.ui.dialogue;
 
 import lombok.Getter;
+import platformer.ui.dialogue.question.Question;
 
 import java.util.List;
 
@@ -11,6 +12,7 @@ public class Dialogue {
     private String id;
     private boolean once;
     private List<String> lines;
+    private Question question;
 
     private boolean activated;
 
