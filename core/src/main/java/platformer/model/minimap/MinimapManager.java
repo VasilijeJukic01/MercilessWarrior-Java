@@ -6,6 +6,9 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.IntStream;
 
 import static platformer.constants.FilePaths.MINIMAP;
 
@@ -42,48 +45,76 @@ public class MinimapManager {
                 BufferedImage levelImage = Utils.getInstance().importImage("/images/levels/"+levelName+".png", -1, -1);
                 if (levelImage == null) continue;
                 BufferedImage img = levelImage.getSubimage(0, 0, levelImage.getWidth() / 2, levelImage.getHeight());
-                Point position = findImageOnMinimap(img);
+                Point position = findImageOnMinimap(img, minimapImage);
                 if (position != null) levelPositions.put(levelName, position);
             }
         }
     }
 
     /**
-     * Finds the position of a level image on the minimap.
-     *
-     * @param levelImage The level image to find on the minimap.
-     * @return The position of the level image on the minimap.
+     * Finds the position of a level image on the minimap using the Sum of Absolute Differences (SAD) technique.
+     * <p>
+     * Time complexity: O(W_minimap × H_minimap × W_level × H_level).
+     * <p>
+     * @param levelImage The smaller image (level) to locate on the larger image (minimap).
+     * @param minimapImage The larger image (minimap) to search within.
+     * @return The top-left position of the level image on the minimap if found.
      */
-    private Point findImageOnMinimap(BufferedImage levelImage) {
-        int levelWidth = levelImage.getWidth();
-        int levelHeight = levelImage.getHeight();
-        int totalPixels = levelWidth * levelHeight;
-        int requiredMatches = (int) (totalPixels * 0.9);
+    public Point findImageOnMinimap(BufferedImage levelImage, BufferedImage minimapImage) {
+        int levelWidth = levelImage.getWidth(), levelHeight = levelImage.getHeight();
+        int minimapWidth = minimapImage.getWidth(), minimapHeight = minimapImage.getHeight();
 
-        for (int y = 0; y <= minimapImage.getHeight() - levelHeight; y++) {
-            for (int x = 0; x <= minimapImage.getWidth() - levelWidth; x++) {
-                int matchCount = 0;
-                boolean earlyExit = false;
+        // Images -> Grayscale
+        int[][] minimapGray = Utils.getInstance().toGrayscale(minimapImage);
+        int[][] levelGray = Utils.getInstance().toGrayscale(levelImage);
 
-                for (int j = 0; j < levelHeight && !earlyExit; j++) {
-                    for (int i = 0; i < levelWidth; i++) {
-                        if (minimapImage.getRGB(x + i, y + j) == levelImage.getRGB(i, j)) {
-                            matchCount++;
-                        }
-                        if (totalPixels - (j * levelWidth + i + 1) + matchCount < requiredMatches) {
-                            earlyExit = true;
-                            break;
-                        }
-                    }
-                }
+        // Thread-safe SAD Tracking
+        AtomicInteger minSAD = new AtomicInteger(Integer.MAX_VALUE);
+        AtomicReference<Point> bestMatch = new AtomicReference<>(null);
 
-                if (matchCount >= requiredMatches) {
-                    System.out.println("DEBUG MINIMAP LEVEL: Match percent: " + (matchCount * 100 / totalPixels) + "%");
-                    return new Point(x, y);
+        // Parallelized Sliding Window
+        IntStream.range(0, minimapHeight - levelHeight + 1).parallel().forEach(y -> {
+            for (int x = 0; x <= minimapWidth - levelWidth; x++) {
+                // Computing SAD for the current window
+                int sad = computeSAD(minimapGray, levelGray, x, y, levelWidth, levelHeight, minSAD.get());
+                if (sad < minSAD.get()) {
+                    minSAD.set(sad);
+                    bestMatch.set(new Point(x, y));
                 }
             }
+        });
+
+        return bestMatch.get();
+    }
+
+    /**
+     * Computes the Sum of Absolute Differences (SAD) for a specific window in the minimap.
+     * SAD is a pixel-by-pixel comparison metric (measures the difference between two images by summing the absolute differences of their pixel values).
+     *
+     * @param minimapGray Grayscale representation of the minimap image.
+     * @param levelGray Grayscale representation of the level image.
+     * @param startX Top-left X coordinate of the current window in the minimap.
+     * @param startY Top-left Y coordinate of the current window in the minimap.
+     * @param levelWidth Width of the level image.
+     * @param levelHeight Height of the level image.
+     * @param currentMinSAD Current minimum SAD (for early stopping).
+     * @return The SAD value for the current window.
+     */
+    private int computeSAD(int[][] minimapGray, int[][] levelGray, int startX, int startY, int levelWidth, int levelHeight, int currentMinSAD) {
+        int sad = 0;
+        for (int j = 0; j < levelHeight; j++) {
+            for (int i = 0; i < levelWidth; i++) {
+                int minimapPixel = minimapGray[startY + j][startX + i];
+                int levelPixel = levelGray[j][i];
+                // Computing the absolute difference
+                int dx = Math.abs(minimapPixel - levelPixel);
+                sad += dx;
+
+                // Early stopping
+                if (sad > currentMinSAD) return Integer.MAX_VALUE;
+            }
         }
-        return null;
+        return sad;
     }
 
     /**
@@ -143,5 +174,9 @@ public class MinimapManager {
     public BufferedImage getMinimap() {
         updateMinimap();
         return minimap;
+    }
+
+    public Point getPlayerLocation() {
+        return playerLocation;
     }
 }
