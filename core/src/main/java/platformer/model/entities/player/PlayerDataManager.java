@@ -4,6 +4,7 @@ import platformer.core.Account;
 import platformer.core.Framework;
 import platformer.model.inventory.InventoryBonus;
 import platformer.model.levels.Spawn;
+import platformer.model.minimap.MinimapManager;
 import platformer.model.perks.PerksBonus;
 import platformer.ui.overlays.hud.UserInterface;
 
@@ -25,9 +26,9 @@ public class PlayerDataManager {
     private int level = 1;
     private int upgradeTokens = 0;
 
-    public PlayerDataManager(Player player) {
+    public PlayerDataManager(Player player, MinimapManager minimapManager) {
         this.player = player;
-        this.userInterface = new UserInterface(player);
+        this.userInterface = new UserInterface(player, minimapManager);
         loadPlayerData();
     }
 

@@ -2,6 +2,7 @@ package platformer.ui.overlays.hud;
 
 import platformer.model.entities.Cooldown;
 import platformer.model.entities.player.Player;
+import platformer.model.minimap.MinimapManager;
 import platformer.utils.Utils;
 
 
@@ -23,6 +24,7 @@ import static platformer.constants.UI.*;
 public class UserInterface {
 
     private final Player player;
+    private final MinimapPanel minimapPanel;
 
     private BufferedImage statusBar, portrait, abilityBar;
     private int healthWidth;
@@ -31,9 +33,10 @@ public class UserInterface {
 
     private final List<AbilitySlot> abilities;
 
-    public UserInterface(Player player) {
+    public UserInterface(Player player, MinimapManager minimapManager) {
         this.player = player;
         this.abilities = new ArrayList<>();
+        this.minimapPanel = new MinimapPanel(minimapManager, (int)(15 * SCALE), (int)(335 * SCALE), 200, 200);
         init();
     }
 
@@ -77,6 +80,7 @@ public class UserInterface {
         renderLevelInfo(g);
         g.drawImage(portrait, PORT_X, PORT_Y, PORT_WID, PORT_HEI, null);
         renderCooldown(g);
+        minimapPanel.render(g);
     }
 
     private void renderStatusBar(Graphics g) {

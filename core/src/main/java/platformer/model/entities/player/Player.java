@@ -96,7 +96,7 @@ public class Player extends Entity {
     }
 
     private void initManagers() {
-        this.playerDataManager = new PlayerDataManager(this);
+        this.playerDataManager = new PlayerDataManager(this, minimapManager);
         this.minimapHandler = new PlayerMinimapHandler(this, minimapManager);
         this.effectController = new PlayerEffectController(this);
         this.actionHandler = new PlayerActionHandler(this);
