@@ -66,6 +66,10 @@ public final class Constants {
 
     public static final double LAVA_DMG = 0.5;
 
+    // Minimap Constants
+    public static final double MIN_ZOOM = 1.0;
+    public static final double MAX_ZOOM = 2.0;
+
     // Perks Constants
     public static final int XP_BONUS_AMOUNT = 15;
     public static final double STRONG_ARMS_BONUS_COOLDOWN = -0.225;

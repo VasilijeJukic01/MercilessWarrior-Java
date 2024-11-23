@@ -171,9 +171,9 @@ public final class UI {
     public static final int SFX_Y = scale(175);
     public static final int MUSIC_X = scale(525);
     public static final int MUSIC_Y = scale(225);
-    public static final int MUSIC_SLIDER_BTN_X = scale(350);
+    public static final int MUSIC_SLIDER_BTN_X = scale(380);
     public static final int MUSIC_SLIDER_BTN_Y = scale(224);
-    public static final int SFX_SLIDER_BTN_X = scale(350);
+    public static final int SFX_SLIDER_BTN_X = scale(380);
     public static final int SFX_SLIDER_BTN_Y = scale(174);
 
     public static final int MUSIC_SLIDER_X = scale(360);
@@ -377,6 +377,13 @@ public final class UI {
     public static final int CRAFT_VAL_ITEM_NAME_Y = scale(130);
     public static final int CRAFT_VAL_ITEM_DESC_X = scale(400);
     public static final int CRAFT_VAL_ITEM_DESC_Y = scale(170);
+
+    // Minimap UI
+    public static final int MAP_OVERLAY_WID = scale(700);
+    public static final int MAP_OVERLAY_HEI = scale(410);
+
+    public static final int MAP_OVERLAY_X = scale(65);
+    public static final int MAP_OVERLAY_Y = scale(30);
 
     private static int scale(double value) {
         return (int)(value * SCALE);

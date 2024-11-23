@@ -38,6 +38,7 @@ public class KeyboardController {
             // TODO: For debug purposes, remove later
             keyConfig.put("Accept", KeyEvent.VK_Y);
             keyConfig.put("Decline", KeyEvent.VK_N);
+            keyConfig.put("Minimap", KeyEvent.VK_M);
         } catch (IOException e) {
             Logger.getInstance().notify("Failed to load key config file: " + KEYBOARD_CONFIG_PATH, Message.ERROR);
         }

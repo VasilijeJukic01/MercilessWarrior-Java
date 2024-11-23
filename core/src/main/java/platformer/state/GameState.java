@@ -13,6 +13,7 @@ import platformer.model.entities.player.Player;
 import platformer.model.entities.player.PlayerAction;
 import platformer.model.gameObjects.ObjectManager;
 import platformer.model.levels.LevelManager;
+import platformer.model.minimap.MinimapManager;
 import platformer.model.perks.PerksBonus;
 import platformer.model.perks.PerksManager;
 import platformer.model.quests.QuestManager;
@@ -53,6 +54,7 @@ public class GameState extends AbstractState implements State {
     private OverlayManager overlayManager;
     private DialogueManager dialogueManager;
     private LightManager lightManager;
+    private MinimapManager minimapManager;
 
     // State
     private PlayingState state;
@@ -92,10 +94,11 @@ public class GameState extends AbstractState implements State {
         this.dialogueManager = new DialogueManager(this);
         this.lightManager = new LightManager(this);
         this.questManager = new QuestManager(this);
+        this.minimapManager = new MinimapManager();
     }
 
     private void initPlayer() {
-        this.player = new Player(PLAYER_X, PLAYER_Y, PLAYER_WIDTH, PLAYER_HEIGHT, enemyManager, objectManager);
+        this.player = new Player(PLAYER_X, PLAYER_Y, PLAYER_WIDTH, PLAYER_HEIGHT, enemyManager, objectManager, minimapManager);
         this.player.loadLvlData(levelManager.getCurrentLevel().getLvlData());
         this.player.setSpawn(levelManager.getCurrentLevel().getPlayerSpawn("LEFT"));
     }
@@ -106,6 +109,7 @@ public class GameState extends AbstractState implements State {
     }
 
     public void reloadSave() {
+        player.activateMinimap(false);
         PerksBonus.getInstance().reset();
         this.perksManager = new PerksManager();
         this.player.getPlayerDataManager().loadPlayerData();
@@ -130,6 +134,7 @@ public class GameState extends AbstractState implements State {
 
     // Level Flow
     private void goToLevel(int I, int J, String message) {
+        player.activateMinimap(false);
         levelManager.loadNextLevel(I, J);
         String spawn = "";
         if (I == 0 && J == 1) spawn = "LEFT";
@@ -252,6 +257,7 @@ public class GameState extends AbstractState implements State {
         objectManager.update(levelManager.getCurrentLevel().getLvlData(), player);
         lightManager.update();
         spellManager.update();
+        minimapManager.update();
         player.update();
         if (state == PlayingState.SHOP) overlayManager.update(PlayingState.SHOP);
         else if (state == PlayingState.BLACKSMITH) overlayManager.update(PlayingState.BLACKSMITH);
@@ -259,6 +265,7 @@ public class GameState extends AbstractState implements State {
         else if (state == PlayingState.CRAFTING) overlayManager.update(PlayingState.CRAFTING);
         else if (state == PlayingState.LOOTING) overlayManager.update(PlayingState.LOOTING);
         else if (state == PlayingState.QUEST) overlayManager.update(PlayingState.QUEST);
+        else if (state == PlayingState.MINIMAP) overlayManager.update(PlayingState.MINIMAP);
     }
 
     @Override
@@ -344,6 +351,10 @@ public class GameState extends AbstractState implements State {
 
     public QuestManager getQuestManager() {
         return questManager;
+    }
+
+    public MinimapManager getMinimapManager() {
+        return minimapManager;
     }
 
     public OverlayManager getOverlayManager() {

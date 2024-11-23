@@ -122,6 +122,8 @@ public class LevelManager {
         gameState.getEnemyManager().loadEnemies(newLevel);
         gameState.getObjectManager().loadObjects(newLevel);
         gameState.getSpellManager().initBossSpells();
+        gameState.getMinimapManager().changeLevel(levelIndexI, levelIndexJ);
+        gameState.getPlayer().activateMinimap(true);
     }
 
     public void loadNextLevel(int dI, int dJ) {
