@@ -61,6 +61,7 @@ public class DialogueManager {
      * @param object the game object
      */
     public void activateDialogue(String id, GameObject object) {
+        overlay.reset();
         gameState.setOverlay(PlayingState.DIALOGUE);
         Random random = new Random();
         int index = random.nextInt(getDialogues(id).size());

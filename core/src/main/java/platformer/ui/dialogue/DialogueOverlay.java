@@ -162,6 +162,7 @@ public class DialogueOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
     public void reset() {
         dialogueIndex = 0;
         resetAnimation();
+        onLastQuestion = false;
     }
 
     private void resetAnimation() {
