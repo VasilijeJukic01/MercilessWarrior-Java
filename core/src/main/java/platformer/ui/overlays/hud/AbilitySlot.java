@@ -51,7 +51,7 @@ public class AbilitySlot {
             int arcAngle = (int) (360 * cooldownPercentage);
             g.setColor(new Color(0, 0, 0, 150));
             g.setClip(xPos, yPos, COOLDOWN_SLOT_SIZE, COOLDOWN_SLOT_SIZE);
-            g.fillArc(xPos - (int)(10 * SCALE), yPos - (int)(10 * SCALE), (int)(55 * SCALE), (int)(55 * SCALE), 90, -arcAngle);
+            g.fillArc(xPos - (int)(10 * SCALE), yPos - (int)(10 * SCALE), (int)(43 * SCALE), (int)(43 * SCALE), 90, -arcAngle);
             g.setClip(null);
         }
         else maxCooldown = 0;

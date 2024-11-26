@@ -146,10 +146,10 @@ public final class UI {
     public static final int ST_HEI = scale(12);
     public static final int XP_HEI = scale(7);
 
-    public static final int COOLDOWN_SLOT_SIZE = scale(30);
-    public static final int COOLDOWN_SLOT_Y = scale(10);
-    public static final int COOLDOWN_SLOT_X = scale(670);
-    public static final int COOLDOWN_SLOT_SPACING = scale(40);
+    public static final int COOLDOWN_SLOT_SIZE = scale(22.5);
+    public static final int COOLDOWN_SLOT_Y = scale(80);
+    public static final int COOLDOWN_SLOT_X = scale(707);
+    public static final int COOLDOWN_SLOT_SPACING = scale(30);
 
     public static final int BOSS_BAR_WID = scale(500);
     public static final int BOSS_BAR_HEI = scale(50);

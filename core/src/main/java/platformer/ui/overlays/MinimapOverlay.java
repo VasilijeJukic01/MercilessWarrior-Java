@@ -1,5 +1,7 @@
 package platformer.ui.overlays;
 
+import platformer.model.minimap.MinimapIcon;
+import platformer.model.minimap.MinimapIconType;
 import platformer.state.GameState;
 
 import java.awt.*;
@@ -7,6 +9,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+import java.util.List;
 
 import static platformer.constants.Constants.*;
 import static platformer.constants.UI.*;
@@ -92,6 +95,7 @@ public class MinimapOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
         int y = MAP_OVERLAY_Y + (int)(20 * SCALE) + offsetY;
 
         g2d.drawImage(map, x, y, width, height, null);
+        renderIcons(g2d, x, y, width, height, map);
         g2d.setClip(null);
     }
 
@@ -102,6 +106,34 @@ public class MinimapOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
         g2d.setColor(Color.WHITE);
         g2d.setStroke(new BasicStroke(2));
         g2d.draw(overlay);
+    }
+
+    private void renderIcons(Graphics2D g2d, int x, int y, int width, int height, BufferedImage map) {
+        double scaledPixelWidth = (double) width / map.getWidth();
+        double scaledPixelHeight = (double) height / map.getHeight();
+
+        List<MinimapIcon> icons = gameState.getMinimapManager().getIcons();
+        BufferedImage[] minimapIcons = gameState.getMinimapManager().getMinimapIcons();
+        for (MinimapIcon icon : icons) {
+            BufferedImage img = minimapIcons[icon.getType().ordinal()];
+            int iconWidth = (int) (1.8 * scaledPixelWidth);
+            int iconHeight = (int) (1.8 * scaledPixelHeight);
+            int iconX = x + (int) (icon.getPosition().x * scaledPixelWidth) - iconWidth / 3;
+            int iconY = y + (int) (icon.getPosition().y * scaledPixelHeight) - (int)(iconHeight / 1.8);
+            g2d.drawImage(img, iconX, iconY, iconWidth, iconHeight, null);
+        }
+
+        if (gameState.getMinimapManager().isFlashVisible()) {
+            Point playerLocation = gameState.getMinimapManager().getPlayerLocation();
+            if (playerLocation != null) {
+                BufferedImage playerIcon = minimapIcons[MinimapIconType.PLAYER.ordinal()];
+                int playerIconWidth = (int) (1.8 * scaledPixelWidth);
+                int playerIconHeight = (int) (1.8 * scaledPixelHeight);
+                int playerIconX = x + (int) (playerLocation.x * scaledPixelWidth) - playerIconWidth / 3;
+                int playerIconY = y + (int) (playerLocation.y * scaledPixelHeight) - playerIconHeight / 2;
+                g2d.drawImage(playerIcon, playerIconX, playerIconY, playerIconWidth, playerIconHeight, null);
+            }
+        }
     }
 
     /**

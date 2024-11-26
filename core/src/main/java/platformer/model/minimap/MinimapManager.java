@@ -4,13 +4,16 @@ import platformer.utils.Utils;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.IntStream;
 
 import static platformer.constants.FilePaths.MINIMAP;
+import static platformer.constants.FilePaths.MINIMAP_ICONS;
 
 /**
  * MinimapManager handles minimap operations such as finding player spawn, level positions and updating player position.
@@ -18,10 +21,12 @@ import static platformer.constants.FilePaths.MINIMAP;
 public class MinimapManager {
 
     private BufferedImage minimapImage;
+    private final BufferedImage[] minimapIcons = new BufferedImage[6];
 
     private BufferedImage minimap;
     private Point playerLocation;
     private Map<String, Point> levelPositions;
+    private final List<MinimapIcon> icons = new ArrayList<>();
 
     private int flashTick = 0;
     private final int flashSpeed = 40;
@@ -35,7 +40,16 @@ public class MinimapManager {
         this.minimapImage = Utils.getInstance().importImage(MINIMAP, -1, -1);
         this.minimap = new BufferedImage(minimapImage.getWidth(), minimapImage.getHeight(), minimapImage.getType());
         this.levelPositions = new LinkedHashMap<>();
+        loadMinimapIcons();
         findLevelPositions();
+        colorizeMinimap();
+    }
+
+    private void loadMinimapIcons() {
+        BufferedImage image = Utils.getInstance().importImage(MINIMAP_ICONS, -1, -1);
+        for (int i = 0; i < 6; i++) {
+            minimapIcons[i] = image.getSubimage(i * 16, 0, 16, 16);
+        }
     }
 
     private void findLevelPositions() {
@@ -47,6 +61,26 @@ public class MinimapManager {
                 BufferedImage img = levelImage.getSubimage(0, 0, levelImage.getWidth() / 2, levelImage.getHeight());
                 Point position = findImageOnMinimap(img, minimapImage);
                 if (position != null) levelPositions.put(levelName, position);
+            }
+        }
+    }
+
+    private void colorizeMinimap() {
+        for (int y = 0; y < minimapImage.getHeight(); y++) {
+            for (int x = 0; x < minimapImage.getWidth(); x++) {
+                int rgb = minimapImage.getRGB(x, y);
+                int r = (rgb >> 16) & 0xFF;
+                int g = (rgb >> 8) & 0xFF;
+                int b = rgb & 0xFF;
+                if (r == 254 && g == 254 && b >= 1 && b <= 5) {
+                    icons.add(new MinimapIcon(new Point(x, y), MinimapIconType.values()[b]));
+                    minimapImage.setRGB(x, y, new Color(78, 105, 80).getRGB());
+                }
+                else if (r == 254 && g == 254 && b == 254)
+                    minimapImage.setRGB(x, y, new Color(78, 105, 80).getRGB());
+                else {
+                    minimapImage.setRGB(x, y, new Color(41, 59, 41).getRGB());
+                }
             }
         }
     }
@@ -148,14 +182,9 @@ public class MinimapManager {
         playerLocation.y = Math.max(0, Math.min(playerLocation.y, minimap.getHeight() - 1));
     }
 
-    // TODO: Maybe transfer this to overlay?
     private void updateMinimap() {
         Graphics2D g2d = minimap.createGraphics();
         g2d.drawImage(minimapImage, 0, 0, null);
-        if (playerLocation != null && flashVisible) {
-            g2d.setColor(Color.RED);
-            g2d.fillOval(playerLocation.x, playerLocation.y - 1, 1, 2);
-        }
         g2d.dispose();
     }
 
@@ -178,5 +207,17 @@ public class MinimapManager {
 
     public Point getPlayerLocation() {
         return playerLocation;
+    }
+
+    public List<MinimapIcon> getIcons() {
+        return icons;
+    }
+
+    public BufferedImage[] getMinimapIcons() {
+        return minimapIcons;
+    }
+
+    public boolean isFlashVisible() {
+        return flashVisible;
     }
 }

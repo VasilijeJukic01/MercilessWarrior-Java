@@ -57,7 +57,7 @@ public final class AnimConstants {
     public static final int FOREST_SPRITE_W = 274, FOREST_SPRITE_H = 274;
     public static final int FOREST_SPRITE_ROW = 7, FOREST_SPRITE_COL = 7;
 
-    public static final int ABILITY_SLOT_W = 60, ABILITY_SLOT_H = 60;
+    public static final int ABILITY_SLOT_W = 45, ABILITY_SLOT_H = 45;
 
     // NPC
     public static final int ANITA_W = 32, ANITA_H = 32;

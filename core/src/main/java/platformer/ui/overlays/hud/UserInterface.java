@@ -36,7 +36,7 @@ public class UserInterface {
     public UserInterface(Player player, MinimapManager minimapManager) {
         this.player = player;
         this.abilities = new ArrayList<>();
-        this.minimapPanel = new MinimapPanel(minimapManager, (int)(15 * SCALE), (int)(335 * SCALE), 200, 200);
+        this.minimapPanel = new MinimapPanel(minimapManager, (int)(700 * SCALE), (int)(7 * SCALE), 250, 130);
         init();
     }
 
@@ -55,7 +55,7 @@ public class UserInterface {
     }
 
     private void loadAbilities() {
-        BufferedImage sheet = Utils.getInstance().importImage(PLAYER_ABILITY_SHEET,240,60);
+        BufferedImage sheet = Utils.getInstance().importImage(PLAYER_ABILITY_SHEET,180,45);
         this.abilities.add(new AbilitySlot(sheet.getSubimage(0, 0, ABILITY_SLOT_W, ABILITY_SLOT_H), Cooldown.ATTACK, COOLDOWN_SLOT_X, COOLDOWN_SLOT_Y));
         this.abilities.add(new AbilitySlot(sheet.getSubimage(ABILITY_SLOT_W, 0, ABILITY_SLOT_W, ABILITY_SLOT_H), Cooldown.BLOCK, COOLDOWN_SLOT_X + COOLDOWN_SLOT_SPACING, COOLDOWN_SLOT_Y));
         this.abilities.add(new AbilitySlot(sheet.getSubimage(2*ABILITY_SLOT_W, 0, ABILITY_SLOT_W, ABILITY_SLOT_H), Cooldown.DASH, COOLDOWN_SLOT_X + 2 * COOLDOWN_SLOT_SPACING, COOLDOWN_SLOT_Y));
@@ -112,7 +112,7 @@ public class UserInterface {
     }
 
     private void renderCooldown(Graphics g) {
-        g.drawImage(abilityBar, ABILITY_HUD_X, ABILITY_HUD_Y, ABILITY_HUD_WID, ABILITY_HUD_HEI, null);
+       // g.drawImage(abilityBar, ABILITY_HUD_X, ABILITY_HUD_Y, ABILITY_HUD_WID, ABILITY_HUD_HEI, null);
         abilities.forEach(ability -> ability.render(g, player));
     }
 
