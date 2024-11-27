@@ -12,6 +12,8 @@ import java.awt.geom.RoundRectangle2D;
 import java.util.ArrayList;
 import java.util.List;
 
+import static platformer.constants.AnimConstants.DIALOGUE_ANIM_SPEED;
+import static platformer.constants.AnimConstants.DIALOGUE_ARR_ANIM_SPEED;
 import static platformer.constants.Constants.FONT_DIALOGUE;
 import static platformer.constants.Constants.SCALE;
 import static platformer.constants.UI.*;
@@ -29,9 +31,7 @@ public class DialogueOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
     private Question question;
     private int dialogueIndex = 0;
     private int currentLetterIndex = 0;
-    private final int animSpeed = 8;
     private int animTick, arrowAnimTick;
-    private final int arrowAnimSpeed = 20;
 
     private String visibleText = "";
     private boolean changeText = true;
@@ -82,7 +82,7 @@ public class DialogueOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
         if (dialogues == null || dialogues.isEmpty()) return;
         animTick++;
         arrowAnimTick++;
-        if (animTick >= animSpeed) {
+        if (animTick >= DIALOGUE_ANIM_SPEED) {
             animTick = 0;
             if (currentLetterIndex < dialogues.get(dialogueIndex).length()) {
                 currentLetterIndex++;
@@ -141,7 +141,7 @@ public class DialogueOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
     private void renderArrow(Graphics g) {
         int xPos = DIALOGUE_BOX_X + DIALOGUE_BOX_WID - (int)(20 * SCALE);
         int yPos = DIALOGUE_Y + DIALOGUE_BOX_HEI - (int)(30 * SCALE);
-        int bounce = (int) (Math.sin(arrowAnimTick / (double) arrowAnimSpeed) * 5);
+        int bounce = (int) (Math.sin(arrowAnimTick / (double) DIALOGUE_ARR_ANIM_SPEED) * 5);
         g.drawString("▼", xPos, yPos + bounce);
     }
 

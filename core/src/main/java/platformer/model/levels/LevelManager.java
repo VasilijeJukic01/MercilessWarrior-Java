@@ -16,8 +16,7 @@ import java.util.Random;
 
 import static platformer.constants.AnimConstants.*;
 import static platformer.constants.Constants.*;
-import static platformer.constants.FilePaths.FOREST_SPRITE;
-import static platformer.constants.FilePaths.PARTICLE_SHEET;
+import static platformer.constants.FilePaths.*;
 
 /**
  * This class is managing the levels in the game.
@@ -78,10 +77,10 @@ public class LevelManager {
     }
 
     private BufferedImage[][] getAllLevels(String layer) {
-        BufferedImage[][] levels = new BufferedImage[4][4];
+        BufferedImage[][] levels = new BufferedImage[MAX_LEVELS][MAX_LEVELS];
         for (int i = 0; i < 2; i++) {
             for (int j = 0; j < levels.length; j++) {
-                BufferedImage levelImg = Utils.getInstance().importImage("/images/levels/level"+i+j+".png", -1, -1);
+                BufferedImage levelImg = Utils.getInstance().importImage(LEVEL_SPRITES.replace("$", i+""+j), -1, -1);
                 if (levelImg == null) continue;
                 if (layer.equals("1")) {
                     levels[i][j] = levelImg.getSubimage(0, 0, levelImg.getWidth()/2, levelImg.getHeight());
@@ -108,7 +107,7 @@ public class LevelManager {
             int yPos = rand.nextInt(GAME_HEIGHT-10) + 10;
             int size = (int)((rand.nextInt(15-5) + 5) * SCALE);
             String key = "DefaultParticle";
-            BufferedImage[] images = Animation.getInstance().loadFromSprite(PARTICLE_SHEET, 8, 0, size, size, 0, PARTICLE_W, PARTICLE_H);
+            BufferedImage[] images = Animation.getInstance().loadFromSprite(PARTICLE_SHEET, DEFAULT_PARTICLE_FRAMES, 0, size, size, 0, PARTICLE_W, PARTICLE_H);
             ParticleType particleType = particleFactory.getParticleImage(key, images);
             particles[i] = new Particle(particleType, size, xPos, yPos);
         }

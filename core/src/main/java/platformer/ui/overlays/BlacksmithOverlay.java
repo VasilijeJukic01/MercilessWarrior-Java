@@ -136,11 +136,11 @@ public class BlacksmithOverlay implements Overlay<MouseEvent, KeyEvent, Graphics
             int y = (p.getSlot() / SLOT_MAX_COL) * PERK_SLOT_SPACING + PERK_SLOT_Y + SLOT_SIZE/4;
             g.drawImage(p.getImage(), x, y, SLOT_SIZE/2, SLOT_SIZE/2, null);
             if (p.isLocked()) {
-                g.setColor(new Color(0, 0, 0, 200));
+                g.setColor(PERK_SLOT_LOCK_COL);
                 renderPerkOverlay(g, p);
             }
             else if (p.isUpgraded()) {
-                g.setColor(new Color(255, 100, 0, 100));
+                g.setColor(PERK_SLOT_UPGRADE_COL);
                 renderPerkOverlay(g, p);
             }
         }

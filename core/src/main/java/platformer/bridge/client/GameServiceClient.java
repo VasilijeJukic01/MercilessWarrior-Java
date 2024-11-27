@@ -11,9 +11,10 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.util.List;
 
+import static platformer.constants.Constants.API_GATEWAY_URL;
+
 public class GameServiceClient {
 
-    private static final String API_GATEWAY_URL = "http://localhost:8080";
     private final Gson gson = new Gson();
 
     public int createAccount(String username, String password) throws IOException {

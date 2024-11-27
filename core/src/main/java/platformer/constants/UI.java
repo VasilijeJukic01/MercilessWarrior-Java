@@ -112,6 +112,15 @@ public final class UI {
     public static final Color BOARD_COLOR_TOP_10 = new Color(165, 0, 95);
 
     // HUD
+    public static final Color INFO_TXT_COLOR = new Color(255, 255, 255, 150);
+
+    public static final int PLAYER_NAME_X = scale(1.5);
+    public static final int PLAYER_NAME_Y = scale(10);
+    public static final int FPS_X = scale(1.5);
+    public static final int FPS_Y = scale(20);
+    public static final int UPS_X = scale(50);
+    public static final int UPS_Y = scale(20);
+
     public static final int HEALTH_WID = 134;
     public static final int STAMINA_WID = 134;
     public static final int EXP_WID = 149;
@@ -124,11 +133,6 @@ public final class UI {
     public static final int PORT_HEI = scale(40);
     public static final int PORT_X = scale(18);
     public static final int PORT_Y = scale(22);
-
-    public static final int ABILITY_HUD_WID = scale(270);
-    public static final int ABILITY_HUD_HEI = scale(55);
-    public static final int ABILITY_HUD_X = scale(620);
-    public static final int ABILITY_HUD_Y = scale(0);
 
     public static final int COINS_X = scale(90);
     public static final int COINS_Y = scale(82);
@@ -308,6 +312,11 @@ public final class UI {
     public static final int PERK_SLOT_SPACING = scale(60);
 
     public static final int SHOP_SLOT_CAP = 5;
+    public static final int CRAFT_SLOT_CAP = 5;
+    public static final int INVENTORY_SLOT_CAP = 5;
+
+    public static final Color PERK_SLOT_LOCK_COL = new Color(0, 0, 0, 200);
+    public static final Color PERK_SLOT_UPGRADE_COL = new Color(255, 100, 0, 100);
 
     // Inventory UI
     public static final int INV_OVERLAY_WID = scale(705);
@@ -384,6 +393,15 @@ public final class UI {
 
     public static final int MAP_OVERLAY_X = scale(65);
     public static final int MAP_OVERLAY_Y = scale(30);
+
+    public static final int RADAR_WID = scale(125);
+    public static final int RADAR_HEI = scale(65);
+
+    public static final int RADAR_X = scale(700);
+    public static final int RADAR_Y = scale(7);
+
+    public static final Color MINIMAP_COLOR_BRIGHT = new Color(78, 105, 80);
+    public static final Color MINIMAP_COLOR_DARK =  new Color(41, 59, 41);
 
     private static int scale(double value) {
         return (int)(value * SCALE);

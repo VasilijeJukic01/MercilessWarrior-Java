@@ -26,7 +26,7 @@ public class UserInterface {
     private final Player player;
     private final MinimapPanel minimapPanel;
 
-    private BufferedImage statusBar, portrait, abilityBar;
+    private BufferedImage statusBar, portrait;
     private int healthWidth;
     private int staminaWidth;
     private int expWidth;
@@ -36,7 +36,7 @@ public class UserInterface {
     public UserInterface(Player player, MinimapManager minimapManager) {
         this.player = player;
         this.abilities = new ArrayList<>();
-        this.minimapPanel = new MinimapPanel(minimapManager, (int)(700 * SCALE), (int)(7 * SCALE), 250, 130);
+        this.minimapPanel = new MinimapPanel(minimapManager, RADAR_X, RADAR_Y, RADAR_WID, RADAR_HEI);
         init();
     }
 
@@ -51,7 +51,6 @@ public class UserInterface {
     private void loadHUD() {
         this.statusBar = Utils.getInstance().importImage(PLAYER_HUD,-1,-1);
         this.portrait = Utils.getInstance().importImage(PLAYER_PORTRAIT,-1,-1);
-        this.abilityBar = Utils.getInstance().importImage(ABILITY_HUD,-1,-1);
     }
 
     private void loadAbilities() {
@@ -112,7 +111,6 @@ public class UserInterface {
     }
 
     private void renderCooldown(Graphics g) {
-       // g.drawImage(abilityBar, ABILITY_HUD_X, ABILITY_HUD_Y, ABILITY_HUD_WID, ABILITY_HUD_HEI, null);
         abilities.forEach(ability -> ability.render(g, player));
     }
 

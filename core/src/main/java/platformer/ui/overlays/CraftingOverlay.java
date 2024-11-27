@@ -232,7 +232,7 @@ public class CraftingOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
     }
 
     private void nextCraftingSlot() {
-        this.craftingSlot = Math.min(craftingSlot+1, 5);
+        this.craftingSlot = Math.min(craftingSlot+1, CRAFT_SLOT_CAP);
     }
 
     @Override

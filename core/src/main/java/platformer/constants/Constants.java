@@ -22,6 +22,9 @@ FB - Fireball
  */
 public final class Constants {
 
+    // Server Constants
+    public static final String API_GATEWAY_URL = "http://localhost:8080";
+
     // Resolution Settings
     public static final int TILES_DEFAULT_SIZE = 32;
     public static final int TILES_WIDTH = 26;
@@ -69,6 +72,7 @@ public final class Constants {
     // Minimap Constants
     public static final double MIN_ZOOM = 1.0;
     public static final double MAX_ZOOM = 2.0;
+    public static final double MINIMAP_ZOOM = 6.5;
 
     // Perks Constants
     public static final int XP_BONUS_AMOUNT = 15;

@@ -12,8 +12,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.IntStream;
 
-import static platformer.constants.FilePaths.MINIMAP;
-import static platformer.constants.FilePaths.MINIMAP_ICONS;
+import static platformer.constants.AnimConstants.MINIMAP_FLASH_ANIM_SPEED;
+import static platformer.constants.AnimConstants.MINIMAP_ICON_SIZE;
+import static platformer.constants.Constants.MAX_LEVELS;
+import static platformer.constants.FilePaths.*;
+import static platformer.constants.UI.MINIMAP_COLOR_BRIGHT;
+import static platformer.constants.UI.MINIMAP_COLOR_DARK;
 
 /**
  * MinimapManager handles minimap operations such as finding player spawn, level positions and updating player position.
@@ -21,7 +25,7 @@ import static platformer.constants.FilePaths.MINIMAP_ICONS;
 public class MinimapManager {
 
     private BufferedImage minimapImage;
-    private final BufferedImage[] minimapIcons = new BufferedImage[6];
+    private BufferedImage[] minimapIcons;
 
     private BufferedImage minimap;
     private Point playerLocation;
@@ -29,7 +33,6 @@ public class MinimapManager {
     private final List<MinimapIcon> icons = new ArrayList<>();
 
     private int flashTick = 0;
-    private final int flashSpeed = 40;
     private boolean flashVisible = true;
 
     public MinimapManager() {
@@ -46,17 +49,18 @@ public class MinimapManager {
     }
 
     private void loadMinimapIcons() {
+        this.minimapIcons = new BufferedImage[6];
         BufferedImage image = Utils.getInstance().importImage(MINIMAP_ICONS, -1, -1);
         for (int i = 0; i < 6; i++) {
-            minimapIcons[i] = image.getSubimage(i * 16, 0, 16, 16);
+            minimapIcons[i] = image.getSubimage(i * MINIMAP_ICON_SIZE, 0, MINIMAP_ICON_SIZE, MINIMAP_ICON_SIZE);
         }
     }
 
     private void findLevelPositions() {
-        for (int i = 0; i < 2; i++) {
-            for (int j = 0; j < 4; j++) {
+        for (int i = 0; i < MAX_LEVELS; i++) {
+            for (int j = 0; j < MAX_LEVELS; j++) {
                 String levelName = "level" + i + j;
-                BufferedImage levelImage = Utils.getInstance().importImage("/images/levels/"+levelName+".png", -1, -1);
+                BufferedImage levelImage = Utils.getInstance().importImage(LEVEL_SPRITES.replace("level$", levelName), -1, -1);
                 if (levelImage == null) continue;
                 BufferedImage img = levelImage.getSubimage(0, 0, levelImage.getWidth() / 2, levelImage.getHeight());
                 Point position = findImageOnMinimap(img, minimapImage);
@@ -74,12 +78,12 @@ public class MinimapManager {
                 int b = rgb & 0xFF;
                 if (r == 254 && g == 254 && b >= 1 && b <= 5) {
                     icons.add(new MinimapIcon(new Point(x, y), MinimapIconType.values()[b]));
-                    minimapImage.setRGB(x, y, new Color(78, 105, 80).getRGB());
+                    minimapImage.setRGB(x, y, MINIMAP_COLOR_BRIGHT.getRGB());
                 }
                 else if (r == 254 && g == 254 && b == 254)
-                    minimapImage.setRGB(x, y, new Color(78, 105, 80).getRGB());
+                    minimapImage.setRGB(x, y, MINIMAP_COLOR_BRIGHT.getRGB());
                 else {
-                    minimapImage.setRGB(x, y, new Color(41, 59, 41).getRGB());
+                    minimapImage.setRGB(x, y, MINIMAP_COLOR_DARK.getRGB());
                 }
             }
         }
@@ -156,7 +160,7 @@ public class MinimapManager {
      */
     public void update() {
         flashTick++;
-        if (flashTick >= flashSpeed) {
+        if (flashTick >= MINIMAP_FLASH_ANIM_SPEED) {
             flashTick = 0;
             flashVisible = !flashVisible;
         }

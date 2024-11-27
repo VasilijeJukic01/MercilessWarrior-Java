@@ -3,6 +3,9 @@ package platformer.constants;
 /**
  * This class contains all the file paths for the game's assets.
  * It is used to keep all the paths in one place for easy access.
+ * <p>
+ * Flags:
+ * $ - used as a placeholder.
  */
 public final class FilePaths {
 
@@ -12,6 +15,8 @@ public final class FilePaths {
     public static final String PLAYER_ABILITY_SHEET = "/images/player/abilitiesSheet.png";
 
     // Levels
+    public static final String LEVEL_SPRITES = "/images/levels/level$.png";
+    public static final String LEVEL_OBJECT_SPRITES = "/images/levels/levelObjects/$.png";
     public static final String BACKGROUND_1 = "/images/background1.jpg";
     public static final String FOREST_SPRITE = "/images/levels/mossyTiles.png";
     public static final String MINIMAP = "/images/levels/minimap.png";
@@ -79,10 +84,10 @@ public final class FilePaths {
     public static final String SAVE_BTN_SHEET = "/images/buttons/SaveButtons.png";
 
     // UI
+    public static final String MENU_SPRITES = "/images/menu/background/Background$.png";
     public static final String MENU_LOGO = "/images/menu/menuLogo.png";
     public static final String BOSS_BAR = "/images/enemies/Bosses/BossBar.png";
     public static final String PLAYER_HUD = "/images/playerHUD.png";
-    public static final String ABILITY_HUD = "/images/abilityHUD.png";
     public static final String PLAYER_PORTRAIT = "/images/portraitHUD.png";
     public static final String PAUSE_TXT = "/images/buttons/PauseText.png";
     public static final String MUSIC_TXT = "/images/buttons/MusicText.png";

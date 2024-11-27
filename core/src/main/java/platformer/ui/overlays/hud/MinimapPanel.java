@@ -8,11 +8,12 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.List;
 
+import static platformer.constants.Constants.MINIMAP_ZOOM;
+
 public class MinimapPanel {
 
     private final MinimapManager minimapManager;
     private final int x, y, width, height;
-    private double zoomFactor = 6.5;
     private int offsetX = 0, offsetY = 0;
 
     public MinimapPanel(MinimapManager minimapManager, int x, int y, int width, int height) {
@@ -35,8 +36,8 @@ public class MinimapPanel {
         BufferedImage minimap = minimapManager.getMinimap();
         g2d.setClip(x, y, width, height);
 
-        int mapWidth = (int) (minimap.getWidth() * zoomFactor);
-        int mapHeight = (int) (minimap.getHeight() * zoomFactor);
+        int mapWidth = (int) (minimap.getWidth() * MINIMAP_ZOOM);
+        int mapHeight = (int) (minimap.getHeight() * MINIMAP_ZOOM);
         int mapX = x + offsetX;
         int mapY = y + offsetY;
 
@@ -76,11 +77,11 @@ public class MinimapPanel {
     private void centerOnPlayer() {
         Point playerLocation = minimapManager.getPlayerLocation();
         if (playerLocation != null) {
-            int mapWidth = (int) (minimapManager.getMinimap().getWidth() * zoomFactor);
-            int mapHeight = (int) (minimapManager.getMinimap().getHeight() * zoomFactor);
+            int mapWidth = (int) (minimapManager.getMinimap().getWidth() * MINIMAP_ZOOM);
+            int mapHeight = (int) (minimapManager.getMinimap().getHeight() * MINIMAP_ZOOM);
 
-            offsetX = (width / 2) - (int) (playerLocation.x * zoomFactor);
-            offsetY = (height / 2) - (int) (playerLocation.y * zoomFactor);
+            offsetX = (width / 2) - (int) (playerLocation.x * MINIMAP_ZOOM);
+            offsetY = (height / 2) - (int) (playerLocation.y * MINIMAP_ZOOM);
 
             offsetX = Math.max(width - mapWidth, Math.min(0, offsetX));
             offsetY = Math.max(height - mapHeight, Math.min(0, offsetY));
