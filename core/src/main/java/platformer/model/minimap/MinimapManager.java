@@ -1,5 +1,7 @@
 package platformer.model.minimap;
 
+import platformer.debug.logger.Logger;
+import platformer.debug.logger.Message;
 import platformer.model.minimap.astar.AStarPathfinding;
 import platformer.utils.Utils;
 
@@ -15,10 +17,8 @@ import java.util.stream.IntStream;
 
 import static platformer.constants.AnimConstants.MINIMAP_FLASH_ANIM_SPEED;
 import static platformer.constants.AnimConstants.MINIMAP_ICON_SIZE;
-import static platformer.constants.Constants.MAX_LEVELS;
+import static platformer.constants.Constants.*;
 import static platformer.constants.FilePaths.*;
-import static platformer.constants.UI.MINIMAP_COLOR_BRIGHT;
-import static platformer.constants.UI.MINIMAP_COLOR_DARK;
 
 /**
  * MinimapManager handles minimap operations such as finding player spawn, level positions and updating player position.
@@ -81,13 +81,10 @@ public class MinimapManager {
                 int b = rgb & 0xFF;
                 if (r == 254 && g == 254 && b >= 1 && b <= 5) {
                     icons.add(new MinimapIcon(new Point(x, y), MinimapIconType.values()[b]));
-                    minimapImage.setRGB(x, y, MINIMAP_COLOR_BRIGHT.getRGB());
+                    minimapImage.setRGB(x, y, MINIMAP_WALKABLE.getRGB());
                 }
-                else if (r == 254 && g == 254 && b == 254)
-                    minimapImage.setRGB(x, y, MINIMAP_COLOR_BRIGHT.getRGB());
-                else {
-                    minimapImage.setRGB(x, y, MINIMAP_COLOR_DARK.getRGB());
-                }
+                else if (r == 254 && g == 254 && b == 254) minimapImage.setRGB(x, y, MINIMAP_WALKABLE.getRGB());
+                else minimapImage.setRGB(x, y, MINIMAP_UNWALKABLE.getRGB());
             }
         }
     }
@@ -179,15 +176,7 @@ public class MinimapManager {
         playerLocation.x += dx;
         playerLocation.y += dy;
         clampPlayerPosition();
-        if (pinnedLocation != null) {
-            if (playerLocation.equals(pinnedLocation)) {
-                resetPin(pinnedLocation);
-                return;
-            }
-            minimapImage.setRGB(pinnedLocation.x, pinnedLocation.y, MINIMAP_COLOR_BRIGHT.getRGB());
-            findPath();
-            minimapImage.setRGB(pinnedLocation.x, pinnedLocation.y, MINIMAP_COLOR_BRIGHT.getRGB());
-        }
+        updatePinnedLocation();
     }
 
     /**
@@ -196,6 +185,17 @@ public class MinimapManager {
     private void clampPlayerPosition() {
         playerLocation.x = Math.max(0, Math.min(playerLocation.x, minimap.getWidth() - 1));
         playerLocation.y = Math.max(0, Math.min(playerLocation.y, minimap.getHeight() - 1));
+    }
+
+    private void updatePinnedLocation() {
+        if (pinnedLocation == null) return;
+        if (playerLocation.equals(pinnedLocation)) {
+            resetPin(pinnedLocation);
+            return;
+        }
+        minimapImage.setRGB(pinnedLocation.x, pinnedLocation.y, MINIMAP_WALKABLE.getRGB());
+        findPath();
+        minimapImage.setRGB(pinnedLocation.x, pinnedLocation.y, Color.BLUE.getRGB());
     }
 
     private void updateMinimap() {
@@ -216,6 +216,12 @@ public class MinimapManager {
             playerLocation = new Point(newLocation);
     }
 
+    /**
+     * Pins a location on the minimap.
+     *
+     * @param location The location to pin.
+     * @param color The color to use for the pin.
+     */
     public void pinLocation(Point location, Color color) {
         if (pinnedLocation != null) resetPin(pinnedLocation);
         else if (isValid(minimapImage, location)) {
@@ -223,6 +229,7 @@ public class MinimapManager {
             pinnedLocation = location;
             findPath();
             minimapImage.setRGB(location.x, location.y, color.getRGB());
+            Logger.getInstance().notify("Minimap location pinned at: (" + location.x + ", " + location.y + ")", Message.NOTIFICATION);
         }
     }
 
@@ -232,13 +239,14 @@ public class MinimapManager {
             int r = (rgb >> 16) & 0xFF;
             int g = (rgb >> 8) & 0xFF;
             int b = rgb & 0xFF;
-            return r == 78 && g == 105 && b == 80;
+
+            return r == MINIMAP_WALKABLE.getRed() && g == MINIMAP_WALKABLE.getGreen() && b == MINIMAP_WALKABLE.getBlue();
         }
         return false;
     }
 
     private void resetPin(Point location) {
-        minimapImage.setRGB(location.x, location.y, MINIMAP_COLOR_BRIGHT.getRGB());
+        minimapImage.setRGB(location.x, location.y, MINIMAP_WALKABLE.getRGB());
         pinnedLocation = null;
         pathPoints.clear();
     }
@@ -249,6 +257,11 @@ public class MinimapManager {
         pathPoints = pathfinding.findPath(minimapImage, playerLocation, pinnedLocation);
     }
 
+    public void reset() {
+        if (pinnedLocation != null) resetPin(pinnedLocation);
+    }
+
+    // Getters & Setters
     public BufferedImage getMinimap() {
         updateMinimap();
         return minimap;

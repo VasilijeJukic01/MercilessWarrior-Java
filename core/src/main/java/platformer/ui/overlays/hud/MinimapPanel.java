@@ -31,9 +31,11 @@ public class MinimapPanel {
         g2d.setColor(Color.WHITE);
         g2d.setStroke(new BasicStroke(3));
         g2d.drawRect(x, y, width, height);
-        g2d.setColor(new Color(0, 0, 0, 180));
-        g2d.fillRect(x, y, width, height);
+        renderMinimap(g2d);
+        g2d.setClip(null);
+    }
 
+    private void renderMinimap(Graphics2D g2d) {
         BufferedImage minimap = minimapManager.getMinimap();
         g2d.setClip(x, y, width, height);
 
@@ -45,15 +47,14 @@ public class MinimapPanel {
         g2d.drawImage(minimap, mapX, mapY, mapWidth, mapHeight, null);
         renderIcons(g2d, mapX, mapY, mapWidth, mapHeight, minimap);
         renderPath(g2d, mapX, mapY, mapWidth, mapHeight, minimap);
-        g2d.setClip(null);
     }
 
     private void renderIcons(Graphics2D g2d, int mapX, int mapY, int mapWidth, int mapHeight, BufferedImage minimap) {
         double scaledPixelWidth = (double) mapWidth / minimap.getWidth();
         double scaledPixelHeight = (double) mapHeight / minimap.getHeight();
-
         List<MinimapIcon> icons = minimapManager.getIcons();
         BufferedImage[] minimapIcons = minimapManager.getMinimapIcons();
+
         for (MinimapIcon icon : icons) {
             BufferedImage img = minimapIcons[icon.getType().ordinal()];
             int iconWidth = (int) (1.8 * scaledPixelWidth);
@@ -63,16 +64,24 @@ public class MinimapPanel {
             g2d.drawImage(img, iconX, iconY, iconWidth, iconHeight, null);
         }
 
-        if (minimapManager.isFlashVisible()) {
-            Point playerLocation = minimapManager.getPlayerLocation();
-            if (playerLocation != null) {
-                BufferedImage playerIcon = minimapIcons[MinimapIconType.PLAYER.ordinal()];
-                int playerIconWidth = (int) (1.8 * scaledPixelWidth);
-                int playerIconHeight = (int) (1.8 * scaledPixelHeight);
-                int playerIconX = mapX + (int) (playerLocation.x * scaledPixelWidth) - playerIconWidth / 3;
-                int playerIconY = mapY + (int) (playerLocation.y * scaledPixelHeight) - playerIconHeight / 2;
-                g2d.drawImage(playerIcon, playerIconX, playerIconY, playerIconWidth, playerIconHeight, null);
-            }
+        if (minimapManager.isFlashVisible())
+            renderPlayer(g2d, mapX, mapY, mapWidth, mapHeight, minimap);
+
+    }
+
+    private void renderPlayer(Graphics2D g2d, int mapX, int mapY, int mapWidth, int mapHeight, BufferedImage minimap) {
+        Point playerLocation = minimapManager.getPlayerLocation();
+
+        if (playerLocation != null) {
+            double scaledPixelWidth = (double) mapWidth / minimap.getWidth();
+            double scaledPixelHeight = (double) mapHeight / minimap.getHeight();
+            BufferedImage playerIcon = minimapManager.getMinimapIcons()[MinimapIconType.PLAYER.ordinal()];
+            int playerIconWidth = (int) (1.8 * scaledPixelWidth);
+            int playerIconHeight = (int) (1.8 * scaledPixelHeight);
+            int playerIconX = mapX + (int) (playerLocation.x * scaledPixelWidth) - playerIconWidth / 3;
+            int playerIconY = mapY + (int) (playerLocation.y * scaledPixelHeight) - playerIconHeight / 2;
+
+            g2d.drawImage(playerIcon, playerIconX, playerIconY, playerIconWidth, playerIconHeight, null);
         }
     }
 
@@ -86,7 +95,7 @@ public class MinimapPanel {
             int dotX = mapX + (int) (point.x * scaledPixelWidth);
             int dotY = mapY + (int) (point.y * scaledPixelHeight);
             int dotSize = (int) (2 * SCALE);
-            g2d.fillOval(dotX - dotSize / 2, dotY - dotSize / 2, dotSize, dotSize);
+            g2d.fillOval(dotX + (int)(scaledPixelWidth / 2.1), dotY + (int)(scaledPixelHeight / 2.1), dotSize, dotSize);
         }
     }
 

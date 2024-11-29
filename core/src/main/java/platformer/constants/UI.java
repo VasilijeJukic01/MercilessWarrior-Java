@@ -400,9 +400,6 @@ public final class UI {
     public static final int RADAR_X = scale(700);
     public static final int RADAR_Y = scale(7);
 
-    public static final Color MINIMAP_COLOR_BRIGHT = new Color(78, 105, 80);
-    public static final Color MINIMAP_COLOR_DARK =  new Color(41, 59, 41);
-
     private static int scale(double value) {
         return (int)(value * SCALE);
     }

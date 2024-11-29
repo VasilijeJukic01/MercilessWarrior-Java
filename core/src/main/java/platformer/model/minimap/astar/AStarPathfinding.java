@@ -5,6 +5,8 @@ import java.awt.image.BufferedImage;
 import java.util.*;
 import java.util.List;
 
+import static platformer.constants.Constants.MINIMAP_WALKABLE;
+
 /**
  * Provides an implementation of the A* algorithm for finding the shortest path between two points on a minimap.
  */
@@ -84,8 +86,7 @@ public class AStarPathfinding {
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
                 int rgb = minimap.getRGB(x, y) & 0xFFFFFF;
-                // RGB (78, 105, 80)
-                walkable[x][y] = (rgb == 0x4E6950);
+                walkable[x][y] = (rgb == (MINIMAP_WALKABLE.getRGB() & 0xFFFFFF));
             }
         }
 

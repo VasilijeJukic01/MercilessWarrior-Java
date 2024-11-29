@@ -1,5 +1,7 @@
 package platformer.constants;
 
+import java.awt.*;
+
 import static platformer.launcher.Config.SCALING_FACTOR;
 
 // Vocabulary
@@ -73,6 +75,9 @@ public final class Constants {
     public static final double MIN_ZOOM = 1.0;
     public static final double MAX_ZOOM = 2.0;
     public static final double MINIMAP_ZOOM = 6.5;
+
+    public static final Color MINIMAP_WALKABLE = new Color(78, 105, 80);
+    public static final Color MINIMAP_UNWALKABLE =  new Color(41, 59, 41);
 
     // Perks Constants
     public static final int XP_BONUS_AMOUNT = 15;

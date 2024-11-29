@@ -40,7 +40,6 @@ public class MinimapOverlay implements Overlay<MouseEvent, KeyEvent, Graphics>, 
         if (e.getButton() == MouseEvent.BUTTON2) {
             if (overlay.contains(e.getPoint())) {
                 Point minimapCoords = screenToMinimap(e.getX(), e.getY());
-                System.out.println("Minimap coordinates: " + minimapCoords);
                 gameState.getMinimapManager().pinLocation(minimapCoords, Color.BLUE);
             }
         }
@@ -134,9 +133,9 @@ public class MinimapOverlay implements Overlay<MouseEvent, KeyEvent, Graphics>, 
     private void renderIcons(Graphics2D g2d, int x, int y, int width, int height, BufferedImage map) {
         double scaledPixelWidth = (double) width / map.getWidth();
         double scaledPixelHeight = (double) height / map.getHeight();
-
         List<MinimapIcon> icons = gameState.getMinimapManager().getIcons();
         BufferedImage[] minimapIcons = gameState.getMinimapManager().getMinimapIcons();
+
         for (MinimapIcon icon : icons) {
             BufferedImage img = minimapIcons[icon.getType().ordinal()];
             int iconWidth = (int) (1.8 * scaledPixelWidth);
@@ -146,16 +145,21 @@ public class MinimapOverlay implements Overlay<MouseEvent, KeyEvent, Graphics>, 
             g2d.drawImage(img, iconX, iconY, iconWidth, iconHeight, null);
         }
 
-        if (gameState.getMinimapManager().isFlashVisible()) {
-            Point playerLocation = gameState.getMinimapManager().getPlayerLocation();
-            if (playerLocation != null) {
-                BufferedImage playerIcon = minimapIcons[MinimapIconType.PLAYER.ordinal()];
-                int playerIconWidth = (int) (1.8 * scaledPixelWidth);
-                int playerIconHeight = (int) (1.8 * scaledPixelHeight);
-                int playerIconX = x + (int) (playerLocation.x * scaledPixelWidth) - playerIconWidth / 3;
-                int playerIconY = y + (int) (playerLocation.y * scaledPixelHeight) - playerIconHeight / 2;
-                g2d.drawImage(playerIcon, playerIconX, playerIconY, playerIconWidth, playerIconHeight, null);
-            }
+        if (gameState.getMinimapManager().isFlashVisible()) renderPlayer(g2d, x, y, width, height, map);
+    }
+
+    private void renderPlayer(Graphics2D g2d, int x, int y, int width, int height, BufferedImage map) {
+        Point playerLocation = gameState.getMinimapManager().getPlayerLocation();
+
+        if (playerLocation != null) {
+            double scaledPixelWidth = (double) width / map.getWidth();
+            double scaledPixelHeight = (double) height / map.getHeight();
+            BufferedImage playerIcon = gameState.getMinimapManager().getMinimapIcons()[MinimapIconType.PLAYER.ordinal()];
+            int playerIconWidth = (int) (1.8 * scaledPixelWidth);
+            int playerIconHeight = (int) (1.8 * scaledPixelHeight);
+            int playerIconX = x + (int) (playerLocation.x * scaledPixelWidth) - playerIconWidth / 3;
+            int playerIconY = y + (int) (playerLocation.y * scaledPixelHeight) - playerIconHeight / 2;
+            g2d.drawImage(playerIcon, playerIconX, playerIconY, playerIconWidth, playerIconHeight, null);
         }
     }
 
@@ -169,7 +173,7 @@ public class MinimapOverlay implements Overlay<MouseEvent, KeyEvent, Graphics>, 
             int dotX = x + (int) (point.x * scaledPixelWidth);
             int dotY = y + (int) (point.y * scaledPixelHeight);
             int dotSize = (int) (2 * SCALE);
-            g2d.fillOval(dotX - dotSize / 2, dotY - dotSize / 2, dotSize, dotSize);
+            g2d.fillOval(dotX + (int)(scaledPixelWidth / 2.1), dotY + (int)(scaledPixelHeight / 2.1), dotSize, dotSize);
         }
     }
 
