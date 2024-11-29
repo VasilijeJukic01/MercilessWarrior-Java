@@ -81,6 +81,11 @@ public class GameOverOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
     }
 
     @Override
+    public void mouseClicked(MouseEvent mouseEvent) {
+
+    }
+
+    @Override
     public void mousePressed(MouseEvent e) {
         if (isMouseInButton(e, retryBtn)) retryBtn.setMousePressed(true);
         if (isMouseInButton(e, menuBtn)) menuBtn.setMousePressed(true);

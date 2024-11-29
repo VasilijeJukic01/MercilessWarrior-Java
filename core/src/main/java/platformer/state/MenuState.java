@@ -63,6 +63,11 @@ public class MenuState extends AbstractState implements State {
         renderMenuButtons(g);
     }
 
+    @Override
+    public void mouseClicked(MouseEvent e) {
+
+    }
+
     // Render
     private void renderMenuImages(Graphics g) {
         OverlayLayer.getInstance().renderMenu(g);

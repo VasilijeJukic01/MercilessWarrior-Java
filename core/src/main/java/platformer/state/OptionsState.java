@@ -22,7 +22,7 @@ import static platformer.constants.UI.*;
  * In this state, the player can adjust various settings such as audio options.
  */
 @SuppressWarnings("FieldCanBeLocal")
-public class OptionsState extends AbstractState implements State{
+public class OptionsState extends AbstractState implements State {
 
     private final AudioOptions audioOptions;
 
@@ -62,6 +62,11 @@ public class OptionsState extends AbstractState implements State{
         renderImages(g);
         exitBtn.render(g);
         audioOptions.render(g);
+    }
+
+    @Override
+    public void mouseClicked(MouseEvent e) {
+
     }
 
     // Render

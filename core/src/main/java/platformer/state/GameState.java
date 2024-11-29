@@ -221,6 +221,11 @@ public class GameState extends AbstractState implements State {
         this.overlayManager.render(g);
     }
 
+    @Override
+    public void mouseClicked(MouseEvent e) {
+        gameStateController.mouseClicked(e);
+    }
+
     private void handleGameState() {
         try {
             checkLevelExit();

@@ -9,6 +9,7 @@ import java.awt.image.BufferedImage;
 import java.util.List;
 
 import static platformer.constants.Constants.MINIMAP_ZOOM;
+import static platformer.constants.Constants.SCALE;
 
 public class MinimapPanel {
 
@@ -43,6 +44,7 @@ public class MinimapPanel {
 
         g2d.drawImage(minimap, mapX, mapY, mapWidth, mapHeight, null);
         renderIcons(g2d, mapX, mapY, mapWidth, mapHeight, minimap);
+        renderPath(g2d, mapX, mapY, mapWidth, mapHeight, minimap);
         g2d.setClip(null);
     }
 
@@ -71,6 +73,20 @@ public class MinimapPanel {
                 int playerIconY = mapY + (int) (playerLocation.y * scaledPixelHeight) - playerIconHeight / 2;
                 g2d.drawImage(playerIcon, playerIconX, playerIconY, playerIconWidth, playerIconHeight, null);
             }
+        }
+    }
+
+    private void renderPath(Graphics2D g2d, int mapX, int mapY, int mapWidth, int mapHeight, BufferedImage minimap) {
+        double scaledPixelWidth = (double) mapWidth / minimap.getWidth();
+        double scaledPixelHeight = (double) mapHeight / minimap.getHeight();
+
+        List<Point> pathPoints = minimapManager.getPathPoints();
+        g2d.setColor(Color.YELLOW);
+        for (Point point : pathPoints) {
+            int dotX = mapX + (int) (point.x * scaledPixelWidth);
+            int dotY = mapY + (int) (point.y * scaledPixelHeight);
+            int dotSize = (int) (2 * SCALE);
+            g2d.fillOval(dotX - dotSize / 2, dotY - dotSize / 2, dotSize, dotSize);
         }
     }
 

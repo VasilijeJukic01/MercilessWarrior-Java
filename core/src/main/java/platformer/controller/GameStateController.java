@@ -117,6 +117,10 @@ public class GameStateController {
     }
 
     // Mouse
+    public void mouseClicked(MouseEvent e) {
+        gameState.getOverlayManager().mouseClicked(e);
+    }
+
     public void mousePressed(MouseEvent e) {
         gameState.getOverlayManager().mousePressed(e);
     }

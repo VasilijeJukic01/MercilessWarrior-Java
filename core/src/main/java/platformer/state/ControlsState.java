@@ -65,6 +65,11 @@ public class ControlsState extends AbstractState implements State {
         renderControls(g);
     }
 
+    @Override
+    public void mouseClicked(MouseEvent e) {
+
+    }
+
     // Render
     private void renderControls(Graphics g) {
         renderTexts(g);

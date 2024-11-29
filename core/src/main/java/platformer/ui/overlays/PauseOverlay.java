@@ -96,6 +96,11 @@ public class PauseOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
     }
 
     @Override
+    public void mouseClicked(MouseEvent mouseEvent) {
+
+    }
+
+    @Override
     public void mousePressed(MouseEvent e) {
         if (isMouseInButton(e, continueBtn)) continueBtn.setMousePressed(true);
         else if (isMouseInButton(e, retryBtn)) retryBtn.setMousePressed(true);

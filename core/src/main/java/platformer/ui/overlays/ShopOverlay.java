@@ -311,6 +311,11 @@ public class ShopOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
     }
 
     @Override
+    public void mouseClicked(MouseEvent mouseEvent) {
+
+    }
+
+    @Override
     public void mousePressed(MouseEvent e) {
         setMousePressed(e, smallButtons);
         setMousePressed(e, mediumButtons);

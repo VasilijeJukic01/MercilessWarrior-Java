@@ -60,6 +60,11 @@ public class ChoseGameState extends AbstractState implements State {
         Arrays.stream(buttons).forEach(b -> b.render(g));
     }
 
+    @Override
+    public void mouseClicked(MouseEvent e) {
+
+    }
+
     private void renderSlots(Graphics g) {
         Framework.getInstance().getSaveController().getGameSlots().forEach(s -> s.render(g));
     }

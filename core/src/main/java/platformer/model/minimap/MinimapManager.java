@@ -1,5 +1,6 @@
 package platformer.model.minimap;
 
+import platformer.model.minimap.astar.AStarPathfinding;
 import platformer.utils.Utils;
 
 import java.awt.*;
@@ -29,6 +30,8 @@ public class MinimapManager {
 
     private BufferedImage minimap;
     private Point playerLocation;
+    private Point pinnedLocation;
+    private List<Point> pathPoints = new ArrayList<>();
     private Map<String, Point> levelPositions;
     private final List<MinimapIcon> icons = new ArrayList<>();
 
@@ -176,6 +179,15 @@ public class MinimapManager {
         playerLocation.x += dx;
         playerLocation.y += dy;
         clampPlayerPosition();
+        if (pinnedLocation != null) {
+            if (playerLocation.equals(pinnedLocation)) {
+                resetPin(pinnedLocation);
+                return;
+            }
+            minimapImage.setRGB(pinnedLocation.x, pinnedLocation.y, MINIMAP_COLOR_BRIGHT.getRGB());
+            findPath();
+            minimapImage.setRGB(pinnedLocation.x, pinnedLocation.y, MINIMAP_COLOR_BRIGHT.getRGB());
+        }
     }
 
     /**
@@ -204,6 +216,39 @@ public class MinimapManager {
             playerLocation = new Point(newLocation);
     }
 
+    public void pinLocation(Point location, Color color) {
+        if (pinnedLocation != null) resetPin(pinnedLocation);
+        else if (isValid(minimapImage, location)) {
+            if (pinnedLocation != null) resetPin(pinnedLocation);
+            pinnedLocation = location;
+            findPath();
+            minimapImage.setRGB(location.x, location.y, color.getRGB());
+        }
+    }
+
+    private boolean isValid(BufferedImage image, Point point) {
+        if (point.x >= 0 && point.y >= 0 && point.x < image.getWidth() && point.y < image.getHeight()) {
+            int rgb = image.getRGB(point.x, point.y);
+            int r = (rgb >> 16) & 0xFF;
+            int g = (rgb >> 8) & 0xFF;
+            int b = rgb & 0xFF;
+            return r == 78 && g == 105 && b == 80;
+        }
+        return false;
+    }
+
+    private void resetPin(Point location) {
+        minimapImage.setRGB(location.x, location.y, MINIMAP_COLOR_BRIGHT.getRGB());
+        pinnedLocation = null;
+        pathPoints.clear();
+    }
+
+    public void findPath() {
+        if (playerLocation == null || pinnedLocation == null) return;
+        AStarPathfinding pathfinding = new AStarPathfinding();
+        pathPoints = pathfinding.findPath(minimapImage, playerLocation, pinnedLocation);
+    }
+
     public BufferedImage getMinimap() {
         updateMinimap();
         return minimap;
@@ -223,5 +268,9 @@ public class MinimapManager {
 
     public boolean isFlashVisible() {
         return flashVisible;
+    }
+
+    public List<Point> getPathPoints() {
+        return pathPoints;
     }
 }

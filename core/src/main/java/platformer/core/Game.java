@@ -117,6 +117,10 @@ public class Game implements Runnable {
         stateManager.getCurrentState().keyReleased(e);
     }
 
+    public void mouseClicked(MouseEvent e) {
+        stateManager.getCurrentState().mouseClicked(e);
+    }
+
     public void mousePressed(MouseEvent e) {
         stateManager.getCurrentState().mousePressed(e);
     }

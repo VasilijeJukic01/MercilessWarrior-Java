@@ -7,6 +7,7 @@ import platformer.state.GameState;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.List;
@@ -18,7 +19,7 @@ import static platformer.constants.UI.*;
  * MinimapOverlay class is an overlay that is displayed when the player selects the minimap option.
  * It allows the player to view a smaller version of the game map, zoom in and out, and drag the map around.
  */
-public class MinimapOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
+public class MinimapOverlay implements Overlay<MouseEvent, KeyEvent, Graphics>, MouseListener {
 
     private final GameState gameState;
 
@@ -32,6 +33,17 @@ public class MinimapOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
     public MinimapOverlay(GameState gameState) {
         this.gameState = gameState;
         this.overlay = new Rectangle2D.Double(MAP_OVERLAY_X, MAP_OVERLAY_Y, MAP_OVERLAY_WID, MAP_OVERLAY_HEI);
+    }
+
+    @Override
+    public void mouseClicked(MouseEvent e) {
+        if (e.getButton() == MouseEvent.BUTTON2) {
+            if (overlay.contains(e.getPoint())) {
+                Point minimapCoords = screenToMinimap(e.getX(), e.getY());
+                System.out.println("Minimap coordinates: " + minimapCoords);
+                gameState.getMinimapManager().pinLocation(minimapCoords, Color.BLUE);
+            }
+        }
     }
 
     @Override
@@ -67,6 +79,16 @@ public class MinimapOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
     }
 
     @Override
+    public void mouseEntered(MouseEvent e) {
+
+    }
+
+    @Override
+    public void mouseExited(MouseEvent e) {
+
+    }
+
+    @Override
     public void keyPressed(KeyEvent e) {
         if (e.getKeyCode() == KeyEvent.VK_PLUS || e.getKeyCode() == KeyEvent.VK_EQUALS) {
             zoomFactor = Math.min(zoomFactor + 0.1, MAX_ZOOM);
@@ -96,6 +118,7 @@ public class MinimapOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
 
         g2d.drawImage(map, x, y, width, height, null);
         renderIcons(g2d, x, y, width, height, map);
+        renderPath(g2d, x, y, width, height, map);
         g2d.setClip(null);
     }
 
@@ -136,6 +159,20 @@ public class MinimapOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
         }
     }
 
+    private void renderPath(Graphics2D g2d, int x, int y, int width, int height, BufferedImage map) {
+        double scaledPixelWidth = (double) width / map.getWidth();
+        double scaledPixelHeight = (double) height / map.getHeight();
+
+        List<Point> pathPoints = gameState.getMinimapManager().getPathPoints();
+        g2d.setColor(Color.YELLOW);
+        for (Point point : pathPoints) {
+            int dotX = x + (int) (point.x * scaledPixelWidth);
+            int dotY = y + (int) (point.y * scaledPixelHeight);
+            int dotSize = (int) (2 * SCALE);
+            g2d.fillOval(dotX - dotSize / 2, dotY - dotSize / 2, dotSize, dotSize);
+        }
+    }
+
     /**
      * Clamps the offsets to ensure the minimap does not go out of bounds.
      */
@@ -144,6 +181,21 @@ public class MinimapOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
         int maxOffsetY = (int) ((MAP_OVERLAY_HEI - (int)(40 * SCALE)) * (zoomFactor - 1));
         offsetX = Math.max(-maxOffsetX, Math.min(offsetX, 0));
         offsetY = Math.max(-maxOffsetY, Math.min(offsetY, 0));
+    }
+
+    private Point screenToMinimap(int screenX, int screenY) {
+        int mapX = MAP_OVERLAY_X + (int)(20 * SCALE) + offsetX;
+        int mapY = MAP_OVERLAY_Y + (int)(20 * SCALE) + offsetY;
+        int width = (int) ((MAP_OVERLAY_WID - (int)(40 * SCALE)) * zoomFactor);
+        int height = (int) ((MAP_OVERLAY_HEI - (int)(40 * SCALE)) * zoomFactor);
+
+        double scaledPixelWidth = (double) width / gameState.getMinimapManager().getMinimap().getWidth();
+        double scaledPixelHeight = (double) height / gameState.getMinimapManager().getMinimap().getHeight();
+
+        int minimapX = (int) ((screenX - mapX) / scaledPixelWidth);
+        int minimapY = (int) ((screenY - mapY) / scaledPixelHeight);
+
+        return new Point(minimapX, minimapY);
     }
 
     @Override

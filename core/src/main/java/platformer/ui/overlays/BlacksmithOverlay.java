@@ -216,6 +216,11 @@ public class BlacksmithOverlay implements Overlay<MouseEvent, KeyEvent, Graphics
     }
 
     @Override
+    public void mouseClicked(MouseEvent mouseEvent) {
+
+    }
+
+    @Override
     public void mousePressed(MouseEvent e) {
         Arrays.stream(buttons)
                 .filter(button -> isMouseInButton(e, button))

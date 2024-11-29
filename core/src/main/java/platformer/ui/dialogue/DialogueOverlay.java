@@ -54,6 +54,11 @@ public class DialogueOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
     }
 
     @Override
+    public void mouseClicked(MouseEvent mouseEvent) {
+
+    }
+
+    @Override
     public void mousePressed(MouseEvent e) {
 
     }

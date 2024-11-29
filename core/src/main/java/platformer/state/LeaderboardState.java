@@ -58,6 +58,11 @@ public class LeaderboardState extends AbstractState implements State {
         renderLeaderboard(g);
     }
 
+    @Override
+    public void mouseClicked(MouseEvent e) {
+
+    }
+
     // Render
     private void renderLeaderboard(Graphics g) {
         List<BoardItem> data = Framework.getInstance().getLeaderboard();

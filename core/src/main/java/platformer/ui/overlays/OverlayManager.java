@@ -53,6 +53,13 @@ public class OverlayManager {
         }
     }
 
+    public void mouseClicked(MouseEvent e) {
+        PlayingState overlay = gameState.getActiveState();
+        if (overlay != null) {
+            overlays.get(overlay).mouseClicked(e);
+        }
+    }
+
     public void mousePressed(MouseEvent e) {
         PlayingState overlay = gameState.getActiveState();
         if (overlay != null) {

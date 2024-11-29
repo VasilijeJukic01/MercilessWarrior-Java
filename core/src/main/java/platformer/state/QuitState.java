@@ -33,6 +33,11 @@ public class QuitState extends AbstractState implements State {
     }
 
     @Override
+    public void mouseClicked(MouseEvent e) {
+
+    }
+
+    @Override
     public void mousePressed(MouseEvent e) {
 
     }
