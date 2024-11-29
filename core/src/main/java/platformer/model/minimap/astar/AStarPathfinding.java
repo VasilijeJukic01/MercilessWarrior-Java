@@ -10,53 +10,55 @@ import java.util.List;
  */
 public class AStarPathfinding {
 
-    private final int[] DX = {-1, 1, 0, 0};
-    private final int[] DY = {0, 0, -1, 1};
+    private final int[] DX = {-1, 1, 0, 0, -1, -1, 1, 1};
+    private final int[] DY = {0, 0, -1, 1, -1, 1, -1, 1};
+    private final double[] COST = {1, 1, 1, 1, Math.sqrt(2), Math.sqrt(2), Math.sqrt(2), Math.sqrt(2)};
+    private boolean[][] cachedWalkable;
+    private BufferedImage cachedMinimap;
 
     /**
      * Finds the shortest path from the start point to the end point on the minimap.
      *
-     * @param minimap Image of the minimap. Walkable pixels are white (R=254, G=254, B=254).
-     * @param start The starting point of the path.
-     * @param end The target point of the path.
+     * @param minimap Image of the minimap.
+     * @param start   The starting point of the path.
+     * @param end     The target point of the path.
      * @return A list of Points representing the path from start to end. Returns an empty list if no path is found.
      * @throws IllegalArgumentException If the start or end point is not walkable.
      */
     public List<Point> findPath(BufferedImage minimap, Point start, Point end) {
-        if (!isWalkable(minimap, start) || !isWalkable(minimap, end)) {
-            throw new IllegalArgumentException("Start or end point is not walkable.");
-        }
+        boolean[][] walkable = preprocessWalkability(minimap);
 
-        // Priority queue (openSet) to hold nodes to explore, prioritized by their f-score.
+        if (!isWalkableAndValid(walkable, start) || !isWalkableAndValid(walkable, end))
+            throw new IllegalArgumentException("Start or end point is not walkable or valid.");
+
         PriorityQueue<AStarNode> openSet = new PriorityQueue<>(Comparator.comparingDouble(AStarNode::getF));
-        // Closed set to track nodes that have already been evaluated.
         Set<Point> closedSet = new HashSet<>();
-        // Map to reconstruct the path from end to start.
+        Map<Point, Double> gScores = new HashMap<>();
         Map<Point, Point> cameFrom = new HashMap<>();
 
         openSet.add(new AStarNode(start, 0, heuristic(start, end)));
+        gScores.put(start, 0.0);
 
         while (!openSet.isEmpty()) {
-            AStarNode current = openSet.poll();
-            Point currentPoint = current.getPoint();
+            AStarNode currentNode = openSet.poll();
+            Point currentPoint = currentNode.getPoint();
 
             if (currentPoint.equals(end)) return reconstructPath(cameFrom, end);
+            if (!closedSet.add(currentPoint)) continue;
 
-            closedSet.add(currentPoint);
+            for (int i = 0; i < 8; i++) {
+                int nx = currentPoint.x + DX[i];
+                int ny = currentPoint.y + DY[i];
+                Point neighbor = new Point(nx, ny);
 
-            for (int i = 0; i < 4; i++) {
-                Point neighbor = new Point(currentPoint.x + DX[i], currentPoint.y + DY[i]);
-                if (!isValid(minimap, neighbor) || closedSet.contains(neighbor) || !isWalkable(minimap, neighbor)) continue;
+                if (!isWalkableAndValid(walkable, neighbor) || closedSet.contains(neighbor)) continue;
 
-                double tentativeG = current.getG() + 1;
-                Optional<AStarNode> existingNode = openSet.stream()
-                        .filter(n -> n.getPoint().equals(neighbor))
-                        .findFirst();
-
-                if (!existingNode.isPresent() || tentativeG < existingNode.get().getG()) {
+                double tentativeG = gScores.getOrDefault(currentPoint, Double.MAX_VALUE) + COST[i];
+                if (tentativeG < gScores.getOrDefault(neighbor, Double.MAX_VALUE)) {
+                    gScores.put(neighbor, tentativeG);
+                    double f = tentativeG + heuristic(neighbor, end);
+                    openSet.add(new AStarNode(neighbor, tentativeG, f));
                     cameFrom.put(neighbor, currentPoint);
-                    existingNode.ifPresent(openSet::remove);
-                    openSet.add(new AStarNode(neighbor, tentativeG, tentativeG + heuristic(neighbor, end)));
                 }
             }
         }
@@ -65,45 +67,75 @@ public class AStarPathfinding {
     }
 
     /**
-     * Validates whether a point lies within the bounds of the minimap.
+     * Precomputes a boolean array for walkable points on the minimap.
      *
-     * @param minimap BufferedImage representing the minimap.
-     * @param point The point to validate.
-     * @return True if the point is within bounds, false otherwise.
+     * Caches the result if the minimap has not changed since the last call.
+     *
+     * @param minimap Image of the minimap.
+     * @return A 2D boolean array where true indicates a walkable point.
      */
-    private boolean isValid(BufferedImage minimap, Point point) {
-        return point.x >= 0 && point.y >= 0 && point.x < minimap.getWidth() && point.y < minimap.getHeight();
-    }
+    private boolean[][] preprocessWalkability(BufferedImage minimap) {
+        if (minimap.equals(cachedMinimap) && cachedWalkable != null) return cachedWalkable;
 
-    private boolean isWalkable(BufferedImage minimap, Point point) {
-        int rgb = minimap.getRGB(point.x, point.y);
-        int r = (rgb >> 16) & 0xFF;
-        int g = (rgb >> 8) & 0xFF;
-        int b = rgb & 0xFF;
-        return r == 78 && g == 105 && b == 80;
+        int width = minimap.getWidth();
+        int height = minimap.getHeight();
+        boolean[][] walkable = new boolean[width][height];
+
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                int rgb = minimap.getRGB(x, y) & 0xFFFFFF;
+                // RGB (78, 105, 80)
+                walkable[x][y] = (rgb == 0x4E6950);
+            }
+        }
+
+        cachedWalkable = walkable;
+        cachedMinimap = minimap;
+        return walkable;
     }
 
     /**
-     * Heuristic function for estimating the distance between two points using Manhattan distance.
+     * Checks if the given point is walkable and within bounds.
+     *
+     * @param walkable 2D boolean array indicating walkable points.
+     * @param point    The point to check.
+     * @return True if the point is walkable and within bounds, false otherwise.
+     */
+    private boolean isWalkableAndValid(boolean[][] walkable, Point point) {
+        return point.x >= 0 && point.y >= 0
+                && point.x < walkable.length && point.y < walkable[0].length
+                && walkable[point.x][point.y];
+    }
+
+    /**
+     * Heuristic function for estimating the distance between two points using Euclidean distance.
      *
      * @param a The first point.
      * @param b The second point.
-     * @return The Manhattan distance between the two points.
+     * @return The Euclidean distance between the two points.
      */
     private double heuristic(Point a, Point b) {
-        return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
+        return Math.hypot(a.x - b.x, a.y - b.y);
     }
 
+    /**
+     * Reconstructs the path from the start to the end using the cameFrom map.
+     *
+     * @param cameFrom Map storing the path relationships.
+     * @param end      The target point.
+     * @return A list of Points representing the path.
+     */
     private List<Point> reconstructPath(Map<Point, Point> cameFrom, Point end) {
-        List<Point> path = new LinkedList<>();
+        List<Point> path = new ArrayList<>();
         Point current = end;
 
         while (cameFrom.containsKey(current)) {
-            path.add(0, current);
+            path.add(current);
             current = cameFrom.get(current);
         }
 
-        path.add(0, current);
+        path.add(current);
+        Collections.reverse(path);
         return path;
     }
 }
