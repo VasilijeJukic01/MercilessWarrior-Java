@@ -2,18 +2,21 @@ package platformer.audio;
 
 import org.lwjgl.openal.AL;
 import org.lwjgl.openal.AL10;
-import org.lwjgl.util.WaveData;
+import org.lwjgl.openal.ALC;
+import org.lwjgl.openal.ALC10;
+import org.lwjgl.system.MemoryStack;
 import platformer.audio.types.Ambience;
 import platformer.audio.types.Song;
 import platformer.audio.types.Sound;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
 import platformer.utils.ValueEnum;
+import java.nio.ByteBuffer;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Random;
+import java.nio.IntBuffer;
+import java.util.*;
+
+import static org.lwjgl.system.MemoryUtil.NULL;
 
 /**
  * OpenAL class that implements the AudioPlayer interface.
@@ -46,10 +49,19 @@ public class OpenAL implements AudioPlayer<Song, Sound, Ambience>  {
     }
 
     private void initAL() {
-        try {
-            AL.create();
+        long device = ALC10.alcOpenDevice((ByteBuffer) null);
+        if (device == NULL) {
+            throw new IllegalStateException("Failed to open the default OpenAL device.");
         }
-        catch (Exception ignored) {}
+
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            IntBuffer contextAttribList = stack.mallocInt(1).put(0).flip();
+            long context = ALC10.alcCreateContext(device, contextAttribList);
+            if (context == NULL) throw new IllegalStateException("Failed to create OpenAL context.");
+
+            ALC10.alcMakeContextCurrent(context);
+            AL.createCapabilities(ALC.createCapabilities(device));
+        }
     }
 
     // Data
@@ -81,9 +93,11 @@ public class OpenAL implements AudioPlayer<Song, Sound, Ambience>  {
     // Core
     private int loadBuffers(String file) {
         int buffer = AL10.alGenBuffers();
-        WaveData waveData = WaveData.create(file);
-        AL10.alBufferData(buffer, waveData.format, waveData.data, waveData.samplerate);
-        waveData.dispose();
+        if (file.endsWith(".wav")) {
+            try (WaveData waveFile = WaveData.create(Objects.requireNonNull(getClass().getClassLoader().getResource(file)).getFile())) {
+                AL10.alBufferData(buffer, waveFile.format, waveFile.data, waveFile.samplerate);
+            }
+        }
         return buffer;
     }
 
@@ -254,7 +268,13 @@ public class OpenAL implements AudioPlayer<Song, Sound, Ambience>  {
         songs.forEach(AL10::alDeleteBuffers);
         sounds.forEach(AL10::alDeleteBuffers);
         ambiences.forEach(AL10::alDeleteBuffers);
-        AL.destroy();
+
+        long context = ALC10.alcGetCurrentContext();
+        long device = ALC10.alcGetContextsDevice(context);
+
+        ALC10.alcMakeContextCurrent(NULL);
+        ALC10.alcDestroyContext(context);
+        ALC10.alcCloseDevice(device);
     }
 
 }
