@@ -112,7 +112,7 @@ public class OpenAL implements AudioPlayer<Song, Sound, Ambience>  {
         stopSong();
         currentSong = song.ordinal();
         if (!songMute) setMusicVolume(musicVolume);
-        songSources.get(currentSong).play(songs.get(currentSong));
+        songSources.get(currentSong).play(songs.get(currentSong), false);
         songSources.get(currentSong).loop(true);
 
         if (song == Song.FOREST_1) playAmbience(Ambience.FOREST);
@@ -136,7 +136,7 @@ public class OpenAL implements AudioPlayer<Song, Sound, Ambience>  {
 
     @Override
     public void playSound(Sound sound) {
-        soundSources.get(sound.ordinal()).play(sounds.get(sound.ordinal()));
+        soundSources.get(sound.ordinal()).play(sounds.get(sound.ordinal()), true);
     }
 
     @Override
@@ -167,7 +167,7 @@ public class OpenAL implements AudioPlayer<Song, Sound, Ambience>  {
     public void playAmbience(Ambience ambience) {
         int index = ambience.ordinal();
         if (!soundMute) soundSources.get(index).changeVolume(sfxVolume);
-        ambienceSources.get(index).play(ambiences.get(index));
+        ambienceSources.get(index).play(ambiences.get(index), false);
         ambienceSources.get(index).loop(true);
     }
 

@@ -2,6 +2,8 @@ package platformer.audio;
 
 import org.lwjgl.openal.AL10;
 
+import java.util.Random;
+
 import static org.lwjgl.openal.AL10.*;
 
 /**
@@ -12,17 +14,25 @@ import static org.lwjgl.openal.AL10.*;
 public class OpenALSource {
 
     private final int sourceID;
+    private final Random random;
 
     public OpenALSource() {
         this.sourceID = AL10.alGenSources();
+        this.random = new Random();
         AL10.alSourcef(sourceID, AL10.AL_GAIN, 1);
         AL10.alSourcef(sourceID, AL10.AL_PITCH, 1);
         AL10.alSource3f(sourceID, AL10.AL_POSITION, 0, 0, 0);
     }
 
     // Operations
-    public void play(int buffer) {
+    public void play(int buffer, boolean varyPitch) {
         AL10.alSourcei(sourceID, AL10.AL_BUFFER, buffer);
+        // Audio Fatigue
+        if (varyPitch) {
+            float pitch = 0.95f + (random.nextFloat() * 0.1f);
+            AL10.alSourcef(sourceID, AL10.AL_PITCH, pitch);
+        }
+        else AL10.alSourcef(sourceID, AL10.AL_PITCH, 1.0f);
         AL10.alSourcePlay(sourceID);
     }
 
