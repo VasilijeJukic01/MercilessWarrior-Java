@@ -15,6 +15,7 @@ public class StateManager {
     private final ControlsState controlsState;
     private final LeaderboardState leaderboardState;
     private final ChoseGameState choseGameState;
+    private final CreditsState creditsState;
     private final QuitState quitState;
 
     public StateManager(Game game) {
@@ -25,6 +26,7 @@ public class StateManager {
         this.controlsState = new ControlsState(game);
         this.leaderboardState = new LeaderboardState(game);
         this.choseGameState = new ChoseGameState(game);
+        this.creditsState = new CreditsState(game);
         this.currentState = menuState;
     }
 
@@ -55,6 +57,10 @@ public class StateManager {
 
     public void setChoseGameState() {
         this.currentState = choseGameState;
+    }
+
+    public void setCreditsState() {
+        this.currentState = creditsState;
     }
 
     public void setQuitState() {

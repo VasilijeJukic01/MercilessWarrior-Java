@@ -10,6 +10,7 @@ import static platformer.constants.Constants.SCALE;
 /*
 
 L - Leaderboard
+CRE - Credits
 PORT - Portrait
 
  */
@@ -30,8 +31,11 @@ public final class UI {
     public static final int MENU_LOGO_WID = scale(300);
     public static final int MENU_LOGO_HEI = scale(150);
 
-    public static final int L_BUTTON_X = scale(790);
+    public static final int L_BUTTON_X = scale(755);
     public static final int L_BUTTON_Y = scale(10);
+
+    public static final int CRE_BUTTON_X = scale(790);
+    public static final int CRE_BUTTON_Y = scale(10);
 
     public static final Color OVERLAY_COLOR = new Color(31, 22, 28, 245);
     public static final Color OVERLAY_SPACE_COLOR = new Color(50, 50, 50);
@@ -399,6 +403,18 @@ public final class UI {
 
     public static final int RADAR_X = scale(700);
     public static final int RADAR_Y = scale(7);
+
+    // Credits UI
+    public static final int CREDITS_TXT_WID = scale(180);
+    public static final int CREDITS_TXT_HEI = scale(40);
+    public static final int CREDITS_TXT_X = scale(330);
+    public static final int CREDITS_TXT_Y = scale(85);
+
+    public static final int CREDITS_POSITION_X = scale(310);
+    public static final int CREDITS_POSITION_Y = scale(150);
+    public static final int CREDITS_SPACING = scale(20);
+
+    public static final Color CREDITS_COLOR = new Color(20, 103, 59, 255);
 
     private static int scale(double value) {
         return (int)(value * SCALE);

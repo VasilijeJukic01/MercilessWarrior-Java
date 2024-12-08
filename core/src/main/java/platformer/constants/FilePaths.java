@@ -78,6 +78,7 @@ public final class FilePaths {
     public static final String SLIDE_BTN_SHEET = "/images/buttons/SliderButton.png";
     public static final String SLIDER_IMG = "/images/buttons/Slider.png";
     public static final String LEADERBOARD_BTN_SHEET = "/images/buttons/LeaderboardButtons.png";
+    public static final String CREDITS_BTN_SHEET = "/images/buttons/CreditsButtons.png";
     public static final String INVENTORY_BTN_SHEET = "/images/buttons/InventoryButtons.png";
     public static final String LOOT_BTN_SHEET = "/images/buttons/LootButtons.png";
     public static final String CRAFT_BTN_SHEET = "/images/buttons/CraftButton.png";
@@ -108,6 +109,7 @@ public final class FilePaths {
     public static final String QUESTS_TXT = "/images/buttons/QuestsText.png";
     public static final String LOAD_TXT = "/images/buttons/LoadText.png";
     public static final String SAVE_TXT = "/images/buttons/SaveText.png";
+    public static final String CREDITS_TXT = "/images/buttons/CreditsText.png";
 
     public static final String ORANGE_GLOW = "/images/particles/orangeGlow.png";
     public static final String WHITE_GLOW = "/images/particles/whiteGlow.png";

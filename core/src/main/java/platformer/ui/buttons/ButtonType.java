@@ -26,5 +26,6 @@ public enum ButtonType {
     TAKE,       // 22
     TAKE_ALL,   // 23
     CLOSE,      // 24
-    CRAFT       // 25
+    CRAFT,      // 25
+    CREDITS     // 26
 }

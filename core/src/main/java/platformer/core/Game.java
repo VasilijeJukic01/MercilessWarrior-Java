@@ -148,7 +148,7 @@ public class Game implements Runnable {
     public void startMenuState() {
         State currentState = stateManager.getCurrentState();
         if (!(currentState instanceof OptionsState || currentState instanceof ControlsState || currentState instanceof LeaderboardState
-                || currentState instanceof ChoseGameState))
+                || currentState instanceof CreditsState || currentState instanceof ChoseGameState))
             Audio.getInstance().getAudioPlayer().playSong(Song.MENU);
         stateManager.setMenuState();
     }
@@ -172,6 +172,10 @@ public class Game implements Runnable {
 
     public void startChoseGameState() {
         stateManager.setChoseGameState();
+    }
+
+    public void startCreditsState() {
+        stateManager.setCreditsState();
     }
 
     public void startQuitState() {
