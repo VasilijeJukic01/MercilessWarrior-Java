@@ -21,7 +21,10 @@ public class CommandFieldsInitializer {
         commandFields.put("Quest",      fields[9]);
         commandFields.put("Transform",  fields[10]);
         commandFields.put("Inventory",  fields[11]);
-        commandFields.put("Pause",      fields[12]);
+        commandFields.put("Accept",     fields[12]);
+        commandFields.put("Decline",    fields[13]);
+        commandFields.put("Minimap",    fields[14]);
+        commandFields.put("Pause",      fields[15]);
 
         return commandFields;
     }
