@@ -6,5 +6,6 @@ public enum MinimapIconType {
     SHOP,           // 2
     BLACKSMITH,     // 3
     CRAFTING,       // 4
-    BOSS            // 5
+    BOSS,           // 5
+    FLAG            // 6
 }

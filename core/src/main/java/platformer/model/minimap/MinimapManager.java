@@ -52,9 +52,9 @@ public class MinimapManager {
     }
 
     private void loadMinimapIcons() {
-        this.minimapIcons = new BufferedImage[6];
+        this.minimapIcons = new BufferedImage[MINIMAP_ICONS_COUNT];
         BufferedImage image = Utils.getInstance().importImage(MINIMAP_ICONS, -1, -1);
-        for (int i = 0; i < 6; i++) {
+        for (int i = 0; i < MINIMAP_ICONS_COUNT; i++) {
             minimapIcons[i] = image.getSubimage(i * MINIMAP_ICON_SIZE, 0, MINIMAP_ICON_SIZE, MINIMAP_ICON_SIZE);
         }
     }
@@ -193,9 +193,7 @@ public class MinimapManager {
             resetPin(pinnedLocation);
             return;
         }
-        minimapImage.setRGB(pinnedLocation.x, pinnedLocation.y, MINIMAP_WALKABLE.getRGB());
         findPath();
-        minimapImage.setRGB(pinnedLocation.x, pinnedLocation.y, Color.BLUE.getRGB());
     }
 
     private void updateMinimap() {
@@ -220,15 +218,13 @@ public class MinimapManager {
      * Pins a location on the minimap.
      *
      * @param location The location to pin.
-     * @param color The color to use for the pin.
      */
-    public void pinLocation(Point location, Color color) {
+    public void pinLocation(Point location) {
         if (pinnedLocation != null) resetPin(pinnedLocation);
         else if (isValid(minimapImage, location)) {
             if (pinnedLocation != null) resetPin(pinnedLocation);
             pinnedLocation = location;
             findPath();
-            minimapImage.setRGB(location.x, location.y, color.getRGB());
             Logger.getInstance().notify("Minimap location pinned at: (" + location.x + ", " + location.y + ")", Message.NOTIFICATION);
         }
     }
@@ -269,6 +265,10 @@ public class MinimapManager {
 
     public Point getPlayerLocation() {
         return playerLocation;
+    }
+
+    public Point getPinnedLocation() {
+        return pinnedLocation;
     }
 
     public List<MinimapIcon> getIcons() {

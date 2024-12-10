@@ -1,19 +1,18 @@
 package platformer.ui.overlays.hud;
 
-import platformer.model.minimap.MinimapIcon;
-import platformer.model.minimap.MinimapIconType;
 import platformer.model.minimap.MinimapManager;
+import platformer.ui.overlays.render.MinimapRenderer;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.util.List;
 
 import static platformer.constants.Constants.MINIMAP_ZOOM;
-import static platformer.constants.Constants.SCALE;
 
 public class MinimapPanel {
 
     private final MinimapManager minimapManager;
+    private final MinimapRenderer minimapRenderer;
+
     private final int x, y, width, height;
     private int offsetX = 0, offsetY = 0;
 
@@ -23,6 +22,7 @@ public class MinimapPanel {
         this.y = y;
         this.width = width;
         this.height = height;
+        this.minimapRenderer = new MinimapRenderer();
     }
 
     public void render(Graphics g) {
@@ -45,58 +45,7 @@ public class MinimapPanel {
         int mapY = y + offsetY;
 
         g2d.drawImage(minimap, mapX, mapY, mapWidth, mapHeight, null);
-        renderIcons(g2d, mapX, mapY, mapWidth, mapHeight, minimap);
-        renderPath(g2d, mapX, mapY, mapWidth, mapHeight, minimap);
-    }
-
-    private void renderIcons(Graphics2D g2d, int mapX, int mapY, int mapWidth, int mapHeight, BufferedImage minimap) {
-        double scaledPixelWidth = (double) mapWidth / minimap.getWidth();
-        double scaledPixelHeight = (double) mapHeight / minimap.getHeight();
-        List<MinimapIcon> icons = minimapManager.getIcons();
-        BufferedImage[] minimapIcons = minimapManager.getMinimapIcons();
-
-        for (MinimapIcon icon : icons) {
-            BufferedImage img = minimapIcons[icon.getType().ordinal()];
-            int iconWidth = (int) (1.8 * scaledPixelWidth);
-            int iconHeight = (int) (1.8 * scaledPixelHeight);
-            int iconX = mapX + (int) (icon.getPosition().x * scaledPixelWidth) - iconWidth / 3;
-            int iconY = mapY + (int) (icon.getPosition().y * scaledPixelHeight) - (int)(iconHeight / 1.8);
-            g2d.drawImage(img, iconX, iconY, iconWidth, iconHeight, null);
-        }
-
-        if (minimapManager.isFlashVisible())
-            renderPlayer(g2d, mapX, mapY, mapWidth, mapHeight, minimap);
-
-    }
-
-    private void renderPlayer(Graphics2D g2d, int mapX, int mapY, int mapWidth, int mapHeight, BufferedImage minimap) {
-        Point playerLocation = minimapManager.getPlayerLocation();
-
-        if (playerLocation != null) {
-            double scaledPixelWidth = (double) mapWidth / minimap.getWidth();
-            double scaledPixelHeight = (double) mapHeight / minimap.getHeight();
-            BufferedImage playerIcon = minimapManager.getMinimapIcons()[MinimapIconType.PLAYER.ordinal()];
-            int playerIconWidth = (int) (1.8 * scaledPixelWidth);
-            int playerIconHeight = (int) (1.8 * scaledPixelHeight);
-            int playerIconX = mapX + (int) (playerLocation.x * scaledPixelWidth) - playerIconWidth / 3;
-            int playerIconY = mapY + (int) (playerLocation.y * scaledPixelHeight) - playerIconHeight / 2;
-
-            g2d.drawImage(playerIcon, playerIconX, playerIconY, playerIconWidth, playerIconHeight, null);
-        }
-    }
-
-    private void renderPath(Graphics2D g2d, int mapX, int mapY, int mapWidth, int mapHeight, BufferedImage minimap) {
-        double scaledPixelWidth = (double) mapWidth / minimap.getWidth();
-        double scaledPixelHeight = (double) mapHeight / minimap.getHeight();
-
-        List<Point> pathPoints = minimapManager.getPathPoints();
-        g2d.setColor(Color.YELLOW);
-        for (Point point : pathPoints) {
-            int dotX = mapX + (int) (point.x * scaledPixelWidth);
-            int dotY = mapY + (int) (point.y * scaledPixelHeight);
-            int dotSize = (int) (2 * SCALE);
-            g2d.fillOval(dotX + (int)(scaledPixelWidth / 2.1), dotY + (int)(scaledPixelHeight / 2.1), dotSize, dotSize);
-        }
+        minimapRenderer.renderIcons(g2d, mapX, mapY, mapWidth, mapHeight, minimap, minimapManager);
     }
 
     private void centerOnPlayer() {
