@@ -8,6 +8,7 @@ SW - Spear Woman
 AT - Arrow Trap
 ST - Smash Trap
 SL - Slider
+ARR - Arrow
 
  */
 
@@ -15,6 +16,13 @@ SL - Slider
  * Constants for sprite dimensions.
  */
 public final class AnimConstants {
+
+    // Animation speed
+    public static final int LIGHT_ANIM_SPEED = 20;
+    public static final int DIALOGUE_ANIM_SPEED = 8;
+    public static final int DIALOGUE_ARR_ANIM_SPEED = 20;
+    public static final int OVERLAY_ANIM_SPEED = 20;
+    public static final int MINIMAP_FLASH_ANIM_SPEED = 40;
 
     // Sprite dimension
     public static final int PLAYER_W = 144, PLAYER_H = 80;
@@ -56,6 +64,10 @@ public final class AnimConstants {
 
     public static final int FOREST_SPRITE_W = 274, FOREST_SPRITE_H = 274;
     public static final int FOREST_SPRITE_ROW = 7, FOREST_SPRITE_COL = 7;
+
+    public static final int ABILITY_SLOT_W = 45, ABILITY_SLOT_H = 45;
+
+    public static final int MINIMAP_ICON_SIZE = 16;
 
     // NPC
     public static final int ANITA_W = 32, ANITA_H = 32;

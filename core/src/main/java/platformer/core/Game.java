@@ -1,7 +1,7 @@
 package platformer.core;
 
 import platformer.audio.Audio;
-import platformer.audio.Song;
+import platformer.audio.types.Song;
 import platformer.state.*;
 import platformer.ui.AudioOptions;
 import platformer.ui.overlays.OverlayLayer;
@@ -117,6 +117,10 @@ public class Game implements Runnable {
         stateManager.getCurrentState().keyReleased(e);
     }
 
+    public void mouseClicked(MouseEvent e) {
+        stateManager.getCurrentState().mouseClicked(e);
+    }
+
     public void mousePressed(MouseEvent e) {
         stateManager.getCurrentState().mousePressed(e);
     }
@@ -144,7 +148,7 @@ public class Game implements Runnable {
     public void startMenuState() {
         State currentState = stateManager.getCurrentState();
         if (!(currentState instanceof OptionsState || currentState instanceof ControlsState || currentState instanceof LeaderboardState
-                || currentState instanceof ChoseGameState))
+                || currentState instanceof CreditsState || currentState instanceof ChoseGameState))
             Audio.getInstance().getAudioPlayer().playSong(Song.MENU);
         stateManager.setMenuState();
     }
@@ -168,6 +172,10 @@ public class Game implements Runnable {
 
     public void startChoseGameState() {
         stateManager.setChoseGameState();
+    }
+
+    public void startCreditsState() {
+        stateManager.setCreditsState();
     }
 
     public void startQuitState() {

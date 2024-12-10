@@ -3,7 +3,7 @@ package platformer.model.entities.player;
 import platformer.animation.Anim;
 import platformer.animation.Animation;
 import platformer.audio.Audio;
-import platformer.audio.Sound;
+import platformer.audio.types.Sound;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
 import platformer.model.entities.AttackState;
@@ -18,6 +18,7 @@ import platformer.model.gameObjects.ObjectManager;
 import platformer.model.gameObjects.projectiles.Projectile;
 import platformer.model.inventory.Inventory;
 import platformer.model.inventory.InventoryBonus;
+import platformer.model.minimap.MinimapManager;
 import platformer.model.perks.PerksBonus;
 import platformer.utils.Utils;
 
@@ -36,6 +37,7 @@ public class Player extends Entity {
 
     private final EnemyManager enemyManager;
     private final ObjectManager objectManager;
+    private final MinimapManager minimapManager;
     private int[][] levelData;
 
     // Core Variables
@@ -59,16 +61,18 @@ public class Player extends Entity {
     private double currentStamina = 15;
     private int spellState = 0;
     private PlayerDataManager playerDataManager;
+    private PlayerMinimapHandler minimapHandler;
     private Inventory inventory;
 
     // Effect
     private PlayerEffectController effectController;
 
 
-    public Player(int xPos, int yPos, int width, int height, EnemyManager enemyManager, ObjectManager objectManager) {
+    public Player(int xPos, int yPos, int width, int height, EnemyManager enemyManager, ObjectManager objectManager, MinimapManager minimapManager) {
         super(xPos, yPos, width, height, PLAYER_MAX_HP);
         this.enemyManager = enemyManager;
         this.objectManager = objectManager;
+        this.minimapManager = minimapManager;
         loadAnimations();
         init();
     }
@@ -92,7 +96,8 @@ public class Player extends Entity {
     }
 
     private void initManagers() {
-        this.playerDataManager = new PlayerDataManager(this);
+        this.playerDataManager = new PlayerDataManager(this, minimapManager);
+        this.minimapHandler = new PlayerMinimapHandler(this, minimapManager);
         this.effectController = new PlayerEffectController(this);
         this.actionHandler = new PlayerActionHandler(this);
         this.inventory = new Inventory();
@@ -279,6 +284,7 @@ public class Player extends Entity {
         if (inAir && !dash) inAirUpdate();
 
         updateX(dx);
+        minimapHandler.update();
         addAction(PlayerAction.MOVE);
     }
 
@@ -457,7 +463,7 @@ public class Player extends Entity {
     public void changeStamina(double value) {
         currentStamina += value;
         double staminaCap = PLAYER_MAX_ST + PerksBonus.getInstance().getBonusPower();
-        double equipmentBonus = InventoryBonus.getInstance().getHealth() * staminaCap;
+        double equipmentBonus = InventoryBonus.getInstance().getStamina() * staminaCap;
         staminaCap += equipmentBonus;
         currentStamina = Math.max(Math.min(currentStamina, staminaCap), 0);
         if (currentStamina == 0) {
@@ -660,6 +666,10 @@ public class Player extends Entity {
             else removeAction(PlayerAction.CAN_TRANSFORM);
             removeActions(PlayerAction.DASH, PlayerAction.DASH_HIT);
         }
+    }
+
+    public void activateMinimap(boolean activateMinimap) {
+        minimapHandler.activateMinimap(activateMinimap);
     }
 
     // Getters

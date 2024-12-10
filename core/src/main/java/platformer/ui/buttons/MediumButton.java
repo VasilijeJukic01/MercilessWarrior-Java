@@ -36,7 +36,15 @@ public class MediumButton extends AbstractButton {
             case LEAVE:
                 sheet = BTN_LEAVE_SHEET; break;
             case SAVE:
-                sheet = BTN_SAVE_SHEET; break;
+                sheet = SAVE_BTN_SHEET; break;
+            case LOAD:
+                sheet = SAVE_BTN_SHEET;
+                row = 1;
+                break;
+            case DELETE:
+                sheet = SAVE_BTN_SHEET;
+                row = 2;
+                break;
             case USE:
                 sheet = INVENTORY_BTN_SHEET; break;
             case EQUIP:
@@ -62,7 +70,7 @@ public class MediumButton extends AbstractButton {
                 sheet = LOOT_BTN_SHEET;
                 row = 2;
                 break;
-                case CRAFT:
+            case CRAFT:
                 sheet = CRAFT_BTN_SHEET;
                 break;
             default: break;

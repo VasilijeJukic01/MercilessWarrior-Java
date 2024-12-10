@@ -3,16 +3,24 @@ package platformer.constants;
 /**
  * This class contains all the file paths for the game's assets.
  * It is used to keep all the paths in one place for easy access.
+ * <p>
+ * Flags:
+ * $ - used as a placeholder.
  */
 public final class FilePaths {
 
     // Player
     public static final String PLAYER_SHEET = "/images/player/playerSheet.png";
     public static final String PLAYER_TRANSFORM_SHEET = "/images/player/transformSheet.png";
+    public static final String PLAYER_ABILITY_SHEET = "/images/player/abilitiesSheet.png";
 
     // Levels
+    public static final String LEVEL_SPRITES = "/images/levels/level$.png";
+    public static final String LEVEL_OBJECT_SPRITES = "/images/levels/levelObjects/$.png";
     public static final String BACKGROUND_1 = "/images/background1.jpg";
     public static final String FOREST_SPRITE = "/images/levels/mossyTiles.png";
+    public static final String MINIMAP = "/images/levels/minimap.png";
+    public static final String MINIMAP_ICONS = "/images/levels/mapIcons.png";
 
     // Enemy
     public static final String SKELETON_SHEET = "/images/enemies/SkeletonSprite.png";
@@ -47,7 +55,7 @@ public final class FilePaths {
     public static final String SIR_DEJANOVIC_SHEET = "/images/objs/npc/SirDejanovicSprite.png";
 
     // Dialogue
-    public static final String OBJECT_DIALOGUES = "/dialogues/object_dialogues.txt";
+    public static final String OBJECT_DIALOGUES = "/dialogues/dialogues.json";
 
     // Spells
     public static final String LIGHTNING_SHEET = "/images/spells/LightningSprite.png";
@@ -70,12 +78,14 @@ public final class FilePaths {
     public static final String SLIDE_BTN_SHEET = "/images/buttons/SliderButton.png";
     public static final String SLIDER_IMG = "/images/buttons/Slider.png";
     public static final String LEADERBOARD_BTN_SHEET = "/images/buttons/LeaderboardButtons.png";
-    public static final String BTN_SAVE_SHEET = "/images/buttons/SaveButton.png";
+    public static final String CREDITS_BTN_SHEET = "/images/buttons/CreditsButtons.png";
     public static final String INVENTORY_BTN_SHEET = "/images/buttons/InventoryButtons.png";
     public static final String LOOT_BTN_SHEET = "/images/buttons/LootButtons.png";
     public static final String CRAFT_BTN_SHEET = "/images/buttons/CraftButton.png";
+    public static final String SAVE_BTN_SHEET = "/images/buttons/SaveButtons.png";
 
     // UI
+    public static final String MENU_SPRITES = "/images/menu/background/Background$.png";
     public static final String MENU_LOGO = "/images/menu/menuLogo.png";
     public static final String BOSS_BAR = "/images/enemies/Bosses/BossBar.png";
     public static final String PLAYER_HUD = "/images/playerHUD.png";
@@ -96,6 +106,10 @@ public final class FilePaths {
     public static final String BOARD_TXT = "/images/buttons/BoardText.png";
     public static final String INVENTORY_TXT = "/images/buttons/InventoryText.png";
     public static final String CRAFTING_TXT = "/images/buttons/CraftingText.png";
+    public static final String QUESTS_TXT = "/images/buttons/QuestsText.png";
+    public static final String LOAD_TXT = "/images/buttons/LoadText.png";
+    public static final String SAVE_TXT = "/images/buttons/SaveText.png";
+    public static final String CREDITS_TXT = "/images/buttons/CreditsText.png";
 
     public static final String ORANGE_GLOW = "/images/particles/orangeGlow.png";
     public static final String WHITE_GLOW = "/images/particles/whiteGlow.png";
@@ -126,6 +140,9 @@ public final class FilePaths {
     public static final String THUNDERBOLT_CHARM = "/images/inventory/ThunderboltCharm.png";
 
     public static final String PLAYER_ICON = "/images/inventory/Player.png";
+
+    // Quests
+    public static final String QUESTS_PATH = "src/main/resources/quests/quests.json";
 
     // Serialization
     public static final String SAVE_PATH = "src/main/resources/saves/";

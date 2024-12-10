@@ -33,14 +33,15 @@ public class ControlsView extends BaseView {
     private void init() {
         initCommandComponents();
         configureTextFields();
-        super.initScene(root, 350, 650, "Controls");
+        super.initScene(root, 590, 560, "Controls");
         initRoot();
         initButtons();
         initStyles(super.getScene());
     }
 
     private void initCommandComponents() {
-        String[] commands = {"Move Left", "Move Right", "Jump", "Dash", "Attack", "Flames", "Fireball", "Shield", "Interact", "Transform", "Inventory", "Pause"};
+        String[] commands = {"Move Left", "Move Right", "Jump", "Dash", "Attack", "Flames", "Fireball", "Shield", "Interact",
+                "Quest", "Transform", "Inventory", "Accept", "Decline", "Minimap", "Pause"};
         KeyboardConfigurator configurator = KeyboardConfigurator.getInstance();
 
         for (String command : commands) {
@@ -64,11 +65,30 @@ public class ControlsView extends BaseView {
     }
 
     private void initRoot() {
-        commandFields.forEach((command, textField) -> {
-            Label label = commandLabels.get(command);
-            root.getChildren().add(new DefaultHBox(Pos.CENTER, label, textField));
-        });
+        DefaultVBox leftColumn = new DefaultVBox(Pos.CENTER);
+        DefaultVBox rightColumn = new DefaultVBox(Pos.CENTER);
 
+        List<String> commands = new ArrayList<>(commandFields.keySet());
+        int midIndex = commands.size() / 2;
+
+        for (int i = 0; i < midIndex; i++) {
+            String command = commands.get(i);
+            Label label = commandLabels.get(command);
+            TextField textField = commandFields.get(command);
+            leftColumn.getChildren().add(new DefaultHBox(Pos.CENTER, label, textField));
+        }
+
+        for (int i = midIndex; i < commands.size(); i++) {
+            String command = commands.get(i);
+            Label label = commandLabels.get(command);
+            TextField textField = commandFields.get(command);
+            rightColumn.getChildren().add(new DefaultHBox(Pos.CENTER, label, textField));
+        }
+
+        DefaultHBox columns = new DefaultHBox(Pos.CENTER, leftColumn, rightColumn);
+        columns.setSpacing(20);
+
+        root.getChildren().add(columns);
         root.getChildren().add(new DefaultHBox(Pos.CENTER, btnApply, btnReset, btnBack));
     }
 

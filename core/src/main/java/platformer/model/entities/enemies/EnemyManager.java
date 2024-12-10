@@ -17,17 +17,18 @@ import platformer.model.gameObjects.projectiles.Projectile;
 import platformer.model.inventory.InventoryBonus;
 import platformer.model.levels.Level;
 import platformer.model.perks.PerksBonus;
+import platformer.model.quests.QuestManager;
 import platformer.model.spells.Flame;
+import platformer.observer.Publisher;
+import platformer.observer.Subscriber;
 import platformer.state.GameState;
 import platformer.utils.Utils;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
-import java.util.Random;
 import java.util.stream.Collectors;
 
 import static platformer.constants.Constants.*;
@@ -36,15 +37,16 @@ import static platformer.constants.Constants.*;
  * Manages all the enemies in the game.
  */
 @SuppressWarnings("unchecked")
-public class EnemyManager {
+public class EnemyManager implements Publisher {
 
     private final GameState gameState;
 
-    BufferedImage[][] skeletonAnimations, ghoulAnimations, knightAnimations, wraithAnimations, spearWomanAnimations;
+    private BufferedImage[][] skeletonAnimations, ghoulAnimations, knightAnimations, wraithAnimations, spearWomanAnimations;
 
     private Map<EnemyType, List<Enemy>> enemies = new HashMap<>();
     private final Map<Class<? extends Enemy>, EnemyRenderer<? extends Enemy>> enemyRenderers = new HashMap<>();
 
+    private final List<Subscriber> subscribers = new ArrayList<>();
 
     public EnemyManager(GameState gameState) {
         this.gameState = gameState;
@@ -148,7 +150,13 @@ public class EnemyManager {
             gameState.getObjectManager().generateLoot(e);
             player.changeStamina(rand.nextInt(5));
             player.changeExp(rand.nextInt(50)+100);
+            checkForEvent(e);
         }
+    }
+
+    private void checkForEvent(Enemy e) {
+        if (e.getEnemyType() == EnemyType.SKELETON) notify("Kill Skeletons");
+        else if (e.getEnemyType() == EnemyType.GHOUL) notify("Kill Ghouls");
     }
 
     private double[] damage(Player player) {
@@ -182,7 +190,7 @@ public class EnemyManager {
                     if (enemy.getEnemyAction() == Anim.HIDE || enemy.getEnemyAction() == Anim.REVEAL) return;
                     enemy.hit(dmg[0], true, true);
                     enemy.setCriticalHit(dmg[1] == 1);
-                    player.changeStamina(new Random().nextInt(5) + 7);
+                    player.changeStamina(new Random().nextInt(3) + 1);
                     checkEnemyDying(enemy, player);
                     writeHitLog(enemy.getEnemyAction(), dmg[0]);
                     player.addAction(PlayerAction.DASH_HIT);
@@ -314,4 +322,22 @@ public class EnemyManager {
                 .collect(Collectors.toList());
     }
 
+    // Emit Events
+    @Override
+    public void addSubscriber(Subscriber s) {
+        this.subscribers.add(s);
+    }
+
+    @Override
+    public void removeSubscriber(Subscriber s) {
+        this.subscribers.remove(s);
+    }
+
+    @Override
+    public <T> void notify(T... o) {
+        subscribers.stream()
+                .filter(s -> s instanceof QuestManager)
+                .findFirst()
+                .ifPresent(s -> s.update(o[0]));
+    }
 }

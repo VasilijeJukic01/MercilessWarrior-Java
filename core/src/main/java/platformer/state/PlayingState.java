@@ -15,5 +15,7 @@ public enum PlayingState {
     SAVE,
     INVENTORY,
     CRAFTING,
-    LOOTING
+    LOOTING,
+    QUEST,
+    MINIMAP
 }

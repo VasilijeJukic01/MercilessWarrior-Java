@@ -1,0 +1,105 @@
+[
+  {
+    "name": "Kill Skeletons",
+    "type": "REPEATABLE",
+    "id": -1,
+    "description": "Kill 5 Skeletons",
+    "goal": 5,
+    "itemRewards": {
+      "IRON": 5
+    },
+    "coinReward": 10,
+    "expReward": 100,
+    "levelRequirement": 1,
+    "parentId": null
+  },
+  {
+    "name": "Kill Ghouls",
+    "type": "REPEATABLE",
+    "id": -1,
+    "description": "Kill 5 Ghouls",
+    "goal": 5,
+    "itemRewards": {
+      "WRAITH_ESSENCE": 5
+    },
+    "coinReward": 20,
+    "expReward": 150,
+    "levelRequirement": 1,
+    "parentId": null
+  },
+  {
+    "name": "Break Crates",
+    "type": "REPEATABLE",
+    "id": -1,
+    "description": "Break 5 Crates",
+    "goal": 5,
+    "itemRewards": {
+      "SONIC_QUARTZ": 3
+    },
+    "coinReward": 20,
+    "expReward": 150,
+    "levelRequirement": 1,
+    "parentId": null
+  },
+  {
+    "name": "Upgrade Sword",
+    "type": "PROGRESSIVE",
+    "id": 1,
+    "description": "Buy sword upgrade",
+    "goal": 1,
+    "itemRewards": {
+      "IRON": 10
+    },
+    "coinReward": 50,
+    "expReward": 200,
+    "levelRequirement": 1,
+    "parentId": null
+  },
+  {
+    "name": "Buy Armor",
+    "type": "PROGRESSIVE",
+    "id": 2,
+    "description": "Buy Armor",
+    "goal": 1,
+    "itemRewards": {
+      "IRON": 10
+    },
+    "coinReward": 50,
+    "expReward": 200,
+    "levelRequirement": 1,
+    "parentId": 1
+  },
+  {
+    "name": "Kill Lancer",
+    "type": "PROGRESSIVE",
+    "id": 3,
+    "description": "Kill Lancer",
+    "goal": 1,
+    "itemRewards": {
+      "ELECTRICITE": 1
+    },
+    "coinReward": 500,
+    "expReward": 1000,
+    "levelRequirement": 1,
+    "parentId": null
+  },
+  {
+    "name": "Kill Bandits",
+    "type": "PROGRESSIVE",
+    "id": 4,
+    "description": "Kill Bandits",
+    "goal": 1,
+    "levelRequirement": 1,
+    "npcRequest": 1,
+    "parentId": null
+  },
+  {
+    "name": "Talk to Anita",
+    "type": "PROGRESSIVE",
+    "id": 5,
+    "description": "Talk to Anita",
+    "goal": 1,
+    "levelRequirement": 1,
+    "parentId": 4
+  }
+]

@@ -9,7 +9,6 @@ import platformer.model.entities.AttackState;
 import platformer.model.entities.player.Player;
 import platformer.model.entities.player.PlayerAction;
 import platformer.model.gameObjects.GameObject;
-import platformer.model.gameObjects.npc.Npc;
 import platformer.state.GameState;
 import platformer.state.PlayingState;
 
@@ -105,14 +104,23 @@ public class GameStateController {
             if (player.getSpellState() == 1) player.setSpellState(2);
         });
         initAction(releaseActions, "Attack", () -> {
-            if (gameState.getActiveState() == PlayingState.DIALOGUE) gameState.getDialogueManager().updateDialogue();
+            if (gameState.getActiveState() == PlayingState.DIALOGUE)
+                gameState.getDialogueManager().updateDialogue("STANDARD");
         });
         initAction(releaseActions, "Fireball", () -> player.getActionHandler().doFireBall());
         initAction(releaseActions, "Interact", this::interact);
         initAction(releaseActions, "Inventory", this::openInventory);
+        initAction(releaseActions, "Quest", this::openQuests);
+        initAction(releaseActions, "Accept", () -> gameState.getDialogueManager().acceptQuestion());
+        initAction(releaseActions, "Decline", () -> gameState.getDialogueManager().declineQuestion());
+        initAction(releaseActions, "Minimap", () -> gameState.setOverlay(PlayingState.MINIMAP));
     }
 
     // Mouse
+    public void mouseClicked(MouseEvent e) {
+        gameState.getOverlayManager().mouseClicked(e);
+    }
+
     public void mousePressed(MouseEvent e) {
         gameState.getOverlayManager().mousePressed(e);
     }
@@ -191,20 +199,16 @@ public class GameStateController {
     }
 
     private void activateDialogue(String id) {
-        gameState.setOverlay(PlayingState.DIALOGUE);
-        Random random = new Random();
-        int index = random.nextInt(gameState.getDialogueManager().getDialogues(id).size());
         GameObject object = gameState.getObjectManager().getIntersection();
-        if (object instanceof Npc) {
-            int newIndex = ((Npc) object).getDialogueIndicator();
-            index = newIndex == -1 ? index : newIndex;
-        }
-        List<String> dialogues = gameState.getDialogueManager().getDialogues(id).get(index);
-        gameState.getDialogueManager().setDialogueObject(dialogues, object);
+        gameState.getDialogueManager().activateDialogue(id, object);
     }
 
     private void openInventory() {
         gameState.setOverlay(PlayingState.INVENTORY);
+    }
+
+    private void openQuests() {
+        gameState.setOverlay(PlayingState.QUEST);
     }
 
     private void showHitBox() {
@@ -240,8 +244,10 @@ public class GameStateController {
                 PlayingState.DIALOGUE,
                 PlayingState.SAVE,
                 PlayingState.INVENTORY,
+                PlayingState.QUEST,
                 PlayingState.CRAFTING,
-                PlayingState.LOOTING
+                PlayingState.LOOTING,
+                PlayingState.MINIMAP,
         };
 
         return Arrays.stream(breakableStates).anyMatch(breakableState -> breakableState == state);

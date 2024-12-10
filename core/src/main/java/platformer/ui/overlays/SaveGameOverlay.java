@@ -1,17 +1,21 @@
 package platformer.ui.overlays;
 
 import platformer.core.Framework;
+import platformer.state.GameState;
+import platformer.ui.buttons.AbstractButton;
 import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.MediumButton;
+import platformer.utils.Utils;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
+import java.util.Arrays;
 
-import static platformer.constants.Constants.MEDIUM_BTN_HEI;
-import static platformer.constants.Constants.MEDIUM_BTN_WID;
-import static platformer.constants.UI.SAVE_BTN_X;
-import static platformer.constants.UI.SAVE_BTN_Y;
+import static platformer.constants.Constants.*;
+import static platformer.constants.FilePaths.SAVE_TXT;
+import static platformer.constants.UI.*;
 
 /**
  * This class manages the save game overlay in the game.
@@ -19,26 +23,38 @@ import static platformer.constants.UI.SAVE_BTN_Y;
  */
 public class SaveGameOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
 
-    private MediumButton saveBtn;
+    private final GameState gameState;
 
-    public SaveGameOverlay() {
+    private BufferedImage saveText;
+    private final MediumButton[] buttons;
+
+    public SaveGameOverlay(GameState gameState) {
+        this.gameState = gameState;
+        this.buttons = new MediumButton[2];
+        loadImages();
         loadButtons();
     }
 
+    private void loadImages() {
+        this.saveText = Utils.getInstance().importImage(SAVE_TXT, SAVE_LOAD_TEXT_WID, SAVE_LOAD_TEXT_HEI);
+    }
+
     private void loadButtons() {
-        this.saveBtn = new MediumButton(SAVE_BTN_X, SAVE_BTN_Y, MEDIUM_BTN_WID, MEDIUM_BTN_HEI, ButtonType.SAVE);
+        buttons[0] = new MediumButton(SAVE_BTN_X, SAVE_BTN_Y, SMALL_BTN_WID, SMALL_BTN_HEI, ButtonType.SAVE);
+        buttons[1] = new MediumButton(SAVE_CLOSE_BTN_X, SAVE_BTN_Y, SMALL_BTN_WID, SMALL_BTN_HEI, ButtonType.CLOSE);
     }
 
     @Override
     public void update() {
-        saveBtn.update();
+        Arrays.stream(buttons).forEach(MediumButton::update);
     }
 
     @Override
     public void render(Graphics g) {
         OverlayLayer.getInstance().renderOverlay(g);
+        g.drawImage(saveText, SAVE_LOAD_TEXT_X, SAVE_LOAD_TEXT_Y, saveText.getWidth(), saveText.getHeight(), null);
         Framework.getInstance().getSaveController().getGameSlots().forEach(s -> s.render(g));
-        saveBtn.render(g);
+        Arrays.stream(buttons).forEach(b -> b.render(g));
     }
 
     @Override
@@ -47,25 +63,45 @@ public class SaveGameOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
     }
 
     @Override
+    public void mouseClicked(MouseEvent mouseEvent) {
+
+    }
+
+    @Override
     public void mousePressed(MouseEvent e) {
-        if (isMouseInButton(e, saveBtn)) {
-            saveBtn.setMousePressed(true);
-        }
+        Arrays.stream(buttons)
+                .filter(button -> isMouseInButton(e, button))
+                .findFirst()
+                .ifPresent(button -> button.setMousePressed(true));
     }
 
     @Override
     public void mouseReleased(MouseEvent e) {
-        if (isMouseInButton(e, saveBtn) && saveBtn.isMousePressed()) {
-            Framework.getInstance().getSaveController().saveSlot();
+        for (MediumButton button : buttons) {
+            if (isMouseInButton(e, button) && button.isMousePressed()) {
+                switch (button.getButtonType()) {
+                    case SAVE:
+                        Framework.getInstance().getSaveController().saveSlot();
+                        break;
+                    case CLOSE:
+                        gameState.setOverlay(null);
+                        break;
+                }
+            }
+            button.setMousePressed(false);
         }
         Framework.getInstance().getSaveController().checkSlotSelection(e);
-        saveBtn.resetMouseSet();
+        Arrays.stream(buttons).forEach(AbstractButton::resetMouseSet);
     }
 
     @Override
     public void mouseMoved(MouseEvent e) {
-        saveBtn.setMouseOver(false);
-        if (isMouseInButton(e, saveBtn)) saveBtn.setMouseOver(true);
+        Arrays.stream(buttons).forEach(button -> button.setMouseOver(false));
+
+        Arrays.stream(buttons)
+                .filter(button -> isMouseInButton(e, button))
+                .findFirst()
+                .ifPresent(button -> button.setMouseOver(true));
     }
 
     @Override

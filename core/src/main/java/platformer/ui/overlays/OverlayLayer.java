@@ -7,8 +7,10 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 
 import static platformer.constants.AnimConstants.MENU_FRAMES;
+import static platformer.constants.AnimConstants.OVERLAY_ANIM_SPEED;
 import static platformer.constants.Constants.GAME_HEIGHT;
 import static platformer.constants.Constants.GAME_WIDTH;
+import static platformer.constants.FilePaths.MENU_SPRITES;
 import static platformer.constants.UI.*;
 
 /**
@@ -20,7 +22,6 @@ public class OverlayLayer {
 
     private BufferedImage[] background;
     private Rectangle2D overlay;
-    private final int animSpeed = 20;
     private int animTick = 0, animIndex = 0;
 
     private OverlayLayer() {}
@@ -40,7 +41,7 @@ public class OverlayLayer {
     private BufferedImage[] loadMenuAnimation() {
         BufferedImage[] anim = new BufferedImage[MENU_FRAMES];
         for (int i = 0; i < anim.length; i++) {
-            anim[i] = Utils.getInstance().importImage("/images/menu/background/Background"+i+".png", GAME_WIDTH, GAME_HEIGHT);
+            anim[i] = Utils.getInstance().importImage(MENU_SPRITES.replace("$", i+""), GAME_WIDTH, GAME_HEIGHT);
         }
         return anim;
     }
@@ -52,7 +53,7 @@ public class OverlayLayer {
 
     private void updateAnimation() {
         animTick++;
-        if (animTick >= animSpeed) {
+        if (animTick >= OVERLAY_ANIM_SPEED) {
             animTick = 0;
             animIndex++;
             if (animIndex >= MENU_FRAMES) {

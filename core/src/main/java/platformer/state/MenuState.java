@@ -1,10 +1,7 @@
 package platformer.state;
 
 import platformer.core.Game;
-import platformer.ui.buttons.AbstractButton;
-import platformer.ui.buttons.BigButton;
-import platformer.ui.buttons.ButtonType;
-import platformer.ui.buttons.LeaderboardButton;
+import platformer.ui.buttons.*;
 import platformer.ui.overlays.OverlayLayer;
 import platformer.utils.Utils;
 
@@ -28,6 +25,7 @@ public class MenuState extends AbstractState implements State {
 
     private final BigButton[] buttons = new BigButton[4];
     private LeaderboardButton leaderboardBtn;
+    private CreditsButton creditsBtn;
     private BufferedImage menuLogo;
 
     public MenuState(Game game) {
@@ -47,6 +45,7 @@ public class MenuState extends AbstractState implements State {
         buttons[2] = new BigButton(MENU_BTN_X, MENU_BTN3_Y, BIG_BTN_WID, BIG_BTN_HEI, ButtonType.CONTROLS);
         buttons[3] = new BigButton(MENU_BTN_X, MENU_BTN4_Y, BIG_BTN_WID, BIG_BTN_HEI, ButtonType.QUIT);
         this.leaderboardBtn = new LeaderboardButton(L_BUTTON_X, L_BUTTON_Y, CRE_BTN_SIZE, CRE_BTN_SIZE, ButtonType.L_BOARD);
+        this.creditsBtn = new CreditsButton(CRE_BUTTON_X, CRE_BUTTON_Y, CRE_BTN_SIZE, CRE_BTN_SIZE, ButtonType.CREDITS);
     }
 
     // Core
@@ -55,12 +54,18 @@ public class MenuState extends AbstractState implements State {
         OverlayLayer.getInstance().update();
         Arrays.stream(buttons).forEach(BigButton::update);
         leaderboardBtn.update();
+        creditsBtn.update();
     }
 
     @Override
     public void render(Graphics g) {
         renderMenuImages(g);
         renderMenuButtons(g);
+    }
+
+    @Override
+    public void mouseClicked(MouseEvent e) {
+
     }
 
     // Render
@@ -72,11 +77,13 @@ public class MenuState extends AbstractState implements State {
     private void renderMenuButtons(Graphics g) {
         Arrays.stream(buttons).forEach(buttons -> buttons.render(g));
         leaderboardBtn.render(g);
+        creditsBtn.render(g);
     }
 
     @Override
     public void mousePressed(MouseEvent e) {
         if (isMouseInButton(e, leaderboardBtn)) leaderboardBtn.setMousePressed(true);
+        if (isMouseInButton(e, creditsBtn)) creditsBtn.setMousePressed(true);
         Arrays.stream(buttons)
                 .filter(button -> isMouseInButton(e, button))
                 .findFirst()
@@ -87,6 +94,9 @@ public class MenuState extends AbstractState implements State {
     public void mouseReleased(MouseEvent e) {
         if(isMouseInButton(e, leaderboardBtn) && leaderboardBtn.isMousePressed()) {
             game.startLeaderboardState();
+        }
+        if(isMouseInButton(e, creditsBtn) && creditsBtn.isMousePressed()) {
+            game.startCreditsState();
         }
         for (BigButton button : buttons) {
             if (isMouseInButton(e, button) && button.isMousePressed()) {
@@ -112,6 +122,8 @@ public class MenuState extends AbstractState implements State {
     public void mouseMoved(MouseEvent e) {
         leaderboardBtn.setMouseOver(false);
         if (isMouseInButton(e, leaderboardBtn)) leaderboardBtn.setMouseOver(true);
+        creditsBtn.setMouseOver(false);
+        if (isMouseInButton(e, creditsBtn)) creditsBtn.setMouseOver(true);
 
         Arrays.stream(buttons).forEach(bigButton -> bigButton.setMouseOver(false));
         Arrays.stream(buttons)
@@ -144,5 +156,6 @@ public class MenuState extends AbstractState implements State {
     @Override
     public void reset() {
         leaderboardBtn.resetMouseSet();
+        creditsBtn.resetMouseSet();
     }
 }

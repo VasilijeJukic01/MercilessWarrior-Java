@@ -91,6 +91,32 @@ public class Utils {
         return newImg;
     }
 
+    /**
+     * Converts a given BufferedImage to a 2D array of grayscale values.
+     * Each element in the array represents the grayscale value of the corresponding pixel in the image.
+     * The grayscale value is calculated as the average of the red, green, and blue components of the pixel.
+     *
+     * @param image The BufferedImage to be converted to grayscale.
+     * @return A 2D array of integers representing the grayscale values of the image.
+     */
+    public int[][] toGrayscale(BufferedImage image) {
+        int width = image.getWidth();
+        int height = image.getHeight();
+        int[][] grayscale = new int[height][width];
+
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                int rgb = image.getRGB(x, y);
+                int r = (rgb >> 16) & 0xFF;
+                int g = (rgb >> 8) & 0xFF;
+                int b = rgb & 0xFF;
+                grayscale[y][x] = (r + g + b) / 3;
+            }
+        }
+
+        return grayscale;
+    }
+
     // Checkers
     /**
      * This method checks if a given entity can move to a specified location in the game level.

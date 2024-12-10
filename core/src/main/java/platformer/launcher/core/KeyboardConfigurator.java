@@ -39,8 +39,12 @@ public class KeyboardConfigurator {
         commandKeyMap.put("Fireball",   KeyCode.Z);
         commandKeyMap.put("Shield",     KeyCode.S);
         commandKeyMap.put("Interact",   KeyCode.F);
+        commandKeyMap.put("Quest",      KeyCode.O);
         commandKeyMap.put("Transform",  KeyCode.Q);
         commandKeyMap.put("Inventory",  KeyCode.I);
+        commandKeyMap.put("Accept",     KeyCode.Y);
+        commandKeyMap.put("Decline",    KeyCode.N);
+        commandKeyMap.put("Minimap",    KeyCode.M);
         commandKeyMap.put("Pause",      KeyCode.ESCAPE);
 
         originalCommandKeyMap.putAll(commandKeyMap);

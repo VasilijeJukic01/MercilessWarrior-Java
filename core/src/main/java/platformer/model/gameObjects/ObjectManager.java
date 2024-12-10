@@ -2,7 +2,7 @@ package platformer.model.gameObjects;
 
 import platformer.animation.Animation;
 import platformer.audio.Audio;
-import platformer.audio.Sound;
+import platformer.audio.types.Sound;
 import platformer.model.entities.Direction;
 import platformer.model.entities.enemies.Enemy;
 import platformer.model.entities.enemies.boss.SpearWoman;
@@ -16,6 +16,9 @@ import platformer.model.gameObjects.projectiles.LightningBall;
 import platformer.model.gameObjects.projectiles.Projectile;
 import platformer.model.levels.Level;
 import platformer.model.perks.PerksBonus;
+import platformer.model.quests.QuestManager;
+import platformer.observer.Publisher;
+import platformer.observer.Subscriber;
 import platformer.state.GameState;
 import platformer.utils.Utils;
 
@@ -34,7 +37,7 @@ import static platformer.constants.FilePaths.*;
  * It handles the loading, updating, rendering and interactions between game objects and the player.
  */
 @SuppressWarnings({"unchecked", "SameParameterValue"})
-public class ObjectManager {
+public class ObjectManager implements Publisher {
 
     private final GameState gameState;
     private CollisionHandler collisionHandler;
@@ -69,6 +72,8 @@ public class ObjectManager {
     private BufferedImage projectileArrow;
     private BufferedImage[] fireball, projectileLightningBall, projectileLightningBall2;
     private final List<Projectile> projectiles;
+
+    private final List<Subscriber> subscribers = new ArrayList<>();
 
     public ObjectManager(GameState gameState) {
         this.gameState = gameState;
@@ -164,7 +169,7 @@ public class ObjectManager {
      * @param attackBox The attack box of the player.
      */
     public void checkObjectBreak(Rectangle2D.Double attackBox) {
-        objectBreakHandler.checkObjectBreak(attackBox, gameState.getSpellManager().getFlames());
+        objectBreakHandler.checkObjectBreak(attackBox, gameState.getSpellManager().getFlames(), this::notify);
     }
 
     /**
@@ -405,5 +410,23 @@ public class ObjectManager {
 
     public GameObject getIntersection() {
         return intersection;
+    }
+
+    @Override
+    public void addSubscriber(Subscriber s) {
+        this.subscribers.add(s);
+    }
+
+    @Override
+    public void removeSubscriber(Subscriber s) {
+        this.subscribers.remove(s);
+    }
+
+    @Override
+    public <T> void notify(T... o) {
+        subscribers.stream()
+                .filter(s -> s instanceof QuestManager)
+                .findFirst()
+                .ifPresent(s -> s.update(o[0]));
     }
 }

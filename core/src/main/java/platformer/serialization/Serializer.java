@@ -23,4 +23,11 @@ public interface Serializer<U, V> {
      */
     V deserialize();
 
+    /**
+     * Deletes the object at the given index.
+     *
+     * @param index the index to delete the object at
+     */
+    void delete(int index);
+
 }

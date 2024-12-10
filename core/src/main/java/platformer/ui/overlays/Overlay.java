@@ -15,6 +15,12 @@ public interface Overlay<E, F, G> {
     void mouseDragged(E e);
 
     /**
+     * Called when the mouse is clicked.
+     * @param e The event.
+     */
+    void mouseClicked(E e);
+
+    /**
      * Called when the mouse is pressed.
      * @param e The event.
      */

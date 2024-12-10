@@ -1,7 +1,7 @@
 package platformer.ui.buttons;
 
 import platformer.audio.Audio;
-import platformer.audio.Sound;
+import platformer.audio.types.Sound;
 
 import java.awt.*;
 

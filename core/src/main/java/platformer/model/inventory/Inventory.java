@@ -124,6 +124,16 @@ public class Inventory {
         }
     }
 
+    public void completeQuestFill(Map<ItemType, Integer> itemRewards) {
+        for (Map.Entry<ItemType, Integer> entry : itemRewards.entrySet()) {
+            ItemType type = entry.getKey();
+            BufferedImage img = Utils.getInstance().importImage(type.getImg(), -1, -1);
+            InventoryItem item = new InventoryItem(type, img, entry.getValue());
+            addItemToBackpack(item);
+        }
+
+    }
+
     private ItemType findItemTypeByName(String name) {
         ItemType[] itemTypes = ItemType.values();
         Optional<ItemType> optional = Arrays.stream(itemTypes)

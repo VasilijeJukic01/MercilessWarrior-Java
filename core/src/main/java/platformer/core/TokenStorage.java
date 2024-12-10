@@ -2,13 +2,23 @@ package platformer.core;
 
 public class TokenStorage {
 
-    private static String token;
+    private static TokenStorage instance;
+    private String token;
 
-    public static void setToken(String token) {
-        TokenStorage.token = token;
+    private TokenStorage() { }
+
+    public static synchronized TokenStorage getInstance() {
+        if (instance == null) {
+            instance = new TokenStorage();
+        }
+        return instance;
     }
 
-    public static String getToken() {
+    public synchronized void setToken(String token) {
+        this.token = token;
+    }
+
+    public synchronized String getToken() {
         return token;
     }
 }

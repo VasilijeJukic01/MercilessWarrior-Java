@@ -295,11 +295,16 @@ public class InventoryOverlay implements Overlay<MouseEvent, KeyEvent, Graphics>
     }
 
     private void nextBackpackSlot() {
-        this.backpackSlot = Math.min(backpackSlot+1, 5);
+        this.backpackSlot = Math.min(backpackSlot+1, INVENTORY_SLOT_CAP);
     }
 
     @Override
     public void mouseDragged(MouseEvent e) {
+
+    }
+
+    @Override
+    public void mouseClicked(MouseEvent mouseEvent) {
 
     }
 

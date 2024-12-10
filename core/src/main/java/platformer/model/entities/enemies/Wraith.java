@@ -2,7 +2,7 @@ package platformer.model.entities.enemies;
 
 import platformer.animation.Anim;
 import platformer.audio.Audio;
-import platformer.audio.Sound;
+import platformer.audio.types.Sound;
 import platformer.model.entities.Direction;
 import platformer.model.entities.player.Player;
 import platformer.utils.Utils;

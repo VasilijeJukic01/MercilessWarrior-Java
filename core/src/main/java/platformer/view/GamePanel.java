@@ -9,6 +9,7 @@ import javax.swing.*;
 import java.awt.*;
 
 import static platformer.constants.Constants.*;
+import static platformer.constants.UI.*;
 
 /**
  * Responsible for rendering the game.
@@ -57,11 +58,11 @@ public class GamePanel extends JPanel {
     }
 
     private void renderInfo(Graphics g) {
-        g.setColor(new Color(255, 255, 255));
+        g.setColor(INFO_TXT_COLOR);
         g.setFont(new Font("Arial", Font.BOLD, FONT_MEDIUM));
-        g.drawString(Framework.getInstance().getAccount().getName(), (int)(1.5 * SCALE), (int)(10 * SCALE));
-        g.drawString("FPS: "+game.getCurrentFps(), (int)(1.5 * SCALE), (int)(20 * SCALE));
-        g.drawString("UPS: "+game.getCurrentUpdates(), (int)(50 * SCALE), (int)(20 * SCALE));
+        g.drawString(Framework.getInstance().getAccount().getName(), PLAYER_NAME_X, PLAYER_NAME_Y);
+        g.drawString("FPS: "+game.getCurrentFps(), FPS_X, FPS_Y);
+        g.drawString("UPS: "+game.getCurrentUpdates(), UPS_X, UPS_Y);
     }
 
     public Game getGame() {

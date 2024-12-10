@@ -14,6 +14,7 @@ import java.awt.image.BufferedImage;
 import java.awt.image.RescaleOp;
 import java.util.List;
 
+import static platformer.constants.AnimConstants.LIGHT_ANIM_SPEED;
 import static platformer.constants.Constants.*;
 import static platformer.constants.FilePaths.*;
 
@@ -32,7 +33,6 @@ public class LightManager {
     private Color[] gradient;
     private float[] gradientFraction;
 
-    private final int animSpeed = 20;
     private int animTick = 0, alpha = 130;
 
     public LightManager(GameState gameState) {
@@ -84,7 +84,7 @@ public class LightManager {
 
     private void updateFading() {
         animTick++;
-        if (animTick >= animSpeed) {
+        if (animTick >= LIGHT_ANIM_SPEED) {
             animTick = 0;
             alpha += 20;
         }

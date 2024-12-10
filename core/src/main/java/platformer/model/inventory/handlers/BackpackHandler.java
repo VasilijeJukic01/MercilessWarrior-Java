@@ -1,7 +1,7 @@
 package platformer.model.inventory.handlers;
 
 import platformer.audio.Audio;
-import platformer.audio.Sound;
+import platformer.audio.types.Sound;
 import platformer.core.Framework;
 import platformer.model.inventory.InventoryItem;
 import platformer.model.inventory.ItemType;

@@ -23,6 +23,13 @@ public interface State {
     void render(Graphics g);
 
     /**
+     * Handles mouse clicked event.
+     *
+     * @param e the mouse event
+     */
+    void mouseClicked(MouseEvent e);
+
+    /**
      * Handles mouse pressed event.
      *
      * @param e the mouse event

@@ -30,10 +30,12 @@ public class OverlayManager {
         this.overlays.put(PlayingState.SHOP, new ShopOverlay(gameState));
         this.overlays.put(PlayingState.BLACKSMITH, new BlacksmithOverlay(gameState));
         this.overlays.put(PlayingState.DIALOGUE, new DialogueOverlay());
-        this.overlays.put(PlayingState.SAVE, new SaveGameOverlay());
+        this.overlays.put(PlayingState.SAVE, new SaveGameOverlay(gameState));
         this.overlays.put(PlayingState.INVENTORY, new InventoryOverlay(gameState));
         this.overlays.put(PlayingState.CRAFTING, new CraftingOverlay(gameState));
         this.overlays.put(PlayingState.LOOTING, new LootingOverlay(gameState));
+        this.overlays.put(PlayingState.QUEST, new QuestOverlay(gameState));
+        this.overlays.put(PlayingState.MINIMAP, new MinimapOverlay(gameState));
     }
 
     // Core
@@ -48,6 +50,13 @@ public class OverlayManager {
         PlayingState overlay = gameState.getActiveState();
         if (overlay != null) {
             overlays.get(overlay).render(g);
+        }
+    }
+
+    public void mouseClicked(MouseEvent e) {
+        PlayingState overlay = gameState.getActiveState();
+        if (overlay != null) {
+            overlays.get(overlay).mouseClicked(e);
         }
     }
 

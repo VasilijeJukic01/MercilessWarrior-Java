@@ -4,6 +4,8 @@ import platformer.utils.Utils;
 
 import java.awt.image.BufferedImage;
 
+import static platformer.constants.FilePaths.LEVEL_OBJECT_SPRITES;
+
 /**
  * This class is responsible for managing the level objects in the game.
  * It holds references to all the level objects and provides methods for loading their images.
@@ -24,7 +26,7 @@ public class LevelObjectManager {
             int bigFlag = id.contains("_BIG") ? 4 : 0;
             int reverseFlag = id.contains("_REVERSE") ? 8 : 0;
             String name = id.substring(0, id.length() - bigFlag - reverseFlag);
-            models[i] = Utils.getInstance().importImage("/images/levels/levelObjects/"+name+".png", objType.getWid(), objType.getHei());
+            models[i] = Utils.getInstance().importImage(LEVEL_OBJECT_SPRITES.replace("$", name), objType.getWid(), objType.getHei());
             if (reverseFlag != 0) models[i] = Utils.getInstance().flipImage(models[i]);
         }
     }

@@ -1,5 +1,7 @@
 package platformer.constants;
 
+import java.awt.*;
+
 import static platformer.launcher.Config.SCALING_FACTOR;
 
 // Vocabulary
@@ -21,6 +23,9 @@ FB - Fireball
  * Constants class contains all the constants used in the game.
  */
 public final class Constants {
+
+    // Server Constants
+    public static final String API_GATEWAY_URL = "http://localhost:8080";
 
     // Resolution Settings
     public static final int TILES_DEFAULT_SIZE = 32;
@@ -66,6 +71,16 @@ public final class Constants {
 
     public static final double LAVA_DMG = 0.5;
 
+    // Minimap Constants
+    public static final double MIN_ZOOM = 1.0;
+    public static final double MAX_ZOOM = 2.0;
+    public static final double MINIMAP_ZOOM = 6.5;
+
+    public static final int MINIMAP_ICONS_COUNT = 7;
+
+    public static final Color MINIMAP_WALKABLE = new Color(78, 105, 80);
+    public static final Color MINIMAP_UNWALKABLE =  new Color(41, 59, 41);
+
     // Perks Constants
     public static final int XP_BONUS_AMOUNT = 15;
     public static final double STRONG_ARMS_BONUS_COOLDOWN = -0.225;
@@ -83,7 +98,7 @@ public final class Constants {
     public static final double PLAYER_ATTACK_CD = 0.75;
     public static final double PLAYER_BLOCK_CD = 1.2;
     public static final double PLAYER_DASH_CD = 1.75;
-    public static final double PLAYER_SPELL_CD = 1.75;
+    public static final double PLAYER_SPELL_CD = 2.5;
 
     public static final double GHOUL_ATT_CD = 10;
     public static final double GHOUL_DASH_CD = 6;
@@ -374,13 +389,16 @@ public final class Constants {
     public static final int SMALL_BTN_SIZE = scale(25);
 
     public static final int SLIDER_BTN_SIZE = scale(15);
-    public static final int SLIDER_WID = scale(215);
+    public static final int SLIDER_WID = scale(150);
     public static final int SLIDER_HEI = scale(30);
+    public static final int SLIDER_MIN_VALUE = scale(365);
+    public static final int SLIDER_MAX_VALUE = scale(507);
 
     // UI
     public static final int FONT_BIG = scale(20);
     public static final int FONT_DIALOGUE = scale(12);
     public static final int FONT_MEDIUM = scale(10);
+    public static final int FONT_LIGHT = scale(8);
     public static final int FONT_SMALL = scale(7);
     public static final int SHOP_SLOT_MAX_ROW = 4, SHOP_SLOT_MAX_COL = 5;
     public static final int PERK_SLOT_MAX_ROW = 4, PERK_SLOT_MAX_COL = 7;

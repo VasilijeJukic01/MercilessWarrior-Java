@@ -1,7 +1,7 @@
 package platformer.ui.overlays;
 
 import platformer.audio.Audio;
-import platformer.audio.Song;
+import platformer.audio.types.Song;
 import platformer.core.Game;
 import platformer.state.GameState;
 import platformer.ui.AudioOptions;
@@ -93,6 +93,11 @@ public class PauseOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
     @Override
     public void mouseDragged(MouseEvent e) {
         audioOptions.mouseDragged(e);
+    }
+
+    @Override
+    public void mouseClicked(MouseEvent mouseEvent) {
+
     }
 
     @Override

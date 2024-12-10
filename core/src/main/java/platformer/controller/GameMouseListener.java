@@ -19,7 +19,7 @@ public class GameMouseListener implements MouseListener, MouseMotionListener {
 
     @Override
     public void mouseClicked(MouseEvent e) {
-
+        gamePanel.getGame().mouseClicked(e);
     }
 
     @Override
