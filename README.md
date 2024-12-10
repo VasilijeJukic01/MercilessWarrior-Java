@@ -1,8 +1,7 @@
 # Merciless Warrior: Java Swing 2D Platformer Game
 
 <p float="left">
-<img src="images/gif1.gif" alt="Gif1" width="49%">
-<img src="images/gif2.gif" alt="Gif2" width="49%">
+<img src="images/example.gif" alt="Gif1" width="60%">
 </p>
 
 ## Table of Contents
@@ -42,7 +41,6 @@ Backed is developed in Spring framework using Kotlin. It consists of four servic
 - ```Service Registry``` - Acts as a centralized registry for all services in the system.
 - ```API Gateway``` - Acts as a single entry point for all client requests and routes requests to appropriate services.
 
-
 ## Design Patterns Used
 - Singleton <br>
   Used to create a global instance for essential components such as Audio and Framework.
@@ -66,7 +64,7 @@ Navigate through various levels, engaging in combat with enemies using a variety
 ## Installation
 
 1. Clone this repository.
-2. Ensure you have Java Development Kit (JDK 10.0.2) and Docker installed.
+2. Ensure you have Java Development Kit (JDK 17) and Docker installed.
 3. Open command line interface and navigate to the root of the project.
 4. Build and run docker images with `docker-compose up --build`.
 5. Compile and run the game using your preferred Java IDE.
