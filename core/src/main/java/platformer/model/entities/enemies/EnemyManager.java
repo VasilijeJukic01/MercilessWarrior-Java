@@ -148,6 +148,7 @@ public class EnemyManager implements Publisher {
         Random rand = new Random();
         if (e.getEnemyAction() == Anim.DEATH) {
             gameState.getObjectManager().generateLoot(e);
+            gameState.getTutorialManager().activateBlockTutorial();
             player.changeStamina(rand.nextInt(5));
             player.changeExp(rand.nextInt(50)+100);
             checkForEvent(e);

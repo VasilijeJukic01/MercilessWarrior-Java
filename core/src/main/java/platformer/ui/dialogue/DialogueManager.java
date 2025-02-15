@@ -2,6 +2,8 @@ package platformer.ui.dialogue;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import platformer.controller.KeyboardController;
+import platformer.core.Framework;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
 import platformer.model.gameObjects.GameObject;
@@ -45,12 +47,25 @@ public class DialogueManager {
             reader.close();
 
             for (Dialogue dialogue : dialogueFile.getDialogues()) {
+                replacePlaceholders(dialogue);
                 String key = dialogue.getObject();
                 dialogues.putIfAbsent(key, new ArrayList<>());
                 dialogues.get(key).add(dialogue);
             }
         } catch (Exception ignored) {
             Logger.getInstance().notify("Reading dialogue file failed!", Message.ERROR);
+        }
+    }
+
+    private void replacePlaceholders(Dialogue dialogue) {
+        if ("Board".equals(dialogue.getObject())) {
+            KeyboardController kbc = Framework.getInstance().getKeyboardController();
+            for (int i = 0; i < dialogue.getLines().size(); i++) {
+                String line = dialogue.getLines().get(i);
+                line = line.replace("%%JUMP%%", kbc.getKeyName("Jump").toUpperCase());
+                line = line.replace("%%ATTACK%%", kbc.getKeyName("Attack").toUpperCase());
+                dialogue.getLines().set(i, line);
+            }
         }
     }
 

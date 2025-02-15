@@ -18,6 +18,7 @@ import platformer.model.perks.PerksBonus;
 import platformer.model.perks.PerksManager;
 import platformer.model.quests.QuestManager;
 import platformer.model.spells.SpellManager;
+import platformer.model.tutorial.TutorialManager;
 import platformer.ui.dialogue.DialogueManager;
 import platformer.ui.overlays.OverlayManager;
 import platformer.ui.overlays.hud.BossInterface;
@@ -55,6 +56,7 @@ public class GameState extends AbstractState implements State {
     private DialogueManager dialogueManager;
     private LightManager lightManager;
     private MinimapManager minimapManager;
+    private TutorialManager tutorialManager;
 
     // State
     private PlayingState state;
@@ -95,6 +97,7 @@ public class GameState extends AbstractState implements State {
         this.lightManager = new LightManager(this);
         this.questManager = new QuestManager(this);
         this.minimapManager = new MinimapManager();
+        this.tutorialManager = new TutorialManager(this);
     }
 
     private void initPlayer() {
@@ -271,6 +274,7 @@ public class GameState extends AbstractState implements State {
         else if (state == PlayingState.LOOTING) overlayManager.update(PlayingState.LOOTING);
         else if (state == PlayingState.QUEST) overlayManager.update(PlayingState.QUEST);
         else if (state == PlayingState.MINIMAP) overlayManager.update(PlayingState.MINIMAP);
+        else if (state == PlayingState.TUTORIAL) overlayManager.update(PlayingState.TUTORIAL);
     }
 
     @Override
@@ -373,6 +377,10 @@ public class GameState extends AbstractState implements State {
 
     public LightManager getLightManager() {
         return lightManager;
+    }
+
+    public TutorialManager getTutorialManager() {
+        return tutorialManager;
     }
 
     public BossInterface getBossInterface() {

@@ -416,6 +416,16 @@ public final class UI {
 
     public static final Color CREDITS_COLOR = new Color(20, 103, 59, 255);
 
+    // Tutorial UI
+    public static final int TUTORIAL_IMAGE_X = scale(150);
+    public static final int TUTORIAL_IMAGE_Y = scale(155);
+
+    public static final int TUTORIAL_TXT_X = scale(350);
+    public static final int TUTORIAL_TXT_Y = scale(170);
+
+    public static final int TUTORIAL_EXIT_X = scale(185);
+    public static final int TUTORIAL_EXIT_Y = scale(270);
+
     private static int scale(double value) {
         return (int)(value * SCALE);
     }

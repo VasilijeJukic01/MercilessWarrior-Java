@@ -72,8 +72,8 @@
       "once": false,
       "lines": [
         "Welcome, adventurer! This is your tutorial board. Here you can learn the basics of the game.",
-        "Use the up arrow key to jump.",
-        "The X key is for attack.",
+        "Use the %%JUMP%% key to jump.",
+        "The %%ATTACK%% key is for attack.",
         "Remember, your journey is filled with challenges. Use your commands wisely.",
         "Good luck on your journey, adventurer!"
       ]

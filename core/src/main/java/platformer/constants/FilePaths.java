@@ -144,6 +144,9 @@ public final class FilePaths {
     // Quests
     public static final String QUESTS_PATH = "src/main/resources/quests/quests.json";
 
+    // Tutorial
+    public static final String TUTORIAL_BLOCK_PATH = "/images/tutorial/Tutorial1.png";
+
     // Serialization
     public static final String SAVE_PATH = "src/main/resources/saves/";
     public static final String KEYBOARD_CONFIG_PATH = "src/main/resources/keyboard.config";

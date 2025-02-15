@@ -36,6 +36,7 @@ public class OverlayManager {
         this.overlays.put(PlayingState.LOOTING, new LootingOverlay(gameState));
         this.overlays.put(PlayingState.QUEST, new QuestOverlay(gameState));
         this.overlays.put(PlayingState.MINIMAP, new MinimapOverlay(gameState));
+        this.overlays.put(PlayingState.TUTORIAL, new TutorialOverlay(gameState));
     }
 
     // Core
