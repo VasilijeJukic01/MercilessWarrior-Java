@@ -8,7 +8,7 @@ ADD https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.s
 RUN chmod +x /app/wait-for-it.sh
 
 # Build
-FROM gradle:7.4.0-jdk17 as build
+FROM gradle:8.7-jdk17 as build
 
 WORKDIR /home/gradle/src
 

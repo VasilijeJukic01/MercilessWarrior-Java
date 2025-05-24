@@ -6,7 +6,7 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient
 
 @SpringBootApplication
 @EnableDiscoveryClient
-open class AuthServiceApplication
+class AuthServiceApplication
 
 fun main(args: Array<String>) {
 	runApplication<AuthServiceApplication>(*args)
