@@ -1,3 +1,5 @@
+val resilience4jVersion = "2.0.2"
+
 plugins {
     java
     id("org.springframework.boot") version "3.1.1"
@@ -17,6 +19,14 @@ java {
 configurations {
     compileOnly {
         extendsFrom(configurations.annotationProcessor.get())
+    }
+    all {
+        resolutionStrategy {
+            force("io.github.resilience4j:resilience4j-core:${resilience4jVersion}")
+            force("io.github.resilience4j:resilience4j-retry:${resilience4jVersion}")
+            force("io.github.resilience4j:resilience4j-circuitbreaker:${resilience4jVersion}")
+            force("io.github.resilience4j:resilience4j-reactor:${resilience4jVersion}")
+        }
     }
 }
 
@@ -40,10 +50,10 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-webflux")
     implementation("io.jsonwebtoken:jjwt-api:0.11.5")
     implementation("org.springframework.cloud:spring-cloud-starter-netflix-eureka-client")
-    implementation("io.github.resilience4j:resilience4j-reactor:1.7.0")
-    implementation("io.github.resilience4j:resilience4j-circuitbreaker:1.7.0")
-    implementation("io.github.resilience4j:resilience4j-retry:1.7.0")
-    implementation("io.github.resilience4j:resilience4j-core:1.7.0")
+    implementation("io.github.resilience4j:resilience4j-reactor:${resilience4jVersion}")
+    implementation("io.github.resilience4j:resilience4j-circuitbreaker:${resilience4jVersion}")
+    implementation("io.github.resilience4j:resilience4j-retry:${resilience4jVersion}")
+    implementation("io.github.resilience4j:resilience4j-core:${resilience4jVersion}")
     runtimeOnly("org.postgresql:postgresql")
     runtimeOnly("io.jsonwebtoken:jjwt-impl:0.11.5")
     runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.11.5")
