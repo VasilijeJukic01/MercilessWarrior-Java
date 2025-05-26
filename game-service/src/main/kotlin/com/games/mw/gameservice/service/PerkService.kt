@@ -1,34 +1,56 @@
 package com.games.mw.gameservice.service
 
+import arrow.core.Either
+import arrow.core.right
+import arrow.core.raise.either
 import com.games.mw.gameservice.model.Perk
 import com.games.mw.gameservice.repository.PerkRepository
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
 @Service
 class PerkService(
     private val perkRepository: PerkRepository
 ) {
 
+    sealed interface PerkError {
+        data object PerkNotFound : PerkError
+        data class Unknown(val throwable: Throwable) : PerkError
+    }
+
+    @Transactional(readOnly = true)
     fun getPerksBySettingsId(settingsId: Long): List<Perk> {
         return perkRepository.findBySettingsId(settingsId)
     }
 
-    fun insertPerk(perk: Perk): Perk {
-        return perkRepository.save(perk)
+    @Transactional
+    fun insertPerk(perk: Perk): Either<PerkError, Perk> = either {
+        try {
+            perkRepository.save(perk)
+        } catch (e: Exception) {
+            raise(PerkError.Unknown(e))
+        }
     }
 
-    fun updatePerk(perkId: Long, perk: Perk): Perk? {
-        val existingPerk = perkRepository.findById(perkId).orElse(null)
-
-        return if (existingPerk != null) {
-            existingPerk.name = perk.name
-            existingPerk.settings = perk.settings
+    @Transactional
+    fun updatePerk(perkId: Long, perkUpdate: Perk): Either<PerkError, Perk> = either {
+        val existingPerk = perkRepository.findById(perkId).orElse(null) ?: raise(PerkError.PerkNotFound)
+        try {
+            existingPerk.name = perkUpdate.name
+            existingPerk.settings = perkUpdate.settings
             perkRepository.save(existingPerk)
-        } else { null }
+        } catch (e: Exception) {
+            raise(PerkError.Unknown(e))
+        }
     }
 
-    fun deleteBySettingsId(settingsId: Long) {
-        perkRepository.deleteBySettingsId(settingsId)
+    @Transactional
+    fun deleteBySettingsId(settingsId: Long): Either<PerkError, Unit> = either {
+        try {
+            perkRepository.deleteBySettingsId(settingsId)
+            Unit.right()
+        } catch (e: Exception) {
+            raise(PerkError.Unknown(e))
+        }
     }
-
 }
