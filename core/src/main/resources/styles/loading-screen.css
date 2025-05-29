@@ -1,0 +1,56 @@
+/* Loading Screen Styles */
+
+/* Main loading label style */
+.loading-label {
+    -fx-font-family: 'Trebuchet MS', sans-serif;
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #e8e8e8;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.7), 6, 0.0, 0, 2);
+}
+
+/* Progress bar styling */
+.loading-progress-bar {
+    -fx-pref-width: 500px;
+    -fx-pref-height: 15px;
+    -fx-accent: #b22525;
+    -fx-background-color: #333333;
+    -fx-border-color: #666666;
+    -fx-border-width: 1px;
+    -fx-border-radius: 2px;
+}
+
+/* Status label styling */
+.status-label {
+    -fx-font-family: 'Trebuchet MS', sans-serif;
+    -fx-font-size: 16px;
+    -fx-text-fill: #3e3e3e;
+    -fx-font-style: italic;
+}
+
+/* Game tip label styling */
+.tip-label {
+    -fx-font-family: 'Trebuchet MS', sans-serif;
+    -fx-font-size: 18px;
+    -fx-text-fill: #ffcc00;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.7), 3, 0.0, 0, 1);
+}
+
+/* Bottom box styling */
+.bottom-box {
+    -fx-alignment: center;
+    -fx-padding: 20px;
+    -fx-background-color: rgba(0, 0, 0, 0.6);
+}
+
+/* Content box styling */
+.content-box {
+    -fx-alignment: center;
+    -fx-padding: 30px;
+    -fx-spacing: 15px;
+}
+
+/* Logo styling */
+.game-logo {
+    -fx-effect: dropshadow(three-pass-box, black, 10, 0.0, 0, 0);
+}

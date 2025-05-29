@@ -8,11 +8,11 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
-import platformer.AppCore;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
 import platformer.launcher.core.KeyboardConfigurator;
 import platformer.launcher.view.LauncherView;
+import platformer.launcher.view.LoadingView;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -56,8 +56,6 @@ public class LaunchController implements EventHandler<ActionEvent> {
 
     @Override
     public void handle(ActionEvent event) {
-        String[] args = new String[4];
-
         Map<String, KeyCode> commandKeyMap = KeyboardConfigurator.getInstance().getCommandKeyMap();
         writeMapToFile(commandKeyMap);
 
@@ -74,11 +72,20 @@ public class LaunchController implements EventHandler<ActionEvent> {
             default: break;
         }
         SCALING_FACTOR = Float.parseFloat(scale);
-        args[0] = rbYes.isSelected() ? "Yes" : "No";
-        args[1] = tfName.getText();
-        args[2] = passwordField.getText();
-        args[3] = cbFullScreen.isSelected() ? "Yes" : "No";
+
+        // Get player config
+        String playerName = tfName.getText();
+        String password = passwordField.getText();
+
+        // Close the launcher
         launcherView.close();
-        AppCore.main(args);
+
+        LoadingView loadingView = new LoadingView(
+            playerName,
+            password,
+            rbYes.isSelected(),
+            cbFullScreen.isSelected()
+        );
+        loadingView.show();
     }
 }
