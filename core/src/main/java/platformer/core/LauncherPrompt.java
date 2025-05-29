@@ -8,11 +8,13 @@ public class LauncherPrompt {
     private final String name;
     private final String password;
     private final boolean enableCheats;
+    private final boolean fullScreen;
 
-    public LauncherPrompt(String name, String password, boolean enableCheats) {
+    public LauncherPrompt(String name, String password, boolean enableCheats, boolean fullScreen) {
         this.name = name;
         this.password = password;
         this.enableCheats = enableCheats;
+        this.fullScreen = fullScreen;
     }
 
     public String getName() {
@@ -25,5 +27,9 @@ public class LauncherPrompt {
 
     public boolean isEnableCheats() {
         return enableCheats;
+    }
+
+    public boolean isFullScreen() {
+        return fullScreen;
     }
 }

@@ -36,6 +36,8 @@ public class LauncherView extends BaseView {
     private final RadioButton rbEnableCheatsNo = new RadioButton();
     private final Label lbResolution = new Label("Resolution: ");
     private final ComboBox<String> cbResolution = new ComboBox<>();
+    private final Label lbFullScreen = new Label("Full Screen: ");
+    private final CheckBox cbFullScreen = new CheckBox();
 
     private final Label lbSpacing2 = new Label();
     private final Button btnLaunch = new Button("Launch");
@@ -63,7 +65,7 @@ public class LauncherView extends BaseView {
         scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/styles/style.css")).toExternalForm());
 
         Styler styler = new FXStyler();
-        List<Label> labels = Arrays.asList(lbLogo, lbName, lbPassword, lbYes, lbNo, lnEnableCheats, lbResolution);
+        List<Label> labels = Arrays.asList(lbLogo, lbName, lbPassword, lbYes, lbNo, lnEnableCheats, lbResolution, lbFullScreen);
         labels.forEach(styler::setBoldStyle);
     }
 
@@ -83,12 +85,14 @@ public class LauncherView extends BaseView {
         root.getChildren().addAll(lbSpacing1, new DefaultHBox(Pos.CENTER, lbName, tfName),
                 new DefaultHBox(Pos.CENTER, lbPassword, tfPassword),
                 new DefaultHBox(Pos.CENTER, lnEnableCheats, lbYes, rbEnableCheatsYes, lbNo, rbEnableCheatsNo));
-        root.getChildren().addAll(new DefaultHBox(Pos.CENTER, lbResolution, cbResolution), lbSpacing2,
+        root.getChildren().addAll(new DefaultHBox(Pos.CENTER, lbResolution, cbResolution),
+                new DefaultHBox(Pos.CENTER, lbFullScreen, cbFullScreen),
+                lbSpacing2,
                 new DefaultHBox(Pos.CENTER, btnLaunch, btnRegister, btnControls), btnExit);
     }
 
     private void initButtons() {
-        btnLaunch.setOnAction(new LaunchController(this, tfName, tfPassword, rbEnableCheatsYes, cbResolution));
+        btnLaunch.setOnAction(new LaunchController(this, tfName, tfPassword, rbEnableCheatsYes, cbResolution, cbFullScreen));
         btnRegister.setOnAction(e -> new RegisterView(this).show());
         btnControls.setOnAction(e -> new ControlsView().show());
         btnExit.setOnAction(e -> System.exit(0));

@@ -2,6 +2,7 @@ package platformer.launcher.controller;
 
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.RadioButton;
@@ -31,13 +32,15 @@ public class LaunchController implements EventHandler<ActionEvent> {
     private final PasswordField passwordField;
     private final RadioButton rbYes;
     private final ComboBox<String> cbResolution;
+    private final CheckBox cbFullScreen;
 
-    public LaunchController(LauncherView launcherView, TextField tfName, PasswordField passwordField, RadioButton rbYes, ComboBox<String> cbResolution) {
+    public LaunchController(LauncherView launcherView, TextField tfName, PasswordField passwordField, RadioButton rbYes, ComboBox<String> cbResolution, CheckBox cbFullScreen) {
         this.launcherView = launcherView;
         this.tfName = tfName;
         this.passwordField = passwordField;
         this.rbYes = rbYes;
         this.cbResolution = cbResolution;
+        this.cbFullScreen = cbFullScreen;
     }
 
     private void writeMapToFile(Map<String, KeyCode> map) {
@@ -53,7 +56,7 @@ public class LaunchController implements EventHandler<ActionEvent> {
 
     @Override
     public void handle(ActionEvent event) {
-        String[] args = new String[3];
+        String[] args = new String[4];
 
         Map<String, KeyCode> commandKeyMap = KeyboardConfigurator.getInstance().getCommandKeyMap();
         writeMapToFile(commandKeyMap);
@@ -74,6 +77,7 @@ public class LaunchController implements EventHandler<ActionEvent> {
         args[0] = rbYes.isSelected() ? "Yes" : "No";
         args[1] = tfName.getText();
         args[2] = passwordField.getText();
+        args[3] = cbFullScreen.isSelected() ? "Yes" : "No";
         launcherView.close();
         AppCore.main(args);
     }
