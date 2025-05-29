@@ -12,6 +12,8 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
 
+import static platformer.constants.Constants.*;
+
 /**
  * Entry point for the game.
  * It initializes and manages the game's core components such as the GameFrame, StateManager, and AudioOptions.
@@ -32,6 +34,10 @@ public class Game implements Runnable {
     private int currentFps = 0;
     private int currentUpdates = 0;
 
+    private float originalScale;
+    private int originalGameWidth;
+    private int originalGameHeight;
+
     public Game() {
         init();
         this.gameThread = new Thread(this);
@@ -40,6 +46,9 @@ public class Game implements Runnable {
     }
 
     private void init() {
+        this.originalScale = SCALE;
+        this.originalGameWidth = GAME_WIDTH;
+        this.originalGameHeight = GAME_HEIGHT;
         this.gameFrame = new GameFrame(this);
         this.audioOptions = new AudioOptions();
         this.stateManager = new StateManager(this);
@@ -54,8 +63,40 @@ public class Game implements Runnable {
         stateManager.getCurrentState().update();
     }
 
+    /**
+     * Renders the current state of the game.
+     * If the game is in full screen mode, it scales the graphics context to fit the current size of the game panel.
+     * Otherwise, it renders the state directly.
+     *
+     * @param g the Graphics object used for rendering
+     */
     public void render(Graphics g) {
-        stateManager.getCurrentState().render(g);
+        if (isFullScreen()) {
+            Graphics2D g2d = (Graphics2D) g;
+            Dimension currentSize = gameFrame.getGamePanel().getCurrentSize();
+            double scaleX = (double) currentSize.width / originalGameWidth;
+            double scaleY = (double) currentSize.height / originalGameHeight;
+
+            g2d.scale(scaleX, scaleY);
+            stateManager.getCurrentState().render(g2d);
+            g2d.scale(1 / scaleX, 1 / scaleY);
+        }
+        else stateManager.getCurrentState().render(g);
+    }
+
+    /**
+     * Toggles between windowed mode and full screen mode.
+     */
+    public void toggleFullScreen() {
+        if (gameFrame != null) gameFrame.toggleFullScreen();
+    }
+
+    /**
+     * Checks if the game is currently in full screen mode.
+     * @return true if the game is in full screen mode, false otherwise
+     */
+    public boolean isFullScreen() {
+        return gameFrame != null && gameFrame.isFullScreen();
     }
 
     // Core
@@ -110,6 +151,10 @@ public class Game implements Runnable {
 
     // Mediator
     public void keyPressed(KeyEvent e) {
+        if (e.getKeyCode() == KeyEvent.VK_F11) {
+            toggleFullScreen();
+            return;
+        }
         stateManager.getCurrentState().keyPressed(e);
     }
 
