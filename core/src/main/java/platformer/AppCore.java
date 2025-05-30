@@ -14,7 +14,7 @@ public class AppCore {
 
         try {
             LoadingProgressTracker.getInstance().update(0.1, "Initializing game");
-            Framework.getInstance().init(args[0], args[1], args[2], args[3]);
+            Framework.getInstance().init(args[2], args[0], args[1], args[3]);
             ClassLoadingTracker.markLoadingComplete();
 
             Framework.getInstance().start();
