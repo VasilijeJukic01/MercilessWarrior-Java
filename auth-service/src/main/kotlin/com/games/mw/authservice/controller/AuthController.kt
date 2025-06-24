@@ -70,4 +70,38 @@ class AuthController(
     fun getAllUsernames(@RequestHeader("Authorization") token: String): ResponseEntity<List<String>> {
         return ResponseEntity.ok(authService.getAllUsernames())
     }
+
+    @GetMapping("/validate-token")
+    fun validateToken(@RequestHeader("Authorization") token: String): ResponseEntity<*> {
+        return authService.validateToken(token).fold(
+            { error ->
+                when (error) {
+                    is AuthService.TokenError.InvalidToken ->
+                        ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token")
+                    is AuthService.TokenError.ExpiredToken ->
+                        ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token expired")
+                    is AuthService.TokenError.Unknown ->
+                        ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Token validation failed: ${error.throwable.message}")
+                }
+            },
+            { userInfo -> ResponseEntity.ok(userInfo) }
+        )
+    }
+
+    @GetMapping("/is-admin")
+    fun isAdmin(@RequestHeader("Authorization") token: String): ResponseEntity<*> {
+        return authService.isAdmin(token).fold(
+            { error ->
+                when (error) {
+                    is AuthService.TokenError.InvalidToken ->
+                        ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token")
+                    is AuthService.TokenError.ExpiredToken ->
+                        ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token expired")
+                    is AuthService.TokenError.Unknown ->
+                        ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Admin check failed: ${error.throwable.message}")
+                }
+            },
+            { isAdmin -> ResponseEntity.ok(isAdmin) }
+        )
+    }
 }

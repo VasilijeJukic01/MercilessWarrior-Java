@@ -1,8 +1,8 @@
 package com.games.mw.authservice.service
 
 import com.games.mw.authservice.repository.UserRepository
+import com.games.mw.authservice.security.CustomUserDetails
 import org.springframework.security.core.authority.SimpleGrantedAuthority
-import org.springframework.security.core.userdetails.User
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.core.userdetails.UsernameNotFoundException
@@ -23,10 +23,11 @@ class UserDetailsServiceImpl(
             .map { userRole -> SimpleGrantedAuthority("ROLE_${userRole.role.name}") }
             .toSet()
 
-        return User
-            .withUsername(user.username)
-            .password(user.password)
-            .authorities(authorities)
-            .build()
+        return CustomUserDetails(
+            id = user.id!!,
+            username = user.username,
+            password = user.password,
+            authorities = authorities
+        )
     }
 }

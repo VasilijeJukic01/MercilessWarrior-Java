@@ -6,6 +6,7 @@ import com.games.mw.gameservice.service.GameService
 import kotlinx.coroutines.runBlocking
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.*
 
 @RestController
@@ -15,6 +16,7 @@ class GameController(
 ) {
 
     @GetMapping("/account/{username}")
+    @PreAuthorize("#username == authentication.name or hasRole('ADMIN')")
     fun getAccountData(@PathVariable username: String, @RequestHeader("Authorization") token: String): ResponseEntity<*> {
         return runBlocking {
             gameService.getAccountData(username, token).fold(
@@ -25,9 +27,10 @@ class GameController(
     }
 
     @PutMapping("/account")
+    @PreAuthorize("#accountDataDTO.username == authentication.name or hasRole('ADMIN')")
     fun updateAccountData(@RequestBody accountDataDTO: AccountDataDTO, @RequestHeader("Authorization") token: String): ResponseEntity<*> {
         return runBlocking {
-            gameService.updateAccountData(accountDataDTO).fold(
+            gameService.updateAccountData(accountDataDTO, token).fold(
                 { error -> handleGameError(error, "Failed to update account data.") },
                 { ResponseEntity.ok().build<Void>() }
             )

@@ -3,30 +3,27 @@ package com.games.mw.gameservice.config
 import com.games.mw.gameservice.security.JwtAuthenticationFilter
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 
-// TODO: Handle permissions
 @Configuration
 @EnableWebSecurity
-open class SecurityConfig(
+@EnableMethodSecurity(prePostEnabled = true)
+class SecurityConfig(
     private val jwtAuthenticationFilter: JwtAuthenticationFilter
 ) {
 
     @Bean
-    open fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
+    fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
         http
             .csrf { csrf -> csrf.disable() }
             .authorizeHttpRequests { authorizeRequests ->
                 authorizeRequests
-                    .requestMatchers("/game/**").permitAll()
-                    .requestMatchers("/items/**").permitAll()
                     .requestMatchers("/leaderboard/**").permitAll()
-                    .requestMatchers("/perks/**").permitAll()
-                    .requestMatchers("/settings/**").permitAll()
                     .anyRequest().authenticated()
             }
             .headers { headers ->

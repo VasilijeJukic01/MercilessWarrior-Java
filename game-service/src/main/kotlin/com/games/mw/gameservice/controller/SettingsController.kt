@@ -5,6 +5,7 @@ import com.games.mw.gameservice.service.SettingsService.SettingsError
 import com.games.mw.gameservice.service.SettingsService
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.*
 
 @RestController
@@ -14,6 +15,7 @@ class SettingsController (
 ) {
 
     @GetMapping("/{userId}")
+    @PreAuthorize("@permissionService.isOwnerByUserId(#userId) or hasRole('ADMIN')")
     fun getSettingsByUserId(@PathVariable userId: Long, @RequestHeader("Authorization") token: String): ResponseEntity<*> {
         return settingsService.getSettingsByUserId(userId).fold(
             { error ->
@@ -27,6 +29,7 @@ class SettingsController (
     }
 
     @PostMapping("/")
+    @PreAuthorize("@permissionService.isOwnerByUserId(#settings.userId) or hasRole('ADMIN')")
     fun insertSettings(@RequestBody settings: Settings, @RequestHeader("Authorization") token: String): ResponseEntity<*> {
         return settingsService.insertSettings(settings).fold(
             { error -> ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to insert settings.") },
@@ -35,6 +38,7 @@ class SettingsController (
     }
 
     @PostMapping("/empty/{userId}")
+    @PreAuthorize("@permissionService.isOwnerByUserId(#userId) or hasRole('ADMIN')")
     fun insertEmptySettings(@PathVariable userId: Long, @RequestHeader("Authorization") token: String): ResponseEntity<*> {
         return settingsService.insertSettings(Settings(userId = userId)).fold(
             { _ -> ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to insert empty settings.") },
@@ -43,6 +47,7 @@ class SettingsController (
     }
 
     @PutMapping("/{userId}")
+    @PreAuthorize("@permissionService.isOwnerByUserId(#userId) or hasRole('ADMIN')")
     fun updateSettings(@PathVariable userId: Long, @RequestBody settings: Settings, @RequestHeader("Authorization") token: String): ResponseEntity<*> {
         return settingsService.updateSettings(userId, settings).fold(
             { error ->

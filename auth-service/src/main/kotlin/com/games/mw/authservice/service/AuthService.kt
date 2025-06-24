@@ -48,6 +48,12 @@ class AuthService(
         data object UserIdNotAvailable : UserAccessError
     }
 
+    sealed interface TokenError {
+        data object InvalidToken : TokenError
+        data object ExpiredToken : TokenError
+        data class Unknown(val throwable: Throwable) : TokenError
+    }
+
     @Transactional
     suspend fun registerUser(request: RegistrationRequest): Either<RegistrationError, User> = either {
         ensure(userRepository.findByUsername(request.username).isEmpty) {
@@ -118,4 +124,31 @@ class AuthService(
         return userRepository.findAll().map { it.username }
     }
 
+    fun validateToken(token: String): Either<TokenError, Map<String, Any>> {
+        return try {
+            val username = jwtService.extractUsername(token)
+            val userDetails = userDetailsService.loadUserByUsername(username)
+
+            if (jwtService.validateToken(token, userDetails)) {
+                val user = userRepository.findByUsername(username)
+                    .orElseThrow { IllegalStateException("User not found despite valid token") }
+
+                val roles = user.userRoles.map { it.role.name }
+
+                mapOf("username" to username, "roles" to roles).right()
+            } else {
+                TokenError.ExpiredToken.left()
+            }
+        } catch (e: Exception) {
+            TokenError.Unknown(e).left()
+        }
+    }
+
+    fun isAdmin(token: String): Either<TokenError, Boolean> {
+        return validateToken(token).map { userInfo ->
+            @Suppress("UNCHECKED_CAST")
+            val roles = userInfo["roles"] as List<String>
+            roles.contains("ADMIN")
+        }
+    }
 }

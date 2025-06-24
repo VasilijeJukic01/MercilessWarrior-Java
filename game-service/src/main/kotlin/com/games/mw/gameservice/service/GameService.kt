@@ -39,21 +39,6 @@ class GameService(
 
     private val authServiceCircuitBreaker: CircuitBreaker = circuitBreakerRegistry.circuitBreaker("authServiceGame")
 
-    private suspend fun fetchUserId(username: String, token: String): Either<GameError, Long> = either {
-        val authServiceClient = webClientBuilder.baseUrl("http://auth-service:8081").build()
-        try {
-            authServiceClient.get()
-                .uri("/auth/account/$username")
-                .header(HttpHeaders.AUTHORIZATION, token)
-                .retrieve()
-                .awaitBody<Long>()
-        } catch (e: WebClientResponseException) {
-            raise(GameError.AuthServiceInteractionError(HttpStatus.valueOf(e.statusCode.value()), e.responseBodyAsString))
-        } catch (e: Exception) {
-            raise(GameError.UnknownSource(e))
-        }
-    }
-
     suspend fun getAccountData(username: String, token: String): Either<GameError, AccountDataDTO> = either {
         val userId = retry.executeSuspendFunction {
             authServiceCircuitBreaker.executeSuspendFunction {
@@ -82,7 +67,6 @@ class GameService(
         val perks: List<Perk> = try { perkService.getPerksBySettingsId(settingsId) }
         catch (e: Exception) { raise(GameError.PerkOperationFailed(PerkService.PerkError.Unknown(e))) }
 
-
         AccountDataDTO(
             username,
             userId,
@@ -98,7 +82,7 @@ class GameService(
     }
 
     @Transactional
-    suspend fun updateAccountData(accountDataDTO: AccountDataDTO): Either<GameError, Unit> = either {
+    suspend fun updateAccountData(accountDataDTO: AccountDataDTO, token: String): Either<GameError, Unit> = either {
         val existingSettings = settingsService.getSettingsByUserId(accountDataDTO.accountId)
             .mapLeft { GameError.SettingsOperationFailed(it) }.bind()
 
@@ -117,6 +101,7 @@ class GameService(
 
         itemService.deleteBySettingsId(settingsId)
             .mapLeft { GameError.ItemOperationFailed(it) }.bind()
+
         accountDataDTO.items.forEach {
             val itemParts = it.split(",")
             val name = itemParts[0]
@@ -131,6 +116,22 @@ class GameService(
         accountDataDTO.perks.forEach {
             perkService.insertPerk(Perk(name = it, settings = settings))
                 .mapLeft { GameError.PerkOperationFailed(it) }.bind()
+        }
+    }
+
+    // Private
+    private suspend fun fetchUserId(username: String, token: String): Either<GameError, Long> = either {
+        val authServiceClient = webClientBuilder.baseUrl("http://auth-service:8081").build()
+        try {
+            authServiceClient.get()
+                .uri("/auth/account/$username")
+                .header(HttpHeaders.AUTHORIZATION, token)
+                .retrieve()
+                .awaitBody<Long>()
+        } catch (e: WebClientResponseException) {
+            raise(GameError.AuthServiceInteractionError(HttpStatus.valueOf(e.statusCode.value()), e.responseBodyAsString))
+        } catch (e: Exception) {
+            raise(GameError.UnknownSource(e))
         }
     }
 
