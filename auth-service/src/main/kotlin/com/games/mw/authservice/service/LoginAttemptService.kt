@@ -1,38 +1,37 @@
 package com.games.mw.authservice.service
 
-import com.google.common.cache.CacheBuilder
-import com.google.common.cache.CacheLoader
-import com.google.common.cache.LoadingCache
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.stereotype.Service
 import java.util.concurrent.TimeUnit
 
 @Service
-class LoginAttemptService {
-
+class LoginAttemptService(
+    private val redisTemplate: RedisTemplate<String, String>
+) {
     @Value("\${login.attempts.max}")
-    private var MAX_ATTEMPT: Int? = null
+    private val maxAttempts: Int = 5
 
-    private val attemptsCache: LoadingCache<String, Int> = CacheBuilder.newBuilder()
-        .expireAfterWrite(1, TimeUnit.DAYS)
-        .build(object : CacheLoader<String, Int>() {
-            // If the key is not found, create a new entry with 0 attempts
-            override fun load(key: String): Int {
-                return 0
-            }
-        })
+    private val blockDurationMinutes: Long = 15
+
+    private fun getKey(key: String): String {
+        return "login:attempts:$key"
+    }
 
     fun loginSucceeded(key: String) {
-        attemptsCache.invalidate(key)
+        redisTemplate.delete(getKey(key))
     }
 
     fun loginFailed(key: String) {
-        var attempts = attemptsCache[key]
-        attempts++
-        attemptsCache.put(key, attempts)
+        val attemptsKey = getKey(key)
+        val attempts = redisTemplate.opsForValue().increment(attemptsKey)
+        if (attempts == 1L) {
+            redisTemplate.expire(attemptsKey, blockDurationMinutes, TimeUnit.MINUTES)
+        }
     }
 
     fun isBlocked(key: String): Boolean {
-        return attemptsCache[key] >= MAX_ATTEMPT!!
+        val attempts = redisTemplate.opsForValue().get(getKey(key))
+        return attempts != null && attempts.toInt() >= maxAttempts
     }
 }

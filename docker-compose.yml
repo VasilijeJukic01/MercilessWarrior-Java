@@ -20,6 +20,11 @@ services:
     ports:
       - "5434:5432"
 
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
   service-registry:
     build: ./service-registry
     ports:
@@ -31,6 +36,7 @@ services:
       - "8080:8080"
     depends_on:
       - service-registry
+      - redis
 
   auth-service:
     build: ./auth-service
@@ -39,6 +45,7 @@ services:
     depends_on:
       - service-registry
       - db-auth
+      - redis
 
   game-service:
     build: ./game-service
@@ -47,3 +54,4 @@ services:
     depends_on:
       - service-registry
       - db-game
+      - redis
