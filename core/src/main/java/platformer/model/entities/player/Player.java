@@ -49,7 +49,10 @@ public class Player extends Entity {
     private final EnumSet<PlayerAction> actions = EnumSet.noneOf(PlayerAction.class);
 
     // Physics
-    private final double gravity = 0.028 * SCALE;
+    private final double downwardGravity = 0.03 * SCALE;
+    private final double upwardGravity = 0.022 * SCALE;
+    private final double jumpCutGravityMultiplier = 3.0;
+
     private final double wallGravity = 0.0005 * SCALE;
     private final double jumpSpeed = -2.25 * SCALE;
     private final double collisionFallSpeed = 0.5 * SCALE;
@@ -290,9 +293,17 @@ public class Player extends Entity {
 
     private void inAirUpdate() {
         boolean onWall = checkAction(PlayerAction.ON_WALL);
+
+        if (airSpeed < 0) {
+            if (checkAction(PlayerAction.JUMP)) airSpeed += upwardGravity;
+            else airSpeed += upwardGravity * jumpCutGravityMultiplier;
+        }
+        else {
+            if (onWall) airSpeed += wallGravity;
+            else airSpeed += downwardGravity;
+        }
+
         if (Utils.getInstance().canMoveHere(hitBox.x, hitBox.y + airSpeed + 1, hitBox.width, hitBox.height, levelData)) {
-            if (onWall && airSpeed > 0) airSpeed += wallGravity;
-            else airSpeed += gravity;
             hitBox.y += airSpeed;
         }
         else {
