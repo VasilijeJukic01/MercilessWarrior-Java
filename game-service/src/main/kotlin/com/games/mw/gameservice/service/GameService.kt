@@ -19,6 +19,18 @@ import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import org.springframework.web.reactive.function.client.awaitBody
 
+/**
+ * Service for managing game account data.
+ * Handles retrieval and update of user account data by interacting with the authentication service and internal services for settings, items,
+ * and perks.
+ *
+ * @property settingsService Service for user settings management.
+ * @property itemService Service for item management.
+ * @property perkService Service for perk management.
+ * @property webClientBuilder Builder for creating WebClient instances.
+ * @property retry Retry configuration for external calls.
+ * @property authServiceCircuitBreaker Circuit breaker for auth service communication.
+ */
 @Service
 class GameService(
     private val settingsService: SettingsService,
@@ -39,6 +51,13 @@ class GameService(
 
     private val authServiceCircuitBreaker: CircuitBreaker = circuitBreakerRegistry.circuitBreaker("authServiceGame")
 
+    /**
+     * Retrieves complete account data for a user, including settings, items, and perks.
+     *
+     * @param username The username of the account.
+     * @param token The authentication token for the request.
+     * @return [Either] containing [AccountDataDTO] on success or [GameError] on failure.
+     */
     suspend fun getAccountData(username: String, token: String): Either<GameError, AccountDataDTO> = either {
         val userId = retry.executeSuspendFunction {
             authServiceCircuitBreaker.executeSuspendFunction {
@@ -81,6 +100,13 @@ class GameService(
         )
     }
 
+    /**
+     * Updates the account data for a user, including settings, items, and perks.
+     *
+     * @param accountDataDTO The new account data to update.
+     * @param token The authentication token for the request.
+     * @return [Either] containing [Unit] on success or [GameError] on failure.
+     */
     @Transactional
     suspend fun updateAccountData(accountDataDTO: AccountDataDTO, token: String): Either<GameError, Unit> = either {
         val existingSettings = settingsService.getSettingsByUserId(accountDataDTO.accountId)

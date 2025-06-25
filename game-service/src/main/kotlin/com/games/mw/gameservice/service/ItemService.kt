@@ -8,6 +8,12 @@ import com.games.mw.gameservice.repository.ItemRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
+/**
+ * Service for managing item entities associated with user settings.
+ * It provides methods to retrieve, insert, update, and delete items by settings ID.
+ *
+ * @property itemRepository Repository for accessing and modifying item data.
+ */
 @Service
 class ItemService(
     private val itemRepository: ItemRepository
@@ -18,11 +24,23 @@ class ItemService(
         data class Unknown(val throwable: Throwable) : ItemError
     }
 
+    /**
+     * Retrieves all items associated with the given settings ID.
+     *
+     * @param settingsId The ID of the settings entity.
+     * @return List of [Item]s for the specified settings.
+     */
     @Transactional(readOnly = true)
     fun getItemsBySettingsId(settingsId: Long): List<Item> {
         return itemRepository.findBySettingsId(settingsId)
     }
 
+    /**
+     * Inserts a new item into the repository.
+     *
+     * @param item The [Item] to insert.
+     * @return [Either] containing the inserted [Item] or an [ItemError] on failure.
+     */
     @Transactional
     fun insertItem(item: Item): Either<ItemError, Item> = either {
         try {
@@ -32,6 +50,13 @@ class ItemService(
         }
     }
 
+    /**
+     * Updates an existing item by its ID.
+     *
+     * @param itemId The ID of the item to update.
+     * @param itemUpdate The new item data.
+     * @return [Either] containing the updated [Item] or an [ItemError] on failure.
+     */
     @Transactional
     fun updateItem(itemId: Long, itemUpdate: Item): Either<ItemError, Item> = either {
         val existingItem = itemRepository.findById(itemId).orElse(null) ?: raise(ItemError.ItemNotFound)
@@ -46,6 +71,12 @@ class ItemService(
         }
     }
 
+    /**
+     * Deletes all items associated with the given settings ID.
+     *
+     * @param settingsId The ID of the settings entity.
+     * @return [Either] containing [Unit] on success or an [ItemError] on failure.
+     */
     @Transactional
     fun deleteBySettingsId(settingsId: Long): Either<ItemError, Unit> = either {
         try {

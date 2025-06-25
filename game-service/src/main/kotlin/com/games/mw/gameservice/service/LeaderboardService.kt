@@ -15,6 +15,14 @@ import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import org.springframework.web.reactive.function.client.awaitBody
 
+/**
+ * Service for retrieving and assembling leaderboard data.
+ *
+ * @property settingsService Service for accessing user settings.
+ * @property webClientBuilder Builder for creating WebClient instances.
+ * @property retry Retry configuration for external calls.
+ * @property authServiceCircuitBreaker Circuit breaker for auth service communication.
+ */
 @Service
 class LeaderboardService(
     private val settingsService: SettingsService,
@@ -30,6 +38,12 @@ class LeaderboardService(
 
     private val authServiceCircuitBreaker: CircuitBreaker = circuitBreakerRegistry.circuitBreaker("authServiceLeaderboard")
 
+    /**
+     * Fetches all usernames from the authentication service.
+     *
+     * @param token The authentication token for the request.
+     * @return [Either] containing a list of usernames or a [LeaderboardError] on failure.
+     */
     private suspend fun fetchUsernames(token: String): Either<LeaderboardError, List<String>> = either {
         val authServiceClient = webClientBuilder.baseUrl("http://auth-service:8081").build()
         try {
@@ -46,6 +60,13 @@ class LeaderboardService(
         }
     }
 
+    /**
+     * Fetches the account ID for a given username from the authentication service.
+     *
+     * @param username The username to look up.
+     * @param token The authentication token for the request.
+     * @return [Either] containing the account ID or a [LeaderboardError] on failure.
+     */
     private suspend fun fetchAccountId(username: String, token: String): Either<LeaderboardError, Long> = either {
         val authServiceClient = webClientBuilder.baseUrl("http://auth-service:8081").build()
         try {
@@ -61,6 +82,12 @@ class LeaderboardService(
         }
     }
 
+    /**
+     * Retrieves the leaderboard, assembling user data sorted by level.
+     *
+     * @param token The authentication token for the request.
+     * @return [Either] containing a list of [BoardItemDTO]s or a [LeaderboardError] on failure.
+     */
     suspend fun getLeaderboard(token: String): Either<LeaderboardError, List<BoardItemDTO>> = either {
         val usernames = retry.executeSuspendFunction {
             authServiceCircuitBreaker.executeSuspendFunction {

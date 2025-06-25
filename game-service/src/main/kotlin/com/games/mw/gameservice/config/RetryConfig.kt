@@ -8,10 +8,10 @@ import org.springframework.context.annotation.Configuration
 import java.time.Duration
 
 @Configuration
-open class RetryConfig {
+class RetryConfig {
 
     @Bean
-    open fun retryRegistry(): RetryRegistry {
+    fun retryRegistry(): RetryRegistry {
         val retryConfig = RetryConfig.custom<RetryConfig>()
             .maxAttempts(3)
             .waitDuration(Duration.ofMillis(1000))
@@ -21,7 +21,7 @@ open class RetryConfig {
     }
 
     @Bean
-    open fun authServiceRetry(retryRegistry: RetryRegistry): Retry {
+    fun authServiceRetry(retryRegistry: RetryRegistry): Retry {
         return retryRegistry.retry("authService")
     }
 }

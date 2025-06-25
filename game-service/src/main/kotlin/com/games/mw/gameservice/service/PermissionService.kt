@@ -8,6 +8,14 @@ import com.games.mw.gameservice.security.CustomAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 
+/**
+ * Service for checking ownership and permission of resources (settings, items, perks) for the current user.
+ * It uses the security context to determine the current user's ID and verifies ownership of various entities by comparing user IDs and related settings.
+ *
+ * @property settingsService Service for accessing user settings.
+ * @property itemRepository Repository for accessing item data.
+ * @property perkRepository Repository for accessing perk data.
+ */
 @Service("permissionService")
 class PermissionService(
     private val settingsService: SettingsService,

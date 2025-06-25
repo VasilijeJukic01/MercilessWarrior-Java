@@ -8,6 +8,12 @@ import com.games.mw.gameservice.repository.SettingsRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
+/**
+ * Service for managing user settings entities.
+ * It provides methods to retrieve, insert, and update settings by user ID.
+ *
+ * @property settingsRepository Repository for accessing and modifying settings data.
+ */
 @Service
 class SettingsService(
     private val settingsRepository: SettingsRepository
@@ -18,11 +24,23 @@ class SettingsService(
         data class Unknown(val throwable: Throwable) : SettingsError
     }
 
+    /**
+     * Retrieves the settings associated with the given user ID.
+     *
+     * @param userId The ID of the user.
+     * @return [Either] containing the [Settings] on success or a [SettingsError] on failure.
+     */
     @Transactional(readOnly = true)
     fun getSettingsByUserId(userId: Long): Either<SettingsError, Settings> = either {
         ensureNotNull(settingsRepository.findByUserId(userId)) { SettingsError.SettingsNotFound }
     }
 
+    /**
+     * Inserts a new settings entity into the repository.
+     *
+     * @param settings The [Settings] to insert.
+     * @return [Either] containing the inserted [Settings] or a [SettingsError] on failure.
+     */
     @Transactional
     fun insertSettings(settings: Settings): Either<SettingsError, Settings> = either {
         try {
@@ -32,6 +50,13 @@ class SettingsService(
         }
     }
 
+    /**
+     * Updates an existing settings entity by user ID.
+     *
+     * @param userId The ID of the user whose settings are to be updated.
+     * @param settingsUpdate The new settings data.
+     * @return [Either] containing the updated [Settings] or a [SettingsError] on failure.
+     */
     @Transactional
     fun updateSettings(userId: Long, settingsUpdate: Settings): Either<SettingsError, Settings> = either {
         val existingSettings = settingsRepository.findByUserId(userId) ?: raise(SettingsError.SettingsNotFound)
