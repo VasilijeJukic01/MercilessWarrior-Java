@@ -59,7 +59,7 @@ public final class Constants {
     public static final int XP_CAP = 10000;
     public static final int PLAYER_MAX_HP = 100;
     public static final int PLAYER_MAX_ST = 100;
-    public static final double PLAYER_SPEED = dScale(0.6);
+    public static final double PLAYER_SPEED = dScale(0.55);
     public static final double LAVA_PLAYER_SPEED = dScale(0.3);
     public static final double PLAYER_BOOST = dScale(0.65);
 
