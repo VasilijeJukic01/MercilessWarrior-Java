@@ -22,7 +22,8 @@ public enum ObjType {
     NPC(4),                         // 18
     LAVA(16),                       // 19
     BRICK(8),                       // 20
-    MAX(0);                         // 21
+    JUMP_PAD(20),                	// 21
+    MAX(0);                         // 22
 
     private final int sprites;
 

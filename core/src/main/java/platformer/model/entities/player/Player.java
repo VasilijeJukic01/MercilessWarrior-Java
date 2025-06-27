@@ -388,6 +388,11 @@ public class Player extends Entity {
         if (attacking || dash) checkAttack();
     }
 
+    public void launch(double launchSpeed) {
+        inAir = true;
+        airSpeed = launchSpeed;
+    }
+
     // Checks
     private void checkAttack() {
         boolean dash = checkAction(PlayerAction.DASH);

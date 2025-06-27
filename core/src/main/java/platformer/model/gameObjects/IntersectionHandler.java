@@ -15,8 +15,7 @@ import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
 
-import static platformer.constants.Constants.HEAL_POTION_VAL;
-import static platformer.constants.Constants.STAMINA_POTION_VAL;
+import static platformer.constants.Constants.*;
 
 /**
  * Handles intersections between game objects and entities.
@@ -30,7 +29,7 @@ public class IntersectionHandler {
     private final Class<? extends GameObject>[] classesToCheck = new Class[]{
             Shop.class, Blacksmith.class, SaveTotem.class, Loot.class, Spike.class,
             Blocker.class, SmashTrap.class, Table.class, Board.class, Dog.class, Npc.class,
-            Lava.class
+            Lava.class, JumpPad.class
     };
 
     public IntersectionHandler(EnemyManager enemyManager, ObjectManager objectManager) {
@@ -87,6 +86,9 @@ public class IntersectionHandler {
             }
             else if (object instanceof Board) {
                 ((Board) object).setActive(intersect);
+            }
+            else if (object instanceof JumpPad) {
+                if (intersect) ((JumpPad) object).launchPlayer(p);
             }
             else if (object instanceof Dog) {
                 ((Dog) object).setActive(intersect);

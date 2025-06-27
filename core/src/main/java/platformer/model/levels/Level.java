@@ -163,6 +163,9 @@ public class Level {
             case BRICK:
                 addGameObject(new Brick(ObjType.values()[valueB], i*TILES_SIZE, j*TILES_SIZE));
                 break;
+            case JUMP_PAD:
+                addGameObject(new JumpPad(ObjType.values()[valueB], i*TILES_SIZE, j*TILES_SIZE));
+                break;
             default: break;
         }
     }

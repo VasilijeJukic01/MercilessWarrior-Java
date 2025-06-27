@@ -53,7 +53,7 @@ public class ObjectManager implements Publisher {
             Coin.class, Container.class, Potion.class, Spike.class,
             Shop.class, Blocker.class, Blacksmith.class, Dog.class,
             SaveTotem.class, SmashTrap.class, Candle.class, Loot.class,
-            Table.class, Board.class, Npc.class, Lava.class, Brick.class
+            Table.class, Board.class, Npc.class, Lava.class, Brick.class, JumpPad.class
     };
     Class<? extends GameObject>[] renderBelow = new Class[] {
             Container.class, Potion.class, Spike.class,
@@ -61,7 +61,7 @@ public class ObjectManager implements Publisher {
     };
     Class<? extends GameObject>[] renderAbove = new Class[] {
             SaveTotem.class, Shop.class, Blacksmith.class, Coin.class,
-            Table.class, Board.class
+            Table.class, Board.class, JumpPad.class
     };
     Class<? extends GameObject>[] renderBehind = new Class[] {
             Lava.class

@@ -155,7 +155,7 @@ public class Animation {
 
     // Objects
     public BufferedImage[][] loadObjects() {
-        BufferedImage[][] anim = new BufferedImage[21][17];
+        BufferedImage[][] anim = new BufferedImage[22][17];
 
         anim[ObjType.STAMINA_POTION.ordinal()] = loadFromSprite(POTIONS_SHEET, 7, 0, POTION_WID, POTION_HEI, 0, POTION_W, POTION_H);
         anim[ObjType.HEAL_POTION.ordinal()] = loadFromSprite(POTIONS_SHEET, 7, 1, POTION_WID, POTION_HEI, 0, POTION_W, POTION_H);
@@ -177,6 +177,7 @@ public class Animation {
         anim[ObjType.BOARD.ordinal()] = loadFromSprite(BOARD_IMG, 1, 0, BOARD_WID, BOARD_HEI, 0, BOARD_W, BOARD_H);
         anim[ObjType.LAVA.ordinal()] = loadFromSprite(LAVA_SHEET, 16, 0, LAVA_WID, LAVA_HEI, 0, LAVA_W, LAVA_H);
         anim[ObjType.BRICK.ordinal()] = loadFromSprite(BRICK_SHEET, 8, 0, BRICK_WID, BRICK_HEI, 0, BRICK_W, BRICK_H);
+        anim[ObjType.JUMP_PAD.ordinal()] = loadFromSprite(JUMP_PAD_SHEET, 20, 0, JUMP_PAD_WID, JUMP_PAD_HEI, 0, JUMP_PAD_W, JUMP_PAD_H);
 
         return anim;
     }
