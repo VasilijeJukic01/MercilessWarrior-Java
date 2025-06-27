@@ -3,5 +3,7 @@ package platformer.model.entities.effects.particles;
 public enum DustType {
     IMPACT,
     RUNNING,
-    DASH
+    DASH,
+    IMPACT_SPARK,
+    CRITICAL_HIT
 }

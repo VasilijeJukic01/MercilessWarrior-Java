@@ -69,6 +69,10 @@ public class GameState extends AbstractState implements State {
 
     private BossInterface bossInterface;
 
+    // Effects
+    private int screenFlashAlpha = 0;
+    private final int flashFadeSpeed = 25;
+
     public GameState(Game game) {
         super(game);
         init();
@@ -191,9 +195,15 @@ public class GameState extends AbstractState implements State {
         yLevelOffset = Math.max(Math.min(yLevelOffset, yMaxLevelOffset), 0);
     }
 
+    // Effect
+    public void triggerScreenFlash() {
+        this.screenFlashAlpha = 200;
+    }
+
     // Core
     @Override
     public void update() {
+        updateFlash();
         checkPlayerDeath();
         if (state == PlayingState.PAUSE)
             overlayManager.update(PlayingState.PAUSE);
@@ -219,6 +229,13 @@ public class GameState extends AbstractState implements State {
         this.player.render(g, xLevelOffset, yLevelOffset);
         this.objectManager.secondRender(g, xLevelOffset, yLevelOffset);
         this.spellManager.render(g, xLevelOffset, yLevelOffset);
+
+        // TODO: Move this to somewhere else
+        if (screenFlashAlpha > 0) {
+            g.setColor(new Color(255, 255, 255, screenFlashAlpha));
+            g.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+        }
+
         this.player.getPlayerStatusManager().getUserInterface().render(g);
         this.bossInterface.render(g);
         this.overlayManager.render(g);
@@ -275,6 +292,13 @@ public class GameState extends AbstractState implements State {
         else if (state == PlayingState.QUEST) overlayManager.update(PlayingState.QUEST);
         else if (state == PlayingState.MINIMAP) overlayManager.update(PlayingState.MINIMAP);
         else if (state == PlayingState.TUTORIAL) overlayManager.update(PlayingState.TUTORIAL);
+    }
+
+    private void updateFlash() {
+        if (screenFlashAlpha > 0) {
+            screenFlashAlpha -= flashFadeSpeed;
+            if (screenFlashAlpha < 0) screenFlashAlpha = 0;
+        }
     }
 
     @Override

@@ -6,6 +6,7 @@ import platformer.audio.Audio;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
 import platformer.model.entities.Direction;
+import platformer.model.entities.effects.particles.DustType;
 import platformer.model.entities.enemies.boss.SpearWoman;
 import platformer.model.entities.enemies.renderer.*;
 import platformer.model.entities.player.Player;
@@ -80,23 +81,6 @@ public class EnemyManager implements Publisher {
         reset();
     }
 
-    /**
-     * Renders the critical hit indicator for an enemy.
-     *
-     * @param g The graphics object to draw on.
-     * @param xLevelOffset The x offset for rendering.
-     * @param yLevelOffset The y offset for rendering.
-     * @param e The enemy to render the critical hit indicator for.
-     */
-    private void renderCriticalHit(Graphics g, int xLevelOffset, int yLevelOffset, Enemy e) {
-        if (e.isCriticalHit()) {
-            int xCritical = (int)(e.getHitBox().x - xLevelOffset);
-            int yCritical = (int)(e.getHitBox().y - 2*SCALE - yLevelOffset);
-            g.setColor(Color.RED);
-            g.drawString("CRITICAL", xCritical, yCritical);
-        }
-    }
-
     // Render
     /**
      * Renders all enemies of a specific type in the game.
@@ -112,7 +96,6 @@ public class EnemyManager implements Publisher {
             if (enemy.isAlive()) {
                 EnemyRenderer<T> renderer = (EnemyRenderer<T>) enemyRenderers.get(enemyClass);
                 renderer.render(g, enemy, xLevelOffset, yLevelOffset);
-                renderCriticalHit(g, xLevelOffset, yLevelOffset, enemy);
             }
         }
     }
@@ -185,10 +168,16 @@ public class EnemyManager implements Publisher {
      */
     private <T extends Enemy> void handleEnemyHit(Rectangle2D.Double attackBox, Player player, Class<T> enemyClass) {
         double[] dmg = damage(player);
+        boolean isCritical = (dmg[1] == 1);
+
         for (T enemy : getEnemies(enemyClass)) {
             if (enemy.isAlive() && enemy.getEnemyAction() != Anim.DEATH) {
                 if (attackBox.intersects(enemy.getHitBox())) {
                     if (enemy.getEnemyAction() == Anim.HIDE || enemy.getEnemyAction() == Anim.REVEAL) return;
+
+                    Rectangle2D intersection = attackBox.createIntersection(enemy.getHitBox());
+                   spawnParticles((Rectangle2D.Double) intersection, player, enemy, isCritical);
+
                     enemy.hit(dmg[0], true, true);
                     enemy.setCriticalHit(dmg[1] == 1);
                     player.changeStamina(new Random().nextInt(3) + 1);
@@ -198,6 +187,25 @@ public class EnemyManager implements Publisher {
                     return;
                 }
             }
+        }
+    }
+
+    /**
+     * Spawns particles at the intersection of the attack box and the enemy's hitbox.
+     * This method is called when an enemy is hit by the player's attack.
+     *
+     * @param box The intersection rectangle where the particles will be spawned.
+     * @param player The Player object representing the player in the game.
+     * @param enemy The Enemy object that was hit.
+     * @param isCritical Indicates if the hit was a critical hit.
+     */
+    private void spawnParticles(Rectangle2D.Double box, Player player, Enemy enemy, boolean isCritical) {
+        if (isCritical) {
+            gameState.triggerScreenFlash();
+            player.getEffectController().spawnDustParticles(box.getCenterX(), box.getCenterY(), 25, DustType.CRITICAL_HIT, player.getFlipSign());
+        }
+        else if (enemy.getEnemyAction() != Anim.BLOCK) {
+            player.getEffectController().spawnDustParticles(box.getCenterX(), box.getCenterY(), 10, DustType.IMPACT_SPARK, player.getFlipSign());
         }
     }
 

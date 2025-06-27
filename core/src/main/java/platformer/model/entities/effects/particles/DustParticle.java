@@ -43,11 +43,38 @@ public class DustParticle {
             this.gravity = 0;
             this.alphaFadeSpeed = 0.05f;
         }
-        else {
+        else if (type == DustType.RUNNING) {
             this.ySpeed = -0.4 * (rand.nextDouble()) * SCALE;
             this.xSpeed = (rand.nextDouble() - 0.5) * 0.1 * SCALE;
             this.gravity = 0.03 * SCALE;
             this.alphaFadeSpeed = 0.015f;
+        }
+        else  if (type == DustType.CRITICAL_HIT) {
+            int streakWidth = (int)((rand.nextInt(10) + 20) * SCALE);
+            int streakHeight = (int)((rand.nextInt(2) + 1) * SCALE);
+            this.particleShape = new Rectangle2D.Double(x, y, streakWidth, streakHeight);
+            this.particleColor = new Color(255, 60, 30);
+
+            double angle = rand.nextDouble() * 2 * Math.PI;
+            double speed = (rand.nextDouble() * 3.0 + 2.0) * SCALE;
+            this.xSpeed = Math.cos(angle) * speed;
+            this.ySpeed = Math.sin(angle) * speed;
+
+            this.gravity = 0.05 * SCALE;
+            this.alphaFadeSpeed = 0.04f;
+            this.currentAlpha = 1.0f;
+        }
+        else {
+            this.particleShape = new Rectangle2D.Double(x, y, size, size);
+            this.particleColor = new Color(255, 255, 200);
+            this.currentAlpha = 1.0f;
+            this.alphaFadeSpeed = 0.035f;
+
+            double angle = rand.nextDouble() * 2 * Math.PI;
+            double speed = (rand.nextDouble() * 2.5 + 1.5) * SCALE;
+            this.xSpeed = Math.cos(angle) * speed;
+            this.ySpeed = Math.sin(angle) * speed;
+            this.gravity = 0.08 * SCALE;
         }
     }
 

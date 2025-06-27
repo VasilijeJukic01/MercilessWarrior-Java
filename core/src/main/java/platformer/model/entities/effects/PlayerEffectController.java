@@ -105,10 +105,11 @@ public class PlayerEffectController {
             double yOffset = 0;
             if (type == DustType.IMPACT) size = (int) ((rand.nextInt(6) + 3) * SCALE);
             else if (type == DustType.RUNNING) size = (int) ((rand.nextInt(5) + 4) * SCALE);
-            else {
+            else if (type == DustType.DASH) {
                 yOffset = (rand.nextDouble() - 0.5) * (entity.getHitBox().height * 0.8);
                 size = (int) ((rand.nextInt(4) + 4) * SCALE);
             }
+            else size = (int) ((rand.nextInt(3) + 2) * SCALE);
 
             dust.add(new DustParticle((int) x, (int) (y + yOffset), size, type, playerFlipSign));
         }
