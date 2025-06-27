@@ -227,8 +227,8 @@ public final class Constants {
     public static final int SPIKE_HEI = scale(35);
     public static final int SPIKE_HB_WID = scale(32);
     public static final int SPIKE_HB_HEI = scale(15);
-    public static final int SPIKE_OFFSET_X = scale(0);
-    public static final int SPIKE_OFFSET_Y = scale(22);
+    public static final int SPIKE_OFFSET_X = scale(20);
+    public static final int SPIKE_OFFSET_Y = scale(16);
 
     public static final int ARROW_TRAP_WID = scale(96);
     public static final int ARROW_TRAP_HEI = scale(32);

@@ -122,9 +122,6 @@ public class Level {
             case BARREL:
                 addGameObject(new Container(ObjType.values()[valueB], i*TILES_SIZE, j*TILES_SIZE));
                 break;
-            case SPIKE:
-                addGameObject(new Spike(ObjType.values()[valueB], i*TILES_SIZE, j*TILES_SIZE));
-                break;
             case ARROW_TRAP_LEFT:
             case ARROW_TRAP_RIGHT:
                 addGameObject(new ArrowLauncher(ObjType.values()[valueB], i*TILES_SIZE, j*TILES_SIZE)); break;
@@ -165,6 +162,12 @@ public class Level {
                 break;
             case JUMP_PAD:
                 addGameObject(new JumpPad(ObjType.values()[valueB], i*TILES_SIZE, j*TILES_SIZE));
+                break;
+            case SPIKE_UP:
+            case SPIKE_DOWN:
+            case SPIKE_LEFT:
+            case SPIKE_RIGHT:
+                addGameObject(new Spike(ObjType.values()[valueB], i*TILES_SIZE, j*TILES_SIZE));
                 break;
             default: break;
         }

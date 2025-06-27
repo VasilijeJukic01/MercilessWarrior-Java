@@ -155,13 +155,13 @@ public class Animation {
 
     // Objects
     public BufferedImage[][] loadObjects() {
-        BufferedImage[][] anim = new BufferedImage[22][17];
+        BufferedImage[][] anim = new BufferedImage[25][17];
 
         anim[ObjType.STAMINA_POTION.ordinal()] = loadFromSprite(POTIONS_SHEET, 7, 0, POTION_WID, POTION_HEI, 0, POTION_W, POTION_H);
         anim[ObjType.HEAL_POTION.ordinal()] = loadFromSprite(POTIONS_SHEET, 7, 1, POTION_WID, POTION_HEI, 0, POTION_W, POTION_H);
         anim[ObjType.BOX.ordinal()] = loadFromSprite(CONTAINERS_SHEET, 8, 0, CONTAINER_WID, CONTAINER_HEI, 0, CONTAINER_W, CONTAINER_H);
         anim[ObjType.BARREL.ordinal()] = loadFromSprite(CONTAINERS_SHEET, 8, 1, CONTAINER_WID, CONTAINER_HEI, 0, CONTAINER_W, CONTAINER_H);
-        anim[ObjType.SPIKE.ordinal()] = loadFromSprite(SPIKES_SHEET, 10, 0, SPIKE_WID, SPIKE_HEI, 0, SPIKES_W, SPIKES_H);
+        anim[ObjType.SPIKE_UP.ordinal()] = loadFromSprite(SPIKES_SHEET, 10, 0, SPIKE_WID, SPIKE_HEI, 0, SPIKES_W, SPIKES_H);
         anim[ObjType.ARROW_TRAP_RIGHT.ordinal()] = loadFromSprite(ARROW_TRAP_SHEET, 16, 0, ARROW_TRAP_WID, ARROW_TRAP_HEI, 1, AT_W, AT_H);
         anim[ObjType.ARROW_TRAP_LEFT.ordinal()] = anim[ObjType.ARROW_TRAP_RIGHT.ordinal()];
         anim[ObjType.COIN.ordinal()] = loadFromSprite(COIN_SHEET, 4, 0, COIN_WID, COIN_HEI, 0, COIN_W, COIN_H);
@@ -178,6 +178,9 @@ public class Animation {
         anim[ObjType.LAVA.ordinal()] = loadFromSprite(LAVA_SHEET, 16, 0, LAVA_WID, LAVA_HEI, 0, LAVA_W, LAVA_H);
         anim[ObjType.BRICK.ordinal()] = loadFromSprite(BRICK_SHEET, 8, 0, BRICK_WID, BRICK_HEI, 0, BRICK_W, BRICK_H);
         anim[ObjType.JUMP_PAD.ordinal()] = loadFromSprite(JUMP_PAD_SHEET, 20, 0, JUMP_PAD_WID, JUMP_PAD_HEI, 0, JUMP_PAD_W, JUMP_PAD_H);
+        anim[ObjType.SPIKE_DOWN.ordinal()] = new BufferedImage[]{Utils.getInstance().rotateImage(anim[ObjType.SPIKE_UP.ordinal()][5], 180)};
+        anim[ObjType.SPIKE_LEFT.ordinal()] = new BufferedImage[]{Utils.getInstance().rotateImage(anim[ObjType.SPIKE_UP.ordinal()][5], 270)};
+        anim[ObjType.SPIKE_RIGHT.ordinal()] = new BufferedImage[]{Utils.getInstance().rotateImage(anim[ObjType.SPIKE_UP.ordinal()][5], 90)};
 
         return anim;
     }

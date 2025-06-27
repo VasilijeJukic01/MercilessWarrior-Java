@@ -5,7 +5,7 @@ public enum ObjType {
     HEAL_POTION(7),                 // 1
     BOX(8),                         // 2
     BARREL(8),                      // 3
-    SPIKE(1),                       // 4
+    SPIKE_UP(1),                       // 4
     ARROW_TRAP_LEFT(16),            // 5
     ARROW_TRAP_RIGHT(16),           // 6
     COIN(4),                        // 7
@@ -23,7 +23,10 @@ public enum ObjType {
     LAVA(16),                       // 19
     BRICK(8),                       // 20
     JUMP_PAD(20),                	// 21
-    MAX(0);                         // 22
+    SPIKE_DOWN(1),                  // 22
+    SPIKE_RIGHT(1),					// 23
+    SPIKE_LEFT(1),                  // 24
+    MAX(0);                         // 25
 
     private final int sprites;
 

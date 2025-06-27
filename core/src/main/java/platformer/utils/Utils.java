@@ -9,6 +9,7 @@ import platformer.model.levels.Level;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
@@ -115,6 +116,35 @@ public class Utils {
         }
 
         return grayscale;
+    }
+
+
+    /**
+     * Rotates a given BufferedImage by a specified angle.
+     * The rotation is performed around the center of the image.
+     *
+     * @param image The BufferedImage to be rotated.
+     * @param angle The angle in degrees by which to rotate the image.
+     * @return A new BufferedImage that is the rotated version of the original image.
+     */
+    public BufferedImage rotateImage(BufferedImage image, double angle) {
+        double rads = Math.toRadians(angle);
+        double sin = Math.abs(Math.sin(rads)), cos = Math.abs(Math.cos(rads));
+        int w = image.getWidth();
+        int h = image.getHeight();
+        int newWidth = (int) Math.floor(w * cos + h * sin);
+        int newHeight = (int) Math.floor(h * cos + w * sin);
+
+        BufferedImage rotated = new BufferedImage(newWidth, newHeight, image.getType());
+        Graphics2D g2d = rotated.createGraphics();
+        AffineTransform at = new AffineTransform();
+        at.translate((newWidth - w) / 2.0, (newHeight - h) / 2.0);
+        at.rotate(rads, w / 2.0, h / 2.0);
+        g2d.setTransform(at);
+        g2d.drawImage(image, 0, 0, null);
+        g2d.dispose();
+
+        return rotated;
     }
 
     // Checkers
