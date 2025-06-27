@@ -10,6 +10,7 @@ import platformer.model.entities.AttackState;
 import platformer.model.entities.Cooldown;
 import platformer.model.entities.Direction;
 import platformer.model.entities.Entity;
+import platformer.model.entities.effects.particles.DustType;
 import platformer.model.entities.effects.EffectType;
 import platformer.model.entities.effects.PlayerEffectController;
 import platformer.model.entities.enemies.Enemy;
@@ -69,6 +70,7 @@ public class Player extends Entity {
 
     // Effect
     private PlayerEffectController effectController;
+    private int runDustTick = 0;
 
 
     public Player(int xPos, int yPos, int width, int height, EnemyManager enemyManager, ObjectManager objectManager, MinimapManager minimapManager) {
@@ -313,6 +315,8 @@ public class Player extends Entity {
                 inAir = false;
                 airSpeed = 0;
                 currentJumps = 0;
+
+                effectController.spawnDustParticles(hitBox.x + hitBox.width / 2, hitBox.y + hitBox.height, LAND_DUST_BURST, DustType.IMPACT, flipSign);
             }
             else {
                 airSpeed = (onWall) ? wallGravity : collisionFallSpeed;
@@ -432,6 +436,9 @@ public class Player extends Entity {
             animIndex = animTick = 0;
             currentJumps++;
         }
+
+        effectController.spawnDustParticles(hitBox.x + hitBox.width / 2, hitBox.y + hitBox.height, JUMP_DUST_BURST, DustType.IMPACT, flipSign);
+
         inAir = true;
         airSpeed = jumpSpeed;
     }
@@ -577,6 +584,15 @@ public class Player extends Entity {
         updateAnimation();
         updateStatus();
         effectController.update();
+
+        if (checkAction(PlayerAction.MOVE) && !inAir) {
+            runDustTick++;
+            if (runDustTick >= 15) {
+                double dustX = (flipSign == 1) ? hitBox.x : hitBox.x + hitBox.width;
+                effectController.spawnDustParticles(dustX, hitBox.y + hitBox.height, RUN_DUST_BURST, DustType.RUNNING, flipSign);
+                runDustTick = 0;
+            }
+        }
     }
 
     public void render(Graphics g, int xLevelOffset, int yLevelOffset) {
@@ -731,6 +747,10 @@ public class Player extends Entity {
 
     public Inventory getInventory() {
         return inventory;
+    }
+
+    public PlayerEffectController getEffectController() {
+        return effectController;
     }
 
     // Action Controller

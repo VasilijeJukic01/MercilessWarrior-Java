@@ -1,13 +1,13 @@
-package platformer.model.entities.effects;
+package platformer.model.entities.effects.particles;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
-public class ParticleType {
+public class AmbientParticleType {
 
     private final BufferedImage[] animations;
 
-    public ParticleType(BufferedImage[] animations) {
+    public AmbientParticleType(BufferedImage[] animations) {
         this.animations = animations;
     }
 

@@ -3,9 +3,9 @@ package platformer.model.levels;
 import platformer.animation.Animation;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
-import platformer.model.entities.effects.Particle;
-import platformer.model.entities.effects.ParticleFactory;
-import platformer.model.entities.effects.ParticleType;
+import platformer.model.entities.effects.particles.AmbientParticle;
+import platformer.model.entities.effects.particles.AmbientParticleFactory;
+import platformer.model.entities.effects.particles.AmbientParticleType;
 import platformer.state.GameState;
 import platformer.utils.Utils;
 
@@ -35,13 +35,13 @@ public class LevelManager {
     private int levelIndexI = 0, levelIndexJ = 0;
 
     // Particle Flyweight
-    private final Particle[] particles;
-    private final ParticleFactory particleFactory;
+    private final AmbientParticle[] ambientParticles;
+    private final AmbientParticleFactory ambientParticleFactory;
 
     public LevelManager(GameState gameState) {
         this.gameState = gameState;
-        this.particleFactory = new ParticleFactory();
-        this.particles = loadParticles();
+        this.ambientParticleFactory = new AmbientParticleFactory();
+        this.ambientParticles = loadParticles();
         this.levelObjectManager = new LevelObjectManager();
         loadForestSprite();
         buildLevels();
@@ -99,19 +99,19 @@ public class LevelManager {
      * The ParticleFactory is used to create and manage the Particle objects.
      * @return An array of Particle objects.
      */
-    private Particle[] loadParticles() {
-        Particle[] particles = new Particle[PARTICLES_CAP];
+    private AmbientParticle[] loadParticles() {
+        AmbientParticle[] ambientParticles = new AmbientParticle[PARTICLES_CAP];
         Random rand = new Random();
-        for (int i = 0; i < particles.length; i++) {
+        for (int i = 0; i < ambientParticles.length; i++) {
             int xPos = rand.nextInt(GAME_WIDTH-10) + 10;
             int yPos = rand.nextInt(GAME_HEIGHT-10) + 10;
             int size = (int)((rand.nextInt(15-5) + 5) * SCALE);
             String key = "DefaultParticle";
             BufferedImage[] images = Animation.getInstance().loadFromSprite(PARTICLE_SHEET, DEFAULT_PARTICLE_FRAMES, 0, size, size, 0, PARTICLE_W, PARTICLE_H);
-            ParticleType particleType = particleFactory.getParticleImage(key, images);
-            particles[i] = new Particle(particleType, size, xPos, yPos);
+            AmbientParticleType ambientParticleType = ambientParticleFactory.getParticleImage(key, images);
+            ambientParticles[i] = new AmbientParticle(ambientParticleType, size, xPos, yPos);
         }
-        return particles;
+        return ambientParticles;
     }
 
     // Level flow
@@ -173,7 +173,7 @@ public class LevelManager {
     }
 
     private void renderParticles(Graphics g) {
-        Arrays.stream(particles).forEach(p -> p.render(g));
+        Arrays.stream(ambientParticles).forEach(p -> p.render(g));
     }
 
     /**
@@ -227,8 +227,8 @@ public class LevelManager {
         loadLevel();
     }
 
-    public Particle[] getParticles() {
-        return particles;
+    public AmbientParticle[] getParticles() {
+        return ambientParticles;
     }
 
 }

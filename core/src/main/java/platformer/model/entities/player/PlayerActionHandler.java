@@ -6,6 +6,7 @@ import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
 import platformer.model.entities.Cooldown;
 import platformer.model.entities.Direction;
+import platformer.model.entities.effects.particles.DustType;
 import platformer.model.gameObjects.ObjectManager;
 import platformer.model.perks.PerksBonus;
 import platformer.utils.Utils;
@@ -59,6 +60,8 @@ public class PlayerActionHandler {
         player.changeStamina(-3);
         player.getCooldown()[Cooldown.DASH.ordinal()] = PLAYER_DASH_CD + PerksBonus.getInstance().getDashCooldown();
         Audio.getInstance().getAudioPlayer().playSound(Sound.DASH);
+
+        player.getEffectController().spawnDustParticles(player.getHitBox().getCenterX(), player.getHitBox().getCenterY(), DASH_BURST, DustType.DASH, player.getFlipSign());
     }
 
     public void doSpell() {

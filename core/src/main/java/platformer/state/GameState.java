@@ -6,8 +6,8 @@ import platformer.core.Framework;
 import platformer.core.Game;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
-import platformer.model.entities.effects.LightManager;
-import platformer.model.entities.effects.Particle;
+import platformer.model.entities.effects.lighting.LightManager;
+import platformer.model.entities.effects.particles.AmbientParticle;
 import platformer.model.entities.enemies.EnemyManager;
 import platformer.model.entities.player.Player;
 import platformer.model.entities.player.PlayerAction;
@@ -255,7 +255,7 @@ public class GameState extends AbstractState implements State {
     }
 
     private void updateParticles() {
-        Arrays.stream(levelManager.getParticles()).forEach(Particle::update);
+        Arrays.stream(levelManager.getParticles()).forEach(AmbientParticle::update);
     }
 
     private void updateManagers() {

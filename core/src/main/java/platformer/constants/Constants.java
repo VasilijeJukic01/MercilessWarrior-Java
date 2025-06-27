@@ -415,6 +415,12 @@ public final class Constants {
 
     // Effect Constants
     public static final double PARTICLE_SHIFT = 0.1;
+    public static final int DASH_BURST = 18;
+    public static final int LAND_DUST_BURST = 6;
+    public static final int JUMP_DUST_BURST = 4;
+    public static final int RUN_DUST_BURST = 1;
+    public static final Color DUST_COLOR = new Color(180, 160, 130);
+    public static final Color DUST_COLOR_DASH = new Color(220, 220, 255);
 
     public static final int PLAYER_LIGHT_RADIUS = scale(75);
     public static final int CANDLE_LIGHT_RADIUS = scale(100);
