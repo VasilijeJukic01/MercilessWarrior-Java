@@ -6,6 +6,7 @@ import platformer.core.Framework;
 import platformer.core.Game;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
+import platformer.model.entities.effects.EffectManager;
 import platformer.model.entities.effects.lighting.LightManager;
 import platformer.model.entities.effects.particles.AmbientParticle;
 import platformer.model.entities.enemies.EnemyManager;
@@ -19,6 +20,8 @@ import platformer.model.perks.PerksManager;
 import platformer.model.quests.QuestManager;
 import platformer.model.spells.SpellManager;
 import platformer.model.tutorial.TutorialManager;
+import platformer.observer.EventHandler;
+import platformer.observer.Subscriber;
 import platformer.ui.dialogue.DialogueManager;
 import platformer.ui.overlays.OverlayManager;
 import platformer.ui.overlays.hud.BossInterface;
@@ -38,12 +41,15 @@ import static platformer.constants.FilePaths.BACKGROUND_1;
  * State of the game when the player is actively playing the game.
  * In this state, the player can move around the game world, interact with objects, fight enemies, and perform other game actions.
  */
-public class GameState extends AbstractState implements State {
+public class GameState extends AbstractState implements State, Subscriber {
 
     private Player player;
     private BufferedImage background;
 
     private final GameStateController gameStateController;
+
+    // Observer
+    private EventHandler eventHandler;
 
     // Managers
     private LevelManager levelManager;
@@ -57,6 +63,7 @@ public class GameState extends AbstractState implements State {
     private LightManager lightManager;
     private MinimapManager minimapManager;
     private TutorialManager tutorialManager;
+    private EffectManager effectManager;
 
     // State
     private PlayingState state;
@@ -102,10 +109,12 @@ public class GameState extends AbstractState implements State {
         this.questManager = new QuestManager(this);
         this.minimapManager = new MinimapManager();
         this.tutorialManager = new TutorialManager(this);
+        this.effectManager = new EffectManager();
+        this.eventHandler = new EventHandler(this.effectManager);
     }
 
     private void initPlayer() {
-        this.player = new Player(PLAYER_X, PLAYER_Y, PLAYER_WIDTH, PLAYER_HEIGHT, enemyManager, objectManager, minimapManager);
+        this.player = new Player(PLAYER_X, PLAYER_Y, PLAYER_WIDTH, PLAYER_HEIGHT, enemyManager, objectManager, minimapManager, effectManager);
         this.player.loadLvlData(levelManager.getCurrentLevel().getLvlData());
         this.player.setSpawn(levelManager.getCurrentLevel().getPlayerSpawn("LEFT"));
     }
@@ -229,6 +238,7 @@ public class GameState extends AbstractState implements State {
         this.player.render(g, xLevelOffset, yLevelOffset);
         this.objectManager.secondRender(g, xLevelOffset, yLevelOffset);
         this.spellManager.render(g, xLevelOffset, yLevelOffset);
+        this.effectManager.renderForegroundEffects(g, xLevelOffset, yLevelOffset);
 
         // TODO: Move this to somewhere else
         if (screenFlashAlpha > 0) {
@@ -283,6 +293,7 @@ public class GameState extends AbstractState implements State {
         lightManager.update();
         spellManager.update();
         minimapManager.update();
+        effectManager.update();
         player.update();
         if (state == PlayingState.SHOP) overlayManager.update(PlayingState.SHOP);
         else if (state == PlayingState.BLACKSMITH) overlayManager.update(PlayingState.BLACKSMITH);
@@ -353,6 +364,12 @@ public class GameState extends AbstractState implements State {
         player.resetDirections();
     }
 
+    // Observer
+    @Override
+    public <T> void update(T... o) {
+        eventHandler.handleEvent(o);
+    }
+
     // Getters & Setters
     public PlayingState getActiveState() {
         if (state == PlayingState.DYING) return null;
@@ -405,6 +422,10 @@ public class GameState extends AbstractState implements State {
 
     public TutorialManager getTutorialManager() {
         return tutorialManager;
+    }
+
+    public EffectManager getEffectManager() {
+        return effectManager;
     }
 
     public BossInterface getBossInterface() {

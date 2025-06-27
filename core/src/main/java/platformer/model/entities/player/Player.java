@@ -10,6 +10,7 @@ import platformer.model.entities.AttackState;
 import platformer.model.entities.Cooldown;
 import platformer.model.entities.Direction;
 import platformer.model.entities.Entity;
+import platformer.model.entities.effects.EffectManager;
 import platformer.model.entities.effects.particles.DustType;
 import platformer.model.entities.effects.EffectType;
 import platformer.model.entities.effects.PlayerEffectController;
@@ -39,6 +40,7 @@ public class Player extends Entity {
     private final EnemyManager enemyManager;
     private final ObjectManager objectManager;
     private final MinimapManager minimapManager;
+    private final EffectManager effectManager;
     private int[][] levelData;
 
     // Core Variables
@@ -73,11 +75,12 @@ public class Player extends Entity {
     private int runDustTick = 0;
 
 
-    public Player(int xPos, int yPos, int width, int height, EnemyManager enemyManager, ObjectManager objectManager, MinimapManager minimapManager) {
+    public Player(int xPos, int yPos, int width, int height, EnemyManager enemyManager, ObjectManager objectManager, MinimapManager minimapManager, EffectManager effectManager) {
         super(xPos, yPos, width, height, PLAYER_MAX_HP);
         this.enemyManager = enemyManager;
         this.objectManager = objectManager;
         this.minimapManager = minimapManager;
+        this.effectManager = effectManager;
         loadAnimations();
         init();
     }
@@ -104,7 +107,7 @@ public class Player extends Entity {
         this.playerDataManager = new PlayerDataManager(this, minimapManager);
         this.minimapHandler = new PlayerMinimapHandler(this, minimapManager);
         this.effectController = new PlayerEffectController(this);
-        this.actionHandler = new PlayerActionHandler(this);
+        this.actionHandler = new PlayerActionHandler(this, effectManager);
         this.inventory = new Inventory();
     }
 
@@ -316,7 +319,7 @@ public class Player extends Entity {
                 airSpeed = 0;
                 currentJumps = 0;
 
-                effectController.spawnDustParticles(hitBox.x + hitBox.width / 2, hitBox.y + hitBox.height, LAND_DUST_BURST, DustType.IMPACT, flipSign);
+                effectManager.spawnDustParticles(hitBox.x + hitBox.width / 2, hitBox.y + hitBox.height, LAND_DUST_BURST, DustType.IMPACT, flipSign, this);
             }
             else {
                 airSpeed = (onWall) ? wallGravity : collisionFallSpeed;
@@ -437,7 +440,7 @@ public class Player extends Entity {
             currentJumps++;
         }
 
-        effectController.spawnDustParticles(hitBox.x + hitBox.width / 2, hitBox.y + hitBox.height, JUMP_DUST_BURST, DustType.IMPACT, flipSign);
+        effectManager.spawnDustParticles(hitBox.x + hitBox.width / 2, hitBox.y + hitBox.height, JUMP_DUST_BURST, DustType.IMPACT, flipSign, this);
 
         inAir = true;
         airSpeed = jumpSpeed;
@@ -589,7 +592,7 @@ public class Player extends Entity {
             runDustTick++;
             if (runDustTick >= 15) {
                 double dustX = (flipSign == 1) ? hitBox.x : hitBox.x + hitBox.width;
-                effectController.spawnDustParticles(dustX, hitBox.y + hitBox.height, RUN_DUST_BURST, DustType.RUNNING, flipSign);
+                effectManager.spawnDustParticles(dustX, hitBox.y + hitBox.height, RUN_DUST_BURST, DustType.RUNNING, flipSign, this);
                 runDustTick = 0;
             }
         }

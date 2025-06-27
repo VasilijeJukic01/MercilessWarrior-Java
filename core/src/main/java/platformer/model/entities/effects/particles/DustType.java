@@ -5,5 +5,9 @@ public enum DustType {
     RUNNING,
     DASH,
     IMPACT_SPARK,
-    CRITICAL_HIT
+    CRITICAL_HIT,
+    SW_TELEPORT,
+    SW_CHANNELING_AURA,
+    SW_AURA_PULSE,
+    SW_AURA_CRACKLE
 }

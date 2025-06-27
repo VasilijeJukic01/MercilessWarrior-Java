@@ -78,6 +78,7 @@ public class EnemyManager implements Publisher {
 
     public void loadEnemies(Level level) {
         this.enemies = level.getEnemiesMap();
+        getEnemies(SpearWoman.class).forEach(spearWoman -> spearWoman.addSubscriber(gameState));
         reset();
     }
 
@@ -202,10 +203,10 @@ public class EnemyManager implements Publisher {
     private void spawnParticles(Rectangle2D.Double box, Player player, Enemy enemy, boolean isCritical) {
         if (isCritical) {
             gameState.triggerScreenFlash();
-            player.getEffectController().spawnDustParticles(box.getCenterX(), box.getCenterY(), 25, DustType.CRITICAL_HIT, player.getFlipSign());
+            gameState.getEffectManager().spawnDustParticles(box.getCenterX(), box.getCenterY(), 25, DustType.CRITICAL_HIT, player.getFlipSign(), null);
         }
         else if (enemy.getEnemyAction() != Anim.BLOCK) {
-            player.getEffectController().spawnDustParticles(box.getCenterX(), box.getCenterY(), 10, DustType.IMPACT_SPARK, player.getFlipSign());
+            gameState.getEffectManager().spawnDustParticles(box.getCenterX(), box.getCenterY(), 10, DustType.IMPACT_SPARK, player.getFlipSign(), null);
         }
     }
 

@@ -6,6 +6,7 @@ import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
 import platformer.model.entities.Cooldown;
 import platformer.model.entities.Direction;
+import platformer.model.entities.effects.EffectManager;
 import platformer.model.entities.effects.particles.DustType;
 import platformer.model.gameObjects.ObjectManager;
 import platformer.model.perks.PerksBonus;
@@ -21,12 +22,14 @@ import static platformer.constants.Constants.*;
 public class PlayerActionHandler {
 
     private final Player player;
+    private final EffectManager effectManager;
     private final Rectangle2D.Double hitBox;
 
     private int dashCount = 0;
 
-    public PlayerActionHandler(Player player) {
+    public PlayerActionHandler(Player player, EffectManager effectManager) {
         this.player = player;
+        this.effectManager = effectManager;
         this.hitBox = player.getHitBox();
     }
 
@@ -61,7 +64,7 @@ public class PlayerActionHandler {
         player.getCooldown()[Cooldown.DASH.ordinal()] = PLAYER_DASH_CD + PerksBonus.getInstance().getDashCooldown();
         Audio.getInstance().getAudioPlayer().playSound(Sound.DASH);
 
-        player.getEffectController().spawnDustParticles(player.getHitBox().getCenterX(), player.getHitBox().getCenterY(), DASH_BURST, DustType.DASH, player.getFlipSign());
+        effectManager.spawnDustParticles(player.getHitBox().getCenterX(), player.getHitBox().getCenterY(), DASH_BURST, DustType.DASH, player.getFlipSign(), player);
     }
 
     public void doSpell() {

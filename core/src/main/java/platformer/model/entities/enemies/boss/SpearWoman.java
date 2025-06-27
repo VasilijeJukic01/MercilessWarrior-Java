@@ -11,6 +11,8 @@ import platformer.model.entities.enemies.EnemyType;
 import platformer.model.entities.player.Player;
 import platformer.model.gameObjects.ObjectManager;
 import platformer.model.spells.SpellManager;
+import platformer.observer.Publisher;
+import platformer.observer.Subscriber;
 import platformer.ui.overlays.hud.BossInterface;
 import platformer.utils.Utils;
 
@@ -23,9 +25,11 @@ import java.util.Objects;
 
 import static platformer.constants.Constants.*;
 
-public class SpearWoman extends Enemy {
+public class SpearWoman extends Enemy implements Publisher {
 
     private final BossAttackHandler handler;
+
+    private final static List<Subscriber> subscribers = new ArrayList<>();
 
     private int attackOffset;
     private Anim prevAnim = Anim.IDLE;
@@ -100,6 +104,7 @@ public class SpearWoman extends Enemy {
             case SPELL_3:
                 thunderSlamAction(player, spellManager); break;
             case SPELL_4:
+                notify("SPAWN_AURA", this);
                 multiLightningBallAction(objectManager, spellManager);
                 break;
             case DEATH:
@@ -273,6 +278,7 @@ public class SpearWoman extends Enemy {
             multiShootCount = 0;
             canFlash = true;
         }
+        notify("CLEAR_AURA", this);
     }
 
 
@@ -365,6 +371,24 @@ public class SpearWoman extends Enemy {
     @Override
     public void attackBoxRenderer(Graphics g, int xLevelOffset, int yLevelOffset) {
         renderAttackBox(g, xLevelOffset, yLevelOffset);
+    }
+
+    // Observer
+    @Override
+    public void addSubscriber(Subscriber s) {
+        if (s != null && !subscribers.contains(s)) subscribers.add(s);
+    }
+
+    @Override
+    public void removeSubscriber(Subscriber s) {
+        subscribers.remove(s);
+    }
+
+    @Override
+    public <T> void notify(T... o) {
+        subscribers.forEach(s -> {
+            if (s != null) s.update(o);
+        });;
     }
 
     // Setters
