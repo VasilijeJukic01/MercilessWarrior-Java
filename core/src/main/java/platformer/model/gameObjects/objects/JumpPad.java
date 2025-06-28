@@ -12,7 +12,7 @@ import static platformer.constants.Constants.*;
 public class JumpPad extends GameObject {
 
     private boolean used = false;
-    private final double launchSpeed = -5.0 * SCALE;
+    private final double launchSpeed = -6.0 * SCALE;
 
     public JumpPad(ObjType objType, int xPos, int yPos) {
         super(objType, xPos, yPos);
@@ -54,8 +54,8 @@ public class JumpPad extends GameObject {
 
     @Override
     public void render(Graphics g, int xLevelOffset, int yLevelOffset, BufferedImage[] animations) {
-        int x = (int)hitBox.x - xOffset - xLevelOffset;
-        int y = (int)hitBox.y - yOffset - yLevelOffset;
+        int x = (int)hitBox.x - xOffset - xLevelOffset - (int) (15 * SCALE);
+        int y = (int)hitBox.y - yOffset - yLevelOffset - (int) (2 * SCALE);
         g.drawImage(animations[animIndex], x, y, JUMP_PAD_WID, JUMP_PAD_HEI, null);
         hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.BLUE);
     }

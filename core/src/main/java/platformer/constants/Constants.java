@@ -335,7 +335,7 @@ public final class Constants {
     public static final int JUMP_PAD_HEI = scale(64);
     public static final int JUMP_PAD_HB_WID = scale(28);
     public static final int JUMP_PAD_HB_HEI = scale(20);
-    public static final int JUMP_PAD_OFFSET_X = scale(16);
+    public static final int JUMP_PAD_OFFSET_X = scale(1);
     public static final int JUMP_PAD_OFFSET_Y = scale(15);
 
     // Projectile Constants
