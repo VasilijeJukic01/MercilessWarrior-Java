@@ -212,23 +212,34 @@ public class LevelManager {
     }
 
     /**
-     * Loads the spawn point of the player
-     * @param spawnNumber the spawn number
+     * Loads the correct level and sets the current level indices based on a spawn ID.
+     * @param spawnId the spawn number from the player's account.
      */
-    public void loadSavePoint(int spawnNumber) {
-        if (spawnNumber == -1) {
-            this.levelIndexI = 0;
-            this.levelIndexJ = 0;
+    public void loadSavePoint(int spawnId) {
+        for (Spawn spawn : Spawn.values()) {
+            if (spawn.getId() == spawnId) {
+                this.levelIndexI = spawn.getLevelI();
+                this.levelIndexJ = spawn.getLevelJ();
+                loadLevel();
+                return;
+            }
         }
-        if (spawnNumber == 1) {
-            this.levelIndexI = 0;
-            this.levelIndexJ = 2;
-        }
+
+        this.levelIndexI = Spawn.INITIAL.getLevelI();
+        this.levelIndexJ = Spawn.INITIAL.getLevelJ();
         loadLevel();
     }
 
+    // Getters
     public AmbientParticle[] getParticles() {
         return ambientParticles;
     }
 
+    public int getLevelIndexI() {
+        return levelIndexI;
+    }
+
+    public int getLevelIndexJ() {
+        return levelIndexJ;
+    }
 }

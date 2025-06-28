@@ -240,4 +240,8 @@ public class Game implements Runnable {
         return audioOptions;
     }
 
+    public State getCurrentState() {
+        return stateManager.getCurrentState();
+    }
+
 }
