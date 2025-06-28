@@ -4,6 +4,8 @@ public enum DustType {
     IMPACT,
     RUNNING,
     DASH,
+    WALL_SLIDE,
+    WALL_JUMP,
     IMPACT_SPARK,
     CRITICAL_HIT,
     SW_TELEPORT,

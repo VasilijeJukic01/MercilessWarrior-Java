@@ -40,6 +40,8 @@ public class DustParticle {
             case IMPACT -> initImpact();
             case DASH -> initDash(x, y, playerFlipSign);
             case RUNNING -> initRunning();
+            case WALL_SLIDE -> initWallSlide(playerFlipSign);
+            case WALL_JUMP -> initWallJump(playerFlipSign);
             case CRITICAL_HIT -> initCriticalHit(x, y);
             case SW_TELEPORT -> initTeleport();
             case SW_CHANNELING_AURA -> initChannelingAura(x, y, size);
@@ -75,6 +77,30 @@ public class DustParticle {
         this.xSpeed = (rand.nextDouble() - 0.5) * 0.1 * SCALE;
         this.gravity = 0.03 * SCALE;
         this.alphaFadeSpeed = 0.015f;
+    }
+
+    private void initWallSlide(int playerFlipSign) {
+        Random rand = new Random();
+        this.xSpeed = (rand.nextDouble() * 0.5) * SCALE * -playerFlipSign;
+        this.ySpeed = (rand.nextDouble() * 0.5) * SCALE;
+        this.gravity = 0.08 * SCALE;
+        this.alphaFadeSpeed = 0.02f;
+        this.particleColor = DUST_COLOR;
+        double size = (rand.nextInt(4) + 4) * SCALE;
+        this.particleShape.width = size;
+        this.particleShape.height = size;
+    }
+
+    private void initWallJump(int playerFlipSign) {
+        Random rand = new Random();
+        this.xSpeed = (rand.nextDouble() * 1.5 + 0.5) * SCALE * -playerFlipSign;
+        this.ySpeed = -(rand.nextDouble() * 1.0 + 0.5) * SCALE;
+        this.gravity = 0.08 * SCALE;
+        this.alphaFadeSpeed = 0.04f;
+        this.particleColor = DUST_COLOR;
+        double size = (rand.nextInt(5) + 3) * SCALE;
+        this.particleShape.width = size;
+        this.particleShape.height = size;
     }
 
     private void initCriticalHit(int x, int y) {

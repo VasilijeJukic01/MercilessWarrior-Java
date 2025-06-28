@@ -3,7 +3,6 @@ package platformer.model.entities;
 import platformer.animation.Anim;
 import platformer.debug.Debug;
 import platformer.debug.DebugSettings;
-import platformer.model.entities.effects.EffectType;
 import platformer.utils.Utils;
 
 import java.awt.*;
@@ -37,8 +36,6 @@ public abstract class Entity implements Debug<Graphics> {
     protected Direction pushOffsetDirection = Direction.UP;
 
     protected double[] cooldown;
-
-    protected EffectType entityEffect;
 
     public Entity(int xPos, int yPos, int width, int height, int maxHealth) {
         this.xPos = xPos;
@@ -166,14 +163,6 @@ public abstract class Entity implements Debug<Graphics> {
 
     public double[] getCooldown() {
         return cooldown;
-    }
-
-    public EffectType getEntityEffect() {
-        return entityEffect;
-    }
-
-    public void setEntityEffect(EffectType entityEffect) {
-        this.entityEffect = entityEffect;
     }
 
     public boolean isInAir() {

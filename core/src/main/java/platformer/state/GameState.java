@@ -255,6 +255,7 @@ public class GameState extends AbstractState implements State, Subscriber {
         this.levelManager.render(g, xLevelOffset, yLevelOffset);
         this.objectManager.render(g, xLevelOffset, yLevelOffset);
         this.lightManager.render(g, xLevelOffset, yLevelOffset);
+        this.effectManager.renderBackgroundEffects(g, xLevelOffset, yLevelOffset);
         this.enemyManager.render(g, xLevelOffset, yLevelOffset);
         this.player.render(g, xLevelOffset, yLevelOffset);
         this.objectManager.secondRender(g, xLevelOffset, yLevelOffset);

@@ -14,7 +14,8 @@ import static platformer.constants.Constants.SCALE;
 
 public class EffectManager {
 
-    private final List<DustParticle> dustParticles = new ArrayList<>();
+    private final List<DustParticle> foregroundParticles = new ArrayList<>();
+    private final List<DustParticle> backgroundParticles = new ArrayList<>();
     private final Random rand = new Random();
 
     public void spawnDustParticles(double x, double y, int count, DustType type, int flipSign, Entity target) {
@@ -46,7 +47,10 @@ public class EffectManager {
                     size = (int)((rand.nextInt(2) + 1) * SCALE);
                     break;
             }
-            dustParticles.add(new DustParticle((int) x, (int) (y + yOffset), size, type, flipSign, target));
+            DustParticle particle = new DustParticle((int) x, (int) (y + yOffset), size, type, flipSign, target);
+
+            if (type == DustType.WALL_SLIDE) backgroundParticles.add(particle);
+            else foregroundParticles.add(particle);
         }
     }
 
@@ -58,18 +62,23 @@ public class EffectManager {
     }
 
     public void clearAura(Entity target) {
-        dustParticles.removeIf(p -> p.getTarget() == target && (p.getType() == DustType.SW_CHANNELING_AURA || p.getType() == DustType.SW_AURA_PULSE || p.getType() == DustType.SW_AURA_CRACKLE));
+        foregroundParticles.removeIf(p -> p.getTarget() == target && (p.getType() == DustType.SW_CHANNELING_AURA || p.getType() == DustType.SW_AURA_PULSE || p.getType() == DustType.SW_AURA_CRACKLE));
     }
 
     public boolean isAuraActive(Entity target) {
-        return dustParticles.stream()
+        return foregroundParticles.stream()
                 .anyMatch(p -> p.getTarget() == target && (p.getType() == DustType.SW_CHANNELING_AURA || p.getType() == DustType.SW_AURA_PULSE || p.getType() == DustType.SW_AURA_CRACKLE));
     }
 
     // Core
     public void update() {
+        updateParticleList(foregroundParticles);
+        updateParticleList(backgroundParticles);
+    }
+
+    private void updateParticleList(List<DustParticle> particles) {
         try {
-            Iterator<DustParticle> pIterator = dustParticles.iterator();
+            Iterator<DustParticle> pIterator = particles.iterator();
             while (pIterator.hasNext()) {
                 DustParticle p = pIterator.next();
                 p.update();
@@ -79,8 +88,18 @@ public class EffectManager {
     }
 
     public void renderForegroundEffects(Graphics g, int xLevelOffset, int yLevelOffset) {
+        renderParticleList(g, xLevelOffset, yLevelOffset, foregroundParticles);
+    }
+
+    public void renderBackgroundEffects(Graphics g, int xLevelOffset, int yLevelOffset) {
+        renderParticleList(g, xLevelOffset, yLevelOffset, backgroundParticles);
+    }
+
+    private void renderParticleList(Graphics g, int xLevelOffset, int yLevelOffset, List<DustParticle> particles) {
         try {
-            dustParticles.forEach(particle -> particle.render(g, xLevelOffset, yLevelOffset));
+            for (DustParticle particle : particles) {
+                particle.render(g, xLevelOffset, yLevelOffset);
+            }
         } catch (Exception ignored) { }
     }
 
