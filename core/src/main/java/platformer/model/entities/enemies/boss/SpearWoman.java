@@ -29,7 +29,7 @@ public class SpearWoman extends Enemy implements Publisher {
 
     private final BossAttackHandler handler;
 
-    private final static List<Subscriber> subscribers = new ArrayList<>();
+    private static final List<Subscriber> subscribers = new ArrayList<>();
 
     private int attackOffset;
     private Anim prevAnim = Anim.IDLE;
@@ -182,7 +182,10 @@ public class SpearWoman extends Enemy implements Publisher {
     private void thunderSlamAction(Player player, SpellManager spellManager) {
         if (animIndex > 5 && animIndex < 16) checkPlayerHit(attackBox, player);
         if (animIndex == 11) Audio.getInstance().getAudioPlayer().playSound(Sound.SW_ROAR_2);
-        else if (animIndex == 13) spellManager.activateLightnings();
+        else if (animIndex == 13) {
+            spellManager.activateLightnings();
+            notify("SHAKE_SCREEN");
+        }
     }
 
     private void multiLightningBallAction(ObjectManager objectManager, SpellManager spellManager) {

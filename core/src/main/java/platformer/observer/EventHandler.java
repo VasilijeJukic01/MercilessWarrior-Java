@@ -3,19 +3,22 @@ package platformer.observer;
 import platformer.model.entities.effects.EffectManager;
 import platformer.model.entities.effects.particles.DustType;
 import platformer.model.entities.enemies.boss.SpearWoman;
+import platformer.state.GameState;
 
 import java.awt.*;
 
 public class EventHandler {
 
+    private GameState gameState;
     private final EffectManager effectManager;
 
-    public EventHandler(EffectManager effectManager) {
+    public EventHandler(GameState gameState, EffectManager effectManager) {
+        this.gameState = gameState;
         this.effectManager = effectManager;
     }
 
     public <T> void handleEvent(T... o) {
-        if (o == null || o.length < 2 || !(o[0] instanceof String)) return;
+        if (o == null || !(o[0] instanceof String)) return;
         String eventType = (String) o[0];
 
         switch (eventType) {
@@ -28,6 +31,9 @@ public class EventHandler {
                 break;
             case "CLEAR_AURA":
                 handleClearAuraEvent(o[1]);
+                break;
+            case "SHAKE_SCREEN":
+                handleShakeScreenEvent(o[0]);
                 break;
         }
     }
@@ -47,6 +53,12 @@ public class EventHandler {
     private void handleClearAuraEvent(Object arg) {
         if (arg instanceof SpearWoman boss) {
             effectManager.clearAura(boss);
+        }
+    }
+
+    private void handleShakeScreenEvent(Object arg) {
+        if ("SHAKE_SCREEN".equals(arg)) {
+            gameState.triggerScreenShake(30, 15.0);
         }
     }
 }

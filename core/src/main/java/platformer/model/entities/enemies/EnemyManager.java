@@ -78,8 +78,8 @@ public class EnemyManager implements Publisher {
 
     public void loadEnemies(Level level) {
         this.enemies = level.getEnemiesMap();
-        getEnemies(SpearWoman.class).forEach(spearWoman -> spearWoman.addSubscriber(gameState));
         reset();
+        getEnemies(SpearWoman.class).forEach(spearWoman -> spearWoman.addSubscriber(gameState));
     }
 
     // Render

@@ -33,6 +33,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.util.Arrays;
+import java.util.Random;
 
 import static platformer.constants.Constants.*;
 import static platformer.constants.FilePaths.BACKGROUND_1;
@@ -79,6 +80,9 @@ public class GameState extends AbstractState implements State, Subscriber {
     // Effects
     private int screenFlashAlpha = 0;
     private final int flashFadeSpeed = 25;
+    private int screenShakeDuration = 0;
+    private double screenShakeIntensity = 0;
+    private final Random random = new Random();
 
     public GameState(Game game) {
         super(game);
@@ -110,7 +114,7 @@ public class GameState extends AbstractState implements State, Subscriber {
         this.minimapManager = new MinimapManager();
         this.tutorialManager = new TutorialManager(this);
         this.effectManager = new EffectManager();
-        this.eventHandler = new EventHandler(this.effectManager);
+        this.eventHandler = new EventHandler(this, this.effectManager);
     }
 
     private void initPlayer() {
@@ -179,6 +183,7 @@ public class GameState extends AbstractState implements State, Subscriber {
 
     private void levelLoadReset(String spawn) {
         levelReset();
+        enemyManager.loadEnemies(levelManager.getCurrentLevel());
         player.setSpawn(levelManager.getCurrentLevel().getPlayerSpawn(spawn));
         calculateLevelOffset();
         overlayManager.reset();
@@ -209,9 +214,15 @@ public class GameState extends AbstractState implements State, Subscriber {
         this.screenFlashAlpha = 200;
     }
 
+    public void triggerScreenShake(int duration, double intensity) {
+        this.screenShakeDuration = duration;
+        this.screenShakeIntensity = intensity;
+    }
+
     // Core
     @Override
     public void update() {
+        updateScreenShake();
         updateFlash();
         checkPlayerDeath();
         if (state == PlayingState.PAUSE)
@@ -230,6 +241,16 @@ public class GameState extends AbstractState implements State, Subscriber {
 
     @Override
     public void render(Graphics g) {
+        Graphics2D g2d = (Graphics2D) g;
+        int shakeOffsetX = 0;
+        int shakeOffsetY = 0;
+
+        if (screenShakeDuration > 0) {
+            shakeOffsetX = (int) ((random.nextDouble() - 0.5) * screenShakeIntensity);
+            shakeOffsetY = (int) ((random.nextDouble() - 0.5) * screenShakeIntensity);
+            g2d.translate(shakeOffsetX, shakeOffsetY);
+        }
+
         g.drawImage(background, 0, 0, null);
         this.levelManager.render(g, xLevelOffset, yLevelOffset);
         this.objectManager.render(g, xLevelOffset, yLevelOffset);
@@ -249,6 +270,10 @@ public class GameState extends AbstractState implements State, Subscriber {
         this.player.getPlayerStatusManager().getUserInterface().render(g);
         this.bossInterface.render(g);
         this.overlayManager.render(g);
+
+        if (screenShakeDuration > 0) {
+            g2d.translate(-shakeOffsetX, -shakeOffsetY);
+        }
     }
 
     @Override
@@ -310,6 +335,10 @@ public class GameState extends AbstractState implements State, Subscriber {
             screenFlashAlpha -= flashFadeSpeed;
             if (screenFlashAlpha < 0) screenFlashAlpha = 0;
         }
+    }
+
+    private void updateScreenShake() {
+        if (screenShakeDuration > 0) screenShakeDuration--;
     }
 
     @Override
