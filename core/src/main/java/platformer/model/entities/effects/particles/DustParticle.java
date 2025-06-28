@@ -29,6 +29,9 @@ public class DustParticle {
     private double angle;
     private double pulsePhase;
 
+    private int lineLength;
+    private double lineAngle;
+
     public DustParticle(int x, int y, int size, DustType type, int playerFlipSign, Entity target) {
         this.type = type;
         this.target = target;
@@ -48,6 +51,7 @@ public class DustParticle {
             case SW_CHANNELING_AURA -> initChannelingAura(x, y, size);
             case SW_AURA_PULSE -> initAuraPulse(x, y, size);
             case SW_AURA_CRACKLE -> initAuraCrackle(x, y, size);
+            case SW_DASH_SLASH -> initDashSlash();
             default -> initDefault(x, y, size);
         }
     }
@@ -191,6 +195,19 @@ public class DustParticle {
         this.gravity = 0;
     }
 
+    private void initDashSlash() {
+        Random rand = new Random();
+        this.xSpeed = (rand.nextDouble() - 0.5) * 0.3 * SCALE;
+        this.ySpeed = (rand.nextDouble() - 0.5) * 0.3 * SCALE;
+        this.gravity = 0;
+        this.alphaFadeSpeed = 0.06f;
+        this.particleColor = new Color(0, 255, 240);
+        this.currentAlpha = 0.9f;
+        this.lineLength = (int)((rand.nextInt(10) + 8) * SCALE);
+        this.lineAngle = rand.nextDouble() * Math.PI;
+    }
+
+
     private void initDefault(int x, int y, int size) {
         Random rand = new Random();
         this.particleShape = new Rectangle2D.Double(x, y, size, size);
@@ -244,7 +261,20 @@ public class DustParticle {
         if (!active) return;
         Graphics2D g2d = (Graphics2D) g;
         g2d.setColor(new Color(particleColor.getRed()/255f, particleColor.getGreen()/255f, particleColor.getBlue()/255f, currentAlpha));
-        g2d.fillRect((int) (particleShape.x - xLevelOffset), (int) (particleShape.y - yLevelOffset), (int) particleShape.width, (int) particleShape.height);
+
+        if (type == DustType.SW_DASH_SLASH) renderDashSlashTrail(g2d, xLevelOffset, yLevelOffset);
+        else g2d.fillRect((int) (particleShape.x - xLevelOffset), (int) (particleShape.y - yLevelOffset), (int) particleShape.width, (int) particleShape.height);
+    }
+
+    private void renderDashSlashTrail(Graphics2D g2d, int xLevelOffset, int yLevelOffset) {
+        int x1 = (int) (particleShape.x - xLevelOffset);
+        int y1 = (int) (particleShape.y - yLevelOffset);
+        int x2 = x1 + (int) (lineLength * Math.cos(lineAngle));
+        int y2 = y1 + (int) (lineLength * Math.sin(lineAngle));
+
+        g2d.setStroke(new BasicStroke(2 * SCALE));
+        g2d.drawLine(x1, y1, x2, y2);
+        g2d.setStroke(new BasicStroke(1));
     }
 
     // Getters and Setters

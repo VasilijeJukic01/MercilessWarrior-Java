@@ -17,6 +17,7 @@ import platformer.ui.overlays.hud.BossInterface;
 import platformer.utils.Utils;
 
 import java.awt.*;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
@@ -196,6 +197,7 @@ public class SpearWoman extends Enemy implements Publisher {
     private void dashSlash(int[][] levelData) {
         if (animIndex == 0) attackCheck = false;
         if (animIndex == 2 && !attackCheck) {
+            Point2D.Double startPos = new Point2D.Double(hitBox.getCenterX(), hitBox.y);
             double xSpeed;
 
             if (direction == Direction.LEFT) xSpeed = -enemySpeed;
@@ -204,6 +206,9 @@ public class SpearWoman extends Enemy implements Publisher {
             if (Utils.getInstance().canMoveHere(hitBox.x + xSpeed * 80, hitBox.y, hitBox.width, hitBox.height, levelData))
                 if (Utils.getInstance().isFloor(hitBox, xSpeed * 80, levelData, direction))
                     hitBox.x += xSpeed * 80;
+
+            Point2D.Double endPos = new Point2D.Double(hitBox.getCenterX(), hitBox.y);
+            notify("DASH_SLASH", startPos, endPos, hitBox.height);
         }
     }
 
