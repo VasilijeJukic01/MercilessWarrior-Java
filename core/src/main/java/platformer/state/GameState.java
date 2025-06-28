@@ -69,7 +69,9 @@ public class GameState extends AbstractState implements State, Subscriber {
     // State
     private PlayingState state;
 
-    // Borders
+    // Camera
+    private double cameraX, cameraY;
+
     private int xLevelOffset;
     private int xMaxLevelOffset;
     private int yLevelOffset;
@@ -88,6 +90,8 @@ public class GameState extends AbstractState implements State, Subscriber {
         super(game);
         init();
         this.gameStateController = new GameStateController(this);
+        this.cameraX = player.getHitBox().x;
+        this.cameraY = player.getHitBox().y;
     }
 
     // Init
@@ -191,6 +195,11 @@ public class GameState extends AbstractState implements State, Subscriber {
     }
 
     // Level Borders
+    /**
+     * @deprecated Replaced by {@link #updateCamera()} which uses linear interpolation for smooth movement.
+     * This border-based method can cause jerky camera movement.
+     */
+    @Deprecated
     private void xBorderUpdate() {
         int playerXPos = (int)player.getHitBox().x;
         int dx = playerXPos - xLevelOffset;
@@ -200,6 +209,11 @@ public class GameState extends AbstractState implements State, Subscriber {
         xLevelOffset = Math.max(Math.min(xLevelOffset, xMaxLevelOffset), 0);
     }
 
+    /**
+     * @deprecated Replaced by {@link #updateCamera()} which uses linear interpolation for smooth movement.
+     * This border-based method can cause jerky camera movement.
+     */
+    @Deprecated
     private void yBorderUpdate() {
         int playerYPos = (int)player.getHitBox().y;
         int dy = playerYPos - yLevelOffset;
@@ -207,6 +221,24 @@ public class GameState extends AbstractState implements State, Subscriber {
         if (dy < TOP_BORDER) yLevelOffset += dy - TOP_BORDER;
         else if (dy > BOTTOM_BORDER) yLevelOffset += dy - BOTTOM_BORDER;
         yLevelOffset = Math.max(Math.min(yLevelOffset, yMaxLevelOffset), 0);
+    }
+
+    /**
+     * Updates the camera position based on the player's position.
+     * The camera smoothly follows the player using linear interpolation (LARP).
+     */
+    private void updateCamera() {
+        float targetX = (float)player.getHitBox().x - (GAME_WIDTH / 2.0f);
+        float targetY = (float)player.getHitBox().y - (GAME_HEIGHT / 2.0f);
+
+        cameraX += (targetX - cameraX) * CAMERA_LERP_FACTOR_X;
+        cameraY += (targetY - cameraY) * CAMERA_LERP_FACTOR_Y;
+
+        xLevelOffset = (int)cameraX;
+        yLevelOffset = (int)cameraY;
+
+        xLevelOffset = Math.max(0, Math.min(xLevelOffset, xMaxLevelOffset));
+        yLevelOffset = Math.max(0, Math.min(yLevelOffset, yMaxLevelOffset));
     }
 
     // Effect
@@ -312,8 +344,7 @@ public class GameState extends AbstractState implements State, Subscriber {
     }
 
     private void updateManagers() {
-        xBorderUpdate();
-        yBorderUpdate();
+        updateCamera();
         enemyManager.update(levelManager.getCurrentLevel().getLvlData(), player);
         objectManager.update(levelManager.getCurrentLevel().getLvlData(), player);
         lightManager.update();

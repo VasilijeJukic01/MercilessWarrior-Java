@@ -430,6 +430,10 @@ public final class Constants {
     public static final double DUST1_OFFSET_X = dScale(15);
     public static final double DUST1_OFFSET_Y = dScale(10);
 
+    // Camera Constants
+    public static final double CAMERA_LERP_FACTOR_X = 0.08;
+    public static final double CAMERA_LERP_FACTOR_Y = 0.08;
+
     private static int scale(double value) {
         return (int)(value * SCALE);
     }
