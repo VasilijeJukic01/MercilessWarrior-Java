@@ -329,7 +329,9 @@ public class Player extends Entity {
                 airSpeed = 0;
                 currentJumps = 0;
 
-                effectManager.spawnDustParticles(hitBox.x + hitBox.width / 2, hitBox.y + hitBox.height, LAND_DUST_BURST, DustType.IMPACT, flipSign, this);
+                boolean isHit = checkAction(PlayerAction.HIT);
+                if (!isHit)
+                    effectManager.spawnDustParticles(hitBox.x + hitBox.width / 2, hitBox.y + hitBox.height, LAND_DUST_BURST, DustType.IMPACT, flipSign, this);
             }
             else {
                 airSpeed = (onWall) ? wallGravity : collisionFallSpeed;
@@ -482,16 +484,17 @@ public class Player extends Entity {
         boolean hit = checkAction(PlayerAction.HIT);
         if (hit) return;
         if (value < 0) {
+            effectManager.spawnDustParticles(hitBox.getCenterX(), hitBox.getCenterY(), 15 + new Random().nextInt(6), DustType.PLAYER_HIT, flipSign, this);
             double defenseBonus = InventoryBonus.getInstance().getDefense() * value * (-1);
             value += defenseBonus;
         }
         changeHealth(value);
-        pushOffsetDirection = Direction.UP;
-        pushOffset = 0;
-        Rectangle2D.Double hBox =  (o instanceof Enemy) ? (((Enemy) o).getHitBox()) : (((Projectile) o).getHitBox());
-        Logger.getInstance().notify("Damage received: "+value, Message.INFORMATION);
+        Rectangle2D.Double hBox = (o instanceof Enemy) ? (((Enemy) o).getHitBox()) : (((Projectile) o).getHitBox());
         if (hBox.x < hitBox.x) pushDirection = Direction.RIGHT;
         else pushDirection = Direction.LEFT;
+        this.inAir = true;
+        this.airSpeed = -1.2 * SCALE;
+        Logger.getInstance().notify("Damage received: " + value, Message.INFORMATION);
     }
 
     private void changeHealthNoKnockback(double value) {
@@ -541,9 +544,8 @@ public class Player extends Entity {
         if (hit) {
             setSpellState(0);
             removeActions(PlayerAction.DASH, PlayerAction.DASH_HIT);
-            if (animIndex <= animations[entityState.ordinal()].length - 2)
-                pushBack(pushDirection, levelData, 1.2, PLAYER_SPEED);
-            updatePushOffset();
+            double pushForce = 1.2;
+            pushBack(pushDirection, levelData, pushForce, PLAYER_SPEED);
             inAirUpdate();
         }
         else if (canBlock) {
@@ -611,6 +613,7 @@ public class Player extends Entity {
                 runDustTick = 0;
             }
         }
+        else runDustTick = 0;
     }
 
     public void render(Graphics g, int xLevelOffset, int yLevelOffset) {

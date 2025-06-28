@@ -43,6 +43,7 @@ public class DustParticle {
             case WALL_SLIDE -> initWallSlide(playerFlipSign);
             case WALL_JUMP -> initWallJump(playerFlipSign);
             case CRITICAL_HIT -> initCriticalHit(x, y);
+            case PLAYER_HIT -> initPlayerHit();
             case SW_TELEPORT -> initTeleport();
             case SW_CHANNELING_AURA -> initChannelingAura(x, y, size);
             case SW_AURA_PULSE -> initAuraPulse(x, y, size);
@@ -118,6 +119,21 @@ public class DustParticle {
         this.gravity = 0.05 * SCALE;
         this.alphaFadeSpeed = 0.04f;
         this.currentAlpha = 1.0f;
+    }
+
+    private void initPlayerHit() {
+        Random rand = new Random();
+        double angle = rand.nextDouble() * 2 * Math.PI;
+        double speed = (rand.nextDouble() * 2.5 + 1.0) * SCALE;
+        this.xSpeed = Math.cos(angle) * speed;
+        this.ySpeed = Math.sin(angle) * speed;
+        this.gravity = 0.05 * SCALE;
+        this.alphaFadeSpeed = 0.025f;
+        this.particleColor = new Color(255, 40, 40);
+        this.currentAlpha = 1.0f;
+        double size = (rand.nextInt(3) + 4) * SCALE;
+        this.particleShape.width = size;
+        this.particleShape.height = size;
     }
 
     private void initTeleport() {
