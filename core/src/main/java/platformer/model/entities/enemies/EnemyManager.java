@@ -18,7 +18,9 @@ import platformer.model.gameObjects.projectiles.Projectile;
 import platformer.model.inventory.InventoryBonus;
 import platformer.model.levels.Level;
 import platformer.model.perks.PerksBonus;
+import platformer.model.quests.ObjectiveTarget;
 import platformer.model.quests.QuestManager;
+import platformer.model.quests.QuestObjectiveType;
 import platformer.model.spells.Flame;
 import platformer.observer.Publisher;
 import platformer.observer.Subscriber;
@@ -140,8 +142,18 @@ public class EnemyManager implements Publisher {
     }
 
     private void checkForEvent(Enemy e) {
-        if (e.getEnemyType() == EnemyType.SKELETON) notify("Kill Skeletons");
-        else if (e.getEnemyType() == EnemyType.GHOUL) notify("Kill Ghouls");
+        switch (e.getEnemyType()) {
+            case SKELETON:
+                notify(QuestObjectiveType.KILL, ObjectiveTarget.SKELETON);
+                break;
+            case GHOUL:
+                notify(QuestObjectiveType.KILL, ObjectiveTarget.GHOUL);
+                break;
+            case SPEAR_WOMAN:
+                notify(QuestObjectiveType.KILL, ObjectiveTarget.LANCER);
+                break;
+            default: break;
+        }
     }
 
     private double[] damage(Player player) {
@@ -348,6 +360,6 @@ public class EnemyManager implements Publisher {
         subscribers.stream()
                 .filter(s -> s instanceof QuestManager)
                 .findFirst()
-                .ifPresent(s -> s.update(o[0]));
+                .ifPresent(s -> s.update(o));
     }
 }

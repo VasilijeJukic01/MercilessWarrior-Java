@@ -44,9 +44,14 @@ public class QuestSlot {
         }
         else {
             g.setFont(new Font("Arial", Font.PLAIN, FONT_DIALOGUE));
-            g.drawString(quest.getDescription(), xPos + (int)(SCALE * 10), yPos + (int)(SCALE * 19));
+            g.drawString(quest.getName(), xPos + (int)(SCALE * 10), yPos + (int)(SCALE * 19));
             g.setFont(new Font("Arial", Font.PLAIN, FONT_LIGHT));
-            g.drawString("Progress: " + (quest.getProgress() / (double) quest.getGoal()) * 100 + "%", xPos + (int)(SCALE * 115), yPos + (int)(SCALE * 37));
+            if (quest.getObjectives() != null && !quest.getObjectives().isEmpty()) {
+                var obj = quest.getObjectives().get(quest.getActiveObjectiveIndex());
+                int percent = (int) ((obj.getCurrentAmount() * 100.0) / obj.getRequiredAmount());
+                String progress = String.format("Progress: (%d%%)", percent);
+                g.drawString(progress, xPos + (int)(SCALE * 117), yPos + (int)(SCALE * 37));
+            }
             if (quest.getItemRewards() != null)
                 quest.getItemRewards()
                         .forEach((item, amount) -> g.drawString("Reward: "+amount+"x "+item.getName(), xPos + (int)(SCALE * 10), yPos + (int)(SCALE * 37)));
@@ -55,6 +60,10 @@ public class QuestSlot {
 
     public void checkSelected(int x, int y) {
         this.selected = isPointInSlot(x, y);
+    }
+
+    public boolean isCompleted() {
+        return quest != null && quest.isCompleted();
     }
 
     private boolean isPointInSlot(int x, int y) {

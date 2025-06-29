@@ -1,105 +1,116 @@
 [
   {
-    "name": "Kill Skeletons",
+    "name": "Skeletal Extermination",
     "type": "REPEATABLE",
     "id": -1,
-    "description": "Kill 5 Skeletons",
-    "goal": 5,
+    "description": "The restless dead disturb the peace. Put them to rest.",
+    "objectives": [
+      { "type": "KILL", "target": "SKELETON", "requiredAmount": 5, "currentAmount": 0 }
+    ],
     "itemRewards": {
       "IRON": 5
     },
     "coinReward": 10,
     "expReward": 100,
     "levelRequirement": 1,
-    "parentId": null
+    "prerequisites": []
   },
   {
-    "name": "Kill Ghouls",
+    "name": "Ghastly Work",
     "type": "REPEATABLE",
     "id": -1,
-    "description": "Kill 5 Ghouls",
-    "goal": 5,
+    "description": "Ghouls are scavenging in the area. Thin their numbers.",
+    "objectives": [
+      { "type": "KILL", "target": "GHOUL", "requiredAmount": 5, "currentAmount": 0 }
+    ],
     "itemRewards": {
       "WRAITH_ESSENCE": 5
     },
     "coinReward": 20,
     "expReward": 150,
     "levelRequirement": 1,
-    "parentId": null
+    "prerequisites": []
   },
   {
-    "name": "Break Crates",
+    "name": "Crate Breaker",
     "type": "REPEATABLE",
     "id": -1,
-    "description": "Break 5 Crates",
-    "goal": 5,
+    "description": "Smash open some crates. Who knows what you'll find?",
+    "objectives": [
+      { "type": "COLLECT", "target": "CRATE", "requiredAmount": 5, "currentAmount": 0 }
+    ],
     "itemRewards": {
       "SONIC_QUARTZ": 3
     },
     "coinReward": 20,
     "expReward": 150,
     "levelRequirement": 1,
-    "parentId": null
+    "prerequisites": []
   },
   {
-    "name": "Upgrade Sword",
+    "name": "Sharpen the Blade",
     "type": "PROGRESSIVE",
     "id": 1,
-    "description": "Buy sword upgrade",
-    "goal": 1,
+    "description": "A true warrior needs a sharp sword. Upgrade your weapon.",
+    "objectives": [
+      { "type": "UPGRADE", "target": "SWORD_UPGRADE", "requiredAmount": 1, "currentAmount": 0 }
+    ],
     "itemRewards": {
       "IRON": 10
     },
     "coinReward": 50,
     "expReward": 200,
     "levelRequirement": 1,
-    "parentId": null
+    "prerequisites": []
   },
   {
-    "name": "Buy Armor",
+    "name": "Armor Up",
     "type": "PROGRESSIVE",
     "id": 2,
-    "description": "Buy Armor",
-    "goal": 1,
+    "description": "Protection is as important as offense. Purchase a piece of armor.",
+    "objectives": [
+      { "type": "COLLECT", "target": "BUY_ARMOR", "requiredAmount": 1, "currentAmount": 0 }
+    ],
     "itemRewards": {
       "IRON": 10
     },
     "coinReward": 50,
     "expReward": 200,
     "levelRequirement": 1,
-    "parentId": 1
+    "prerequisites": [1]
   },
   {
-    "name": "Kill Lancer",
+    "name": "The Lancer's Challenge",
     "type": "PROGRESSIVE",
     "id": 3,
-    "description": "Kill Lancer",
-    "goal": 1,
+    "description": "A formidable Lancer guards the path forward. Defeat her.",
+    "objectives": [
+      { "type": "KILL", "target": "LANCER", "requiredAmount": 1, "currentAmount": 0 }
+    ],
     "itemRewards": {
       "ELECTRICITE": 1
     },
     "coinReward": 500,
     "expReward": 1000,
     "levelRequirement": 1,
-    "parentId": null
+    "prerequisites": []
   },
   {
-    "name": "Kill Bandits",
+    "name": "Helping Anita",
     "type": "PROGRESSIVE",
     "id": 4,
-    "description": "Kill Bandits",
-    "goal": 1,
+    "description": "Anita is scared of bandits in her town. Defeat them for her.",
+    "objectives": [
+      { "type": "KILL", "target": "KNIGHT", "requiredAmount": 3, "currentAmount": 0 },
+      { "type": "INTERACT", "target": "ANITA", "requiredAmount": 1, "currentAmount": 0 }
+    ],
+    "itemRewards": {
+      "SILVER": 10
+    },
+    "coinReward": 300,
+    "expReward": 550,
     "levelRequirement": 1,
     "npcRequest": 1,
-    "parentId": null
-  },
-  {
-    "name": "Talk to Anita",
-    "type": "PROGRESSIVE",
-    "id": 5,
-    "description": "Talk to Anita",
-    "goal": 1,
-    "levelRequirement": 1,
-    "parentId": 4
+    "prerequisites": []
   }
 ]

@@ -1,7 +1,9 @@
 package platformer.model.perks;
 
 import platformer.core.Framework;
+import platformer.model.quests.ObjectiveTarget;
 import platformer.model.quests.QuestManager;
+import platformer.model.quests.QuestObjectiveType;
 import platformer.observer.Publisher;
 import platformer.observer.Subscriber;
 
@@ -187,7 +189,7 @@ public class PerksManager implements Publisher {
     }
 
     private void notifyQuestManager(Perk perk) {
-        if (perk.getName().equals("Strong Arms")) notify("Upgrade Sword");
+        if (perk.getName().equals("Strong Arms")) notify(QuestObjectiveType.UPGRADE, ObjectiveTarget.SWORD_UPGRADE);
     }
 
     // Observer
@@ -206,7 +208,7 @@ public class PerksManager implements Publisher {
         subscribers.stream()
                 .filter(s -> s instanceof QuestManager)
                 .findFirst()
-                .ifPresent(s -> s.update(o[0]));
+                .ifPresent(s -> s.update(o));
     }
 
     private boolean isSafe(int i, int j, int n, int m) {

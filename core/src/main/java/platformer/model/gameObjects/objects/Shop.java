@@ -9,7 +9,9 @@ import platformer.model.inventory.Inventory;
 import platformer.model.inventory.InventoryItem;
 import platformer.model.inventory.ItemType;
 import platformer.model.inventory.ShopItem;
+import platformer.model.quests.ObjectiveTarget;
 import platformer.model.quests.QuestManager;
+import platformer.model.quests.QuestObjectiveType;
 import platformer.observer.Publisher;
 import platformer.observer.Subscriber;
 import platformer.utils.Utils;
@@ -109,7 +111,7 @@ public class Shop extends GameObject implements Publisher {
                 .filter(inventoryItem -> inventoryItem.getItemType() == item)
                 .findFirst();
 
-        if (item == ItemType.ARMOR_WARRIOR) notify("Buy Armor");
+        if (item == ItemType.ARMOR_WARRIOR) notify(QuestObjectiveType.COLLECT, ObjectiveTarget.BUY_ARMOR);
 
         if (existingItem.isPresent()) existingItem.get().addAmount(1);
         else inventory.getBackpack().add(new InventoryItem(item, getImageModel(item), 1));
@@ -190,6 +192,6 @@ public class Shop extends GameObject implements Publisher {
         subscribers.stream()
                 .filter(s -> s instanceof QuestManager)
                 .findFirst()
-                .ifPresent(s -> s.update(o[0]));
+                .ifPresent(s -> s.update(o));
     }
 }

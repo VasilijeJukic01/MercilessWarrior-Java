@@ -102,6 +102,7 @@ public class ObjectManager implements Publisher {
         level.gatherData();
         this.objectsMap = level.getObjectsMap();
         this.projectiles.clear();
+        embedSubscribers();
     }
 
     // Intersection Handler
@@ -169,7 +170,7 @@ public class ObjectManager implements Publisher {
      * @param attackBox The attack box of the player.
      */
     public void checkObjectBreak(Rectangle2D.Double attackBox) {
-        objectBreakHandler.checkObjectBreak(attackBox, gameState.getSpellManager().getFlames(), this::notify);
+        objectBreakHandler.checkObjectBreak(attackBox, gameState.getSpellManager().getFlames());
     }
 
     /**
@@ -412,6 +413,11 @@ public class ObjectManager implements Publisher {
         return intersection;
     }
 
+    // Observer
+    private void embedSubscribers() {
+        getObjects(Shop.class).forEach(shop -> shop.addSubscriber(gameState.getQuestManager()));
+    }
+
     @Override
     public void addSubscriber(Subscriber s) {
         this.subscribers.add(s);
@@ -427,6 +433,6 @@ public class ObjectManager implements Publisher {
         subscribers.stream()
                 .filter(s -> s instanceof QuestManager)
                 .findFirst()
-                .ifPresent(s -> s.update(o[0]));
+                .ifPresent(s -> s.update(o));
     }
 }

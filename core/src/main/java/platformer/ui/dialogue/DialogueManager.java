@@ -108,7 +108,8 @@ public class DialogueManager {
      */
     public void acceptQuestion() {
         if (overlay.getQuestion() == null || !overlay.isOnLastQuestion()) return;
-        gameState.getQuestManager().startNPCQuest(overlay.getQuestion().getAnswers().get(0).getNext().replace("Quest: ", ""));
+        String questName = overlay.getQuestion().getAnswers().get(0).getNext().replace("Quest: ", "");
+        gameState.getQuestManager().startNPCQuest(questName);
         updateDialogue("QUESTION");
     }
 
