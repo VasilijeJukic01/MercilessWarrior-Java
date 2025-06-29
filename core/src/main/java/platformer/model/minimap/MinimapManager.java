@@ -2,10 +2,13 @@ package platformer.model.minimap;
 
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
+import platformer.model.levels.Level;
 import platformer.model.minimap.astar.AStarPathfinding;
+import platformer.state.GameState;
 import platformer.utils.Utils;
 
 import java.awt.*;
+import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -25,11 +28,13 @@ import static platformer.constants.FilePaths.*;
  */
 public class MinimapManager {
 
+    private final GameState gameState;
+
     private BufferedImage minimapImage;
     private BufferedImage[] minimapIcons;
 
     private BufferedImage minimap;
-    private Point playerLocation;
+    private Point2D.Double playerLocation;
     private Point pinnedLocation;
     private List<Point> pathPoints = new ArrayList<>();
     private Map<String, Point> levelPositions;
@@ -38,7 +43,8 @@ public class MinimapManager {
     private int flashTick = 0;
     private boolean flashVisible = true;
 
-    public MinimapManager() {
+    public MinimapManager(GameState gameState) {
+        this.gameState = gameState;
         init();
     }
 
@@ -167,29 +173,40 @@ public class MinimapManager {
     }
 
     /**
-     * Updates the player's position on the minimap.
+     * Updates the player's position on the minimap based on their world coordinates.
+     * This ensures the player's icon is accurately placed on the minimap, reflecting their position within the level.
      *
-     * @param dx The change in the player's x position.
-     * @param dy The change in the player's y position.
+     * @param playerWorldX The player's X coordinate in world pixels.
+     * @param playerWorldY The player's Y coordinate in world pixels.
      */
-    public void updatePlayerPosition(int dx, int dy) {
-        playerLocation.x += dx;
-        playerLocation.y += dy;
-        clampPlayerPosition();
-        updatePinnedLocation();
-    }
+    public void updatePlayerPosition(double playerWorldX, double playerWorldY) {
+        Level currentLevel = gameState.getLevelManager().getCurrentLevel();
+        int levelWidthInPixels = currentLevel.getLevelTilesWidth() * TILES_SIZE;
+        int levelHeightInPixels = currentLevel.getLevelTilesHeight() * TILES_SIZE;
 
-    /**
-     * Clamps the player's position to ensure it stays within the bounds of the minimap.
-     */
-    private void clampPlayerPosition() {
-        playerLocation.x = Math.max(0, Math.min(playerLocation.x, minimap.getWidth() - 1));
-        playerLocation.y = Math.max(0, Math.min(playerLocation.y, minimap.getHeight() - 1));
+        String levelName = "level" + gameState.getLevelManager().getLevelIndexI() + gameState.getLevelManager().getLevelIndexJ();
+        Point levelPosOnMinimap = levelPositions.get(levelName);
+        if (levelPosOnMinimap == null) return;
+
+        int levelWidthOnMinimap = currentLevel.getLevelTilesWidth();
+        int levelHeightOnMinimap = currentLevel.getLevelTilesHeight();
+
+        double relativeX = playerWorldX / levelWidthInPixels;
+        double relativeY = playerWorldY / levelHeightInPixels;
+
+        double playerMapX = levelPosOnMinimap.x + (relativeX * levelWidthOnMinimap);
+        double playerMapY = levelPosOnMinimap.y + (relativeY * levelHeightOnMinimap);
+
+        if (playerLocation == null) playerLocation = new Point2D.Double(playerMapX, playerMapY);
+        else playerLocation.setLocation(playerMapX, playerMapY);
+
+        updatePinnedLocation();
     }
 
     private void updatePinnedLocation() {
         if (pinnedLocation == null) return;
-        if (playerLocation.equals(pinnedLocation)) {
+        Point playerIntLocation = getPlayerIntegerLocation();
+        if (playerIntLocation != null && playerIntLocation.equals(pinnedLocation)) {
             resetPin(pinnedLocation);
             return;
         }
@@ -209,9 +226,7 @@ public class MinimapManager {
      * @param J The column index of the new level.
      */
     public void changeLevel(int I, int J) {
-        Point newLocation = levelPositions.get("level" + I + J);
-        if (newLocation != null)
-            playerLocation = new Point(newLocation);
+        this.playerLocation = null;
     }
 
     /**
@@ -248,9 +263,10 @@ public class MinimapManager {
     }
 
     public void findPath() {
-        if (playerLocation == null || pinnedLocation == null) return;
+        Point playerIntLocation = getPlayerIntegerLocation();
+        if (playerIntLocation == null || pinnedLocation == null) return;
         AStarPathfinding pathfinding = new AStarPathfinding();
-        pathPoints = pathfinding.findPath(minimapImage, playerLocation, pinnedLocation);
+        pathPoints = pathfinding.findPath(minimapImage, playerIntLocation, pinnedLocation);
     }
 
     public void reset() {
@@ -263,8 +279,13 @@ public class MinimapManager {
         return minimap;
     }
 
-    public Point getPlayerLocation() {
+    public Point2D.Double getPlayerLocation() {
         return playerLocation;
+    }
+
+    private Point getPlayerIntegerLocation() {
+        if (playerLocation == null) return null;
+        return new Point((int)Math.round(playerLocation.x), (int)Math.round(playerLocation.y));
     }
 
     public Point getPinnedLocation() {

@@ -5,6 +5,7 @@ import platformer.model.minimap.MinimapIconType;
 import platformer.model.minimap.MinimapManager;
 
 import java.awt.*;
+import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.util.List;
 
@@ -33,7 +34,7 @@ public class MinimapRenderer {
     }
 
     private void renderPlayer(Graphics2D g2d, int mapX, int mapY, int mapWidth, int mapHeight, BufferedImage minimap, MinimapManager minimapManager) {
-        Point playerLocation = minimapManager.getPlayerLocation();
+        Point2D.Double playerLocation = minimapManager.getPlayerLocation(); // Changed from Point
 
         if (playerLocation != null) {
             double scaledPixelWidth = (double) mapWidth / minimap.getWidth();

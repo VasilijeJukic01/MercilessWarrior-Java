@@ -309,6 +309,14 @@ public class Level {
         return yMaxLevelOffset;
     }
 
+    public int getLevelTilesWidth() {
+        return levelTilesWidth;
+    }
+
+    public int getLevelTilesHeight() {
+        return levelTilesHeight;
+    }
+
     /**
      * Returns the spawn point for the player based on the given location.
      *

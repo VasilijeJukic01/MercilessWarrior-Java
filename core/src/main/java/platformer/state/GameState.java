@@ -115,7 +115,7 @@ public class GameState extends AbstractState implements State, Subscriber {
         this.dialogueManager = new DialogueManager(this);
         this.lightManager = new LightManager(this);
         this.questManager = new QuestManager(this);
-        this.minimapManager = new MinimapManager();
+        this.minimapManager = new MinimapManager(this);
         this.tutorialManager = new TutorialManager(this);
         this.effectManager = new EffectManager();
         this.eventHandler = new EventHandler(this, this.effectManager);

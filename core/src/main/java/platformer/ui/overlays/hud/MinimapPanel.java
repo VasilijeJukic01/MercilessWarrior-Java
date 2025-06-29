@@ -4,6 +4,7 @@ import platformer.model.minimap.MinimapManager;
 import platformer.ui.overlays.render.MinimapRenderer;
 
 import java.awt.*;
+import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 
 import static platformer.constants.Constants.MINIMAP_ZOOM;
@@ -49,7 +50,7 @@ public class MinimapPanel {
     }
 
     private void centerOnPlayer() {
-        Point playerLocation = minimapManager.getPlayerLocation();
+        Point2D.Double playerLocation = minimapManager.getPlayerLocation();
         if (playerLocation != null) {
             int mapWidth = (int) (minimapManager.getMinimap().getWidth() * MINIMAP_ZOOM);
             int mapHeight = (int) (minimapManager.getMinimap().getHeight() * MINIMAP_ZOOM);
