@@ -198,7 +198,7 @@ public class LevelManager {
     public void render(Graphics g, int xLevelOffset, int yLevelOffset) {
         renderDeco(g, xLevelOffset, yLevelOffset, 0);               // First deco layer
         renderDeco(g, xLevelOffset, yLevelOffset, 1);               // Second deco layer
-        g.setColor(new Color(1, 130, 120, 110));
+        g.setColor(new Color(1, 130, 120, 60));
         g.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);                 // Green ambient layer
         renderDeco(g, xLevelOffset, yLevelOffset, 2);              // Third deco layer
         renderTerrain(g, xLevelOffset, yLevelOffset, true);       // Terrain behind layer
