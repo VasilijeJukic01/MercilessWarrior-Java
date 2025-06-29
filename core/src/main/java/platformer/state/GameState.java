@@ -247,6 +247,7 @@ public class GameState extends AbstractState implements State, Subscriber {
     }
 
     public void triggerScreenShake(int duration, double intensity) {
+        if (!game.getSettings().isScreenShake()) return;
         this.screenShakeDuration = duration;
         this.screenShakeIntensity = intensity;
     }

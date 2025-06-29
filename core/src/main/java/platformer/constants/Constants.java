@@ -422,7 +422,7 @@ public final class Constants {
     public static final double CAMERA_LERP_FACTOR_X = 0.08;
     public static final double CAMERA_LERP_FACTOR_Y = 0.08;
 
-    private static int scale(double value) {
+    public static int scale(double value) {
         return (int)(value * SCALE);
     }
 

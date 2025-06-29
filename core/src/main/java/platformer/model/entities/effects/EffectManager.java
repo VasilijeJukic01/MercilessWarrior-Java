@@ -1,5 +1,7 @@
 package platformer.model.entities.effects;
 
+import platformer.core.Framework;
+import platformer.core.Settings;
 import platformer.model.entities.Entity;
 import platformer.model.entities.effects.particles.DustParticle;
 import platformer.model.entities.effects.particles.DustType;
@@ -19,7 +21,10 @@ public class EffectManager {
     private final Random rand = new Random();
 
     public void spawnDustParticles(double x, double y, int count, DustType type, int flipSign, Entity target) {
-        for (int i = 0; i < count; i++) {
+        Settings settings = Framework.getInstance().getGame().getSettings();
+        int adjustedCount = (int) (count * settings.getParticleDensity());
+
+        for (int i = 0; i < adjustedCount; i++) {
             int size = 0;
             double yOffset = 0;
             switch (type) {

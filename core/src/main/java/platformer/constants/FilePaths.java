@@ -92,9 +92,6 @@ public final class FilePaths {
     public static final String PLAYER_HUD = "/images/playerHUD.png";
     public static final String PLAYER_PORTRAIT = "/images/portraitHUD.png";
     public static final String PAUSE_TXT = "/images/buttons/PauseText.png";
-    public static final String MUSIC_TXT = "/images/buttons/MusicText.png";
-    public static final String SFX_TXT = "/images/buttons/SFXText.png";
-    public static final String VOLUME_TXT = "/images/buttons/VolumeText.png";
     public static final String DEAD_TXT = "/images/buttons/DeadText.png";
     public static final String RESPAWN_TXT = "/images/buttons/RespawnText.png";
     public static final String MENU_TXT = "/images/buttons/MenuText.png";

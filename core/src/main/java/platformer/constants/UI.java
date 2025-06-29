@@ -180,18 +180,18 @@ public final class UI {
 
     // Audio UI
     public static final int SFX_X = scale(525);
-    public static final int SFX_Y = scale(175);
+    public static final int SFX_Y = scale(203);
     public static final int MUSIC_X = scale(525);
-    public static final int MUSIC_Y = scale(225);
+    public static final int MUSIC_Y = scale(253);
     public static final int MUSIC_SLIDER_BTN_X = scale(380);
-    public static final int MUSIC_SLIDER_BTN_Y = scale(224);
+    public static final int MUSIC_SLIDER_BTN_Y = scale(253);
     public static final int SFX_SLIDER_BTN_X = scale(380);
-    public static final int SFX_SLIDER_BTN_Y = scale(174);
+    public static final int SFX_SLIDER_BTN_Y = scale(203);
 
     public static final int MUSIC_SLIDER_X = scale(360);
-    public static final int MUSIC_SLIDER_Y = scale(225);
+    public static final int MUSIC_SLIDER_Y = scale(254);
     public static final int SFX_SLIDER_X = scale(360);
-    public static final int SFX_SLIDER_Y = scale(175);
+    public static final int SFX_SLIDER_Y = scale(204);
 
     // Overlay UI
     public static final int OVERLAY_WID = scale(300);
@@ -204,12 +204,6 @@ public final class UI {
     public static final int OPTIONS_TEXT_HEI = scale(40);
     public static final int PAUSE_TEXT_WID = scale(180);
     public static final int PAUSE_TEXT_HEI = scale(40);
-    public static final int SFX_TEXT_WID = scale(50);
-    public static final int SFX_TEXT_HEI = scale(25);
-    public static final int MUSIC_TEXT_WID = scale(70);
-    public static final int MUSIC_TEXT_HEI = scale(25);
-    public static final int VOLUME_TEXT_WID = scale(110);
-    public static final int VOLUME_TEXT_HEI = scale(30);
 
     public static final int CONTINUE_BTN_X = scale(330);
     public static final int CONTINUE_BTN_Y = scale(350);
@@ -222,12 +216,6 @@ public final class UI {
     public static final int OPTIONS_TEXT_Y = scale(85);
     public static final int PAUSE_TEXT_X = scale(330);
     public static final int PAUSE_TEXT_Y = scale(85);
-    public static final int SFX_TEXT_X = scale(280);
-    public static final int SFX_TEXT_Y = scale(180);
-    public static final int MUSIC_TEXT_X = scale(280);
-    public static final int MUSIC_TEXT_Y = scale(230);
-    public static final int VOLUME_TEXT_X = scale(365);
-    public static final int VOLUME_TEXT_Y = scale(140);
 
     // Game Over UI
     public static final int DEAD_TEXT_WID = scale(180);
