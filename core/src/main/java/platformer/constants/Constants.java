@@ -418,11 +418,6 @@ public final class Constants {
     public static final int PLAYER_LIGHT_RADIUS = scale(75);
     public static final int CANDLE_LIGHT_RADIUS = scale(100);
 
-    public static final double DUST1_WID = dScale(40);
-    public static final double DUST1_HEI = dScale(80);
-    public static final double DUST1_OFFSET_X = dScale(15);
-    public static final double DUST1_OFFSET_Y = dScale(10);
-
     // Camera Constants
     public static final double CAMERA_LERP_FACTOR_X = 0.08;
     public static final double CAMERA_LERP_FACTOR_Y = 0.08;
