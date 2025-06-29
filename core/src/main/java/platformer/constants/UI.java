@@ -217,6 +217,32 @@ public final class UI {
     public static final int PAUSE_TEXT_X = scale(330);
     public static final int PAUSE_TEXT_Y = scale(85);
 
+    public static final int VOLUME_TEXT_X = scale(390);
+    public static final int VOLUME_TEXT_Y = scale(195);
+    public static final int SFX_TEXT_X = scale(310);
+    public static final int SFX_TEXT_Y = scale(224);
+    public static final int MUSIC_TEXT_X = scale(310);
+    public static final int MUSIC_TEXT_Y = scale(274);
+
+    public static final int PARTICLE_BTN_PREV_X = scale(390);
+    public static final int PARTICLE_BTN_NEXT_X = scale(510);
+    public static final int PARTICLE_BTN_Y = scale(175);
+    public static final int SHAKE_BTN_PREV_X = scale(390);
+    public static final int SHAKE_BTN_NEXT_X = scale(510);
+    public static final int SHAKE_BTN_Y = scale(225);
+
+    public static final int PARTICLE_TEXT_X = scale(290);
+    public static final int PARTICLE_TEXT_Y = scale(192);
+    public static final int PARTICLE_LEVEL_X = scale(452);
+    public static final int PARTICLE_LEVEL_Y = scale(192);
+
+    public static final int SHAKE_TEXT_X = scale(290);
+    public static final int SHAKE_TEXT_Y = scale(242);
+    public static final int SHAKE_STATUS_X = scale(452);
+    public static final int SHAKE_STATUS_Y = scale(242);
+
+    public static final Color TAB_COLOR = new Color(144, 9, 97);
+
     // Game Over UI
     public static final int DEAD_TEXT_WID = scale(180);
     public static final int DEAD_TEXT_HEI = scale(40);
