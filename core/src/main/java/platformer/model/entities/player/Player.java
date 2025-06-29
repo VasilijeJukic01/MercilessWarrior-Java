@@ -408,6 +408,7 @@ public class Player extends Entity {
     }
 
     public void launch(double launchSpeed) {
+        effectManager.spawnDustParticles(hitBox.getCenterX(), hitBox.y + hitBox.height, 25, DustType.JUMP_PAD, 0, this);
         inAir = true;
         airSpeed = launchSpeed;
     }

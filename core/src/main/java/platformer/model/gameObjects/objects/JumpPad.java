@@ -69,4 +69,8 @@ public class JumpPad extends GameObject {
     public void attackBoxRenderer(Graphics g, int xLevelOffset, int yLevelOffset) {
 
     }
+
+    public boolean isUsed() {
+        return used;
+    }
 }

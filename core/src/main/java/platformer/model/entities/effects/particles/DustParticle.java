@@ -52,6 +52,7 @@ public class DustParticle {
             case SW_AURA_PULSE -> initAuraPulse(x, y, size);
             case SW_AURA_CRACKLE -> initAuraCrackle(x, y, size);
             case SW_DASH_SLASH -> initDashSlash();
+            case JUMP_PAD -> initJumpPad();
             default -> initDefault(x, y, size);
         }
     }
@@ -220,6 +221,15 @@ public class DustParticle {
         this.xSpeed = Math.cos(angle) * speed;
         this.ySpeed = Math.sin(angle) * speed;
         this.gravity = 0.08 * SCALE;
+    }
+
+    private void initJumpPad() {
+        Random rand = new Random();
+        this.ySpeed = -(rand.nextDouble() * 2.5 + 1.0) * SCALE;
+        this.xSpeed = (rand.nextDouble() - 0.5) * 1.5 * SCALE;
+        this.gravity = 0.06 * SCALE;
+        this.alphaFadeSpeed = 0.03f;
+        this.particleColor = new Color(57, 211, 228);
     }
 
     // Core

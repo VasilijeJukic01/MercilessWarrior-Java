@@ -13,5 +13,6 @@ public enum DustType {
     SW_CHANNELING_AURA,
     SW_AURA_PULSE,
     SW_AURA_CRACKLE,
-    SW_DASH_SLASH
+    SW_DASH_SLASH,
+    JUMP_PAD
 }

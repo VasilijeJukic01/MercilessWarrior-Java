@@ -46,6 +46,13 @@ public class EffectManager {
                 case SW_AURA_CRACKLE:
                     size = (int)((rand.nextInt(2) + 1) * SCALE);
                     break;
+                case WALL_JUMP:
+                    size = (int) ((rand.nextInt(4) + 3) * SCALE);
+                    break;
+                case JUMP_PAD:
+                    yOffset = target.getHitBox().height * 0.5;
+                    size = (int) ((rand.nextInt(6) + 3) * SCALE);
+                    break;
             }
             DustParticle particle = new DustParticle((int) x, (int) (y + yOffset), size, type, flipSign, target);
 
