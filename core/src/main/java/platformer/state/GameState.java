@@ -263,8 +263,11 @@ public class GameState extends AbstractState implements State, Subscriber {
             overlayManager.update(PlayingState.SAVE);
         else if (state == PlayingState.GAME_OVER)
             overlayManager.update(PlayingState.GAME_OVER);
-        else if (state == PlayingState.DYING)
+        else if (state == PlayingState.DYING) {
             player.update();
+            effectManager.update();
+        }
+
         else handleGameState();
 
         if (state == PlayingState.DIALOGUE)
