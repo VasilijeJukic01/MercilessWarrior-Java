@@ -94,9 +94,13 @@ public final class UI {
     public static final int CONTROLS_TXT_X = scale(330);
     public static final int CONTROLS_TXT_Y = scale(85);
 
-    public static final int CTRL_ROW_TXT_X = scale(300);
-    public static final int CTRL_ROW_TXT_Y = scale(150);
+    public static final int CTRL_ROW_TXT_X = scale(320);
+    public static final int CTRL_ROW_TXT_Y = scale(165);
     public static final int CTRL_TXT_Y_SPACING = scale(20);
+
+    public static final int CONTROLS_BTN_PREV_X = scale(300);
+    public static final int CONTROLS_BTN_NEXT_X = scale(335);
+    public static final int CONTROLS_BTN_Y = scale(350);
 
     // Leaderboards UI
     public static final int BOARD_TXT_WID = scale(180);
