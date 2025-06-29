@@ -186,12 +186,17 @@ public class Animation {
     }
 
     // NPC
-    public BufferedImage[][] loadNpcs() {
-        BufferedImage[][] anim = new BufferedImage[3][4];
+    private BufferedImage[] loadNpcAnimation(String sheet, int frames, int row, NpcType type) {
+        return loadFromSprite(sheet, frames, row, type.getWid(), type.getHei(), 0, type.getSpriteW(), type.getSpriteH());
+    }
 
-        anim[NpcType.ANITA.ordinal()] = loadFromSprite(ANITA_SHEET, 4, 0, NPC_WID, NPC_HEI, 0, ANITA_W, ANITA_H);
-        anim[NpcType.NIKOLAS.ordinal()] = loadFromSprite(NIKOLAS_SHEET, 4, 0, NPC_WID, NPC_HEI, 0, ANITA_W, ANITA_H);
-        anim[NpcType.SIR_DEJANOVIC.ordinal()] = loadFromSprite(SIR_DEJANOVIC_SHEET, 4, 0, NPC_WID, NPC_HEI, 0, ANITA_W, ANITA_H);
+    public BufferedImage[][] loadNpcs() {
+        BufferedImage[][] anim = new BufferedImage[4][6];
+
+        anim[NpcType.ANITA.ordinal()] = loadNpcAnimation(ANITA_SHEET, 4, 0, NpcType.ANITA);
+        anim[NpcType.NIKOLAS.ordinal()] = loadNpcAnimation(NIKOLAS_SHEET, 4, 0, NpcType.NIKOLAS);
+        anim[NpcType.SIR_DEJANOVIC.ordinal()] = loadNpcAnimation(SIR_DEJANOVIC_SHEET, 4, 0, NpcType.SIR_DEJANOVIC);
+        anim[NpcType.KRYSANTHE.ordinal()] = loadNpcAnimation(KRYSANTHE_SHEET, 8, 0, NpcType.KRYSANTHE);
 
         return anim;
     }

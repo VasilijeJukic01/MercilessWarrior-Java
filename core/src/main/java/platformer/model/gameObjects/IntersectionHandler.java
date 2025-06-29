@@ -94,7 +94,7 @@ public class IntersectionHandler {
                 ((Dog) object).setActive(intersect);
             }
             else if (object instanceof Npc) {
-               if (p.getHitBox().x < object.getHitBox().x - object.getXOffset()) {
+               if (p.getHitBox().x + p.getHitBox().width < object.getHitBox().x + object.getHitBox().width / 1.2) {
                    ((Npc) object).setDirection(Direction.RIGHT);
                }
                else {
@@ -199,6 +199,7 @@ public class IntersectionHandler {
         if (object instanceof Npc && ((Npc)object).getNpcType() == NpcType.ANITA) return "NpcAnita";
         if (object instanceof Npc && ((Npc)object).getNpcType() == NpcType.NIKOLAS) return "NpcNikolas";
         if (object instanceof Npc && ((Npc)object).getNpcType() == NpcType.SIR_DEJANOVIC) return "NpcSirDejanovic";
+        if (object instanceof Npc && ((Npc)object).getNpcType() == NpcType.KRYSANTHE) return "NpcKrysanthe";
         return null;
     }
 

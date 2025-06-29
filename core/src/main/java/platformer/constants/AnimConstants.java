@@ -70,9 +70,6 @@ public final class AnimConstants {
 
     public static final int MINIMAP_ICON_SIZE = 16;
 
-    // NPC
-    public static final int ANITA_W = 32, ANITA_H = 32;
-
     // Frames
     public static final int MENU_FRAMES = 24;
     public static final int DEFAULT_PARTICLE_FRAMES = 8;

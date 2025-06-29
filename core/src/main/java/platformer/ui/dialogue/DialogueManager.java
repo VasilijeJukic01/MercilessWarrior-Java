@@ -7,6 +7,7 @@ import platformer.core.Framework;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
 import platformer.model.gameObjects.GameObject;
+import platformer.model.gameObjects.npc.DialogueBehavior;
 import platformer.model.gameObjects.npc.Npc;
 import platformer.state.GameState;
 import platformer.state.PlayingState;
@@ -81,8 +82,11 @@ public class DialogueManager {
         Random random = new Random();
         int index = random.nextInt(getDialogues(id).size());
         if (object instanceof Npc) {
-            int newIndex = ((Npc) object).getDialogueIndicator();
-            index = newIndex == -1 ? index : newIndex;
+            Npc npc = (Npc) object;
+            if (npc.getDialogueBehavior() == DialogueBehavior.RANDOM) {
+                index = random.nextInt(getDialogues(id).size());
+            }
+            else index = npc.getDialogueIndicator();
         }
         Dialogue dialogue = getDialogues(id).get(index);
         dialogue.setActivated();

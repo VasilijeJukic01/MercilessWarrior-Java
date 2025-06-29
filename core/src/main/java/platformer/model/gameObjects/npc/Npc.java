@@ -8,13 +8,10 @@ import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
-import java.util.List;
 
 import static platformer.constants.Constants.*;
 
 public class Npc extends GameObject {
-
-    private static final List<NpcType> randomizedDialogues = List.of(NpcType.NIKOLAS);
 
     private final NpcType npcType;
     private int progression = 1;
@@ -22,7 +19,7 @@ public class Npc extends GameObject {
     private Direction direction = Direction.RIGHT;
 
     public Npc(ObjType objType, int xPos, int yPos, NpcType npcType) {
-        super(objType, xPos - (int)(35*SCALE), yPos + (int)(10*SCALE));
+        super(objType, xPos - (int)(25*SCALE), yPos + npcType.getHei() - TILES_SIZE);
         super.animSpeed = 34;
         this.npcType = npcType;
         generateHitBox();
@@ -30,9 +27,19 @@ public class Npc extends GameObject {
 
     private void generateHitBox() {
         super.animate = true;
-        initHitBox(NPC_HB_WID, NPC_HB_HEI);
-        super.xOffset = NPC_OFFSET_X;
-        super.yOffset = NPC_OFFSET_Y;
+        initHitBox(npcType.getHitboxWidth(), npcType.getHitboxHeight());
+        super.xOffset = npcType.getXOffset();
+        super.yOffset = npcType.getYOffset();
+    }
+
+    @Override
+    protected void updateAnimation() {
+        animTick++;
+        if (animTick >= animSpeed) {
+            animTick = 0;
+            animIndex++;
+            if (animIndex >= npcType.getSprites()) animIndex = 0;
+        }
     }
 
     // Core
@@ -52,9 +59,15 @@ public class Npc extends GameObject {
             tx.translate(-image.getWidth(null), 0);
             AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
             image = op.filter(image, null);
+
+            int hitBoxCenterX = (int) (hitBox.x + hitBox.width / 2);
+            x = hitBoxCenterX - (npcType.getWid() / 2) - xLevelOffset;
+
+            // Bad sprite alignment fix >.<
+            if (npcType == NpcType.KRYSANTHE) x += (int) (20 * SCALE);
         }
 
-        g.drawImage(image, x, y, NPC_WID, NPC_HEI, null);
+        g.drawImage(image, x, y, npcType.getWid(), npcType.getHei(), null);
         hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.MAGENTA);
     }
 
@@ -68,6 +81,14 @@ public class Npc extends GameObject {
 
     }
 
+    public DialogueBehavior getDialogueBehavior() {
+        return npcType.getDialogueBehavior();
+    }
+
+    public int getDialogueIndicator() {
+        return dialogueIndicator;
+    }
+
     public void progress() {
         this.progression++;
     }
@@ -75,11 +96,6 @@ public class Npc extends GameObject {
     public void increaseDialogueIndicator() {
         if (dialogueIndicator + 1 > progression) return;
         this.dialogueIndicator++;
-    }
-
-    public int getDialogueIndicator() {
-        if (randomizedDialogues.contains(npcType)) return -1;
-        return dialogueIndicator;
     }
 
     public int getProgression() {

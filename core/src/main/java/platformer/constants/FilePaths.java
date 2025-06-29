@@ -54,6 +54,7 @@ public final class FilePaths {
     public static final String ANITA_SHEET = "/images/objs/npc/AnitaSprite.png";
     public static final String NIKOLAS_SHEET = "/images/objs/npc/NikolasSprite.png";
     public static final String SIR_DEJANOVIC_SHEET = "/images/objs/npc/SirDejanovicSprite.png";
+    public static final String KRYSANTHE_SHEET = "/images/objs/npc/KrysantheSprite.png";
 
     // Dialogue
     public static final String OBJECT_DIALOGUES = "/dialogues/dialogues.json";
