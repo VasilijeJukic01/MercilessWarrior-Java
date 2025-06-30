@@ -91,7 +91,10 @@ public class ControlsState extends AbstractState implements State {
             String command = commands.get(description);
             String[] commandParts = Arrays.stream(command.split("&"))
                     .map(String::trim)
-                    .map(kc::getKeyName)
+                    .map(part -> {
+                        if (part.startsWith("LITERAL:")) return part.substring(8);
+                        else return kc.getKeyName(part);
+                    })
                     .toArray(String[]::new);
 
             String descriptionText = description + ": ";
@@ -101,7 +104,7 @@ public class ControlsState extends AbstractState implements State {
             g.setColor(Color.WHITE);
             g.drawString(descriptionText, CTRL_ROW_TXT_X, yPos);
 
-            g.setColor(Color.YELLOW);
+            g.setColor(TAB_COLOR);
             g.drawString(commandText, CTRL_ROW_TXT_X + g.getFontMetrics().stringWidth(descriptionText), yPos);
         }
     }
@@ -179,6 +182,9 @@ public class ControlsState extends AbstractState implements State {
         commands.put("Transform", "Transform");
         commands.put("Accept", "Accept");
         commands.put("Decline", "Decline");
+        commands.put("Minimap Zoom In", "LITERAL:=");
+        commands.put("Minimap Zoom Out", "LITERAL:-");
+        commands.put("Toggle Minimap Legend", "LITERAL:L");
         commands.put("Pause Game", "Pause");
         return commands;
     }

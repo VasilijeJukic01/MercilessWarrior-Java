@@ -113,7 +113,10 @@ public class GameStateController {
         initAction(releaseActions, "Quest", this::openQuests);
         initAction(releaseActions, "Accept", () -> gameState.getDialogueManager().acceptQuestion());
         initAction(releaseActions, "Decline", () -> gameState.getDialogueManager().declineQuestion());
-        initAction(releaseActions, "Minimap", () -> gameState.setOverlay(PlayingState.MINIMAP));
+        initAction(releaseActions, "Minimap", () -> {
+            gameState.setOverlay(PlayingState.MINIMAP);
+            gameState.getOverlayManager().refreshCurrentOverlay();
+        });
     }
 
     // Mouse

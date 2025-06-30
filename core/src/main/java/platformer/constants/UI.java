@@ -412,15 +412,22 @@ public final class UI {
     // Minimap UI
     public static final int MAP_OVERLAY_WID = scale(700);
     public static final int MAP_OVERLAY_HEI = scale(410);
-
     public static final int MAP_OVERLAY_X = scale(65);
     public static final int MAP_OVERLAY_Y = scale(30);
 
     public static final int RADAR_WID = scale(125);
     public static final int RADAR_HEI = scale(65);
-
     public static final int RADAR_X = scale(700);
     public static final int RADAR_Y = scale(7);
+
+    public static final int LEGEND_X = MAP_OVERLAY_X + scale(10);
+    public static final int LEGEND_Y = MAP_OVERLAY_Y + MAP_OVERLAY_HEI - scale(50);
+    public static final int LEGEND_WID = MAP_OVERLAY_WID - scale(20);
+    public static final int LEGEND_HEI = scale(40);
+    public static final int LEGEND_ITEM_SPACING = scale(95);
+    public static final int LEGEND_ICON_SIZE = scale(18);
+    public static final int LEGEND_TEXT_OFFSET = scale(22);
+    public static final int LEGEND_PADDING = scale(10);
 
     // Credits UI
     public static final int CREDITS_TXT_WID = scale(180);

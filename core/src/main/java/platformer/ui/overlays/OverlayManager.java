@@ -100,6 +100,11 @@ public class OverlayManager {
         overlays.get(PlayingState.DIALOGUE).reset();
     }
 
+    public void refreshCurrentOverlay() {
+        PlayingState currentState = gameState.getActiveState();
+        if (currentState != null) overlays.get(currentState).reset();
+    }
+
     public Map<PlayingState, Overlay<MouseEvent, KeyEvent, Graphics>> getOverlays() {
         return overlays;
     }
