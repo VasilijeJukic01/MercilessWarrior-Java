@@ -34,7 +34,7 @@ public class RegisterController implements EventHandler<ActionEvent> {
             return;
         }
 
-        Connector connector = new Connector(new LauncherPrompt(tfName.getText(), tfPassword.getText(), false));
+        Connector connector = new Connector(new LauncherPrompt(tfName.getText(), tfPassword.getText(), false, false));
         int status = connector.createAccount(tfName.getText(), tfPassword.getText());
 
         switch (status) {

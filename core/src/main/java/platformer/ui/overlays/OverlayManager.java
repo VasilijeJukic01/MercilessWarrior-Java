@@ -36,6 +36,7 @@ public class OverlayManager {
         this.overlays.put(PlayingState.LOOTING, new LootingOverlay(gameState));
         this.overlays.put(PlayingState.QUEST, new QuestOverlay(gameState));
         this.overlays.put(PlayingState.MINIMAP, new MinimapOverlay(gameState));
+        this.overlays.put(PlayingState.TUTORIAL, new TutorialOverlay(gameState));
     }
 
     // Core
@@ -97,6 +98,11 @@ public class OverlayManager {
         overlays.get(PlayingState.SHOP).reset();
         overlays.get(PlayingState.CRAFTING).reset();
         overlays.get(PlayingState.DIALOGUE).reset();
+    }
+
+    public void refreshCurrentOverlay() {
+        PlayingState currentState = gameState.getActiveState();
+        if (currentState != null) overlays.get(currentState).reset();
     }
 
     public Map<PlayingState, Overlay<MouseEvent, KeyEvent, Graphics>> getOverlays() {

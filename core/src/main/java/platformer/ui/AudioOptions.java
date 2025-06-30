@@ -97,7 +97,7 @@ public class AudioOptions {
         return abstractButton.getButtonHitBox().contains(e.getX(), e.getY());
     }
 
-    private void resetButtons() {
+    public void resetButtons() {
         sfxBtn.resetMouseSet();
         musicBtn.resetMouseSet();
         musicSliderButton.resetMouseSet();

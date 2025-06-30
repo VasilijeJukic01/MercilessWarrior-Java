@@ -6,8 +6,9 @@ import platformer.core.Framework;
 import platformer.core.Game;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
-import platformer.model.entities.effects.LightManager;
-import platformer.model.entities.effects.Particle;
+import platformer.model.entities.effects.EffectManager;
+import platformer.model.entities.effects.lighting.LightManager;
+import platformer.model.entities.effects.particles.AmbientParticle;
 import platformer.model.entities.enemies.EnemyManager;
 import platformer.model.entities.player.Player;
 import platformer.model.entities.player.PlayerAction;
@@ -18,6 +19,9 @@ import platformer.model.perks.PerksBonus;
 import platformer.model.perks.PerksManager;
 import platformer.model.quests.QuestManager;
 import platformer.model.spells.SpellManager;
+import platformer.model.tutorial.TutorialManager;
+import platformer.observer.EventHandler;
+import platformer.observer.Subscriber;
 import platformer.ui.dialogue.DialogueManager;
 import platformer.ui.overlays.OverlayManager;
 import platformer.ui.overlays.hud.BossInterface;
@@ -29,6 +33,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.util.Arrays;
+import java.util.Random;
 
 import static platformer.constants.Constants.*;
 import static platformer.constants.FilePaths.BACKGROUND_1;
@@ -37,12 +42,15 @@ import static platformer.constants.FilePaths.BACKGROUND_1;
  * State of the game when the player is actively playing the game.
  * In this state, the player can move around the game world, interact with objects, fight enemies, and perform other game actions.
  */
-public class GameState extends AbstractState implements State {
+public class GameState extends AbstractState implements State, Subscriber {
 
     private Player player;
     private BufferedImage background;
 
     private final GameStateController gameStateController;
+
+    // Observer
+    private EventHandler eventHandler;
 
     // Managers
     private LevelManager levelManager;
@@ -55,11 +63,16 @@ public class GameState extends AbstractState implements State {
     private DialogueManager dialogueManager;
     private LightManager lightManager;
     private MinimapManager minimapManager;
+    private TutorialManager tutorialManager;
+    private EffectManager effectManager;
 
     // State
     private PlayingState state;
+    private boolean isRespawning;
 
-    // Borders
+    // Camera
+    private double cameraX, cameraY;
+
     private int xLevelOffset;
     private int xMaxLevelOffset;
     private int yLevelOffset;
@@ -67,10 +80,19 @@ public class GameState extends AbstractState implements State {
 
     private BossInterface bossInterface;
 
+    // Effects
+    private int screenFlashAlpha = 0;
+    private final int flashFadeSpeed = 25;
+    private int screenShakeDuration = 0;
+    private double screenShakeIntensity = 0;
+    private final Random random = new Random();
+
     public GameState(Game game) {
         super(game);
         init();
         this.gameStateController = new GameStateController(this);
+        this.cameraX = player.getHitBox().x;
+        this.cameraY = player.getHitBox().y;
     }
 
     // Init
@@ -94,11 +116,14 @@ public class GameState extends AbstractState implements State {
         this.dialogueManager = new DialogueManager(this);
         this.lightManager = new LightManager(this);
         this.questManager = new QuestManager(this);
-        this.minimapManager = new MinimapManager();
+        this.minimapManager = new MinimapManager(this);
+        this.tutorialManager = new TutorialManager(this);
+        this.effectManager = new EffectManager();
+        this.eventHandler = new EventHandler(this, this.effectManager);
     }
 
     private void initPlayer() {
-        this.player = new Player(PLAYER_X, PLAYER_Y, PLAYER_WIDTH, PLAYER_HEIGHT, enemyManager, objectManager, minimapManager);
+        this.player = new Player(PLAYER_X, PLAYER_Y, PLAYER_WIDTH, PLAYER_HEIGHT, enemyManager, objectManager, minimapManager, effectManager);
         this.player.loadLvlData(levelManager.getCurrentLevel().getLvlData());
         this.player.setSpawn(levelManager.getCurrentLevel().getPlayerSpawn("LEFT"));
     }
@@ -163,6 +188,7 @@ public class GameState extends AbstractState implements State {
 
     private void levelLoadReset(String spawn) {
         levelReset();
+        enemyManager.loadEnemies(levelManager.getCurrentLevel());
         player.setSpawn(levelManager.getCurrentLevel().getPlayerSpawn(spawn));
         calculateLevelOffset();
         overlayManager.reset();
@@ -170,6 +196,11 @@ public class GameState extends AbstractState implements State {
     }
 
     // Level Borders
+    /**
+     * @deprecated Replaced by {@link #updateCamera()} which uses linear interpolation for smooth movement.
+     * This border-based method can cause jerky camera movement.
+     */
+    @Deprecated
     private void xBorderUpdate() {
         int playerXPos = (int)player.getHitBox().x;
         int dx = playerXPos - xLevelOffset;
@@ -179,6 +210,11 @@ public class GameState extends AbstractState implements State {
         xLevelOffset = Math.max(Math.min(xLevelOffset, xMaxLevelOffset), 0);
     }
 
+    /**
+     * @deprecated Replaced by {@link #updateCamera()} which uses linear interpolation for smooth movement.
+     * This border-based method can cause jerky camera movement.
+     */
+    @Deprecated
     private void yBorderUpdate() {
         int playerYPos = (int)player.getHitBox().y;
         int dy = playerYPos - yLevelOffset;
@@ -188,9 +224,40 @@ public class GameState extends AbstractState implements State {
         yLevelOffset = Math.max(Math.min(yLevelOffset, yMaxLevelOffset), 0);
     }
 
+    /**
+     * Updates the camera position based on the player's position.
+     * The camera smoothly follows the player using linear interpolation (LARP).
+     */
+    private void updateCamera() {
+        float targetX = (float)player.getHitBox().x - (GAME_WIDTH / 2.0f);
+        float targetY = (float)player.getHitBox().y - (GAME_HEIGHT / 2.0f);
+
+        cameraX += (targetX - cameraX) * CAMERA_LERP_FACTOR_X;
+        cameraY += (targetY - cameraY) * CAMERA_LERP_FACTOR_Y;
+
+        xLevelOffset = (int)cameraX;
+        yLevelOffset = (int)cameraY;
+
+        xLevelOffset = Math.max(0, Math.min(xLevelOffset, xMaxLevelOffset));
+        yLevelOffset = Math.max(0, Math.min(yLevelOffset, yMaxLevelOffset));
+    }
+
+    // Effect
+    public void triggerScreenFlash() {
+        this.screenFlashAlpha = 200;
+    }
+
+    public void triggerScreenShake(int duration, double intensity) {
+        if (!game.getSettings().isScreenShake()) return;
+        this.screenShakeDuration = duration;
+        this.screenShakeIntensity = intensity;
+    }
+
     // Core
     @Override
     public void update() {
+        updateScreenShake();
+        updateFlash();
         checkPlayerDeath();
         if (state == PlayingState.PAUSE)
             overlayManager.update(PlayingState.PAUSE);
@@ -198,8 +265,11 @@ public class GameState extends AbstractState implements State {
             overlayManager.update(PlayingState.SAVE);
         else if (state == PlayingState.GAME_OVER)
             overlayManager.update(PlayingState.GAME_OVER);
-        else if (state == PlayingState.DYING)
+        else if (state == PlayingState.DYING) {
             player.update();
+            effectManager.update();
+        }
+
         else handleGameState();
 
         if (state == PlayingState.DIALOGUE)
@@ -208,17 +278,40 @@ public class GameState extends AbstractState implements State {
 
     @Override
     public void render(Graphics g) {
+        Graphics2D g2d = (Graphics2D) g;
+        int shakeOffsetX = 0;
+        int shakeOffsetY = 0;
+
+        if (screenShakeDuration > 0) {
+            shakeOffsetX = (int) ((random.nextDouble() - 0.5) * screenShakeIntensity);
+            shakeOffsetY = (int) ((random.nextDouble() - 0.5) * screenShakeIntensity);
+            g2d.translate(shakeOffsetX, shakeOffsetY);
+        }
+
         g.drawImage(background, 0, 0, null);
         this.levelManager.render(g, xLevelOffset, yLevelOffset);
         this.objectManager.render(g, xLevelOffset, yLevelOffset);
         this.lightManager.render(g, xLevelOffset, yLevelOffset);
+        this.effectManager.renderBackgroundEffects(g, xLevelOffset, yLevelOffset);
         this.enemyManager.render(g, xLevelOffset, yLevelOffset);
         this.player.render(g, xLevelOffset, yLevelOffset);
         this.objectManager.secondRender(g, xLevelOffset, yLevelOffset);
         this.spellManager.render(g, xLevelOffset, yLevelOffset);
+        this.effectManager.renderForegroundEffects(g, xLevelOffset, yLevelOffset);
+
+        // TODO: Move this to somewhere else
+        if (screenFlashAlpha > 0) {
+            g.setColor(new Color(255, 255, 255, screenFlashAlpha));
+            g.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+        }
+
         this.player.getPlayerStatusManager().getUserInterface().render(g);
         this.bossInterface.render(g);
         this.overlayManager.render(g);
+
+        if (screenShakeDuration > 0) {
+            g2d.translate(-shakeOffsetX, -shakeOffsetY);
+        }
     }
 
     @Override
@@ -252,17 +345,17 @@ public class GameState extends AbstractState implements State {
     }
 
     private void updateParticles() {
-        Arrays.stream(levelManager.getParticles()).forEach(Particle::update);
+        Arrays.stream(levelManager.getParticles()).forEach(AmbientParticle::update);
     }
 
     private void updateManagers() {
-        xBorderUpdate();
-        yBorderUpdate();
+        updateCamera();
         enemyManager.update(levelManager.getCurrentLevel().getLvlData(), player);
         objectManager.update(levelManager.getCurrentLevel().getLvlData(), player);
         lightManager.update();
         spellManager.update();
         minimapManager.update();
+        effectManager.update();
         player.update();
         if (state == PlayingState.SHOP) overlayManager.update(PlayingState.SHOP);
         else if (state == PlayingState.BLACKSMITH) overlayManager.update(PlayingState.BLACKSMITH);
@@ -271,6 +364,18 @@ public class GameState extends AbstractState implements State {
         else if (state == PlayingState.LOOTING) overlayManager.update(PlayingState.LOOTING);
         else if (state == PlayingState.QUEST) overlayManager.update(PlayingState.QUEST);
         else if (state == PlayingState.MINIMAP) overlayManager.update(PlayingState.MINIMAP);
+        else if (state == PlayingState.TUTORIAL) overlayManager.update(PlayingState.TUTORIAL);
+    }
+
+    private void updateFlash() {
+        if (screenFlashAlpha > 0) {
+            screenFlashAlpha -= flashFadeSpeed;
+            if (screenFlashAlpha < 0) screenFlashAlpha = 0;
+        }
+    }
+
+    private void updateScreenShake() {
+        if (screenShakeDuration > 0) screenShakeDuration--;
     }
 
     @Override
@@ -311,7 +416,8 @@ public class GameState extends AbstractState implements State {
         objectManager.reset();
         spellManager.reset();
         overlayManager.reset();
-        minimapManager.reset();
+        if (!isRespawning) minimapManager.reset();
+        isRespawning = false;
     }
 
     private void levelReset() {
@@ -323,6 +429,12 @@ public class GameState extends AbstractState implements State {
     @Override
     public void windowFocusLost(WindowEvent e) {
         player.resetDirections();
+    }
+
+    // Observer
+    @Override
+    public <T> void update(T... o) {
+        eventHandler.handleEvent(o);
     }
 
     // Getters & Setters
@@ -375,8 +487,20 @@ public class GameState extends AbstractState implements State {
         return lightManager;
     }
 
+    public TutorialManager getTutorialManager() {
+        return tutorialManager;
+    }
+
+    public EffectManager getEffectManager() {
+        return effectManager;
+    }
+
     public BossInterface getBossInterface() {
         return bossInterface;
+    }
+
+    public void setRespawning(boolean respawning) {
+        isRespawning = respawning;
     }
 
     public void setOverlay(PlayingState newOverlay) {

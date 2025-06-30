@@ -17,7 +17,7 @@ public final class FilePaths {
     // Levels
     public static final String LEVEL_SPRITES = "/images/levels/level$.png";
     public static final String LEVEL_OBJECT_SPRITES = "/images/levels/levelObjects/$.png";
-    public static final String BACKGROUND_1 = "/images/background1.jpg";
+    public static final String BACKGROUND_1 = "/images/background1.png";
     public static final String FOREST_SPRITE = "/images/levels/mossyTiles.png";
     public static final String MINIMAP = "/images/levels/minimap.png";
     public static final String MINIMAP_ICONS = "/images/levels/mapIcons.png";
@@ -48,11 +48,13 @@ public final class FilePaths {
     public static final String BOARD_IMG = "/images/objs/Board.png";
     public static final String LAVA_SHEET = "/images/objs/Lava.png";
     public static final String BRICK_SHEET = "/images/objs/Brick.png";
+    public static final String JUMP_PAD_SHEET = "/images/objs/JumpPad.png";
 
     // NPC
     public static final String ANITA_SHEET = "/images/objs/npc/AnitaSprite.png";
     public static final String NIKOLAS_SHEET = "/images/objs/npc/NikolasSprite.png";
     public static final String SIR_DEJANOVIC_SHEET = "/images/objs/npc/SirDejanovicSprite.png";
+    public static final String KRYSANTHE_SHEET = "/images/objs/npc/KrysantheSprite.png";
 
     // Dialogue
     public static final String OBJECT_DIALOGUES = "/dialogues/dialogues.json";
@@ -65,7 +67,6 @@ public final class FilePaths {
     public static final String FIREBALL_SHEET = "/images/player/fireBallSheet.png";
 
     // Effects
-    public static final String DUST_SHEET_1 = "/images/particles/DustSprite.png";
     public static final String PARTICLE_SHEET = "/images/particles/ParticleSprite.png";
 
     // Buttons
@@ -91,9 +92,6 @@ public final class FilePaths {
     public static final String PLAYER_HUD = "/images/playerHUD.png";
     public static final String PLAYER_PORTRAIT = "/images/portraitHUD.png";
     public static final String PAUSE_TXT = "/images/buttons/PauseText.png";
-    public static final String MUSIC_TXT = "/images/buttons/MusicText.png";
-    public static final String SFX_TXT = "/images/buttons/SFXText.png";
-    public static final String VOLUME_TXT = "/images/buttons/VolumeText.png";
     public static final String DEAD_TXT = "/images/buttons/DeadText.png";
     public static final String RESPAWN_TXT = "/images/buttons/RespawnText.png";
     public static final String MENU_TXT = "/images/buttons/MenuText.png";
@@ -142,10 +140,9 @@ public final class FilePaths {
     public static final String PLAYER_ICON = "/images/inventory/Player.png";
 
     // Quests
-    public static final String QUESTS_PATH = "src/main/resources/quests/quests.json";
+    public static final String QUESTS_PATH = "/quests/quests.json";
 
-    // Serialization
-    public static final String SAVE_PATH = "src/main/resources/saves/";
-    public static final String KEYBOARD_CONFIG_PATH = "src/main/resources/keyboard.config";
+    // Tutorial
+    public static final String TUTORIAL_BLOCK_PATH = "/images/tutorial/Tutorial1.png";
 
 }

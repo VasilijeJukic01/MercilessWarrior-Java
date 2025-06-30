@@ -1,4 +1,4 @@
-package platformer.model.entities.effects;
+package platformer.model.entities.effects.particles;
 
 import java.awt.*;
 import java.util.Random;
@@ -13,7 +13,7 @@ import static platformer.constants.Constants.PARTICLE_SHIFT;
  * The extrinsic state (the state that varies across instances) should be passed in as arguments to the methods that use it.
  * This approach is used to save memory when a large number of similar objects need to be created.
  */
-public class Particle {
+public class AmbientParticle {
 
     private final Random rand = new Random();
     private final int size;
@@ -22,10 +22,10 @@ public class Particle {
     private int animTick = 0, animIndex = 0;
     boolean xDir = rand.nextBoolean(), yDir = rand.nextBoolean();
 
-    private final ParticleType particleType;
+    private final AmbientParticleType ambientParticleType;
 
-    public Particle(ParticleType particleType, int size, int xPos, int yPos) {
-        this.particleType = particleType;
+    public AmbientParticle(AmbientParticleType ambientParticleType, int size, int xPos, int yPos) {
+        this.ambientParticleType = ambientParticleType;
         this.size = size;
         this.xPos = xPos;
         this.yPos = yPos;
@@ -50,7 +50,7 @@ public class Particle {
     }
 
     public void render(Graphics g) {
-        particleType.render(g, animIndex, (int)xPos, (int)yPos, size);
+        ambientParticleType.render(g, animIndex, (int)xPos, (int)yPos, size);
     }
 
 }

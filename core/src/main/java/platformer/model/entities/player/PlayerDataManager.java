@@ -58,17 +58,16 @@ public class PlayerDataManager {
 
     // Actions
     private void loadSpawnPoint(Account account) {
-        if (account.getSpawn() == -1) {
-            setPlayerCoordinates(Spawn.INITIAL.getX(), Spawn.INITIAL.getY());
-            return;
-        }
+        int spawnId = account.getSpawn();
 
         for (Spawn spawn : Spawn.values()) {
-            if (spawn.getId() == account.getSpawn()) {
+            if (spawn.getId() == spawnId) {
                 setPlayerCoordinates(spawn.getX(), spawn.getY());
-                break;
+                return;
             }
         }
+
+        setPlayerCoordinates(Spawn.INITIAL.getX(), Spawn.INITIAL.getY());
     }
 
     private void setPlayerCoordinates(int x, int y) {

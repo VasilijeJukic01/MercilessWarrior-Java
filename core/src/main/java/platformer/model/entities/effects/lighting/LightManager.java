@@ -1,4 +1,4 @@
-package platformer.model.entities.effects;
+package platformer.model.entities.effects.lighting;
 
 import platformer.model.entities.enemies.Enemy;
 import platformer.model.entities.player.Player;

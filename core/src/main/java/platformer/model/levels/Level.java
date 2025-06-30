@@ -54,6 +54,7 @@ public class Level {
         npcMap.put("level02", List.of(NpcType.ANITA));
         npcMap.put("level11", List.of(NpcType.NIKOLAS));
         npcMap.put("level10", List.of(NpcType.SIR_DEJANOVIC));
+        npcMap.put("level13", List.of(NpcType.KRYSANTHE));
     }
 
     public Level(String name, BufferedImage layer1Img, BufferedImage layer2Img) {
@@ -122,9 +123,6 @@ public class Level {
             case BARREL:
                 addGameObject(new Container(ObjType.values()[valueB], i*TILES_SIZE, j*TILES_SIZE));
                 break;
-            case SPIKE:
-                addGameObject(new Spike(ObjType.values()[valueB], i*TILES_SIZE, j*TILES_SIZE));
-                break;
             case ARROW_TRAP_LEFT:
             case ARROW_TRAP_RIGHT:
                 addGameObject(new ArrowLauncher(ObjType.values()[valueB], i*TILES_SIZE, j*TILES_SIZE)); break;
@@ -162,6 +160,15 @@ public class Level {
                 break;
             case BRICK:
                 addGameObject(new Brick(ObjType.values()[valueB], i*TILES_SIZE, j*TILES_SIZE));
+                break;
+            case JUMP_PAD:
+                addGameObject(new JumpPad(ObjType.values()[valueB], i*TILES_SIZE, j*TILES_SIZE));
+                break;
+            case SPIKE_UP:
+            case SPIKE_DOWN:
+            case SPIKE_LEFT:
+            case SPIKE_RIGHT:
+                addGameObject(new Spike(ObjType.values()[valueB], i*TILES_SIZE, j*TILES_SIZE));
                 break;
             default: break;
         }
@@ -300,6 +307,14 @@ public class Level {
 
     public int getYMaxLevelOffset() {
         return yMaxLevelOffset;
+    }
+
+    public int getLevelTilesWidth() {
+        return levelTilesWidth;
+    }
+
+    public int getLevelTilesHeight() {
+        return levelTilesHeight;
     }
 
     /**

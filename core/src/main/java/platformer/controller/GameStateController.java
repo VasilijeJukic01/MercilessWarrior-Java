@@ -113,7 +113,10 @@ public class GameStateController {
         initAction(releaseActions, "Quest", this::openQuests);
         initAction(releaseActions, "Accept", () -> gameState.getDialogueManager().acceptQuestion());
         initAction(releaseActions, "Decline", () -> gameState.getDialogueManager().declineQuestion());
-        initAction(releaseActions, "Minimap", () -> gameState.setOverlay(PlayingState.MINIMAP));
+        initAction(releaseActions, "Minimap", () -> {
+            gameState.setOverlay(PlayingState.MINIMAP);
+            gameState.getOverlayManager().refreshCurrentOverlay();
+        });
     }
 
     // Mouse
@@ -248,6 +251,7 @@ public class GameStateController {
                 PlayingState.CRAFTING,
                 PlayingState.LOOTING,
                 PlayingState.MINIMAP,
+                PlayingState.TUTORIAL,
         };
 
         return Arrays.stream(breakableStates).anyMatch(breakableState -> breakableState == state);

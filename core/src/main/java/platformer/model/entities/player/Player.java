@@ -10,8 +10,8 @@ import platformer.model.entities.AttackState;
 import platformer.model.entities.Cooldown;
 import platformer.model.entities.Direction;
 import platformer.model.entities.Entity;
-import platformer.model.entities.effects.EffectType;
-import platformer.model.entities.effects.PlayerEffectController;
+import platformer.model.entities.effects.EffectManager;
+import platformer.model.entities.effects.particles.DustType;
 import platformer.model.entities.enemies.Enemy;
 import platformer.model.entities.enemies.EnemyManager;
 import platformer.model.gameObjects.ObjectManager;
@@ -27,6 +27,7 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Random;
 
 import static platformer.constants.Constants.*;
 import static platformer.constants.FilePaths.PLAYER_SHEET;
@@ -38,6 +39,7 @@ public class Player extends Entity {
     private final EnemyManager enemyManager;
     private final ObjectManager objectManager;
     private final MinimapManager minimapManager;
+    private final EffectManager effectManager;
     private int[][] levelData;
 
     // Core Variables
@@ -49,7 +51,10 @@ public class Player extends Entity {
     private final EnumSet<PlayerAction> actions = EnumSet.noneOf(PlayerAction.class);
 
     // Physics
-    private final double gravity = 0.028 * SCALE;
+    private final double downwardGravity = 0.03 * SCALE;
+    private final double upwardGravity = 0.022 * SCALE;
+    private final double jumpCutGravityMultiplier = 3.0;
+
     private final double wallGravity = 0.0005 * SCALE;
     private final double jumpSpeed = -2.25 * SCALE;
     private final double collisionFallSpeed = 0.5 * SCALE;
@@ -65,14 +70,16 @@ public class Player extends Entity {
     private Inventory inventory;
 
     // Effect
-    private PlayerEffectController effectController;
+    private int runDustTick = 0;
+    private int wallSlideDustTick = 0;
 
 
-    public Player(int xPos, int yPos, int width, int height, EnemyManager enemyManager, ObjectManager objectManager, MinimapManager minimapManager) {
+    public Player(int xPos, int yPos, int width, int height, EnemyManager enemyManager, ObjectManager objectManager, MinimapManager minimapManager, EffectManager effectManager) {
         super(xPos, yPos, width, height, PLAYER_MAX_HP);
         this.enemyManager = enemyManager;
         this.objectManager = objectManager;
         this.minimapManager = minimapManager;
+        this.effectManager = effectManager;
         loadAnimations();
         init();
     }
@@ -98,8 +105,7 @@ public class Player extends Entity {
     private void initManagers() {
         this.playerDataManager = new PlayerDataManager(this, minimapManager);
         this.minimapHandler = new PlayerMinimapHandler(this, minimapManager);
-        this.effectController = new PlayerEffectController(this);
-        this.actionHandler = new PlayerActionHandler(this);
+        this.actionHandler = new PlayerActionHandler(this, effectManager);
         this.inventory = new Inventory();
     }
 
@@ -221,7 +227,13 @@ public class Player extends Entity {
 
     private void setWallSlideAnimation() {
         entityState = Anim.WALL;
-        effectController.setPlayerEffect(EffectType.WALL_SLIDE);
+        wallSlideDustTick++;
+        if (wallSlideDustTick > 3) {
+            wallSlideDustTick = 0;
+            double dustX = (flipSign == 1) ? hitBox.x + hitBox.width : hitBox.x;
+            double dustY = hitBox.y + (new Random().nextDouble() * hitBox.height);
+            effectManager.spawnDustParticles(dustX, dustY, 1, DustType.WALL_SLIDE, flipSign, this);
+        }
     }
 
     private void setDashAnimation() {
@@ -258,6 +270,7 @@ public class Player extends Entity {
         if (spellState != 0 || canBlock || canTransform) return;
         boolean jump = checkAction(PlayerAction.JUMP);
         boolean onWall = checkAction(PlayerAction.ON_WALL);
+        if (!onWall) wallSlideDustTick = 0;
         if (jump) doJump();
         if (!inAir || onWall) actionHandler.setDashCount(0);
         boolean left = checkAction(PlayerAction.LEFT);
@@ -290,9 +303,17 @@ public class Player extends Entity {
 
     private void inAirUpdate() {
         boolean onWall = checkAction(PlayerAction.ON_WALL);
+
+        if (airSpeed < 0) {
+            if (checkAction(PlayerAction.JUMP)) airSpeed += upwardGravity;
+            else airSpeed += upwardGravity * jumpCutGravityMultiplier;
+        }
+        else {
+            if (onWall) airSpeed += wallGravity;
+            else airSpeed += downwardGravity;
+        }
+
         if (Utils.getInstance().canMoveHere(hitBox.x, hitBox.y + airSpeed + 1, hitBox.width, hitBox.height, levelData)) {
-            if (onWall && airSpeed > 0) airSpeed += wallGravity;
-            else airSpeed += gravity;
             hitBox.y += airSpeed;
         }
         else {
@@ -302,6 +323,10 @@ public class Player extends Entity {
                 inAir = false;
                 airSpeed = 0;
                 currentJumps = 0;
+
+                boolean isHit = checkAction(PlayerAction.HIT);
+                if (!isHit)
+                    effectManager.spawnDustParticles(hitBox.x + hitBox.width / 2, hitBox.y + hitBox.height, LAND_DUST_BURST, DustType.IMPACT, flipSign, this);
             }
             else {
                 airSpeed = (onWall) ? wallGravity : collisionFallSpeed;
@@ -377,6 +402,12 @@ public class Player extends Entity {
         if (attacking || dash) checkAttack();
     }
 
+    public void launch(double launchSpeed) {
+        effectManager.spawnDustParticles(hitBox.getCenterX(), hitBox.y + hitBox.height, 25, DustType.JUMP_PAD, 0, this);
+        inAir = true;
+        airSpeed = launchSpeed;
+    }
+
     // Checks
     private void checkAttack() {
         boolean dash = checkAction(PlayerAction.DASH);
@@ -384,7 +415,9 @@ public class Player extends Entity {
 
         if (attackCheck || animIndex != 1 || dashHit) return;
         attackCheck = !dash;
-        enemyManager.checkEnemyHit(attackBox, this);
+        boolean contactMade = enemyManager.checkEnemyHit(attackBox, this);
+        if (contactMade) Audio.getInstance().getAudioPlayer().playHitSound();
+        else if (!dash) Audio.getInstance().getAudioPlayer().playSlashSound();
         objectManager.checkObjectBreak(attackBox);
         objectManager.checkProjectileDeflect(attackBox);
     }
@@ -395,7 +428,6 @@ public class Player extends Entity {
         if (objectManager.isPlayerTouchingObject(this) && !onObject) {
             inAir = !objectManager.isPlayerGlitchedInObject(this);
             removeAction(PlayerAction.WALL_PUSH);
-            entityEffect = null;
             airSpeed = currentJumps = 0;
             addAction(PlayerAction.ON_OBJECT);
         }
@@ -404,18 +436,34 @@ public class Player extends Entity {
         if (onObject) removeAction(PlayerAction.WALL_PUSH);
     }
 
+    private void checkBreakablesOnPush() {
+        if (!checkAction(PlayerAction.HIT)) return;
+        objectManager.checkObjectBreakByPush(hitBox);
+    }
+
     // Actions
     public void doJump() {
         boolean left = checkAction(PlayerAction.LEFT);
         boolean right = checkAction(PlayerAction.RIGHT);
         boolean doubleJump = checkAction(PlayerAction.DOUBLE_JUMP);
+        boolean onWall = checkAction(PlayerAction.ON_WALL);
 
         if (!actionHandler.canJump(levelData, left, right, doubleJump)) return;
+
+        if (onWall) {
+            double dustX = (flipSign == 1) ? hitBox.x + hitBox.width : hitBox.x;
+            double dustY = hitBox.y + hitBox.height / 2.0;
+            effectManager.spawnDustParticles(dustX, dustY, 6, DustType.WALL_JUMP, flipSign, this);
+        }
+
         if (currentJumps == 1) {
             addAction(PlayerAction.DOUBLE_JUMP);
             animIndex = animTick = 0;
             currentJumps++;
         }
+
+        effectManager.spawnDustParticles(hitBox.x + hitBox.width / 2, hitBox.y + hitBox.height, JUMP_DUST_BURST, DustType.IMPACT, flipSign, this);
+
         inAir = true;
         airSpeed = jumpSpeed;
     }
@@ -440,16 +488,17 @@ public class Player extends Entity {
         boolean hit = checkAction(PlayerAction.HIT);
         if (hit) return;
         if (value < 0) {
+            effectManager.spawnDustParticles(hitBox.getCenterX(), hitBox.getCenterY(), 15 + new Random().nextInt(6), DustType.PLAYER_HIT, flipSign, this);
             double defenseBonus = InventoryBonus.getInstance().getDefense() * value * (-1);
             value += defenseBonus;
         }
         changeHealth(value);
-        pushOffsetDirection = Direction.UP;
-        pushOffset = 0;
-        Rectangle2D.Double hBox =  (o instanceof Enemy) ? (((Enemy) o).getHitBox()) : (((Projectile) o).getHitBox());
-        Logger.getInstance().notify("Damage received: "+value, Message.INFORMATION);
+        Rectangle2D.Double hBox = (o instanceof Enemy) ? (((Enemy) o).getHitBox()) : (((Projectile) o).getHitBox());
         if (hBox.x < hitBox.x) pushDirection = Direction.RIGHT;
         else pushDirection = Direction.LEFT;
+        this.inAir = true;
+        this.airSpeed = -1.2 * SCALE;
+        Logger.getInstance().notify("Damage received: " + value, Message.INFORMATION);
     }
 
     private void changeHealthNoKnockback(double value) {
@@ -499,9 +548,8 @@ public class Player extends Entity {
         if (hit) {
             setSpellState(0);
             removeActions(PlayerAction.DASH, PlayerAction.DASH_HIT);
-            if (animIndex <= animations[entityState.ordinal()].length - 2)
-                pushBack(pushDirection, levelData, 1.2, PLAYER_SPEED);
-            updatePushOffset();
+            double pushForce = 1.2;
+            pushBack(pushDirection, levelData, pushForce, PLAYER_SPEED);
             inAirUpdate();
         }
         else if (canBlock) {
@@ -560,11 +608,21 @@ public class Player extends Entity {
         updateAttack();
         updateAnimation();
         updateStatus();
-        effectController.update();
+        checkBreakablesOnPush();
+
+        // TODO: Isolate this somewhere
+        if (checkAction(PlayerAction.MOVE) && !inAir) {
+            runDustTick++;
+            if (runDustTick >= 15) {
+                double dustX = (flipSign == 1) ? hitBox.x : hitBox.x + hitBox.width;
+                effectManager.spawnDustParticles(dustX, hitBox.y + hitBox.height, RUN_DUST_BURST, DustType.RUNNING, flipSign, this);
+                runDustTick = 0;
+            }
+        }
+        else runDustTick = 0;
     }
 
     public void render(Graphics g, int xLevelOffset, int yLevelOffset) {
-        effectController.render(g, xLevelOffset, yLevelOffset);
         try {
             int playerXPos = (int)(hitBox.x-PLAYER_HB_OFFSET_X-xLevelOffset+flipCoefficient);
             int playerYPos = (int)(hitBox.y-PLAYER_HB_OFFSET_Y-yLevelOffset)+(int)pushOffset;
@@ -606,7 +664,7 @@ public class Player extends Entity {
     private void resetFlags() {
         inAir = false;
         removeActions(PlayerAction.DYING, PlayerAction.GAME_OVER);
-        removeActions(PlayerAction.HIT, PlayerAction.BLOCK, PlayerAction.ATTACK, PlayerAction.MOVE);
+        removeActions(PlayerAction.HIT, PlayerAction.BLOCK, PlayerAction.ATTACK, PlayerAction.MOVE, PlayerAction.DASH);
         removeActions(PlayerAction.LEFT, PlayerAction.RIGHT, PlayerAction.JUMP);
     }
 

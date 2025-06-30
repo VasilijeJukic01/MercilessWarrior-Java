@@ -6,6 +6,7 @@ import platformer.audio.Audio;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
 import platformer.model.entities.Direction;
+import platformer.model.entities.effects.particles.DustType;
 import platformer.model.entities.enemies.boss.SpearWoman;
 import platformer.model.entities.enemies.renderer.*;
 import platformer.model.entities.player.Player;
@@ -17,7 +18,9 @@ import platformer.model.gameObjects.projectiles.Projectile;
 import platformer.model.inventory.InventoryBonus;
 import platformer.model.levels.Level;
 import platformer.model.perks.PerksBonus;
+import platformer.model.quests.ObjectiveTarget;
 import platformer.model.quests.QuestManager;
+import platformer.model.quests.QuestObjectiveType;
 import platformer.model.spells.Flame;
 import platformer.observer.Publisher;
 import platformer.observer.Subscriber;
@@ -78,23 +81,7 @@ public class EnemyManager implements Publisher {
     public void loadEnemies(Level level) {
         this.enemies = level.getEnemiesMap();
         reset();
-    }
-
-    /**
-     * Renders the critical hit indicator for an enemy.
-     *
-     * @param g The graphics object to draw on.
-     * @param xLevelOffset The x offset for rendering.
-     * @param yLevelOffset The y offset for rendering.
-     * @param e The enemy to render the critical hit indicator for.
-     */
-    private void renderCriticalHit(Graphics g, int xLevelOffset, int yLevelOffset, Enemy e) {
-        if (e.isCriticalHit()) {
-            int xCritical = (int)(e.getHitBox().x - xLevelOffset);
-            int yCritical = (int)(e.getHitBox().y - 2*SCALE - yLevelOffset);
-            g.setColor(Color.RED);
-            g.drawString("CRITICAL", xCritical, yCritical);
-        }
+        getEnemies(SpearWoman.class).forEach(spearWoman -> spearWoman.addSubscriber(gameState));
     }
 
     // Render
@@ -112,7 +99,6 @@ public class EnemyManager implements Publisher {
             if (enemy.isAlive()) {
                 EnemyRenderer<T> renderer = (EnemyRenderer<T>) enemyRenderers.get(enemyClass);
                 renderer.render(g, enemy, xLevelOffset, yLevelOffset);
-                renderCriticalHit(g, xLevelOffset, yLevelOffset, enemy);
             }
         }
     }
@@ -148,6 +134,7 @@ public class EnemyManager implements Publisher {
         Random rand = new Random();
         if (e.getEnemyAction() == Anim.DEATH) {
             gameState.getObjectManager().generateLoot(e);
+            gameState.getTutorialManager().activateBlockTutorial();
             player.changeStamina(rand.nextInt(5));
             player.changeExp(rand.nextInt(50)+100);
             checkForEvent(e);
@@ -155,8 +142,18 @@ public class EnemyManager implements Publisher {
     }
 
     private void checkForEvent(Enemy e) {
-        if (e.getEnemyType() == EnemyType.SKELETON) notify("Kill Skeletons");
-        else if (e.getEnemyType() == EnemyType.GHOUL) notify("Kill Ghouls");
+        switch (e.getEnemyType()) {
+            case SKELETON:
+                notify(QuestObjectiveType.KILL, ObjectiveTarget.SKELETON);
+                break;
+            case GHOUL:
+                notify(QuestObjectiveType.KILL, ObjectiveTarget.GHOUL);
+                break;
+            case SPEAR_WOMAN:
+                notify(QuestObjectiveType.KILL, ObjectiveTarget.LANCER);
+                break;
+            default: break;
+        }
     }
 
     private double[] damage(Player player) {
@@ -175,40 +172,75 @@ public class EnemyManager implements Publisher {
     }
 
     /**
-     * Handles the event of an enemy being hit by the player's attack.
+     * Handles hitting enemies within a specified attack box.
+     * This method implements a "cleave" mechanic, allowing a single swing to hit multiple enemies.
+     * To maintain game balance, damage falloff is applied:
+     * The first enemy hit takes full damage, and each subsequent enemy hit in the same swing takes progressively less damage.
+     * <p>
+     * The process is as follows:
+     * 1. Gathers all living enemies that intersect with the player's attack box.
+     * 2. Sorts the intersected enemies by their distance from the player to ensure a consistent and fair application of damage falloff.
+     * 3. Iterates through list, applying damage with a falloff multiplier (100%, 75%, 56%, etc.).
      *
-     * @param <T> The specific type of enemy that was hit. This type must extend from the Enemy class.
-     * @param attackBox The hitbox of the player's attack.
-     * @param player The Player object representing the player in the game.
-     * @param enemyClass The Class object representing the type of enemy that was hit.
+     * @param attackBox player's attack hitbox.
+     * @param player    entity who is performing the attack.
      */
-    private <T extends Enemy> void handleEnemyHit(Rectangle2D.Double attackBox, Player player, Class<T> enemyClass) {
-        double[] dmg = damage(player);
-        for (T enemy : getEnemies(enemyClass)) {
-            if (enemy.isAlive() && enemy.getEnemyAction() != Anim.DEATH) {
-                if (attackBox.intersects(enemy.getHitBox())) {
-                    if (enemy.getEnemyAction() == Anim.HIDE || enemy.getEnemyAction() == Anim.REVEAL) return;
-                    enemy.hit(dmg[0], true, true);
-                    enemy.setCriticalHit(dmg[1] == 1);
-                    player.changeStamina(new Random().nextInt(3) + 1);
-                    checkEnemyDying(enemy, player);
-                    writeHitLog(enemy.getEnemyAction(), dmg[0]);
-                    player.addAction(PlayerAction.DASH_HIT);
-                    return;
-                }
+    public boolean checkEnemyHit(Rectangle2D.Double attackBox, Player player) {
+        boolean contactMade = false;
+
+        List<Enemy> intersectingEnemies = new ArrayList<>();
+        for (Enemy enemy : getAllEnemies()) {
+            if (enemy.isAlive() && enemy.getEnemyAction() != Anim.DEATH && attackBox.intersects(enemy.getHitBox())) {
+                if (enemy.getEnemyAction() == Anim.HIDE || enemy.getEnemyAction() == Anim.REVEAL) continue;
+                intersectingEnemies.add(enemy);
             }
         }
+        if (intersectingEnemies.isEmpty()) return false;
+
+        intersectingEnemies.sort(Comparator.comparingDouble(e -> e.getHitBox().getCenterX() - player.getHitBox().getCenterX()));
+
+        double damageModifier = 1.0;
+        for (Enemy enemy : intersectingEnemies) {
+            double[] dmg = damage(player);
+            double finalDamage = dmg[0] * damageModifier;
+            boolean isCritical = (dmg[1] == 1);
+
+            Rectangle2D intersection = attackBox.createIntersection(enemy.getHitBox());
+            spawnParticles((Rectangle2D.Double) intersection, player, enemy, isCritical);
+
+            if (enemy.hit(finalDamage, true, false)) {
+                contactMade = true;
+                if (enemy.getEnemyAction() != Anim.BLOCK) {
+                    if (damageModifier > 0.1) damageModifier *= 0.75;
+                    player.changeStamina(new Random().nextInt(3) + 1);
+                }
+            }
+
+            enemy.setCriticalHit(isCritical);
+            checkEnemyDying(enemy, player);
+            writeHitLog(enemy.getEnemyAction(), finalDamage);
+            player.addAction(PlayerAction.DASH_HIT);
+        }
+        return contactMade;
     }
 
-    public void checkEnemyHit(Rectangle2D.Double attackBox, Player player) {
-        handleEnemyHit(attackBox, player, Skeleton.class);
-        handleEnemyHit(attackBox, player, Ghoul.class);
-        handleEnemyHit(attackBox, player, Knight.class);
-        handleEnemyHit(attackBox, player, Wraith.class);
-        handleEnemyHit(attackBox, player, SpearWoman.class);
-        boolean dash = player.checkAction(PlayerAction.DASH);
-        boolean onWall = player.checkAction(PlayerAction.ON_WALL);
-        if (!dash && !onWall) Audio.getInstance().getAudioPlayer().playSlashSound();
+    /**
+     * Spawns particles at the intersection of the attack box and the enemy's hitbox.
+     * This method is called when an enemy is hit by the player's attack.
+     *
+     * @param box The intersection rectangle where the particles will be spawned.
+     * @param player The Player object representing the player in the game.
+     * @param enemy The Enemy object that was hit.
+     * @param isCritical Indicates if the hit was a critical hit.
+     */
+    private void spawnParticles(Rectangle2D.Double box, Player player, Enemy enemy, boolean isCritical) {
+        if (isCritical) {
+            gameState.triggerScreenFlash();
+            gameState.getEffectManager().spawnDustParticles(box.getCenterX(), box.getCenterY(), 25, DustType.CRITICAL_HIT, player.getFlipSign(), null);
+        }
+        else if (enemy.getEnemyAction() != Anim.BLOCK) {
+            gameState.getEffectManager().spawnDustParticles(box.getCenterX(), box.getCenterY(), 10, DustType.IMPACT_SPARK, player.getFlipSign(), null);
+        }
     }
 
     private void writeHitLog(Anim anim, double dmg) {
@@ -265,6 +297,19 @@ public class EnemyManager implements Publisher {
         }
     }
 
+    private void checkEnemyAttackObject(Enemy enemy) {
+        if (!enemy.isAttacking()) return;
+        boolean isAttackFrame = false;
+        int animIndex = enemy.getAnimIndex();
+
+        if (enemy instanceof Skeleton && animIndex == 3) isAttackFrame = true;
+        else if (enemy instanceof Ghoul && animIndex == 3) isAttackFrame = true;
+        else if (enemy instanceof Knight && animIndex == 4) isAttackFrame = true;
+        else if (enemy instanceof Wraith && animIndex == 3) isAttackFrame = true;
+
+        if (isAttackFrame) gameState.getObjectManager().checkObjectBreakByEnemy(enemy.getAttackBox());
+    }
+
     // Core
     /**
      * Updates the state of all enemies of a specific type in the game.
@@ -279,7 +324,10 @@ public class EnemyManager implements Publisher {
     private <T extends Enemy> void updateEnemies(Class<T> enemyType, BufferedImage[][] animations, int[][] levelData, Player player) {
         getEnemies(enemyType).stream()
                 .filter(Enemy::isAlive)
-                .forEach(enemy -> enemy.update(animations, levelData, player));
+                .forEach(enemy -> {
+                    enemy.update(animations, levelData, player);
+                    checkEnemyAttackObject(enemy);
+                });
     }
 
     public void update(int[][] levelData, Player player) {
@@ -338,6 +386,6 @@ public class EnemyManager implements Publisher {
         subscribers.stream()
                 .filter(s -> s instanceof QuestManager)
                 .findFirst()
-                .ifPresent(s -> s.update(o[0]));
+                .ifPresent(s -> s.update(o));
     }
 }

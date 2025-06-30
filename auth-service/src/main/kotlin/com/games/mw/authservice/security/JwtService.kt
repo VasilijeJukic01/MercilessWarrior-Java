@@ -17,7 +17,14 @@ class JwtService {
     private val expirationMs: Long = 1000 * 60 * 60 * 10 // 10 hours
 
     fun generateToken(userDetails: UserDetails): String {
+        val claims = mutableMapOf<String, Any>()
+        claims["roles"] = userDetails.authorities.map { it.authority.replace("ROLE_", "") }
+        if (userDetails is CustomUserDetails) {
+            claims["userId"] = userDetails.id
+        }
+
         return Jwts.builder()
+            .setClaims(claims)
             .setSubject(userDetails.username)
             .setIssuedAt(Date())
             .setExpiration(Date(System.currentTimeMillis() + expirationMs))

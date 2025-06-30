@@ -155,13 +155,13 @@ public class Animation {
 
     // Objects
     public BufferedImage[][] loadObjects() {
-        BufferedImage[][] anim = new BufferedImage[21][17];
+        BufferedImage[][] anim = new BufferedImage[25][17];
 
         anim[ObjType.STAMINA_POTION.ordinal()] = loadFromSprite(POTIONS_SHEET, 7, 0, POTION_WID, POTION_HEI, 0, POTION_W, POTION_H);
         anim[ObjType.HEAL_POTION.ordinal()] = loadFromSprite(POTIONS_SHEET, 7, 1, POTION_WID, POTION_HEI, 0, POTION_W, POTION_H);
         anim[ObjType.BOX.ordinal()] = loadFromSprite(CONTAINERS_SHEET, 8, 0, CONTAINER_WID, CONTAINER_HEI, 0, CONTAINER_W, CONTAINER_H);
         anim[ObjType.BARREL.ordinal()] = loadFromSprite(CONTAINERS_SHEET, 8, 1, CONTAINER_WID, CONTAINER_HEI, 0, CONTAINER_W, CONTAINER_H);
-        anim[ObjType.SPIKE.ordinal()] = loadFromSprite(SPIKES_SHEET, 10, 0, SPIKE_WID, SPIKE_HEI, 0, SPIKES_W, SPIKES_H);
+        anim[ObjType.SPIKE_UP.ordinal()] = loadFromSprite(SPIKES_SHEET, 10, 0, SPIKE_WID, SPIKE_HEI, 0, SPIKES_W, SPIKES_H);
         anim[ObjType.ARROW_TRAP_RIGHT.ordinal()] = loadFromSprite(ARROW_TRAP_SHEET, 16, 0, ARROW_TRAP_WID, ARROW_TRAP_HEI, 1, AT_W, AT_H);
         anim[ObjType.ARROW_TRAP_LEFT.ordinal()] = anim[ObjType.ARROW_TRAP_RIGHT.ordinal()];
         anim[ObjType.COIN.ordinal()] = loadFromSprite(COIN_SHEET, 4, 0, COIN_WID, COIN_HEI, 0, COIN_W, COIN_H);
@@ -177,17 +177,26 @@ public class Animation {
         anim[ObjType.BOARD.ordinal()] = loadFromSprite(BOARD_IMG, 1, 0, BOARD_WID, BOARD_HEI, 0, BOARD_W, BOARD_H);
         anim[ObjType.LAVA.ordinal()] = loadFromSprite(LAVA_SHEET, 16, 0, LAVA_WID, LAVA_HEI, 0, LAVA_W, LAVA_H);
         anim[ObjType.BRICK.ordinal()] = loadFromSprite(BRICK_SHEET, 8, 0, BRICK_WID, BRICK_HEI, 0, BRICK_W, BRICK_H);
+        anim[ObjType.JUMP_PAD.ordinal()] = loadFromSprite(JUMP_PAD_SHEET, 20, 0, JUMP_PAD_WID, JUMP_PAD_HEI, 0, JUMP_PAD_W, JUMP_PAD_H);
+        anim[ObjType.SPIKE_DOWN.ordinal()] = new BufferedImage[]{Utils.getInstance().rotateImage(anim[ObjType.SPIKE_UP.ordinal()][5], 180)};
+        anim[ObjType.SPIKE_LEFT.ordinal()] = new BufferedImage[]{Utils.getInstance().rotateImage(anim[ObjType.SPIKE_UP.ordinal()][5], 270)};
+        anim[ObjType.SPIKE_RIGHT.ordinal()] = new BufferedImage[]{Utils.getInstance().rotateImage(anim[ObjType.SPIKE_UP.ordinal()][5], 90)};
 
         return anim;
     }
 
     // NPC
-    public BufferedImage[][] loadNpcs() {
-        BufferedImage[][] anim = new BufferedImage[3][4];
+    private BufferedImage[] loadNpcAnimation(String sheet, int frames, int row, NpcType type) {
+        return loadFromSprite(sheet, frames, row, type.getWid(), type.getHei(), 0, type.getSpriteW(), type.getSpriteH());
+    }
 
-        anim[NpcType.ANITA.ordinal()] = loadFromSprite(ANITA_SHEET, 4, 0, NPC_WID, NPC_HEI, 0, ANITA_W, ANITA_H);
-        anim[NpcType.NIKOLAS.ordinal()] = loadFromSprite(NIKOLAS_SHEET, 4, 0, NPC_WID, NPC_HEI, 0, ANITA_W, ANITA_H);
-        anim[NpcType.SIR_DEJANOVIC.ordinal()] = loadFromSprite(SIR_DEJANOVIC_SHEET, 4, 0, NPC_WID, NPC_HEI, 0, ANITA_W, ANITA_H);
+    public BufferedImage[][] loadNpcs() {
+        BufferedImage[][] anim = new BufferedImage[4][6];
+
+        anim[NpcType.ANITA.ordinal()] = loadNpcAnimation(ANITA_SHEET, 4, 0, NpcType.ANITA);
+        anim[NpcType.NIKOLAS.ordinal()] = loadNpcAnimation(NIKOLAS_SHEET, 4, 0, NpcType.NIKOLAS);
+        anim[NpcType.SIR_DEJANOVIC.ordinal()] = loadNpcAnimation(SIR_DEJANOVIC_SHEET, 4, 0, NpcType.SIR_DEJANOVIC);
+        anim[NpcType.KRYSANTHE.ordinal()] = loadNpcAnimation(KRYSANTHE_SHEET, 8, 0, NpcType.KRYSANTHE);
 
         return anim;
     }

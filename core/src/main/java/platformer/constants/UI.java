@@ -94,9 +94,14 @@ public final class UI {
     public static final int CONTROLS_TXT_X = scale(330);
     public static final int CONTROLS_TXT_Y = scale(85);
 
-    public static final int CTRL_ROW_TXT_X = scale(300);
-    public static final int CTRL_ROW_TXT_Y = scale(150);
+    public static final int CTRL_ROW_TXT_X = scale(320);
+    public static final int OPTIONS_CTRL_ROW_TXT_Y = scale(165);
+    public static final int PAUSE_CTRL_ROW_TXT_Y = scale(175);
     public static final int CTRL_TXT_Y_SPACING = scale(20);
+
+    public static final int CONTROLS_BTN_PREV_X = scale(300);
+    public static final int CONTROLS_BTN_NEXT_X = scale(335);
+    public static final int CONTROLS_BTN_Y = scale(350);
 
     // Leaderboards UI
     public static final int BOARD_TXT_WID = scale(180);
@@ -176,18 +181,18 @@ public final class UI {
 
     // Audio UI
     public static final int SFX_X = scale(525);
-    public static final int SFX_Y = scale(175);
+    public static final int SFX_Y = scale(203);
     public static final int MUSIC_X = scale(525);
-    public static final int MUSIC_Y = scale(225);
+    public static final int MUSIC_Y = scale(253);
     public static final int MUSIC_SLIDER_BTN_X = scale(380);
-    public static final int MUSIC_SLIDER_BTN_Y = scale(224);
+    public static final int MUSIC_SLIDER_BTN_Y = scale(253);
     public static final int SFX_SLIDER_BTN_X = scale(380);
-    public static final int SFX_SLIDER_BTN_Y = scale(174);
+    public static final int SFX_SLIDER_BTN_Y = scale(203);
 
     public static final int MUSIC_SLIDER_X = scale(360);
-    public static final int MUSIC_SLIDER_Y = scale(225);
+    public static final int MUSIC_SLIDER_Y = scale(254);
     public static final int SFX_SLIDER_X = scale(360);
-    public static final int SFX_SLIDER_Y = scale(175);
+    public static final int SFX_SLIDER_Y = scale(204);
 
     // Overlay UI
     public static final int OVERLAY_WID = scale(300);
@@ -200,12 +205,6 @@ public final class UI {
     public static final int OPTIONS_TEXT_HEI = scale(40);
     public static final int PAUSE_TEXT_WID = scale(180);
     public static final int PAUSE_TEXT_HEI = scale(40);
-    public static final int SFX_TEXT_WID = scale(50);
-    public static final int SFX_TEXT_HEI = scale(25);
-    public static final int MUSIC_TEXT_WID = scale(70);
-    public static final int MUSIC_TEXT_HEI = scale(25);
-    public static final int VOLUME_TEXT_WID = scale(110);
-    public static final int VOLUME_TEXT_HEI = scale(30);
 
     public static final int CONTINUE_BTN_X = scale(330);
     public static final int CONTINUE_BTN_Y = scale(350);
@@ -218,12 +217,32 @@ public final class UI {
     public static final int OPTIONS_TEXT_Y = scale(85);
     public static final int PAUSE_TEXT_X = scale(330);
     public static final int PAUSE_TEXT_Y = scale(85);
-    public static final int SFX_TEXT_X = scale(280);
-    public static final int SFX_TEXT_Y = scale(180);
-    public static final int MUSIC_TEXT_X = scale(280);
-    public static final int MUSIC_TEXT_Y = scale(230);
-    public static final int VOLUME_TEXT_X = scale(365);
-    public static final int VOLUME_TEXT_Y = scale(140);
+
+    public static final int VOLUME_TEXT_X = scale(390);
+    public static final int VOLUME_TEXT_Y = scale(195);
+    public static final int SFX_TEXT_X = scale(310);
+    public static final int SFX_TEXT_Y = scale(224);
+    public static final int MUSIC_TEXT_X = scale(310);
+    public static final int MUSIC_TEXT_Y = scale(274);
+
+    public static final int PARTICLE_BTN_PREV_X = scale(390);
+    public static final int PARTICLE_BTN_NEXT_X = scale(510);
+    public static final int PARTICLE_BTN_Y = scale(175);
+    public static final int SHAKE_BTN_PREV_X = scale(390);
+    public static final int SHAKE_BTN_NEXT_X = scale(510);
+    public static final int SHAKE_BTN_Y = scale(225);
+
+    public static final int PARTICLE_TEXT_X = scale(290);
+    public static final int PARTICLE_TEXT_Y = scale(192);
+    public static final int PARTICLE_LEVEL_X = scale(452);
+    public static final int PARTICLE_LEVEL_Y = scale(192);
+
+    public static final int SHAKE_TEXT_X = scale(290);
+    public static final int SHAKE_TEXT_Y = scale(242);
+    public static final int SHAKE_STATUS_X = scale(452);
+    public static final int SHAKE_STATUS_Y = scale(242);
+
+    public static final Color TAB_COLOR = new Color(144, 9, 97);
 
     // Game Over UI
     public static final int DEAD_TEXT_WID = scale(180);
@@ -394,15 +413,22 @@ public final class UI {
     // Minimap UI
     public static final int MAP_OVERLAY_WID = scale(700);
     public static final int MAP_OVERLAY_HEI = scale(410);
-
     public static final int MAP_OVERLAY_X = scale(65);
     public static final int MAP_OVERLAY_Y = scale(30);
 
     public static final int RADAR_WID = scale(125);
     public static final int RADAR_HEI = scale(65);
-
     public static final int RADAR_X = scale(700);
     public static final int RADAR_Y = scale(7);
+
+    public static final int LEGEND_X = MAP_OVERLAY_X + scale(10);
+    public static final int LEGEND_Y = MAP_OVERLAY_Y + MAP_OVERLAY_HEI - scale(50);
+    public static final int LEGEND_WID = MAP_OVERLAY_WID - scale(20);
+    public static final int LEGEND_HEI = scale(40);
+    public static final int LEGEND_ITEM_SPACING = scale(95);
+    public static final int LEGEND_ICON_SIZE = scale(18);
+    public static final int LEGEND_TEXT_OFFSET = scale(22);
+    public static final int LEGEND_PADDING = scale(10);
 
     // Credits UI
     public static final int CREDITS_TXT_WID = scale(180);
@@ -415,6 +441,16 @@ public final class UI {
     public static final int CREDITS_SPACING = scale(20);
 
     public static final Color CREDITS_COLOR = new Color(20, 103, 59, 255);
+
+    // Tutorial UI
+    public static final int TUTORIAL_IMAGE_X = scale(150);
+    public static final int TUTORIAL_IMAGE_Y = scale(155);
+
+    public static final int TUTORIAL_TXT_X = scale(350);
+    public static final int TUTORIAL_TXT_Y = scale(170);
+
+    public static final int TUTORIAL_EXIT_X = scale(185);
+    public static final int TUTORIAL_EXIT_Y = scale(270);
 
     private static int scale(double value) {
         return (int)(value * SCALE);

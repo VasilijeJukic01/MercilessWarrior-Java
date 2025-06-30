@@ -7,10 +7,10 @@ import org.springframework.context.annotation.Configuration
 import java.time.Duration
 
 @Configuration
-open class CircuitBreakerConfig {
+class CircuitBreakerConfig {
 
     @Bean
-    open fun circuitBreakerRegistry(): CircuitBreakerRegistry {
+    fun circuitBreakerRegistry(): CircuitBreakerRegistry {
         val defaultConfig = CircuitBreakerConfig.custom()
             .failureRateThreshold(50.0f)
             .waitDurationInOpenState(Duration.ofMillis(1000))

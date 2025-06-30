@@ -18,6 +18,7 @@ import static platformer.constants.UI.*;
 public class GamePanel extends JPanel {
 
     private final Game game;
+    private Dimension currentSize;
 
     public GamePanel(Game game) {
         this.game = game;
@@ -39,10 +40,25 @@ public class GamePanel extends JPanel {
     }
 
     private void initPanelSize() {
-        Dimension dimension = new Dimension(GAME_WIDTH, GAME_HEIGHT);
-        this.setMinimumSize(dimension);
-        this.setPreferredSize(dimension);
-        this.setMinimumSize(dimension);
+        this.currentSize = new Dimension(GAME_WIDTH, GAME_HEIGHT);
+        this.setMinimumSize(currentSize);
+        this.setPreferredSize(currentSize);
+        this.setMaximumSize(currentSize);
+    }
+
+    /**
+     * Updates the panel size. Used when switching between windowed and fullscreen modes.
+     * @param width The new width
+     * @param height The new height
+     */
+    public void updateSize(int width, int height) {
+        this.currentSize = new Dimension(width, height);
+        this.setMinimumSize(currentSize);
+        this.setPreferredSize(currentSize);
+        this.setMaximumSize(currentSize);
+        this.setSize(currentSize);
+        revalidate();
+        repaint();
     }
 
     @Override
@@ -67,5 +83,9 @@ public class GamePanel extends JPanel {
 
     public Game getGame() {
         return game;
+    }
+
+    public Dimension getCurrentSize() {
+        return currentSize;
     }
 }

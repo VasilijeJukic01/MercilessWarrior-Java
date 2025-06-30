@@ -59,7 +59,7 @@ public final class Constants {
     public static final int XP_CAP = 10000;
     public static final int PLAYER_MAX_HP = 100;
     public static final int PLAYER_MAX_ST = 100;
-    public static final double PLAYER_SPEED = dScale(0.6);
+    public static final double PLAYER_SPEED = dScale(0.55);
     public static final double LAVA_PLAYER_SPEED = dScale(0.3);
     public static final double PLAYER_BOOST = dScale(0.65);
 
@@ -80,6 +80,8 @@ public final class Constants {
 
     public static final Color MINIMAP_WALKABLE = new Color(78, 105, 80);
     public static final Color MINIMAP_UNWALKABLE =  new Color(41, 59, 41);
+    public static final Color MINIMAP_HOVER =  new Color(255, 180, 40);
+    public static final Color MINIMAP_PINNED =  new Color(80, 200, 255);
 
     // Perks Constants
     public static final int XP_BONUS_AMOUNT = 15;
@@ -224,11 +226,11 @@ public final class Constants {
     public static final int POTION_OFFSET_Y = scale(2);
 
     public static final int SPIKE_WID = scale(32);
-    public static final int SPIKE_HEI = scale(35);
+    public static final int SPIKE_HEI = scale(36);
     public static final int SPIKE_HB_WID = scale(32);
-    public static final int SPIKE_HB_HEI = scale(15);
-    public static final int SPIKE_OFFSET_X = scale(0);
-    public static final int SPIKE_OFFSET_Y = scale(22);
+    public static final int SPIKE_HB_HEI = scale(18);
+    public static final int SPIKE_OFFSET_X = scale(20);
+    public static final int SPIKE_OFFSET_Y = scale(16);
 
     public static final int ARROW_TRAP_WID = scale(96);
     public static final int ARROW_TRAP_HEI = scale(32);
@@ -310,13 +312,6 @@ public final class Constants {
     public static final int BOARD_OFFSET_X = scale(5);
     public static final int BOARD_OFFSET_Y = scale(-5);
 
-    public static final int NPC_WID = scale(40);
-    public static final int NPC_HEI = scale(52);
-    public static final int NPC_HB_WID = scale(90);
-    public static final int NPC_HB_HEI = scale(50);
-    public static final int NPC_OFFSET_X = scale(-25);
-    public static final int NPC_OFFSET_Y = scale(-7);
-
     public static final int LAVA_WID = scale(32);
     public static final int LAVA_HEI = scale(32);
     public static final int LAVA_HB_WID = scale(32);
@@ -330,6 +325,13 @@ public final class Constants {
     public static final int BRICK_HB_HEI = scale(68);
     public static final int BRICK_OFFSET_X = scale(16);
     public static final int BRICK_OFFSET_Y = scale(32);
+
+    public static final int JUMP_PAD_WID = scale(64);
+    public static final int JUMP_PAD_HEI = scale(64);
+    public static final int JUMP_PAD_HB_WID = scale(28);
+    public static final int JUMP_PAD_HB_HEI = scale(20);
+    public static final int JUMP_PAD_OFFSET_X = scale(1);
+    public static final int JUMP_PAD_OFFSET_Y = scale(15);
 
     // Projectile Constants
     public static final int ARROW_WID = scale(32);
@@ -408,16 +410,21 @@ public final class Constants {
 
     // Effect Constants
     public static final double PARTICLE_SHIFT = 0.1;
+    public static final int DASH_BURST = 18;
+    public static final int LAND_DUST_BURST = 6;
+    public static final int JUMP_DUST_BURST = 4;
+    public static final int RUN_DUST_BURST = 1;
+    public static final Color DUST_COLOR = new Color(180, 160, 130);
+    public static final Color DUST_COLOR_DASH = new Color(220, 220, 255);
 
     public static final int PLAYER_LIGHT_RADIUS = scale(75);
     public static final int CANDLE_LIGHT_RADIUS = scale(100);
 
-    public static final double DUST1_WID = dScale(40);
-    public static final double DUST1_HEI = dScale(80);
-    public static final double DUST1_OFFSET_X = dScale(15);
-    public static final double DUST1_OFFSET_Y = dScale(10);
+    // Camera Constants
+    public static final double CAMERA_LERP_FACTOR_X = 0.08;
+    public static final double CAMERA_LERP_FACTOR_Y = 0.08;
 
-    private static int scale(double value) {
+    public static int scale(double value) {
         return (int)(value * SCALE);
     }
 

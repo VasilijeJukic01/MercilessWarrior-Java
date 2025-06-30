@@ -126,7 +126,11 @@ public abstract class Enemy extends Entity implements Debug<Graphics> {
         attackCheck = true;
     }
 
-    public abstract void hit(double damage, boolean special, boolean hitSound);
+    public boolean isAttacking() {
+        return entityState == Anim.ATTACK_1 || entityState == Anim.ATTACK_2 || entityState == Anim.ATTACK_3 || entityState == Anim.SPELL_3;
+    }
+
+    public abstract boolean hit(double damage, boolean special, boolean hitSound);
 
     public abstract void spellHit(double damage);
 

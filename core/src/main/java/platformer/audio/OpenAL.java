@@ -10,6 +10,7 @@ import platformer.audio.types.Song;
 import platformer.audio.types.Sound;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
+import platformer.utils.loading.LoadingProgressTracker;
 import platformer.utils.ValueEnum;
 import java.nio.ByteBuffer;
 
@@ -38,13 +39,35 @@ public class OpenAL implements AudioPlayer<Song, Sound, Ambience>  {
     private float sfxVolume = 0.2f;
     private boolean songMute, soundMute;
     private final Random rand = new Random();
+    private final LoadingProgressTracker progressTracker = LoadingProgressTracker.getInstance();
+
+    // Loading
+    private static final double INIT_PROGRESS = 0.1;
+    private static final double SONGS_PROGRESS = 0.4;
+    private static final double SOUNDS_PROGRESS = 0.3;
+    private static final double AMBIENCE_PROGRESS = 0.2;
 
     public OpenAL() {
+        progressTracker.updateStatus("Initializing audio system");
+        progressTracker.updateProgress(0.01);
+
         initAL();
+        progressTracker.updateProgress(INIT_PROGRESS);
+        progressTracker.updateStatus("Loading music");
+
         loadSongs();
+        progressTracker.updateProgress(INIT_PROGRESS + SONGS_PROGRESS);
+        progressTracker.updateStatus("Loading sound effects");
+
         loadSounds();
+        progressTracker.updateProgress(INIT_PROGRESS + SONGS_PROGRESS + SOUNDS_PROGRESS);
+        progressTracker.updateStatus("Loading ambient sounds");
+
         loadAmbiences();
         setListenerData();
+
+        progressTracker.updateProgress(INIT_PROGRESS + SONGS_PROGRESS + SOUNDS_PROGRESS + AMBIENCE_PROGRESS);
+        progressTracker.updateStatus("Audio loaded successfully!");
         Logger.getInstance().notify("Audio loaded successfully!", Message.INFORMATION);
     }
 
@@ -65,29 +88,49 @@ public class OpenAL implements AudioPlayer<Song, Sound, Ambience>  {
     }
 
     // Data
-    private void loadAudio(ValueEnum<String>[] audioArray, List<Integer> buffers, List<OpenALSource> sources) {
-        Arrays.stream(audioArray).forEach(audio -> {
+    private void loadAudio(ValueEnum<String>[] audioArray, List<Integer> buffers, List<OpenALSource> sources, double progressStart, double progressTotal) {
+        int totalFiles = audioArray.length;
+        double progressPerFile = progressTotal / totalFiles;
+        double currentProgress = progressStart;
+
+        for (ValueEnum<String> audio : audioArray) {
             String id = audio.getValue();
+
             buffers.add(loadBuffers("audio/" + id + ".wav"));
             sources.add(new OpenALSource());
-        });
+
+            try {
+                Thread.sleep(50);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+
+            currentProgress += progressPerFile;
+            progressTracker.updateProgress(currentProgress);
+
+            try {
+                Thread.sleep(25);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
     }
 
     private void loadSongs() {
         Song[] songArray = Song.values();
-        loadAudio(songArray, songs, songSources);
+        loadAudio(songArray, songs, songSources,  INIT_PROGRESS, SONGS_PROGRESS);
         updateSongVolume();
     }
 
     private void loadSounds() {
         Sound[] soundArray = Sound.values();
-        loadAudio(soundArray, sounds, soundSources);
+        loadAudio(soundArray, sounds, soundSources,  INIT_PROGRESS + SONGS_PROGRESS, SOUNDS_PROGRESS);
         updateSoundVolume();
     }
 
     private void loadAmbiences() {
         Ambience[] ambienceArray = Ambience.values();
-        loadAudio(ambienceArray, ambiences, ambienceSources);
+        loadAudio(ambienceArray, ambiences, ambienceSources, INIT_PROGRESS + SONGS_PROGRESS + SOUNDS_PROGRESS, AMBIENCE_PROGRESS);
     }
 
     // Core

@@ -4,16 +4,20 @@ import platformer.audio.Audio;
 import platformer.audio.types.Song;
 import platformer.core.Game;
 import platformer.state.GameState;
-import platformer.ui.AudioOptions;
 import platformer.ui.buttons.AbstractButton;
 import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.SmallButton;
+import platformer.ui.options.ControlsPanel;
+import platformer.ui.options.GameSettingsPanel;
 import platformer.utils.Utils;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+import java.util.List;
 
 import static platformer.constants.Constants.*;
 import static platformer.constants.FilePaths.*;
@@ -27,39 +31,50 @@ public class PauseOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
 
     private final Game game;
     private final GameState gameState;
-    private final AudioOptions audioOptions;
+    private final GameSettingsPanel settingsPanel;
+    private final ControlsPanel controlsPanel;
     private BufferedImage pauseText;
-    private BufferedImage SFXText, musicText, volumeText;
+
+    private int currentPage = 0;
+    private final Rectangle2D.Double[] tabs = new Rectangle2D.Double[4];
+
     private SmallButton continueBtn, retryBtn, exitBtn;
 
     public PauseOverlay(Game game, GameState gameState) {
         this.game = game;
         this.gameState = gameState;
-        this.audioOptions = game.getAudioOptions();
+        this.settingsPanel = new GameSettingsPanel(game);
+        this.controlsPanel = new ControlsPanel(this.getClass());
         loadImages();
         loadButtons();
     }
 
     private void loadImages() {
         this.pauseText = Utils.getInstance().importImage(PAUSE_TXT, PAUSE_TEXT_WID, PAUSE_TEXT_HEI);
-        this.SFXText = Utils.getInstance().importImage(SFX_TXT, SFX_TEXT_WID, SFX_TEXT_HEI);
-        this.musicText = Utils.getInstance().importImage(MUSIC_TXT, MUSIC_TEXT_WID, MUSIC_TEXT_HEI);
-        this.volumeText = Utils.getInstance().importImage(VOLUME_TXT, VOLUME_TEXT_WID, VOLUME_TEXT_HEI);
     }
 
     private void loadButtons() {
-        this.continueBtn = new SmallButton(CONTINUE_BTN_X, CONTINUE_BTN_Y, CRE_BTN_SIZE, CRE_BTN_SIZE, ButtonType.CONTINUE);
-        this.retryBtn = new SmallButton(RETRY_BTN_X, RETRY_BTN_Y, CRE_BTN_SIZE, CRE_BTN_SIZE, ButtonType.RETRY);
-        this.exitBtn = new SmallButton(EXIT_BTN_X, EXIT_BTN_Y, CRE_BTN_SIZE, CRE_BTN_SIZE, ButtonType.EXIT);
+        continueBtn = new SmallButton(CONTINUE_BTN_X, CONTINUE_BTN_Y, CRE_BTN_SIZE, CRE_BTN_SIZE, ButtonType.CONTINUE);
+        retryBtn = new SmallButton(RETRY_BTN_X, RETRY_BTN_Y, CRE_BTN_SIZE, CRE_BTN_SIZE, ButtonType.RETRY);
+        exitBtn = new SmallButton(EXIT_BTN_X, EXIT_BTN_Y, CRE_BTN_SIZE, CRE_BTN_SIZE, ButtonType.EXIT);
+        tabs[0] = new Rectangle2D.Double(scale(305), scale(135), TINY_BTN_WID, TINY_BTN_HEI);
+        tabs[1] = new Rectangle2D.Double(scale(365), scale(135), TINY_BTN_WID, TINY_BTN_HEI);
+        tabs[2] = new Rectangle2D.Double(scale(425), scale(135), TINY_BTN_WID, TINY_BTN_HEI);
+        tabs[3] = new Rectangle2D.Double(scale(485), scale(135), TINY_BTN_WID, TINY_BTN_HEI);
     }
 
-    // Core
     @Override
     public void update() {
-        continueBtn.update();
-        retryBtn.update();
-        exitBtn.update();
-        audioOptions.update();
+        switch (currentPage) {
+            case 0 -> {
+                continueBtn.update();
+                retryBtn.update();
+                exitBtn.update();
+            }
+            case 1 -> settingsPanel.updateAudio();
+            case 2 -> settingsPanel.updateGameplay();
+            case 3 -> controlsPanel.update();
+        }
     }
 
     @Override
@@ -67,87 +82,123 @@ public class PauseOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
         g.setColor(new Color(0, 0, 0, 150));
         g.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
         OverlayLayer.getInstance().renderOverlay(g);
-        renderTexts(g);
-        renderButtons(g);
+        renderPageTabs(g);
+
+        switch (currentPage) {
+            case 0 -> renderMenuPage(g);
+            case 1 -> settingsPanel.renderAudioPage(g);
+            case 2 -> settingsPanel.renderGameplayPage(g);
+            case 3 -> controlsPanel.render(g);
+        }
     }
 
-    private void renderTexts(Graphics g) {
+    private void renderPageTabs(Graphics g) {
+        g.setColor(Color.WHITE);
+        g.setFont(new Font("Arial", Font.BOLD, FONT_MEDIUM));
         g.drawImage(pauseText, PAUSE_TEXT_X, PAUSE_TEXT_Y, pauseText.getWidth(), pauseText.getHeight(), null);
-        g.drawImage(SFXText, SFX_TEXT_X, SFX_TEXT_Y, SFXText.getWidth(), SFXText.getHeight(), null);
-        g.drawImage(musicText, MUSIC_TEXT_X, MUSIC_TEXT_Y, musicText.getWidth(), musicText.getHeight(), null);
-        g.drawImage(volumeText, VOLUME_TEXT_X, VOLUME_TEXT_Y, volumeText.getWidth(), volumeText.getHeight(), null);
+        g.drawString("Menu", scale(318), scale(147));
+        g.drawString("Audio", scale(377), scale(147));
+        g.drawString("Gameplay", scale(425), scale(147));
+        g.drawString("Controls", scale(490), scale(147));
+
+        Graphics2D g2d = (Graphics2D) g;
+        g2d.setColor(TAB_COLOR);
+        g2d.setStroke(new BasicStroke(2));
+        Rectangle2D.Double activeTab = tabs[currentPage];
+        g2d.drawLine((int)activeTab.x, (int)(activeTab.y + activeTab.height), (int)(activeTab.x + activeTab.width), (int)(activeTab.y + activeTab.height));
+        g2d.setStroke(new BasicStroke(1));
     }
 
-    private void renderButtons(Graphics g) {
+    private void renderMenuPage(Graphics g) {
         continueBtn.render(g);
         retryBtn.render(g);
         exitBtn.render(g);
-        audioOptions.render(g);
-    }
-
-    @Override
-    public void reset() {
-
-    }
-
-    @Override
-    public void mouseDragged(MouseEvent e) {
-        audioOptions.mouseDragged(e);
-    }
-
-    @Override
-    public void mouseClicked(MouseEvent mouseEvent) {
-
     }
 
     @Override
     public void mousePressed(MouseEvent e) {
-        if (isMouseInButton(e, continueBtn)) continueBtn.setMousePressed(true);
-        else if (isMouseInButton(e, retryBtn)) retryBtn.setMousePressed(true);
-        else if (isMouseInButton(e, exitBtn)) exitBtn.setMousePressed(true);
-        else audioOptions.mousePressed(e);
+        for (int i = 0; i < tabs.length; i++) {
+            if (tabs[i].contains(e.getPoint())) {
+                currentPage = i;
+                return;
+            }
+        }
+        switch (currentPage) {
+            case 0 -> {
+                if (isMouseInButton(e, continueBtn)) continueBtn.setMousePressed(true);
+                else if (isMouseInButton(e, retryBtn)) retryBtn.setMousePressed(true);
+                else if (isMouseInButton(e, exitBtn)) exitBtn.setMousePressed(true);
+            }
+            case 1 -> settingsPanel.mousePressedAudio(e);
+            case 2 -> settingsPanel.mousePressedGameplay(e);
+            case 3 -> controlsPanel.mousePressed(e);
+        }
     }
 
     @Override
     public void mouseReleased(MouseEvent e) {
-        if(isMouseInButton(e, continueBtn) && continueBtn.isMousePressed()) {
+        switch (currentPage) {
+            case 0 -> handleMenuButtonRelease(e);
+            case 1 -> settingsPanel.mouseReleasedAudio(e);
+            case 2 -> settingsPanel.mouseReleasedGameplay(e);
+            case 3 -> controlsPanel.mouseReleased(e);
+        }
+        reset();
+    }
+
+    private void handleMenuButtonRelease(MouseEvent e) {
+        if (isMouseInButton(e, continueBtn) && continueBtn.isMousePressed()) {
             gameState.setOverlay(null);
         }
-        else if(isMouseInButton(e, retryBtn) && retryBtn.isMousePressed()) {
+        else if (isMouseInButton(e, retryBtn) && retryBtn.isMousePressed()) {
             game.reset();
             Audio.getInstance().getAudioPlayer().playSong(Song.FOREST_1);
         }
-        else if(isMouseInButton(e, exitBtn) && exitBtn.isMousePressed()) {
+        else if (isMouseInButton(e, exitBtn) && exitBtn.isMousePressed()) {
             gameState.setOverlay(null);
             game.startMenuState();
         }
-        else audioOptions.mouseReleased(e);
-        resetButtons();
     }
 
     @Override
     public void mouseMoved(MouseEvent e) {
-        continueBtn.setMouseOver(false);
-        retryBtn.setMouseOver(false);
-        exitBtn.setMouseOver(false);
-        if (isMouseInButton(e, continueBtn)) continueBtn.setMouseOver(true);
-        else if (isMouseInButton(e, retryBtn)) retryBtn.setMouseOver(true);
-        else if (isMouseInButton(e, exitBtn)) exitBtn.setMouseOver(true);
-        else audioOptions.mouseMoved(e);
+        List<AbstractButton> allButtons = new ArrayList<>();
+        allButtons.add(continueBtn);
+        allButtons.add(retryBtn);
+        allButtons.add(exitBtn);
+
+        allButtons.forEach(b -> b.setMouseOver(false));
+        allButtons.stream().filter(b -> isMouseInButton(e, b)).findFirst().ifPresent(b -> b.setMouseOver(true));
+
+        if (currentPage == 1) settingsPanel.mouseMovedAudio(e);
+        else if (currentPage == 2) settingsPanel.mouseMovedGameplay(e);
+        else if (currentPage == 3) controlsPanel.mouseMoved(e);
+    }
+
+    @Override
+    public void mouseDragged(MouseEvent e) {
+        if (currentPage == 1) settingsPanel.mouseDraggedAudio(e);
     }
 
     @Override
     public void keyPressed(KeyEvent e) {
+        if (currentPage == 3) controlsPanel.keyPressed(e);
+    }
 
+    @Override
+    public void reset() {
+        continueBtn.resetMouseSet();
+        retryBtn.resetMouseSet();
+        exitBtn.resetMouseSet();
+        settingsPanel.resetAudio();
+        settingsPanel.resetGameplay();
+        controlsPanel.reset();
     }
 
     private boolean isMouseInButton(MouseEvent e, AbstractButton abstractButton) {
         return abstractButton.getButtonHitBox().contains(e.getX(), e.getY());
     }
 
-    private void resetButtons() {
-        continueBtn.resetMouseSet();
-        retryBtn.resetMouseSet();
-        exitBtn.resetMouseSet();
-    }
+    @Override
+    public void mouseClicked(MouseEvent mouseEvent) {}
 }

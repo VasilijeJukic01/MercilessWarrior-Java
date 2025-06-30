@@ -42,14 +42,14 @@ public class Framework {
     }
 
     // Init
-    public void init(String cheats, String name, String password) {
-        this.launcherPrompt = new LauncherPrompt(name, password, cheats.equals("Yes"));
+    public void init(String cheats, String name, String password, String fullScreen) {
+        this.launcherPrompt = new LauncherPrompt(name, password, cheats.equals("Yes"), fullScreen.equals("Yes"));
         this.keyboardController = new KeyboardController();
         this.connector = new Connector(launcherPrompt);
         this.serializer = new GameSerializer();
         initAccount();
         initLeaderboard();
-        this.game = new Game();
+        initGame();
         this.saveController = new GameSaveController(game);
     }
 
@@ -61,6 +61,11 @@ public class Framework {
 
     private void initLeaderboard() {
         this.leaderboard = connector.loadLeaderboardData();
+    }
+
+    private void initGame() {
+        this.game = new Game();
+        if (launcherPrompt.isFullScreen()) this.game.toggleFullScreen();
     }
 
     // Save

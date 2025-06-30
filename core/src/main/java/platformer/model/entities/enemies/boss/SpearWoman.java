@@ -11,10 +11,13 @@ import platformer.model.entities.enemies.EnemyType;
 import platformer.model.entities.player.Player;
 import platformer.model.gameObjects.ObjectManager;
 import platformer.model.spells.SpellManager;
+import platformer.observer.Publisher;
+import platformer.observer.Subscriber;
 import platformer.ui.overlays.hud.BossInterface;
 import platformer.utils.Utils;
 
 import java.awt.*;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
@@ -23,9 +26,11 @@ import java.util.Objects;
 
 import static platformer.constants.Constants.*;
 
-public class SpearWoman extends Enemy {
+public class SpearWoman extends Enemy implements Publisher {
 
     private final BossAttackHandler handler;
+
+    private static final List<Subscriber> subscribers = new ArrayList<>();
 
     private int attackOffset;
     private Anim prevAnim = Anim.IDLE;
@@ -67,7 +72,7 @@ public class SpearWoman extends Enemy {
 
     // Hit
     @Override
-    public void hit(double damage, boolean block, boolean hitSound) {
+    public boolean hit(double damage, boolean block, boolean hitSound) {
         currentHealth -= damage;
         slashCount = 0;
         if (currentHealth <= 0) setEnemyAction(Anim.DEATH);
@@ -75,6 +80,7 @@ public class SpearWoman extends Enemy {
             if (entityState != Anim.IDLE) prevAnim = entityState;
             setEnemyAction(Anim.HIT);
         }
+        return true;
     }
 
     @Override
@@ -100,6 +106,7 @@ public class SpearWoman extends Enemy {
             case SPELL_3:
                 thunderSlamAction(player, spellManager); break;
             case SPELL_4:
+                notify("SPAWN_AURA", this);
                 multiLightningBallAction(objectManager, spellManager);
                 break;
             case DEATH:
@@ -177,7 +184,10 @@ public class SpearWoman extends Enemy {
     private void thunderSlamAction(Player player, SpellManager spellManager) {
         if (animIndex > 5 && animIndex < 16) checkPlayerHit(attackBox, player);
         if (animIndex == 11) Audio.getInstance().getAudioPlayer().playSound(Sound.SW_ROAR_2);
-        else if (animIndex == 13) spellManager.activateLightnings();
+        else if (animIndex == 13) {
+            spellManager.activateLightnings();
+            notify("SHAKE_SCREEN");
+        }
     }
 
     private void multiLightningBallAction(ObjectManager objectManager, SpellManager spellManager) {
@@ -188,6 +198,7 @@ public class SpearWoman extends Enemy {
     private void dashSlash(int[][] levelData) {
         if (animIndex == 0) attackCheck = false;
         if (animIndex == 2 && !attackCheck) {
+            Point2D.Double startPos = new Point2D.Double(hitBox.getCenterX(), hitBox.y);
             double xSpeed;
 
             if (direction == Direction.LEFT) xSpeed = -enemySpeed;
@@ -196,6 +207,9 @@ public class SpearWoman extends Enemy {
             if (Utils.getInstance().canMoveHere(hitBox.x + xSpeed * 80, hitBox.y, hitBox.width, hitBox.height, levelData))
                 if (Utils.getInstance().isFloor(hitBox, xSpeed * 80, levelData, direction))
                     hitBox.x += xSpeed * 80;
+
+            Point2D.Double endPos = new Point2D.Double(hitBox.getCenterX(), hitBox.y);
+            notify("DASH_SLASH", startPos, endPos, hitBox.height);
         }
     }
 
@@ -273,6 +287,7 @@ public class SpearWoman extends Enemy {
             multiShootCount = 0;
             canFlash = true;
         }
+        notify("CLEAR_AURA", this);
     }
 
 
@@ -365,6 +380,24 @@ public class SpearWoman extends Enemy {
     @Override
     public void attackBoxRenderer(Graphics g, int xLevelOffset, int yLevelOffset) {
         renderAttackBox(g, xLevelOffset, yLevelOffset);
+    }
+
+    // Observer
+    @Override
+    public void addSubscriber(Subscriber s) {
+        if (s != null && !subscribers.contains(s)) subscribers.add(s);
+    }
+
+    @Override
+    public void removeSubscriber(Subscriber s) {
+        subscribers.remove(s);
+    }
+
+    @Override
+    public <T> void notify(T... o) {
+        subscribers.forEach(s -> {
+            if (s != null) s.update(o);
+        });;
     }
 
     // Setters

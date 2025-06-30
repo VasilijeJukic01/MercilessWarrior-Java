@@ -7,6 +7,7 @@ import platformer.model.entities.Direction;
 import platformer.model.entities.player.Player;
 import platformer.utils.Utils;
 
+import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.util.List;
 import java.util.Random;
@@ -38,34 +39,35 @@ public class BossAttackHandler {
     }
 
     private void doTeleport(int[][] levelData, int k, double rightTeleport, double leftTeleport) {
+        double targetX = hitBox.x;
         if (k == 0 && Utils.getInstance().canMoveHere(rightTeleport, hitBox.y, hitBox.width, hitBox.height, levelData))
-            hitBox.x = rightTeleport;
+            targetX = rightTeleport;
         else if (k == 0 && Utils.getInstance().canMoveHere(leftTeleport, hitBox.y, hitBox.width, hitBox.height, levelData))
-            hitBox.x = leftTeleport;
+            targetX = leftTeleport;
         else if (k == 1 && Utils.getInstance().canMoveHere(leftTeleport, hitBox.y, hitBox.width, hitBox.height, levelData))
-            hitBox.x = leftTeleport;
+            targetX = leftTeleport;
         else if (k == 1 && Utils.getInstance().canMoveHere(rightTeleport, hitBox.y, hitBox.width, hitBox.height, levelData))
-            hitBox.x = rightTeleport;
+            targetX = rightTeleport;
+        performTeleport(targetX, hitBox.y);
     }
 
     // Attacks
     private void thunderSlamAttack() {
-        spearWoman.getHitBox().x = 12.5 * TILES_SIZE;
-        spearWoman.getHitBox().y = 4 * TILES_SIZE;
+        performTeleport(12.5 * TILES_SIZE, 4 * TILES_SIZE);
     }
 
     private void lightningBallAttack() {
         Random rand = new Random();
-        int dir = rand.nextInt(2);
-        if (dir == 0) {
+        double targetX;
+        if (rand.nextInt(2) == 0) {
             spearWoman.setDirection(Direction.LEFT);
-            hitBox.x = 23 * TILES_SIZE;
+            targetX = 23 * TILES_SIZE;
         }
         else {
             spearWoman.setDirection(Direction.RIGHT);
-            hitBox.x = 3 * TILES_SIZE;
+            targetX = 3 * TILES_SIZE;
         }
-        hitBox.y = spearWoman.getYPos();
+        performTeleport(targetX, spearWoman.getYPos());
     }
 
     private void dashSlashAttack(int[][] levelData, Player player) {
@@ -75,10 +77,8 @@ public class BossAttackHandler {
     }
 
     private int multiLightningBallAttack() {
-        Random rand = new Random();
-        hitBox.x = 12.5 * TILES_SIZE;
-        hitBox.y = 4 * TILES_SIZE;
-        return rand.nextInt(2);
+        performTeleport(12.5 * TILES_SIZE, 4 * TILES_SIZE);
+        return new Random().nextInt(2);
     }
 
     private void classicAttack(int[][] levelData, Player player) {
@@ -116,5 +116,11 @@ public class BossAttackHandler {
 
     }
 
+    private void performTeleport(double newX, double newY) {
+        spearWoman.notify("TELEPORT_OUT", new Point((int) hitBox.getCenterX(), (int) hitBox.getCenterY()));
+        hitBox.x = newX;
+        hitBox.y = newY;
+        spearWoman.notify("TELEPORT_IN", new Point((int) hitBox.getCenterX(), (int) hitBox.getCenterY()));
+    }
 
 }

@@ -36,10 +36,10 @@ public class Skeleton extends Enemy {
 
     // Attack
     @Override
-    public void hit(double damage, boolean enableBlock, boolean hitSound) {
+    public boolean hit(double damage, boolean enableBlock, boolean hitSound) {
         if (enableBlock) {
           blockAttack();
-          if (entityState == Anim.BLOCK) return;
+          if (entityState == Anim.BLOCK) return true;
         }
         currentHealth -= damage;
         if (hitSound) Audio.getInstance().getAudioPlayer().playHitSound();
@@ -50,6 +50,7 @@ public class Skeleton extends Enemy {
         pushOffsetDirection = Direction.UP;
         pushOffset = 0;
         enemySpeed = ENEMY_SPEED_SLOW;
+        return true;
     }
 
     @Override

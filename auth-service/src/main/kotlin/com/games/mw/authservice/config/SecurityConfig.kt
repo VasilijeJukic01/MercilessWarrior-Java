@@ -15,29 +15,29 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
-open class SecurityConfig(
+class SecurityConfig(
     private val jwtAuthenticationFilter: JwtAuthenticationFilter
 ) {
 
     @Bean
-    open fun passwordEncoder(): PasswordEncoder {
+    fun passwordEncoder(): PasswordEncoder {
         return BCryptPasswordEncoder()
     }
 
     @Bean
-    open fun authenticationManager(authenticationConfiguration: AuthenticationConfiguration): AuthenticationManager {
+    fun authenticationManager(authenticationConfiguration: AuthenticationConfiguration): AuthenticationManager {
         return authenticationConfiguration.authenticationManager
     }
 
     @Bean
-    open fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
+    fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
         http
             .csrf { csrf -> csrf.disable() }
             .authorizeHttpRequests { authorizeRequests ->
                 authorizeRequests
-                    .requestMatchers("/auth/account").hasAnyRole("ADMIN", "USER")
+                    .requestMatchers("/auth/register", "/auth/login").permitAll()
+                    .requestMatchers("/auth/account/**").hasAnyRole("ADMIN", "USER")
                     .requestMatchers("/auth/usernames").hasAnyRole("ADMIN", "USER")
-                    .requestMatchers("/auth/**").permitAll()
                     .anyRequest().authenticated()
             }
             .headers { headers ->

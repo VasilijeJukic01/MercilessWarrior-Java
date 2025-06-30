@@ -53,7 +53,7 @@ public class ObjectManager implements Publisher {
             Coin.class, Container.class, Potion.class, Spike.class,
             Shop.class, Blocker.class, Blacksmith.class, Dog.class,
             SaveTotem.class, SmashTrap.class, Candle.class, Loot.class,
-            Table.class, Board.class, Npc.class, Lava.class, Brick.class
+            Table.class, Board.class, Npc.class, Lava.class, Brick.class, JumpPad.class
     };
     Class<? extends GameObject>[] renderBelow = new Class[] {
             Container.class, Potion.class, Spike.class,
@@ -61,7 +61,7 @@ public class ObjectManager implements Publisher {
     };
     Class<? extends GameObject>[] renderAbove = new Class[] {
             SaveTotem.class, Shop.class, Blacksmith.class, Coin.class,
-            Table.class, Board.class
+            Table.class, Board.class, JumpPad.class
     };
     Class<? extends GameObject>[] renderBehind = new Class[] {
             Lava.class
@@ -102,6 +102,7 @@ public class ObjectManager implements Publisher {
         level.gatherData();
         this.objectsMap = level.getObjectsMap();
         this.projectiles.clear();
+        embedSubscribers();
     }
 
     // Intersection Handler
@@ -169,7 +170,30 @@ public class ObjectManager implements Publisher {
      * @param attackBox The attack box of the player.
      */
     public void checkObjectBreak(Rectangle2D.Double attackBox) {
-        objectBreakHandler.checkObjectBreak(attackBox, gameState.getSpellManager().getFlames(), this::notify);
+        objectBreakHandler.checkObjectBreak(attackBox, gameState.getSpellManager().getFlames());
+    }
+
+    /**
+     * Checks if an object is broken by an enemy attack.
+     *
+     * @param attackBox The attack box of the enemy.
+     */
+    public void checkObjectBreakByEnemy(Rectangle2D.Double attackBox) {
+        objectBreakHandler.checkObjectBreakByEnemy(attackBox);
+    }
+
+
+    /**
+     * Checks if an object is broken by a push action.
+     *
+     * @param hitBox The hitbox of the player or object that is pushing.
+     */
+    public void checkObjectBreakByPush(Rectangle2D.Double hitBox) {
+        List<Container> containers = getObjects(Container.class);
+        for (Container container : containers) {
+            if (container.isAlive() && !container.isAnimate() && hitBox.intersects(container.getHitBox()))
+                objectBreakHandler.breakContainerOnPush(container);
+        }
     }
 
     /**
@@ -412,6 +436,11 @@ public class ObjectManager implements Publisher {
         return intersection;
     }
 
+    // Observer
+    private void embedSubscribers() {
+        getObjects(Shop.class).forEach(shop -> shop.addSubscriber(gameState.getQuestManager()));
+    }
+
     @Override
     public void addSubscriber(Subscriber s) {
         this.subscribers.add(s);
@@ -427,6 +456,6 @@ public class ObjectManager implements Publisher {
         subscribers.stream()
                 .filter(s -> s instanceof QuestManager)
                 .findFirst()
-                .ifPresent(s -> s.update(o[0]));
+                .ifPresent(s -> s.update(o));
     }
 }

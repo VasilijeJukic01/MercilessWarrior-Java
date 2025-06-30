@@ -2,23 +2,24 @@ package platformer.launcher.controller;
 
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
-import platformer.AppCore;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
 import platformer.launcher.core.KeyboardConfigurator;
 import platformer.launcher.view.LauncherView;
+import platformer.launcher.view.LoadingView;
+import platformer.utils.loading.PathManager;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Map;
 
-import static platformer.constants.FilePaths.KEYBOARD_CONFIG_PATH;
 import static platformer.launcher.Config.SCALING_FACTOR;
 
 public class LaunchController implements EventHandler<ActionEvent> {
@@ -31,17 +32,20 @@ public class LaunchController implements EventHandler<ActionEvent> {
     private final PasswordField passwordField;
     private final RadioButton rbYes;
     private final ComboBox<String> cbResolution;
+    private final CheckBox cbFullScreen;
 
-    public LaunchController(LauncherView launcherView, TextField tfName, PasswordField passwordField, RadioButton rbYes, ComboBox<String> cbResolution) {
+    public LaunchController(LauncherView launcherView, TextField tfName, PasswordField passwordField, RadioButton rbYes, ComboBox<String> cbResolution, CheckBox cbFullScreen) {
         this.launcherView = launcherView;
         this.tfName = tfName;
         this.passwordField = passwordField;
         this.rbYes = rbYes;
         this.cbResolution = cbResolution;
+        this.cbFullScreen = cbFullScreen;
     }
 
     private void writeMapToFile(Map<String, KeyCode> map) {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(KEYBOARD_CONFIG_PATH))) {
+        String configPath = PathManager.getConfigPath();
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(configPath))) {
             for (Map.Entry<String, KeyCode> entry : map.entrySet()) {
                 writer.write(entry.getKey() + "=" + entry.getValue());
                 writer.newLine();
@@ -53,8 +57,6 @@ public class LaunchController implements EventHandler<ActionEvent> {
 
     @Override
     public void handle(ActionEvent event) {
-        String[] args = new String[3];
-
         Map<String, KeyCode> commandKeyMap = KeyboardConfigurator.getInstance().getCommandKeyMap();
         writeMapToFile(commandKeyMap);
 
@@ -71,10 +73,20 @@ public class LaunchController implements EventHandler<ActionEvent> {
             default: break;
         }
         SCALING_FACTOR = Float.parseFloat(scale);
-        args[0] = rbYes.isSelected() ? "Yes" : "No";
-        args[1] = tfName.getText();
-        args[2] = passwordField.getText();
+
+        // Get player config
+        String playerName = tfName.getText();
+        String password = passwordField.getText();
+
+        // Close the launcher
         launcherView.close();
-        AppCore.main(args);
+
+        LoadingView loadingView = new LoadingView(
+            playerName,
+            password,
+            rbYes.isSelected(),
+            cbFullScreen.isSelected()
+        );
+        loadingView.show();
     }
 }
