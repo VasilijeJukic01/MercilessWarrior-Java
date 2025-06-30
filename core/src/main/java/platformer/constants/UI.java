@@ -95,7 +95,8 @@ public final class UI {
     public static final int CONTROLS_TXT_Y = scale(85);
 
     public static final int CTRL_ROW_TXT_X = scale(320);
-    public static final int CTRL_ROW_TXT_Y = scale(165);
+    public static final int OPTIONS_CTRL_ROW_TXT_Y = scale(165);
+    public static final int PAUSE_CTRL_ROW_TXT_Y = scale(175);
     public static final int CTRL_TXT_Y_SPACING = scale(20);
 
     public static final int CONTROLS_BTN_PREV_X = scale(300);

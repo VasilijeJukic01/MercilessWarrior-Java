@@ -7,6 +7,7 @@ import platformer.state.GameState;
 import platformer.ui.buttons.AbstractButton;
 import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.SmallButton;
+import platformer.ui.options.ControlsPanel;
 import platformer.ui.options.GameSettingsPanel;
 import platformer.utils.Utils;
 
@@ -31,10 +32,11 @@ public class PauseOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
     private final Game game;
     private final GameState gameState;
     private final GameSettingsPanel settingsPanel;
+    private final ControlsPanel controlsPanel;
     private BufferedImage pauseText;
 
     private int currentPage = 0;
-    private final Rectangle2D.Double[] tabs = new Rectangle2D.Double[3];
+    private final Rectangle2D.Double[] tabs = new Rectangle2D.Double[4];
 
     private SmallButton continueBtn, retryBtn, exitBtn;
 
@@ -42,6 +44,7 @@ public class PauseOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
         this.game = game;
         this.gameState = gameState;
         this.settingsPanel = new GameSettingsPanel(game);
+        this.controlsPanel = new ControlsPanel(this.getClass());
         loadImages();
         loadButtons();
     }
@@ -54,9 +57,10 @@ public class PauseOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
         continueBtn = new SmallButton(CONTINUE_BTN_X, CONTINUE_BTN_Y, CRE_BTN_SIZE, CRE_BTN_SIZE, ButtonType.CONTINUE);
         retryBtn = new SmallButton(RETRY_BTN_X, RETRY_BTN_Y, CRE_BTN_SIZE, CRE_BTN_SIZE, ButtonType.RETRY);
         exitBtn = new SmallButton(EXIT_BTN_X, EXIT_BTN_Y, CRE_BTN_SIZE, CRE_BTN_SIZE, ButtonType.EXIT);
-        tabs[0] = new Rectangle2D.Double(scale(320), scale(135), TINY_BTN_WID, TINY_BTN_HEI);
-        tabs[1] = new Rectangle2D.Double(scale(400), scale(135), TINY_BTN_WID, TINY_BTN_HEI);
-        tabs[2] = new Rectangle2D.Double(scale(480), scale(135), TINY_BTN_WID, TINY_BTN_HEI);
+        tabs[0] = new Rectangle2D.Double(scale(305), scale(135), TINY_BTN_WID, TINY_BTN_HEI);
+        tabs[1] = new Rectangle2D.Double(scale(365), scale(135), TINY_BTN_WID, TINY_BTN_HEI);
+        tabs[2] = new Rectangle2D.Double(scale(425), scale(135), TINY_BTN_WID, TINY_BTN_HEI);
+        tabs[3] = new Rectangle2D.Double(scale(485), scale(135), TINY_BTN_WID, TINY_BTN_HEI);
     }
 
     @Override
@@ -69,6 +73,7 @@ public class PauseOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
             }
             case 1 -> settingsPanel.updateAudio();
             case 2 -> settingsPanel.updateGameplay();
+            case 3 -> controlsPanel.update();
         }
     }
 
@@ -83,6 +88,7 @@ public class PauseOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
             case 0 -> renderMenuPage(g);
             case 1 -> settingsPanel.renderAudioPage(g);
             case 2 -> settingsPanel.renderGameplayPage(g);
+            case 3 -> controlsPanel.render(g);
         }
     }
 
@@ -90,9 +96,10 @@ public class PauseOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
         g.setColor(Color.WHITE);
         g.setFont(new Font("Arial", Font.BOLD, FONT_MEDIUM));
         g.drawImage(pauseText, PAUSE_TEXT_X, PAUSE_TEXT_Y, pauseText.getWidth(), pauseText.getHeight(), null);
-        g.drawString("Menu", scale(333), scale(147));
-        g.drawString("Audio", scale(413), scale(147));
-        g.drawString("Gameplay", scale(480), scale(147));
+        g.drawString("Menu", scale(318), scale(147));
+        g.drawString("Audio", scale(377), scale(147));
+        g.drawString("Gameplay", scale(425), scale(147));
+        g.drawString("Controls", scale(490), scale(147));
 
         Graphics2D g2d = (Graphics2D) g;
         g2d.setColor(TAB_COLOR);
@@ -124,6 +131,7 @@ public class PauseOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
             }
             case 1 -> settingsPanel.mousePressedAudio(e);
             case 2 -> settingsPanel.mousePressedGameplay(e);
+            case 3 -> controlsPanel.mousePressed(e);
         }
     }
 
@@ -133,6 +141,7 @@ public class PauseOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
             case 0 -> handleMenuButtonRelease(e);
             case 1 -> settingsPanel.mouseReleasedAudio(e);
             case 2 -> settingsPanel.mouseReleasedGameplay(e);
+            case 3 -> controlsPanel.mouseReleased(e);
         }
         reset();
     }
@@ -162,7 +171,8 @@ public class PauseOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
         allButtons.stream().filter(b -> isMouseInButton(e, b)).findFirst().ifPresent(b -> b.setMouseOver(true));
 
         if (currentPage == 1) settingsPanel.mouseMovedAudio(e);
-        if (currentPage == 2) settingsPanel.mouseMovedGameplay(e);
+        else if (currentPage == 2) settingsPanel.mouseMovedGameplay(e);
+        else if (currentPage == 3) controlsPanel.mouseMoved(e);
     }
 
     @Override
@@ -172,7 +182,7 @@ public class PauseOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
 
     @Override
     public void keyPressed(KeyEvent e) {
-
+        if (currentPage == 3) controlsPanel.keyPressed(e);
     }
 
     @Override
@@ -182,6 +192,7 @@ public class PauseOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
         exitBtn.resetMouseSet();
         settingsPanel.resetAudio();
         settingsPanel.resetGameplay();
+        controlsPanel.reset();
     }
 
     private boolean isMouseInButton(MouseEvent e, AbstractButton abstractButton) {
