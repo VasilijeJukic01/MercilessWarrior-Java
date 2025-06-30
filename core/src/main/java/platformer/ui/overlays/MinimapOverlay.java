@@ -1,5 +1,6 @@
 package platformer.ui.overlays;
 
+import platformer.model.minimap.MinimapIcon;
 import platformer.state.GameState;
 import platformer.ui.overlays.render.MinimapRenderer;
 
@@ -39,8 +40,12 @@ public class MinimapOverlay implements Overlay<MouseEvent, KeyEvent, Graphics>, 
     public void mouseClicked(MouseEvent e) {
         if (e.getButton() == MouseEvent.BUTTON2) {
             if (overlay.contains(e.getPoint())) {
+                MinimapIcon foundIcon = findIconAtScreenPos(e.getX(), e.getY());
                 Point minimapCoords = screenToMinimap(e.getX(), e.getY());
-                gameState.getMinimapManager().pinLocation(minimapCoords);
+
+                if (isValid(gameState.getMinimapManager().getMinimap(), minimapCoords)) {
+                    gameState.getMinimapManager().handlePinRequest(minimapCoords, foundIcon);
+                }
             }
         }
     }
@@ -73,8 +78,12 @@ public class MinimapOverlay implements Overlay<MouseEvent, KeyEvent, Graphics>, 
     }
 
     @Override
-    public void mouseMoved(MouseEvent mouseEvent) {
-
+    public void mouseMoved(MouseEvent e) {
+        if (overlay.contains(e.getPoint())) {
+            MinimapIcon foundIcon = findIconAtScreenPos(e.getX(), e.getY());
+            gameState.getMinimapManager().setHoveredIcon(foundIcon);
+        }
+        else gameState.getMinimapManager().setHoveredIcon(null);
     }
 
     @Override
@@ -152,6 +161,36 @@ public class MinimapOverlay implements Overlay<MouseEvent, KeyEvent, Graphics>, 
         int minimapY = (int) ((screenY - mapY) / scaledPixelHeight);
 
         return new Point(minimapX, minimapY);
+    }
+
+    private MinimapIcon findIconAtScreenPos(int screenX, int screenY) {
+        BufferedImage map = gameState.getMinimapManager().getMinimap();
+        int mapX = MAP_OVERLAY_X + (int)(20 * SCALE) + offsetX;
+        int mapY = MAP_OVERLAY_Y + (int)(20 * SCALE) + offsetY;
+        int width = (int) ((MAP_OVERLAY_WID - (int)(40 * SCALE)) * zoomFactor);
+        int height = (int) ((MAP_OVERLAY_HEI - (int)(40 * SCALE)) * zoomFactor);
+
+        double scaledPixelWidth = (double) width / map.getWidth();
+        double scaledPixelHeight = (double) height / map.getHeight();
+
+        for (MinimapIcon icon : gameState.getMinimapManager().getIcons()) {
+            int iconWidth = (int) (2.5 * scaledPixelWidth);
+            int iconHeight = (int) (2.5 * scaledPixelHeight);
+            int iconX = mapX + (int) (icon.position().x * scaledPixelWidth) - iconWidth / 2;
+            int iconY = mapY + (int) (icon.position().y * scaledPixelHeight) - iconHeight / 2;
+
+            Rectangle iconBounds = new Rectangle(iconX, iconY, iconWidth, iconHeight);
+            if (iconBounds.contains(screenX, screenY)) return icon;
+        }
+        return null;
+    }
+
+    private boolean isValid(BufferedImage image, Point point) {
+        if (point.x >= 0 && point.y >= 0 && point.x < image.getWidth() && point.y < image.getHeight()) {
+            int rgb = image.getRGB(point.x, point.y);
+            return (rgb & 0xFFFFFF) == (MINIMAP_WALKABLE.getRGB() & 0xFFFFFF);
+        }
+        return false;
     }
 
     @Override

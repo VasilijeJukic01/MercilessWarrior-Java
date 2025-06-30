@@ -80,6 +80,8 @@ public final class Constants {
 
     public static final Color MINIMAP_WALKABLE = new Color(78, 105, 80);
     public static final Color MINIMAP_UNWALKABLE =  new Color(41, 59, 41);
+    public static final Color MINIMAP_HOVER =  new Color(255, 180, 40);
+    public static final Color MINIMAP_PINNED =  new Color(80, 200, 255);
 
     // Perks Constants
     public static final int XP_BONUS_AMOUNT = 15;
