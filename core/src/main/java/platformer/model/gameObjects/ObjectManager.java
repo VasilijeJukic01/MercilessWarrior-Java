@@ -174,6 +174,29 @@ public class ObjectManager implements Publisher {
     }
 
     /**
+     * Checks if an object is broken by an enemy attack.
+     *
+     * @param attackBox The attack box of the enemy.
+     */
+    public void checkObjectBreakByEnemy(Rectangle2D.Double attackBox) {
+        objectBreakHandler.checkObjectBreakByEnemy(attackBox);
+    }
+
+
+    /**
+     * Checks if an object is broken by a push action.
+     *
+     * @param hitBox The hitbox of the player or object that is pushing.
+     */
+    public void checkObjectBreakByPush(Rectangle2D.Double hitBox) {
+        List<Container> containers = getObjects(Container.class);
+        for (Container container : containers) {
+            if (container.isAlive() && !container.isAnimate() && hitBox.intersects(container.getHitBox()))
+                objectBreakHandler.breakContainerOnPush(container);
+        }
+    }
+
+    /**
      * Generates loot for a defeated enemy.
      *
      * @param e The enemy for which the loot is to be generated.

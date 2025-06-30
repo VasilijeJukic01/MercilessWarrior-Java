@@ -287,6 +287,19 @@ public class EnemyManager implements Publisher {
         }
     }
 
+    private void checkEnemyAttackObject(Enemy enemy) {
+        if (!enemy.isAttacking()) return;
+        boolean isAttackFrame = false;
+        int animIndex = enemy.getAnimIndex();
+
+        if (enemy instanceof Skeleton && animIndex == 3) isAttackFrame = true;
+        else if (enemy instanceof Ghoul && animIndex == 3) isAttackFrame = true;
+        else if (enemy instanceof Knight && animIndex == 4) isAttackFrame = true;
+        else if (enemy instanceof Wraith && animIndex == 3) isAttackFrame = true;
+
+        if (isAttackFrame) gameState.getObjectManager().checkObjectBreakByEnemy(enemy.getAttackBox());
+    }
+
     // Core
     /**
      * Updates the state of all enemies of a specific type in the game.
@@ -301,7 +314,10 @@ public class EnemyManager implements Publisher {
     private <T extends Enemy> void updateEnemies(Class<T> enemyType, BufferedImage[][] animations, int[][] levelData, Player player) {
         getEnemies(enemyType).stream()
                 .filter(Enemy::isAlive)
-                .forEach(enemy -> enemy.update(animations, levelData, player));
+                .forEach(enemy -> {
+                    enemy.update(animations, levelData, player);
+                    checkEnemyAttackObject(enemy);
+                });
     }
 
     public void update(int[][] levelData, Player player) {

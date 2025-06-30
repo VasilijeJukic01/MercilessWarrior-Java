@@ -68,6 +68,7 @@ public class GameState extends AbstractState implements State, Subscriber {
 
     // State
     private PlayingState state;
+    private boolean isRespawning;
 
     // Camera
     private double cameraX, cameraY;
@@ -415,7 +416,8 @@ public class GameState extends AbstractState implements State, Subscriber {
         objectManager.reset();
         spellManager.reset();
         overlayManager.reset();
-        minimapManager.reset();
+        if (!isRespawning) minimapManager.reset();
+        isRespawning = false;
     }
 
     private void levelReset() {
@@ -495,6 +497,10 @@ public class GameState extends AbstractState implements State, Subscriber {
 
     public BossInterface getBossInterface() {
         return bossInterface;
+    }
+
+    public void setRespawning(boolean respawning) {
+        isRespawning = respawning;
     }
 
     public void setOverlay(PlayingState newOverlay) {

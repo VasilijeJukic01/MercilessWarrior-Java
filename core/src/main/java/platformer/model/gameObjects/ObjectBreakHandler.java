@@ -44,6 +44,33 @@ public class ObjectBreakHandler {
     }
 
     /**
+     * Checks if an object should be broken by an enemy attack.
+     *
+     * @param attackBox The attack box of the enemy.
+     */
+    public void checkObjectBreakByEnemy(Rectangle2D.Double attackBox) {
+        for (Container container : getObjects(Container.class)) {
+            if (!container.isAlive() || container.animate) continue;
+
+            if (attackBox.intersects(container.getHitBox())) {
+                breakContainerByEnemy(container);
+            }
+        }
+    }
+
+    /**
+     * Breaks a container when the player is pushed into it.
+     *
+     * @param container The container that was pushed into.
+     */
+    public void breakContainerOnPush(Container container) {
+        container.setAnimate(true);
+        Audio.getInstance().getAudioPlayer().playCrateSound();
+        Logger.getInstance().notify("Player was pushed into a container, breaking it.", Message.INFORMATION);
+        generateCrateLoot(container);
+    }
+
+    /**
      * Checks if a projectile should break an object.
      *
      * @param projectiles The list of projectiles.
@@ -77,6 +104,14 @@ public class ObjectBreakHandler {
         objectManager.notify(QuestObjectiveType.COLLECT, ObjectiveTarget.CRATE);
         generateCrateLoot(container);
     }
+
+    private void breakContainerByEnemy(Container container) {
+        container.setAnimate(true);
+        Audio.getInstance().getAudioPlayer().playCrateSound();
+        Logger.getInstance().notify("Enemy breaks container.", Message.NOTIFICATION);
+        generateCrateLoot(container);
+    }
+
 
     private void breakBrick(Brick brick) {
         brick.setAnimate(true);

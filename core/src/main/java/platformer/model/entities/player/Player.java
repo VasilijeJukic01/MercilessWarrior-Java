@@ -228,15 +228,10 @@ public class Player extends Entity {
     private void setWallSlideAnimation() {
         entityState = Anim.WALL;
         wallSlideDustTick++;
-        if (wallSlideDustTick > 3) { // Increased spawn rate for a denser effect
+        if (wallSlideDustTick > 3) {
             wallSlideDustTick = 0;
-
-            // Spawn dust on the side that is touching the wall
             double dustX = (flipSign == 1) ? hitBox.x + hitBox.width : hitBox.x;
-
-            // Spawn particles randomly along the player's vertical hitbox
             double dustY = hitBox.y + (new Random().nextDouble() * hitBox.height);
-
             effectManager.spawnDustParticles(dustX, dustY, 1, DustType.WALL_SLIDE, flipSign, this);
         }
     }
@@ -439,6 +434,11 @@ public class Player extends Entity {
         if (onObject) removeAction(PlayerAction.WALL_PUSH);
     }
 
+    private void checkBreakablesOnPush() {
+        if (!checkAction(PlayerAction.HIT)) return;
+        objectManager.checkObjectBreakByPush(hitBox);
+    }
+
     // Actions
     public void doJump() {
         boolean left = checkAction(PlayerAction.LEFT);
@@ -446,13 +446,14 @@ public class Player extends Entity {
         boolean doubleJump = checkAction(PlayerAction.DOUBLE_JUMP);
         boolean onWall = checkAction(PlayerAction.ON_WALL);
 
+        if (!actionHandler.canJump(levelData, left, right, doubleJump)) return;
+
         if (onWall) {
             double dustX = (flipSign == 1) ? hitBox.x + hitBox.width : hitBox.x;
             double dustY = hitBox.y + hitBox.height / 2.0;
             effectManager.spawnDustParticles(dustX, dustY, 6, DustType.WALL_JUMP, flipSign, this);
         }
 
-        if (!actionHandler.canJump(levelData, left, right, doubleJump)) return;
         if (currentJumps == 1) {
             addAction(PlayerAction.DOUBLE_JUMP);
             animIndex = animTick = 0;
@@ -605,7 +606,9 @@ public class Player extends Entity {
         updateAttack();
         updateAnimation();
         updateStatus();
+        checkBreakablesOnPush();
 
+        // TODO: Isolate this somewhere
         if (checkAction(PlayerAction.MOVE) && !inAir) {
             runDustTick++;
             if (runDustTick >= 15) {
@@ -659,7 +662,7 @@ public class Player extends Entity {
     private void resetFlags() {
         inAir = false;
         removeActions(PlayerAction.DYING, PlayerAction.GAME_OVER);
-        removeActions(PlayerAction.HIT, PlayerAction.BLOCK, PlayerAction.ATTACK, PlayerAction.MOVE);
+        removeActions(PlayerAction.HIT, PlayerAction.BLOCK, PlayerAction.ATTACK, PlayerAction.MOVE, PlayerAction.DASH);
         removeActions(PlayerAction.LEFT, PlayerAction.RIGHT, PlayerAction.JUMP);
     }
 

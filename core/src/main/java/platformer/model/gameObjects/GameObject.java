@@ -99,6 +99,10 @@ public abstract class GameObject implements AdvancedRenderable<Graphics>, Debug<
         return alive;
     }
 
+    public boolean isAnimate() {
+        return animate;
+    }
+
     public int getXOffset() {
         return xOffset;
     }

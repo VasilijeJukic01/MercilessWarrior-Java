@@ -145,6 +145,10 @@ public abstract class Entity implements Debug<Graphics> {
         return hitBox;
     }
 
+    public Rectangle2D.Double getAttackBox() {
+        return attackBox;
+    }
+
     public int getFlipSign() {
         return flipSign;
     }
