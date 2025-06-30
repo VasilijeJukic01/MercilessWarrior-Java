@@ -35,7 +35,7 @@ public class Knight extends Enemy {
 
     // Attack
     @Override
-    public void hit(double damage, boolean enableBlock, boolean hitSound) {
+    public boolean hit(double damage, boolean enableBlock, boolean hitSound) {
         currentHealth -= damage;
         if (hitSound) Audio.getInstance().getAudioPlayer().playHitSound();
         if (currentHealth <= 0) {
@@ -43,6 +43,7 @@ public class Knight extends Enemy {
         }
         else setEnemyAction(Anim.HIT);
         enemySpeed = ENEMY_SPEED_SLOW;
+        return true;
     }
 
     @Override

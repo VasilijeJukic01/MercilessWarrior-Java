@@ -172,35 +172,56 @@ public class EnemyManager implements Publisher {
     }
 
     /**
-     * Handles the event of an enemy being hit by the player's attack.
+     * Handles hitting enemies within a specified attack box.
+     * This method implements a "cleave" mechanic, allowing a single swing to hit multiple enemies.
+     * To maintain game balance, damage falloff is applied:
+     * The first enemy hit takes full damage, and each subsequent enemy hit in the same swing takes progressively less damage.
+     * <p>
+     * The process is as follows:
+     * 1. Gathers all living enemies that intersect with the player's attack box.
+     * 2. Sorts the intersected enemies by their distance from the player to ensure a consistent and fair application of damage falloff.
+     * 3. Iterates through list, applying damage with a falloff multiplier (100%, 75%, 56%, etc.).
      *
-     * @param <T> The specific type of enemy that was hit. This type must extend from the Enemy class.
-     * @param attackBox The hitbox of the player's attack.
-     * @param player The Player object representing the player in the game.
-     * @param enemyClass The Class object representing the type of enemy that was hit.
+     * @param attackBox player's attack hitbox.
+     * @param player    entity who is performing the attack.
      */
-    private <T extends Enemy> void handleEnemyHit(Rectangle2D.Double attackBox, Player player, Class<T> enemyClass) {
-        double[] dmg = damage(player);
-        boolean isCritical = (dmg[1] == 1);
+    public boolean checkEnemyHit(Rectangle2D.Double attackBox, Player player) {
+        boolean contactMade = false;
 
-        for (T enemy : getEnemies(enemyClass)) {
-            if (enemy.isAlive() && enemy.getEnemyAction() != Anim.DEATH) {
-                if (attackBox.intersects(enemy.getHitBox())) {
-                    if (enemy.getEnemyAction() == Anim.HIDE || enemy.getEnemyAction() == Anim.REVEAL) return;
-
-                    Rectangle2D intersection = attackBox.createIntersection(enemy.getHitBox());
-                   spawnParticles((Rectangle2D.Double) intersection, player, enemy, isCritical);
-
-                    enemy.hit(dmg[0], true, true);
-                    enemy.setCriticalHit(dmg[1] == 1);
-                    player.changeStamina(new Random().nextInt(3) + 1);
-                    checkEnemyDying(enemy, player);
-                    writeHitLog(enemy.getEnemyAction(), dmg[0]);
-                    player.addAction(PlayerAction.DASH_HIT);
-                    return;
-                }
+        List<Enemy> intersectingEnemies = new ArrayList<>();
+        for (Enemy enemy : getAllEnemies()) {
+            if (enemy.isAlive() && enemy.getEnemyAction() != Anim.DEATH && attackBox.intersects(enemy.getHitBox())) {
+                if (enemy.getEnemyAction() == Anim.HIDE || enemy.getEnemyAction() == Anim.REVEAL) continue;
+                intersectingEnemies.add(enemy);
             }
         }
+        if (intersectingEnemies.isEmpty()) return false;
+
+        intersectingEnemies.sort(Comparator.comparingDouble(e -> e.getHitBox().getCenterX() - player.getHitBox().getCenterX()));
+
+        double damageModifier = 1.0;
+        for (Enemy enemy : intersectingEnemies) {
+            double[] dmg = damage(player);
+            double finalDamage = dmg[0] * damageModifier;
+            boolean isCritical = (dmg[1] == 1);
+
+            Rectangle2D intersection = attackBox.createIntersection(enemy.getHitBox());
+            spawnParticles((Rectangle2D.Double) intersection, player, enemy, isCritical);
+
+            if (enemy.hit(finalDamage, true, false)) {
+                contactMade = true;
+                if (enemy.getEnemyAction() != Anim.BLOCK) {
+                    if (damageModifier > 0.1) damageModifier *= 0.75;
+                    player.changeStamina(new Random().nextInt(3) + 1);
+                }
+            }
+
+            enemy.setCriticalHit(isCritical);
+            checkEnemyDying(enemy, player);
+            writeHitLog(enemy.getEnemyAction(), finalDamage);
+            player.addAction(PlayerAction.DASH_HIT);
+        }
+        return contactMade;
     }
 
     /**
@@ -220,17 +241,6 @@ public class EnemyManager implements Publisher {
         else if (enemy.getEnemyAction() != Anim.BLOCK) {
             gameState.getEffectManager().spawnDustParticles(box.getCenterX(), box.getCenterY(), 10, DustType.IMPACT_SPARK, player.getFlipSign(), null);
         }
-    }
-
-    public void checkEnemyHit(Rectangle2D.Double attackBox, Player player) {
-        handleEnemyHit(attackBox, player, Skeleton.class);
-        handleEnemyHit(attackBox, player, Ghoul.class);
-        handleEnemyHit(attackBox, player, Knight.class);
-        handleEnemyHit(attackBox, player, Wraith.class);
-        handleEnemyHit(attackBox, player, SpearWoman.class);
-        boolean dash = player.checkAction(PlayerAction.DASH);
-        boolean onWall = player.checkAction(PlayerAction.ON_WALL);
-        if (!dash && !onWall) Audio.getInstance().getAudioPlayer().playSlashSound();
     }
 
     private void writeHitLog(Anim anim, double dmg) {

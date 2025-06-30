@@ -72,7 +72,7 @@ public class SpearWoman extends Enemy implements Publisher {
 
     // Hit
     @Override
-    public void hit(double damage, boolean block, boolean hitSound) {
+    public boolean hit(double damage, boolean block, boolean hitSound) {
         currentHealth -= damage;
         slashCount = 0;
         if (currentHealth <= 0) setEnemyAction(Anim.DEATH);
@@ -80,6 +80,7 @@ public class SpearWoman extends Enemy implements Publisher {
             if (entityState != Anim.IDLE) prevAnim = entityState;
             setEnemyAction(Anim.HIT);
         }
+        return true;
     }
 
     @Override

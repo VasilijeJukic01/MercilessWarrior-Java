@@ -415,7 +415,9 @@ public class Player extends Entity {
 
         if (attackCheck || animIndex != 1 || dashHit) return;
         attackCheck = !dash;
-        enemyManager.checkEnemyHit(attackBox, this);
+        boolean contactMade = enemyManager.checkEnemyHit(attackBox, this);
+        if (contactMade) Audio.getInstance().getAudioPlayer().playHitSound();
+        else if (!dash) Audio.getInstance().getAudioPlayer().playSlashSound();
         objectManager.checkObjectBreak(attackBox);
         objectManager.checkProjectileDeflect(attackBox);
     }

@@ -38,10 +38,10 @@ public class Ghoul extends Enemy {
 
     // Attack
     @Override
-    public void hit(double damage, boolean enableRevive, boolean hitSound) {
+    public boolean hit(double damage, boolean enableRevive, boolean hitSound) {
         if (enableRevive) {
             hide();
-            if (entityState == Anim.HIDE) return;
+            if (entityState == Anim.HIDE) return false;
         }
         currentHealth -= damage;
         if (hitSound) Audio.getInstance().getAudioPlayer().playHitSound();
@@ -49,6 +49,7 @@ public class Ghoul extends Enemy {
             checkDeath();
         }
         else setEnemyAction(Anim.HIT);
+        return true;
     }
 
     @Override
