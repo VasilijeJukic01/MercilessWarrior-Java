@@ -13,13 +13,13 @@ import platformer.debug.logger.Message;
 import platformer.launcher.core.KeyboardConfigurator;
 import platformer.launcher.view.LauncherView;
 import platformer.launcher.view.LoadingView;
+import platformer.utils.loading.PathManager;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Map;
 
-import static platformer.constants.FilePaths.KEYBOARD_CONFIG_PATH;
 import static platformer.launcher.Config.SCALING_FACTOR;
 
 public class LaunchController implements EventHandler<ActionEvent> {
@@ -44,7 +44,8 @@ public class LaunchController implements EventHandler<ActionEvent> {
     }
 
     private void writeMapToFile(Map<String, KeyCode> map) {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(KEYBOARD_CONFIG_PATH))) {
+        String configPath = PathManager.getConfigPath();
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(configPath))) {
             for (Map.Entry<String, KeyCode> entry : map.entrySet()) {
                 writer.write(entry.getKey() + "=" + entry.getValue());
                 writer.newLine();

@@ -2,15 +2,12 @@ package platformer.controller;
 
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
+import platformer.utils.loading.PathManager;
 
 import java.awt.event.KeyEvent;
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
-
-import static platformer.constants.FilePaths.KEYBOARD_CONFIG_PATH;
 
 /**
  * KeyboardController class.
@@ -27,16 +24,29 @@ public class KeyboardController {
     }
 
     private void loadKeyConfig() {
-        try (BufferedReader reader = new BufferedReader(new FileReader(KEYBOARD_CONFIG_PATH))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                String[] parts = line.split("=");
-                if (parts.length == 2) {
-                    keyConfig.put(parts[0], getKeyCode(parts[1]));
-                }
+        File userConfigFile = new File(PathManager.getConfigPath());
+        if (userConfigFile.exists()) {
+            try (BufferedReader reader = new BufferedReader(new FileReader(userConfigFile))) {
+                loadConfigFromReader(reader);
+                return;
+            } catch (IOException e) {
+                Logger.getInstance().notify("Failed to load user keyboard config.", Message.WARNING);
             }
-        } catch (IOException e) {
-            Logger.getInstance().notify("Failed to load key config file: " + KEYBOARD_CONFIG_PATH, Message.ERROR);
+        }
+
+        try (InputStream is = getClass().getResourceAsStream("/keyboard.config");
+            BufferedReader reader = new BufferedReader(new InputStreamReader(is))) {
+            loadConfigFromReader(reader);
+        } catch (IOException | NullPointerException e) {
+            Logger.getInstance().notify("Failed to load default keyboard config.", Message.ERROR);
+        }
+    }
+
+    private void loadConfigFromReader(BufferedReader reader) throws IOException {
+        String line;
+        while ((line = reader.readLine()) != null) {
+            String[] parts = line.split("=");
+            if (parts.length == 2) keyConfig.put(parts[0].trim(), getKeyCode(parts[1].trim()));
         }
     }
 

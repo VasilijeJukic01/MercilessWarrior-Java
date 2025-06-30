@@ -10,9 +10,11 @@ import platformer.observer.Subscriber;
 import platformer.state.GameState;
 import platformer.ui.QuestSlot;
 
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.lang.reflect.Type;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -52,7 +54,8 @@ public class QuestManager implements Subscriber {
         gsonBuilder.registerTypeAdapter(ObjectiveTarget.class, new ObjectiveTargetDeserializer());
         Gson gson = gsonBuilder.create();
 
-        try (FileReader reader = new FileReader(filePath)) {
+        try (InputStream is = getClass().getResourceAsStream(filePath);
+            InputStreamReader reader = new InputStreamReader(is, StandardCharsets.UTF_8)) {
             Type questListType = new TypeToken<List<Quest>>() {}.getType();
             allQuests = gson.fromJson(reader, questListType);
             progressiveQuests = filterAndSortQuests(QuestType.PROGRESSIVE);

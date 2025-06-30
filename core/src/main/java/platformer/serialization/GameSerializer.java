@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder;
 import platformer.core.Account;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
+import platformer.utils.loading.PathManager;
 
 import java.io.File;
 import java.io.FileReader;
@@ -15,8 +16,6 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-
-import static platformer.constants.FilePaths.SAVE_PATH;
 
 /**
  * The GameSerializer class implements the Serializer interface for serializing and deserializing game data.
@@ -46,12 +45,14 @@ public class GameSerializer implements Serializer<Account, List<Account>> {
         account.setLastTimeSaved(date+" "+time);
         try {
             Gson gson = new Gson();
+            String savePath = PathManager.getSavesPath();
+
             String jsonCache = gson.toJson(account);
 
             String encryptedJson = encryptor.encrypt(jsonCache);
             if (encryptedJson == null) return;
 
-            try (FileWriter writer = new FileWriter(SAVE_PATH + "save" + index)) {
+            try (FileWriter writer = new FileWriter(savePath + File.separator + "save" + index)) {
                 writer.write(encryptedJson);
                 Logger.getInstance().notify("Game saved to slot " + index + ".", Message.NOTIFICATION);
             }
@@ -69,8 +70,9 @@ public class GameSerializer implements Serializer<Account, List<Account>> {
     @Override
     public List<Account> deserialize() {
         List<Account> savedFilesData = new ArrayList<>();
+        String savePath = PathManager.getSavesPath();
         for (String save : saves) {
-            String filePath = SAVE_PATH + save;
+            String filePath = savePath + File.separator + save;
             File file = new File(filePath);
 
             if (file.exists()) {
@@ -103,7 +105,8 @@ public class GameSerializer implements Serializer<Account, List<Account>> {
 
     @Override
     public void delete(int index) {
-        File file = new File(SAVE_PATH + "save" + index);
+        String savePath = PathManager.getSavesPath();
+        File file = new File(savePath + File.separator + "save" + index);
         if (file.delete()) {
             Logger.getInstance().notify("Game at slot " + index + " deleted.", Message.NOTIFICATION);
         }
