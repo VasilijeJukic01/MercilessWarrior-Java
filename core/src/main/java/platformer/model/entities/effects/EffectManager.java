@@ -5,6 +5,7 @@ import platformer.core.Settings;
 import platformer.model.entities.Entity;
 import platformer.model.entities.effects.particles.DustParticle;
 import platformer.model.entities.effects.particles.DustType;
+import platformer.ui.text.DamageNumber;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -18,6 +19,7 @@ public class EffectManager {
 
     private final List<DustParticle> foregroundParticles = new ArrayList<>();
     private final List<DustParticle> backgroundParticles = new ArrayList<>();
+    private final List<DamageNumber> damageNumbers = new ArrayList<>();
     private final Random rand = new Random();
 
     public void spawnDustParticles(double x, double y, int count, DustType type, int flipSign, Entity target) {
@@ -82,10 +84,16 @@ public class EffectManager {
                 .anyMatch(p -> p.getTarget() == target && (p.getType() == DustType.SW_CHANNELING_AURA || p.getType() == DustType.SW_AURA_PULSE || p.getType() == DustType.SW_AURA_CRACKLE));
     }
 
+    public void spawnDamageNumber(String text, double x, double y, Color color) {
+        if (!Framework.getInstance().getGame().getSettings().isShowDamageCounters()) return;
+        damageNumbers.add(new DamageNumber(text, x, y, color));
+    }
+
     // Core
     public void update() {
         updateParticleList(foregroundParticles);
         updateParticleList(backgroundParticles);
+        updateDamageNumbers();
     }
 
     private void updateParticleList(List<DustParticle> particles) {
@@ -99,8 +107,20 @@ public class EffectManager {
         } catch (Exception ignored) {}
     }
 
+    private void updateDamageNumbers() {
+        try {
+            Iterator<DamageNumber> iterator = damageNumbers.iterator();
+            while (iterator.hasNext()) {
+                DamageNumber dn = iterator.next();
+                dn.update();
+                if (!dn.isActive()) iterator.remove();
+            }
+        } catch (Exception ignored) {}
+    }
+
     public void renderForegroundEffects(Graphics g, int xLevelOffset, int yLevelOffset) {
         renderParticleList(g, xLevelOffset, yLevelOffset, foregroundParticles);
+        renderDamageNumbers(g, xLevelOffset, yLevelOffset);
     }
 
     public void renderBackgroundEffects(Graphics g, int xLevelOffset, int yLevelOffset) {
@@ -111,6 +131,14 @@ public class EffectManager {
         try {
             for (DustParticle particle : particles) {
                 particle.render(g, xLevelOffset, yLevelOffset);
+            }
+        } catch (Exception ignored) { }
+    }
+
+    private void renderDamageNumbers(Graphics g, int xLevelOffset, int yLevelOffset) {
+        try {
+            for (DamageNumber dn : damageNumbers) {
+                dn.render(g, xLevelOffset, yLevelOffset);
             }
         } catch (Exception ignored) { }
     }

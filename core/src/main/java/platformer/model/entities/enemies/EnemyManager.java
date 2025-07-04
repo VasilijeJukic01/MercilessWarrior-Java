@@ -2,7 +2,6 @@ package platformer.model.entities.enemies;
 
 import platformer.animation.Anim;
 import platformer.animation.Animation;
-import platformer.audio.Audio;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
 import platformer.model.entities.Direction;
@@ -48,6 +47,7 @@ public class EnemyManager implements Publisher {
 
     private Map<EnemyType, List<Enemy>> enemies = new HashMap<>();
     private final Map<Class<? extends Enemy>, EnemyRenderer<? extends Enemy>> enemyRenderers = new HashMap<>();
+    private final Map<Enemy, Integer> spellHitTimers = new HashMap<>();
 
     private final List<Subscriber> subscribers = new ArrayList<>();
 
@@ -211,6 +211,10 @@ public class EnemyManager implements Publisher {
             if (enemy.hit(finalDamage, true, false)) {
                 contactMade = true;
                 if (enemy.getEnemyAction() != Anim.BLOCK) {
+                    double displayDmg = Math.round(finalDamage * 10.0) / 10.0;
+                    String dmgText = String.valueOf(displayDmg);
+                    Color dmgColor = isCritical ? CRITICAL_COLOR : DAMAGE_COLOR;
+                    gameState.getEffectManager().spawnDamageNumber(dmgText, enemy.getHitBox().getCenterX(), enemy.getHitBox().y, dmgColor);
                     if (damageModifier > 0.1) damageModifier *= 0.75;
                     player.changeStamina(new Random().nextInt(3) + 1);
                 }
@@ -254,6 +258,11 @@ public class EnemyManager implements Publisher {
             if (enemy.isAlive() && enemy.getEnemyAction() != Anim.DEATH) {
                 if (flame.isActive() && flame.getHitBox().intersects(enemy.getHitBox())) {
                     enemy.spellHit(dmg);
+                    if (!spellHitTimers.containsKey(enemy) || spellHitTimers.get(enemy) == 0) {
+                        String dmgText = String.format("%.1f", dmg * SPELL_HIT_DISPLAY_COOLDOWN);
+                        gameState.getEffectManager().spawnDamageNumber(dmgText, enemy.getHitBox().getCenterX(), enemy.getHitBox().y, DAMAGE_COLOR);
+                        spellHitTimers.put(enemy, SPELL_HIT_DISPLAY_COOLDOWN);
+                    }
                     checkEnemyDying(enemy, gameState.getPlayer());
                     return;
                 }
@@ -331,6 +340,7 @@ public class EnemyManager implements Publisher {
     }
 
     public void update(int[][] levelData, Player player) {
+        updateSpellHitTimers();
         updateEnemies(Skeleton.class, skeletonAnimations, levelData, player);
         updateEnemies(Ghoul.class, ghoulAnimations, levelData, player);
         updateEnemies(Knight.class, knightAnimations, levelData, player);
@@ -339,6 +349,11 @@ public class EnemyManager implements Publisher {
         getEnemies(SpearWoman.class).stream()
                 .filter(SpearWoman::isAlive)
                 .forEach(spearWoman -> spearWoman.update(spearWomanAnimations, levelData, player, gameState.getSpellManager(), gameState.getObjectManager(), gameState.getBossInterface()));
+    }
+
+    private void updateSpellHitTimers() {
+        spellHitTimers.replaceAll((k, v) -> v > 0 ? v - 1 : 0);
+        spellHitTimers.keySet().removeIf(enemy -> !enemy.isAlive());
     }
 
     public void render(Graphics g, int xLevelOffset, int yLevelOffset) {
@@ -357,6 +372,7 @@ public class EnemyManager implements Publisher {
         enemies.values().stream()
                 .flatMap(List::stream)
                 .forEach(Enemy::reset);
+        spellHitTimers.clear();
     }
 
     public List<Enemy> getAllEnemies() {

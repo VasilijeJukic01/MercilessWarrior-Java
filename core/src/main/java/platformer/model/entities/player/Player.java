@@ -476,6 +476,10 @@ public class Player extends Entity {
             if (hit) return;
             else addAction(PlayerAction.HIT);
         }
+        else {
+            String healText = String.format("+%.1f", value);
+            effectManager.spawnDamageNumber(healText, getHitBox().getCenterX(), getHitBox().y, HEAL_COLOR);
+        }
         currentHealth += value;
         double healthCap = maxHealth + PerksBonus.getInstance().getBonusHealth();
         double equipmentBonus = InventoryBonus.getInstance().getHealth() * healthCap;
@@ -491,6 +495,8 @@ public class Player extends Entity {
             effectManager.spawnDustParticles(hitBox.getCenterX(), hitBox.getCenterY(), 15 + new Random().nextInt(6), DustType.PLAYER_HIT, flipSign, this);
             double defenseBonus = InventoryBonus.getInstance().getDefense() * value * (-1);
             value += defenseBonus;
+            String dmgText = String.format("%.1f", -value);
+            effectManager.spawnDamageNumber(dmgText, getHitBox().getCenterX(), getHitBox().y, DAMAGE_COLOR);
         }
         changeHealth(value);
         Rectangle2D.Double hBox = (o instanceof Enemy) ? (((Enemy) o).getHitBox()) : (((Projectile) o).getHitBox());
@@ -502,6 +508,10 @@ public class Player extends Entity {
     }
 
     private void changeHealthNoKnockback(double value) {
+        if (value < 0) {
+            String dmgText = String.format("%.1f", -value);
+            effectManager.spawnDamageNumber(dmgText, getHitBox().getCenterX(), getHitBox().y, DAMAGE_COLOR);
+        }
         currentHealth += value;
         double healthCap = maxHealth + PerksBonus.getInstance().getBonusHealth();
         double equipmentBonus = InventoryBonus.getInstance().getHealth() * healthCap;
@@ -510,6 +520,10 @@ public class Player extends Entity {
     }
 
     public void changeStamina(double value) {
+        if (value > 0) {
+            String staminaText = String.format("+%.1f", value);
+            effectManager.spawnDamageNumber(staminaText, getHitBox().getCenterX(), getHitBox().y, STAMINA_COLOR);
+        }
         currentStamina += value;
         double staminaCap = PLAYER_MAX_ST + PerksBonus.getInstance().getBonusPower();
         double equipmentBonus = InventoryBonus.getInstance().getStamina() * staminaCap;

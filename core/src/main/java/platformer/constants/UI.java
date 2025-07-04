@@ -242,6 +242,14 @@ public final class UI {
     public static final int SHAKE_STATUS_X = scale(452);
     public static final int SHAKE_STATUS_Y = scale(242);
 
+    public static final int DAMAGE_COUNTER_BTN_PREV_X = scale(390);
+    public static final int DAMAGE_COUNTER_BTN_NEXT_X = scale(510);
+    public static final int DAMAGE_COUNTER_BTN_Y = scale(275);
+    public static final int DAMAGE_COUNTER_TEXT_X = scale(290);
+    public static final int DAMAGE_COUNTER_TEXT_Y = scale(292);
+    public static final int DAMAGE_COUNTER_STATUS_X = scale(452);
+    public static final int DAMAGE_COUNTER_STATUS_Y = scale(292);
+
     public static final Color TAB_COLOR = new Color(144, 9, 97);
 
     // Game Over UI
