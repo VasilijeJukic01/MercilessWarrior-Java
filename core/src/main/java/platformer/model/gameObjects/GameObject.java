@@ -18,6 +18,10 @@ public abstract class GameObject implements AdvancedRenderable<Graphics>, Debug<
     protected int xOffset, yOffset;
     protected Rectangle2D.Double hitBox;
 
+    protected double rotation = 0.0;
+    protected double scaleX = 1.0;
+    protected double scaleY = 1.0;
+
     protected boolean animate;
     protected boolean alive = true;
     protected int animSpeed = 20;
@@ -131,4 +135,27 @@ public abstract class GameObject implements AdvancedRenderable<Graphics>, Debug<
         isOnGround = onGround;
     }
 
+    public double getRotation() {
+        return rotation;
+    }
+
+    public void setRotation(double rotation) {
+        this.rotation = rotation;
+    }
+
+    public double getScaleX() {
+        return scaleX;
+    }
+
+    public void setScaleX(double scaleX) {
+        this.scaleX = scaleX;
+    }
+
+    public double getScaleY() {
+        return scaleY;
+    }
+
+    public void setScaleY(double scaleY) {
+        this.scaleY = scaleY;
+    }
 }
