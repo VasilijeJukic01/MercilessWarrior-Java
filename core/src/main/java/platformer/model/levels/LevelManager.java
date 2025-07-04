@@ -37,11 +37,14 @@ public class LevelManager {
 
     private final GameState gameState;
     private final LevelObjectManager levelObjectManager;
+    private final BackgroundManager backgroundManager;
     private final Map<Point, ObjectMetadata> decorationMetadata;
 
     private BufferedImage[] levelSprite;
     private final Level[][] levels = new Level[MAX_LEVELS][MAX_LEVELS];
     private int levelIndexI = 0, levelIndexJ = 0;
+    private BufferedImage currentBackground;
+    private LevelMetadata currentLevelMetadata;
 
     // Particle Flyweight
     private final AmbientParticle[] ambientParticles;
@@ -50,6 +53,8 @@ public class LevelManager {
     public LevelManager(GameState gameState) {
         this.gameState = gameState;
         this.decorationMetadata = new HashMap<>();
+        this.backgroundManager = new BackgroundManager();
+        this.currentBackground = backgroundManager.getDefaultBackground();
         this.ambientParticleFactory = new AmbientParticleFactory();
         this.ambientParticles = loadParticles();
         this.levelObjectManager = new LevelObjectManager();
@@ -134,6 +139,7 @@ public class LevelManager {
         gameState.getSpellManager().initBossSpells();
         gameState.getMinimapManager().changeLevel();
         gameState.getPlayer().activateMinimap(true);
+        loadBackground();
     }
 
     public void loadNextLevel(int dI, int dJ) {
@@ -145,16 +151,27 @@ public class LevelManager {
         else loadLevel();
     }
 
+    private void loadBackground() {
+        if (currentLevelMetadata != null && currentLevelMetadata.getBackgroundId() != null) {
+            this.currentBackground = backgroundManager.getBackground(currentLevelMetadata.getBackgroundId());
+        }
+        else this.currentBackground = backgroundManager.getDefaultBackground();
+    }
+
     private void loadMetadata() {
         decorationMetadata.clear();
         String levelName = "level" + levelIndexI + levelIndexJ;
-        String jsonPath = "/images/levels/" + levelName + ".json";
+        String jsonPath = "/meta/" + levelName + ".json";
 
         try (InputStream is = getClass().getResourceAsStream(jsonPath)) {
-            if (is == null) return;
+            if (is == null) {
+                currentLevelMetadata = null;
+                return;
+            }
             try (InputStreamReader reader = new InputStreamReader(is, StandardCharsets.UTF_8)) {
                 Gson gson = new Gson();
                 LevelMetadata metadata = gson.fromJson(reader, LevelMetadata.class);
+                this.currentLevelMetadata = metadata;
                 if (metadata != null && metadata.getDecorations() != null) {
                     for (ObjectMetadata meta : metadata.getDecorations()) {
                         decorationMetadata.put(new Point(meta.getX(), meta.getY()), meta);
@@ -162,6 +179,7 @@ public class LevelManager {
                 }
             }
         } catch (Exception e) {
+            this.currentLevelMetadata = null;
             Logger.getInstance().notify("Could not load metadata for " + levelName + ": " + e.getMessage(), Message.ERROR);
         }
     }
@@ -292,5 +310,9 @@ public class LevelManager {
 
     public int getLevelIndexJ() {
         return levelIndexJ;
+    }
+
+    public BufferedImage getCurrentBackground() {
+        return currentBackground;
     }
 }

@@ -31,12 +31,10 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
-import java.awt.image.BufferedImage;
 import java.util.Arrays;
 import java.util.Random;
 
 import static platformer.constants.Constants.*;
-import static platformer.constants.FilePaths.BACKGROUND_1;
 
 /**
  * State of the game when the player is actively playing the game.
@@ -45,7 +43,6 @@ import static platformer.constants.FilePaths.BACKGROUND_1;
 public class GameState extends AbstractState implements State, Subscriber {
 
     private Player player;
-    private BufferedImage background;
 
     private final GameStateController gameStateController;
 
@@ -97,7 +94,6 @@ public class GameState extends AbstractState implements State, Subscriber {
 
     // Init
     private void init() {
-        this.background = Utils.getInstance().importImage(BACKGROUND_1, GAME_WIDTH, GAME_HEIGHT);
         this.bossInterface = new BossInterface();
         initManagers();
         initPlayer();
@@ -288,7 +284,7 @@ public class GameState extends AbstractState implements State, Subscriber {
             g2d.translate(shakeOffsetX, shakeOffsetY);
         }
 
-        g.drawImage(background, 0, 0, null);
+        g.drawImage(levelManager.getCurrentBackground(), 0, 0, null);
         this.levelManager.render(g, xLevelOffset, yLevelOffset);
         this.objectManager.render(g, xLevelOffset, yLevelOffset);
         this.lightManager.render(g, xLevelOffset, yLevelOffset);

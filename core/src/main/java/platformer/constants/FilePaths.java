@@ -17,10 +17,14 @@ public final class FilePaths {
     // Levels
     public static final String LEVEL_SPRITES = "/images/levels/level$.png";
     public static final String LEVEL_OBJECT_SPRITES = "/images/levels/levelObjects/$.png";
-    public static final String BACKGROUND_1 = "/images/background1.png";
     public static final String FOREST_SPRITE = "/images/levels/mossyTiles.png";
     public static final String MINIMAP = "/images/levels/minimap.png";
     public static final String MINIMAP_ICONS = "/images/levels/mapIcons.png";
+
+    public static final String FOREST_BG_1 = "/images/levels/backgrounds/forest1.png";
+    public static final String FOREST_BG_2 = "/images/levels/backgrounds/forest2.png";
+    public static final String FOREST_BG_3 = "/images/levels/backgrounds/forest3.png";
+    public static final String FOREST_BG_4 = "/images/levels/backgrounds/forest4.png";
 
     // Enemy
     public static final String SKELETON_SHEET = "/images/enemies/SkeletonSprite.png";
