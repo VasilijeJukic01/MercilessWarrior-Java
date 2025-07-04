@@ -15,6 +15,8 @@ import java.awt.geom.Rectangle2D;
 import java.util.List;
 import java.util.Random;
 
+import static platformer.constants.Constants.SCALE;
+
 /**
  * Class that handles breaking of objects.
  */
@@ -151,9 +153,12 @@ public class ObjectBreakHandler {
         Random rand = new Random();
         int n = rand.nextInt(7 + PerksBonus.getInstance().getBonusCoin());
         for (int i = 0; i < n; i++) {
-            int x = rand.nextInt((int)location.width)+(int)location.x;
-            int y = rand.nextInt((int)(location.height/3)) + (int)location.y + 2*(int)location.height/3;
-            Coin coin = new Coin(ObjType.COIN, x, y);
+            int x = (int)location.getCenterX();
+            int y = (int)location.y;
+            double initialYSpeed = -2.2 * SCALE - (rand.nextDouble() * 1.5 * SCALE);
+            double initialXSpeed = (rand.nextDouble() - 0.5) * (2.5 * SCALE);
+
+            Coin coin = new Coin(ObjType.COIN, x, y, initialXSpeed, initialYSpeed);
             objectManager.addGameObject(coin);
         }
     }

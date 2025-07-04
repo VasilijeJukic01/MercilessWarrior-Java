@@ -275,8 +275,8 @@ public class ObjectManager implements Publisher {
     }
 
     // Core
-    private <T extends GameObject> void updateObjects(Class<T> objectClass) {
-        getObjects(objectClass).forEach(GameObject::update);
+    private <T extends GameObject> void updateObjects(Class<T> objectClass, int[][] lvlData) {
+        getObjects(objectClass).forEach(obj -> obj.update(lvlData));
     }
 
     private <T extends GameObject> void renderObjects(Graphics g, int xLevelOffset, int yLevelOffset, Class<T> objectType) {
@@ -289,7 +289,7 @@ public class ObjectManager implements Publisher {
     }
 
     public void update(int[][] lvlData, Player player) {
-        Arrays.stream(updateClasses).forEach(this::updateObjects);
+        Arrays.stream(updateClasses).forEach(clazz -> updateObjects(clazz, lvlData));
         updateArrowLaunchers(lvlData, player);
         checkEnemyIntersection();
         collisionHandler.updateObjectInAir();

@@ -51,6 +51,16 @@ public abstract class GameObject implements AdvancedRenderable<Graphics>, Debug<
 
     public abstract void update();
 
+    /**
+     * Update method that can be overridden to include level data.
+     * By default, it calls the parameterless update method.
+     *
+     * @param levelData The level data to update the game object with.
+     */
+    public void update(int[][] levelData) {
+        update();
+    }
+
     @Override
     public abstract void render(Graphics g, int xLevelOffset, int yLevelOffset, BufferedImage[] animations);
 
