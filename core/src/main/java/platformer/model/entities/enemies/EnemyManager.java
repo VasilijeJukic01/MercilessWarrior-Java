@@ -295,6 +295,7 @@ public class EnemyManager implements Publisher {
                 Direction projectileDirection = projectile.getDirection();
                 skeleton.setPushDirection(projectileDirection == Direction.LEFT ? Direction.RIGHT : Direction.LEFT);
                 projectile.setAlive(false);
+                checkEnemyDying(skeleton, gameState.getPlayer());
             }
         }
         for (SpearWoman spearWoman : getEnemies(SpearWoman.class)) {
@@ -302,6 +303,7 @@ public class EnemyManager implements Publisher {
                 if (!projectile.getHitBox().intersects(spearWoman.getHitBox())) continue;
                 spearWoman.hit(FIREBALL_PROJECTILE_DMG, false, false);
                 projectile.setAlive(false);
+                checkEnemyDying(spearWoman, gameState.getPlayer());
             }
         }
     }

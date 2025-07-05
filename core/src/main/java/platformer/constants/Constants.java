@@ -241,7 +241,7 @@ public final class Constants {
     public static final int COIN_HEI = scale(15);
     public static final int COIN_HB_SIZE = scale(10);
     public static final int COIN_OFFSET = scale(3);
-    public static final double COIN_GRAVITY = 0.035 * SCALE;
+    public static final double COIN_GRAVITY = dScale(0.035);
 
     public static final int SHOP_WID = scale(154);
     public static final int SHOP_HEI = scale(132);
