@@ -103,6 +103,9 @@ public class EffectManager {
                     yOffset = target.getHitBox().height * 0.5;
                     size = (int) ((rand.nextInt(6) + 3) * SCALE);
                     break;
+                case THUNDERBOLT_AURA:
+                    size = (int)((new Random().nextInt(2) + 2) * SCALE);
+                    break;
             }
             DustParticle particle = new DustParticle((int) x, (int) (y + yOffset), size, type, flipSign, target);
 

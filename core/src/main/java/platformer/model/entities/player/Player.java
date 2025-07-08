@@ -18,6 +18,7 @@ import platformer.model.gameObjects.ObjectManager;
 import platformer.model.gameObjects.projectiles.Projectile;
 import platformer.model.inventory.Inventory;
 import platformer.model.inventory.InventoryBonus;
+import platformer.model.inventory.ItemRarity;
 import platformer.model.minimap.MinimapManager;
 import platformer.model.perks.PerksBonus;
 import platformer.utils.Utils;
@@ -25,6 +26,7 @@ import platformer.utils.Utils;
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Random;
@@ -72,6 +74,7 @@ public class Player extends Entity {
     // Effect
     private int runDustTick = 0;
     private int wallSlideDustTick = 0;
+    private int mythicAuraTick = 0;
 
 
     public Player(int xPos, int yPos, int width, int height, EnemyManager enemyManager, ObjectManager objectManager, MinimapManager minimapManager, EffectManager effectManager) {
@@ -614,6 +617,7 @@ public class Player extends Entity {
             updateDeath();
             return;
         }
+        updateMythicAura();
         updateAttackBox();
         setAnimation();
         updateHitBlockMove();
@@ -634,6 +638,21 @@ public class Player extends Entity {
             }
         }
         else runDustTick = 0;
+    }
+
+    private void updateMythicAura() {
+        boolean hasMythic = Arrays.stream(inventory.getEquipped())
+                .anyMatch(item -> item != null && item.getItemType().getRarity() == ItemRarity.MYTHIC);
+
+        if (!hasMythic) return;
+
+        mythicAuraTick++;
+        if (mythicAuraTick >= 5) {
+            mythicAuraTick = 0;
+            double x = getHitBox().getCenterX();
+            double y = getHitBox().getCenterY();
+            effectManager.spawnDustParticles(x, y, 1, DustType.THUNDERBOLT_AURA, flipSign, this);
+        }
     }
 
     public void render(Graphics g, int xLevelOffset, int yLevelOffset) {
