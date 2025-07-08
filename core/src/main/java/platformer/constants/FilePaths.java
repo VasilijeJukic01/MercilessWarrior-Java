@@ -72,6 +72,7 @@ public final class FilePaths {
 
     // Effects
     public static final String PARTICLE_SHEET = "/images/particles/ParticleSprite.png";
+    public static final String SMOKE_SHEET = "/images/particles/Smoke.png";
 
     // Buttons
     public static final String BTN_BUY_SHEET = "/images/buttons/BuyButton.png";

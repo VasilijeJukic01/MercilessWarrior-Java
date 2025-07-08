@@ -8,7 +8,6 @@ import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
 import platformer.model.entities.effects.EffectManager;
 import platformer.model.entities.effects.lighting.LightManager;
-import platformer.model.entities.effects.particles.AmbientParticle;
 import platformer.model.entities.enemies.EnemyManager;
 import platformer.model.entities.player.Player;
 import platformer.model.entities.player.PlayerAction;
@@ -31,7 +30,6 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
-import java.util.Arrays;
 import java.util.Random;
 
 import static platformer.constants.Constants.*;
@@ -285,6 +283,7 @@ public class GameState extends AbstractState implements State, Subscriber {
         }
 
         g.drawImage(levelManager.getCurrentBackground(), 0, 0, null);
+        effectManager.renderAmbientEffects(g);
         this.levelManager.render(g, xLevelOffset, yLevelOffset);
         this.objectManager.render(g, xLevelOffset, yLevelOffset);
         this.lightManager.render(g, xLevelOffset, yLevelOffset);
@@ -318,7 +317,6 @@ public class GameState extends AbstractState implements State, Subscriber {
     private void handleGameState() {
         try {
             checkLevelExit();
-            updateParticles();
             updateManagers();
         }
         catch (Exception ignored) {}
@@ -338,10 +336,6 @@ public class GameState extends AbstractState implements State, Subscriber {
         boolean gameOver = player.checkAction(PlayerAction.GAME_OVER);
         if (dying) setOverlay(PlayingState.DYING);
         if (gameOver) setOverlay(PlayingState.GAME_OVER);
-    }
-
-    private void updateParticles() {
-        Arrays.stream(levelManager.getParticles()).forEach(AmbientParticle::update);
     }
 
     private void updateManagers() {

@@ -1,12 +1,8 @@
 package platformer.model.levels;
 
 import com.google.gson.Gson;
-import platformer.animation.Animation;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
-import platformer.model.entities.effects.particles.AmbientParticle;
-import platformer.model.entities.effects.particles.AmbientParticleFactory;
-import platformer.model.entities.effects.particles.AmbientParticleType;
 import platformer.model.levels.metadata.LevelMetadata;
 import platformer.model.levels.metadata.ObjectMetadata;
 import platformer.state.GameState;
@@ -17,10 +13,8 @@ import java.awt.image.BufferedImage;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
 
 import static platformer.constants.AnimConstants.*;
 import static platformer.constants.Constants.*;
@@ -46,17 +40,11 @@ public class LevelManager {
     private BufferedImage currentBackground;
     private LevelMetadata currentLevelMetadata;
 
-    // Particle Flyweight
-    private final AmbientParticle[] ambientParticles;
-    private final AmbientParticleFactory ambientParticleFactory;
-
     public LevelManager(GameState gameState) {
         this.gameState = gameState;
         this.decorationMetadata = new HashMap<>();
         this.backgroundManager = new BackgroundManager();
         this.currentBackground = backgroundManager.getDefaultBackground();
-        this.ambientParticleFactory = new AmbientParticleFactory();
-        this.ambientParticles = loadParticles();
         this.levelObjectManager = new LevelObjectManager();
         loadForestSprite();
         buildLevels();
@@ -106,27 +94,6 @@ public class LevelManager {
             }
         }
         return levels;
-    }
-
-    /**
-     * This method creates and initializes the particles used in the game.
-     * It uses the Flyweight pattern to manage the particles, which helps to save memory.
-     * The ParticleFactory is used to create and manage the Particle objects.
-     * @return An array of Particle objects.
-     */
-    private AmbientParticle[] loadParticles() {
-        AmbientParticle[] ambientParticles = new AmbientParticle[PARTICLES_CAP];
-        Random rand = new Random();
-        for (int i = 0; i < ambientParticles.length; i++) {
-            int xPos = rand.nextInt(GAME_WIDTH-10) + 10;
-            int yPos = rand.nextInt(GAME_HEIGHT-10) + 10;
-            int size = (int)((rand.nextInt(15-5) + 5) * SCALE);
-            String key = "DefaultParticle";
-            BufferedImage[] images = Animation.getInstance().loadFromSprite(PARTICLE_SHEET, DEFAULT_PARTICLE_FRAMES, 0, size, size, 0, PARTICLE_W, PARTICLE_H);
-            AmbientParticleType ambientParticleType = ambientParticleFactory.getParticleImage(key, images);
-            ambientParticles[i] = new AmbientParticle(ambientParticleType, size, xPos, yPos);
-        }
-        return ambientParticles;
     }
 
     // Level flow
@@ -241,10 +208,6 @@ public class LevelManager {
         }
     }
 
-    private void renderParticles(Graphics g) {
-        Arrays.stream(ambientParticles).forEach(p -> p.render(g));
-    }
-
     /**
      * This method is responsible for rendering the game level.
      * It renders the decorations, terrain, and particles of the level.
@@ -273,7 +236,6 @@ public class LevelManager {
         renderTerrain(g, xLevelOffset, yLevelOffset, true);       // Terrain behind layer
         renderDeco(g, xLevelOffset, yLevelOffset, 4);              // Fourth deco layer
         renderTerrain(g, xLevelOffset, yLevelOffset, false);      // Terrain normal layer
-        renderParticles(g);
     }
 
     public Level getCurrentLevel() {
@@ -300,10 +262,6 @@ public class LevelManager {
     }
 
     // Getters
-    public AmbientParticle[] getParticles() {
-        return ambientParticles;
-    }
-
     public int getLevelIndexI() {
         return levelIndexI;
     }

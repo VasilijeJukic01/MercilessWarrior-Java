@@ -57,6 +57,7 @@ public final class AnimConstants {
     public static final int FIREBALL_W = 26, FIREBALL_H = 26;
 
     public static final int PARTICLE_W = 181, PARTICLE_H = 181;
+    public static final int SMOKE_W = 713, SMOKE_H = 300;
 
     public static final int BTN_W = 700, BTN_H = 230;
     public static final int SMALL_BTN_W = 150, SMALL_BTN_H = 158;
