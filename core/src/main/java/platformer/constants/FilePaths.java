@@ -119,6 +119,8 @@ public final class FilePaths {
     public static final String WHITE_RADIAL_GLOW = "/images/particles/whiteRadialGlow.png";
 
     // Inventory / Shop
+    public static final String RECIPES_PATH = "/items/recipes.json";
+
     public static final String HEALTH_ITEM = "/images/inventory/HealthItem.png";
     public static final String STAMINA_ITEM = "/images/inventory/StaminaItem.png";
     public static final String IRON_ORE_ITEM = "/images/inventory/IronOre.png";

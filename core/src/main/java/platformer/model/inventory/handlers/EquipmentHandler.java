@@ -5,6 +5,7 @@ import platformer.model.inventory.InventoryItem;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Handles the equipment in the inventory system.
@@ -47,41 +48,58 @@ public class EquipmentHandler {
     public void equipItem(BackpackHandler backpackHandler, int index) {
         List<InventoryItem> backpack = backpackHandler.getBackpack();
         if (index >= backpack.size()) return;
-        if (!backpack.get(index).getItemType().canEquip()) return;
-        addToEquipment(backpack.get(index), equipment);
-        bonusHandler.applyBonus(backpack.get(index).getItemType());
-        backpackHandler.dropItem(index);
+        InventoryItem itemToEquip = backpack.get(index);
+        if (!itemToEquip.getItemType().canEquip()) return;
+
+        Optional<Integer> slotIndexOptional = getSlotIndexForItem(itemToEquip);
+        if (slotIndexOptional.isEmpty()) return;
+        int slotIndex = slotIndexOptional.get();
+
+        // If slot is already occupied, we should unequip the existing item
+        if (equipped[slotIndex] != null) {
+            unequipItem(slotIndex, backpackHandler, false);
+        }
+
+        equipped[slotIndex] = itemToEquip;
+        bonusHandler.applyBonus(itemToEquip.getItemType());
+        backpackHandler.dropItem(index, true);
+    }
+
+    public void unequipItem(int index, BackpackHandler backpackHandler) {
+        unequipItem(index, backpackHandler, true);
     }
 
     /**
-     * Unequips an item from the equipment and adds it back to the backpack.
-     * The bonus associated with the item type is also removed.
+     * Unequips an item from the equipment.
+     * The item is removed from the equipment and added back to the backpack.
+     * If dropFromBackpack is true, the item is dropped from the backpack.
      *
      * @param index The index of the item in the equipment to be unequipped.
-     * @param backpack The BackpackHandler instance used to manage backpack-related operations.
+     * @param backpackHandler The BackpackHandler instance used to manage backpack-related operations.
+     * @param dropFromBackpack Whether to drop the item from the backpack or not.
      */
-    public void unequipItem(int index, BackpackHandler backpack) {
-        if (index >= equipped.length) return;
-        if (equipped[index] == null) return;
-        bonusHandler.removeBonus(equipped[index].getItemType());
-        equipped[index].addAmount(1);
-        backpack.addItemAmountToBackpack(equipped[index], 1);
+    private void unequipItem(int index, BackpackHandler backpackHandler, boolean dropFromBackpack) {
+        if (index >= equipped.length || equipped[index] == null) return;
+
+        InventoryItem itemToUnequip = equipped[index];
+        bonusHandler.removeBonus(itemToUnequip.getItemType());
+        backpackHandler.addItemAmountToBackpack(itemToUnequip, 1);
         equipped[index] = null;
     }
 
     /**
-     * Adds an item to the equipment.
-     * The item is added to the slot that matches its type.
+     * Retrieves the index of the equipment slot for a given item.
+     * The index is determined based on the item's type name.
      *
-     * @param item The item to be added to the equipment.
-     * @param equipment The map of equipment slots.
+     * @param item The InventoryItem for which to find the slot index.
+     * @return An Optional containing the slot index if found, otherwise an empty Optional.
      */
-    private void addToEquipment(InventoryItem item, Map<String, Integer> equipment) {
+    private Optional<Integer> getSlotIndexForItem(InventoryItem item) {
         String name = item.getItemType().getName();
-        equipment.keySet().stream()
+        return equipment.keySet().stream()
                 .filter(name::contains)
-                .findFirst()
-                .map(equipment::get).ifPresent(index -> equipped[index] = item);
+                .map(equipment::get)
+                .findFirst();
     }
 
     public void reset() {

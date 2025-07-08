@@ -1,0 +1,19 @@
+[
+  {
+    "output": "ARMOR_GUARDIAN",
+    "amount": 1,
+    "ingredients": {
+      "IRON": 3,
+      "SONIC_QUARTZ": 1,
+      "ELECTRICITE": 1
+    }
+  },
+  {
+    "output": "RING_AMETHYST",
+    "amount": 1,
+    "ingredients": {
+      "COPPER": 4,
+      "AMETHYST": 3
+    }
+  }
+]

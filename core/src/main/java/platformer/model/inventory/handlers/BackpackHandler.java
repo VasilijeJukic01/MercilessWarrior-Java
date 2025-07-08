@@ -27,10 +27,18 @@ public class BackpackHandler {
     }
 
     public void dropItem(int index) {
+        dropItem(index, false);
+    }
+
+    public void dropItem(int index, boolean isEquipAction) {
         if (index >= backpack.size()) return;
-        backpack.get(index).removeAmount(-1);
-        if (backpack.get(index).getAmount() <= 0)
-            backpack.remove(index);
+        if (isEquipAction) backpack.remove(index);
+        else {
+            backpack.get(index).removeAmount(-1);
+            if (backpack.get(index).getAmount() <= 0) {
+                backpack.remove(index);
+            }
+        }
         refreshAccountItems();
     }
 

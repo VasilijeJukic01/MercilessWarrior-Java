@@ -1,9 +1,7 @@
 package platformer.ui.overlays;
 
 import platformer.model.gameObjects.objects.Table;
-import platformer.model.inventory.Inventory;
-import platformer.model.inventory.InventoryItem;
-import platformer.model.inventory.ItemType;
+import platformer.model.inventory.*;
 import platformer.state.GameState;
 import platformer.ui.buttons.AbstractButton;
 import platformer.ui.buttons.ButtonType;
@@ -149,79 +147,87 @@ public class CraftingOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
     }
 
     private void renderCraftingSlots(Graphics g) {
-        for (Table table : tables) {
-            if (!table.isActive()) continue;
-            for (int i = 0; i < INVENTORY_SLOT_MAX_ROW; i++) {
-                for (int j = 0; j < INVENTORY_SLOT_MAX_COL; j++) {
-                    int xPos = i * SLOT_SPACING + BACKPACK_SLOT_X;
-                    int yPos = j * SLOT_SPACING + BACKPACK_SLOT_Y;
-
-                    g.drawImage(slotImage, xPos, yPos, slotImage.getWidth(), slotImage.getHeight(), null);
-                    int slotNumber = (j * INVENTORY_SLOT_MAX_ROW + i) + craftingSlot * (INVENTORY_SLOT_MAX_ROW * INVENTORY_SLOT_MAX_COL);
-                    if (slotNumber < table.getRecipes().size())
-                        renderItem(g, table, slotNumber);
+        List<Recipe> recipes = RecipeManager.getInstance().getRecipes();
+        for (int i = 0; i < INVENTORY_SLOT_MAX_ROW; i++) {
+            for (int j = 0; j < INVENTORY_SLOT_MAX_COL; j++) {
+                int xPos = i * SLOT_SPACING + BACKPACK_SLOT_X;
+                int yPos = j * SLOT_SPACING + BACKPACK_SLOT_Y;
+                g.drawImage(slotImage, xPos, yPos, slotImage.getWidth(), slotImage.getHeight(), null);
+                int currentSlot = (j * INVENTORY_SLOT_MAX_ROW + i) + craftingSlot * (INVENTORY_SLOT_MAX_ROW * INVENTORY_SLOT_MAX_COL);
+                if (currentSlot < recipes.size()) {
+                    renderItem(g, recipes.get(currentSlot));
                 }
             }
-            renderItemInfo(g, table);
         }
-
+        renderItemInfo(g, recipes);
     }
 
-    private void renderItem(Graphics g, Table table, int slotNumber) {
-        List<InventoryItem> items = new ArrayList<>(table.getRecipes().keySet());
-        InventoryItem item = items.get(slotNumber);
+    private void renderItem(Graphics g, Recipe recipe) {
+        ItemType itemType = recipe.getOutput();
+        BufferedImage itemImage = Utils.getInstance().importImage(itemType.getImg(), -1, -1);
+        int slotPos = RecipeManager.getInstance().getRecipes().indexOf(recipe);
 
-        int xPos = (slotNumber % INVENTORY_SLOT_MAX_ROW) * SLOT_SPACING + BACKPACK_SLOT_X + ITEM_OFFSET_X;
-        int yPos = (slotNumber / INVENTORY_SLOT_MAX_ROW) * SLOT_SPACING + BACKPACK_SLOT_Y + ITEM_OFFSET_Y;
-        g.setColor(item.getItemType().getRarity().getColor());
-        g.fillRect(xPos-(int)(ITEM_OFFSET_X/1.1), yPos-(int)(ITEM_OFFSET_Y/1.1), (int)(SLOT_SIZE/1.06), (int)(SLOT_SIZE/1.06));
-        g.drawImage(item.getModel(), xPos, yPos, ITEM_SIZE, ITEM_SIZE, null);
+        int xPos = (slotPos % INVENTORY_SLOT_MAX_ROW) * SLOT_SPACING + BACKPACK_SLOT_X + ITEM_OFFSET_X;
+        int yPos = (slotPos / INVENTORY_SLOT_MAX_ROW) * SLOT_SPACING + BACKPACK_SLOT_Y + ITEM_OFFSET_Y;
+        g.setColor(itemType.getRarity().getColor());
+        g.fillRect(xPos - (int)(ITEM_OFFSET_X / 1.1), yPos - (int)(ITEM_OFFSET_Y / 1.1), (int)(SLOT_SIZE / 1.06), (int)(SLOT_SIZE / 1.06));
+        g.drawImage(itemImage, xPos, yPos, ITEM_SIZE, ITEM_SIZE, null);
     }
 
-    private void renderItemInfo(Graphics g, Table table) {
-        List<InventoryItem> items = new ArrayList<>(table.getRecipes().keySet());
-        if (slotNumber >= items.size()) return;
-        InventoryItem item = items.get(slotNumber);
-        if (item != null) renderItemDescription(g, item, table);
+    private void renderItemInfo(Graphics g, List<Recipe> recipes) {
+        if (slotNumber >= recipes.size()) return;
+        Recipe recipe = recipes.get(slotNumber);
+        if (recipe != null) renderItemDescription(g, recipe);
     }
 
-    private void renderItemDescription(Graphics g, InventoryItem inventoryItem, Table table) {
-        ItemType item = inventoryItem.getItemType();
+    private void renderItemDescription(Graphics g, Recipe recipe) {
+        ItemType itemType = recipe.getOutput();
         g.setColor(Color.WHITE);
         g.setFont(new Font("Arial", Font.BOLD, FONT_MEDIUM));
-        g.drawString(item.getName(), CRAFT_VAL_ITEM_NAME_X, CRAFT_VAL_ITEM_NAME_Y);
-        g.drawString("Value: " + item.getSellValue(), CRAFT_VAL_TEXT_X, CRAFT_VAL_TEXT_Y);
+        g.drawString(itemType.getName(), CRAFT_VAL_ITEM_NAME_X, CRAFT_VAL_ITEM_NAME_Y);
+        g.drawString("Value: " + itemType.getSellValue(), CRAFT_VAL_TEXT_X, CRAFT_VAL_TEXT_Y);
         g.setFont(new Font("Arial", Font.PLAIN, FONT_MEDIUM));
-        String[] lines = item.getDescription().split("\n");
+        String[] lines = itemType.getDescription().split("\n");
         int lineHeight = g.getFontMetrics().getHeight();
         int y = CRAFT_VAL_ITEM_DESC_Y;
         for (String line : lines) {
             g.drawString(line, CRAFT_VAL_ITEM_DESC_X, y);
             y += lineHeight;
         }
-        renderResources(g, inventoryItem, table, y);
+        renderResources(g, recipe.getIngredients(), y);
     }
 
-    private void renderResources(Graphics g, InventoryItem item, Table table, int yPos) {
-        List<String> lines = new ArrayList<>(List.of("", "Required Resources: "));
-        Map<ItemType, Integer> resources = table.getRecipes().get(item);
-        for (Map.Entry<ItemType, Integer> entry : resources.entrySet()) {
-            ItemType itemType = entry.getKey();
-            Integer quantity = entry.getValue();
-            lines.add(itemType.getName() + ": " + quantity + "x");
+    private void renderResources(Graphics g, Map<ItemType, Integer> resources, int yPos) {
+        Inventory inventory = gameState.getPlayer().getInventory();
+        Map<ItemType, Integer> playerItems = new HashMap<>();
+        for (InventoryItem item : inventory.getBackpack()) {
+            playerItems.put(item.getItemType(), item.getAmount());
         }
+
+        g.setFont(new Font("Arial", Font.PLAIN, FONT_MEDIUM));
         int lineHeight = g.getFontMetrics().getHeight();
         int y = yPos;
-        for (String line : lines) {
-            if (line.startsWith("Required Resources:")) {
-                g.setColor(Color.WHITE);
-            }
-            else if (!line.isEmpty()) {
-                String itemName = line.split(":")[0];
-                ItemType itemType = ItemType.valueOf(itemName.toUpperCase().replace(" ", "_").replace("_ORE", ""));
-                g.setColor(itemType.getRarity().getColor());
-            }
-            g.drawString(line, CRAFT_VAL_ITEM_DESC_X, y);
+
+        g.setColor(Color.WHITE);
+        y += lineHeight;
+        g.drawString("Required Resources:", CRAFT_VAL_ITEM_DESC_X, y);
+        y += lineHeight;
+
+        for (Map.Entry<ItemType, Integer> entry : resources.entrySet()) {
+            ItemType requiredType = entry.getKey();
+            int requiredAmount = entry.getValue();
+            int playerAmount = playerItems.getOrDefault(requiredType, 0);
+
+            g.setColor(requiredType.getRarity().getColor());
+            String resourceText = " - " + requiredType.getName() + ": " + requiredAmount + "x";
+            g.drawString(resourceText, CRAFT_VAL_ITEM_DESC_X, y);
+
+            Color haveColor = (playerAmount >= requiredAmount) ? new Color(120, 255, 120) : new Color(255, 90, 90);
+            g.setColor(haveColor);
+            String haveText = "(" + playerAmount + ")";
+            int resourceTextWidth = g.getFontMetrics().stringWidth(resourceText);
+            g.drawString(haveText, CRAFT_VAL_ITEM_DESC_X + resourceTextWidth + (int)(5*SCALE), y);
+
             y += lineHeight;
         }
     }
@@ -295,17 +301,15 @@ public class CraftingOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
     }
 
     private void releaseCraftButton() {
-        Inventory inventory = gameState.getPlayer().getInventory();
-        for (Table table : tables) {
-            if (table.isActive()) {
-                List<InventoryItem> items = new ArrayList<>(table.getRecipes().keySet());
-                if (slotNumber >= items.size()) return;
-                InventoryItem item = items.get(slotNumber);
-                Map<ItemType, Integer> resources = table.getRecipes().get(item);
-                inventory.craftItem(item, resources);
-                break;
-            }
-        }
+        List<Recipe> recipes = RecipeManager.getInstance().getRecipes();
+        if (slotNumber >= recipes.size()) return;
+        Recipe recipe = recipes.get(slotNumber);
+        if (recipe == null) return;
+        ItemType type = recipe.getOutput();
+        BufferedImage image = Utils.getInstance().importImage(type.getImg(), -1, -1);
+        if (image == null) return;
+        InventoryItem itemToCraft = new InventoryItem(type, image, recipe.getAmount());
+        gameState.getPlayer().getInventory().craftItem(itemToCraft, recipe.getIngredients());
     }
 
     @Override
