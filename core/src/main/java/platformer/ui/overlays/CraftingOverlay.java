@@ -189,10 +189,13 @@ public class CraftingOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
         g.drawString(itemData.name, CRAFT_VAL_ITEM_NAME_X, CRAFT_VAL_ITEM_NAME_Y);
         g.drawString("Value: " + itemData.sellValue, CRAFT_VAL_TEXT_X, CRAFT_VAL_TEXT_Y);
         g.setFont(new Font("Arial", Font.PLAIN, FONT_MEDIUM));
-        String[] lines = itemData.description.split("\n");
+
+        int descriptionMaxWidth = (int) (overlay.getX() + overlay.getWidth() - CRAFT_VAL_ITEM_DESC_X - (10 * SCALE));
+        List<String> wrappedLines = wrapText(itemData.description, descriptionMaxWidth, g.getFontMetrics());
+
         int lineHeight = g.getFontMetrics().getHeight();
         int y = CRAFT_VAL_ITEM_DESC_Y;
-        for (String line : lines) {
+        for (String line : wrappedLines) {
             g.drawString(line, CRAFT_VAL_ITEM_DESC_X, y);
             y += lineHeight;
         }
@@ -235,6 +238,27 @@ public class CraftingOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
 
             y += lineHeight;
         }
+    }
+
+    private List<String> wrapText(String text, int maxWidth, FontMetrics fm) {
+        List<String> lines = new ArrayList<>();
+        for (String paragraph : text.split("\n")) {
+            String[] words = paragraph.split(" ");
+            StringBuilder currentLine = new StringBuilder();
+
+            for (String word : words) {
+                if (fm.stringWidth(currentLine + " " + word) <= maxWidth) {
+                    if (!currentLine.isEmpty()) currentLine.append(" ");
+                    currentLine.append(word);
+                }
+                else {
+                    lines.add(currentLine.toString());
+                    currentLine = new StringBuilder(word);
+                }
+            }
+            if (!currentLine.isEmpty()) lines.add(currentLine.toString());
+        }
+        return lines;
     }
 
     // Actions

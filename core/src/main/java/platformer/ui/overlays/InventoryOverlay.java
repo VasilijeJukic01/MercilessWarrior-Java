@@ -16,7 +16,9 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import static platformer.constants.Constants.*;
 import static platformer.constants.FilePaths.*;
@@ -278,13 +280,55 @@ public class InventoryOverlay implements Overlay<MouseEvent, KeyEvent, Graphics>
         g.drawString(itemData.name, INV_ITEM_NAME_X, INV_ITEM_NAME_Y);
         g.drawString("Value: " + itemData.sellValue, INV_ITEM_VALUE_X, INV_ITEM_VALUE_Y);
         g.setFont(new Font("Arial", Font.PLAIN, FONT_MEDIUM));
-        String[] lines = itemData.description.split("\n");
+
+        int descriptionMaxWidth = (int) (overlay.getX() + overlay.getWidth() - INV_ITEM_DESC_X - (10 * SCALE));
+        List<String> wrappedLines = wrapText(itemData.description, descriptionMaxWidth, g.getFontMetrics());
+
         int lineHeight = g.getFontMetrics().getHeight();
         int y = INV_ITEM_DESC_Y;
-        for (String line : lines) {
+        for (String line : wrappedLines) {
             g.drawString(line, INV_ITEM_DESC_X, y);
             y += lineHeight;
         }
+    }
+
+    private List<String> wrapText(String text, int maxWidth, FontMetrics fm) {
+        List<String> lines = new ArrayList<>();
+        String[] words = text.split(" ");
+        StringBuilder currentLine = new StringBuilder();
+
+        for (String word : words) {
+            if (word.contains("\n")) {
+                String[] parts = word.split("\n", -1);
+                for (int i = 0; i < parts.length; i++) {
+                    String part = parts[i];
+                    if (fm.stringWidth(currentLine + " " + part) <= maxWidth) {
+                        if (!currentLine.isEmpty()) currentLine.append(" ");
+                        currentLine.append(part);
+                    }
+                    else {
+                        lines.add(currentLine.toString());
+                        currentLine = new StringBuilder(part);
+                    }
+                    if (i < parts.length - 1) {
+                        lines.add(currentLine.toString());
+                        currentLine = new StringBuilder();
+                    }
+                }
+            }
+            else {
+                if (fm.stringWidth(currentLine + " " + word) <= maxWidth) {
+                    if (!currentLine.isEmpty()) currentLine.append(" ");
+                    currentLine.append(word);
+                }
+                else {
+                    lines.add(currentLine.toString());
+                    currentLine = new StringBuilder(word);
+                }
+            }
+        }
+        if (!currentLine.isEmpty()) lines.add(currentLine.toString());
+        return lines;
     }
 
     private void renderBonusInfo(Graphics g) {

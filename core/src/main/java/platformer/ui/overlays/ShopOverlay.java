@@ -14,6 +14,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -201,10 +202,13 @@ public class ShopOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
         g.setFont(new Font("Arial", Font.BOLD, FONT_MEDIUM));
         g.drawString(itemData.name, SHOP_ITEM_NAME_X, SHOP_ITEM_NAME_Y);
         g.setFont(new Font("Arial", Font.PLAIN, FONT_MEDIUM));
-        String[] lines = itemData.description.split("\n");
+
+        int descriptionMaxWidth = (int) (sellPanel.getX() - SHOP_ITEM_DESC_X - (10 * SCALE));
+        List<String> wrappedLines = wrapText(itemData.description, descriptionMaxWidth, g.getFontMetrics());
+
         int lineHeight = g.getFontMetrics().getHeight();
         int y = SHOP_ITEM_DESC_Y;
-        for (String line : lines) {
+        for (String line : wrappedLines) {
             g.drawString(line, SHOP_ITEM_DESC_X, y);
             y += lineHeight;
         }
@@ -222,6 +226,27 @@ public class ShopOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
                 g.drawImage(slotImage, xPosRight, yPosRight, slotImage.getWidth(), slotImage.getHeight(), null);
             }
         }
+    }
+
+    private List<String> wrapText(String text, int maxWidth, FontMetrics fm) {
+        List<String> lines = new ArrayList<>();
+        for (String paragraph : text.split("\n")) {
+            String[] words = paragraph.split(" ");
+            StringBuilder currentLine = new StringBuilder();
+
+            for (String word : words) {
+                if (fm.stringWidth(currentLine + " " + word) <= maxWidth) {
+                    if (!currentLine.isEmpty()) currentLine.append(" ");
+                    currentLine.append(word);
+                }
+                else {
+                    lines.add(currentLine.toString());
+                    currentLine = new StringBuilder(word);
+                }
+            }
+            if (!currentLine.isEmpty()) lines.add(currentLine.toString());
+        }
+        return lines;
     }
 
     // Selection
