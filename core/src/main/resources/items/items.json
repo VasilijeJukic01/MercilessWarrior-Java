@@ -27,7 +27,7 @@
     "name": "Copper Ore",
     "description": "Ingredient for crafting",
     "rarity": "COMMON",
-    "imagePath": "/images/inventory/CopperOre.png",
+    "imagePath": "/images/inventory/ores/CopperOre.png",
     "sellValue": 2,
     "stackable": true,
     "equip": {
@@ -39,7 +39,7 @@
     "name": "Iron Ore",
     "description": "Ingredient for crafting",
     "rarity": "UNCOMMON",
-    "imagePath": "/images/inventory/IronOre.png",
+    "imagePath": "/images/inventory/ores/IronOre.png",
     "sellValue": 5,
     "stackable": true,
     "equip": {
@@ -51,7 +51,7 @@
     "name": "Silver Ore",
     "description": "Ingredient for crafting",
     "rarity": "UNCOMMON",
-    "imagePath": "/images/inventory/SilverOre.png",
+    "imagePath": "/images/inventory/ores/SilverOre.png",
     "sellValue": 7,
     "stackable": true,
     "equip": {
@@ -63,7 +63,7 @@
     "name": "Amethyst Ore",
     "description": "Ingredient for crafting",
     "rarity": "RARE",
-    "imagePath": "/images/inventory/AmethystOre.png",
+    "imagePath": "/images/inventory/ores/AmethystOre.png",
     "sellValue": 10,
     "stackable": true,
     "equip": {
@@ -75,7 +75,7 @@
     "name": "Sonic Quartz Ore",
     "description": "Ingredient for crafting",
     "rarity": "RARE",
-    "imagePath": "/images/inventory/SonicQuartzOre.png",
+    "imagePath": "/images/inventory/ores/SonicQuartzOre.png",
     "sellValue": 15,
     "stackable": true,
     "equip": {
@@ -87,7 +87,7 @@
     "name": "Magma Ore",
     "description": "Ingredient for crafting",
     "rarity": "RARE",
-    "imagePath": "/images/inventory/MagmaOre.png",
+    "imagePath": "/images/inventory/ores/MagmaOre.png",
     "sellValue": 20,
     "stackable": true,
     "equip": {
@@ -99,7 +99,7 @@
     "name": "Azurelite Ore",
     "description": "Ingredient for crafting",
     "rarity": "EPIC",
-    "imagePath": "/images/inventory/AzureliteOre.png",
+    "imagePath": "/images/inventory/ores/AzureliteOre.png",
     "sellValue": 50,
     "stackable": true,
     "equip": {
@@ -111,7 +111,7 @@
     "name": "Electricite Ore",
     "description": "Ingredient for crafting",
     "rarity": "LEGENDARY",
-    "imagePath": "/images/inventory/ElectriciteOre.png",
+    "imagePath": "/images/inventory/ores/ElectriciteOre.png",
     "sellValue": 80,
     "stackable": true,
     "equip": {
@@ -123,8 +123,137 @@
     "name": "Rosallium Ore",
     "description": "Ingredient for crafting",
     "rarity": "LEGENDARY",
-    "imagePath": "/images/inventory/RosalliumOre.png",
+    "imagePath": "/images/inventory/ores/RosalliumOre.png",
     "sellValue": 100,
+    "stackable": true,
+    "equip": {
+      "canEquip": false,
+      "slot": "NONE"
+    }
+  },
+  "AETHERIUM_CRYSTAL": {
+    "name": "Aetherium Crystal",
+    "description": "A crystal that defies gravity, pulsing with raw, untamed magic from another plane.",
+    "rarity": "EPIC",
+    "imagePath": "/images/inventory/ores/AetheriumCrystal.png",
+    "sellValue": 180,
+    "stackable": true,
+    "equip": { "canEquip": false, "slot": "NONE" }
+  },
+  "CELESTIAL_SHARD": {
+    "name": "Celestial Shard",
+    "description": "A fragment of a fallen star, shimmering with all the colors of the cosmos.",
+    "rarity": "LEGENDARY",
+    "imagePath": "/images/inventory/ores/CelestialShard.png",
+    "sellValue": 500,
+    "stackable": true,
+    "equip": { "canEquip": false, "slot": "NONE" }
+  },
+  "CRIMSON_CRYSTAL": {
+    "name": "Crimson Crystal",
+    "description": "Also known as a 'Blood Gem,' this stone holds the life force of the earth.",
+    "rarity": "RARE",
+    "imagePath": "/images/inventory/ores/CrimsonCrystal.png",
+    "sellValue": 30,
+    "stackable": true,
+    "equip": { "canEquip": false, "slot": "NONE" }
+  },
+  "EMBER_CRYSTAL": {
+    "name": "Ember Crystal",
+    "description": "A crystal that feels warm to the touch, containing the essence of fire.",
+    "rarity": "RARE",
+    "imagePath": "/images/inventory/ores/EmberCrystal.png",
+    "sellValue": 40,
+    "stackable": true,
+    "equip": { "canEquip": false, "slot": "NONE" }
+  },
+  "GOLD_ORE": {
+    "name": "Gold Ore",
+    "description": "A heavy, soft metal, gleaming with a promise of wealth and power.",
+    "rarity": "RARE",
+    "imagePath": "/images/inventory/ores/GoldOre.png",
+    "sellValue": 25,
+    "stackable": true,
+    "equip": { "canEquip": false, "slot": "NONE" }
+  },
+  "JADE_SHARD": {
+    "name": "Jade Shard",
+    "description": "A smooth, green stone associated with nature and resilience.",
+    "rarity": "UNCOMMON",
+    "imagePath": "/images/inventory/ores/JadeShard.png",
+    "sellValue": 10,
+    "stackable": true,
+    "equip": { "canEquip": false, "slot": "NONE" }
+  },
+  "ROCK_SHARD": {
+    "name": "Rock Shard",
+    "description": "A common, jagged piece of rock. Can be crushed for basic components.",
+    "rarity": "COMMON",
+    "imagePath": "/images/inventory/ores/RockShard.png",
+    "sellValue": 1,
+    "stackable": true,
+    "equip": { "canEquip": false, "slot": "NONE" }
+  },
+  "SOUL_GEM_FRAGMENT": {
+    "name": "Soul Gem Fragment",
+    "description": "A mesmerizing gem that seems to contain a swirling nebula. Used in enchanting soul-bound weapons.",
+    "rarity": "EPIC",
+    "imagePath": "/images/inventory/ores/SoulGemFragment.png",
+    "sellValue": 200,
+    "stackable": true,
+    "equip": { "canEquip": false, "slot": "NONE" }
+  },
+  "STORM_FORGED_CRYSTAL": {
+    "name": "Storm-Forged Crystal",
+    "description": "A crystal forged in a magical thunderstorm. It crackles with contained lightning.",
+    "rarity": "EPIC",
+    "imagePath": "/images/inventory/ores/Storm-ForgedCrystal.png",
+    "sellValue": 180,
+    "stackable": true,
+    "equip": { "canEquip": false, "slot": "NONE" }
+  },
+  "DRAGONSCALE_SHARD": {
+    "name": "Dragonscale Shard",
+    "description": "A shard from the scale of a true dragon. Almost indestructible and highly resistant to magic.",
+    "rarity": "EPIC",
+    "imagePath": "/images/inventory/ores/DragonScaleShard.png",
+    "sellValue": 350,
+    "stackable": true,
+    "equip": {
+      "canEquip": false,
+      "slot": "NONE"
+    }
+  },
+  "OBSIDIAN_SHARD": {
+    "name": "Obsidian Shard",
+    "description": "Volcanic glass, sharp and brittle. Excellent for crafting daggers or serrated blades.",
+    "rarity": "RARE",
+    "imagePath": "/images/inventory/ores/ObsidianShard.png",
+    "sellValue": 18,
+    "stackable": true,
+    "equip": {
+      "canEquip": false,
+      "slot": "NONE"
+    }
+  },
+  "SERPENTINE_GEM": {
+    "name": "Serpentine Gem",
+    "description": "A swirling green gem that seems to writhe with inner life. Grants resistance to poisons.",
+    "rarity": "UNCOMMON",
+    "imagePath": "/images/inventory/ores/SerpentineGem.png",
+    "sellValue": 22,
+    "stackable": true,
+    "equip": {
+      "canEquip": false,
+      "slot": "NONE"
+    }
+  },
+  "FROST_ORE": {
+    "name": "Frost Ore",
+    "description": "A shimmering blue ore that radiates cold. Used in crafting frost-resistant gear.",
+    "rarity": "RARE",
+    "imagePath": "/images/inventory/ores/FrostOre.png",
+    "sellValue": 15,
     "stackable": true,
     "equip": {
       "canEquip": false,
@@ -145,7 +274,7 @@
   },
   "HELMET_WARRIOR": {
     "name": "Warrior Helmet",
-    "description": "Helmet designed specifically for warriors \nwhich provides solid protection during combat. \n\nHealth Bonus +3%\nDefense Bonus +5%",
+    "description": "Helmet designed specifically for warriors which provides solid protection during combat. \nHealth Bonus +3% Defense Bonus +5%",
     "rarity": "MYTHIC",
     "imagePath": "/images/inventory/WarriorHelmet.png",
     "sellValue": 30,
@@ -161,7 +290,7 @@
   },
   "ARMOR_WARRIOR": {
     "name": "Warrior Armor",
-    "description": "Warrior Armor is a rugged combat attire \ndesigned specifically for warriors.\n\nHealth Bonus +5%\nSpell Bonus +5%",
+    "description": "Warrior Armor is a rugged combat attire designed specifically for warriors. \nHealth Bonus +5% Spell Bonus +5%",
     "rarity": "UNCOMMON",
     "imagePath": "/images/inventory/WarriorArmor.png",
     "sellValue": 40,
@@ -177,7 +306,7 @@
   },
   "BRACELETS_WARRIOR": {
     "name": "Warrior Bracelets",
-    "description": "These Warrior Bracelets are wristbands\ntailored for warriors, enhancing their \nprotection in battle. \n\nAttack Bonus +5%\nCritical Bonus +3%",
+    "description": "These Warrior Bracelets are wristbands tailored for warriors, enhancing their protection in battle. \nAttack Bonus +5% Critical Bonus +3%",
     "rarity": "UNCOMMON",
     "imagePath": "/images/inventory/WarriorBracelets.png",
     "sellValue": 20,
@@ -193,7 +322,7 @@
   },
   "TROUSERS_WARRIOR": {
     "name": "Warrior Trousers",
-    "description": "Warrior Trousers are specialized pants \ncrafted to provide warriors with both \ncomfort and protection. \n\nDefense Bonus +3%\nStamina Bonus +5%",
+    "description": "Warrior Trousers are specialized pants crafted to provide warriors with both comfort and protection. \nDefense Bonus +3% Stamina Bonus +5%",
     "rarity": "UNCOMMON",
     "imagePath": "/images/inventory/WarriorTrousers.png",
     "sellValue": 30,
@@ -209,7 +338,7 @@
   },
   "BOOTS_WARRIOR": {
     "name": "Warrior Boots",
-    "description": "These boots are customized to meet the \ndemands of warriors. \n\nStamina Bonus +3%\nCooldown Bonus +3%",
+    "description": "These boots are customized to meet the demands of warriors. \nStamina Bonus +3% Cooldown Bonus +3%",
     "rarity": "UNCOMMON",
     "imagePath": "/images/inventory/WarriorBoots.png",
     "sellValue": 20,
@@ -225,7 +354,7 @@
   },
   "ARMOR_GUARDIAN": {
     "name": "Guardian Armor",
-    "description": "Powerful ancient armor.\n\nHealth Bonus +10%\nAttack Bonus +5%",
+    "description": "Powerful ancient armor. \nHealth Bonus +10% Attack Bonus +5%",
     "rarity": "RARE",
     "imagePath": "/images/inventory/GuardianArmor.png",
     "sellValue": 80,
@@ -241,7 +370,7 @@
   },
   "RING_AMETHYST": {
     "name": "Amethyst Ring",
-    "description": "This ring is a very rare piece of equipment.\n\nStamina Bonus +8%\nSpell Bonus +8%\nCooldown Bonus +5%",
+    "description": "This ring is a very rare piece of equipment. \nStamina Bonus +8% Spell Bonus +8% Cooldown Bonus +5%",
     "rarity": "EPIC",
     "imagePath": "/images/inventory/AmethystRing.png",
     "sellValue": 120,
@@ -258,7 +387,7 @@
   },
   "CHARM_THUNDERBOLT": {
     "name": "Thunderbolt Charm",
-    "description": "This charm is a very rare piece of equipment.\n\nHealth Bonus +15%\nAttack Bonus +10%\nCritical Bonus +10%",
+    "description": "This charm is a very rare piece of equipment. \nHealth Bonus +15% Attack Bonus +10% Critical Bonus +10%",
     "rarity": "MYTHIC",
     "imagePath": "/images/inventory/ThunderboltCharm.png",
     "sellValue": 500,
@@ -271,6 +400,78 @@
         "attack": 10.0,
         "critical": 10.0
       }
+    }
+  },
+  "FROST_THISTLE_BERRY": {
+    "name": "Frost-Thistle Berry",
+    "description": "A pale blue berry covered in tiny, harmless crystalline spikes. Grants temporary resistance to fire and heat.",
+    "rarity": "RARE",
+    "imagePath": "/images/inventory/berries/Frost-Thistle Berry.png",
+    "sellValue": 8,
+    "stackable": true,
+    "equip": {
+      "canEquip": false,
+      "slot": "NONE"
+    }
+  },
+  "GLIMMER_ROOT_BERRY": {
+    "name": "Glimmer-Root Berry",
+    "description": "When consumed in darkness, it causes the user to emit a soft, guiding light for a short time.",
+    "rarity": "UNCOMMON",
+    "imagePath": "/images/inventory/berries/Glimmer-Root Berry.png",
+    "sellValue": 6,
+    "stackable": true,
+    "equip": {
+      "canEquip": false,
+      "slot": "NONE"
+    }
+  },
+  "GRAVE_WORT_BERRY": {
+    "name": "Grave-Wort Berry",
+    "description": "A dark, almost black berry found in shaded, damp places. Briefly enhances the power of spells.",
+    "rarity": "UNCOMMON",
+    "imagePath": "/images/inventory/berries/Grave-Wort Berry.png",
+    "sellValue": 7,
+    "stackable": true,
+    "equip": {
+      "canEquip": false,
+      "slot": "NONE"
+    }
+  },
+  "MENDERS_BERRY": {
+    "name": "Mender's Berry",
+    "description": "A plump, light-green berry. Boosts the effectiveness of healing potions and spells for a brief period.",
+    "rarity": "RARE",
+    "imagePath": "/images/inventory/berries/Mender's Berry.png",
+    "sellValue": 12,
+    "stackable": true,
+    "equip": {
+      "canEquip": false,
+      "slot": "NONE"
+    }
+  },
+  "SUN_KISSED_BERRY": {
+    "name": "Sun-Kissed Berry",
+    "description": "Tastes of summer sunshine. Restores a small amount of stamina.",
+    "rarity": "COMMON",
+    "imagePath": "/images/inventory/berries/Sun-Kissed Berry.png",
+    "sellValue": 2,
+    "stackable": true,
+    "equip": {
+      "canEquip": false,
+      "slot": "NONE"
+    }
+  },
+  "WHISPER_VINE_BERRY": {
+    "name": "Whisper-Vine Berry",
+    "description": "A muted purple berry that grows on hanging vines. A key ingredient in sleep potions.",
+    "rarity": "COMMON",
+    "imagePath": "/images/inventory/berries/Whisper-Vine Berry.png",
+    "sellValue": 3,
+    "stackable": true,
+    "equip": {
+      "canEquip": false,
+      "slot": "NONE"
     }
   }
 }

@@ -56,6 +56,71 @@
       "cost": 270
     },
     {
+      "itemId": "ROCK_SHARD",
+      "stock": 50,
+      "cost": 2
+    },
+    {
+      "itemId": "JADE_SHARD",
+      "stock": 15,
+      "cost": 20
+    },
+    {
+      "itemId": "GOLD_ORE",
+      "stock": 10,
+      "cost": 50
+    },
+    {
+      "itemId": "CRIMSON_CRYSTAL",
+      "stock": 5,
+      "cost": 60
+    },
+    {
+      "itemId": "EMBER_CRYSTAL",
+      "stock": 5,
+      "cost": 80
+    },
+    {
+      "itemId": "AETHERIUM_CRYSTAL",
+      "stock": 3,
+      "cost": 360
+    },
+    {
+      "itemId": "STORM_FORGED_CRYSTAL",
+      "stock": 3,
+      "cost": 360
+    },
+    {
+      "itemId": "SOUL_GEM_FRAGMENT",
+      "stock": 2,
+      "cost": 400
+    },
+    {
+      "itemId": "CELESTIAL_SHARD",
+      "stock": 1,
+      "cost": 1000
+    },
+    {
+      "itemId": "OBSIDIAN_SHARD",
+      "stock": 20,
+      "cost": 36
+    },
+    {
+      "itemId": "SERPENTINE_GEM",
+      "stock": 15,
+      "cost": 45
+    },
+    {
+      "itemId": "DRAGONSCALE_SHARD",
+      "stock": 2,
+      "cost": 700
+    },
+    {
+      "itemId": "FROST_ORE",
+        "stock": 30,
+        "cost": 20
+    },
+    {
       "itemId": "HELMET_WARRIOR",
       "stock": 1,
       "cost": 80
@@ -79,6 +144,36 @@
       "itemId": "BOOTS_WARRIOR",
       "stock": 1,
       "cost": 70
+    },
+    {
+      "itemId": "SUN_KISSED_BERRY",
+      "stock": 15,
+      "cost": 5
+    },
+    {
+      "itemId": "WHISPER_VINE_BERRY",
+      "stock": 10,
+      "cost": 8
+    },
+    {
+      "itemId": "FROST_THISTLE_BERRY",
+      "stock": 8,
+      "cost": 15
+    },
+    {
+      "itemId": "GLIMMER_ROOT_BERRY",
+      "stock": 8,
+      "cost": 12
+    },
+    {
+      "itemId": "GRAVE_WORT_BERRY",
+      "stock": 5,
+      "cost": 20
+    },
+    {
+      "itemId": "MENDERS_BERRY",
+      "stock": 3,
+      "cost": 35
     }
   ]
 }
