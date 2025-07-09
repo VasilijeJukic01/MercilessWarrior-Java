@@ -38,7 +38,7 @@
   "IRON_ORE": {
     "name": "Iron Ore",
     "description": "Ingredient for crafting",
-    "rarity": "UNCOMMON",
+    "rarity": "COMMON",
     "imagePath": "/images/inventory/ores/IronOre.png",
     "sellValue": 5,
     "stackable": true,
@@ -473,5 +473,104 @@
       "canEquip": false,
       "slot": "NONE"
     }
+  },
+  "WILD_GRASS": {
+    "name": "Wildgrass",
+    "description": "A bundle of tough, wild grass. Not very potent, but useful as a filler in many concoctions.",
+    "rarity": "COMMON",
+    "imagePath": "/images/inventory/herbs/WildGrass.png",
+    "sellValue": 1,
+    "stackable": true,
+    "equip": { "canEquip": false, "slot": "NONE" }
+  },
+  "GHOST_LEAF": {
+    "name": "Ghost-Leaf",
+    "description": "A pale, almost translucent leaf. When brewed, it can grant temporary stealth or etherealness.",
+    "rarity": "UNCOMMON",
+    "imagePath": "/images/inventory/herbs/GhostLeaf.png",
+    "sellValue": 15,
+    "stackable": true,
+    "equip": { "canEquip": false, "slot": "NONE" }
+  },
+  "FAE_LEAF": {
+    "name": "Fae-Leaf",
+    "description": "A three-pointed leaf that glimmers with a faint, otherworldly light. Used in potions that restore magical energy.",
+    "rarity": "UNCOMMON",
+    "imagePath": "/images/inventory/herbs/FaeLeaf.png",
+    "sellValue": 12,
+    "stackable": true,
+    "equip": { "canEquip": false, "slot": "NONE" }
+  },
+  "FROST_BLOOM_PETALS": {
+    "name": "Frost-Bloom Petals",
+    "description": "Crystalline blue petals that are perpetually cold. Essential for crafting potions of frost resistance.",
+    "rarity": "UNCOMMON",
+    "imagePath": "/images/inventory/herbs/FrostBloomPetals.png",
+    "sellValue": 20,
+    "stackable": true,
+    "equip": { "canEquip": false, "slot": "NONE" }
+  },
+  "BLOOD_VEIN_LEAF": {
+    "name": "Blood-Vein Leaf",
+    "description": "A leaf with deep red veins that seem to pulse with life. A potent ingredient for powerful health potions.",
+    "rarity": "RARE",
+    "imagePath": "/images/inventory/herbs/BloodVeinLeaf.png",
+    "sellValue": 45,
+    "stackable": true,
+    "equip": { "canEquip": false, "slot": "NONE" }
+  },
+  "GLOOMSHROOM": {
+    "name": "Gloomshroom",
+    "description": "A cluster of bioluminescent blue mushrooms. Their essence can sharpen the senses, allowing one to see in the dark.",
+    "rarity": "RARE",
+    "imagePath": "/images/inventory/herbs/Gloomshroom.png",
+    "sellValue": 50,
+    "stackable": true,
+    "equip": { "canEquip": false, "slot": "NONE" }
+  },
+  "VOID_GRAPES": {
+    "name": "Void-Touched Grapes",
+    "description": "A cluster of grapes that seem to absorb all light. Used in powerful spell-enhancing potions.",
+    "rarity": "RARE",
+    "imagePath": "/images/inventory/herbs/VoidGrapes.png",
+    "sellValue": 70,
+    "stackable": true,
+    "equip": { "canEquip": false, "slot": "NONE" }
+  },
+  "SCREAMING_MANDRAKE": {
+    "name": "Screaming Mandrake",
+    "description": "A rare, vaguely humanoid plant whose cry can be fatal. Its root is a powerful alchemical catalyst.",
+    "rarity": "RARE",
+    "imagePath": "/images/inventory/herbs/ScreamingMandrake.png",
+    "sellValue": 100,
+    "stackable": true,
+    "equip": { "canEquip": false, "slot": "NONE" }
+  },
+  "WITCHS_WORT": {
+    "name": "Witch's Wort",
+    "description": "A thorny, twisted vine. Can be crafted into caltrops that damage and slow enemies who walk over them.",
+    "rarity": "UNCOMMON",
+    "imagePath": "/images/inventory/herbs/WitchsWort.png",
+    "sellValue": 18,
+    "stackable": true,
+    "equip": { "canEquip": false, "slot": "NONE" }
+  },
+  "GOBLINS_IVY": {
+    "name": "Goblin's Ivy",
+    "description": "A hardy, fast-growing ivy. Can be woven into a makeshift rope to descend into otherwise unreachable pits.",
+    "rarity": "COMMON",
+    "imagePath": "/images/inventory/herbs/GoblinsIvy.png",
+    "sellValue": 5,
+    "stackable": true,
+    "equip": { "canEquip": false, "slot": "NONE" }
+  },
+  "CAVERN_BEANS": {
+    "name": "Cavern Beans",
+    "description": "Hard beans that grow in the low light of caves. Can be roasted for a simple, nourishing meal.",
+    "rarity": "COMMON",
+    "imagePath": "/images/inventory/herbs/CavernBeans.png",
+    "sellValue": 3,
+    "stackable": true,
+    "equip": { "canEquip": false, "slot": "NONE" }
   }
 }

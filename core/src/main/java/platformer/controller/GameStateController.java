@@ -9,6 +9,7 @@ import platformer.model.entities.AttackState;
 import platformer.model.entities.player.Player;
 import platformer.model.entities.player.PlayerAction;
 import platformer.model.gameObjects.GameObject;
+import platformer.model.gameObjects.objects.Herb;
 import platformer.state.GameState;
 import platformer.state.PlayingState;
 
@@ -197,6 +198,10 @@ public class GameStateController {
         }
         else if (Objects.equals(id, "Table")) {
             gameState.setOverlay(PlayingState.CRAFTING);
+        }
+        else if (Objects.equals(id, "Herb")) {
+            GameObject herb = gameState.getObjectManager().getIntersection();
+            if (herb instanceof Herb) gameState.getObjectManager().harvestHerb((Herb)herb);
         }
         else activateDialogue(id);
     }

@@ -170,6 +170,9 @@ public class Level {
             case SPIKE_RIGHT:
                 addGameObject(new Spike(ObjType.values()[valueB], i*TILES_SIZE, j*TILES_SIZE));
                 break;
+            case HERB:
+                addGameObject(new Herb(ObjType.HERB, i * TILES_SIZE, j * TILES_SIZE));
+                break;
             default: break;
         }
     }

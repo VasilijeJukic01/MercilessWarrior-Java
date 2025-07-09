@@ -53,6 +53,7 @@ public final class FilePaths {
     public static final String LAVA_SHEET = "/images/objs/Lava.png";
     public static final String BRICK_SHEET = "/images/objs/Brick.png";
     public static final String JUMP_PAD_SHEET = "/images/objs/JumpPad.png";
+    public static final String HERB_IMG = "/images/objs/Herb.png";
 
     // NPC
     public static final String ANITA_SHEET = "/images/objs/npc/AnitaSprite.png";

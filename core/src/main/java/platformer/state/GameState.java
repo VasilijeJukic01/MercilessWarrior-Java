@@ -103,6 +103,7 @@ public class GameState extends AbstractState implements State, Subscriber {
     private void initManagers() {
         this.perksManager = new PerksManager();
         this.levelManager = new LevelManager(this);
+        this.effectManager = new EffectManager();
         this.enemyManager = new EnemyManager(this);
         this.objectManager = new ObjectManager(this);
         this.overlayManager = new OverlayManager(this);
@@ -112,7 +113,6 @@ public class GameState extends AbstractState implements State, Subscriber {
         this.questManager = new QuestManager(this);
         this.minimapManager = new MinimapManager(this);
         this.tutorialManager = new TutorialManager(this);
-        this.effectManager = new EffectManager();
         this.eventHandler = new EventHandler(this, this.effectManager);
     }
 

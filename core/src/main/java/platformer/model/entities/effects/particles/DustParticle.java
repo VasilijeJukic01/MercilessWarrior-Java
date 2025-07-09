@@ -54,6 +54,7 @@ public class DustParticle {
             case SW_DASH_SLASH -> initDashSlash();
             case JUMP_PAD -> initJumpPad();
             case THUNDERBOLT_AURA -> initMythicAura(x, y, size);
+            case HERB_CUT -> initHerbCut();
             default -> initDefault(x, y, size);
         }
     }
@@ -249,6 +250,21 @@ public class DustParticle {
         this.xSpeed = 0.02 + rand.nextDouble() * 0.02;
         this.ySpeed = 0;
         this.pulsePhase = rand.nextDouble() * Math.PI * 2;
+    }
+
+    private void initHerbCut() {
+        Random rand = new Random();
+        double angle = rand.nextDouble() * 2 * Math.PI;
+        double speed = (rand.nextDouble() * 1.0 + 0.3) * SCALE;
+        this.xSpeed = Math.cos(angle) * speed;
+        this.ySpeed = Math.sin(angle) * speed;
+        this.gravity = 0.04 * SCALE;
+        this.alphaFadeSpeed = 0.02f;
+        this.particleColor = new Color(50, 140, 50);
+        this.currentAlpha = 1.0f;
+        double particleSize = (rand.nextInt(5) + 4) * SCALE;
+        this.particleShape.width = particleSize;
+        this.particleShape.height = particleSize;
     }
 
     // Core

@@ -174,6 +174,61 @@
       "itemId": "MENDERS_BERRY",
       "stock": 3,
       "cost": 35
+    },
+    {
+      "itemId": "WILD_GRASS",
+      "stock": 25,
+      "cost": 2
+    },
+    {
+      "itemId": "CAVERN_BEANS",
+      "stock": 20,
+      "cost": 6
+    },
+    {
+      "itemId": "GOBLINS_IVY",
+      "stock": 10,
+      "cost": 10
+    },
+    {
+      "itemId": "FAE_LEAF",
+      "stock": 10,
+      "cost": 24
+    },
+    {
+      "itemId": "GHOST_LEAF",
+      "stock": 8,
+      "cost": 30
+    },
+    {
+      "itemId": "WITCHS_WORT",
+      "stock": 8,
+      "cost": 36
+    },
+    {
+      "itemId": "FROST_BLOOM_PETALS",
+      "stock": 5,
+      "cost": 40
+    },
+    {
+      "itemId": "BLOOD_VEIN_LEAF",
+      "stock": 3,
+      "cost": 90
+    },
+    {
+      "itemId": "GLOOMSHROOM",
+      "stock": 3,
+      "cost": 100
+    },
+    {
+      "itemId": "VOID_GRAPES",
+      "stock": 2,
+      "cost": 140
+    },
+    {
+      "itemId": "SCREAMING_MANDRAKE",
+      "stock": 1,
+      "cost": 200
     }
   ]
 }

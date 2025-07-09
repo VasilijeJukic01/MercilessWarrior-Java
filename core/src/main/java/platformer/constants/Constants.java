@@ -106,26 +106,8 @@ public final class Constants {
     public static final double GHOUL_DASH_CD = 6;
 
     // Shop Constants
-    public static final int HEALTH_COST = 10;
-    public static final int STAMINA_COST = 12;
     public static final int HEALTH_VAL = 40;
     public static final int STAMINA_VAL = 40;
-
-    public static final int IRON_COST = 15;
-    public static final int SILVER_COST = 20;
-    public static final int COPPER_COST = 10;
-    public static final int AMETHYST_COST = 30;
-    public static final int SONIC_QUARTZ_COST = 45;
-    public static final int AZURELITE_COST = 100;
-    public static final int ELECTRICITE_COST = 250;
-    public static final int MAGMA_COST = 50;
-    public static final int ROSALLIUM_COST = 270;
-
-    public static final int HELMET_WARRIOR_COST = 80;
-    public static final int ARMOR_WARRIOR_COST = 100;
-    public static final int BRACELETS_WARRIOR_COST = 70;
-    public static final int TROUSERS_WARRIOR_COST = 80;
-    public static final int BOOTS_WARRIOR_COST = 70;
 
     // Level Constants
     public static final int MAX_LEVELS = 4;
@@ -333,6 +315,13 @@ public final class Constants {
     public static final int JUMP_PAD_HB_HEI = scale(20);
     public static final int JUMP_PAD_OFFSET_X = scale(1);
     public static final int JUMP_PAD_OFFSET_Y = scale(15);
+
+    public static final int HERB_WID = scale(36);
+    public static final int HERB_HEI = scale(48);
+    public static final int HERB_HB_WID = scale(26);
+    public static final int HERB_HB_HEI = scale(28);
+    public static final int HERB_OFFSET_X = scale(6);
+    public static final int HERB_OFFSET_Y = scale(3);
 
     // Projectile Constants
     public static final int ARROW_WID = scale(32);

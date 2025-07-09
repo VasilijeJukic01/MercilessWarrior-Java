@@ -4,6 +4,7 @@ import platformer.animation.Animation;
 import platformer.audio.Audio;
 import platformer.audio.types.Sound;
 import platformer.model.entities.Direction;
+import platformer.model.entities.effects.particles.DustType;
 import platformer.model.entities.enemies.Enemy;
 import platformer.model.entities.enemies.boss.SpearWoman;
 import platformer.model.entities.player.Player;
@@ -14,6 +15,7 @@ import platformer.model.gameObjects.projectiles.Arrow;
 import platformer.model.gameObjects.projectiles.Fireball;
 import platformer.model.gameObjects.projectiles.LightningBall;
 import platformer.model.gameObjects.projectiles.Projectile;
+import platformer.model.inventory.InventoryItem;
 import platformer.model.levels.Level;
 import platformer.model.perks.PerksBonus;
 import platformer.model.quests.QuestManager;
@@ -53,7 +55,8 @@ public class ObjectManager implements Publisher {
             Coin.class, Container.class, Potion.class, Spike.class,
             Shop.class, Blocker.class, Blacksmith.class, Dog.class,
             SaveTotem.class, SmashTrap.class, Candle.class, Loot.class,
-            Table.class, Board.class, Npc.class, Lava.class, Brick.class, JumpPad.class
+            Table.class, Board.class, Npc.class, Lava.class, Brick.class,
+            JumpPad.class, Herb.class
     };
     Class<? extends GameObject>[] renderBelow = new Class[] {
             Container.class, Potion.class, Spike.class,
@@ -61,13 +64,18 @@ public class ObjectManager implements Publisher {
     };
     Class<? extends GameObject>[] renderAbove = new Class[] {
             SaveTotem.class, Shop.class, Blacksmith.class, Coin.class,
-            Table.class, Board.class, JumpPad.class
+            Table.class, Board.class, JumpPad.class, Herb.class
     };
     Class<? extends GameObject>[] renderBehind = new Class[] {
             Lava.class
     };
 
     private Map<ObjType, List<GameObject>> objectsMap = new HashMap<>();
+
+    private static final List<String> HERB_LOOT_TABLE = List.of(
+            "WILD_GRASS", "CAVERN_BEANS", "GOBLINS_IVY",
+            "FAE_LEAF", "GHOST_LEAF", "WITCHS_WORT", "FROST_BLOOM_PETALS"
+    );
 
     private BufferedImage projectileArrow;
     private BufferedImage[] fireball, projectileLightningBall, projectileLightningBall2;
@@ -127,6 +135,22 @@ public class ObjectManager implements Publisher {
      */
     public void handleObjectInteraction(Rectangle2D.Double hitBox, Player player) {
         intersectionHandler.handleObjectInteraction(hitBox, player);
+    }
+
+    // TODO: Think about creating LootHandler
+    /**
+     * Handles the logic for harvesting a herb.
+     *
+     * @param herb The Herb object to be harvested.
+     */
+    public void harvestHerb(Herb herb) {
+        if (herb == null || !herb.isAlive()) return;
+        gameState.getEffectManager().spawnDustParticles(herb.getHitBox().getCenterX(), herb.getHitBox().getCenterY() - (10 * SCALE), 15, DustType.HERB_CUT, 0, null);
+        Random rand = new Random();
+        String randomHerbId = HERB_LOOT_TABLE.get(rand.nextInt(HERB_LOOT_TABLE.size()));
+        InventoryItem item = new InventoryItem(randomHerbId, 1);
+        gameState.getPlayer().getInventory().addItemToBackpack(item);
+        herb.harvest();
     }
 
     // Collision Handler

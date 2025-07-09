@@ -106,6 +106,9 @@ public class EffectManager {
                 case THUNDERBOLT_AURA:
                     size = (int)((new Random().nextInt(2) + 2) * SCALE);
                     break;
+                case HERB_CUT:
+                    size = (int) ((rand.nextInt(3) + 2) * SCALE);
+                    break;
             }
             DustParticle particle = new DustParticle((int) x, (int) (y + yOffset), size, type, flipSign, target);
 

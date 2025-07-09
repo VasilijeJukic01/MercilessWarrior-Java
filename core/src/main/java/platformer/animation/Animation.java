@@ -155,7 +155,7 @@ public class Animation {
 
     // Objects
     public BufferedImage[][] loadObjects() {
-        BufferedImage[][] anim = new BufferedImage[25][17];
+        BufferedImage[][] anim = new BufferedImage[26][17];
 
         anim[ObjType.STAMINA_POTION.ordinal()] = loadFromSprite(POTIONS_SHEET, 7, 0, POTION_WID, POTION_HEI, 0, POTION_W, POTION_H);
         anim[ObjType.HEAL_POTION.ordinal()] = loadFromSprite(POTIONS_SHEET, 7, 1, POTION_WID, POTION_HEI, 0, POTION_W, POTION_H);
@@ -181,6 +181,7 @@ public class Animation {
         anim[ObjType.SPIKE_DOWN.ordinal()] = new BufferedImage[]{Utils.getInstance().rotateImage(anim[ObjType.SPIKE_UP.ordinal()][5], 180)};
         anim[ObjType.SPIKE_LEFT.ordinal()] = new BufferedImage[]{Utils.getInstance().rotateImage(anim[ObjType.SPIKE_UP.ordinal()][5], 270)};
         anim[ObjType.SPIKE_RIGHT.ordinal()] = new BufferedImage[]{Utils.getInstance().rotateImage(anim[ObjType.SPIKE_UP.ordinal()][5], 90)};
+        anim[ObjType.HERB.ordinal()] = loadFromSprite(HERB_IMG, 1, 0, HERB_WID, HERB_HEI, 0, HERB_W, HERB_H);
 
         return anim;
     }

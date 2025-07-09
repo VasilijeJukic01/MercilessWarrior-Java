@@ -50,6 +50,7 @@ public final class AnimConstants {
     public static final int LAVA_W = 32, LAVA_H = 32;
     public static final int BRICK_W = 32, BRICK_H = 32;
     public static final int JUMP_PAD_W = 512, JUMP_PAD_H = 512;
+    public static final int HERB_W = 512, HERB_H = 512;
 
     public static final int LIGHTNING_W = 128, LIGHTNING_H = 512;
     public static final int FLASH_W = 192, FLASH_H = 984;
