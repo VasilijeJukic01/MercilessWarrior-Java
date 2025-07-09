@@ -2,6 +2,8 @@ package platformer.ui;
 
 import lombok.Getter;
 import lombok.Setter;
+import platformer.model.inventory.ItemData;
+import platformer.model.inventory.ItemDatabase;
 import platformer.model.quests.Quest;
 import platformer.model.quests.QuestType;
 
@@ -52,9 +54,14 @@ public class QuestSlot {
                 String progress = String.format("Progress: (%d%%)", percent);
                 g.drawString(progress, xPos + (int)(SCALE * 117), yPos + (int)(SCALE * 37));
             }
-            if (quest.getItemRewards() != null)
+            if (quest.getItemRewards() != null) {
                 quest.getItemRewards()
-                        .forEach((item, amount) -> g.drawString("Reward: "+amount+"x "+item.getName(), xPos + (int)(SCALE * 10), yPos + (int)(SCALE * 37)));
+                        .forEach((itemId, amount) -> {
+                            ItemData data = ItemDatabase.getInstance().getItemData(itemId);
+                            String name = (data != null) ? data.name : "Unknown Item";
+                            g.drawString("Reward: " + amount + "x " + name, xPos + (int) (SCALE * 10), yPos + (int) (SCALE * 37));
+                        });
+            }
         }
     }
 

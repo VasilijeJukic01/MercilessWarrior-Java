@@ -1,29 +1,30 @@
 package platformer.model.gameObjects.objects;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import platformer.audio.Audio;
 import platformer.audio.types.Sound;
+import platformer.debug.logger.Logger;
+import platformer.debug.logger.Message;
 import platformer.model.entities.player.Player;
 import platformer.model.gameObjects.GameObject;
 import platformer.model.gameObjects.ObjType;
-import platformer.model.inventory.Inventory;
-import platformer.model.inventory.InventoryItem;
-import platformer.model.inventory.ItemType;
-import platformer.model.inventory.ShopItem;
+import platformer.model.inventory.*;
 import platformer.model.quests.ObjectiveTarget;
 import platformer.model.quests.QuestManager;
 import platformer.model.quests.QuestObjectiveType;
 import platformer.observer.Publisher;
 import platformer.observer.Subscriber;
-import platformer.utils.Utils;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
+import java.io.InputStreamReader;
+import java.lang.reflect.Type;
+import java.util.*;
 import java.util.List;
-import java.util.Optional;
-import java.util.Random;
 
 import static platformer.constants.Constants.*;
+import static platformer.constants.FilePaths.SHOP_INV_PATH;
 
 @SuppressWarnings("unchecked")
 public class Shop extends GameObject implements Publisher {
@@ -37,7 +38,7 @@ public class Shop extends GameObject implements Publisher {
         super(objType, xPos, yPos);
         this.shopItems = new ArrayList<>();
         generateHitBox();
-        initItems();
+        loadShopInventory("DEFAULT_SHOP");
     }
 
     // Init
@@ -48,30 +49,23 @@ public class Shop extends GameObject implements Publisher {
         super.yOffset = SHOP_OFFSET_Y;
     }
 
-    private void addShopItem(ItemType type, int minQuantity, int maxQuantity, int cost) {
-        BufferedImage itemImg = Utils.getInstance().importImage(type.getImg(), -1, -1);
-        int randomQuantity = new Random().nextInt(maxQuantity - minQuantity + 1) + minQuantity;
-        shopItems.add(new ShopItem(type, itemImg, randomQuantity, cost));
-    }
+    private void loadShopInventory(String shopId) {
+        try (InputStreamReader reader = new InputStreamReader(Objects.requireNonNull(getClass().getResourceAsStream(SHOP_INV_PATH)))) {
+            Type type = new TypeToken<Map<String, List<Map<String, Object>>>>() {}.getType();
+            Map<String, List<Map<String, Object>>> allShops = new Gson().fromJson(reader, type);
 
-    private void initItems() {
-        addShopItem(ItemType.HEALTH,            1, 10, HEALTH_COST);
-        addShopItem(ItemType.STAMINA,           1, 6, STAMINA_COST);
-        addShopItem(ItemType.IRON,              16, 25, IRON_COST);
-        addShopItem(ItemType.SILVER,            16, 25, SILVER_COST);
-        addShopItem(ItemType.COPPER,            16, 25, COPPER_COST);
-        addShopItem(ItemType.AMETHYST,          1, 5, AMETHYST_COST);
-        addShopItem(ItemType.SONIC_QUARTZ,      1, 3, SONIC_QUARTZ_COST);
-        addShopItem(ItemType.MAGMA,             1, 4, MAGMA_COST);
-        addShopItem(ItemType.AZURELITE,         1, 2, AZURELITE_COST);
-        addShopItem(ItemType.ELECTRICITE,       1, 1, ELECTRICITE_COST);
-        addShopItem(ItemType.ROSALLIUM,         1, 1, ROSALLIUM_COST);
-
-        addShopItem(ItemType.HELMET_WARRIOR,    1, 1, HELMET_WARRIOR_COST);
-        addShopItem(ItemType.ARMOR_WARRIOR,     1, 1, ARMOR_WARRIOR_COST);
-        addShopItem(ItemType.BRACELETS_WARRIOR, 1, 1, BRACELETS_WARRIOR_COST);
-        addShopItem(ItemType.TROUSERS_WARRIOR,  1, 1, TROUSERS_WARRIOR_COST);
-        addShopItem(ItemType.BOOTS_WARRIOR,     1, 1, BOOTS_WARRIOR_COST);
+            List<Map<String, Object>> itemsForShop = allShops.get(shopId);
+            if (itemsForShop != null) {
+                for (Map<String, Object> itemMap : itemsForShop) {
+                    String itemId = (String) itemMap.get("itemId");
+                    int stock = ((Double) itemMap.get("stock")).intValue();
+                    int cost = ((Double) itemMap.get("cost")).intValue();
+                    shopItems.add(new ShopItem(itemId, stock, cost));
+                }
+            }
+        } catch (Exception e) {
+            Logger.getInstance().notify("Error loading shop inventory!", Message.ERROR);
+        }
     }
 
     // Actions
@@ -80,50 +74,53 @@ public class Shop extends GameObject implements Publisher {
         ShopItem item = shopItems.get(slot);
         if (player.getCoins() >= item.getCost()) {
             player.changeCoins(-item.getCost());
-            item.setAmount(item.getAmount()-1);
-            if (item.getAmount() == 0) shopItems.remove(item);
+            item.setStock(item.getStock() - 1);
+            if (item.getStock() == 0) shopItems.remove(item);
             Audio.getInstance().getAudioPlayer().playSound(Sound.SHOP_BUY);
-            switch(item.getItemType()) {
-                case HEALTH: player.changeHealth(HEALTH_VAL); break;
-                case STAMINA: player.changeStamina(STAMINA_VAL); break;
-                default: addToInventory(player, item.getItemType()); break;
-            }
+
+            // TODO: Change healing logic
+            if (item.getItemId().equals("HEALTH")) player.changeHealth(HEALTH_VAL);
+            else if (item.getItemId().equals("STAMINA")) player.changeStamina(STAMINA_VAL);
+            else addToInventory(player, item.getItemId());
         }
     }
 
     public void sellItem(Player player, int slot) {
         Inventory inventory = player.getInventory();
         if (slot >= inventory.getBackpack().size()) return;
-        InventoryItem item = inventory.getBackpack().get(slot);
-        if (item.getAmount() > 0) {
-            player.changeCoins(item.getItemType().getSellValue());
-            item.setAmount(item.getAmount()-1);
-            if (item.getAmount() == 0) inventory.getBackpack().remove(item);
+        InventoryItem itemToSell = inventory.getBackpack().get(slot);
+
+        if (itemToSell.getAmount() > 0) {
+            ItemData data = itemToSell.getData();
+            if (data == null) return;
+            player.changeCoins(data.sellValue);
+            itemToSell.setAmount(itemToSell.getAmount() - 1);
+            if (itemToSell.getAmount() == 0) inventory.getBackpack().remove(itemToSell);
             Audio.getInstance().getAudioPlayer().playSound(Sound.SHOP_BUY);
-            addToShop(item);
+            addToShop(itemToSell);
         }
     }
 
-    private void addToInventory(Player player, ItemType item) {
+    private void addToInventory(Player player, String itemId) {
         Inventory inventory = player.getInventory();
-
         Optional<InventoryItem> existingItem = inventory.getBackpack().stream()
-                .filter(inventoryItem -> inventoryItem.getItemType() == item)
+                .filter(invItem -> invItem.getItemId().equals(itemId))
                 .findFirst();
 
-        if (item == ItemType.ARMOR_WARRIOR) notify(QuestObjectiveType.COLLECT, ObjectiveTarget.BUY_ARMOR);
-
+        if (itemId.equals("ARMOR_WARRIOR")) notify(QuestObjectiveType.COLLECT, ObjectiveTarget.BUY_ARMOR);
         if (existingItem.isPresent()) existingItem.get().addAmount(1);
-        else inventory.getBackpack().add(new InventoryItem(item, getImageModel(item), 1));
+        else inventory.getBackpack().add(new InventoryItem(itemId, 1));
     }
 
     private void addToShop(InventoryItem inventoryItem) {
         Optional<ShopItem> existingItem = shopItems.stream()
-                .filter(shopItem -> shopItem.getItemType() == inventoryItem.getItemType())
+                .filter(shopItem -> shopItem.getItemId().equals(inventoryItem.getItemId()))
                 .findFirst();
 
-        if (existingItem.isPresent()) existingItem.get().addAmount(1);
-        else shopItems.add(new ShopItem(inventoryItem.getItemType(), inventoryItem.getModel(), 1, inventoryItem.getItemType().getSellValue()));
+        ItemData data = inventoryItem.getData();
+        if (data == null) return;
+        if (existingItem.isPresent()) existingItem.get().addStock(1);
+        else shopItems.add(new ShopItem(inventoryItem.getItemId(), 1, data.sellValue));
     }
 
     // Core
@@ -171,10 +168,6 @@ public class Shop extends GameObject implements Publisher {
 
     public ArrayList<ShopItem> getShopItems() {
         return shopItems;
-    }
-
-    private BufferedImage getImageModel(ItemType type) {
-        return Utils.getInstance().importImage(type.getImg(), -1, -1);
     }
 
     @Override

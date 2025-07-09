@@ -120,30 +120,7 @@ public final class FilePaths {
 
     // Inventory / Shop
     public static final String RECIPES_PATH = "/items/recipes.json";
-
-    public static final String HEALTH_ITEM = "/images/inventory/HealthItem.png";
-    public static final String STAMINA_ITEM = "/images/inventory/StaminaItem.png";
-    public static final String IRON_ORE_ITEM = "/images/inventory/IronOre.png";
-    public static final String SILVER_ORE_ITEM = "/images/inventory/SilverOre.png";
-    public static final String COPPER_ORE_ITEM = "/images/inventory/CopperOre.png";
-    public static final String AMETHYST_ORE_ITEM = "/images/inventory/AmethystOre.png";
-    public static final String SONIC_QUARTZ_ORE_ITEM = "/images/inventory/SonicQuartzOre.png";
-    public static final String AZURELITE_ORE_ITEM = "/images/inventory/AzureliteOre.png";
-    public static final String ELECTRICITE_ORE_ITEM = "/images/inventory/ElectriciteOre.png";
-    public static final String MAGMA_ORE_ITEM = "/images/inventory/MagmaOre.png";
-    public static final String ROSALLIUM_ORE_ITEM = "/images/inventory/RosalliumOre.png";
-    public static final String WRAITH_ESSENCE_ITEM = "/images/inventory/WraithEssence.png";
-
-    public static final String WARRIOR_HELMET = "/images/inventory/WarriorHelmet.png";
-    public static final String WARRIOR_ARMOR = "/images/inventory/WarriorArmor.png";
-    public static final String WARRIOR_BRACELETS = "/images/inventory/WarriorBracelets.png";
-    public static final String WARRIOR_TROUSERS = "/images/inventory/WarriorTrousers.png";
-    public static final String WARRIOR_BOOTS = "/images/inventory/WarriorBoots.png";
-
-    public static final String GUARDIAN_ARMOR = "/images/inventory/GuardianArmor.png";
-    public static final String AMETHYST_RING = "/images/inventory/AmethystRing.png";
-    public static final String THUNDERBOLT_CHARM = "/images/inventory/ThunderboltCharm.png";
-
+    public static final String SHOP_INV_PATH = "/items/shop_inventory.json";
     public static final String PLAYER_ICON = "/images/inventory/Player.png";
 
     // Quests

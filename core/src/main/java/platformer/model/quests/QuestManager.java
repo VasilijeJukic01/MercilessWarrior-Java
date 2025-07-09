@@ -5,7 +5,6 @@ import com.google.gson.reflect.TypeToken;
 import lombok.Getter;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
-import platformer.model.inventory.ItemType;
 import platformer.observer.Subscriber;
 import platformer.state.GameState;
 import platformer.ui.QuestSlot;
@@ -48,7 +47,6 @@ public class QuestManager implements Subscriber {
 
     public void loadQuests(String filePath) {
         GsonBuilder gsonBuilder = new GsonBuilder();
-        gsonBuilder.registerTypeAdapter(new TypeToken<Map<ItemType, Integer>>() {}.getType(), new ItemTypeMapDeserializer());
         gsonBuilder.registerTypeAdapter(QuestType.class, new QuestTypeDeserializer());
         gsonBuilder.registerTypeAdapter(QuestObjectiveType.class, new QuestObjectiveTypeDeserializer());
         gsonBuilder.registerTypeAdapter(ObjectiveTarget.class, new ObjectiveTargetDeserializer());
@@ -223,24 +221,6 @@ public class QuestManager implements Subscriber {
     }
 
     // Custom Deserializers
-    private static class ItemTypeMapDeserializer implements JsonDeserializer<Map<ItemType, Integer>> {
-        @Override
-        public Map<ItemType, Integer> deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
-            JsonObject jsonObject = json.getAsJsonObject();
-            Map<ItemType, Integer> itemMap = new HashMap<>();
-            for (Map.Entry<String, JsonElement> entry : jsonObject.entrySet()) {
-                try {
-                    ItemType itemType = ItemType.valueOf(entry.getKey());
-                    Integer quantity = entry.getValue().getAsInt();
-                    itemMap.put(itemType, quantity);
-                } catch (IllegalArgumentException e) {
-                    System.err.println("Warning: Unknown ItemType in quests.json: " + entry.getKey());
-                }
-            }
-            return itemMap;
-        }
-    }
-
     private static class QuestTypeDeserializer implements JsonDeserializer<QuestType> {
         @Override
         public QuestType deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) {

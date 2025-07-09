@@ -1,0 +1,84 @@
+{
+  "DEFAULT_SHOP": [
+    {
+      "itemId": "HEALTH",
+      "stock": 10,
+      "cost": 10
+    },
+    {
+      "itemId": "STAMINA",
+      "stock": 6,
+      "cost": 12
+    },
+    {
+      "itemId": "IRON_ORE",
+      "stock": 25,
+      "cost": 15
+    },
+    {
+      "itemId": "SILVER_ORE",
+      "stock": 25,
+      "cost": 20
+    },
+    {
+      "itemId": "COPPER_ORE",
+      "stock": 25,
+      "cost": 10
+    },
+    {
+      "itemId": "AMETHYST_ORE",
+      "stock": 5,
+      "cost": 30
+    },
+    {
+      "itemId": "SONIC_QUARTZ_ORE",
+      "stock": 3,
+      "cost": 45
+    },
+    {
+      "itemId": "MAGMA_ORE",
+      "stock": 4,
+      "cost": 50
+    },
+    {
+      "itemId": "AZURELITE_ORE",
+      "stock": 2,
+      "cost": 100
+    },
+    {
+      "itemId": "ELECTRICITE_ORE",
+      "stock": 1,
+      "cost": 250
+    },
+    {
+      "itemId": "ROSALLIUM_ORE",
+      "stock": 1,
+      "cost": 270
+    },
+    {
+      "itemId": "HELMET_WARRIOR",
+      "stock": 1,
+      "cost": 80
+    },
+    {
+      "itemId": "ARMOR_WARRIOR",
+      "stock": 1,
+      "cost": 100
+    },
+    {
+      "itemId": "BRACELETS_WARRIOR",
+      "stock": 1,
+      "cost": 70
+    },
+    {
+      "itemId": "TROUSERS_WARRIOR",
+      "stock": 1,
+      "cost": 80
+    },
+    {
+      "itemId": "BOOTS_WARRIOR",
+      "stock": 1,
+      "cost": 70
+    }
+  ]
+}

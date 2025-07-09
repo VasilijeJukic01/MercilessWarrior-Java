@@ -1,0 +1,276 @@
+{
+  "HEALTH": {
+    "name": "Health",
+    "description": "Restores a small amount of health.",
+    "rarity": "COMMON",
+    "imagePath": "/images/inventory/HealthItem.png",
+    "sellValue": 0,
+    "stackable": true,
+    "equip": {
+      "canEquip": false,
+      "slot": "NONE"
+    }
+  },
+  "STAMINA": {
+    "name": "Stamina",
+    "description": "Restores a small amount of stamina.",
+    "rarity": "COMMON",
+    "imagePath": "/images/inventory/StaminaItem.png",
+    "sellValue": 0,
+    "stackable": true,
+    "equip": {
+      "canEquip": false,
+      "slot": "NONE"
+    }
+  },
+  "COPPER_ORE": {
+    "name": "Copper Ore",
+    "description": "Ingredient for crafting",
+    "rarity": "COMMON",
+    "imagePath": "/images/inventory/CopperOre.png",
+    "sellValue": 2,
+    "stackable": true,
+    "equip": {
+      "canEquip": false,
+      "slot": "NONE"
+    }
+  },
+  "IRON_ORE": {
+    "name": "Iron Ore",
+    "description": "Ingredient for crafting",
+    "rarity": "UNCOMMON",
+    "imagePath": "/images/inventory/IronOre.png",
+    "sellValue": 5,
+    "stackable": true,
+    "equip": {
+      "canEquip": false,
+      "slot": "NONE"
+    }
+  },
+  "SILVER_ORE": {
+    "name": "Silver Ore",
+    "description": "Ingredient for crafting",
+    "rarity": "UNCOMMON",
+    "imagePath": "/images/inventory/SilverOre.png",
+    "sellValue": 7,
+    "stackable": true,
+    "equip": {
+      "canEquip": false,
+      "slot": "NONE"
+    }
+  },
+  "AMETHYST_ORE": {
+    "name": "Amethyst Ore",
+    "description": "Ingredient for crafting",
+    "rarity": "RARE",
+    "imagePath": "/images/inventory/AmethystOre.png",
+    "sellValue": 10,
+    "stackable": true,
+    "equip": {
+      "canEquip": false,
+      "slot": "NONE"
+    }
+  },
+  "SONIC_QUARTZ_ORE": {
+    "name": "Sonic Quartz Ore",
+    "description": "Ingredient for crafting",
+    "rarity": "RARE",
+    "imagePath": "/images/inventory/SonicQuartzOre.png",
+    "sellValue": 15,
+    "stackable": true,
+    "equip": {
+      "canEquip": false,
+      "slot": "NONE"
+    }
+  },
+  "MAGMA_ORE": {
+    "name": "Magma Ore",
+    "description": "Ingredient for crafting",
+    "rarity": "RARE",
+    "imagePath": "/images/inventory/MagmaOre.png",
+    "sellValue": 20,
+    "stackable": true,
+    "equip": {
+      "canEquip": false,
+      "slot": "NONE"
+    }
+  },
+  "AZURELITE_ORE": {
+    "name": "Azurelite Ore",
+    "description": "Ingredient for crafting",
+    "rarity": "EPIC",
+    "imagePath": "/images/inventory/AzureliteOre.png",
+    "sellValue": 50,
+    "stackable": true,
+    "equip": {
+      "canEquip": false,
+      "slot": "NONE"
+    }
+  },
+  "ELECTRICITE_ORE": {
+    "name": "Electricite Ore",
+    "description": "Ingredient for crafting",
+    "rarity": "LEGENDARY",
+    "imagePath": "/images/inventory/ElectriciteOre.png",
+    "sellValue": 80,
+    "stackable": true,
+    "equip": {
+      "canEquip": false,
+      "slot": "NONE"
+    }
+  },
+  "ROSALLIUM_ORE": {
+    "name": "Rosallium Ore",
+    "description": "Ingredient for crafting",
+    "rarity": "LEGENDARY",
+    "imagePath": "/images/inventory/RosalliumOre.png",
+    "sellValue": 100,
+    "stackable": true,
+    "equip": {
+      "canEquip": false,
+      "slot": "NONE"
+    }
+  },
+  "WRAITH_ESSENCE": {
+    "name": "Wraith Essence",
+    "description": "Essence of a wraith",
+    "rarity": "RARE",
+    "imagePath": "/images/inventory/WraithEssence.png",
+    "sellValue": 18,
+    "stackable": true,
+    "equip": {
+      "canEquip": false,
+      "slot": "NONE"
+    }
+  },
+  "HELMET_WARRIOR": {
+    "name": "Warrior Helmet",
+    "description": "Helmet designed specifically for warriors \nwhich provides solid protection during combat. \n\nHealth Bonus +3%\nDefense Bonus +5%",
+    "rarity": "MYTHIC",
+    "imagePath": "/images/inventory/WarriorHelmet.png",
+    "sellValue": 30,
+    "stackable": false,
+    "equip": {
+      "canEquip": true,
+      "slot": "Helmet",
+      "bonuses": {
+        "health": 3.0,
+        "defense": 5.0
+      }
+    }
+  },
+  "ARMOR_WARRIOR": {
+    "name": "Warrior Armor",
+    "description": "Warrior Armor is a rugged combat attire \ndesigned specifically for warriors.\n\nHealth Bonus +5%\nSpell Bonus +5%",
+    "rarity": "UNCOMMON",
+    "imagePath": "/images/inventory/WarriorArmor.png",
+    "sellValue": 40,
+    "stackable": false,
+    "equip": {
+      "canEquip": true,
+      "slot": "Armor",
+      "bonuses": {
+        "health": 5.0,
+        "spell": 5.0
+      }
+    }
+  },
+  "BRACELETS_WARRIOR": {
+    "name": "Warrior Bracelets",
+    "description": "These Warrior Bracelets are wristbands\ntailored for warriors, enhancing their \nprotection in battle. \n\nAttack Bonus +5%\nCritical Bonus +3%",
+    "rarity": "UNCOMMON",
+    "imagePath": "/images/inventory/WarriorBracelets.png",
+    "sellValue": 20,
+    "stackable": false,
+    "equip": {
+      "canEquip": true,
+      "slot": "Bracelets",
+      "bonuses": {
+        "attack": 5.0,
+        "critical": 3.0
+      }
+    }
+  },
+  "TROUSERS_WARRIOR": {
+    "name": "Warrior Trousers",
+    "description": "Warrior Trousers are specialized pants \ncrafted to provide warriors with both \ncomfort and protection. \n\nDefense Bonus +3%\nStamina Bonus +5%",
+    "rarity": "UNCOMMON",
+    "imagePath": "/images/inventory/WarriorTrousers.png",
+    "sellValue": 30,
+    "stackable": false,
+    "equip": {
+      "canEquip": true,
+      "slot": "Trousers",
+      "bonuses": {
+        "defense": 3.0,
+        "stamina": 5.0
+      }
+    }
+  },
+  "BOOTS_WARRIOR": {
+    "name": "Warrior Boots",
+    "description": "These boots are customized to meet the \ndemands of warriors. \n\nStamina Bonus +3%\nCooldown Bonus +3%",
+    "rarity": "UNCOMMON",
+    "imagePath": "/images/inventory/WarriorBoots.png",
+    "sellValue": 20,
+    "stackable": false,
+    "equip": {
+      "canEquip": true,
+      "slot": "Boots",
+      "bonuses": {
+        "stamina": 3.0,
+        "cooldown": 3.0
+      }
+    }
+  },
+  "ARMOR_GUARDIAN": {
+    "name": "Guardian Armor",
+    "description": "Powerful ancient armor.\n\nHealth Bonus +10%\nAttack Bonus +5%",
+    "rarity": "RARE",
+    "imagePath": "/images/inventory/GuardianArmor.png",
+    "sellValue": 80,
+    "stackable": false,
+    "equip": {
+      "canEquip": true,
+      "slot": "Armor",
+      "bonuses": {
+        "health": 10.0,
+        "attack": 5.0
+      }
+    }
+  },
+  "RING_AMETHYST": {
+    "name": "Amethyst Ring",
+    "description": "This ring is a very rare piece of equipment.\n\nStamina Bonus +8%\nSpell Bonus +8%\nCooldown Bonus +5%",
+    "rarity": "EPIC",
+    "imagePath": "/images/inventory/AmethystRing.png",
+    "sellValue": 120,
+    "stackable": false,
+    "equip": {
+      "canEquip": true,
+      "slot": "Ring",
+      "bonuses": {
+        "stamina": 8.0,
+        "spell": 8.0,
+        "cooldown": 5.0
+      }
+    }
+  },
+  "CHARM_THUNDERBOLT": {
+    "name": "Thunderbolt Charm",
+    "description": "This charm is a very rare piece of equipment.\n\nHealth Bonus +15%\nAttack Bonus +10%\nCritical Bonus +10%",
+    "rarity": "MYTHIC",
+    "imagePath": "/images/inventory/ThunderboltCharm.png",
+    "sellValue": 500,
+    "stackable": false,
+    "equip": {
+      "canEquip": true,
+      "slot": "Charm",
+      "bonuses": {
+        "health": 15.0,
+        "attack": 10.0,
+        "critical": 10.0
+      }
+    }
+  }
+}

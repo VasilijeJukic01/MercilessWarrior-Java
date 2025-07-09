@@ -3,17 +3,17 @@
     "output": "ARMOR_GUARDIAN",
     "amount": 1,
     "ingredients": {
-      "IRON": 3,
-      "SONIC_QUARTZ": 1,
-      "ELECTRICITE": 1
+      "IRON_ORE": 3,
+      "SONIC_QUARTZ_ORE": 1,
+      "ELECTRICITE_ORE": 1
     }
   },
   {
     "output": "RING_AMETHYST",
     "amount": 1,
     "ingredients": {
-      "COPPER": 4,
-      "AMETHYST": 3
+      "COPPER_ORE": 4,
+      "AMETHYST_ORE": 3
     }
   }
 ]

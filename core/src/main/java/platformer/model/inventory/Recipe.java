@@ -4,11 +4,11 @@ import java.util.Map;
 
 public class Recipe {
 
-    private ItemType output;
+    private String  output;
     private int amount;
-    private Map<ItemType, Integer> ingredients;
+    private Map<String, Integer> ingredients;
 
-    public ItemType getOutput() {
+    public String getOutput() {
         return output;
     }
 
@@ -16,7 +16,7 @@ public class Recipe {
         return amount;
     }
 
-    public Map<ItemType, Integer> getIngredients() {
+    public Map<String, Integer> getIngredients() {
         return ingredients;
     }
 }

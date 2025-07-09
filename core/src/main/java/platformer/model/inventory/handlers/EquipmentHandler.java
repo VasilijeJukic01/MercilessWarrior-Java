@@ -1,6 +1,8 @@
 package platformer.model.inventory.handlers;
 
+import platformer.model.inventory.InventoryBonus;
 import platformer.model.inventory.InventoryItem;
+import platformer.model.inventory.ItemData;
 
 import java.util.HashMap;
 import java.util.List;
@@ -14,27 +16,21 @@ import java.util.Optional;
 public class EquipmentHandler {
 
     private final InventoryItem[] equipped = new InventoryItem[6];
-    private final Map<String, Integer> equipment;
-
-    private final BonusHandler bonusHandler;
+    private final Map<String, Integer> equipmentSlots;
 
     public EquipmentHandler() {
-        this.equipment = new HashMap<>();
-        this.bonusHandler = new BonusHandler();
-        initEquipment();
+        this.equipmentSlots = new HashMap<>();
+        initEquipmentSlots();
     }
 
-    /**
-     * Initializes the equipment map with predefined equipment slots.
-     */
-    private void initEquipment() {
-        equipment.put("Helmet",     0);
-        equipment.put("Armor",      2);
-        equipment.put("Bracelets",  4);
-        equipment.put("Trousers",   1);
-        equipment.put("Ring",       3);
-        equipment.put("Charm",      3);
-        equipment.put("Boots",      5);
+    private void initEquipmentSlots() {
+        equipmentSlots.put("Helmet", 0);
+        equipmentSlots.put("Trousers", 1);
+        equipmentSlots.put("Armor", 2);
+        equipmentSlots.put("Ring", 3);
+        equipmentSlots.put("Charm", 3);
+        equipmentSlots.put("Bracelets", 4);
+        equipmentSlots.put("Boots", 5);
     }
 
     /**
@@ -49,24 +45,20 @@ public class EquipmentHandler {
         List<InventoryItem> backpack = backpackHandler.getBackpack();
         if (index >= backpack.size()) return;
         InventoryItem itemToEquip = backpack.get(index);
-        if (!itemToEquip.getItemType().canEquip()) return;
-
-        Optional<Integer> slotIndexOptional = getSlotIndexForItem(itemToEquip);
+        ItemData data = itemToEquip.getData();
+        if (data == null || data.equip == null || !data.equip.canEquip) return;
+        Optional<Integer> slotIndexOptional = getSlotIndexForItem(data.equip.slot);
         if (slotIndexOptional.isEmpty()) return;
         int slotIndex = slotIndexOptional.get();
 
         // If slot is already occupied, we should unequip the existing item
         if (equipped[slotIndex] != null) {
-            unequipItem(slotIndex, backpackHandler, false);
+            unequipItem(slotIndex, backpackHandler);
         }
 
         equipped[slotIndex] = itemToEquip;
-        bonusHandler.applyBonus(itemToEquip.getItemType());
+        applyBonus(itemToEquip);
         backpackHandler.dropItem(index, true);
-    }
-
-    public void unequipItem(int index, BackpackHandler backpackHandler) {
-        unequipItem(index, backpackHandler, true);
     }
 
     /**
@@ -76,36 +68,45 @@ public class EquipmentHandler {
      *
      * @param index The index of the item in the equipment to be unequipped.
      * @param backpackHandler The BackpackHandler instance used to manage backpack-related operations.
-     * @param dropFromBackpack Whether to drop the item from the backpack or not.
      */
-    private void unequipItem(int index, BackpackHandler backpackHandler, boolean dropFromBackpack) {
+    public void unequipItem(int index, BackpackHandler backpackHandler) {
         if (index >= equipped.length || equipped[index] == null) return;
 
         InventoryItem itemToUnequip = equipped[index];
-        bonusHandler.removeBonus(itemToUnequip.getItemType());
-        backpackHandler.addItemAmountToBackpack(itemToUnequip, 1);
+        removeBonus(itemToUnequip);
+        backpackHandler.addItemToBackpack(itemToUnequip);
         equipped[index] = null;
     }
 
+    private void applyBonus(InventoryItem item) {
+        ItemData.EquipmentData equipData = item.getData().equip;
+        if (equipData != null && equipData.bonuses != null) {
+            equipData.bonuses.forEach(InventoryBonus.getInstance()::addBonus);
+        }
+    }
+
+    private void removeBonus(InventoryItem item) {
+        ItemData.EquipmentData equipData = item.getData().equip;
+        if (equipData != null && equipData.bonuses != null) {
+            equipData.bonuses.forEach(InventoryBonus.getInstance()::removeBonus);
+        }
+    }
+
     /**
-     * Retrieves the index of the equipment slot for a given item.
-     * The index is determined based on the item's type name.
+     * Retrieves the index of the equipment slot for a given slot name.
+     * The index is determined by looking up the slot name in the equipmentSlots.
      *
-     * @param item The InventoryItem for which to find the slot index.
+     * @param slotName The name of the slot (e.g., "Helmet", "Armor").
      * @return An Optional containing the slot index if found, otherwise an empty Optional.
      */
-    private Optional<Integer> getSlotIndexForItem(InventoryItem item) {
-        String name = item.getItemType().getName();
-        return equipment.keySet().stream()
-                .filter(name::contains)
-                .map(equipment::get)
-                .findFirst();
+    private Optional<Integer> getSlotIndexForItem(String slotName) {
+        return Optional.ofNullable(equipmentSlots.get(slotName));
     }
 
     public void reset() {
         for (int i = 0; i < equipped.length; i++) {
             if (equipped[i] != null) {
-                bonusHandler.removeBonus(equipped[i].getItemType());
+                removeBonus(equipped[i]);
                 equipped[i] = null;
             }
         }

@@ -3,6 +3,7 @@ package platformer.ui.overlays;
 import platformer.model.gameObjects.objects.Loot;
 import platformer.model.inventory.Inventory;
 import platformer.model.inventory.InventoryItem;
+import platformer.model.inventory.ItemData;
 import platformer.state.GameState;
 import platformer.ui.buttons.AbstractButton;
 import platformer.ui.buttons.ButtonType;
@@ -104,9 +105,11 @@ public class LootingOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
     }
 
     private void renderItem(Graphics g, InventoryItem item, int slot) {
+        ItemData itemData = item.getData();
+        if (itemData == null) return;
         int xPos = (slot % INVENTORY_SLOT_MAX_ROW) * SLOT_SPACING + LOOT_SLOT_X + ITEM_OFFSET_X;
         int yPos = (slot / INVENTORY_SLOT_MAX_ROW) * SLOT_SPACING + LOOT_SLOT_Y + ITEM_OFFSET_Y;
-        g.setColor(item.getItemType().getRarity().getColor());
+        g.setColor(itemData.rarity.getColor());
         g.fillRect(xPos-(int)(ITEM_OFFSET_X/1.1), yPos-(int)(ITEM_OFFSET_Y/1.1), (int)(SLOT_SIZE/1.06), (int)(SLOT_SIZE/1.06));
         g.drawImage(item.getModel(), xPos, yPos, ITEM_SIZE, ITEM_SIZE, null);
         g.setColor(Color.WHITE);

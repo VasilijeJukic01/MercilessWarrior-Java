@@ -137,13 +137,15 @@ public class ShopOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
     private void renderShopItems(Graphics g) {
         for (Shop shop : shops) {
             if (shop.isActive()) {
-                int slot =  buySelectedSlot * (SHOP_SLOT_MAX_ROW * SHOP_SLOT_MAX_COL);
-                for (ShopItem item : shop.getShopItems()) {
-                    if (item.getAmount() > 0) {
-                        if (slot >= shop.getShopItems().size()) break;
-                        renderItem(g, item, slot, SHOP_BUY_SLOT_X, SHOP_BUY_SLOT_Y, false);
-                        slot++;
-                        g.setColor(Color.RED);
+                int slot = buySelectedSlot * (SHOP_SLOT_MAX_ROW * SHOP_SLOT_MAX_COL);
+                List<ShopItem> items = shop.getShopItems();
+                for (int i = 0; i < items.size(); i++) {
+                    int slotIndex = i - slot;
+                    if (slotIndex >= 0 && slotIndex < (SHOP_SLOT_MAX_ROW * SHOP_SLOT_MAX_COL)) {
+                        ShopItem item = items.get(i);
+                        if (item.getStock() > 0) {
+                            renderItem(g, item.getItemId(), item.getStock(), item.getCost(), slotIndex, SHOP_BUY_SLOT_X, SHOP_BUY_SLOT_Y, false);
+                        }
                     }
                 }
             }
@@ -153,52 +155,53 @@ public class ShopOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
     private void renderInventoryItems(Graphics g) {
         Inventory inventory = gameState.getPlayer().getInventory();
         int slot = sellSelectedSlot * (SHOP_SLOT_MAX_ROW * SHOP_SLOT_MAX_COL);
-        for (InventoryItem item : inventory.getBackpack()) {
-            if (slot >= inventory.getBackpack().size()) break;
-            renderItem(g, item, slot, SHOP_SELL_SLOT_X, SHOP_SELL_SLOT_Y, true);
-            slot++;
-            g.setColor(Color.RED);
+        List<InventoryItem> backpack = inventory.getBackpack();
+        for (int i = 0; i < backpack.size(); i++) {
+            int slotIndex = i - slot;
+            if (slotIndex >= 0 && slotIndex < (SHOP_SLOT_MAX_ROW * SHOP_SLOT_MAX_COL)) {
+                InventoryItem item = backpack.get(i);
+                renderItem(g, item.getItemId(), item.getAmount(), item.getData().sellValue, slotIndex, SHOP_SELL_SLOT_X, SHOP_SELL_SLOT_Y, true);
+            }
         }
     }
 
-    private void renderItem(Graphics g, AbstractItem item, int slot, int xSlot, int ySlot, boolean isInventory) {
+    private void renderItem(Graphics g, String itemId, int amount, int value, int slot, int xSlot, int ySlot, boolean isInventoryPanel) {
+        ItemData itemData = ItemDatabase.getInstance().getItemData(itemId);
+        if (itemData == null) return;
+
         int xPos = (slot % SHOP_SLOT_MAX_ROW) * SLOT_SPACING + xSlot + ITEM_OFFSET_X;
         int yPos = (slot / SHOP_SLOT_MAX_ROW) * SLOT_SPACING + ySlot + ITEM_OFFSET_Y;
 
-        g.setColor(item.getItemType().getRarity().getColor());
-        g.fillRect(xPos-(int)(ITEM_OFFSET_X/1.1), yPos-(int)(ITEM_OFFSET_Y/1.1), (int)(SLOT_SIZE/1.06), (int)(SLOT_SIZE/1.06));
-        g.drawImage(item.getModel(), xPos, yPos, ITEM_SIZE, ITEM_SIZE, null);
+        g.setColor(itemData.rarity.getColor());
+        g.fillRect(xPos - (int) (ITEM_OFFSET_X / 1.1), yPos - (int) (ITEM_OFFSET_Y / 1.1), (int) (SLOT_SIZE / 1.06), (int) (SLOT_SIZE / 1.06));
+        g.drawImage(Utils.getInstance().importImage(itemData.imagePath, -1, -1), xPos, yPos, ITEM_SIZE, ITEM_SIZE, null);
 
         g.setColor(Color.WHITE);
         g.setFont(new Font("Arial", Font.BOLD, FONT_MEDIUM));
-        int countX = xPos + ITEM_COUNT_OFFSET_X, countY =  yPos + ITEM_COUNT_OFFSET_Y;
-        g.drawString(String.valueOf(item.getAmount()), countX, countY);
+        int countX = xPos + ITEM_COUNT_OFFSET_X, countY = yPos + ITEM_COUNT_OFFSET_Y;
+        g.drawString(String.valueOf(amount), countX, countY);
 
-        renderText(g, item, slot, isInventory);
-    }
-
-    private void renderText(Graphics g, AbstractItem item, int slot, boolean isInventory) {
-        if ((buySlotNumber == slot) && !isSelling && !isInventory) {
-            g.drawString("Value: "+item.getCost(), COST_TEXT_X, COST_TEXT_Y);
-            int totalCoins = gameState.getPlayer().getCoins();
-            g.drawString("Coins: " + totalCoins, POCKET_TEXT_X, COST_TEXT_Y);
-            renderItemDescription(g, item.getItemType());
-
-        }
-        else if ((sellSlotNumber == slot) && isSelling && isInventory) {
-            g.drawString("Value: "+item.getItemType().getSellValue(), COST_TEXT_X, COST_TEXT_Y);
-            int totalCoins = gameState.getPlayer().getCoins();
-            g.drawString("Coins: " + totalCoins, POCKET_TEXT_X, COST_TEXT_Y);
-            renderItemDescription(g, item.getItemType());
+        if (isSelling == isInventoryPanel) {
+            renderText(g, itemData, value, slot);
         }
     }
 
-    private void renderItemDescription(Graphics g, ItemType itemType) {
+    private void renderText(Graphics g, ItemData itemData, int value, int slot) {
+        int currentSlotNumber = isSelling ? sellSlotNumber : buySlotNumber;
+        if (currentSlotNumber == slot) {
+            g.drawString("Value: " + value, COST_TEXT_X, COST_TEXT_Y);
+            int totalCoins = gameState.getPlayer().getCoins();
+            g.drawString("Coins: " + totalCoins, POCKET_TEXT_X, COST_TEXT_Y);
+            renderItemDescription(g, itemData);
+        }
+    }
+
+    private void renderItemDescription(Graphics g, ItemData itemData) {
         g.setColor(Color.WHITE);
         g.setFont(new Font("Arial", Font.BOLD, FONT_MEDIUM));
-        g.drawString(itemType.getName(), SHOP_ITEM_NAME_X, SHOP_ITEM_NAME_Y);
+        g.drawString(itemData.name, SHOP_ITEM_NAME_X, SHOP_ITEM_NAME_Y);
         g.setFont(new Font("Arial", Font.PLAIN, FONT_MEDIUM));
-        String[] lines = itemType.getDescription().split("\n");
+        String[] lines = itemData.description.split("\n");
         int lineHeight = g.getFontMetrics().getHeight();
         int y = SHOP_ITEM_DESC_Y;
         for (String line : lines) {

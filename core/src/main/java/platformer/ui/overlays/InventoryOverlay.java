@@ -3,6 +3,7 @@ package platformer.ui.overlays;
 import platformer.model.inventory.Inventory;
 import platformer.model.inventory.InventoryBonus;
 import platformer.model.inventory.InventoryItem;
+import platformer.model.inventory.ItemData;
 import platformer.state.GameState;
 import platformer.ui.buttons.AbstractButton;
 import platformer.ui.buttons.ButtonType;
@@ -196,15 +197,19 @@ public class InventoryOverlay implements Overlay<MouseEvent, KeyEvent, Graphics>
 
     private void renderBackpackItem(Graphics g, Inventory inventory, int slotNumber) {
         InventoryItem item = inventory.getBackpack().get(slotNumber);
+        ItemData itemData = item.getData();
+        if (itemData == null) return;
+
         int xPos = (slotNumber % INVENTORY_SLOT_MAX_ROW) * SLOT_SPACING + BACKPACK_SLOT_X + ITEM_OFFSET_X;
         int yPos = (slotNumber / INVENTORY_SLOT_MAX_ROW) * SLOT_SPACING + BACKPACK_SLOT_Y + ITEM_OFFSET_Y;
-        g.setColor(item.getItemType().getRarity().getColor());
-        g.fillRect(xPos-(int)(ITEM_OFFSET_X/1.1), yPos-(int)(ITEM_OFFSET_Y/1.1), (int)(SLOT_SIZE/1.06), (int)(SLOT_SIZE/1.06));
+
+        g.setColor(itemData.rarity.getColor());
+        g.fillRect(xPos - (int)(ITEM_OFFSET_X / 1.1), yPos - (int)(ITEM_OFFSET_Y / 1.1), (int)(SLOT_SIZE / 1.06), (int)(SLOT_SIZE / 1.06));
         g.drawImage(item.getModel(), xPos, yPos, ITEM_SIZE, ITEM_SIZE, null);
 
         g.setColor(Color.WHITE);
         g.setFont(new Font("Arial", Font.BOLD, FONT_MEDIUM));
-        int countX = xPos + ITEM_COUNT_OFFSET_X, countY =  yPos + ITEM_COUNT_OFFSET_Y;
+        int countX = xPos + ITEM_COUNT_OFFSET_X, countY = yPos + ITEM_COUNT_OFFSET_Y;
         g.drawString(String.valueOf(item.getAmount()), countX, countY);
     }
 
@@ -233,13 +238,17 @@ public class InventoryOverlay implements Overlay<MouseEvent, KeyEvent, Graphics>
 
     private void renderEquipmentItem(Graphics g, int i, int j) {
         Inventory inventory = gameState.getPlayer().getInventory();
-        if (inventory.getEquipped()[j * EQUIPMENT_SLOT_MAX_ROW + i] != null) {
-            InventoryItem item = inventory.getEquipped()[j * EQUIPMENT_SLOT_MAX_ROW + i];
-            int slot = (j * EQUIPMENT_SLOT_MAX_ROW + i);
-            int xPos = (slot % EQUIPMENT_SLOT_MAX_ROW) * EQUIPMENT_SLOT_SPACING + EQUIPMENT_SLOT_X + ITEM_OFFSET_X;
-            int yPos = (slot / EQUIPMENT_SLOT_MAX_ROW) * SLOT_SPACING + EQUIPMENT_SLOT_Y + ITEM_OFFSET_Y;
-            g.setColor(item.getItemType().getRarity().getColor());
-            g.fillRect(xPos-(int)(ITEM_OFFSET_X/1.1), yPos-(int)(ITEM_OFFSET_Y/1.1), (int)(SLOT_SIZE/1.06), (int)(SLOT_SIZE/1.06));
+        int slotIndex = j * EQUIPMENT_SLOT_MAX_ROW + i;
+        if (inventory.getEquipped()[slotIndex] != null) {
+            InventoryItem item = inventory.getEquipped()[slotIndex];
+            ItemData itemData = item.getData();
+            if (itemData == null) return;
+
+            int xPos = (slotIndex % EQUIPMENT_SLOT_MAX_ROW) * EQUIPMENT_SLOT_SPACING + EQUIPMENT_SLOT_X + ITEM_OFFSET_X;
+            int yPos = (slotIndex / EQUIPMENT_SLOT_MAX_ROW) * SLOT_SPACING + EQUIPMENT_SLOT_Y + ITEM_OFFSET_Y;
+
+            g.setColor(itemData.rarity.getColor());
+            g.fillRect(xPos - (int)(ITEM_OFFSET_X / 1.1), yPos - (int)(ITEM_OFFSET_Y / 1.1), (int)(SLOT_SIZE / 1.06), (int)(SLOT_SIZE / 1.06));
             g.drawImage(item.getModel(), xPos, yPos, ITEM_SIZE, ITEM_SIZE, null);
         }
     }
@@ -262,12 +271,14 @@ public class InventoryOverlay implements Overlay<MouseEvent, KeyEvent, Graphics>
     }
 
     private void renderItemDescription(Graphics g, InventoryItem item) {
+        ItemData itemData = item.getData();
+        if (itemData == null) return;
         g.setColor(Color.WHITE);
         g.setFont(new Font("Arial", Font.BOLD, FONT_MEDIUM));
-        g.drawString(item.getItemType().getName(), INV_ITEM_NAME_X, INV_ITEM_NAME_Y);
-        g.drawString("Value: " + item.getItemType().getSellValue(), INV_ITEM_VALUE_X, INV_ITEM_VALUE_Y);
+        g.drawString(itemData.name, INV_ITEM_NAME_X, INV_ITEM_NAME_Y);
+        g.drawString("Value: " + itemData.sellValue, INV_ITEM_VALUE_X, INV_ITEM_VALUE_Y);
         g.setFont(new Font("Arial", Font.PLAIN, FONT_MEDIUM));
-        String[] lines = item.getItemType().getDescription().split("\n");
+        String[] lines = itemData.description.split("\n");
         int lineHeight = g.getFontMetrics().getHeight();
         int y = INV_ITEM_DESC_Y;
         for (String line : lines) {

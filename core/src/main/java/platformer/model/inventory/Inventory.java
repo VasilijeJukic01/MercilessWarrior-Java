@@ -1,15 +1,13 @@
 package platformer.model.inventory;
 
+import platformer.debug.logger.Logger;
+import platformer.debug.logger.Message;
 import platformer.model.gameObjects.objects.Loot;
 import platformer.model.inventory.handlers.BackpackHandler;
 import platformer.model.inventory.handlers.EquipmentHandler;
-import platformer.utils.Utils;
 
-import java.awt.image.BufferedImage;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 /**
  * Class that represents the player's inventory.
@@ -85,7 +83,7 @@ public class Inventory {
      * @param item the item to be crafted
      * @param resources the resources required to craft the item
      */
-    public void craftItem(InventoryItem item, Map<ItemType, Integer> resources) {
+    public void craftItem(InventoryItem item, Map<String, Integer> resources) {
         backpackHandler.craftItem(item, resources);
     }
 
@@ -106,40 +104,36 @@ public class Inventory {
      * Fills the inventory with items.
      * Used to load the inventory from a save file.
      *
-     * @param values the values used to fill the inventory
+     * @param savedItems the list of saved items in string format
      */
-    public void fillItems(List<String> values) {
+    public void fillItems(List<String> savedItems) {
         reset();
-        for (String value : values) {
-            String[] indexes = value.split(",");
-            ItemType type = findItemTypeByName(indexes[0]);
-            if (type == null) continue;
-            BufferedImage img = Utils.getInstance().importImage(type.getImg(), -1, -1);
-            InventoryItem item = new InventoryItem(type, img, Integer.parseInt(indexes[1]));
-            getBackpack().add(item);
-            if (indexes[2].equals("1")) {
-                backpackHandler.addItemAmountToBackpack(item, 1);
-                equipItem(getBackpack().size()-1);
+        if (savedItems == null) return;
+
+        for (String itemString : savedItems) {
+            try {
+                String[] parts = itemString.split(",");
+                if (parts.length != 3) continue;
+                String itemId = parts[0];
+                int amount = Integer.parseInt(parts[1]);
+                boolean isEquipped = parts[2].equals("1");
+                InventoryItem item = new InventoryItem(itemId, amount);
+                addItemToBackpack(item);
+                if (isEquipped) {
+                    int lastItemIndex = getBackpack().size() - 1;
+                    equipItem(lastItemIndex);
+                }
+            } catch (Exception e) {
+                Logger.getInstance().notify("Reading items from save file failed!", Message.ERROR);
             }
         }
     }
 
-    public void completeQuestFill(Map<ItemType, Integer> itemRewards) {
-        for (Map.Entry<ItemType, Integer> entry : itemRewards.entrySet()) {
-            ItemType type = entry.getKey();
-            BufferedImage img = Utils.getInstance().importImage(type.getImg(), -1, -1);
-            InventoryItem item = new InventoryItem(type, img, entry.getValue());
+    public void completeQuestFill(Map<String, Integer> itemRewards) {
+        for (Map.Entry<String, Integer> entry : itemRewards.entrySet()) {
+            InventoryItem item = new InventoryItem(entry.getKey(), entry.getValue());
             addItemToBackpack(item);
         }
-
-    }
-
-    private ItemType findItemTypeByName(String name) {
-        ItemType[] itemTypes = ItemType.values();
-        Optional<ItemType> optional = Arrays.stream(itemTypes)
-                .filter(item -> item.getName().equalsIgnoreCase(name))
-                .findFirst();
-        return optional.orElse(null);
     }
 
 }

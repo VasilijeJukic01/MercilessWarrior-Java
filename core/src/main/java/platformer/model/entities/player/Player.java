@@ -642,7 +642,7 @@ public class Player extends Entity {
 
     private void updateMythicAura() {
         boolean hasMythic = Arrays.stream(inventory.getEquipped())
-                .anyMatch(item -> item != null && item.getItemType().getRarity() == ItemRarity.MYTHIC);
+                .anyMatch(item -> item != null && item.getData() != null && item.getData().rarity == ItemRarity.MYTHIC);
 
         if (!hasMythic) return;
 

@@ -163,13 +163,14 @@ public class CraftingOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
     }
 
     private void renderItem(Graphics g, Recipe recipe) {
-        ItemType itemType = recipe.getOutput();
-        BufferedImage itemImage = Utils.getInstance().importImage(itemType.getImg(), -1, -1);
+        ItemData itemData = ItemDatabase.getInstance().getItemData(recipe.getOutput());
+        if (itemData == null) return;
+        BufferedImage itemImage = Utils.getInstance().importImage(itemData.imagePath, -1, -1);
         int slotPos = RecipeManager.getInstance().getRecipes().indexOf(recipe);
 
         int xPos = (slotPos % INVENTORY_SLOT_MAX_ROW) * SLOT_SPACING + BACKPACK_SLOT_X + ITEM_OFFSET_X;
         int yPos = (slotPos / INVENTORY_SLOT_MAX_ROW) * SLOT_SPACING + BACKPACK_SLOT_Y + ITEM_OFFSET_Y;
-        g.setColor(itemType.getRarity().getColor());
+        g.setColor(itemData.rarity.getColor());
         g.fillRect(xPos - (int)(ITEM_OFFSET_X / 1.1), yPos - (int)(ITEM_OFFSET_Y / 1.1), (int)(SLOT_SIZE / 1.06), (int)(SLOT_SIZE / 1.06));
         g.drawImage(itemImage, xPos, yPos, ITEM_SIZE, ITEM_SIZE, null);
     }
@@ -181,13 +182,14 @@ public class CraftingOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
     }
 
     private void renderItemDescription(Graphics g, Recipe recipe) {
-        ItemType itemType = recipe.getOutput();
+        ItemData itemData = ItemDatabase.getInstance().getItemData(recipe.getOutput());
+        if (itemData == null) return;
         g.setColor(Color.WHITE);
         g.setFont(new Font("Arial", Font.BOLD, FONT_MEDIUM));
-        g.drawString(itemType.getName(), CRAFT_VAL_ITEM_NAME_X, CRAFT_VAL_ITEM_NAME_Y);
-        g.drawString("Value: " + itemType.getSellValue(), CRAFT_VAL_TEXT_X, CRAFT_VAL_TEXT_Y);
+        g.drawString(itemData.name, CRAFT_VAL_ITEM_NAME_X, CRAFT_VAL_ITEM_NAME_Y);
+        g.drawString("Value: " + itemData.sellValue, CRAFT_VAL_TEXT_X, CRAFT_VAL_TEXT_Y);
         g.setFont(new Font("Arial", Font.PLAIN, FONT_MEDIUM));
-        String[] lines = itemType.getDescription().split("\n");
+        String[] lines = itemData.description.split("\n");
         int lineHeight = g.getFontMetrics().getHeight();
         int y = CRAFT_VAL_ITEM_DESC_Y;
         for (String line : lines) {
@@ -197,11 +199,11 @@ public class CraftingOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
         renderResources(g, recipe.getIngredients(), y);
     }
 
-    private void renderResources(Graphics g, Map<ItemType, Integer> resources, int yPos) {
+    private void renderResources(Graphics g, Map<String, Integer> resources, int yPos) {
         Inventory inventory = gameState.getPlayer().getInventory();
-        Map<ItemType, Integer> playerItems = new HashMap<>();
+        Map<String, Integer> playerItems = new HashMap<>();
         for (InventoryItem item : inventory.getBackpack()) {
-            playerItems.put(item.getItemType(), item.getAmount());
+            playerItems.put(item.getItemId(), item.getAmount());
         }
 
         g.setFont(new Font("Arial", Font.PLAIN, FONT_MEDIUM));
@@ -213,13 +215,16 @@ public class CraftingOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
         g.drawString("Required Resources:", CRAFT_VAL_ITEM_DESC_X, y);
         y += lineHeight;
 
-        for (Map.Entry<ItemType, Integer> entry : resources.entrySet()) {
-            ItemType requiredType = entry.getKey();
-            int requiredAmount = entry.getValue();
-            int playerAmount = playerItems.getOrDefault(requiredType, 0);
+        for (Map.Entry<String, Integer> entry : resources.entrySet()) {
+            String requiredId = entry.getKey();
+            ItemData requiredData = ItemDatabase.getInstance().getItemData(requiredId);
+            if (requiredData == null) continue;
 
-            g.setColor(requiredType.getRarity().getColor());
-            String resourceText = " - " + requiredType.getName() + ": " + requiredAmount + "x";
+            int requiredAmount = entry.getValue();
+            int playerAmount = playerItems.getOrDefault(requiredId, 0);
+
+            g.setColor(requiredData.rarity.getColor());
+            String resourceText = " - " + requiredData.name + ": " + requiredAmount + "x";
             g.drawString(resourceText, CRAFT_VAL_ITEM_DESC_X, y);
 
             Color haveColor = (playerAmount >= requiredAmount) ? new Color(120, 255, 120) : new Color(255, 90, 90);
@@ -305,10 +310,7 @@ public class CraftingOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
         if (slotNumber >= recipes.size()) return;
         Recipe recipe = recipes.get(slotNumber);
         if (recipe == null) return;
-        ItemType type = recipe.getOutput();
-        BufferedImage image = Utils.getInstance().importImage(type.getImg(), -1, -1);
-        if (image == null) return;
-        InventoryItem itemToCraft = new InventoryItem(type, image, recipe.getAmount());
+        InventoryItem itemToCraft = new InventoryItem(recipe.getOutput(), recipe.getAmount());
         gameState.getPlayer().getInventory().craftItem(itemToCraft, recipe.getIngredients());
     }
 
