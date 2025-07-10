@@ -12,6 +12,7 @@ import static platformer.constants.Constants.*;
 
 public class Coin extends GameObject {
 
+    private final CoinType coinType;
     private double floatOffset;
     private final int maxFloatOffset;
     private int floatDir = 1;
@@ -19,12 +20,9 @@ public class Coin extends GameObject {
     private double airSpeed, xSpeed;
     private boolean inAir = true;
 
-    public Coin(ObjType objType, int xPos, int yPos) {
-        this(objType, xPos, yPos, 0, 0);
-    }
-
-    public Coin(ObjType objType, int xPos, int yPos, double xSpeed, double ySpeed) {
-        super(objType, xPos, yPos);
+    public Coin(CoinType coinType, int xPos, int yPos, double xSpeed, double ySpeed) {
+        super(ObjType.COIN, xPos, yPos);
+        this.coinType = coinType;
         this.xSpeed = xSpeed;
         this.airSpeed = ySpeed;
         this.maxFloatOffset = (int)(5*SCALE);
@@ -131,5 +129,14 @@ public class Coin extends GameObject {
     @Override
     public void attackBoxRenderer(Graphics g, int xLevelOffset, int yLevelOffset) {
 
+    }
+
+    // Getters
+    public int getValue() {
+        return coinType.getValue();
+    }
+
+    public CoinType getCoinType() {
+        return coinType;
     }
 }

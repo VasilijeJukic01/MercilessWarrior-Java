@@ -6,10 +6,7 @@ import platformer.model.entities.effects.EffectManager;
 import platformer.model.entities.effects.particles.DustType;
 import platformer.model.entities.enemies.EnemyType;
 import platformer.model.entities.player.Player;
-import platformer.model.gameObjects.objects.Coin;
-import platformer.model.gameObjects.objects.Container;
-import platformer.model.gameObjects.objects.Loot;
-import platformer.model.gameObjects.objects.Potion;
+import platformer.model.gameObjects.objects.*;
 import platformer.model.inventory.InventoryItem;
 import platformer.model.perks.PerksBonus;
 
@@ -26,6 +23,7 @@ public class LootHandler {
 
     private final ObjectManager objectManager;
     private final EffectManager effectManager;
+    private final Random rand = new Random();
 
     private static final List<String> HERB_LOOT_TABLE = List.of(
             "WILD_GRASS", "CAVERN_BEANS", "GOBLINS_IVY",
@@ -61,17 +59,46 @@ public class LootHandler {
         generateLoot(location, enemyType);
     }
 
+    /**
+     * Generates coins at the specified location based on the total value to drop.
+     * The distribution of coin types is determined by random chance.
+     *
+     * @param location The location where coins should be spawned.
+     */
     private void generateCoins(Rectangle2D.Double location) {
-        Random rand = new Random();
-        int n = rand.nextInt(7 + PerksBonus.getInstance().getBonusCoin());
-        for (int i = 0; i < n; i++) {
-            int x = (int) location.getCenterX();
-            int y = (int) location.y;
-            double initialYSpeed = -2.2 * SCALE - (rand.nextDouble() * 1.5 * SCALE);
-            double initialXSpeed = (rand.nextDouble() - 0.5) * (2.5 * SCALE);
-            Coin coin = new Coin(ObjType.COIN, x, y, initialXSpeed, initialYSpeed);
-            objectManager.addGameObject(coin);
+        int totalValue = rand.nextInt(11) + 5 + PerksBonus.getInstance().getBonusCoin();
+
+        while (totalValue > 0) {
+            CoinType dropType;
+            int roll = rand.nextInt(100);
+
+            if (roll < 5) dropType = CoinType.GOLD;
+            else if (roll < 30) dropType = CoinType.SILVER;
+            else dropType = CoinType.BRONZE;
+
+            if (totalValue >= dropType.getValue()) {
+                totalValue -= dropType.getValue();
+                spawnCoin(location, dropType);
+            }
+            else if (totalValue >= CoinType.SILVER.getValue()) {
+                totalValue -= CoinType.SILVER.getValue();
+                spawnCoin(location, CoinType.SILVER);
+            }
+            else {
+                for (int i = 0; i < totalValue; i++)
+                    spawnCoin(location, CoinType.BRONZE);
+                totalValue = 0;
+            }
         }
+    }
+
+    private void spawnCoin(Rectangle2D.Double location, CoinType coinType) {
+        int x = (int) location.getCenterX();
+        int y = (int) location.y;
+        double initialYSpeed = -2.2 * SCALE - (rand.nextDouble() * 1.5 * SCALE);
+        double initialXSpeed = (rand.nextDouble() - 0.5) * (2.5 * SCALE);
+        Coin coin = new Coin(coinType, x, y, initialXSpeed, initialYSpeed);
+        objectManager.addGameObject(coin);
     }
 
     private void generateLoot(Rectangle2D.Double location, EnemyType enemyType) {
@@ -88,9 +115,9 @@ public class LootHandler {
         if (object instanceof Potion) {
             applyPotionEffect((Potion) object, player);
             object.setAlive(false);
-        } else if (object instanceof Coin) {
+        } else if (object instanceof Coin coin) {
             Audio.getInstance().getAudioPlayer().playSound(Sound.COIN_PICK);
-            player.changeCoins(1);
+            player.changeCoins(coin.getValue());
             object.setAlive(false);
         }
     }

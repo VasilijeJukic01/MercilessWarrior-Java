@@ -13,6 +13,7 @@ import static platformer.constants.FilePaths.*;
 public class Animation {
 
     private static volatile Animation instance = null;
+    private BufferedImage[][] coinAnimations;
 
     private Animation() {}
 
@@ -164,7 +165,8 @@ public class Animation {
         anim[ObjType.SPIKE_UP.ordinal()] = loadFromSprite(SPIKES_SHEET, 10, 0, SPIKE_WID, SPIKE_HEI, 0, SPIKES_W, SPIKES_H);
         anim[ObjType.ARROW_TRAP_RIGHT.ordinal()] = loadFromSprite(ARROW_TRAP_SHEET, 16, 0, ARROW_TRAP_WID, ARROW_TRAP_HEI, 1, AT_W, AT_H);
         anim[ObjType.ARROW_TRAP_LEFT.ordinal()] = anim[ObjType.ARROW_TRAP_RIGHT.ordinal()];
-        anim[ObjType.COIN.ordinal()] = loadFromSprite(COIN_SHEET, 4, 0, COIN_WID, COIN_HEI, 0, COIN_W, COIN_H);
+        loadCoinAnimations();
+        anim[ObjType.COIN.ordinal()] = coinAnimations[0];
         anim[ObjType.SHOP.ordinal()] = loadFromSprite(SHOP_SHEET, 6, 0, SHOP_WID, SHOP_HEI, 0, SHOP_W, SHOP_H);
         anim[ObjType.BLOCKER.ordinal()] = loadFromSprite(BLOCKER_SHEET, 12, 0, BLOCKER_WID, BLOCKER_HEI, 0, BLOCKER_W, BLOCKER_H);
         anim[ObjType.BLACKSMITH.ordinal()] = loadFromSprite(BS_SHEET, 8, 0, BLACKSMITH_WID, BLACKSMITH_HEI, 0, BLACKSMITH_W, BLACKSMITH_H);
@@ -184,6 +186,16 @@ public class Animation {
         anim[ObjType.HERB.ordinal()] = loadFromSprite(HERB_IMG, 1, 0, HERB_WID, HERB_HEI, 0, HERB_W, HERB_H);
 
         return anim;
+    }
+
+    private void loadCoinAnimations() {
+        coinAnimations = new BufferedImage[3][];
+        // Bronze
+        coinAnimations[0] = loadFromSprite(COIN_SHEET, 4, 0, COIN_WID, COIN_HEI, 0, COIN_W, COIN_H);
+        // Silver
+        coinAnimations[1] = loadFromSprite(COIN_SHEET, 4, 1, COIN_WID, COIN_HEI, 0, COIN_W, COIN_H);
+        // Gold
+        coinAnimations[2] = loadFromSprite(COIN_SHEET, 4, 2, COIN_WID, COIN_HEI, 0, COIN_W, COIN_H);
     }
 
     // NPC
@@ -208,6 +220,11 @@ public class Animation {
 
     public BufferedImage[] loadFireBall() {
         return loadFromSprite(FIREBALL_SHEET, 9, 0, FB_WID, FB_HEI,0, FIREBALL_W, FIREBALL_H);
+    }
+
+    // Getters
+    public BufferedImage[][] getCoinAnimations() {
+        return coinAnimations;
     }
 
 }

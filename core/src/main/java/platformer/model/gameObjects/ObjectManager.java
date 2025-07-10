@@ -49,6 +49,7 @@ public class ObjectManager implements Publisher {
 
     private final BufferedImage[][] objects;
     private final BufferedImage[][] npcs;
+    private final BufferedImage[][] coinAnimations;
 
     Class<? extends GameObject>[] updateClasses = new Class[]{
             Coin.class, Container.class, Potion.class, Spike.class,
@@ -81,6 +82,7 @@ public class ObjectManager implements Publisher {
         this.gameState = gameState;
         initHandlers();
         this.objects = Animation.getInstance().loadObjects();
+        this.coinAnimations = Animation.getInstance().getCoinAnimations();
         this.npcs = Animation.getInstance().loadNpcs();
         this.projectiles = new ArrayList<>();
         loadImages();
@@ -293,6 +295,7 @@ public class ObjectManager implements Publisher {
 
     private <T extends GameObject> void renderObjects(Graphics g, int xLevelOffset, int yLevelOffset, Class<T> objectType) {
         try {
+            if (objectType.equals(Coin.class)) return;
             getObjects(objectType).stream()
                     .filter(GameObject::isAlive)
                     .forEach(obj -> obj.render(g, xLevelOffset, yLevelOffset, objects[obj.getObjType().ordinal()]));
@@ -323,8 +326,18 @@ public class ObjectManager implements Publisher {
 
     public void glowingRender(Graphics g, int xLevelOffset, int yLevelOffset) {
         Arrays.stream(renderAbove).forEach(renderClass -> renderObjects(g, xLevelOffset, yLevelOffset, renderClass));
+        renderCoins(g, xLevelOffset, yLevelOffset);
         renderNpcs(g, xLevelOffset, yLevelOffset);
         renderProjectiles(g, xLevelOffset, yLevelOffset);
+    }
+
+    private void renderCoins(Graphics g, int xLevelOffset, int yLevelOffset) {
+        for (Coin coin : getObjects(Coin.class)) {
+            if (coin.isAlive()) {
+                BufferedImage[] anims = coinAnimations[coin.getCoinType().getAnimationRow()];
+                coin.render(g, xLevelOffset, yLevelOffset, anims);
+            }
+        }
     }
 
     private void renderNpcs(Graphics g, int xLevelOffset, int yLevelOffset) {
