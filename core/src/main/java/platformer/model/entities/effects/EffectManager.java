@@ -5,7 +5,9 @@ import platformer.core.Framework;
 import platformer.core.Settings;
 import platformer.model.entities.Entity;
 import platformer.model.entities.effects.particles.*;
+import platformer.model.entities.player.Player;
 import platformer.ui.text.DamageNumber;
+import platformer.ui.text.ItemPickupText;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -22,7 +24,13 @@ public class EffectManager {
     private final List<DustParticle> foregroundParticles = new ArrayList<>();
     private final List<DustParticle> backgroundParticles = new ArrayList<>();
     private final List<DamageNumber> damageNumbers = new ArrayList<>();
+    private final List<ItemPickupText> itemPickupTexts = new ArrayList<>();
     private final Random rand = new Random();
+
+    // Text Effects
+    private int itemTextYOffset = 0;
+    private int itemTextCooldown = 0;
+    private static final int ITEM_TEXT_COOLDOWN_MAX = 20;
 
     // Ambient Effects
     private final AmbientParticle[] ambientParticles;
@@ -138,11 +146,21 @@ public class EffectManager {
         damageNumbers.add(new DamageNumber(text, x, y, color));
     }
 
+    public void spawnItemPickupText(String text, Player player, Color color) {
+        int yOffset = itemTextYOffset;
+        itemPickupTexts.add(new ItemPickupText(text, player, yOffset, color));
+        itemTextYOffset += (int)(15 * SCALE);
+        itemTextCooldown = ITEM_TEXT_COOLDOWN_MAX;
+    }
+
     // Core
     public void update() {
+        if (itemTextCooldown > 0) itemTextCooldown--;
+        else itemTextYOffset = 0;
         updateParticleList(foregroundParticles);
         updateParticleList(backgroundParticles);
         updateDamageNumbers();
+        updateItemPickupTexts();
         Arrays.stream(ambientParticles).forEach(AmbientParticle::update);
         Arrays.stream(smokeParticles).forEach(SmokeParticle::update);
     }
@@ -169,6 +187,17 @@ public class EffectManager {
         } catch (Exception ignored) {}
     }
 
+    private void updateItemPickupTexts() {
+        try {
+            Iterator<ItemPickupText> iterator = itemPickupTexts.iterator();
+            while (iterator.hasNext()) {
+                ItemPickupText text = iterator.next();
+                text.update();
+                if (!text.isActive()) iterator.remove();
+            }
+        } catch (Exception ignored) {}
+    }
+
     public void renderAmbientEffects(Graphics g) {
         Arrays.stream(smokeParticles).forEach(p -> p.render((Graphics2D) g));
         Arrays.stream(ambientParticles).forEach(p -> p.render(g));
@@ -177,6 +206,7 @@ public class EffectManager {
     public void renderForegroundEffects(Graphics g, int xLevelOffset, int yLevelOffset) {
         renderParticleList(g, xLevelOffset, yLevelOffset, foregroundParticles);
         renderDamageNumbers(g, xLevelOffset, yLevelOffset);
+        renderItemPickupTexts(g, xLevelOffset, yLevelOffset);
     }
 
     public void renderBackgroundEffects(Graphics g, int xLevelOffset, int yLevelOffset) {
@@ -197,6 +227,14 @@ public class EffectManager {
                 dn.render(g, xLevelOffset, yLevelOffset);
             }
         } catch (Exception ignored) { }
+    }
+
+    private void renderItemPickupTexts(Graphics g, int xLevelOffset, int yLevelOffset) {
+        try {
+            for (ItemPickupText text : itemPickupTexts) {
+                text.render(g, xLevelOffset, yLevelOffset);
+            }
+        } catch (Exception ignored) {}
     }
 
 }

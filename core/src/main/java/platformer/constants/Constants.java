@@ -408,11 +408,14 @@ public final class Constants {
     public static final Color DUST_COLOR_DASH = new Color(220, 220, 255);
     public static final float DAMAGE_TEXT_Y_SPEED = 0.5f;
     public static final float DAMAGE_TEXT_FADE_SPEED = 0.02f;
+    public static final float ITEM_TEXT_Y_SPEED = 0.2f;
+    public static final float ITEM_TEXT_FADE_SPEED = 0.015f;
     public static final int SPELL_HIT_DISPLAY_COOLDOWN = 20;
     public static final Color DAMAGE_COLOR = new Color(255, 60, 30);
     public static final Color HEAL_COLOR = new Color(40, 255, 40);
     public static final Color STAMINA_COLOR = new Color(40, 40, 255);
     public static final Color CRITICAL_COLOR = new Color(255, 150, 0);
+    public static final Color ITEM_TEXT_COLOR = new Color(255, 255, 255);
     public static final int FONT_DAMAGE = scale(10);
 
     public static final int PLAYER_LIGHT_RADIUS = scale(75);

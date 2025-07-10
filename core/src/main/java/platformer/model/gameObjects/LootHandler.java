@@ -8,6 +8,7 @@ import platformer.model.entities.enemies.EnemyType;
 import platformer.model.entities.player.Player;
 import platformer.model.gameObjects.objects.*;
 import platformer.model.inventory.InventoryItem;
+import platformer.model.inventory.ItemData;
 import platformer.model.perks.PerksBonus;
 
 import java.awt.geom.Rectangle2D;
@@ -148,6 +149,9 @@ public class LootHandler {
         String randomHerbId = HERB_LOOT_TABLE.get(rand.nextInt(HERB_LOOT_TABLE.size()));
         InventoryItem item = new InventoryItem(randomHerbId, 1);
         player.getInventory().addItemToBackpack(item);
+
+        ItemData data = item.getData();
+        if (data != null) effectManager.spawnItemPickupText("+1 " + data.name, player, ITEM_TEXT_COLOR);
 
         herb.setAlive(false);
     }
