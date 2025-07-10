@@ -44,7 +44,7 @@ public final class AnimConstants {
     public static final int TOTEM_W = 50, TOTEM_H = 42;
     public static final int ST_W = 64, ST_H = 64;
     public static final int CANDLE_W = 23, CANDLE_H = 57;
-    public static final int LOOT_W = 210, LOOT_H = 122;
+    public static final int LOOT_W = 74, LOOT_H = 24;
     public static final int TABLE_W = 46, TABLE_H = 25;
     public static final int BOARD_W = 68, BOARD_H = 61;
     public static final int LAVA_W = 32, LAVA_H = 32;

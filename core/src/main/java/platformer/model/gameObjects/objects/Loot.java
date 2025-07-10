@@ -90,8 +90,8 @@ public class Loot extends GameObject {
         if (active) {
             g.setColor(Color.WHITE);
             g.setFont(new Font("Arial", Font.BOLD, FONT_MEDIUM));
-            int infoX = (int)(hitBox.x - xLevelOffset);
-            int infoY = (int)(hitBox.y - yLevelOffset - 5 * SCALE);
+            int infoX = (int)(hitBox.x - xLevelOffset + 2 * SCALE);
+            int infoY = (int)(hitBox.y - yLevelOffset);
             g.drawString("LOOT", infoX, infoY);
         }
     }

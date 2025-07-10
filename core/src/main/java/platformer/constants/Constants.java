@@ -274,12 +274,12 @@ public final class Constants {
     public static final int CANDLE_OFFSET_X = scale(-8);
     public static final int CANDLE_OFFSET_Y = scale(12);
 
-    public static final int LOOT_WID = scale(32);
-    public static final int LOOT_HEI = scale(24);
-    public static final int LOOT_HB_WID = scale(27);
+    public static final int LOOT_WID = scale(40);
+    public static final int LOOT_HEI = scale(13);
+    public static final int LOOT_HB_WID = scale(36);
     public static final int LOOT_HB_HEI = scale(27);
     public static final int LOOT_OFFSET_X = scale(1);
-    public static final int LOOT_OFFSET_Y = scale(-5);
+    public static final int LOOT_OFFSET_Y = scale(-15);
 
     public static final int TABLE_WID = scale(48);
     public static final int TABLE_HEI = scale(32);
