@@ -3,19 +3,14 @@ package platformer.model.gameObjects;
 import platformer.audio.Audio;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
-import platformer.model.entities.enemies.EnemyType;
 import platformer.model.gameObjects.objects.*;
 import platformer.model.gameObjects.projectiles.Projectile;
-import platformer.model.perks.PerksBonus;
 import platformer.model.quests.ObjectiveTarget;
 import platformer.model.quests.QuestObjectiveType;
 import platformer.model.spells.Flame;
 
 import java.awt.geom.Rectangle2D;
 import java.util.List;
-import java.util.Random;
-
-import static platformer.constants.Constants.SCALE;
 
 /**
  * Class that handles breaking of objects.
@@ -23,9 +18,11 @@ import static platformer.constants.Constants.SCALE;
 public class ObjectBreakHandler {
 
     private final ObjectManager objectManager;
+    private final LootHandler lootHandler;
 
-    public ObjectBreakHandler(ObjectManager objectManager) {
+    public ObjectBreakHandler(ObjectManager objectManager, LootHandler lootHandler) {
         this.objectManager = objectManager;
+        this.lootHandler = lootHandler;
     }
 
     /**
@@ -69,7 +66,7 @@ public class ObjectBreakHandler {
         container.setAnimate(true);
         Audio.getInstance().getAudioPlayer().playCrateSound();
         Logger.getInstance().notify("Player was pushed into a container, breaking it.", Message.INFORMATION);
-        generateCrateLoot(container);
+        lootHandler.generateCrateLoot(container);
     }
 
     /**
@@ -104,70 +101,20 @@ public class ObjectBreakHandler {
         Audio.getInstance().getAudioPlayer().playCrateSound();
         Logger.getInstance().notify("Player breaks container.", Message.NOTIFICATION);
         objectManager.notify(QuestObjectiveType.COLLECT, ObjectiveTarget.CRATE);
-        generateCrateLoot(container);
+        lootHandler.generateCrateLoot(container);
     }
 
     private void breakContainerByEnemy(Container container) {
         container.setAnimate(true);
         Audio.getInstance().getAudioPlayer().playCrateSound();
         Logger.getInstance().notify("Enemy breaks container.", Message.NOTIFICATION);
-        generateCrateLoot(container);
+        lootHandler.generateCrateLoot(container);
     }
 
 
     private void breakBrick(Brick brick) {
         brick.setAnimate(true);
         Logger.getInstance().notify("Player breaks brick.", Message.NOTIFICATION);
-    }
-
-    /**
-     * Generates loot from a broken container.
-     *
-     * @param container The broken container.
-     */
-    private void generateCrateLoot(Container container) {
-        Random rand = new Random();
-        int value = rand.nextInt(4)-1;
-        ObjType obj = null;
-        if (value == 0) obj = ObjType.STAMINA_POTION;
-        else if (value == 1) obj = ObjType.HEAL_POTION;
-        if (obj != null) {
-            int xPos = (int)(container.getHitBox().x + container.getHitBox().width / 2);
-            int yPos = (int)(container.getHitBox().y - container.getHitBox().height / 4);
-            objectManager.addGameObject(new Potion(obj, xPos, yPos));
-        }
-    }
-
-    /**
-     * Generates loot from a defeated enemy.
-     *
-     * @param location The location of the defeated enemy.
-     * @param enemyType The type of the defeated enemy.
-     */
-    public void generateEnemyLoot(Rectangle2D.Double location, EnemyType enemyType) {
-       generateCoins(location);
-       generateLoot(location, enemyType);
-    }
-
-    private void generateCoins(Rectangle2D.Double location) {
-        Random rand = new Random();
-        int n = rand.nextInt(7 + PerksBonus.getInstance().getBonusCoin());
-        for (int i = 0; i < n; i++) {
-            int x = (int)location.getCenterX();
-            int y = (int)location.y;
-            double initialYSpeed = -2.2 * SCALE - (rand.nextDouble() * 1.5 * SCALE);
-            double initialXSpeed = (rand.nextDouble() - 0.5) * (2.5 * SCALE);
-
-            Coin coin = new Coin(ObjType.COIN, x, y, initialXSpeed, initialYSpeed);
-            objectManager.addGameObject(coin);
-        }
-    }
-
-    private void generateLoot(Rectangle2D.Double location, EnemyType enemyType) {
-        int x = (int)(location.width / 4) + (int)location.x;
-        int y = (int)(location.height / 2.3) + (int)location.y;
-        Loot loot = new Loot(ObjType.LOOT, x, y, enemyType);
-        objectManager.addGameObject(loot);
     }
 
     private <T> List<T> getObjects(Class<T> objectType) {

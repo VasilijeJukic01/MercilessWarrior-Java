@@ -4,7 +4,6 @@ import platformer.animation.Animation;
 import platformer.audio.Audio;
 import platformer.audio.types.Sound;
 import platformer.model.entities.Direction;
-import platformer.model.entities.effects.particles.DustType;
 import platformer.model.entities.enemies.Enemy;
 import platformer.model.entities.enemies.boss.SpearWoman;
 import platformer.model.entities.player.Player;
@@ -15,7 +14,6 @@ import platformer.model.gameObjects.projectiles.Arrow;
 import platformer.model.gameObjects.projectiles.Fireball;
 import platformer.model.gameObjects.projectiles.LightningBall;
 import platformer.model.gameObjects.projectiles.Projectile;
-import platformer.model.inventory.InventoryItem;
 import platformer.model.levels.Level;
 import platformer.model.perks.PerksBonus;
 import platformer.model.quests.QuestManager;
@@ -45,6 +43,7 @@ public class ObjectManager implements Publisher {
     private CollisionHandler collisionHandler;
     private IntersectionHandler intersectionHandler;
     private ObjectBreakHandler objectBreakHandler;
+    private LootHandler lootHandler;
 
     private GameObject intersection;
 
@@ -72,11 +71,6 @@ public class ObjectManager implements Publisher {
 
     private Map<ObjType, List<GameObject>> objectsMap = new HashMap<>();
 
-    private static final List<String> HERB_LOOT_TABLE = List.of(
-            "WILD_GRASS", "CAVERN_BEANS", "GOBLINS_IVY",
-            "FAE_LEAF", "GHOST_LEAF", "WITCHS_WORT", "FROST_BLOOM_PETALS"
-    );
-
     private BufferedImage projectileArrow;
     private BufferedImage[] fireball, projectileLightningBall, projectileLightningBall2;
     private final List<Projectile> projectiles;
@@ -102,8 +96,9 @@ public class ObjectManager implements Publisher {
 
     private void initHandlers() {
         this.collisionHandler = new CollisionHandler(gameState.getLevelManager(), this);
-        this.intersectionHandler = new IntersectionHandler(gameState.getEnemyManager(), this);
-        this.objectBreakHandler = new ObjectBreakHandler(this);
+        this.lootHandler = new LootHandler(this, gameState.getEffectManager());
+        this.intersectionHandler = new IntersectionHandler(gameState.getEnemyManager(), this, lootHandler);
+        this.objectBreakHandler = new ObjectBreakHandler(this, lootHandler);
     }
 
     public void loadObjects(Level level) {
@@ -137,20 +132,13 @@ public class ObjectManager implements Publisher {
         intersectionHandler.handleObjectInteraction(hitBox, player);
     }
 
-    // TODO: Think about creating LootHandler
     /**
-     * Handles the logic for harvesting a herb.
+     * Handles the interaction of a player with a herb item.
      *
      * @param herb The Herb object to be harvested.
      */
     public void harvestHerb(Herb herb) {
-        if (herb == null || !herb.isAlive()) return;
-        gameState.getEffectManager().spawnDustParticles(herb.getHitBox().getCenterX(), herb.getHitBox().getCenterY() - (10 * SCALE), 15, DustType.HERB_CUT, 0, null);
-        Random rand = new Random();
-        String randomHerbId = HERB_LOOT_TABLE.get(rand.nextInt(HERB_LOOT_TABLE.size()));
-        InventoryItem item = new InventoryItem(randomHerbId, 1);
-        gameState.getPlayer().getInventory().addItemToBackpack(item);
-        herb.harvest();
+        lootHandler.harvestHerb(herb, gameState.getPlayer());
     }
 
     // Collision Handler
@@ -227,7 +215,7 @@ public class ObjectManager implements Publisher {
      */
     public void generateLoot(Enemy e) {
         Rectangle2D.Double location = e.getHitBox();
-        objectBreakHandler.generateEnemyLoot(location, e.getEnemyType());
+        lootHandler.generateEnemyLoot(location, e.getEnemyType());
     }
 
     public void checkProjectileDeflect(Rectangle2D.Double attackBox) {
