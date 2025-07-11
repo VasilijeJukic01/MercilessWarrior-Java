@@ -9,6 +9,7 @@ import platformer.ui.buttons.AbstractButton;
 import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.MediumButton;
 import platformer.ui.buttons.SmallButton;
+import platformer.ui.overlays.controller.InventoryViewController;
 import platformer.utils.Utils;
 
 import java.awt.*;
@@ -29,7 +30,7 @@ import static platformer.constants.UI.*;
  */
 public class InventoryOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
 
-    private final GameState gameState;
+    private final InventoryViewController controller;
 
     private Rectangle2D overlay;
     private BufferedImage inventoryText;
@@ -40,18 +41,14 @@ public class InventoryOverlay implements Overlay<MouseEvent, KeyEvent, Graphics>
     private Rectangle2D backpackPanel, equipPanel;
     private BufferedImage playerImage, slotImage;
     private Rectangle2D.Double selectedSlot;
-    private int backpackSlot;
-    private int backpackSlotNumber, equipmentSlotNumber;
-    private boolean isInBackpack = true;
 
     public InventoryOverlay(GameState gameState) {
-        this.gameState = gameState;
+        this.controller = new InventoryViewController(gameState, this);
         this.mediumButtons = new MediumButton[3];
         this.smallButtons = new SmallButton[2];
         init();
     }
 
-    // Init
     private void init() {
         loadImages();
         loadButtons();
@@ -70,76 +67,36 @@ public class InventoryOverlay implements Overlay<MouseEvent, KeyEvent, Graphics>
     private void loadButtons() {
         smallButtons[0] = new SmallButton(PREV_BTN_X, INV_SMALL_BTN_Y, SMALL_BTN_SIZE, SMALL_BTN_SIZE, ButtonType.PREV);
         smallButtons[1] = new SmallButton(NEXT_BTN_X, INV_SMALL_BTN_Y, SMALL_BTN_SIZE, SMALL_BTN_SIZE, ButtonType.NEXT);
-
         mediumButtons[0] = new MediumButton(USE_BTN_X, INV_MEDIUM_BTN_Y, TINY_BTN_WID, TINY_BTN_HEI, ButtonType.USE);
         mediumButtons[1] = new MediumButton(EQUIP_BTN_X, INV_MEDIUM_BTN_Y, TINY_BTN_WID, TINY_BTN_HEI, ButtonType.EQUIP);
         mediumButtons[2] = new MediumButton(DROP_BTN_X, INV_MEDIUM_BTN_Y, TINY_BTN_WID, TINY_BTN_HEI, ButtonType.DROP);
-
         this.unequipBtn = new MediumButton(UNEQUIP_BTN_X, UNEQUIP_BTN_Y, TINY_BTN_WID, TINY_BTN_HEI, ButtonType.UNEQUIP);
     }
 
     private void initSelectedSlot() {
-        int xPos = (backpackSlotNumber % INVENTORY_SLOT_MAX_ROW) * SLOT_SPACING + BACKPACK_SLOT_X;
-        int yPos = (backpackSlotNumber / INVENTORY_SLOT_MAX_ROW) * SLOT_SPACING + BACKPACK_SLOT_Y;
+        int xPos = (controller.getBackpackSlotNumber() % INVENTORY_SLOT_MAX_ROW) * SLOT_SPACING + BACKPACK_SLOT_X;
+        int yPos = (controller.getBackpackSlotNumber() / INVENTORY_SLOT_MAX_ROW) * SLOT_SPACING + BACKPACK_SLOT_Y;
         this.selectedSlot = new Rectangle2D.Double(xPos, yPos, SLOT_SIZE, SLOT_SIZE);
     }
 
-    // Selection
-    private void setSelectedSlotBackpack() {
-        this.selectedSlot.x = (backpackSlotNumber % INVENTORY_SLOT_MAX_ROW) * SLOT_SPACING + BACKPACK_SLOT_X;
-        int offset = backpackSlotNumber / INVENTORY_SLOT_MAX_ROW;
-        this.selectedSlot.y = offset * SLOT_SPACING + BACKPACK_SLOT_Y;
-    }
-
-    private void setSelectedSlotEquipment() {
-        this.selectedSlot.x = (equipmentSlotNumber % EQUIPMENT_SLOT_MAX_ROW) * EQUIPMENT_SLOT_SPACING + EQUIPMENT_SLOT_X;
-        int offset = equipmentSlotNumber / EQUIPMENT_SLOT_MAX_ROW;
-        this.selectedSlot.y = offset * SLOT_SPACING + EQUIPMENT_SLOT_Y;
-    }
-
-    private void changeSlot(MouseEvent e) {
-        int x = e.getX(), y = e.getY();
-        checkBackpackSelection(x, y);
-        checkEquipmentSelection(x, y);
-    }
-
-    private void checkBackpackSelection(int x, int y) {
-        for (int i = 0; i < INVENTORY_SLOT_MAX_ROW; i++) {
-            for (int j = 0; j < INVENTORY_SLOT_MAX_COL; j++) {
-                int xStart = i * SLOT_SPACING + BACKPACK_SLOT_X;
-                int xEnd = i * SLOT_SPACING + BACKPACK_SLOT_X + SLOT_SIZE;
-                int yStart = j * SLOT_SPACING + BACKPACK_SLOT_Y;
-                int yEnd = j * SLOT_SPACING + BACKPACK_SLOT_Y + SLOT_SIZE;
-
-                if (x >= xStart && x <= xEnd && y >= yStart && y <= yEnd) {
-                    backpackSlotNumber = i + (j * INVENTORY_SLOT_MAX_ROW);
-                    setSelectedSlotBackpack();
-                    isInBackpack = true;
-                    break;
-                }
-            }
+    public void updateSelectedSlot(boolean isInBackpack) {
+        if (isInBackpack) {
+            this.selectedSlot.x = (controller.getBackpackSlotNumber() % INVENTORY_SLOT_MAX_ROW) * SLOT_SPACING + BACKPACK_SLOT_X;
+            this.selectedSlot.y = (controller.getBackpackSlotNumber() / INVENTORY_SLOT_MAX_ROW) * SLOT_SPACING + BACKPACK_SLOT_Y;
+        }
+        else {
+            this.selectedSlot.x = (controller.getEquipmentSlotNumber() % EQUIPMENT_SLOT_MAX_ROW) * EQUIPMENT_SLOT_SPACING + EQUIPMENT_SLOT_X;
+            this.selectedSlot.y = (controller.getEquipmentSlotNumber() / EQUIPMENT_SLOT_MAX_ROW) * SLOT_SPACING + EQUIPMENT_SLOT_Y;
         }
     }
 
-    private void checkEquipmentSelection(int x, int y) {
-        for (int i = 0; i < EQUIPMENT_SLOT_MAX_ROW; i++) {
-            for (int j = 0; j < EQUIPMENT_SLOT_MAX_COL; j++) {
-                int xStart = i * EQUIPMENT_SLOT_SPACING + EQUIPMENT_SLOT_X;
-                int xEnd = i * EQUIPMENT_SLOT_SPACING + EQUIPMENT_SLOT_X + SLOT_SIZE;
-                int yStart = j * SLOT_SPACING + EQUIPMENT_SLOT_Y;
-                int yEnd = j * SLOT_SPACING + EQUIPMENT_SLOT_Y + SLOT_SIZE;
-
-                if (x >= xStart && x <= xEnd && y >= yStart && y <= yEnd) {
-                    equipmentSlotNumber = i + (j * EQUIPMENT_SLOT_MAX_ROW);
-                    setSelectedSlotEquipment();
-                    isInBackpack = false;
-                    break;
-                }
-            }
-        }
+    @Override
+    public void update() {
+        Arrays.stream(smallButtons).forEach(SmallButton::update);
+        Arrays.stream(mediumButtons).forEach(MediumButton::update);
+        unequipBtn.update();
     }
 
-    // Core
     @Override
     public void render(Graphics g) {
         Graphics2D g2d = (Graphics2D) g;
@@ -152,16 +109,6 @@ public class InventoryOverlay implements Overlay<MouseEvent, KeyEvent, Graphics>
         g.setColor(Color.RED);
         g.drawRect((int)selectedSlot.x, (int)selectedSlot.y,  (int)selectedSlot.width,  (int)selectedSlot.height);
         renderButtons(g);
-    }
-
-    // Render
-    private void renderButtons(Graphics g) {
-        Arrays.stream(smallButtons).forEach(button -> button.render(g));
-        Arrays.stream(mediumButtons).forEach(button -> button.render(g));
-    }
-
-    private void renderSpecialButton(Graphics g) {
-        unequipBtn.render(g);
     }
 
     private void renderOverlay(Graphics2D g2d) {
@@ -182,37 +129,33 @@ public class InventoryOverlay implements Overlay<MouseEvent, KeyEvent, Graphics>
     }
 
     private void renderBackpackSlots(Graphics g) {
-        Inventory inventory = gameState.getPlayer().getInventory();
+        Inventory inventory = controller.getGameState().getPlayer().getInventory();
+        int pageOffset = controller.getBackpackSlot() * (INVENTORY_SLOT_MAX_ROW * INVENTORY_SLOT_MAX_COL);
         for (int i = 0; i < INVENTORY_SLOT_MAX_ROW; i++) {
             for (int j = 0; j < INVENTORY_SLOT_MAX_COL; j++) {
                 int xPos = i * SLOT_SPACING + BACKPACK_SLOT_X;
                 int yPos = j * SLOT_SPACING + BACKPACK_SLOT_Y;
-
                 g.drawImage(slotImage, xPos, yPos, slotImage.getWidth(), slotImage.getHeight(), null);
-                int slotNumber = (j * INVENTORY_SLOT_MAX_ROW + i) + backpackSlot * (INVENTORY_SLOT_MAX_ROW * INVENTORY_SLOT_MAX_COL);
-                if (slotNumber < inventory.getBackpack().size())
-                    renderBackpackItem(g, inventory, slotNumber);
+                int slotNumber = (j * INVENTORY_SLOT_MAX_ROW + i) + pageOffset;
+                if (slotNumber < inventory.getBackpack().size()) renderBackpackItem(g, inventory, slotNumber);
             }
         }
         renderItemInfoBackpack(g);
     }
 
-    private void renderBackpackItem(Graphics g, Inventory inventory, int slotNumber) {
-        InventoryItem item = inventory.getBackpack().get(slotNumber);
+    private void renderBackpackItem(Graphics g, Inventory inventory, int absoluteSlotNumber) {
+        InventoryItem item = inventory.getBackpack().get(absoluteSlotNumber);
         ItemData itemData = item.getData();
         if (itemData == null) return;
-
-        int xPos = (slotNumber % INVENTORY_SLOT_MAX_ROW) * SLOT_SPACING + BACKPACK_SLOT_X + ITEM_OFFSET_X;
-        int yPos = (slotNumber / INVENTORY_SLOT_MAX_ROW) * SLOT_SPACING + BACKPACK_SLOT_Y + ITEM_OFFSET_Y;
-
+        int relativeSlotNumber = absoluteSlotNumber - (controller.getBackpackSlot() * (INVENTORY_SLOT_MAX_ROW * INVENTORY_SLOT_MAX_COL));
+        int xPos = (relativeSlotNumber % INVENTORY_SLOT_MAX_ROW) * SLOT_SPACING + BACKPACK_SLOT_X + ITEM_OFFSET_X;
+        int yPos = (relativeSlotNumber / INVENTORY_SLOT_MAX_ROW) * SLOT_SPACING + BACKPACK_SLOT_Y + ITEM_OFFSET_Y;
         g.setColor(itemData.rarity.getColor());
         g.fillRect(xPos - (int)(ITEM_OFFSET_X / 1.1), yPos - (int)(ITEM_OFFSET_Y / 1.1), (int)(SLOT_SIZE / 1.06), (int)(SLOT_SIZE / 1.06));
         g.drawImage(item.getModel(), xPos, yPos, ITEM_SIZE, ITEM_SIZE, null);
-
         g.setColor(Color.WHITE);
         g.setFont(new Font("Arial", Font.BOLD, FONT_MEDIUM));
-        int countX = xPos + ITEM_COUNT_OFFSET_X, countY = yPos + ITEM_COUNT_OFFSET_Y;
-        g.drawString(String.valueOf(item.getAmount()), countX, countY);
+        g.drawString(String.valueOf(item.getAmount()), xPos + ITEM_COUNT_OFFSET_X, yPos + ITEM_COUNT_OFFSET_Y);
     }
 
     private void renderEquipmentPanel(Graphics2D g2d) {
@@ -229,26 +172,22 @@ public class InventoryOverlay implements Overlay<MouseEvent, KeyEvent, Graphics>
             for (int j = 0; j < EQUIPMENT_SLOT_MAX_COL; j++) {
                 int xPos = i * EQUIPMENT_SLOT_SPACING + EQUIPMENT_SLOT_X;
                 int yPos = j * SLOT_SPACING + EQUIPMENT_SLOT_Y;
-
                 g.drawImage(slotImage, xPos, yPos, slotImage.getWidth(), slotImage.getHeight(), null);
                 renderEquipmentItem(g, i, j);
-
             }
         }
         renderItemInfoEquipment(g);
     }
 
     private void renderEquipmentItem(Graphics g, int i, int j) {
-        Inventory inventory = gameState.getPlayer().getInventory();
+        Inventory inventory = controller.getGameState().getPlayer().getInventory();
         int slotIndex = j * EQUIPMENT_SLOT_MAX_ROW + i;
         if (inventory.getEquipped()[slotIndex] != null) {
             InventoryItem item = inventory.getEquipped()[slotIndex];
             ItemData itemData = item.getData();
             if (itemData == null) return;
-
             int xPos = (slotIndex % EQUIPMENT_SLOT_MAX_ROW) * EQUIPMENT_SLOT_SPACING + EQUIPMENT_SLOT_X + ITEM_OFFSET_X;
             int yPos = (slotIndex / EQUIPMENT_SLOT_MAX_ROW) * SLOT_SPACING + EQUIPMENT_SLOT_Y + ITEM_OFFSET_Y;
-
             g.setColor(itemData.rarity.getColor());
             g.fillRect(xPos - (int)(ITEM_OFFSET_X / 1.1), yPos - (int)(ITEM_OFFSET_Y / 1.1), (int)(SLOT_SIZE / 1.06), (int)(SLOT_SIZE / 1.06));
             g.drawImage(item.getModel(), xPos, yPos, ITEM_SIZE, ITEM_SIZE, null);
@@ -256,19 +195,20 @@ public class InventoryOverlay implements Overlay<MouseEvent, KeyEvent, Graphics>
     }
 
     private void renderItemInfoBackpack(Graphics g) {
-        Inventory inventory = gameState.getPlayer().getInventory();
-        if (backpackSlotNumber >= inventory.getBackpack().size()) return;
-        InventoryItem item = inventory.getBackpack().get(backpackSlotNumber);
-        if (item != null && isInBackpack) renderItemDescription(g, item);
+        Inventory inventory = controller.getGameState().getPlayer().getInventory();
+        int absoluteSlotNumber = controller.getBackpackSlotNumber() + (controller.getBackpackSlot() * (INVENTORY_SLOT_MAX_ROW * INVENTORY_SLOT_MAX_COL));
+        if (absoluteSlotNumber >= inventory.getBackpack().size()) return;
+        InventoryItem item = inventory.getBackpack().get(absoluteSlotNumber);
+        if (item != null && controller.isInBackpack()) renderItemDescription(g, item);
     }
 
     private void renderItemInfoEquipment(Graphics g) {
-        Inventory inventory = gameState.getPlayer().getInventory();
-        if (equipmentSlotNumber >= inventory.getEquipped().length) return;
-        InventoryItem item = inventory.getEquipped()[equipmentSlotNumber];
-        if (item != null && !isInBackpack) {
+        Inventory inventory = controller.getGameState().getPlayer().getInventory();
+        if (controller.getEquipmentSlotNumber() >= inventory.getEquipped().length) return;
+        InventoryItem item = inventory.getEquipped()[controller.getEquipmentSlotNumber()];
+        if (item != null && !controller.isInBackpack()) {
             renderItemDescription(g, item);
-            renderSpecialButton(g);
+            unequipBtn.render(g);
         }
     }
 
@@ -292,45 +232,6 @@ public class InventoryOverlay implements Overlay<MouseEvent, KeyEvent, Graphics>
         }
     }
 
-    private List<String> wrapText(String text, int maxWidth, FontMetrics fm) {
-        List<String> lines = new ArrayList<>();
-        String[] words = text.split(" ");
-        StringBuilder currentLine = new StringBuilder();
-
-        for (String word : words) {
-            if (word.contains("\n")) {
-                String[] parts = word.split("\n", -1);
-                for (int i = 0; i < parts.length; i++) {
-                    String part = parts[i];
-                    if (fm.stringWidth(currentLine + " " + part) <= maxWidth) {
-                        if (!currentLine.isEmpty()) currentLine.append(" ");
-                        currentLine.append(part);
-                    }
-                    else {
-                        lines.add(currentLine.toString());
-                        currentLine = new StringBuilder(part);
-                    }
-                    if (i < parts.length - 1) {
-                        lines.add(currentLine.toString());
-                        currentLine = new StringBuilder();
-                    }
-                }
-            }
-            else {
-                if (fm.stringWidth(currentLine + " " + word) <= maxWidth) {
-                    if (!currentLine.isEmpty()) currentLine.append(" ");
-                    currentLine.append(word);
-                }
-                else {
-                    lines.add(currentLine.toString());
-                    currentLine = new StringBuilder(word);
-                }
-            }
-        }
-        if (!currentLine.isEmpty()) lines.add(currentLine.toString());
-        return lines;
-    }
-
     private void renderBonusInfo(Graphics g) {
         g.setColor(Color.WHITE);
         g.setFont(new Font("Arial", Font.PLAIN, FONT_MEDIUM));
@@ -344,197 +245,96 @@ public class InventoryOverlay implements Overlay<MouseEvent, KeyEvent, Graphics>
         g.drawString("Cooldown Bonus: +"+InventoryBonus.getInstance().getCooldown()*100+"%", INV_BONUS_X, INV_BONUS_Y +  7 * INV_BONUS_SPACING);
     }
 
-    // Actions
-    private void prevBackpackSlot() {
-        this.backpackSlot = Math.max(backpackSlot-1, 0);
+    private void renderButtons(Graphics g) {
+        Arrays.stream(smallButtons).forEach(button -> button.render(g));
+        Arrays.stream(mediumButtons).forEach(button -> button.render(g));
     }
 
-    private void nextBackpackSlot() {
-        this.backpackSlot = Math.min(backpackSlot+1, INVENTORY_SLOT_CAP);
+    private List<String> wrapText(String text, int maxWidth, FontMetrics fm) {
+        List<String> lines = new ArrayList<>();
+        for (String paragraph : text.split("\n")) {
+            String[] words = paragraph.split(" ");
+            StringBuilder currentLine = new StringBuilder();
+            for (String word : words) {
+                if (fm.stringWidth(currentLine + " " + word) <= maxWidth) {
+                    if (!currentLine.isEmpty()) currentLine.append(" ");
+                    currentLine.append(word);
+                }
+                else {
+                    lines.add(currentLine.toString());
+                    currentLine = new StringBuilder(word);
+                }
+            }
+            if (!currentLine.isEmpty()) lines.add(currentLine.toString());
+        }
+        return lines;
     }
 
-    @Override
-    public void mouseDragged(MouseEvent e) {
-
-    }
-
-    @Override
-    public void mouseClicked(MouseEvent mouseEvent) {
-
-    }
-
-    @Override
-    public void mousePressed(MouseEvent e) {
-        setMousePressed(e, smallButtons);
-        setMousePressed(e, mediumButtons);
-        setMousePressed(e, new AbstractButton[]{unequipBtn});
-        changeSlot(e);
-    }
-
-    private void setMousePressed(MouseEvent e, AbstractButton[] buttons) {
+    public void setMousePressed(MouseEvent e, AbstractButton[] buttons) {
         Arrays.stream(buttons)
-                .filter(button -> isMouseInButton(e, button))
+                .filter(button -> button.getButtonHitBox().contains(e.getPoint()))
                 .findFirst()
                 .ifPresent(button -> button.setMousePressed(true));
     }
 
-    @Override
-    public void mouseReleased(MouseEvent e) {
-        releaseSmallButtons(e);
-        releaseMediumButtons(e);
-        releaseUnequipButton(e);
-        Arrays.stream(smallButtons).forEach(AbstractButton::resetMouseSet);
-        Arrays.stream(mediumButtons).forEach(AbstractButton::resetMouseSet);
-        unequipBtn.resetMouseSet();
-    }
-
-    private void releaseSmallButtons(MouseEvent e) {
-        for (SmallButton button : smallButtons) {
-            if (isMouseInButton(e, button) && button.isMousePressed()) {
-                switch (button.getButtonType()) {
-                    case PREV:
-                        prevBackpackSlot();
-                        break;
-                    case NEXT:
-                        nextBackpackSlot();
-                        break;
-                    default: break;
-                }
-                break;
-            }
-        }
-    }
-
-    private void releaseMediumButtons(MouseEvent e) {
-        for (MediumButton button : mediumButtons) {
-            if (isMouseInButton(e, button) && button.isMousePressed()) {
-                Inventory inventory = gameState.getPlayer().getInventory();
-                switch (button.getButtonType()) {
-                    case USE:
-                        inventory.useItem(backpackSlotNumber, gameState.getPlayer()); break;
-                    case EQUIP:
-                        inventory.equipItem(backpackSlotNumber); break;
-                    case DROP:
-                        inventory.dropItem(backpackSlotNumber); break;
-                    default: break;
-                }
-            }
-        }
-    }
-
-    private void releaseUnequipButton(MouseEvent e) {
-        if (isMouseInButton(e, unequipBtn) && unequipBtn.isMousePressed()) {
-            Inventory inventory = gameState.getPlayer().getInventory();
-            inventory.unequipItem(equipmentSlotNumber);
-        }
-    }
-
-    @Override
-    public void mouseMoved(MouseEvent e) {
-        setMouseMoved(e, smallButtons);
-        setMouseMoved(e, mediumButtons);
-        setMouseMoved(e, new AbstractButton[]{unequipBtn});
-    }
-
-    @Override
-    public void keyPressed(KeyEvent e) {
-        switch (e.getKeyCode()) {
-            case KeyEvent.VK_UP:
-                moveUp();
-                break;
-            case KeyEvent.VK_DOWN:
-                moveDown();
-                break;
-            case KeyEvent.VK_LEFT:
-                moveLeft();
-                break;
-            case KeyEvent.VK_RIGHT:
-                moveRight();
-                break;
-            case KeyEvent.VK_X:
-                useItem();
-                break;
-            default: break;
-        }
-    }
-
-    private void moveUp() {
-        if (isInBackpack) {
-            backpackSlotNumber -= INVENTORY_SLOT_MAX_ROW;
-            backpackSlotNumber = Math.max(0, backpackSlotNumber);
-            setSelectedSlotBackpack();
-        } else {
-            equipmentSlotNumber -= EQUIPMENT_SLOT_MAX_ROW;
-            equipmentSlotNumber = Math.max(0, equipmentSlotNumber);
-            setSelectedSlotEquipment();
-        }
-    }
-
-    private void moveDown() {
-        if (isInBackpack) {
-            backpackSlotNumber += INVENTORY_SLOT_MAX_ROW;
-            backpackSlotNumber = Math.min(INVENTORY_SLOT_MAX_ROW * INVENTORY_SLOT_MAX_COL - 1, backpackSlotNumber);
-            setSelectedSlotBackpack();
-        } else {
-            equipmentSlotNumber += EQUIPMENT_SLOT_MAX_ROW;
-            equipmentSlotNumber = Math.min(EQUIPMENT_SLOT_MAX_ROW * EQUIPMENT_SLOT_MAX_COL - 1, equipmentSlotNumber);
-            setSelectedSlotEquipment();
-        }
-    }
-
-    private void moveLeft() {
-        if (isInBackpack) {
-            backpackSlotNumber--;
-            backpackSlotNumber = Math.max(0, backpackSlotNumber);
-            setSelectedSlotBackpack();
-        } else {
-            equipmentSlotNumber--;
-            equipmentSlotNumber = Math.max(0, equipmentSlotNumber);
-            setSelectedSlotEquipment();
-        }
-    }
-
-    private void moveRight() {
-        if (isInBackpack) {
-            backpackSlotNumber++;
-            backpackSlotNumber = Math.min(INVENTORY_SLOT_MAX_ROW * INVENTORY_SLOT_MAX_COL - 1, backpackSlotNumber);
-            setSelectedSlotBackpack();
-        } else {
-            equipmentSlotNumber++;
-            equipmentSlotNumber = Math.min(EQUIPMENT_SLOT_MAX_ROW * EQUIPMENT_SLOT_MAX_COL - 1, equipmentSlotNumber);
-            setSelectedSlotEquipment();
-        }
-    }
-
-    private void useItem() {
-        Inventory inventory = gameState.getPlayer().getInventory();
-        inventory.useItem(backpackSlotNumber, gameState.getPlayer());
-    }
-
-
-    private void setMouseMoved(MouseEvent e, AbstractButton[] buttons) {
+    public void setMouseMoved(MouseEvent e, AbstractButton[] buttons) {
         Arrays.stream(buttons).forEach(button -> button.setMouseOver(false));
-
         Arrays.stream(buttons)
-                .filter(button -> isMouseInButton(e, button))
+                .filter(button -> button.getButtonHitBox().contains(e.getPoint()))
                 .findFirst()
                 .ifPresent(button -> button.setMouseOver(true));
     }
 
     @Override
-    public void update() {
-        Arrays.stream(smallButtons).forEach(SmallButton::update);
-        Arrays.stream(mediumButtons).forEach(MediumButton::update);
-        unequipBtn.update();
+    public void mouseDragged(MouseEvent e) {
     }
 
-    private boolean isMouseInButton(MouseEvent e, AbstractButton button) {
-        return button.getButtonHitBox().contains(e.getX(), e.getY());
+    @Override
+    public void mouseClicked(MouseEvent e) {
+    }
+
+    @Override
+    public void mousePressed(MouseEvent e) {
+        controller.mousePressed(e);
+    }
+
+    @Override
+    public void mouseReleased(MouseEvent e) {
+        controller.mouseReleased(e);
+    }
+
+    @Override
+    public void mouseMoved(MouseEvent e) {
+        controller.mouseMoved(e);
+    }
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+        controller.keyPressed(e);
     }
 
     @Override
     public void reset() {
-
+        controller.reset();
     }
 
+    public InventoryViewController getController() {
+        return controller;
+    }
+
+    public Rectangle2D getOverlay() {
+        return overlay;
+    }
+
+    public MediumButton[] getMediumButtons() {
+        return mediumButtons;
+    }
+
+    public MediumButton getUnequipBtn() {
+        return unequipBtn;
+    }
+
+    public SmallButton[] getSmallButtons() {
+        return smallButtons;
+    }
 }
