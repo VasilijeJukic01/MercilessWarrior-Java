@@ -307,16 +307,18 @@ public class ShopOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
     // Actions
     private void buyItem() {
         if (isSelling) return;
+        int absoluteIndex = buySlotNumber + (buySelectedSlot * (SHOP_SLOT_MAX_ROW * SHOP_SLOT_MAX_COL));
         shops.stream()
                 .filter(Shop::isActive)
-                .forEach(shop -> shop.buyItem(gameState.getPlayer(), buySlotNumber));
+                .forEach(shop -> shop.buyItem(gameState.getPlayer(), absoluteIndex));
     }
 
     private void sellItem() {
         if (!isSelling) return;
+        int absoluteIndex = sellSlotNumber + (sellSelectedSlot * (SHOP_SLOT_MAX_ROW * SHOP_SLOT_MAX_COL));
         shops.stream()
                 .filter(Shop::isActive)
-                .forEach(shop -> shop.sellItem(gameState.getPlayer(), sellSlotNumber));
+                .forEach(shop -> shop.sellItem(gameState.getPlayer(), absoluteIndex));
     }
 
     private void prevBackpackSlot(SmallButton button) {
