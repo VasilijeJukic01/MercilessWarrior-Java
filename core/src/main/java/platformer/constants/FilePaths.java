@@ -122,6 +122,7 @@ public final class FilePaths {
     // Inventory / Shop
     public static final String RECIPES_PATH = "/items/recipes.json";
     public static final String SHOP_INV_PATH = "/items/shop_inventory.json";
+    public static final String LOOT_TABLE_PATH = "/items/loot_tables.json";
     public static final String PLAYER_ICON = "/images/inventory/Player.png";
 
     // Quests

@@ -107,7 +107,12 @@ public class ObjectManager implements Publisher {
         level.gatherData();
         this.objectsMap = level.getObjectsMap();
         this.projectiles.clear();
+        configureObjects();
         embedSubscribers();
+    }
+
+    private void configureObjects() {
+        getObjects(Container.class).forEach(container -> lootHandler.generateCrateLoot(container));
     }
 
     // Intersection Handler

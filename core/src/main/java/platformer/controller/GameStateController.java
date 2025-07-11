@@ -193,7 +193,7 @@ public class GameStateController {
     }
 
     private void handleInteraction(String id) {
-        if (Objects.equals(id, "Loot")) {
+        if (Objects.equals(id, "Loot") || Objects.equals(id, "Container")) {
             gameState.setOverlay(PlayingState.LOOTING);
         }
         else if (Objects.equals(id, "Table")) {

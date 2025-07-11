@@ -1,5 +1,7 @@
 package platformer.model.gameObjects;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import platformer.audio.Audio;
 import platformer.audio.types.Sound;
 import platformer.model.entities.effects.EffectManager;
@@ -9,13 +11,17 @@ import platformer.model.entities.player.Player;
 import platformer.model.gameObjects.objects.*;
 import platformer.model.inventory.InventoryItem;
 import platformer.model.inventory.ItemData;
+import platformer.model.inventory.loot.LootItem;
+import platformer.model.inventory.loot.LootTable;
 import platformer.model.perks.PerksBonus;
 
 import java.awt.geom.Rectangle2D;
-import java.util.List;
-import java.util.Random;
+import java.io.InputStreamReader;
+import java.lang.reflect.Type;
+import java.util.*;
 
 import static platformer.constants.Constants.*;
+import static platformer.constants.FilePaths.LOOT_TABLE_PATH;
 
 /**
  * Handles all logic related to loot generation and collection.
@@ -25,30 +31,30 @@ public class LootHandler {
     private final ObjectManager objectManager;
     private final EffectManager effectManager;
     private final Random rand = new Random();
-
-    private static final List<String> HERB_LOOT_TABLE = List.of(
-            "WILD_GRASS", "CAVERN_BEANS", "GOBLINS_IVY",
-            "FAE_LEAF", "GHOST_LEAF", "WITCHS_WORT", "FROST_BLOOM_PETALS"
-    );
+    private final Map<String, LootTable> lootTables;
 
     public LootHandler(ObjectManager objectManager, EffectManager effectManager) {
         this.objectManager = objectManager;
         this.effectManager = effectManager;
+        this.lootTables = loadLootTables();
     }
 
     /**
-     * Generates loot from a broken container.
+     * Generates loot and places it inside a container.
      */
     public void generateCrateLoot(Container container) {
-        Random rand = new Random();
-        int value = rand.nextInt(4) - 1;
-        ObjType obj = null;
-        if (value == 0) obj = ObjType.STAMINA_POTION;
-        else if (value == 1) obj = ObjType.HEAL_POTION;
-        if (obj != null) {
-            int xPos = (int) (container.getHitBox().x + container.getHitBox().width / 2);
-            int yPos = (int) (container.getHitBox().y - container.getHitBox().height / 4);
-            objectManager.addGameObject(new Potion(obj, xPos, yPos));
+        LootTable crateTable = lootTables.get("CRATE");
+        if (crateTable == null) return;
+
+        int roll = rand.nextInt(crateTable.getTotalWeight());
+        int cumulativeWeight = 0;
+        for (LootItem lootItem : crateTable.getItems()) {
+            cumulativeWeight += lootItem.getWeight();
+            if (roll < cumulativeWeight) {
+                InventoryItem item = new InventoryItem(lootItem.getItemId(), lootItem.getQuantity());
+                container.getItems().add(item);
+                return;
+            }
         }
     }
 
@@ -142,18 +148,42 @@ public class LootHandler {
      * Handles the harvesting of a herb, giving the player loot.
      */
     public void harvestHerb(GameObject herb, Player player) {
-        Audio.getInstance().getAudioPlayer().playSound(Sound.CRATE_BREAK_1);
         effectManager.spawnDustParticles(herb.getHitBox().getCenterX(), herb.getHitBox().getCenterY() - (10 * SCALE), 15, DustType.HERB_CUT, 0, null);
 
-        Random rand = new Random();
-        String randomHerbId = HERB_LOOT_TABLE.get(rand.nextInt(HERB_LOOT_TABLE.size()));
-        InventoryItem item = new InventoryItem(randomHerbId, 1);
-        player.getInventory().addItemToBackpack(item);
+        LootTable herbTable = lootTables.get("HERB");
+        if (herbTable == null) return;
 
-        ItemData data = item.getData();
-        if (data != null) effectManager.spawnItemPickupText("+1 " + data.name, player, ITEM_TEXT_COLOR);
-
+        int roll = rand.nextInt(herbTable.getTotalWeight());
+        int cumulativeWeight = 0;
+        for (LootItem lootItem : herbTable.getItems()) {
+            cumulativeWeight += lootItem.getWeight();
+            if (roll < cumulativeWeight) {
+                InventoryItem item = new InventoryItem(lootItem.getItemId(), lootItem.getQuantity());
+                player.getInventory().addItemToBackpack(item);
+                ItemData data = item.getData();
+                if (data != null) effectManager.spawnItemPickupText("+" + lootItem.getQuantity() + " " + data.name, player, ITEM_TEXT_COLOR);
+                break;
+            }
+        }
         herb.setAlive(false);
+    }
+
+    // Helper
+    private Map<String, LootTable> loadLootTables() {
+        try (InputStreamReader reader = new InputStreamReader(Objects.requireNonNull(getClass().getResourceAsStream(LOOT_TABLE_PATH)))) {
+            Type type = new TypeToken<Map<String, List<LootItem>>>() {}.getType();
+            Map<String, List<LootItem>> rawTables = new Gson().fromJson(reader, type);
+
+            Map<String, LootTable> processedTables = new HashMap<>();
+            for (Map.Entry<String, List<LootItem>> entry : rawTables.entrySet()) {
+                LootTable table = new LootTable();
+                table.setItems(entry.getValue());
+                processedTables.put(entry.getKey(), table);
+            }
+            return processedTables;
+        } catch (Exception e) {
+            return Collections.emptyMap();
+        }
     }
 
 }

@@ -27,7 +27,7 @@ public class IntersectionHandler {
     private final Class<? extends GameObject>[] classesToCheck = new Class[]{
             Shop.class, Blacksmith.class, SaveTotem.class, Loot.class, Spike.class,
             Blocker.class, SmashTrap.class, Table.class, Board.class, Dog.class, Npc.class,
-            Lava.class, JumpPad.class, Herb.class
+            Lava.class, JumpPad.class, Herb.class, Container.class
     };
 
     public IntersectionHandler(EnemyManager enemyManager, ObjectManager objectManager, LootHandler lootHandler) {
@@ -165,6 +165,7 @@ public class IntersectionHandler {
         if (object instanceof Board) return "Board";
         if (object instanceof Herb) return "Herb";
         if (object instanceof Dog) return "Dog";
+        if (object instanceof Container) return "Container";
         if (object instanceof Npc && ((Npc)object).getNpcType() == NpcType.ANITA) return "NpcAnita";
         if (object instanceof Npc && ((Npc)object).getNpcType() == NpcType.NIKOLAS) return "NpcNikolas";
         if (object instanceof Npc && ((Npc)object).getNpcType() == NpcType.SIR_DEJANOVIC) return "NpcSirDejanovic";

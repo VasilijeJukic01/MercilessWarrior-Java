@@ -1,0 +1,61 @@
+{
+  "CRATE": [
+    {
+      "itemId": "HEALTH",
+      "quantity": 1,
+      "weight": 35
+    },
+    {
+      "itemId": "STAMINA",
+      "quantity": 1,
+      "weight": 35
+    },
+    {
+      "itemId": "COPPER_ORE",
+      "quantity": 2,
+      "weight": 20
+    },
+    {
+      "itemId": "ROCK_SHARD",
+      "quantity": 5,
+      "weight": 10
+    }
+  ],
+  "HERB": [
+    {
+      "itemId": "WILD_GRASS",
+      "quantity": 1,
+      "weight": 30
+    },
+    {
+      "itemId": "CAVERN_BEANS",
+      "quantity": 1,
+      "weight": 25
+    },
+    {
+      "itemId": "GOBLINS_IVY",
+      "quantity": 1,
+      "weight": 20
+    },
+    {
+      "itemId": "FAE_LEAF",
+      "quantity": 1,
+      "weight": 10
+    },
+    {
+      "itemId": "GHOST_LEAF",
+      "quantity": 1,
+      "weight": 8
+    },
+    {
+      "itemId": "WITCHS_WORT",
+      "quantity": 1,
+      "weight": 5
+    },
+    {
+      "itemId": "FROST_BLOOM_PETALS",
+      "quantity": 1,
+      "weight": 2
+    }
+  ]
+}

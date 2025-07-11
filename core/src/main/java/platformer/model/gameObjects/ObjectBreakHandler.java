@@ -66,7 +66,6 @@ public class ObjectBreakHandler {
         container.setAnimate(true);
         Audio.getInstance().getAudioPlayer().playCrateSound();
         Logger.getInstance().notify("Player was pushed into a container, breaking it.", Message.INFORMATION);
-        lootHandler.generateCrateLoot(container);
     }
 
     /**
@@ -101,14 +100,12 @@ public class ObjectBreakHandler {
         Audio.getInstance().getAudioPlayer().playCrateSound();
         Logger.getInstance().notify("Player breaks container.", Message.NOTIFICATION);
         objectManager.notify(QuestObjectiveType.COLLECT, ObjectiveTarget.CRATE);
-        lootHandler.generateCrateLoot(container);
     }
 
     private void breakContainerByEnemy(Container container) {
         container.setAnimate(true);
         Audio.getInstance().getAudioPlayer().playCrateSound();
         Logger.getInstance().notify("Enemy breaks container.", Message.NOTIFICATION);
-        lootHandler.generateCrateLoot(container);
     }
 
 

@@ -2,13 +2,18 @@ package platformer.model.gameObjects.objects;
 
 import platformer.model.gameObjects.GameObject;
 import platformer.model.gameObjects.ObjType;
+import platformer.model.inventory.InventoryItem;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+import java.util.List;
 
 import static platformer.constants.Constants.*;
 
 public class Container extends GameObject {
+
+    private final List<InventoryItem> items = new ArrayList<>();
 
     public Container(ObjType objType, int xPos, int yPos) {
         super(objType, xPos, yPos);
@@ -51,5 +56,9 @@ public class Container extends GameObject {
     @Override
     public void attackBoxRenderer(Graphics g, int xLevelOffset, int yLevelOffset) {
 
+    }
+
+    public List<InventoryItem> getItems() {
+        return items;
     }
 }
