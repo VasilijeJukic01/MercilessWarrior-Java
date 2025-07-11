@@ -383,8 +383,7 @@ public final class Constants {
     public static final int SLIDER_BTN_SIZE = scale(15);
     public static final int SLIDER_WID = scale(150);
     public static final int SLIDER_HEI = scale(30);
-    public static final int SLIDER_MIN_VALUE = scale(365);
-    public static final int SLIDER_MAX_VALUE = scale(507);
+    public static final int SLIDER_LEN = scale(144);
 
     // UI
     public static final int FONT_BIG = scale(20);

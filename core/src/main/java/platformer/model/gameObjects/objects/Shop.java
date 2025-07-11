@@ -69,58 +69,54 @@ public class Shop extends GameObject implements Publisher {
     }
 
     // Actions
-    public void buyItem(Player player, int slot) {
+    public void buyItem(Player player, int slot, int quantity) {
         if (slot >= shopItems.size()) return;
         ShopItem item = shopItems.get(slot);
-        if (player.getCoins() >= item.getCost()) {
-            player.changeCoins(-item.getCost());
-            item.setStock(item.getStock() - 1);
-            if (item.getStock() == 0) shopItems.remove(item);
+        if (quantity <= 0 || quantity > item.getStock()) return;
+        int totalCost = item.getCost() * quantity;
+        if (player.getCoins() >= totalCost) {
+            player.changeCoins(-totalCost);
+            item.setStock(item.getStock() - quantity);
+            if (item.getStock() <= 0) shopItems.remove(item);
             Audio.getInstance().getAudioPlayer().playSound(Sound.SHOP_BUY);
-
-            // TODO: Change healing logic
-            if (item.getItemId().equals("HEALTH")) player.changeHealth(HEALTH_VAL);
-            else if (item.getItemId().equals("STAMINA")) player.changeStamina(STAMINA_VAL);
-            else addToInventory(player, item.getItemId());
+            addToInventory(player, item.getItemId(), quantity);
         }
     }
 
-    public void sellItem(Player player, int slot) {
+    public void sellItem(Player player, int slot, int quantity) {
         Inventory inventory = player.getInventory();
         if (slot >= inventory.getBackpack().size()) return;
         InventoryItem itemToSell = inventory.getBackpack().get(slot);
-
-        if (itemToSell.getAmount() > 0) {
-            ItemData data = itemToSell.getData();
-            if (data == null) return;
-            player.changeCoins(data.sellValue);
-            itemToSell.setAmount(itemToSell.getAmount() - 1);
-            if (itemToSell.getAmount() == 0) inventory.getBackpack().remove(itemToSell);
-            Audio.getInstance().getAudioPlayer().playSound(Sound.SHOP_BUY);
-            addToShop(itemToSell);
-        }
+        if (quantity <= 0 || quantity > itemToSell.getAmount()) return;
+        ItemData data = itemToSell.getData();
+        if (data == null) return;
+        player.changeCoins(data.sellValue * quantity);
+        itemToSell.setAmount(itemToSell.getAmount() - quantity);
+        if (itemToSell.getAmount() <= 0) inventory.getBackpack().remove(itemToSell);
+        Audio.getInstance().getAudioPlayer().playSound(Sound.SHOP_BUY);
+        addToShop(itemToSell, quantity);
     }
 
-    private void addToInventory(Player player, String itemId) {
+    private void addToInventory(Player player, String itemId, int quantity) {
         Inventory inventory = player.getInventory();
         Optional<InventoryItem> existingItem = inventory.getBackpack().stream()
                 .filter(invItem -> invItem.getItemId().equals(itemId))
                 .findFirst();
 
         if (itemId.equals("ARMOR_WARRIOR")) notify(QuestObjectiveType.COLLECT, ObjectiveTarget.BUY_ARMOR);
-        if (existingItem.isPresent()) existingItem.get().addAmount(1);
-        else inventory.getBackpack().add(new InventoryItem(itemId, 1));
+        if (existingItem.isPresent()) existingItem.get().addAmount(quantity);
+        else inventory.getBackpack().add(new InventoryItem(itemId, quantity));
     }
 
-    private void addToShop(InventoryItem inventoryItem) {
+    private void addToShop(InventoryItem inventoryItem, int quantity) {
         Optional<ShopItem> existingItem = shopItems.stream()
                 .filter(shopItem -> shopItem.getItemId().equals(inventoryItem.getItemId()))
                 .findFirst();
 
         ItemData data = inventoryItem.getData();
         if (data == null) return;
-        if (existingItem.isPresent()) existingItem.get().addStock(1);
-        else shopItems.add(new ShopItem(inventoryItem.getItemId(), 1, data.sellValue));
+        if (existingItem.isPresent()) existingItem.get().addStock(quantity);
+        else shopItems.add(new ShopItem(inventoryItem.getItemId(), quantity, data.sellValue));
     }
 
     // Core

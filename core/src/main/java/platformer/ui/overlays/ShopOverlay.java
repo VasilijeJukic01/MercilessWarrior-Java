@@ -1,12 +1,10 @@
 package platformer.ui.overlays;
 
+import platformer.animation.Animation;
 import platformer.model.gameObjects.objects.Shop;
 import platformer.model.inventory.*;
 import platformer.state.GameState;
-import platformer.ui.buttons.AbstractButton;
-import platformer.ui.buttons.ButtonType;
-import platformer.ui.buttons.MediumButton;
-import platformer.ui.buttons.SmallButton;
+import platformer.ui.buttons.*;
 import platformer.utils.Utils;
 
 import java.awt.*;
@@ -18,15 +16,17 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static platformer.constants.AnimConstants.COIN_H;
+import static platformer.constants.AnimConstants.COIN_W;
 import static platformer.constants.Constants.*;
-import static platformer.constants.FilePaths.SHOP_TXT;
-import static platformer.constants.FilePaths.SLOT_IMG;
+import static platformer.constants.FilePaths.*;
 import static platformer.constants.UI.*;
 
 /**
  * ShopOverlay class is responsible for rendering the shop overlay.
  * It allows the player to buy and sell items from the shop.
  */
+// TODO: Refactor !!!
 public class ShopOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
 
     private final GameState gameState;
@@ -37,11 +37,15 @@ public class ShopOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
     private final SmallButton[] smallButtons;
 
     private Rectangle2D buyPanel, sellPanel;
-    private BufferedImage slotImage;
+    private BufferedImage slotImage, coinIcon;
     private Rectangle2D.Double selectedSlot;
     private int buySelectedSlot, sellSelectedSlot;
     private int buySlotNumber, sellSlotNumber;
     private boolean isSelling;
+
+    private SliderButton slider;
+    private int quantityToTrade = 1;
+    private boolean sliderActive = false;
 
     private List<Shop> shops;
 
@@ -50,18 +54,23 @@ public class ShopOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
         this.shops = gameState.getObjectManager().getObjects(Shop.class);
         this.mediumButtons = new MediumButton[3];
         this.smallButtons = new SmallButton[4];
-        initSelectedSlot();
-        loadImages();
-        loadButtons();
+        init();
     }
 
     // Init
+    private void init() {
+        loadImages();
+        loadButtons();
+        initSelectedSlot();
+    }
+
     private void loadImages() {
         this.overlay = new Rectangle2D.Double(INV_OVERLAY_X, INV_OVERLAY_Y, INV_OVERLAY_WID, INV_OVERLAY_HEI);
         this.buyPanel = new Rectangle2D.Double(SHOP_BUY_OVERLAY_X, SHOP_BUY_OVERLAY_Y, SHOP_PANEL_WID, SHOP_PANEL_HEI);
         this.sellPanel = new Rectangle2D.Double(SHOP_SELL_OVERLAY_X, SHOP_SELL_OVERLAY_Y, SHOP_PANEL_WID, SHOP_PANEL_HEI);
         this.shopText = Utils.getInstance().importImage(SHOP_TXT, SHOP_TEXT_WID, SHOP_TEXT_HEI);
         this.slotImage = Utils.getInstance().importImage(SLOT_IMG, SLOT_SIZE, SLOT_SIZE);
+        this.coinIcon = Animation.getInstance().loadFromSprite(COIN_SHEET, 1, 1, COIN_WID, COIN_HEI, 0, COIN_W, COIN_H)[0];
     }
 
     private void loadButtons() {
@@ -73,6 +82,8 @@ public class ShopOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
         mediumButtons[0] = new MediumButton(BUY_BTN_X, BUY_BTN_Y, TINY_BTN_WID, TINY_BTN_HEI, ButtonType.BUY);
         mediumButtons[1] = new MediumButton(LEAVE_BTN_X, LEAVE_BTN_Y, MEDIUM_BTN_WID, MEDIUM_BTN_HEI, ButtonType.LEAVE);
         mediumButtons[2] = new MediumButton(SELL_BTN_X, SELL_BTN_Y, TINY_BTN_WID, TINY_BTN_HEI, ButtonType.SELL);
+
+        this.slider = new SliderButton(SHOP_SLIDER_BTN_X, SHOP_SLIDER_BTN_Y, SOUND_BTN_SIZE, SOUND_BTN_SIZE);
     }
 
     private void initSelectedSlot() {
@@ -86,6 +97,22 @@ public class ShopOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
     public void update() {
         Arrays.stream(mediumButtons).forEach(MediumButton::update);
         Arrays.stream(smallButtons).forEach(SmallButton::update);
+        updateSliderVisibility();
+        if (sliderActive) {
+            slider.update();
+            updateQuantityFromSlider();
+        }
+    }
+
+    private void updateSliderVisibility() {
+        ItemData selectedData = getSelectedItemData();
+        boolean previouslyActive = sliderActive;
+        sliderActive = selectedData != null && selectedData.stackable;
+        if (sliderActive && !previouslyActive) {
+            slider.updateSlider(slider.getButtonHitBox().x);
+            quantityToTrade = 1;
+        }
+        else if (!sliderActive) quantityToTrade = 1;
     }
 
     @Override
@@ -96,6 +123,7 @@ public class ShopOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
         renderSlots(g);
         renderShopItems(g);
         renderInventoryItems(g);
+        if (sliderActive) renderSlider(g);
         g.drawRect((int)selectedSlot.x, (int)selectedSlot.y,  (int)selectedSlot.width,  (int)selectedSlot.height);
     }
 
@@ -114,13 +142,13 @@ public class ShopOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
         g2d.setColor(OVERLAY_SPACE_COLOR);
         g2d.fill(buyPanel);
         g2d.fill(sellPanel);
-        g2d.setColor(Color.WHITE);
+        g2d.setColor(SHOP_TEXT_DEFAULT);
         g2d.setStroke(new BasicStroke(1));
         g2d.draw(buyPanel);
         g2d.draw(sellPanel);
 
         g2d.setFont(new Font("Arial", Font.BOLD, FONT_MEDIUM));
-        g2d.setColor(Color.WHITE);
+        g2d.setColor(SHOP_TEXT_DEFAULT);
         g2d.drawString("Merchant", (int) buyPanel.getX(), (int) buyPanel.getY() - 10);
         g2d.drawString("Backpack", (int) sellPanel.getX(), (int) sellPanel.getY() - 10);
 
@@ -190,17 +218,36 @@ public class ShopOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
     private void renderText(Graphics g, ItemData itemData, int value, int slot) {
         int currentSlotNumber = isSelling ? sellSlotNumber : buySlotNumber;
         if (currentSlotNumber == slot) {
-            g.drawString("Value: " + value, COST_TEXT_X, COST_TEXT_Y);
             int totalCoins = gameState.getPlayer().getCoins();
-            g.drawString("Coins: " + totalCoins, POCKET_TEXT_X, COST_TEXT_Y);
+            g.setFont(new Font("Arial", Font.BOLD, FONT_MEDIUM));
+
+            g.setColor(SHOP_TEXT_DEFAULT);
+            g.drawString("Item value: ", COST_TEXT_X, COST_TEXT_Y);
+            int valueTextX = COST_TEXT_X + g.getFontMetrics().stringWidth("Item value: ");
+            if (totalCoins >= value) g.setColor(SHOP_TEXT_GOLD);
+            else g.setColor(SHOP_TEXT_CANNOT_AFFORD);
+            g.drawString(String.valueOf(value), valueTextX, COST_TEXT_Y);
+            int valueIconX = valueTextX + g.getFontMetrics().stringWidth(String.valueOf(value)) + (int)(3 * SCALE);
+            g.drawImage(coinIcon, valueIconX, COST_TEXT_Y - (int)(12 * SCALE), COIN_WID, COIN_HEI, null);
+
+            g.setColor(SHOP_TEXT_DEFAULT);
+            g.drawString("Total coins: ", POCKET_TEXT_X, POCKET_TEXT_Y);
+            int coinsTextX = POCKET_TEXT_X + g.getFontMetrics().stringWidth("Total coins: ");
+            g.setColor(SHOP_TEXT_GOLD);
+            g.drawString(String.valueOf(totalCoins), coinsTextX, POCKET_TEXT_Y);
+            int coinsIconX = coinsTextX + g.getFontMetrics().stringWidth(String.valueOf(totalCoins)) + (int)(3 * SCALE);
+            g.drawImage(coinIcon, coinsIconX, POCKET_TEXT_Y - (int)(12 * SCALE), COIN_WID, COIN_HEI, null);
+
             renderItemDescription(g, itemData);
         }
     }
 
     private void renderItemDescription(Graphics g, ItemData itemData) {
-        g.setColor(Color.WHITE);
+        Color rarityColor = itemData.rarity.getColor();
+        g.setColor(new Color(rarityColor.getRed(), rarityColor.getGreen(), rarityColor.getBlue()));
         g.setFont(new Font("Arial", Font.BOLD, FONT_MEDIUM));
         g.drawString(itemData.name, SHOP_ITEM_NAME_X, SHOP_ITEM_NAME_Y);
+        g.setColor(SHOP_TEXT_DESC);
         g.setFont(new Font("Arial", Font.PLAIN, FONT_MEDIUM));
 
         int descriptionMaxWidth = (int) (sellPanel.getX() - SHOP_ITEM_DESC_X - (10 * SCALE));
@@ -211,6 +258,12 @@ public class ShopOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
         for (String line : wrappedLines) {
             g.drawString(line, SHOP_ITEM_DESC_X, y);
             y += lineHeight;
+        }
+
+        if (sliderActive) {
+            g.setColor(SHOP_TEXT_DEFAULT);
+            g.setFont(new Font("Arial", Font.BOLD, FONT_MEDIUM));
+            g.drawString("Quantity: " + quantityToTrade, SHOP_QUANTITY_TEXT_X, SHOP_QUANTITY_TEXT_Y);
         }
     }
 
@@ -226,6 +279,10 @@ public class ShopOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
                 g.drawImage(slotImage, xPosRight, yPosRight, slotImage.getWidth(), slotImage.getHeight(), null);
             }
         }
+    }
+
+    private void renderSlider(Graphics g) {
+        slider.render(g);
     }
 
     private List<String> wrapText(String text, int maxWidth, FontMetrics fm) {
@@ -310,7 +367,8 @@ public class ShopOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
         int absoluteIndex = buySlotNumber + (buySelectedSlot * (SHOP_SLOT_MAX_ROW * SHOP_SLOT_MAX_COL));
         shops.stream()
                 .filter(Shop::isActive)
-                .forEach(shop -> shop.buyItem(gameState.getPlayer(), absoluteIndex));
+                .forEach(shop -> shop.buyItem(gameState.getPlayer(), absoluteIndex, quantityToTrade));
+        updateSliderVisibility();
     }
 
     private void sellItem() {
@@ -318,7 +376,8 @@ public class ShopOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
         int absoluteIndex = sellSlotNumber + (sellSelectedSlot * (SHOP_SLOT_MAX_ROW * SHOP_SLOT_MAX_COL));
         shops.stream()
                 .filter(Shop::isActive)
-                .forEach(shop -> shop.sellItem(gameState.getPlayer(), absoluteIndex));
+                .forEach(shop -> shop.sellItem(gameState.getPlayer(), absoluteIndex, quantityToTrade));
+        updateSliderVisibility();
     }
 
     private void prevBackpackSlot(SmallButton button) {
@@ -335,9 +394,52 @@ public class ShopOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
             this.sellSelectedSlot = Math.min(sellSelectedSlot+1, SHOP_SLOT_CAP);
     }
 
+    private ItemData getSelectedItemData() {
+        int itemsPerPage = SHOP_SLOT_MAX_ROW * SHOP_SLOT_MAX_COL;
+        if (isSelling) {
+            Inventory inventory = gameState.getPlayer().getInventory();
+            int absoluteIndex = sellSlotNumber + (sellSelectedSlot * itemsPerPage);
+            if (absoluteIndex < inventory.getBackpack().size())
+                return inventory.getBackpack().get(absoluteIndex).getData();
+        }
+        else {
+            for (Shop shop : shops) {
+                if (shop.isActive()) {
+                    int absoluteIndex = buySlotNumber + (buySelectedSlot * itemsPerPage);
+                    if (absoluteIndex < shop.getShopItems().size())
+                        return shop.getShopItems().get(absoluteIndex).getData();
+                }
+            }
+        }
+        return null;
+    }
+
+    private void updateQuantityFromSlider() {
+        int maxQuantity = 1;
+        int itemsPerPage = SHOP_SLOT_MAX_ROW * SHOP_SLOT_MAX_COL;
+        if (isSelling) {
+            Inventory inventory = gameState.getPlayer().getInventory();
+            int absoluteIndex = sellSlotNumber + (sellSelectedSlot * itemsPerPage);
+            if (absoluteIndex < inventory.getBackpack().size())
+                maxQuantity = inventory.getBackpack().get(absoluteIndex).getAmount();
+        }
+        else {
+            for (Shop shop : shops) {
+                if (shop.isActive()) {
+                    int absoluteIndex = buySlotNumber + (buySelectedSlot * itemsPerPage);
+                    if (absoluteIndex < shop.getShopItems().size())
+                        maxQuantity = shop.getShopItems().get(absoluteIndex).getStock();
+                }
+            }
+        }
+        quantityToTrade = 1 + (int) (slider.getValue() * (maxQuantity - 1));
+        quantityToTrade = Math.max(1, quantityToTrade);
+    }
+
+
     @Override
     public void mouseDragged(MouseEvent e) {
-
+        if (slider.isMousePressed()) slider.updateSlider(e.getX());
     }
 
     @Override
@@ -347,9 +449,12 @@ public class ShopOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
 
     @Override
     public void mousePressed(MouseEvent e) {
-        setMousePressed(e, smallButtons);
-        setMousePressed(e, mediumButtons);
-        changeSlot(e);
+        if (sliderActive && isMouseInButton(e, slider)) slider.setMousePressed(true);
+        else {
+            setMousePressed(e, smallButtons);
+            setMousePressed(e, mediumButtons);
+            changeSlot(e);
+        }
     }
 
     private void setMousePressed(MouseEvent e, AbstractButton[] buttons) {
@@ -361,6 +466,7 @@ public class ShopOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
 
     @Override
     public void mouseReleased(MouseEvent e) {
+        slider.resetMouseSet();
         releaseSmallButtons(e);
         releaseMediumButtons(e);
         Arrays.stream(smallButtons).forEach(AbstractButton::resetMouseSet);
@@ -409,6 +515,8 @@ public class ShopOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
     public void mouseMoved(MouseEvent e) {
         setMouseMoved(e, smallButtons);
         setMouseMoved(e, mediumButtons);
+        slider.setMouseOver(false);
+        if (isMouseInButton(e, slider)) slider.setMouseOver(true);
     }
 
     @Override
