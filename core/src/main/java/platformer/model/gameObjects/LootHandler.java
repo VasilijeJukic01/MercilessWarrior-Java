@@ -119,29 +119,28 @@ public class LootHandler {
      * Handles the collection of an item by the player.
      */
     public void collectItem(GameObject object, Player player) {
-        if (object instanceof Potion) {
-            applyPotionEffect((Potion) object, player);
-            object.setAlive(false);
-        } else if (object instanceof Coin coin) {
-            Audio.getInstance().getAudioPlayer().playSound(Sound.COIN_PICK);
-            player.changeCoins(coin.getValue());
-            object.setAlive(false);
+        if (object instanceof Potion) collectPotion((Potion) object, player);
+        else if (object instanceof Coin) collectCoin((Coin) object, player);
+    }
+
+    private void collectPotion(Potion potion, Player player) {
+        if (!potion.isAlive()) return;
+
+        String itemId = "";
+        if (potion.getObjType() == ObjType.HEAL_POTION) itemId = "HEALTH_POTION";
+        else if (potion.getObjType() == ObjType.STAMINA_POTION) itemId = "STAMINA_POTION";
+
+        if (!itemId.isEmpty()) {
+            player.getInventory().addItemToBackpack(new InventoryItem(itemId, 1));
+            potion.setAlive(false);
         }
     }
 
-    /**
-     * Applies the effect of a potion to the player.
-     */
-    private void applyPotionEffect(Potion potion, Player player) {
-        if (potion == null) return;
-        switch (potion.getObjType()) {
-            case HEAL_POTION:
-                player.changeHealth(HEAL_POTION_VAL);
-                break;
-            case STAMINA_POTION:
-                player.changeStamina(STAMINA_POTION_VAL);
-                break;
-        }
+    private void collectCoin(Coin coin, Player player) {
+        if (!coin.isAlive()) return;
+        Audio.getInstance().getAudioPlayer().playSound(Sound.COIN_PICK);
+        player.changeCoins(coin.getValue());
+        coin.setAlive(false);
     }
 
     /**

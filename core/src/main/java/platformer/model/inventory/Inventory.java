@@ -2,6 +2,7 @@ package platformer.model.inventory;
 
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
+import platformer.model.entities.player.Player;
 import platformer.model.gameObjects.objects.Loot;
 import platformer.model.inventory.handlers.BackpackHandler;
 import platformer.model.inventory.handlers.EquipmentHandler;
@@ -28,8 +29,8 @@ public class Inventory {
      *
      * @param index the index of the item in the backpack
      */
-    public void useItem(int index) {
-        backpackHandler.useItem(index);
+    public void useItem(int index, Player player) {
+        backpackHandler.useItem(index, player);
     }
 
     /**

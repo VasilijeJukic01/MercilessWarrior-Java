@@ -3,11 +3,15 @@ package platformer.model.inventory.handlers;
 import platformer.audio.Audio;
 import platformer.audio.types.Sound;
 import platformer.core.Framework;
+import platformer.model.entities.player.Player;
 import platformer.model.inventory.InventoryItem;
 import platformer.model.inventory.ItemData;
 
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static platformer.constants.Constants.HEAL_POTION_VAL;
+import static platformer.constants.Constants.STAMINA_POTION_VAL;
 
 /**
  * Handles the operations related to the backpack in the inventory system.
@@ -22,8 +26,28 @@ public class BackpackHandler {
         this.equipmentHandler = equipmentHandler;
     }
 
-    public void useItem(int index) {
-        // TODO: Implement use item logic
+    public void useItem(int index, Player player) {
+        if (index >= backpack.size()) return;
+        InventoryItem item = backpack.get(index);
+
+        switch (item.getItemId()) {
+            case "HEALTH_POTION":
+                player.changeHealth(HEAL_POTION_VAL);
+                consumeItem(index);
+                break;
+            case "STAMINA_POTION":
+                player.changeStamina(STAMINA_POTION_VAL);
+                consumeItem(index);
+                break;
+            default: break;
+        }
+    }
+
+    private void consumeItem(int index) {
+        InventoryItem item = backpack.get(index);
+        item.setAmount(item.getAmount() - 1);
+        if (item.getAmount() <= 0) backpack.remove(index);
+        refreshAccountItems();
     }
 
     public void dropItem(int index) {

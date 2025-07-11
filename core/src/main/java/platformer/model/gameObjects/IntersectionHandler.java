@@ -145,7 +145,7 @@ public class IntersectionHandler {
      * @param player The player to handle the interaction for.
      */
     public void handleObjectInteraction(Rectangle2D.Double hitBox, Player player) {
-        Stream.concat(getObjects(Potion.class).stream(), getObjects(Coin.class).stream())
+        Stream.concat(objectManager.getObjects(Coin.class).stream(), objectManager.getObjects(Potion.class).stream())
                 .filter(object -> object.isAlive() && hitBox.intersects(object.getHitBox()))
                 .forEach(object -> lootHandler.collectItem(object, player));
     }

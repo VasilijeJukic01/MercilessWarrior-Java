@@ -1,12 +1,12 @@
 {
   "DEFAULT_SHOP": [
     {
-      "itemId": "HEALTH",
+      "itemId": "HEALTH_POTION",
       "stock": 10,
       "cost": 10
     },
     {
-      "itemId": "STAMINA",
+      "itemId": "STAMINA_POTION",
       "stock": 6,
       "cost": 12
     },

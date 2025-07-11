@@ -411,7 +411,7 @@ public class InventoryOverlay implements Overlay<MouseEvent, KeyEvent, Graphics>
                 Inventory inventory = gameState.getPlayer().getInventory();
                 switch (button.getButtonType()) {
                     case USE:
-                        inventory.useItem(backpackSlotNumber); break;
+                        inventory.useItem(backpackSlotNumber, gameState.getPlayer()); break;
                     case EQUIP:
                         inventory.equipItem(backpackSlotNumber); break;
                     case DROP:
@@ -508,7 +508,7 @@ public class InventoryOverlay implements Overlay<MouseEvent, KeyEvent, Graphics>
 
     private void useItem() {
         Inventory inventory = gameState.getPlayer().getInventory();
-        inventory.useItem(backpackSlotNumber);
+        inventory.useItem(backpackSlotNumber, gameState.getPlayer());
     }
 
 

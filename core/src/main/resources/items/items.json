@@ -1,22 +1,22 @@
 {
-  "HEALTH": {
-    "name": "Health",
-    "description": "Restores a small amount of health.",
+  "HEALTH_POTION": {
+    "name": "Health Potion",
+    "description": "A simple brew that restores 15 health upon use.",
     "rarity": "COMMON",
-    "imagePath": "/images/inventory/HealthItem.png",
-    "sellValue": 0,
+    "imagePath": "/images/inventory/potions/HealthPotion.png",
+    "sellValue": 5,
     "stackable": true,
     "equip": {
       "canEquip": false,
       "slot": "NONE"
     }
   },
-  "STAMINA": {
-    "name": "Stamina",
-    "description": "Restores a small amount of stamina.",
+  "STAMINA_POTION": {
+    "name": "Stamina Potion",
+    "description": "A basic concoction that restores 10 stamina when consumed.",
     "rarity": "COMMON",
-    "imagePath": "/images/inventory/StaminaItem.png",
-    "sellValue": 0,
+    "imagePath": "/images/inventory/potions/StaminaPotion.png",
+    "sellValue": 6,
     "stackable": true,
     "equip": {
       "canEquip": false,
