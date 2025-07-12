@@ -1,12 +1,13 @@
 package platformer.ui.overlays.controller;
 
 import platformer.model.inventory.Inventory;
+import platformer.model.inventory.InventoryItem;
 import platformer.state.GameState;
 import platformer.ui.buttons.AbstractButton;
 import platformer.ui.buttons.ButtonType;
 import platformer.ui.overlays.InventoryOverlay;
 
-import java.awt.Rectangle;
+import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.util.Arrays;
@@ -27,6 +28,9 @@ public class InventoryViewController {
     private int backpackSlotNumber = 0;
     private int equipmentSlotNumber = 0;
     private boolean isInBackpack = true;
+
+    private InventoryItem hoveredItem = null;
+    private Point mousePosition;
 
     public InventoryViewController(GameState gameState, InventoryOverlay inventoryOverlay) {
         this.gameState = gameState;
@@ -54,6 +58,8 @@ public class InventoryViewController {
         inventoryOverlay.setMouseMoved(e, inventoryOverlay.getSmallButtons());
         inventoryOverlay.setMouseMoved(e, inventoryOverlay.getMediumButtons());
         inventoryOverlay.setMouseMoved(e, new AbstractButton[]{inventoryOverlay.getUnequipBtn()});
+        updateHoveredItem(e);
+        this.mousePosition = e.getPoint();
     }
 
     public void keyPressed(KeyEvent e) {
@@ -67,6 +73,36 @@ public class InventoryViewController {
     }
 
     // Actions
+    private void updateHoveredItem(MouseEvent e) {
+        hoveredItem = null;
+        if (!isInBackpack) return; // Only show tooltip for backpack items
+
+        Inventory inventory = gameState.getPlayer().getInventory();
+        int slot = getSlotAt(e.getPoint());
+
+        if (slot != -1) {
+            int absoluteIndex = slot + (backpackSlot * (INVENTORY_SLOT_MAX_ROW * INVENTORY_SLOT_MAX_COL));
+            if (absoluteIndex < inventory.getBackpack().size()) {
+                hoveredItem = inventory.getBackpack().get(absoluteIndex);
+            }
+        }
+    }
+
+    private int getSlotAt(Point p) {
+        for (int j = 0; j < INVENTORY_SLOT_MAX_COL; j++) {
+            for (int i = 0; i < INVENTORY_SLOT_MAX_ROW; i++) {
+                Rectangle slotBounds = new Rectangle(
+                        i * SLOT_SPACING + BACKPACK_SLOT_X,
+                        j * SLOT_SPACING + BACKPACK_SLOT_Y,
+                        SLOT_SIZE, SLOT_SIZE);
+                if (slotBounds.contains(p)) {
+                    return i + (j * INVENTORY_SLOT_MAX_ROW);
+                }
+            }
+        }
+        return -1;
+    }
+
     private void releaseSmallButtons(MouseEvent e) {
         for (AbstractButton button : inventoryOverlay.getSmallButtons()) {
             if (isMouseInButton(e, button) && button.isMousePressed()) {
@@ -194,6 +230,14 @@ public class InventoryViewController {
 
     public boolean isInBackpack() {
         return isInBackpack;
+    }
+
+    public InventoryItem getHoveredItem() {
+        return hoveredItem;
+    }
+
+    public Point getMousePosition() {
+        return mousePosition;
     }
 
     public void reset() {

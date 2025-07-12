@@ -1,5 +1,7 @@
 package platformer.ui.overlays;
 
+import platformer.animation.Anim;
+import platformer.animation.Animation;
 import platformer.model.inventory.Inventory;
 import platformer.model.inventory.InventoryBonus;
 import platformer.model.inventory.InventoryItem;
@@ -9,6 +11,7 @@ import platformer.ui.buttons.AbstractButton;
 import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.MediumButton;
 import platformer.ui.buttons.SmallButton;
+import platformer.ui.coponents.ItemComparisonTooltip;
 import platformer.ui.overlays.controller.InventoryViewController;
 import platformer.utils.Utils;
 
@@ -17,10 +20,11 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.*;
 import java.util.List;
 
+import static platformer.constants.AnimConstants.COIN_H;
+import static platformer.constants.AnimConstants.COIN_W;
 import static platformer.constants.Constants.*;
 import static platformer.constants.FilePaths.*;
 import static platformer.constants.UI.*;
@@ -31,6 +35,8 @@ import static platformer.constants.UI.*;
 public class InventoryOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
 
     private final InventoryViewController controller;
+    private final ItemComparisonTooltip comparisonTooltip;
+    private final Map<String, Integer> equipmentSlots;
 
     private Rectangle2D overlay;
     private BufferedImage inventoryText;
@@ -39,18 +45,25 @@ public class InventoryOverlay implements Overlay<MouseEvent, KeyEvent, Graphics>
     private final SmallButton[] smallButtons;
 
     private Rectangle2D backpackPanel, equipPanel;
-    private BufferedImage playerImage, slotImage;
+    private BufferedImage slotImage, coinIcon;
+    private BufferedImage[] playerAnim;
     private Rectangle2D.Double selectedSlot;
+
+    private int playerAnimTick, playerAnimIndex;
+    private final int playerAnimSpeed = 20;
 
     public InventoryOverlay(GameState gameState) {
         this.controller = new InventoryViewController(gameState, this);
         this.mediumButtons = new MediumButton[3];
         this.smallButtons = new SmallButton[2];
+        this.comparisonTooltip = new ItemComparisonTooltip((int)(160*SCALE), (int)(120*SCALE));
+        this.equipmentSlots = new HashMap<>();
         init();
     }
 
     private void init() {
         loadImages();
+        initEquipmentSlots();
         loadButtons();
         initSelectedSlot();
     }
@@ -61,7 +74,18 @@ public class InventoryOverlay implements Overlay<MouseEvent, KeyEvent, Graphics>
         this.equipPanel = new Rectangle2D.Double(EQUIPMENT_X, EQUIPMENT_Y, EQUIPMENT_WID, EQUIPMENT_HEI);
         this.inventoryText = Utils.getInstance().importImage(INVENTORY_TXT, INV_TEXT_WID, INV_TEXT_HEI);
         this.slotImage = Utils.getInstance().importImage(SLOT_INVENTORY, SLOT_SIZE, SLOT_SIZE);
-        this.playerImage = Utils.getInstance().importImage(PLAYER_ICON, -1, -1);
+        this.playerAnim = Animation.getInstance().loadPlayerAnimations(INV_PLAYER_WID, INV_PLAYER_HEI, PLAYER_TRANSFORM_SHEET)[Anim.IDLE.ordinal()];
+        this.coinIcon = Animation.getInstance().loadFromSprite(COIN_SHEET, 1, 1, COIN_WID, COIN_HEI, 0, COIN_W, COIN_H)[0];
+    }
+
+    private void initEquipmentSlots() {
+        equipmentSlots.put("Helmet", 0);
+        equipmentSlots.put("Trousers", 1);
+        equipmentSlots.put("Armor", 2);
+        equipmentSlots.put("Ring", 3);
+        equipmentSlots.put("Charm", 3);
+        equipmentSlots.put("Bracelets", 4);
+        equipmentSlots.put("Boots", 5);
     }
 
     private void loadButtons() {
@@ -92,9 +116,21 @@ public class InventoryOverlay implements Overlay<MouseEvent, KeyEvent, Graphics>
 
     @Override
     public void update() {
+        updatePlayerAnimation();
         Arrays.stream(smallButtons).forEach(SmallButton::update);
         Arrays.stream(mediumButtons).forEach(MediumButton::update);
         unequipBtn.update();
+    }
+
+    private void updatePlayerAnimation() {
+        playerAnimTick++;
+        if (playerAnimTick >= playerAnimSpeed) {
+            playerAnimTick = 0;
+            playerAnimIndex++;
+            if (playerAnimIndex >= playerAnim.length) {
+                playerAnimIndex = 0;
+            }
+        }
     }
 
     @Override
@@ -109,6 +145,7 @@ public class InventoryOverlay implements Overlay<MouseEvent, KeyEvent, Graphics>
         g.setColor(Color.RED);
         g.drawRect((int)selectedSlot.x, (int)selectedSlot.y,  (int)selectedSlot.width,  (int)selectedSlot.height);
         renderButtons(g);
+        renderTooltip(g);
     }
 
     private void renderOverlay(Graphics2D g2d) {
@@ -153,7 +190,7 @@ public class InventoryOverlay implements Overlay<MouseEvent, KeyEvent, Graphics>
         g.setColor(itemData.rarity.getColor());
         g.fillRect(xPos - (int)(ITEM_OFFSET_X / 1.1), yPos - (int)(ITEM_OFFSET_Y / 1.1), (int)(SLOT_SIZE / 1.06), (int)(SLOT_SIZE / 1.06));
         g.drawImage(item.getModel(), xPos, yPos, ITEM_SIZE, ITEM_SIZE, null);
-        g.setColor(Color.WHITE);
+        g.setColor(INV_TEXT_DEFAULT);
         g.setFont(new Font("Arial", Font.BOLD, FONT_MEDIUM));
         g.drawString(String.valueOf(item.getAmount()), xPos + ITEM_COUNT_OFFSET_X, yPos + ITEM_COUNT_OFFSET_Y);
     }
@@ -164,7 +201,7 @@ public class InventoryOverlay implements Overlay<MouseEvent, KeyEvent, Graphics>
         g2d.setColor(Color.WHITE);
         g2d.setStroke(new BasicStroke(1));
         g2d.draw(equipPanel);
-        g2d.drawImage(playerImage, INV_PLAYER_X, INV_PLAYER_Y, INV_PLAYER_WID, INV_PLAYER_HEI, null);
+        g2d.drawImage(playerAnim[playerAnimIndex], INV_PLAYER_X, INV_PLAYER_Y, INV_PLAYER_WID, INV_PLAYER_HEI, null);
     }
 
     private void renderEquipmentSlots(Graphics g) {
@@ -215,15 +252,20 @@ public class InventoryOverlay implements Overlay<MouseEvent, KeyEvent, Graphics>
     private void renderItemDescription(Graphics g, InventoryItem item) {
         ItemData itemData = item.getData();
         if (itemData == null) return;
-        g.setColor(Color.WHITE);
+        g.setColor(itemData.rarity.getTextColor());
         g.setFont(new Font("Arial", Font.BOLD, FONT_MEDIUM));
         g.drawString(itemData.name, INV_ITEM_NAME_X, INV_ITEM_NAME_Y);
-        g.drawString("Value: " + itemData.sellValue, INV_ITEM_VALUE_X, INV_ITEM_VALUE_Y);
-        g.setFont(new Font("Arial", Font.PLAIN, FONT_MEDIUM));
+        g.setColor(INV_TEXT_LABEL);
+        g.drawString("Value: ", INV_ITEM_VALUE_X, INV_ITEM_VALUE_Y);
+        g.setColor(INV_TEXT_VALUE);
+        String valueText = String.valueOf(itemData.sellValue);
+        g.drawString(valueText, INV_ITEM_VALUE_X + g.getFontMetrics().stringWidth("Value: "), INV_ITEM_VALUE_Y);
+        g.drawImage(coinIcon, INV_ITEM_VALUE_X + g.getFontMetrics().stringWidth("Value: " + valueText) + 2, INV_ITEM_VALUE_Y - g.getFontMetrics().getAscent() + 1, (int)(COIN_WID/1.5), (int)(COIN_HEI/1.5), null);
 
+        g.setColor(INV_TEXT_DESC);
+        g.setFont(new Font("Arial", Font.PLAIN, FONT_MEDIUM));
         int descriptionMaxWidth = (int) (overlay.getX() + overlay.getWidth() - INV_ITEM_DESC_X - (10 * SCALE));
         List<String> wrappedLines = wrapText(itemData.description, descriptionMaxWidth, g.getFontMetrics());
-
         int lineHeight = g.getFontMetrics().getHeight();
         int y = INV_ITEM_DESC_Y;
         for (String line : wrappedLines) {
@@ -233,21 +275,58 @@ public class InventoryOverlay implements Overlay<MouseEvent, KeyEvent, Graphics>
     }
 
     private void renderBonusInfo(Graphics g) {
-        g.setColor(Color.WHITE);
+        g.setFont(new Font("Arial", Font.BOLD, FONT_MEDIUM));
+        g.setColor(INV_TEXT_COINS);
+        String coinText = "Coins: ";
+        g.drawString(coinText, INV_BONUS_X, INV_BONUS_Y);
+        g.setColor(INV_TEXT_VALUE);
+        String coinValue = String.valueOf(controller.getGameState().getPlayer().getCoins());
+        int coinTextWidth = g.getFontMetrics().stringWidth(coinText);
+        g.drawString(coinValue, INV_BONUS_X + coinTextWidth, INV_BONUS_Y);
+        g.drawImage(coinIcon, INV_BONUS_X + coinTextWidth + g.getFontMetrics().stringWidth(coinValue) + 2, INV_BONUS_Y - g.getFontMetrics().getAscent() + 1, (int)(COIN_WID/1.5), (int)(COIN_HEI/1.5), null);
+
+        g.setColor(INV_TEXT_HEADER);
+        g.setFont(new Font("Arial", Font.BOLD, FONT_MEDIUM));
+        g.drawString("Active bonuses: ", INV_BONUS_X, INV_BONUS_Y + 2 * INV_BONUS_SPACING);
+
+        renderBonusLine(g, "Health Bonus: ", InventoryBonus.getInstance().getHealth(), INV_BONUS_Y + 3 * INV_BONUS_SPACING);
+        renderBonusLine(g, "Defense Bonus: ", InventoryBonus.getInstance().getDefense(), INV_BONUS_Y + 4 * INV_BONUS_SPACING);
+        renderBonusLine(g, "Attack Bonus: ", InventoryBonus.getInstance().getAttack(), INV_BONUS_Y + 5 * INV_BONUS_SPACING);
+        renderBonusLine(g, "Stamina Bonus: ", InventoryBonus.getInstance().getStamina(), INV_BONUS_Y + 6 * INV_BONUS_SPACING);
+        renderBonusLine(g, "Critical Bonus: ", InventoryBonus.getInstance().getCritical(), INV_BONUS_Y + 7 * INV_BONUS_SPACING);
+        renderBonusLine(g, "Spell Bonus: ", InventoryBonus.getInstance().getSpell(), INV_BONUS_Y + 8 * INV_BONUS_SPACING);
+        renderBonusLine(g, "Cooldown Bonus: ", InventoryBonus.getInstance().getCooldown(), INV_BONUS_Y +  9 * INV_BONUS_SPACING);
+    }
+
+    private void renderBonusLine(Graphics g, String label, double bonusValue, int y) {
+        g.setColor(INV_TEXT_LABEL);
         g.setFont(new Font("Arial", Font.PLAIN, FONT_MEDIUM));
-        g.drawString("Active bonuses: ", INV_BONUS_X, INV_BONUS_Y);
-        g.drawString("Health Bonus: +"+InventoryBonus.getInstance().getHealth()*100+"%", INV_BONUS_X, INV_BONUS_Y + INV_BONUS_SPACING);
-        g.drawString("Defense Bonus: +"+InventoryBonus.getInstance().getDefense()*100+"%", INV_BONUS_X, INV_BONUS_Y + 2 * INV_BONUS_SPACING);
-        g.drawString("Attack Bonus: +"+InventoryBonus.getInstance().getAttack()*100+"%", INV_BONUS_X, INV_BONUS_Y + 3 * INV_BONUS_SPACING);
-        g.drawString("Stamina Bonus: +"+InventoryBonus.getInstance().getStamina()*100+"%", INV_BONUS_X, INV_BONUS_Y + 4 * INV_BONUS_SPACING);
-        g.drawString("Critical Bonus: +"+InventoryBonus.getInstance().getCritical()*100+"%", INV_BONUS_X, INV_BONUS_Y + 5 * INV_BONUS_SPACING);
-        g.drawString("Spell Bonus: +"+InventoryBonus.getInstance().getSpell()*100+"%", INV_BONUS_X, INV_BONUS_Y + 6 * INV_BONUS_SPACING);
-        g.drawString("Cooldown Bonus: +"+InventoryBonus.getInstance().getCooldown()*100+"%", INV_BONUS_X, INV_BONUS_Y +  7 * INV_BONUS_SPACING);
+        g.drawString(label, INV_BONUS_X, y);
+        g.setColor(INV_TEXT_BONUS);
+        g.drawString(String.format("+%.1f%%", bonusValue * 100), INV_BONUS_X + g.getFontMetrics().stringWidth(label), y);
     }
 
     private void renderButtons(Graphics g) {
         Arrays.stream(smallButtons).forEach(button -> button.render(g));
         Arrays.stream(mediumButtons).forEach(button -> button.render(g));
+    }
+
+    private void renderTooltip(Graphics g) {
+        InventoryItem hoveredItem = controller.getHoveredItem();
+        if (hoveredItem != null && controller.isInBackpack() && hoveredItem.getData().equip.canEquip) {
+            Inventory inventory = controller.getGameState().getPlayer().getInventory();
+            String slotType = hoveredItem.getData().equip.slot;
+            for (Map.Entry<String, Integer> entry : equipmentSlots.entrySet()) {
+                if (entry.getKey().equalsIgnoreCase(slotType)) {
+                    InventoryItem equippedItem = inventory.getEquipped()[entry.getValue()];
+                    if (equippedItem != null) {
+                        Point p = controller.getMousePosition();
+                        if (p != null) comparisonTooltip.render(g, hoveredItem, equippedItem, p.x + 15, p.y + 15, overlay.getBounds());
+                    }
+                    break;
+                }
+            }
+        }
     }
 
     private List<String> wrapText(String text, int maxWidth, FontMetrics fm) {
@@ -318,6 +397,7 @@ public class InventoryOverlay implements Overlay<MouseEvent, KeyEvent, Graphics>
         controller.reset();
     }
 
+    // Getters
     public InventoryViewController getController() {
         return controller;
     }

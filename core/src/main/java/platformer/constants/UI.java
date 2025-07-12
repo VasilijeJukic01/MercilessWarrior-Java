@@ -365,6 +365,14 @@ public final class UI {
     public static final int INV_TEXT_X = scale(310);
     public static final int INV_TEXT_Y = scale(45);
 
+    public static final Color INV_TEXT_DEFAULT = new Color(220, 220, 220);
+    public static final Color INV_TEXT_HEADER = new Color(255, 255, 255);
+    public static final Color INV_TEXT_COINS = new Color(255, 255, 255);
+    public static final Color INV_TEXT_LABEL = new Color(180, 180, 180);
+    public static final Color INV_TEXT_VALUE = new Color(255, 215, 0);
+    public static final Color INV_TEXT_BONUS = new Color(120, 255, 120);
+    public static final Color INV_TEXT_DESC = new Color(200, 200, 200);
+
     public static final int BACKPACK_WID = scale(240);
     public static final int BACKPACK_HEI = scale(240);
     public static final int BACKPACK_X = scale(120);
@@ -380,10 +388,10 @@ public final class UI {
     public static final int EQUIPMENT_SLOT_Y = scale(115);
     public static final int EQUIPMENT_SLOT_SPACING = scale(95);
 
-    public static final int INV_PLAYER_WID = scale(40);
-    public static final int INV_PLAYER_HEI = scale(70);
-    public static final int INV_PLAYER_X = scale(446);
-    public static final int INV_PLAYER_Y = scale(140);
+    public static final int INV_PLAYER_WID = scale(170);
+    public static final int INV_PLAYER_HEI = scale(130);
+    public static final int INV_PLAYER_X = scale(402);
+    public static final int INV_PLAYER_Y = scale(120);
 
     public static final int INV_ITEM_NAME_X = scale(380);
     public static final int INV_ITEM_NAME_Y = scale(300);
