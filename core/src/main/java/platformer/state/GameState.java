@@ -323,6 +323,7 @@ public class GameState extends AbstractState implements State, Subscriber {
     }
 
     private void checkLevelExit() {
+        if (player.checkAction(PlayerAction.DASH)) return;
         int exitStatus = Utils.getInstance().isEntityOnExit(levelManager.getCurrentLevel(), player.getHitBox());
 
         if (exitStatus == RIGHT_EXIT) goToRightLevel();

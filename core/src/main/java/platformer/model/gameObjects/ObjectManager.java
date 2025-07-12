@@ -150,6 +150,18 @@ public class ObjectManager implements Publisher {
 
     // Collision Handler
     /**
+     * Checks if the player is colliding with a solid object.
+     * This method is used to prevent the player from moving through solid objects.
+     *
+     * @param hitbox The hitbox of the player.
+     * @param dx The desired change in the player's X coordinate.
+     * @return The new X coordinate after collision resolution.
+     */
+    public double checkSolidObjectCollision(Rectangle2D.Double hitbox, double dx) {
+        return collisionHandler.checkSolidObjectCollision(hitbox, dx);
+    }
+
+    /**
      * Checks if the player is touching an object.
      *
      * @param player The player whose position is to be checked.

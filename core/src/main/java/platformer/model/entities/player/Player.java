@@ -365,13 +365,20 @@ public class Player extends Entity {
         boolean onWall = checkAction(PlayerAction.ON_WALL);
         boolean onObject = checkAction(PlayerAction.ON_OBJECT);
 
-        if (!onObject && !onWall && Utils.getInstance().canMoveHere(hitBox.x+dx, hitBox.y, hitBox.width, hitBox.height, levelData))
-            hitBox.x += dx;
-        else if (dash && Utils.getInstance().canMoveHere(hitBox.x+dx, hitBox.y, hitBox.width, hitBox.height, levelData))
-            hitBox.x += dx;
+        double actualDx = objectManager.checkSolidObjectCollision(hitBox, dx);
+        if (dash && actualDx != dx) {
+            removeAction(PlayerAction.DASH);
+            removeAction(PlayerAction.DASH_HIT);
+            dashTick = 0;
+        }
+
+        if (!onObject && !onWall && Utils.getInstance().canMoveHere(hitBox.x + actualDx, hitBox.y, hitBox.width, hitBox.height, levelData))
+            hitBox.x += actualDx;
+        else if (dash && Utils.getInstance().canMoveHere(hitBox.x + actualDx, hitBox.y, hitBox.width, hitBox.height, levelData))
+            hitBox.x += actualDx;
         else {
-            if (onObject) hitBox.x = objectManager.getXObjectBound(hitBox, dx);
-            else if (!onWall) hitBox.x = Utils.getInstance().getXPosOnTheWall(hitBox, dx);
+            if (onObject) hitBox.x = objectManager.getXObjectBound(hitBox, actualDx);
+            else if (!onWall) hitBox.x = Utils.getInstance().getXPosOnTheWall(hitBox, actualDx);
 
             if (dash) {
                 removeAction(PlayerAction.DASH);
