@@ -225,7 +225,7 @@ public final class UI {
     public static final int PARTICLE_BTN_Y = scale(175);
     public static final int SHAKE_BTN_PREV_X = scale(390);
     public static final int SHAKE_BTN_NEXT_X = scale(510);
-    public static final int SHAKE_BTN_Y = scale(225);
+    public static final int SHAKE_BTN_Y = scale(205);
 
     public static final int PARTICLE_TEXT_X = scale(290);
     public static final int PARTICLE_TEXT_Y = scale(192);
@@ -233,17 +233,25 @@ public final class UI {
     public static final int PARTICLE_LEVEL_Y = scale(192);
 
     public static final int SHAKE_TEXT_X = scale(290);
-    public static final int SHAKE_TEXT_Y = scale(242);
+    public static final int SHAKE_TEXT_Y = scale(222);
     public static final int SHAKE_STATUS_X = scale(452);
-    public static final int SHAKE_STATUS_Y = scale(242);
+    public static final int SHAKE_STATUS_Y = scale(222);
 
     public static final int DAMAGE_COUNTER_BTN_PREV_X = scale(390);
     public static final int DAMAGE_COUNTER_BTN_NEXT_X = scale(510);
-    public static final int DAMAGE_COUNTER_BTN_Y = scale(275);
+    public static final int DAMAGE_COUNTER_BTN_Y = scale(235);
     public static final int DAMAGE_COUNTER_TEXT_X = scale(290);
-    public static final int DAMAGE_COUNTER_TEXT_Y = scale(292);
+    public static final int DAMAGE_COUNTER_TEXT_Y = scale(252);
     public static final int DAMAGE_COUNTER_STATUS_X = scale(452);
-    public static final int DAMAGE_COUNTER_STATUS_Y = scale(292);
+    public static final int DAMAGE_COUNTER_STATUS_Y = scale(252);
+
+    public static final int FULL_SCREEN_BTN_PREV_X = scale(390);
+    public static final int FULL_SCREEN_BTN_NEXT_X = scale(510);
+    public static final int FULL_SCREEN_BTN_Y = scale(265);
+    public static final int FULL_SCREEN_TEXT_X = scale(290);
+    public static final int FULL_SCREEN_TEXT_Y = scale(282);
+    public static final int FULL_SCREEN_STATUS_X = scale(452);
+    public static final int FULL_SCREEN_STATUS_Y = scale(282);
 
     public static final Color TAB_COLOR = new Color(144, 9, 97);
 
