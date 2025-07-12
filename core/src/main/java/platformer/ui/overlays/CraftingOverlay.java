@@ -1,12 +1,11 @@
 package platformer.ui.overlays;
 
-import platformer.model.gameObjects.objects.Table;
 import platformer.model.inventory.*;
 import platformer.state.GameState;
-import platformer.ui.buttons.AbstractButton;
 import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.MediumButton;
 import platformer.ui.buttons.SmallButton;
+import platformer.ui.overlays.controller.CraftingViewController;
 import platformer.utils.Utils;
 
 import java.awt.*;
@@ -28,7 +27,7 @@ import static platformer.constants.UI.*;
  */
 public class CraftingOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
 
-    private final GameState gameState;
+    private final CraftingViewController controller;
 
     private Rectangle2D overlay;
     private BufferedImage craftingText;
@@ -38,14 +37,9 @@ public class CraftingOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
     private Rectangle2D craftingPanel;
     private BufferedImage slotImage;
     private Rectangle2D.Double selectedSlot;
-    private int craftingSlot;
-    private int slotNumber;
-
-    private List<Table> tables;
 
     public CraftingOverlay(GameState gameState) {
-        this.gameState = gameState;
-        this.tables = gameState.getObjectManager().getObjects(Table.class);
+        this.controller = new CraftingViewController(gameState, this);
         this.mediumButtons = new MediumButton[1];
         this.smallButtons = new SmallButton[2];
         init();
@@ -73,35 +67,14 @@ public class CraftingOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
     }
 
     private void initSelectedSlot() {
-        int xPos = (slotNumber % INVENTORY_SLOT_MAX_ROW) * SLOT_SPACING + BACKPACK_SLOT_X;
-        int yPos = (slotNumber / INVENTORY_SLOT_MAX_ROW) * SLOT_SPACING + BACKPACK_SLOT_Y;
+        int xPos = (controller.getSlotNumber() % INVENTORY_SLOT_MAX_ROW) * SLOT_SPACING + BACKPACK_SLOT_X;
+        int yPos = (controller.getSlotNumber() / INVENTORY_SLOT_MAX_ROW) * SLOT_SPACING + BACKPACK_SLOT_Y;
         this.selectedSlot = new Rectangle2D.Double(xPos, yPos, SLOT_SIZE, SLOT_SIZE);
     }
 
-
-    // Selection
-    private void setSelectedSlot() {
-        this.selectedSlot.x = (slotNumber % INVENTORY_SLOT_MAX_ROW) * SLOT_SPACING + BACKPACK_SLOT_X;
-        int offset = slotNumber / INVENTORY_SLOT_MAX_ROW;
-        this.selectedSlot.y = offset * SLOT_SPACING + BACKPACK_SLOT_Y;
-    }
-
-    private void changeSlot(MouseEvent e) {
-        int x = e.getX(), y = e.getY();
-        for (int i = 0; i < INVENTORY_SLOT_MAX_ROW; i++) {
-            for (int j = 0; j < INVENTORY_SLOT_MAX_COL; j++) {
-                int xStart = i * SLOT_SPACING + BACKPACK_SLOT_X;
-                int xEnd = i * SLOT_SPACING + BACKPACK_SLOT_X + SLOT_SIZE;
-                int yStart = j * SLOT_SPACING + BACKPACK_SLOT_Y;
-                int yEnd = j * SLOT_SPACING + BACKPACK_SLOT_Y + SLOT_SIZE;
-
-                if (x >= xStart && x <= xEnd && y >= yStart && y <= yEnd) {
-                    slotNumber = i + (j * INVENTORY_SLOT_MAX_ROW);
-                    setSelectedSlot();
-                    break;
-                }
-            }
-        }
+    public void updateSelectedSlot() {
+        this.selectedSlot.x = (controller.getSlotNumber() % INVENTORY_SLOT_MAX_ROW) * SLOT_SPACING + BACKPACK_SLOT_X;
+        this.selectedSlot.y = (controller.getSlotNumber() / INVENTORY_SLOT_MAX_ROW) * SLOT_SPACING + BACKPACK_SLOT_Y;
     }
 
     @Override
@@ -142,7 +115,7 @@ public class CraftingOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
         g2d.setColor(Color.WHITE);
         g2d.setStroke(new BasicStroke(1));
         g2d.draw(craftingPanel);
-        int pageNumber = craftingSlot + 1;
+        int pageNumber = controller.getCraftingSlot() + 1;
         g2d.drawString("Page: " + pageNumber, (int) (craftingPanel.getX() + craftingPanel.getWidth() - 40 * SCALE), (int) craftingPanel.getY() - 10);
     }
 
@@ -153,7 +126,7 @@ public class CraftingOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
                 int xPos = i * SLOT_SPACING + BACKPACK_SLOT_X;
                 int yPos = j * SLOT_SPACING + BACKPACK_SLOT_Y;
                 g.drawImage(slotImage, xPos, yPos, slotImage.getWidth(), slotImage.getHeight(), null);
-                int currentSlot = (j * INVENTORY_SLOT_MAX_ROW + i) + craftingSlot * (INVENTORY_SLOT_MAX_ROW * INVENTORY_SLOT_MAX_COL);
+                int currentSlot = (j * INVENTORY_SLOT_MAX_ROW + i) + controller.getCraftingSlot() * (INVENTORY_SLOT_MAX_ROW * INVENTORY_SLOT_MAX_COL);
                 if (currentSlot < recipes.size()) {
                     renderItem(g, recipes.get(currentSlot));
                 }
@@ -166,18 +139,23 @@ public class CraftingOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
         ItemData itemData = ItemDatabase.getInstance().getItemData(recipe.getOutput());
         if (itemData == null) return;
         BufferedImage itemImage = Utils.getInstance().importImage(itemData.imagePath, -1, -1);
-        int slotPos = RecipeManager.getInstance().getRecipes().indexOf(recipe);
 
-        int xPos = (slotPos % INVENTORY_SLOT_MAX_ROW) * SLOT_SPACING + BACKPACK_SLOT_X + ITEM_OFFSET_X;
-        int yPos = (slotPos / INVENTORY_SLOT_MAX_ROW) * SLOT_SPACING + BACKPACK_SLOT_Y + ITEM_OFFSET_Y;
+        int absoluteSlotNumber = RecipeManager.getInstance().getRecipes().indexOf(recipe);
+        int pageOffset = controller.getCraftingSlot() * (INVENTORY_SLOT_MAX_ROW * INVENTORY_SLOT_MAX_COL);
+        int relativeSlotNumber = absoluteSlotNumber - pageOffset;
+
+        int xPos = (relativeSlotNumber % INVENTORY_SLOT_MAX_ROW) * SLOT_SPACING + BACKPACK_SLOT_X + ITEM_OFFSET_X;
+        int yPos = (relativeSlotNumber / INVENTORY_SLOT_MAX_ROW) * SLOT_SPACING + BACKPACK_SLOT_Y + ITEM_OFFSET_Y;
+
         g.setColor(itemData.rarity.getColor());
         g.fillRect(xPos - (int)(ITEM_OFFSET_X / 1.1), yPos - (int)(ITEM_OFFSET_Y / 1.1), (int)(SLOT_SIZE / 1.06), (int)(SLOT_SIZE / 1.06));
         g.drawImage(itemImage, xPos, yPos, ITEM_SIZE, ITEM_SIZE, null);
     }
 
     private void renderItemInfo(Graphics g, List<Recipe> recipes) {
-        if (slotNumber >= recipes.size()) return;
-        Recipe recipe = recipes.get(slotNumber);
+        int absoluteSlot = controller.getSlotNumber() + (controller.getCraftingSlot() * (INVENTORY_SLOT_MAX_ROW * INVENTORY_SLOT_MAX_COL));
+        if (absoluteSlot >= recipes.size()) return;
+        Recipe recipe = recipes.get(absoluteSlot);
         if (recipe != null) renderItemDescription(g, recipe);
     }
 
@@ -203,7 +181,7 @@ public class CraftingOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
     }
 
     private void renderResources(Graphics g, Map<String, Integer> resources, int yPos) {
-        Inventory inventory = gameState.getPlayer().getInventory();
+        Inventory inventory = controller.getGameState().getPlayer().getInventory();
         Map<String, Integer> playerItems = new HashMap<>();
         for (InventoryItem item : inventory.getBackpack()) {
             playerItems.put(item.getItemId(), item.getAmount());
@@ -261,151 +239,41 @@ public class CraftingOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
         return lines;
     }
 
-    // Actions
-    private void prevCraftingSlot() {
-        this.craftingSlot = Math.max(craftingSlot-1, 0);
-    }
-
-    private void nextCraftingSlot() {
-        this.craftingSlot = Math.min(craftingSlot+1, CRAFT_SLOT_CAP);
-    }
+    @Override
+    public void mouseDragged(MouseEvent e) {}
 
     @Override
-    public void mouseDragged(MouseEvent e) {
-
-    }
-
-    @Override
-    public void mouseClicked(MouseEvent mouseEvent) {
-
-    }
+    public void mouseClicked(MouseEvent mouseEvent) {}
 
     @Override
     public void mousePressed(MouseEvent e) {
-        setMousePressed(e, smallButtons);
-        setMousePressed(e, mediumButtons);
-        changeSlot(e);
-    }
-
-    private void setMousePressed(MouseEvent e, AbstractButton[] buttons) {
-        Arrays.stream(buttons)
-                .filter(button -> isMouseInButton(e, button))
-                .findFirst()
-                .ifPresent(button -> button.setMousePressed(true));
+        controller.mousePressed(e);
     }
 
     @Override
     public void mouseReleased(MouseEvent e) {
-        releaseSmallButtons(e);
-        releaseMediumButtons(e);
-        Arrays.stream(smallButtons).forEach(AbstractButton::resetMouseSet);
-        Arrays.stream(mediumButtons).forEach(AbstractButton::resetMouseSet);
-    }
-
-    private void releaseSmallButtons(MouseEvent e) {
-        for (SmallButton button : smallButtons) {
-            if (isMouseInButton(e, button) && button.isMousePressed()) {
-                switch (button.getButtonType()) {
-                    case PREV:
-                        prevCraftingSlot();
-                        break;
-                    case NEXT:
-                        nextCraftingSlot();
-                        break;
-                    default: break;
-                }
-                break;
-            }
-        }
-    }
-
-    private void releaseMediumButtons(MouseEvent e) {
-        for (MediumButton button : mediumButtons) {
-            if (isMouseInButton(e, button) && button.isMousePressed()) {
-                if (Objects.requireNonNull(button.getButtonType()) == ButtonType.CRAFT) {
-                    releaseCraftButton();
-                }
-            }
-        }
-    }
-
-    private void releaseCraftButton() {
-        List<Recipe> recipes = RecipeManager.getInstance().getRecipes();
-        if (slotNumber >= recipes.size()) return;
-        Recipe recipe = recipes.get(slotNumber);
-        if (recipe == null) return;
-        InventoryItem itemToCraft = new InventoryItem(recipe.getOutput(), recipe.getAmount());
-        gameState.getPlayer().getInventory().craftItem(itemToCraft, recipe.getIngredients());
+        controller.mouseReleased(e);
     }
 
     @Override
     public void mouseMoved(MouseEvent e) {
-        setMouseMoved(e, smallButtons);
-        setMouseMoved(e, mediumButtons);
+        controller.mouseMoved(e);
     }
 
     @Override
     public void keyPressed(KeyEvent e) {
-        switch (e.getKeyCode()) {
-            case KeyEvent.VK_UP:
-                moveUp();
-                break;
-            case KeyEvent.VK_DOWN:
-                moveDown();
-                break;
-            case KeyEvent.VK_LEFT:
-                moveLeft();
-                break;
-            case KeyEvent.VK_RIGHT:
-                moveRight();
-                break;
-            case KeyEvent.VK_C:
-                releaseCraftButton();
-                break;
-            default: break;
-        }
-    }
-
-    private void moveUp() {
-        int y = slotNumber / INVENTORY_SLOT_MAX_ROW;
-        if (y > 0) slotNumber -= INVENTORY_SLOT_MAX_ROW;
-        setSelectedSlot();
-    }
-
-    private void moveDown() {
-        int y = slotNumber / INVENTORY_SLOT_MAX_ROW;
-        if (y < INVENTORY_SLOT_MAX_COL - 1) slotNumber += INVENTORY_SLOT_MAX_ROW;
-        setSelectedSlot();
-    }
-
-    private void moveLeft() {
-        int x = slotNumber % INVENTORY_SLOT_MAX_ROW;
-        if (x > 0) slotNumber--;
-        setSelectedSlot();
-    }
-
-    private void moveRight() {
-        int x = slotNumber % INVENTORY_SLOT_MAX_ROW;
-        if (x < INVENTORY_SLOT_MAX_ROW - 1) slotNumber++;
-        setSelectedSlot();
-    }
-
-    private void setMouseMoved(MouseEvent e, AbstractButton[] buttons) {
-        Arrays.stream(buttons).forEach(button -> button.setMouseOver(false));
-
-        Arrays.stream(buttons)
-                .filter(button -> isMouseInButton(e, button))
-                .findFirst()
-                .ifPresent(button -> button.setMouseOver(true));
-    }
-
-    private boolean isMouseInButton(MouseEvent e, AbstractButton button) {
-        return button.getButtonHitBox().contains(e.getX(), e.getY());
+        controller.keyPressed(e);
     }
 
     @Override
-    public void reset() {
-        this.tables = gameState.getObjectManager().getObjects(Table.class);
+    public void reset() { }
+
+    // Getters for the controller
+    public SmallButton[] getSmallButtons() {
+        return smallButtons;
     }
 
+    public MediumButton[] getMediumButtons() {
+        return mediumButtons;
+    }
 }
