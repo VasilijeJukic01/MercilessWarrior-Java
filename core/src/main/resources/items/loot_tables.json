@@ -1,12 +1,12 @@
 {
   "CRATE": [
     {
-      "itemId": "HEALTH",
+      "itemId": "HEALTH_POTION",
       "quantity": 1,
       "weight": 35
     },
     {
-      "itemId": "STAMINA",
+      "itemId": "STAMINA_POTION",
       "quantity": 1,
       "weight": 35
     },
