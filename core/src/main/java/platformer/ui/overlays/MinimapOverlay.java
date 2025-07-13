@@ -1,16 +1,13 @@
 package platformer.ui.overlays;
 
-import platformer.model.minimap.MinimapIcon;
 import platformer.model.minimap.MinimapIconType;
 import platformer.state.GameState;
+import platformer.ui.overlays.controller.MinimapViewController;
 import platformer.ui.overlays.render.MinimapRenderer;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 
 import static platformer.constants.Constants.*;
@@ -20,146 +17,72 @@ import static platformer.constants.UI.*;
  * MinimapOverlay class is an overlay that is displayed when the player selects the minimap option.
  * It allows the player to view a smaller version of the game map, zoom in and out, and drag the map around.
  */
-public class MinimapOverlay implements Overlay<MouseEvent, KeyEvent, Graphics>, MouseListener {
+public class MinimapOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
 
     private final GameState gameState;
     private final MinimapRenderer minimapRenderer;
-
-    private final Rectangle2D overlay;
-    private double zoomFactor = 1.8;
-    private boolean showLegend = true;
-
-    private boolean drag = false;
-    private int lastMouseX, lastMouseY;
-    private int offsetX = 0, offsetY = 0;
-
-    private boolean centered = false;
+    private final MinimapViewController controller;
+    private final Rectangle overlay;
 
     public MinimapOverlay(GameState gameState) {
         this.gameState = gameState;
         this.minimapRenderer = new MinimapRenderer();
-        this.overlay = new Rectangle2D.Double(MAP_OVERLAY_X, MAP_OVERLAY_Y, MAP_OVERLAY_WID, MAP_OVERLAY_HEI);
-    }
-
-    private void centerOverlay() {
-        BufferedImage map = gameState.getMinimapManager().getMinimap();
-        Point2D.Double playerLoc = gameState.getMinimapManager().getPlayerLocation();
-        if (map != null && playerLoc != null) {
-            int width = (int) (MAP_OVERLAY_WID * zoomFactor);
-            int height = (int) (MAP_OVERLAY_HEI * zoomFactor);
-
-            double scaledPixelWidth = (double) width / map.getWidth();
-            double scaledPixelHeight = (double) height / map.getHeight();
-
-            int playerScreenX = MAP_OVERLAY_X + (int) (playerLoc.x * scaledPixelWidth);
-            int playerScreenY = MAP_OVERLAY_Y + (int) (playerLoc.y * scaledPixelHeight);
-
-            offsetX = (MAP_OVERLAY_X + MAP_OVERLAY_WID / 2) - playerScreenX;
-            offsetY = (MAP_OVERLAY_Y + MAP_OVERLAY_HEI / 2) - playerScreenY;
-            clampOffsets();
-        }
+        this.controller = new MinimapViewController(gameState);
+        this.overlay = new Rectangle(MAP_OVERLAY_X, MAP_OVERLAY_Y, MAP_OVERLAY_WID, MAP_OVERLAY_HEI);
     }
 
     @Override
     public void mouseClicked(MouseEvent e) {
-        if (e.getButton() == MouseEvent.BUTTON2) {
-            if (overlay.contains(e.getPoint())) {
-                MinimapIcon foundIcon = findIconAtScreenPos(e.getX(), e.getY());
-                Point minimapCoords = screenToMinimap(e.getX(), e.getY());
-
-                if (isValid(gameState.getMinimapManager().getMinimap(), minimapCoords)) {
-                    gameState.getMinimapManager().handlePinRequest(minimapCoords, foundIcon);
-                }
-            }
-        }
+        controller.mouseClicked(e);
     }
 
     @Override
     public void mouseDragged(MouseEvent e) {
-        if (drag && zoomFactor > MIN_ZOOM) {
-            int dx = e.getX() - lastMouseX;
-            int dy = e.getY() - lastMouseY;
-            offsetX += dx;
-            offsetY += dy;
-            lastMouseX = e.getX();
-            lastMouseY = e.getY();
-            clampOffsets();
-        }
+        controller.mouseDragged(e);
     }
 
     @Override
     public void mousePressed(MouseEvent e) {
-        if (overlay.contains(e.getPoint()) && zoomFactor > MIN_ZOOM) {
-            drag = true;
-            lastMouseX = e.getX();
-            lastMouseY = e.getY();
-        }
+        controller.mousePressed(e);
     }
 
     @Override
-    public void mouseReleased(MouseEvent mouseEvent) {
-        drag = false;
+    public void mouseReleased(MouseEvent e) {
+        controller.mouseReleased(e);
     }
 
     @Override
     public void mouseMoved(MouseEvent e) {
-        if (overlay.contains(e.getPoint())) {
-            MinimapIcon foundIcon = findIconAtScreenPos(e.getX(), e.getY());
-            gameState.getMinimapManager().setHoveredIcon(foundIcon);
-        }
-        else gameState.getMinimapManager().setHoveredIcon(null);
-    }
-
-    @Override
-    public void mouseEntered(MouseEvent e) {
-
-    }
-
-    @Override
-    public void mouseExited(MouseEvent e) {
-
+        controller.mouseMoved(e);
     }
 
     @Override
     public void keyPressed(KeyEvent e) {
-        if (e.getKeyCode() == KeyEvent.VK_PLUS || e.getKeyCode() == KeyEvent.VK_EQUALS) {
-            zoomFactor = Math.min(zoomFactor + 0.1, MAX_ZOOM);
-        }
-        else if (e.getKeyCode() == KeyEvent.VK_MINUS) {
-            zoomFactor = Math.max(zoomFactor - 0.1, MIN_ZOOM);
-        }
-        else if (e.getKeyCode() == KeyEvent.VK_L) {
-            showLegend = !showLegend;
-        }
-        clampOffsets();
+        controller.keyPressed(e);
     }
 
     @Override
     public void update() {
-
+        controller.update();
     }
 
     @Override
     public void render(Graphics g) {
-        if (!centered && gameState.getMinimapManager().getPlayerLocation() != null) {
-            centerOverlay();
-            centered = true;
-        }
         BufferedImage map = gameState.getMinimapManager().getMinimap();
         renderOverlay(g);
         Graphics2D g2d = (Graphics2D) g;
         g2d.setClip(overlay);
 
-        int width = (int) (MAP_OVERLAY_WID * zoomFactor);
-        int height = (int) (MAP_OVERLAY_HEI * zoomFactor);
-        int x = MAP_OVERLAY_X + offsetX;
-        int y = MAP_OVERLAY_Y + offsetY;
+        int width = (int) (MAP_OVERLAY_WID * controller.getZoomFactor());
+        int height = (int) (MAP_OVERLAY_HEI * controller.getZoomFactor());
+        int x = MAP_OVERLAY_X + controller.getOffsetX();
+        int y = MAP_OVERLAY_Y + controller.getOffsetY();
 
         g2d.drawImage(map, x, y, width, height, null);
         minimapRenderer.renderIcons(g2d, x, y, width, height, map, gameState.getMinimapManager());
         g2d.setClip(null);
 
-        if (showLegend) renderLegend(g);
+        if (controller.isShowLegend()) renderLegend(g);
     }
 
     private void renderOverlay(Graphics g) {
@@ -191,65 +114,6 @@ public class MinimapOverlay implements Overlay<MouseEvent, KeyEvent, Graphics>, 
         }
     }
 
-    /**
-     * Clamps the offsets to ensure the minimap does not go out of bounds.
-     */
-    private void clampOffsets() {
-        int width = (int) (MAP_OVERLAY_WID * zoomFactor);
-        int height = (int) (MAP_OVERLAY_HEI * zoomFactor);
-
-        int minOffsetX = Math.min(0, MAP_OVERLAY_WID - width);
-        int minOffsetY = Math.min(0, MAP_OVERLAY_HEI - height);
-
-        offsetX = Math.max(minOffsetX, Math.min(offsetX, 0));
-        offsetY = Math.max(minOffsetY, Math.min(offsetY, 0));
-    }
-
-    private Point screenToMinimap(int screenX, int screenY) {
-        int mapX = MAP_OVERLAY_X + offsetX;
-        int mapY = MAP_OVERLAY_Y + offsetY;
-        int width = (int) (MAP_OVERLAY_WID * zoomFactor);
-        int height = (int) (MAP_OVERLAY_HEI * zoomFactor);
-
-        double scaledPixelWidth = (double) width / gameState.getMinimapManager().getMinimap().getWidth();
-        double scaledPixelHeight = (double) height / gameState.getMinimapManager().getMinimap().getHeight();
-
-        int minimapX = (int) ((screenX - mapX) / scaledPixelWidth);
-        int minimapY = (int) ((screenY - mapY) / scaledPixelHeight);
-
-        return new Point(minimapX, minimapY);
-    }
-
-    private MinimapIcon findIconAtScreenPos(int screenX, int screenY) {
-        BufferedImage map = gameState.getMinimapManager().getMinimap();
-        int mapX = MAP_OVERLAY_X + offsetX;
-        int mapY = MAP_OVERLAY_Y + offsetY;
-        int width = (int) (MAP_OVERLAY_WID * zoomFactor);
-        int height = (int) (MAP_OVERLAY_HEI * zoomFactor);
-
-        double scaledPixelWidth = (double) width / map.getWidth();
-        double scaledPixelHeight = (double) height / map.getHeight();
-
-        for (MinimapIcon icon : gameState.getMinimapManager().getIcons()) {
-            int iconWidth = (int) (2.5 * scaledPixelWidth);
-            int iconHeight = (int) (2.5 * scaledPixelHeight);
-            int iconX = mapX + (int) (icon.position().x * scaledPixelWidth) - iconWidth / 2;
-            int iconY = mapY + (int) (icon.position().y * scaledPixelHeight) - iconHeight / 2;
-
-            Rectangle iconBounds = new Rectangle(iconX, iconY, iconWidth, iconHeight);
-            if (iconBounds.contains(screenX, screenY)) return icon;
-        }
-        return null;
-    }
-
-    private boolean isValid(BufferedImage image, Point point) {
-        if (point.x >= 0 && point.y >= 0 && point.x < image.getWidth() && point.y < image.getHeight()) {
-            int rgb = image.getRGB(point.x, point.y);
-            return (rgb & 0xFFFFFF) == (MINIMAP_WALKABLE.getRGB() & 0xFFFFFF);
-        }
-        return false;
-    }
-
     private String getLabelForIconType(MinimapIconType type) {
         return switch (type) {
             case PLAYER -> "Player";
@@ -264,6 +128,6 @@ public class MinimapOverlay implements Overlay<MouseEvent, KeyEvent, Graphics>, 
 
     @Override
     public void reset() {
-        this.centered = false;
+        controller.reset();
     }
 }
