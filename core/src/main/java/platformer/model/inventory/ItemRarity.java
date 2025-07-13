@@ -3,7 +3,7 @@ package platformer.model.inventory;
 import java.awt.*;
 
 public enum ItemRarity {
-    COMMON(new Color(150, 150, 150, 100), new Color(255, 255, 255)),
+    COMMON(new Color(150, 150, 150, 100), new Color(166, 166, 166)),
     UNCOMMON(new Color(0, 170, 20, 100), new Color(90, 255, 90)),
     RARE(new Color(0, 90, 170, 100), new Color(100, 180, 255)),
     EPIC(new Color(95, 0, 170, 100), new Color(200, 120, 255)),

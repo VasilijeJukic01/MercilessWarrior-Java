@@ -1,5 +1,6 @@
 package platformer.ui.overlays;
 
+import platformer.animation.Animation;
 import platformer.model.inventory.*;
 import platformer.state.GameState;
 import platformer.ui.buttons.ButtonType;
@@ -16,9 +17,9 @@ import java.awt.image.BufferedImage;
 import java.util.List;
 import java.util.*;
 
+import static platformer.constants.AnimConstants.*;
 import static platformer.constants.Constants.*;
-import static platformer.constants.FilePaths.CRAFTING_TXT;
-import static platformer.constants.FilePaths.SLOT_INVENTORY;
+import static platformer.constants.FilePaths.*;
 import static platformer.constants.UI.*;
 
 /**
@@ -35,7 +36,7 @@ public class CraftingOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
     private final SmallButton[] smallButtons;
 
     private Rectangle2D craftingPanel;
-    private BufferedImage slotImage;
+    private BufferedImage slotImage, coinIcon;
     private Rectangle2D.Double selectedSlot;
 
     public CraftingOverlay(GameState gameState) {
@@ -57,6 +58,7 @@ public class CraftingOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
         this.craftingText = Utils.getInstance().importImage(CRAFTING_TXT, INV_TEXT_WID, INV_TEXT_HEI);
         this.craftingPanel = new Rectangle2D.Double(BACKPACK_X, BACKPACK_Y, BACKPACK_WID, BACKPACK_HEI);
         this.slotImage = Utils.getInstance().importImage(SLOT_INVENTORY, SLOT_SIZE, SLOT_SIZE);
+        this.coinIcon = Animation.getInstance().loadFromSprite(COIN_SHEET, 1, 1, COIN_WID, COIN_HEI, 0, COIN_W, COIN_H)[0];
     }
 
     private void loadButtons() {
@@ -162,10 +164,17 @@ public class CraftingOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
     private void renderItemDescription(Graphics g, Recipe recipe) {
         ItemData itemData = ItemDatabase.getInstance().getItemData(recipe.getOutput());
         if (itemData == null) return;
-        g.setColor(Color.WHITE);
+        g.setColor(itemData.rarity.getTextColor());
         g.setFont(new Font("Arial", Font.BOLD, FONT_MEDIUM));
         g.drawString(itemData.name, CRAFT_VAL_ITEM_NAME_X, CRAFT_VAL_ITEM_NAME_Y);
-        g.drawString("Value: " + itemData.sellValue, CRAFT_VAL_TEXT_X, CRAFT_VAL_TEXT_Y);
+        g.setColor(INV_TEXT_LABEL);
+        g.drawString("Value: ", CRAFT_VAL_TEXT_X, CRAFT_VAL_TEXT_Y);
+        g.setColor(INV_TEXT_VALUE);
+        String valueText = String.valueOf(itemData.sellValue);
+        g.drawString(valueText, CRAFT_VAL_TEXT_X + g.getFontMetrics().stringWidth("Value: "), CRAFT_VAL_TEXT_Y);
+        g.drawImage(coinIcon, CRAFT_VAL_TEXT_X + g.getFontMetrics().stringWidth("Value: " + valueText) + 2, CRAFT_VAL_TEXT_Y - g.getFontMetrics().getAscent() + 1, (int)(COIN_WID/1.5), (int)(COIN_HEI/1.5), null);
+
+        g.setColor(INV_TEXT_DESC);
         g.setFont(new Font("Arial", Font.PLAIN, FONT_MEDIUM));
 
         int descriptionMaxWidth = (int) (overlay.getX() + overlay.getWidth() - CRAFT_VAL_ITEM_DESC_X - (10 * SCALE));
@@ -204,7 +213,7 @@ public class CraftingOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
             int requiredAmount = entry.getValue();
             int playerAmount = playerItems.getOrDefault(requiredId, 0);
 
-            g.setColor(requiredData.rarity.getColor());
+            g.setColor(requiredData.rarity.getTextColor());
             String resourceText = " - " + requiredData.name + ": " + requiredAmount + "x";
             g.drawString(resourceText, CRAFT_VAL_ITEM_DESC_X, y);
 
