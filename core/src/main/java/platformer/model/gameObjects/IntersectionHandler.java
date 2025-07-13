@@ -60,6 +60,7 @@ public class IntersectionHandler {
     private <T extends GameObject> boolean checkPlayerIntersection(Player p, Class<T> objectClass) {
         boolean check = false;
         for (T object : getObjects(objectClass)) {
+            if (!object.isAlive()) continue;
             boolean intersect = p.getHitBox().intersects(object.getHitBox());
             if (intersect) {
                 check = true;

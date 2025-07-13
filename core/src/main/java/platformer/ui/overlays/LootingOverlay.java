@@ -206,6 +206,7 @@ public class LootingOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
         InventoryItem item = items.get(slotNumber);
         inventory.addItemToBackpack(item);
         items.remove(item);
+        checkAndCloseOverlayIfEmpty();
     }
 
     private void takeAllItems() {
@@ -216,6 +217,15 @@ public class LootingOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
             inventory.addItemToBackpack(item);
         }
         items.clear();
+        checkAndCloseOverlayIfEmpty();
+    }
+
+    private void checkAndCloseOverlayIfEmpty() {
+        List<InventoryItem> items = getItemsFromSource();
+        if (items != null && items.isEmpty()) {
+            gameState.getObjectManager().setIntersection(null);
+            gameState.setOverlay(null);
+        }
     }
 
     @Override
