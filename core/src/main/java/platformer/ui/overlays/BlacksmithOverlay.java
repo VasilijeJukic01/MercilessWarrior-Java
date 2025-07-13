@@ -1,11 +1,10 @@
 package platformer.ui.overlays;
 
-import platformer.audio.Audio;
-import platformer.audio.types.Sound;
 import platformer.model.perks.Perk;
 import platformer.state.GameState;
 import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.MediumButton;
+import platformer.ui.overlays.controller.BlacksmithViewController;
 import platformer.utils.Utils;
 
 import java.awt.*;
@@ -26,6 +25,7 @@ import static platformer.constants.UI.*;
  */
 public class BlacksmithOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
 
+    private final BlacksmithViewController controller;
     private final GameState gameState;
 
     private Rectangle2D overlay;
@@ -34,20 +34,20 @@ public class BlacksmithOverlay implements Overlay<MouseEvent, KeyEvent, Graphics
 
     private BufferedImage slotImage;
     private Rectangle2D.Double selectedSlot;
-    private int slotNumber;
-    private int SLOT_MAX_ROW, SLOT_MAX_COL;
-    private int[][] placeHolders;
+    private final int SLOT_MAX_ROW, SLOT_MAX_COL;
+    private final int[][] placeHolders;
 
     public BlacksmithOverlay(GameState gameState) {
         this.gameState = gameState;
+        this.controller = new BlacksmithViewController(gameState, this);
         this.buttons = new MediumButton[2];
+        this.SLOT_MAX_COL = PERK_SLOT_MAX_COL;
+        this.SLOT_MAX_ROW = PERK_SLOT_MAX_ROW;
+        this.placeHolders = gameState.getPerksManager().getPlaceHolders();
         init();
     }
 
     private void init() {
-        this.SLOT_MAX_COL = PERK_SLOT_MAX_COL;
-        this.SLOT_MAX_ROW = PERK_SLOT_MAX_ROW;
-        this.placeHolders = gameState.getPerksManager().getPlaceHolders();
         loadImages();
         loadButtons();
         initSelectedSlot();
@@ -66,9 +66,14 @@ public class BlacksmithOverlay implements Overlay<MouseEvent, KeyEvent, Graphics
     }
 
     private void initSelectedSlot() {
-        int xPos = (slotNumber % SLOT_MAX_ROW) * PERK_SLOT_SPACING + PERK_SLOT_X;
-        int yPos = (slotNumber / SLOT_MAX_ROW) * PERK_SLOT_SPACING + PERK_SLOT_Y;
+        int xPos = (controller.getSlotNumber() % SLOT_MAX_COL) * PERK_SLOT_SPACING + PERK_SLOT_X;
+        int yPos = (controller.getSlotNumber() / SLOT_MAX_COL) * PERK_SLOT_SPACING + PERK_SLOT_Y;
         this.selectedSlot = new Rectangle2D.Double(xPos, yPos, SLOT_SIZE, SLOT_SIZE);
+    }
+
+    public void updateSelectedSlot() {
+        this.selectedSlot.x = (controller.getSlotNumber() % SLOT_MAX_COL) * PERK_SLOT_SPACING + PERK_SLOT_X;
+        this.selectedSlot.y = (controller.getSlotNumber() / SLOT_MAX_COL) * PERK_SLOT_SPACING + PERK_SLOT_Y;
     }
 
     // Core
@@ -154,7 +159,7 @@ public class BlacksmithOverlay implements Overlay<MouseEvent, KeyEvent, Graphics
 
     private void renderPerkInfo(Graphics g) {
         for (Perk perk : gameState.getPerksManager().getPerks()) {
-            if (slotNumber == perk.getSlot()) {
+            if (controller.getSlotNumber() == perk.getSlot()) {
                 g.setColor(Color.WHITE);
                 g.setFont(new Font("Arial", Font.BOLD, FONT_MEDIUM));
                 g.drawString("Tokens: "+ gameState.getPlayer().getUpgradeTokens(), TOKENS_TEXT_X, TOKENS_TEXT_Y);
@@ -171,45 +176,6 @@ public class BlacksmithOverlay implements Overlay<MouseEvent, KeyEvent, Graphics
         return i >= 0 && j >= 0 && i < n && j < m;
     }
 
-    private void setSelectedSlot() {
-        this.selectedSlot.x = (slotNumber % SLOT_MAX_COL) * PERK_SLOT_SPACING + PERK_SLOT_X;
-        int offset = slotNumber / SLOT_MAX_COL;
-        this.selectedSlot.y = offset * PERK_SLOT_SPACING + PERK_SLOT_Y;
-    }
-
-    private void changeSlot(MouseEvent e) {
-        int x = e.getX(), y = e.getY();
-        for (int i = 0; i < SLOT_MAX_COL; i++) {
-            for (int j = 0; j < SLOT_MAX_ROW; j++) {
-                if (x >= i*PERK_SLOT_SPACING+PERK_SLOT_X && x <= i*PERK_SLOT_SPACING+PERK_SLOT_X+SLOT_SIZE && y >= j*PERK_SLOT_SPACING+PERK_SLOT_Y && y <= j*PERK_SLOT_SPACING+PERK_SLOT_Y+SLOT_SIZE) {
-                    slotNumber = i + (j*SLOT_MAX_COL);
-                    if (placeHolders[j][i] == 1)
-                        setSelectedSlot();
-                    break;
-                }
-            }
-        }
-    }
-
-    private boolean checkTokens() {
-        for (Perk perk : gameState.getPerksManager().getPerks()) {
-            if (slotNumber == perk.getSlot() && gameState.getPlayer().getUpgradeTokens() >= perk.getCost()) {
-                gameState.getPlayer().changeUpgradeTokens(-perk.getCost());
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public void upgrade() {
-        for (Perk perk : gameState.getPerksManager().getPerks()) {
-            if (slotNumber == perk.getSlot() && perk.isUpgraded()) return;
-        }
-        if (!checkTokens()) return;
-        Audio.getInstance().getAudioPlayer().playSound(Sound.SHOP_BUY);
-        gameState.getPerksManager().upgrade(SLOT_MAX_COL, SLOT_MAX_ROW, slotNumber);
-    }
-
     @Override
     public void mouseDragged(MouseEvent e) {
 
@@ -222,41 +188,17 @@ public class BlacksmithOverlay implements Overlay<MouseEvent, KeyEvent, Graphics
 
     @Override
     public void mousePressed(MouseEvent e) {
-        Arrays.stream(buttons)
-                .filter(button -> isMouseInButton(e, button))
-                .findFirst()
-                .ifPresent(button -> button.setMousePressed(true));
-
-        changeSlot(e);
+        controller.mousePressed(e);
     }
 
     @Override
     public void mouseReleased(MouseEvent e) {
-        for (MediumButton button : buttons) {
-            if (isMouseInButton(e, button) && button.isMousePressed()) {
-                switch (button.getButtonType()) {
-                    case BUY:
-                        upgrade();
-                        break;
-                    case LEAVE:
-                        gameState.setOverlay(null);
-                        break;
-                    default: break;
-                }
-                break;
-            }
-        }
-        Arrays.stream(buttons).forEach(MediumButton::resetMouseSet);
+        controller.mouseReleased(e);
     }
 
     @Override
     public void mouseMoved(MouseEvent e) {
-        Arrays.stream(buttons).forEach(mediumButton -> mediumButton.setMouseOver(false));
-
-        Arrays.stream(buttons)
-                .filter(mediumButton -> isMouseInButton(e, mediumButton))
-                .findFirst()
-                .ifPresent(mediumButton -> mediumButton.setMouseOver(true));
+        controller.mouseMoved(e);
     }
 
     @Override
@@ -269,7 +211,11 @@ public class BlacksmithOverlay implements Overlay<MouseEvent, KeyEvent, Graphics
 
     }
 
-    private boolean isMouseInButton(MouseEvent e, MediumButton mediumButton) {
-        return mediumButton.getButtonHitBox().contains(e.getX(), e.getY());
+    public int[][] getPlaceHolders() {
+        return placeHolders;
+    }
+
+    public MediumButton[] getButtons() {
+        return buttons;
     }
 }
