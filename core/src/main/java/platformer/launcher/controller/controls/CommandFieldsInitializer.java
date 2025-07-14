@@ -25,6 +25,10 @@ public class CommandFieldsInitializer {
         commandFields.put("Decline",    fields[13]);
         commandFields.put("Minimap",    fields[14]);
         commandFields.put("Pause",      fields[15]);
+        commandFields.put("QuickUse1",  fields[16]);
+        commandFields.put("QuickUse2",  fields[17]);
+        commandFields.put("QuickUse3",  fields[18]);
+        commandFields.put("QuickUse4",  fields[19]);
 
         return commandFields;
     }

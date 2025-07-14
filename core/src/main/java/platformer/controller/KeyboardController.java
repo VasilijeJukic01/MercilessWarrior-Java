@@ -51,8 +51,10 @@ public class KeyboardController {
     }
 
     private int getKeyCode(String keyName) {
+        String targetKeyName = keyName;
+        if (keyName.startsWith("DIGIT")) targetKeyName = keyName.substring(5);
         try {
-            return KeyEvent.class.getField("VK_" + keyName.toUpperCase()).getInt(null);
+            return KeyEvent.class.getField("VK_" + targetKeyName.toUpperCase()).getInt(null);
         } catch (Exception e) {
             Logger.getInstance().notify("Failed to get key code for: " + keyName, Message.ERROR);
             return -1;

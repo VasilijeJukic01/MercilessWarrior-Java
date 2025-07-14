@@ -69,6 +69,10 @@ public class InventoryViewController {
             case KeyEvent.VK_LEFT -> moveLeft();
             case KeyEvent.VK_RIGHT -> moveRight();
             case KeyEvent.VK_X -> useItem();
+            case KeyEvent.VK_1 -> assignToQuickSlot(0);
+            case KeyEvent.VK_2 -> assignToQuickSlot(1);
+            case KeyEvent.VK_3 -> assignToQuickSlot(2);
+            case KeyEvent.VK_4 -> assignToQuickSlot(3);
         }
     }
 
@@ -193,6 +197,12 @@ public class InventoryViewController {
 
     private void useItem() {
         gameState.getPlayer().getInventory().useItem(getAbsoluteBackpackSlot(), gameState.getPlayer());
+    }
+
+    private void assignToQuickSlot(int slotIndex) {
+        if (!isInBackpack) return;
+        int absoluteBackpackIndex = getAbsoluteBackpackSlot();
+        gameState.getPlayer().getInventory().assignToQuickSlot(absoluteBackpackIndex, slotIndex);
     }
 
     private void prevBackpackSlot() {

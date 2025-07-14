@@ -7,8 +7,10 @@ import platformer.model.gameObjects.objects.Loot;
 import platformer.model.inventory.handlers.BackpackHandler;
 import platformer.model.inventory.handlers.EquipmentHandler;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Class that represents the player's inventory.
@@ -18,10 +20,12 @@ public class Inventory {
 
     private final EquipmentHandler equipmentHandler;
     private final BackpackHandler backpackHandler;
+    private final String[] quickUseSlots = new String[4];
 
     public Inventory() {
         this.equipmentHandler = new EquipmentHandler();
         this.backpackHandler = new BackpackHandler(equipmentHandler);
+        Arrays.fill(quickUseSlots, null);
     }
 
     /**
@@ -31,6 +35,39 @@ public class Inventory {
      */
     public void useItem(int index, Player player) {
         backpackHandler.useItem(index, player);
+        checkQuickSlots();
+    }
+
+    /**
+     * Uses an item from a quick-use slot.
+     *
+     * @param slotIndex The index of the quick-use slot (0-3).
+     * @param player The player using the item.
+     */
+    public void useQuickSlotItem(int slotIndex, Player player) {
+        if (slotIndex < 0 || slotIndex >= quickUseSlots.length) return;
+
+        String itemId = quickUseSlots[slotIndex];
+        if (itemId == null) return;
+        Optional<InventoryItem> itemToUse = backpackHandler.getBackpack().stream()
+                .filter(item -> item.getItemId().equals(itemId))
+                .findFirst();
+
+        itemToUse.ifPresent(item -> useItem(backpackHandler.getBackpack().indexOf(item), player));
+    }
+
+    /**
+     * Assigns an item from the backpack to a quick-use slot.
+     *
+     * @param backpackIndex The index of the item in the backpack.
+     * @param quickSlotIndex The index of the quick-use slot (0-3).
+     */
+    public void assignToQuickSlot(int backpackIndex, int quickSlotIndex) {
+        if (backpackIndex >= backpackHandler.getBackpack().size() || quickSlotIndex >= quickUseSlots.length) return;
+        InventoryItem item = backpackHandler.getBackpack().get(backpackIndex);
+        if (item.getItemId().contains("POTION")) {
+            quickUseSlots[quickSlotIndex] = item.getItemId();
+        }
     }
 
     /**
@@ -91,6 +128,7 @@ public class Inventory {
     private void reset() {
         equipmentHandler.reset();
         backpackHandler.reset();
+        Arrays.fill(quickUseSlots, null);
     }
 
     public List<InventoryItem> getBackpack() {
@@ -99,6 +137,10 @@ public class Inventory {
 
     public InventoryItem[] getEquipped() {
         return equipmentHandler.getEquipped();
+    }
+
+    public String[] getQuickUseSlots() {
+        return quickUseSlots;
     }
 
     /**
@@ -134,6 +176,19 @@ public class Inventory {
         for (Map.Entry<String, Integer> entry : itemRewards.entrySet()) {
             InventoryItem item = new InventoryItem(entry.getKey(), entry.getValue());
             addItemToBackpack(item);
+        }
+    }
+
+    /**
+     * Checks if any quick-use slots reference items that no longer exist in the backpack and clears them.
+     */
+    private void checkQuickSlots() {
+        for (int i = 0; i < quickUseSlots.length; i++) {
+            String itemId = quickUseSlots[i];
+            if (itemId != null) {
+                boolean itemExists = backpackHandler.getBackpack().stream().anyMatch(item -> item.getItemId().equals(itemId));
+                if (!itemExists) quickUseSlots[i] = null;
+            }
         }
     }
 

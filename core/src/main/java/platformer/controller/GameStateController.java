@@ -84,6 +84,10 @@ public class GameStateController {
             if (isBreakableState(gameState.getActiveState())) gameState.setOverlay(null);
             else gameState.setOverlay(pause(gameState.getActiveState()));
         });
+        initAction(pressActions, "QuickUse1", () -> player.getInventory().useQuickSlotItem(0, player));
+        initAction(pressActions, "QuickUse2", () -> player.getInventory().useQuickSlotItem(1, player));
+        initAction(pressActions, "QuickUse3", () -> player.getInventory().useQuickSlotItem(2, player));
+        initAction(pressActions, "QuickUse4", () -> player.getInventory().useQuickSlotItem(3, player));
     }
 
     private void initReleaseActions() {

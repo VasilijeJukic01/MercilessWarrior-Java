@@ -24,6 +24,7 @@ import static platformer.constants.UI.*;
 public class UserInterface {
 
     private final Player player;
+    private final QuickUsePanel quickUsePanel;
     private final MinimapPanel minimapPanel;
 
     private BufferedImage statusBar, portrait;
@@ -36,6 +37,7 @@ public class UserInterface {
     public UserInterface(Player player, MinimapManager minimapManager) {
         this.player = player;
         this.abilities = new ArrayList<>();
+        this.quickUsePanel = new QuickUsePanel(player);
         this.minimapPanel = new MinimapPanel(minimapManager, RADAR_X, RADAR_Y, RADAR_WID, RADAR_HEI);
         init();
     }
@@ -79,6 +81,7 @@ public class UserInterface {
         renderLevelInfo(g);
         g.drawImage(portrait, PORT_X, PORT_Y, PORT_WID, PORT_HEI, null);
         renderCooldown(g);
+        quickUsePanel.render(g);
         minimapPanel.render(g);
     }
 

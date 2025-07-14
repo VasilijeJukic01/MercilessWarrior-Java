@@ -41,7 +41,7 @@ public class ControlsView extends BaseView {
 
     private void initCommandComponents() {
         String[] commands = {"Move Left", "Move Right", "Jump", "Dash", "Attack", "Flames", "Fireball", "Shield", "Interact",
-                "Quest", "Transform", "Inventory", "Accept", "Decline", "Minimap", "Pause"};
+                "Quest", "Transform", "Inventory", "Accept", "Decline", "Minimap", "Pause", "QuickUse1", "QuickUse2", "QuickUse3", "QuickUse4"};
         KeyboardConfigurator configurator = KeyboardConfigurator.getInstance();
 
         for (String command : commands) {
