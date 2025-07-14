@@ -123,10 +123,11 @@ public final class FilePaths {
     public static final String RECIPES_PATH = "/items/recipes.json";
     public static final String SHOP_INV_PATH = "/items/shop_inventory.json";
     public static final String LOOT_TABLE_PATH = "/items/loot_tables.json";
-    public static final String PLAYER_ICON = "/images/inventory/Player.png";
 
     // Quests
     public static final String QUESTS_PATH = "/quests/quests.json";
+    public static final String QUEST_COIN_PATH = "/images/quest/CoinIcon.png";
+    public static final String QUEST_EXP_PATH = "/images/quest/ExpIcon.png";
 
     // Tutorial
     public static final String TUTORIAL_BLOCK_PATH = "/images/tutorial/Tutorial1.png";

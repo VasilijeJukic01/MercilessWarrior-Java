@@ -66,27 +66,39 @@ public final class UI {
     public static final int LOAD_BTN_Y = scale(350);
 
     // Quest UI
-    public static final int QUEST_SLOT_WID = scale(180);
-    public static final int QUEST_SLOT_HEI = scale(50);
-    public static final int QUEST_SLOT_X = scale(330);
-    public static final int QUEST_SLOT_Y = scale(45);
-    public static final int QUEST_SLOT_SPACING = scale(80);
-    public static final int QUEST_SLOT_CAP = 3;
+    public static final int QUEST_SLOT_WID = scale(200);
+    public static final int QUEST_SLOT_HEI = scale(40);
+    public static final int QUEST_SLOT_X = scale(140);
+    public static final int QUEST_SLOT_Y = scale(120);
+    public static final int QUEST_SLOT_SPACING = scale(50);
+    public static final int QUEST_SLOT_CAP = 4;
 
-    public static final int QUEST_TXT_WID = scale(180);
+    public static final int QUEST_TXT_WID = scale(220);
     public static final int QUEST_TXT_HEI = scale(40);
-    public static final int QUEST_TEXT_X = scale(330);
-    public static final int QUEST_TEXT_Y = scale(65);
+    public static final int QUEST_TEXT_X = scale(310);
+    public static final int QUEST_TEXT_Y = scale(45);
 
-    public static final int QUEST_BTN_X = scale(388);
-    public static final int QUEST_BTN_Y = scale(350);
+    public static final int QUEST_BTN_X = scale(213);
+    public static final int QUEST_BTN_Y = scale(358);
+    public static final int QUEST_BTN_PREV_X = scale(153);
+    public static final int QUEST_BTN_NEXT_X = scale(297);
 
-    public static final int QUEST_BTN_PREV_X = scale(330);
-    public static final int QUEST_BTN_NEXT_X = scale(485);
+    public static final int QUEST_DESC_X = scale(400);
+    public static final int QUEST_DESC_Y = scale(120);
 
-    public static final Color QUEST_SLOT_COLOR = new Color(20, 20, 20, 220);
-    public static final Color QUEST_SLOT_REPEATABLE_COLOR = new Color(20, 70, 68, 220);
-    public static final Color QUEST_SLOT_COMPLETE = new Color(22, 70, 20, 220);
+    public static final Color QUEST_SLOT_PROGRESSIVE_BG_START = new Color(30, 40, 50, 230);
+    public static final Color QUEST_SLOT_PROGRESSIVE_BG_END = new Color(45, 60, 75, 230);
+    public static final Color QUEST_SLOT_REPEATABLE_BG_START = new Color(30, 60, 58, 230);
+    public static final Color QUEST_SLOT_REPEATABLE_BG_END = new Color(45, 85, 80, 230);
+    public static final Color QUEST_SLOT_COMPLETED_BG_START = new Color(40, 70, 40, 230);
+    public static final Color QUEST_SLOT_COMPLETED_BG_END = new Color(60, 100, 60, 230);
+    public static final Color QUEST_SELECTED_GLOW_COLOR = new Color(255, 215, 0, 150);
+
+    public static final Color QUEST_HEADER_COLOR = new Color(255, 255, 255);
+    public static final Color QUEST_REWARD_XP_COLOR = new Color(170, 170, 255);
+    public static final Color QUEST_SEPARATOR_COLOR = new Color(100, 100, 100, 200);
+
+    public static final int QUEST_ICON_SIZE = scale(20);
 
     // Controls UI
     public static final int CONTROLS_TXT_WID = scale(180);
