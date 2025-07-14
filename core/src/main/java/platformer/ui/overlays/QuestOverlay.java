@@ -184,7 +184,7 @@ public class QuestOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
             if (isComplete) g.setColor(INV_TEXT_BONUS);
             else if (isActive) g.setColor(Color.WHITE);
             else g.setColor(Color.GRAY);
-            String objectiveText = String.format("- %s %s (%d/%d)", capitalize(objective.getType().toString()), objective.getTarget().toString().replace("_", " "), objective.getCurrentAmount(), objective.getRequiredAmount());
+            String objectiveText = String.format("- %s (%d/%d)", objective.getDescription(), objective.getCurrentAmount(), objective.getRequiredAmount());
             g.drawString(objectiveText, QUEST_DESC_X, yPos);
             yPos += g.getFontMetrics().getHeight();
         }

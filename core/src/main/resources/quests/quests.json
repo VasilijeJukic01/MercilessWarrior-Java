@@ -5,7 +5,7 @@
     "id": -1,
     "description": "The restless dead disturb the peace. Put them to rest.",
     "objectives": [
-      { "type": "KILL", "target": "SKELETON", "requiredAmount": 5, "currentAmount": 0 }
+      { "type": "KILL", "target": "SKELETON", "description": "Defeat Skeletons", "requiredAmount": 5, "currentAmount": 0 }
     ],
     "itemRewards": {
       "IRON_ORE": 5
@@ -21,7 +21,7 @@
     "id": -1,
     "description": "Ghouls are scavenging in the area. Thin their numbers.",
     "objectives": [
-      { "type": "KILL", "target": "GHOUL", "requiredAmount": 5, "currentAmount": 0 }
+      { "type": "KILL", "target": "GHOUL", "description": "Eliminate Ghouls", "requiredAmount": 5, "currentAmount": 0 }
     ],
     "itemRewards": {
       "WRAITH_ESSENCE": 5
@@ -37,7 +37,7 @@
     "id": -1,
     "description": "Smash open some crates. Who knows what you'll find?",
     "objectives": [
-      { "type": "COLLECT", "target": "CRATE", "requiredAmount": 5, "currentAmount": 0 }
+      { "type": "COLLECT", "target": "CRATE", "description": "Break open crates", "requiredAmount": 5, "currentAmount": 0 }
     ],
     "itemRewards": {
       "SONIC_QUARTZ_ORE": 3
@@ -53,7 +53,7 @@
     "id": 1,
     "description": "A true warrior needs a sharp sword. Upgrade your weapon.",
     "objectives": [
-      { "type": "UPGRADE", "target": "SWORD_UPGRADE", "requiredAmount": 1, "currentAmount": 0 }
+      { "type": "UPGRADE", "target": "SWORD_UPGRADE", "description": "Upgrade your weapon at the Blacksmith", "requiredAmount": 1, "currentAmount": 0 }
     ],
     "itemRewards": {
       "IRON_ORE": 10
@@ -69,7 +69,7 @@
     "id": 2,
     "description": "Protection is as important as offense. Purchase a piece of armor.",
     "objectives": [
-      { "type": "COLLECT", "target": "BUY_ARMOR", "requiredAmount": 1, "currentAmount": 0 }
+      { "type": "COLLECT", "target": "BUY_ARMOR", "description": "Purchase a new piece of armor", "requiredAmount": 1, "currentAmount": 0 }
     ],
     "itemRewards": {
       "IRON_ORE": 10
@@ -85,7 +85,7 @@
     "id": 3,
     "description": "A formidable Lancer guards the path forward. Defeat her.",
     "objectives": [
-      { "type": "KILL", "target": "LANCER", "requiredAmount": 1, "currentAmount": 0 }
+      { "type": "KILL", "target": "LANCER", "description": "Defeat the Lancer", "requiredAmount": 1, "currentAmount": 0 }
     ],
     "itemRewards": {
       "ELECTRICITE_ORE": 1
@@ -101,8 +101,8 @@
     "id": 4,
     "description": "Anita is scared of bandits in her town. Defeat them for her.",
     "objectives": [
-      { "type": "KILL", "target": "KNIGHT", "requiredAmount": 3, "currentAmount": 0 },
-      { "type": "INTERACT", "target": "ANITA", "requiredAmount": 1, "currentAmount": 0 }
+      { "type": "KILL", "target": "KNIGHT", "description": "Defeat the bandits", "requiredAmount": 3, "currentAmount": 0 },
+      { "type": "INTERACT", "target": "ANITA", "description": "Report back to Anita", "requiredAmount": 1, "currentAmount": 0 }
     ],
     "itemRewards": {
       "SILVER_ORE": 10

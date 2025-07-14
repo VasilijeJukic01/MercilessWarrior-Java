@@ -8,6 +8,7 @@ public class QuestObjective {
 
     private QuestObjectiveType type;
     private ObjectiveTarget target;
+    private String description;
     private int requiredAmount;
     private int currentAmount;
 
@@ -25,6 +26,14 @@ public class QuestObjective {
 
     public void setTarget(ObjectiveTarget target) {
         this.target = target;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public int getRequiredAmount() {
