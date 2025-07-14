@@ -57,8 +57,12 @@ public final class UI {
     public static final int GAME_SLOT_SPACING = scale(60);
     public static final int GAME_SLOT_CAP = 4;
 
-    public static final Color DATABASE_SLOT_COLOR = new Color(20, 70, 20, 220);
-    public static final Color SAVE_SLOT_COLOR = new Color(20, 20, 20, 220);
+    public static final Color DATABASE_SLOT_BG_START = new Color(25, 50, 80, 230);
+    public static final Color DATABASE_SLOT_BG_END = new Color(40, 70, 110, 230);
+    public static final Color SAVE_SLOT_BG_START = new Color(50, 30, 60, 230);
+    public static final Color SAVE_SLOT_BG_END = new Color(75, 45, 85, 230);
+    public static final Color EMPTY_SLOT_BG_START = new Color(40, 40, 40, 230);
+    public static final Color EMPTY_SLOT_BG_END = new Color(60, 60, 60, 230);
 
     public static final int SAVE_BTN_X = scale(345);
     public static final int SAVE_CLOSE_BTN_X = scale(430);
