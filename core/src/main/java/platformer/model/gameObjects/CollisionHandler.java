@@ -27,6 +27,40 @@ public class CollisionHandler {
     }
 
     /**
+     * Checks if an entity is colliding with a solid object.
+     *
+     * @param hitbox The hitbox of the entity.
+     * @param dx The desired change in the entity's X coordinate.
+     * @return The new X coordinate of the entity after collision resolution.
+     */
+    private Rectangle2D.Double getSweptHitbox(Rectangle2D.Double hitbox, double dx) {
+        double x = dx > 0 ? hitbox.x : hitbox.x + dx;
+        double width = dx > 0 ? hitbox.width + dx : hitbox.width - dx;
+        return new Rectangle2D.Double(x, hitbox.y, width, hitbox.height);
+    }
+
+    /**
+     * Checks for collision with solid objects and resolves the collision by adjusting the X coordinate.
+     *
+     * @param hitbox The hitbox of the entity.
+     * @param dx The desired change in the entity's X coordinate.
+     * @return The new X coordinate of the entity after collision resolution.
+     */
+    public double checkSolidObjectCollision(Rectangle2D.Double hitbox, double dx) {
+        Rectangle2D.Double sweptHitbox = getSweptHitbox(hitbox, dx);
+        List<Brick> solidObjects = objectManager.getObjects(Brick.class).stream()
+                .filter(GameObject::isAlive).toList();
+
+        for (GameObject obj : solidObjects) {
+            if (obj.getHitBox().intersects(sweptHitbox)) {
+                if (dx > 0) return obj.getHitBox().x - hitbox.x - hitbox.width - 1;
+                else return obj.getHitBox().x + obj.getHitBox().width - hitbox.x + 1;
+            }
+        }
+        return dx;
+    }
+
+    /**
      * Checks if an entity is touching a specific type of game object.
      *
      * @param objectClass The class of the game object.

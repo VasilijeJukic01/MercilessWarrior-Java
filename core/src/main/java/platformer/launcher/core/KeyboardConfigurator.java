@@ -46,6 +46,10 @@ public class KeyboardConfigurator {
         commandKeyMap.put("Decline",    KeyCode.N);
         commandKeyMap.put("Minimap",    KeyCode.M);
         commandKeyMap.put("Pause",      KeyCode.ESCAPE);
+        commandKeyMap.put("QuickUse1",  KeyCode.DIGIT1);
+        commandKeyMap.put("QuickUse2",  KeyCode.DIGIT2);
+        commandKeyMap.put("QuickUse3",  KeyCode.DIGIT3);
+        commandKeyMap.put("QuickUse4",  KeyCode.DIGIT4);
 
         originalCommandKeyMap.putAll(commandKeyMap);
     }

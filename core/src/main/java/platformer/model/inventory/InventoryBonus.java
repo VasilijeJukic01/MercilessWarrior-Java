@@ -1,14 +1,16 @@
 package platformer.model.inventory;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
- * Class that represents the cumulative bonuses of all items in the inventory.
- * It provides methods to apply and remove bonuses from items.
+ * Singleton that holds the cumulative bonuses from all equipped items.
+ * Uses a flexible map to handle any type of bonus defined in items.json.
  */
 public class InventoryBonus {
 
     private static volatile InventoryBonus instance = null;
-
-    private double health, defense, attack, stamina, critical, spell, cooldown;
+    private final Map<String, Double> bonuses = new HashMap<>();
 
     private InventoryBonus() {}
 
@@ -24,61 +26,62 @@ public class InventoryBonus {
     }
 
     /**
-     * Applies the bonuses from an item to the inventory.
-     * @param itemBonus the item whose bonuses are to be applied
+     * Adds a bonus value to the total.
+     * @param bonusName The name of the bonus (e.g., "health", "attack").
+     * @param value The value to add (e.g., 5 for 5%).
      */
-    public void applyBonus(ItemBonus itemBonus) {
-        double[] bonuses = itemBonus.getEquipmentBonus();;
-        this.health += bonuses[0];
-        this.defense += bonuses[1];
-        this.attack += bonuses[2];
-        this.stamina += bonuses[3];
-        this.critical += bonuses[4];
-        this.spell += bonuses[5];
-        this.cooldown += bonuses[6];
+    public void addBonus(String bonusName, double value) {
+        bonuses.put(bonusName, bonuses.getOrDefault(bonusName, 0.0) + value);
     }
 
     /**
-     * Removes the bonuses from an item from the inventory.
-     * @param itemBonus the item whose bonuses are to be removed
+     * Removes a bonus value from the total.
+     * @param bonusName The name of the bonus.
+     * @param value The value to remove.
      */
-    public void removeBonus(ItemBonus itemBonus) {
-        double[] bonuses = itemBonus.getEquipmentBonus();
-        this.health -= bonuses[0];
-        this.defense -= bonuses[1];
-        this.attack -= bonuses[2];
-        this.stamina -= bonuses[3];
-        this.critical -= bonuses[4];
-        this.spell -= bonuses[5];
-        this.cooldown -= bonuses[6];
+    public void removeBonus(String bonusName, double value) {
+        bonuses.put(bonusName, bonuses.getOrDefault(bonusName, 0.0) - value);
+    }
+
+    /**
+     * Gets the total value for a specific bonus.
+     * @param bonusName The name of the bonus.
+     * @return The total bonus value as a decimal (e.g., 5% is returned as 0.05).
+     */
+    public double getBonus(String bonusName) {
+        return bonuses.getOrDefault(bonusName.toLowerCase(), 0.0) / 100.0;
     }
 
     public double getHealth() {
-        return health/100;
+        return getBonus("health");
     }
 
     public double getDefense() {
-        return defense/100;
+        return getBonus("defense");
     }
 
     public double getAttack() {
-        return attack/100;
+        return getBonus("attack");
     }
 
     public double getStamina() {
-        return stamina/100;
+        return getBonus("stamina");
     }
 
     public double getCritical() {
-        return critical/100;
+        return getBonus("critical");
     }
 
     public double getSpell() {
-        return spell/100;
+        return getBonus("spell");
     }
 
     public double getCooldown() {
-        return cooldown/100;
+        return getBonus("cooldown");
+    }
+
+    public void reset() {
+        bonuses.clear();
     }
 
 }

@@ -1,10 +1,13 @@
 package platformer.model.inventory.handlers;
 
+import platformer.model.inventory.InventoryBonus;
 import platformer.model.inventory.InventoryItem;
+import platformer.model.inventory.ItemData;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Handles the equipment in the inventory system.
@@ -13,27 +16,21 @@ import java.util.Map;
 public class EquipmentHandler {
 
     private final InventoryItem[] equipped = new InventoryItem[6];
-    private final Map<String, Integer> equipment;
-
-    private final BonusHandler bonusHandler;
+    private final Map<String, Integer> equipmentSlots;
 
     public EquipmentHandler() {
-        this.equipment = new HashMap<>();
-        this.bonusHandler = new BonusHandler();
-        initEquipment();
+        this.equipmentSlots = new HashMap<>();
+        initEquipmentSlots();
     }
 
-    /**
-     * Initializes the equipment map with predefined equipment slots.
-     */
-    private void initEquipment() {
-        equipment.put("Helmet",     0);
-        equipment.put("Armor",      2);
-        equipment.put("Bracelets",  4);
-        equipment.put("Trousers",   1);
-        equipment.put("Ring",       3);
-        equipment.put("Charm",      3);
-        equipment.put("Boots",      5);
+    private void initEquipmentSlots() {
+        equipmentSlots.put("Helmet", 0);
+        equipmentSlots.put("Trousers", 1);
+        equipmentSlots.put("Armor", 2);
+        equipmentSlots.put("Ring", 3);
+        equipmentSlots.put("Charm", 3);
+        equipmentSlots.put("Bracelets", 4);
+        equipmentSlots.put("Boots", 5);
     }
 
     /**
@@ -47,47 +44,69 @@ public class EquipmentHandler {
     public void equipItem(BackpackHandler backpackHandler, int index) {
         List<InventoryItem> backpack = backpackHandler.getBackpack();
         if (index >= backpack.size()) return;
-        if (!backpack.get(index).getItemType().canEquip()) return;
-        addToEquipment(backpack.get(index), equipment);
-        bonusHandler.applyBonus(backpack.get(index).getItemType());
-        backpackHandler.dropItem(index);
+        InventoryItem itemToEquip = backpack.get(index);
+        ItemData data = itemToEquip.getData();
+        if (data == null || data.equip == null || !data.equip.canEquip) return;
+        Optional<Integer> slotIndexOptional = getSlotIndexForItem(data.equip.slot);
+        if (slotIndexOptional.isEmpty()) return;
+        int slotIndex = slotIndexOptional.get();
+
+        // If slot is already occupied, we should unequip the existing item
+        if (equipped[slotIndex] != null) {
+            unequipItem(slotIndex, backpackHandler);
+        }
+
+        equipped[slotIndex] = itemToEquip;
+        applyBonus(itemToEquip);
+        backpackHandler.dropItem(index, true);
     }
 
     /**
-     * Unequips an item from the equipment and adds it back to the backpack.
-     * The bonus associated with the item type is also removed.
+     * Unequips an item from the equipment.
+     * The item is removed from the equipment and added back to the backpack.
+     * If dropFromBackpack is true, the item is dropped from the backpack.
      *
      * @param index The index of the item in the equipment to be unequipped.
-     * @param backpack The BackpackHandler instance used to manage backpack-related operations.
+     * @param backpackHandler The BackpackHandler instance used to manage backpack-related operations.
      */
-    public void unequipItem(int index, BackpackHandler backpack) {
-        if (index >= equipped.length) return;
-        if (equipped[index] == null) return;
-        bonusHandler.removeBonus(equipped[index].getItemType());
-        equipped[index].addAmount(1);
-        backpack.addItemAmountToBackpack(equipped[index], 1);
+    public void unequipItem(int index, BackpackHandler backpackHandler) {
+        if (index >= equipped.length || equipped[index] == null) return;
+
+        InventoryItem itemToUnequip = equipped[index];
+        removeBonus(itemToUnequip);
+        backpackHandler.addItemToBackpack(itemToUnequip);
         equipped[index] = null;
     }
 
+    private void applyBonus(InventoryItem item) {
+        ItemData.EquipmentData equipData = item.getData().equip;
+        if (equipData != null && equipData.bonuses != null) {
+            equipData.bonuses.forEach(InventoryBonus.getInstance()::addBonus);
+        }
+    }
+
+    private void removeBonus(InventoryItem item) {
+        ItemData.EquipmentData equipData = item.getData().equip;
+        if (equipData != null && equipData.bonuses != null) {
+            equipData.bonuses.forEach(InventoryBonus.getInstance()::removeBonus);
+        }
+    }
+
     /**
-     * Adds an item to the equipment.
-     * The item is added to the slot that matches its type.
+     * Retrieves the index of the equipment slot for a given slot name.
+     * The index is determined by looking up the slot name in the equipmentSlots.
      *
-     * @param item The item to be added to the equipment.
-     * @param equipment The map of equipment slots.
+     * @param slotName The name of the slot (e.g., "Helmet", "Armor").
+     * @return An Optional containing the slot index if found, otherwise an empty Optional.
      */
-    private void addToEquipment(InventoryItem item, Map<String, Integer> equipment) {
-        String name = item.getItemType().getName();
-        equipment.keySet().stream()
-                .filter(name::contains)
-                .findFirst()
-                .map(equipment::get).ifPresent(index -> equipped[index] = item);
+    private Optional<Integer> getSlotIndexForItem(String slotName) {
+        return Optional.ofNullable(equipmentSlots.get(slotName));
     }
 
     public void reset() {
         for (int i = 0; i < equipped.length; i++) {
             if (equipped[i] != null) {
-                bonusHandler.removeBonus(equipped[i].getItemType());
+                removeBonus(equipped[i]);
                 equipped[i] = null;
             }
         }

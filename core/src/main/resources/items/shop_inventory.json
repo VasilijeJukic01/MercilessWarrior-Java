@@ -1,0 +1,234 @@
+{
+  "DEFAULT_SHOP": [
+    {
+      "itemId": "HEALTH_POTION",
+      "stock": 10,
+      "cost": 10
+    },
+    {
+      "itemId": "STAMINA_POTION",
+      "stock": 6,
+      "cost": 12
+    },
+    {
+      "itemId": "IRON_ORE",
+      "stock": 25,
+      "cost": 15
+    },
+    {
+      "itemId": "SILVER_ORE",
+      "stock": 25,
+      "cost": 20
+    },
+    {
+      "itemId": "COPPER_ORE",
+      "stock": 25,
+      "cost": 10
+    },
+    {
+      "itemId": "AMETHYST_ORE",
+      "stock": 5,
+      "cost": 30
+    },
+    {
+      "itemId": "SONIC_QUARTZ_ORE",
+      "stock": 3,
+      "cost": 45
+    },
+    {
+      "itemId": "MAGMA_ORE",
+      "stock": 4,
+      "cost": 50
+    },
+    {
+      "itemId": "AZURELITE_ORE",
+      "stock": 2,
+      "cost": 100
+    },
+    {
+      "itemId": "ELECTRICITE_ORE",
+      "stock": 1,
+      "cost": 250
+    },
+    {
+      "itemId": "ROSALLIUM_ORE",
+      "stock": 1,
+      "cost": 270
+    },
+    {
+      "itemId": "ROCK_SHARD",
+      "stock": 50,
+      "cost": 2
+    },
+    {
+      "itemId": "JADE_SHARD",
+      "stock": 15,
+      "cost": 20
+    },
+    {
+      "itemId": "GOLD_ORE",
+      "stock": 10,
+      "cost": 50
+    },
+    {
+      "itemId": "CRIMSON_CRYSTAL",
+      "stock": 5,
+      "cost": 60
+    },
+    {
+      "itemId": "EMBER_CRYSTAL",
+      "stock": 5,
+      "cost": 80
+    },
+    {
+      "itemId": "AETHERIUM_CRYSTAL",
+      "stock": 3,
+      "cost": 360
+    },
+    {
+      "itemId": "STORM_FORGED_CRYSTAL",
+      "stock": 3,
+      "cost": 360
+    },
+    {
+      "itemId": "SOUL_GEM_FRAGMENT",
+      "stock": 2,
+      "cost": 400
+    },
+    {
+      "itemId": "CELESTIAL_SHARD",
+      "stock": 1,
+      "cost": 1000
+    },
+    {
+      "itemId": "OBSIDIAN_SHARD",
+      "stock": 20,
+      "cost": 36
+    },
+    {
+      "itemId": "SERPENTINE_GEM",
+      "stock": 15,
+      "cost": 45
+    },
+    {
+      "itemId": "DRAGONSCALE_SHARD",
+      "stock": 2,
+      "cost": 700
+    },
+    {
+      "itemId": "FROST_ORE",
+        "stock": 30,
+        "cost": 20
+    },
+    {
+      "itemId": "HELMET_WARRIOR",
+      "stock": 1,
+      "cost": 80
+    },
+    {
+      "itemId": "ARMOR_WARRIOR",
+      "stock": 1,
+      "cost": 100
+    },
+    {
+      "itemId": "BRACELETS_WARRIOR",
+      "stock": 1,
+      "cost": 70
+    },
+    {
+      "itemId": "TROUSERS_WARRIOR",
+      "stock": 1,
+      "cost": 80
+    },
+    {
+      "itemId": "BOOTS_WARRIOR",
+      "stock": 1,
+      "cost": 70
+    },
+    {
+      "itemId": "SUN_KISSED_BERRY",
+      "stock": 15,
+      "cost": 5
+    },
+    {
+      "itemId": "WHISPER_VINE_BERRY",
+      "stock": 10,
+      "cost": 8
+    },
+    {
+      "itemId": "FROST_THISTLE_BERRY",
+      "stock": 8,
+      "cost": 15
+    },
+    {
+      "itemId": "GLIMMER_ROOT_BERRY",
+      "stock": 8,
+      "cost": 12
+    },
+    {
+      "itemId": "GRAVE_WORT_BERRY",
+      "stock": 5,
+      "cost": 20
+    },
+    {
+      "itemId": "MENDERS_BERRY",
+      "stock": 3,
+      "cost": 35
+    },
+    {
+      "itemId": "WILD_GRASS",
+      "stock": 25,
+      "cost": 2
+    },
+    {
+      "itemId": "CAVERN_BEANS",
+      "stock": 20,
+      "cost": 6
+    },
+    {
+      "itemId": "GOBLINS_IVY",
+      "stock": 10,
+      "cost": 10
+    },
+    {
+      "itemId": "FAE_LEAF",
+      "stock": 10,
+      "cost": 24
+    },
+    {
+      "itemId": "GHOST_LEAF",
+      "stock": 8,
+      "cost": 30
+    },
+    {
+      "itemId": "WITCHS_WORT",
+      "stock": 8,
+      "cost": 36
+    },
+    {
+      "itemId": "FROST_BLOOM_PETALS",
+      "stock": 5,
+      "cost": 40
+    },
+    {
+      "itemId": "BLOOD_VEIN_LEAF",
+      "stock": 3,
+      "cost": 90
+    },
+    {
+      "itemId": "GLOOMSHROOM",
+      "stock": 3,
+      "cost": 100
+    },
+    {
+      "itemId": "VOID_GRAPES",
+      "stock": 2,
+      "cost": 140
+    },
+    {
+      "itemId": "SCREAMING_MANDRAKE",
+      "stock": 1,
+      "cost": 200
+    }
+  ]
+}

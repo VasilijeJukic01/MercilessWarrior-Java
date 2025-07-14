@@ -4,8 +4,8 @@ import platformer.model.entities.enemies.EnemyType;
 import platformer.model.gameObjects.GameObject;
 import platformer.model.gameObjects.ObjType;
 import platformer.model.inventory.InventoryItem;
-import platformer.model.inventory.ItemType;
-import platformer.utils.Utils;
+import platformer.model.inventory.ItemData;
+import platformer.model.inventory.ItemDatabase;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -20,11 +20,11 @@ public class Loot extends GameObject {
 
     private boolean active;
     private final List<InventoryItem> items = new ArrayList<>();
-    private static final Map<EnemyType, List<ItemType>> lootMap = Map.of(
-            EnemyType.SKELETON, List.of(ItemType.COPPER, ItemType.IRON),
-            EnemyType.GHOUL, List.of(ItemType.COPPER, ItemType.SILVER, ItemType.WRAITH_ESSENCE),
-            EnemyType.KNIGHT, List.of(ItemType.SONIC_QUARTZ, ItemType.IRON),
-            EnemyType.WRAITH, List.of(ItemType.COPPER, ItemType.SILVER, ItemType.WRAITH_ESSENCE)
+    private static final Map<EnemyType, List<String>> lootMap = Map.of(
+            EnemyType.SKELETON, List.of("COPPER_ORE", "IRON_ORE"),
+            EnemyType.GHOUL, List.of("COPPER_ORE", "SILVER_ORE", "WRAITH_ESSENCE"),
+            EnemyType.KNIGHT, List.of("SONIC_QUARTZ_ORE", "IRON_ORE"),
+            EnemyType.WRAITH, List.of("COPPER_ORE", "SILVER_ORE", "WRAITH_ESSENCE")
     );
 
     public Loot(ObjType objType, int xPos, int yPos, EnemyType enemyType) {
@@ -48,26 +48,28 @@ public class Loot extends GameObject {
 
     private void generateStandardLoot(EnemyType enemyType) {
         Random rand = new Random();
-        for (ItemType itemType : lootMap.get(enemyType)) {
+        List<String> possibleLoot = lootMap.get(enemyType);
+        if (possibleLoot == null) return;
+
+        for (String itemId : possibleLoot) {
             int chance = rand.nextInt(100);
             if (chance < 70) {
+                ItemData itemData = ItemDatabase.getInstance().getItemData(itemId);
+                if (itemData == null) continue;
                 int amount = 0;
-                switch (itemType.getRarity()) {
+                switch (itemData.rarity) {
                     case COMMON: amount = rand.nextInt(8); break;
                     case UNCOMMON: amount = rand.nextInt(4); break;
                     case RARE: amount = rand.nextInt(2); break;
                     default: break;
                 }
-                if (amount < 1) continue;
-                BufferedImage img = Utils.getInstance().importImage(itemType.getImg(), -1, -1);
-                items.add(new InventoryItem(itemType, img, amount));
+                if (amount >= 1) items.add(new InventoryItem(itemId, amount));
             }
         }
     }
 
     private void generateBossLoot() {
-        BufferedImage img = Utils.getInstance().importImage(ItemType.CHARM_THUNDERBOLT.getImg(), -1, -1);
-        items.add(new InventoryItem(ItemType.CHARM_THUNDERBOLT, img, 1));
+        items.add(new InventoryItem("CHARM_THUNDERBOLT", 1));
     }
 
     @Override
@@ -88,8 +90,8 @@ public class Loot extends GameObject {
         if (active) {
             g.setColor(Color.WHITE);
             g.setFont(new Font("Arial", Font.BOLD, FONT_MEDIUM));
-            int infoX = (int)(hitBox.x - xLevelOffset);
-            int infoY = (int)(hitBox.y - yLevelOffset - 5 * SCALE);
+            int infoX = (int)(hitBox.x - xLevelOffset + 2 * SCALE);
+            int infoY = (int)(hitBox.y - yLevelOffset);
             g.drawString("LOOT", infoX, infoY);
         }
     }

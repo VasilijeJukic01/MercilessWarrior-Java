@@ -53,6 +53,8 @@ public class DustParticle {
             case SW_AURA_CRACKLE -> initAuraCrackle(x, y, size);
             case SW_DASH_SLASH -> initDashSlash();
             case JUMP_PAD -> initJumpPad();
+            case THUNDERBOLT_AURA -> initMythicAura(x, y, size);
+            case HERB_CUT -> initHerbCut();
             default -> initDefault(x, y, size);
         }
     }
@@ -232,6 +234,39 @@ public class DustParticle {
         this.particleColor = new Color(57, 211, 228);
     }
 
+    private void initMythicAura(int x, int y, int size) {
+        Random rand = new Random();
+        float r = rand.nextFloat();
+        if (r < 0.33f) this.particleColor = new Color(6, 2, 151, 150);
+        else if (r < 0.66f) this.particleColor = new Color(76, 221, 237, 150);
+        else this.particleColor = new Color(233, 9, 226, 150);
+        this.currentAlpha = 0.0f;
+        this.alphaFadeSpeed = -0.015f;
+        double radius = (rand.nextDouble() * 20 + 25) * SCALE;
+        this.angle = rand.nextDouble() * 2 * Math.PI;
+        this.offset = new Point2D.Double(radius, 0);
+        this.particleShape = new Rectangle2D.Double(x, y, size, size);
+        this.gravity = 0;
+        this.xSpeed = 0.02 + rand.nextDouble() * 0.02;
+        this.ySpeed = 0;
+        this.pulsePhase = rand.nextDouble() * Math.PI * 2;
+    }
+
+    private void initHerbCut() {
+        Random rand = new Random();
+        double angle = rand.nextDouble() * 2 * Math.PI;
+        double speed = (rand.nextDouble() * 1.0 + 0.3) * SCALE;
+        this.xSpeed = Math.cos(angle) * speed;
+        this.ySpeed = Math.sin(angle) * speed;
+        this.gravity = 0.04 * SCALE;
+        this.alphaFadeSpeed = 0.02f;
+        this.particleColor = new Color(50, 140, 50);
+        this.currentAlpha = 1.0f;
+        double particleSize = (rand.nextInt(5) + 4) * SCALE;
+        this.particleShape.width = particleSize;
+        this.particleShape.height = particleSize;
+    }
+
     // Core
     public void update() {
         if (!active) return;
@@ -253,6 +288,19 @@ public class DustParticle {
                 particleShape.y = cY + currentRadius * Math.sin(angle);
                 pulsePhase += 0.1;
                 if (currentAlpha >= 0.9f) alphaFadeSpeed = 0.03f;
+                break;
+            case THUNDERBOLT_AURA:
+                if (target == null) {
+                    active = false;
+                    return;
+                }
+                angle += xSpeed;
+                centerX = target.getHitBox().getCenterX();
+                centerY = target.getHitBox().getCenterY();
+                double verticalBob = Math.sin(angle * 2 + pulsePhase) * (offset.x / 4);
+                particleShape.x = centerX + offset.x * Math.cos(angle);
+                particleShape.y = centerY + offset.x * Math.sin(angle) + verticalBob;
+                if (currentAlpha >= 0.9f) alphaFadeSpeed = 0.015f;
                 break;
             default:
                 particleShape.x += xSpeed;

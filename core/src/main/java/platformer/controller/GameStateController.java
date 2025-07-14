@@ -9,6 +9,7 @@ import platformer.model.entities.AttackState;
 import platformer.model.entities.player.Player;
 import platformer.model.entities.player.PlayerAction;
 import platformer.model.gameObjects.GameObject;
+import platformer.model.gameObjects.objects.Herb;
 import platformer.state.GameState;
 import platformer.state.PlayingState;
 
@@ -83,6 +84,10 @@ public class GameStateController {
             if (isBreakableState(gameState.getActiveState())) gameState.setOverlay(null);
             else gameState.setOverlay(pause(gameState.getActiveState()));
         });
+        initAction(pressActions, "QuickUse1", () -> player.getInventory().useQuickSlotItem(0, player));
+        initAction(pressActions, "QuickUse2", () -> player.getInventory().useQuickSlotItem(1, player));
+        initAction(pressActions, "QuickUse3", () -> player.getInventory().useQuickSlotItem(2, player));
+        initAction(pressActions, "QuickUse4", () -> player.getInventory().useQuickSlotItem(3, player));
     }
 
     private void initReleaseActions() {
@@ -192,11 +197,15 @@ public class GameStateController {
     }
 
     private void handleInteraction(String id) {
-        if (Objects.equals(id, "Loot")) {
+        if (Objects.equals(id, "Loot") || Objects.equals(id, "Container")) {
             gameState.setOverlay(PlayingState.LOOTING);
         }
         else if (Objects.equals(id, "Table")) {
             gameState.setOverlay(PlayingState.CRAFTING);
+        }
+        else if (Objects.equals(id, "Herb")) {
+            GameObject herb = gameState.getObjectManager().getIntersection();
+            if (herb instanceof Herb) gameState.getObjectManager().harvestHerb((Herb)herb);
         }
         else activateDialogue(id);
     }

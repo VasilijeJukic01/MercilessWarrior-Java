@@ -34,6 +34,7 @@ public class LightManager {
     private float[] gradientFraction;
 
     private int animTick = 0, alpha = 130;
+    private double pulseTimer = 0.0;
 
     public LightManager(GameState gameState) {
         this.gameState = gameState;
@@ -80,6 +81,7 @@ public class LightManager {
     // Update
     public void update() {
         if (alpha < 130) updateFading();
+        updatePulse();
     }
 
     private void updateFading() {
@@ -87,6 +89,17 @@ public class LightManager {
         if (animTick >= LIGHT_ANIM_SPEED) {
             animTick = 0;
             alpha += 20;
+        }
+    }
+
+    /**
+     * Updates the pulse timer, which drives the sine wave for the light pulsation effect.
+     * The timer increments in each frame, and resets to avoid growing indefinitely.
+     */
+    private void updatePulse() {
+        pulseTimer += 0.02;
+        if (pulseTimer > Math.PI * 2) {
+            pulseTimer -= Math.PI * 2;
         }
     }
 
@@ -139,13 +152,16 @@ public class LightManager {
     }
 
     private void candleFilter(Graphics2D g2d, int xLevelOffset, int yLevelOffset) {
+        double pulseScale = 0.975 + 0.025 * Math.sin(pulseTimer);
         List<Candle> candles = gameState.getObjectManager().getObjects(Candle.class);
         for (Candle candle : candles) {
-            int candleX = (int) (candle.getHitBox().x + candle.getHitBox().width / 2 - xLevelOffset) - CANDLE_LIGHT_RADIUS;
-            int candleY = (int) (candle.getHitBox().y + candle.getHitBox().height / 2 - yLevelOffset) - CANDLE_LIGHT_RADIUS;
-            g2d.drawImage(whiteRadialLight, candleX, candleY, null);
+            int glowWidth = (int) (2 * CANDLE_LIGHT_RADIUS * pulseScale);
+            int glowHeight = (int) (2 * CANDLE_LIGHT_RADIUS * pulseScale);
+            int candleX = (int) (candle.getHitBox().x + candle.getHitBox().width / 2 - xLevelOffset) - glowWidth / 2;
+            int candleY = (int) (candle.getHitBox().y + candle.getHitBox().height / 2 - yLevelOffset) - glowHeight / 2;
+            g2d.drawImage(whiteRadialLight, candleX, candleY, glowWidth, glowHeight, null);
             gameState.getObjectManager().candleRender(g2d, xLevelOffset, yLevelOffset, candle);
-            g2d.drawImage(orangeLight, candleX, candleY, null);
+            g2d.drawImage(orangeLight, candleX, candleY, glowWidth, glowHeight, null);
         }
     }
 

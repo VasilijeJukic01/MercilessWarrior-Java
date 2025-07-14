@@ -29,8 +29,8 @@ public class AudioOptions {
     private void init() {
         this.sfxBtn = new AudioButton(SFX_X, SFX_Y, SOUND_BTN_SIZE, SOUND_BTN_SIZE, ButtonType.SFX);
         this.musicBtn = new AudioButton(MUSIC_X, MUSIC_Y, SOUND_BTN_SIZE, SOUND_BTN_SIZE, ButtonType.MUSIC);
-        this.musicSliderButton = new SliderButton(MUSIC_SLIDER_BTN_X, MUSIC_SLIDER_BTN_Y, SOUND_BTN_SIZE, SOUND_BTN_SIZE, true);
-        this.sfxSliderButton = new SliderButton(SFX_SLIDER_BTN_X, SFX_SLIDER_BTN_Y, SOUND_BTN_SIZE, SOUND_BTN_SIZE, false);
+        this.musicSliderButton = new SliderButton(MUSIC_SLIDER_BTN_X, MUSIC_SLIDER_BTN_Y, SOUND_BTN_SIZE, SOUND_BTN_SIZE);
+        this.sfxSliderButton = new SliderButton(SFX_SLIDER_BTN_X, SFX_SLIDER_BTN_Y, SOUND_BTN_SIZE, SOUND_BTN_SIZE);
     }
 
     public void update() {

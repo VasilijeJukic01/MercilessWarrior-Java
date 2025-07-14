@@ -30,23 +30,46 @@ public class GameSlot {
     }
 
     public void render(Graphics g) {
-        Color slotColor = (!databaseSlot) ? SAVE_SLOT_COLOR : DATABASE_SLOT_COLOR;
-        g.setColor(slotColor);
-        g.fillRect(xPos, yPos, GAME_SLOT_WID, GAME_SLOT_HEI);
+        Graphics2D g2d = (Graphics2D) g;
+        renderSlotRectangle(g2d);
+        renderSelectionBorder(g2d);
 
         if (!databaseSlot) renderSlotInfo(g);
         else renderDatabaseSlotInfo(g);
 
-        if (selected) g.drawRect(xPos, yPos, GAME_SLOT_WID, GAME_SLOT_HEI);
+        g2d.setColor(Color.WHITE);
+        g2d.setStroke(new BasicStroke(1));
+        g2d.drawRoundRect(xPos, yPos, GAME_SLOT_WID, GAME_SLOT_HEI, 10, 10);
+    }
+
+    private void renderSlotRectangle(Graphics2D g2d) {
+        GradientPaint gp;
+        if (databaseSlot)
+            gp = new GradientPaint(xPos, yPos, DATABASE_SLOT_BG_START, xPos, yPos + GAME_SLOT_HEI, DATABASE_SLOT_BG_END);
+        else if (account != null)
+            gp = new GradientPaint(xPos, yPos, SAVE_SLOT_BG_START, xPos, yPos + GAME_SLOT_HEI, SAVE_SLOT_BG_END);
+        else
+            gp = new GradientPaint(xPos, yPos, EMPTY_SLOT_BG_START, xPos, yPos + GAME_SLOT_HEI, EMPTY_SLOT_BG_END);
+        g2d.setPaint(gp);
+        g2d.fillRoundRect(xPos, yPos, GAME_SLOT_WID, GAME_SLOT_HEI, 10, 10);
+    }
+
+    private void renderSelectionBorder(Graphics2D g2d) {
+        if (selected) {
+            g2d.setColor(QUEST_SELECTED_GLOW_COLOR);
+            g2d.setStroke(new BasicStroke(3));
+            g2d.drawRoundRect(xPos - 1, yPos - 1, GAME_SLOT_WID + 2, GAME_SLOT_HEI + 2, 12, 12);
+        }
     }
 
     private void renderSlotInfo(Graphics g) {
-        g.setColor(Color.WHITE);
         g.setFont(new Font("Arial", Font.BOLD, FONT_MEDIUM));
         if (account == null) {
-            g.drawString("Empty", xPos + (int)(GAME_SLOT_WID / 2.3), yPos + (int)(GAME_SLOT_HEI / 2.1));
+            g.setColor(Color.GRAY);
+            g.drawString("Empty", xPos + (int)(GAME_SLOT_WID / 2.3), yPos + (int)(GAME_SLOT_HEI / 1.75));
         }
         else {
+            g.setColor(Color.WHITE);
             g.drawString("Lvl: "+account.getLevel(), xPos + (int)(SCALE * 130), yPos + (int)(SCALE * 15));
             g.drawString("Exp: "+account.getExp(), xPos + (int)(SCALE * 130), yPos + (int)(SCALE * 30));
             g.drawString("Playtime: "+(account.getPlaytime()/3600)+"h", xPos + (int)(SCALE * 10), yPos + (int)(SCALE * 15));
@@ -55,13 +78,14 @@ public class GameSlot {
     }
 
     private void renderDatabaseSlotInfo(Graphics g) {
-        g.setColor(Color.WHITE);
         g.setFont(new Font("Arial", Font.BOLD, FONT_MEDIUM));
         if (account.getName().equalsIgnoreCase("Default")) {
-            g.drawString("Unregistered", xPos + (int)(GAME_SLOT_WID / 2.8), yPos + (int)(GAME_SLOT_HEI / 2.1));
+            g.setColor(Color.GRAY);
+            g.drawString("Unregistered", xPos + (int)(GAME_SLOT_WID / 2.8), yPos + (int)(GAME_SLOT_HEI / 1.75));
         }
         else {
-            g.drawString("Database", xPos + (int)(SCALE * 10), yPos + (int)(SCALE * 15));
+            g.setColor(Color.WHITE);
+            g.drawString("Cloud Save", xPos + (int)(SCALE * 10), yPos + (int)(SCALE * 15));
             g.drawString("Lvl: "+account.getLevel(), xPos + (int)(SCALE * 130), yPos + (int)(SCALE * 15));
             g.drawString("Exp: "+account.getExp(), xPos + (int)(SCALE * 130), yPos + (int)(SCALE * 30));
         }

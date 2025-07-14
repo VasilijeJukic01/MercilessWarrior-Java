@@ -8,7 +8,6 @@ import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
 import platformer.model.entities.effects.EffectManager;
 import platformer.model.entities.effects.lighting.LightManager;
-import platformer.model.entities.effects.particles.AmbientParticle;
 import platformer.model.entities.enemies.EnemyManager;
 import platformer.model.entities.player.Player;
 import platformer.model.entities.player.PlayerAction;
@@ -31,12 +30,9 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
-import java.awt.image.BufferedImage;
-import java.util.Arrays;
 import java.util.Random;
 
 import static platformer.constants.Constants.*;
-import static platformer.constants.FilePaths.BACKGROUND_1;
 
 /**
  * State of the game when the player is actively playing the game.
@@ -45,7 +41,6 @@ import static platformer.constants.FilePaths.BACKGROUND_1;
 public class GameState extends AbstractState implements State, Subscriber {
 
     private Player player;
-    private BufferedImage background;
 
     private final GameStateController gameStateController;
 
@@ -97,7 +92,6 @@ public class GameState extends AbstractState implements State, Subscriber {
 
     // Init
     private void init() {
-        this.background = Utils.getInstance().importImage(BACKGROUND_1, GAME_WIDTH, GAME_HEIGHT);
         this.bossInterface = new BossInterface();
         initManagers();
         initPlayer();
@@ -109,6 +103,7 @@ public class GameState extends AbstractState implements State, Subscriber {
     private void initManagers() {
         this.perksManager = new PerksManager();
         this.levelManager = new LevelManager(this);
+        this.effectManager = new EffectManager();
         this.enemyManager = new EnemyManager(this);
         this.objectManager = new ObjectManager(this);
         this.overlayManager = new OverlayManager(this);
@@ -118,7 +113,6 @@ public class GameState extends AbstractState implements State, Subscriber {
         this.questManager = new QuestManager(this);
         this.minimapManager = new MinimapManager(this);
         this.tutorialManager = new TutorialManager(this);
-        this.effectManager = new EffectManager();
         this.eventHandler = new EventHandler(this, this.effectManager);
     }
 
@@ -288,7 +282,8 @@ public class GameState extends AbstractState implements State, Subscriber {
             g2d.translate(shakeOffsetX, shakeOffsetY);
         }
 
-        g.drawImage(background, 0, 0, null);
+        g.drawImage(levelManager.getCurrentBackground(), 0, 0, null);
+        effectManager.renderAmbientEffects(g);
         this.levelManager.render(g, xLevelOffset, yLevelOffset);
         this.objectManager.render(g, xLevelOffset, yLevelOffset);
         this.lightManager.render(g, xLevelOffset, yLevelOffset);
@@ -322,13 +317,13 @@ public class GameState extends AbstractState implements State, Subscriber {
     private void handleGameState() {
         try {
             checkLevelExit();
-            updateParticles();
             updateManagers();
         }
         catch (Exception ignored) {}
     }
 
     private void checkLevelExit() {
+        if (player.checkAction(PlayerAction.DASH)) return;
         int exitStatus = Utils.getInstance().isEntityOnExit(levelManager.getCurrentLevel(), player.getHitBox());
 
         if (exitStatus == RIGHT_EXIT) goToRightLevel();
@@ -342,10 +337,6 @@ public class GameState extends AbstractState implements State, Subscriber {
         boolean gameOver = player.checkAction(PlayerAction.GAME_OVER);
         if (dying) setOverlay(PlayingState.DYING);
         if (gameOver) setOverlay(PlayingState.GAME_OVER);
-    }
-
-    private void updateParticles() {
-        Arrays.stream(levelManager.getParticles()).forEach(AmbientParticle::update);
     }
 
     private void updateManagers() {

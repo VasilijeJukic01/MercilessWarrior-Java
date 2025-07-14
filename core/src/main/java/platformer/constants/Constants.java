@@ -106,26 +106,8 @@ public final class Constants {
     public static final double GHOUL_DASH_CD = 6;
 
     // Shop Constants
-    public static final int HEALTH_COST = 10;
-    public static final int STAMINA_COST = 12;
     public static final int HEALTH_VAL = 40;
     public static final int STAMINA_VAL = 40;
-
-    public static final int IRON_COST = 15;
-    public static final int SILVER_COST = 20;
-    public static final int COPPER_COST = 10;
-    public static final int AMETHYST_COST = 30;
-    public static final int SONIC_QUARTZ_COST = 45;
-    public static final int AZURELITE_COST = 100;
-    public static final int ELECTRICITE_COST = 250;
-    public static final int MAGMA_COST = 50;
-    public static final int ROSALLIUM_COST = 270;
-
-    public static final int HELMET_WARRIOR_COST = 80;
-    public static final int ARMOR_WARRIOR_COST = 100;
-    public static final int BRACELETS_WARRIOR_COST = 70;
-    public static final int TROUSERS_WARRIOR_COST = 80;
-    public static final int BOOTS_WARRIOR_COST = 70;
 
     // Level Constants
     public static final int MAX_LEVELS = 4;
@@ -241,6 +223,7 @@ public final class Constants {
     public static final int COIN_HEI = scale(15);
     public static final int COIN_HB_SIZE = scale(10);
     public static final int COIN_OFFSET = scale(3);
+    public static final double COIN_GRAVITY = dScale(0.035);
 
     public static final int SHOP_WID = scale(154);
     public static final int SHOP_HEI = scale(132);
@@ -291,12 +274,12 @@ public final class Constants {
     public static final int CANDLE_OFFSET_X = scale(-8);
     public static final int CANDLE_OFFSET_Y = scale(12);
 
-    public static final int LOOT_WID = scale(32);
-    public static final int LOOT_HEI = scale(24);
-    public static final int LOOT_HB_WID = scale(27);
+    public static final int LOOT_WID = scale(40);
+    public static final int LOOT_HEI = scale(13);
+    public static final int LOOT_HB_WID = scale(36);
     public static final int LOOT_HB_HEI = scale(27);
     public static final int LOOT_OFFSET_X = scale(1);
-    public static final int LOOT_OFFSET_Y = scale(-5);
+    public static final int LOOT_OFFSET_Y = scale(-15);
 
     public static final int TABLE_WID = scale(48);
     public static final int TABLE_HEI = scale(32);
@@ -332,6 +315,13 @@ public final class Constants {
     public static final int JUMP_PAD_HB_HEI = scale(20);
     public static final int JUMP_PAD_OFFSET_X = scale(1);
     public static final int JUMP_PAD_OFFSET_Y = scale(15);
+
+    public static final int HERB_WID = scale(36);
+    public static final int HERB_HEI = scale(48);
+    public static final int HERB_HB_WID = scale(26);
+    public static final int HERB_HB_HEI = scale(28);
+    public static final int HERB_OFFSET_X = scale(6);
+    public static final int HERB_OFFSET_Y = scale(3);
 
     // Projectile Constants
     public static final int ARROW_WID = scale(32);
@@ -393,8 +383,7 @@ public final class Constants {
     public static final int SLIDER_BTN_SIZE = scale(15);
     public static final int SLIDER_WID = scale(150);
     public static final int SLIDER_HEI = scale(30);
-    public static final int SLIDER_MIN_VALUE = scale(365);
-    public static final int SLIDER_MAX_VALUE = scale(507);
+    public static final int SLIDER_LEN = scale(144);
 
     // UI
     public static final int FONT_BIG = scale(20);
@@ -416,6 +405,17 @@ public final class Constants {
     public static final int RUN_DUST_BURST = 1;
     public static final Color DUST_COLOR = new Color(180, 160, 130);
     public static final Color DUST_COLOR_DASH = new Color(220, 220, 255);
+    public static final float DAMAGE_TEXT_Y_SPEED = 0.5f;
+    public static final float DAMAGE_TEXT_FADE_SPEED = 0.02f;
+    public static final float ITEM_TEXT_Y_SPEED = 0.2f;
+    public static final float ITEM_TEXT_FADE_SPEED = 0.015f;
+    public static final int SPELL_HIT_DISPLAY_COOLDOWN = 20;
+    public static final Color DAMAGE_COLOR = new Color(255, 60, 30);
+    public static final Color HEAL_COLOR = new Color(40, 255, 40);
+    public static final Color STAMINA_COLOR = new Color(40, 40, 255);
+    public static final Color CRITICAL_COLOR = new Color(255, 150, 0);
+    public static final Color ITEM_TEXT_COLOR = new Color(255, 255, 255);
+    public static final int FONT_DAMAGE = scale(10);
 
     public static final int PLAYER_LIGHT_RADIUS = scale(75);
     public static final int CANDLE_LIGHT_RADIUS = scale(100);

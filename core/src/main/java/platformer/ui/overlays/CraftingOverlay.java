@@ -1,14 +1,12 @@
 package platformer.ui.overlays;
 
-import platformer.model.gameObjects.objects.Table;
-import platformer.model.inventory.Inventory;
-import platformer.model.inventory.InventoryItem;
-import platformer.model.inventory.ItemType;
+import platformer.animation.Animation;
+import platformer.model.inventory.*;
 import platformer.state.GameState;
-import platformer.ui.buttons.AbstractButton;
 import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.MediumButton;
 import platformer.ui.buttons.SmallButton;
+import platformer.ui.overlays.controller.CraftingViewController;
 import platformer.utils.Utils;
 
 import java.awt.*;
@@ -19,9 +17,9 @@ import java.awt.image.BufferedImage;
 import java.util.List;
 import java.util.*;
 
+import static platformer.constants.AnimConstants.*;
 import static platformer.constants.Constants.*;
-import static platformer.constants.FilePaths.CRAFTING_TXT;
-import static platformer.constants.FilePaths.SLOT_INVENTORY;
+import static platformer.constants.FilePaths.*;
 import static platformer.constants.UI.*;
 
 /**
@@ -30,7 +28,7 @@ import static platformer.constants.UI.*;
  */
 public class CraftingOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
 
-    private final GameState gameState;
+    private final CraftingViewController controller;
 
     private Rectangle2D overlay;
     private BufferedImage craftingText;
@@ -38,16 +36,11 @@ public class CraftingOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
     private final SmallButton[] smallButtons;
 
     private Rectangle2D craftingPanel;
-    private BufferedImage slotImage;
+    private BufferedImage slotImage, coinIcon;
     private Rectangle2D.Double selectedSlot;
-    private int craftingSlot;
-    private int slotNumber;
-
-    private List<Table> tables;
 
     public CraftingOverlay(GameState gameState) {
-        this.gameState = gameState;
-        this.tables = gameState.getObjectManager().getObjects(Table.class);
+        this.controller = new CraftingViewController(gameState, this);
         this.mediumButtons = new MediumButton[1];
         this.smallButtons = new SmallButton[2];
         init();
@@ -65,6 +58,7 @@ public class CraftingOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
         this.craftingText = Utils.getInstance().importImage(CRAFTING_TXT, INV_TEXT_WID, INV_TEXT_HEI);
         this.craftingPanel = new Rectangle2D.Double(BACKPACK_X, BACKPACK_Y, BACKPACK_WID, BACKPACK_HEI);
         this.slotImage = Utils.getInstance().importImage(SLOT_INVENTORY, SLOT_SIZE, SLOT_SIZE);
+        this.coinIcon = Animation.getInstance().loadFromSprite(COIN_SHEET, 1, 1, COIN_WID, COIN_HEI, 0, COIN_W, COIN_H)[0];
     }
 
     private void loadButtons() {
@@ -75,35 +69,14 @@ public class CraftingOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
     }
 
     private void initSelectedSlot() {
-        int xPos = (slotNumber % INVENTORY_SLOT_MAX_ROW) * SLOT_SPACING + BACKPACK_SLOT_X;
-        int yPos = (slotNumber / INVENTORY_SLOT_MAX_ROW) * SLOT_SPACING + BACKPACK_SLOT_Y;
+        int xPos = (controller.getSlotNumber() % INVENTORY_SLOT_MAX_ROW) * SLOT_SPACING + BACKPACK_SLOT_X;
+        int yPos = (controller.getSlotNumber() / INVENTORY_SLOT_MAX_ROW) * SLOT_SPACING + BACKPACK_SLOT_Y;
         this.selectedSlot = new Rectangle2D.Double(xPos, yPos, SLOT_SIZE, SLOT_SIZE);
     }
 
-
-    // Selection
-    private void setSelectedSlot() {
-        this.selectedSlot.x = (slotNumber % INVENTORY_SLOT_MAX_ROW) * SLOT_SPACING + BACKPACK_SLOT_X;
-        int offset = slotNumber / INVENTORY_SLOT_MAX_ROW;
-        this.selectedSlot.y = offset * SLOT_SPACING + BACKPACK_SLOT_Y;
-    }
-
-    private void changeSlot(MouseEvent e) {
-        int x = e.getX(), y = e.getY();
-        for (int i = 0; i < INVENTORY_SLOT_MAX_ROW; i++) {
-            for (int j = 0; j < INVENTORY_SLOT_MAX_COL; j++) {
-                int xStart = i * SLOT_SPACING + BACKPACK_SLOT_X;
-                int xEnd = i * SLOT_SPACING + BACKPACK_SLOT_X + SLOT_SIZE;
-                int yStart = j * SLOT_SPACING + BACKPACK_SLOT_Y;
-                int yEnd = j * SLOT_SPACING + BACKPACK_SLOT_Y + SLOT_SIZE;
-
-                if (x >= xStart && x <= xEnd && y >= yStart && y <= yEnd) {
-                    slotNumber = i + (j * INVENTORY_SLOT_MAX_ROW);
-                    setSelectedSlot();
-                    break;
-                }
-            }
-        }
+    public void updateSelectedSlot() {
+        this.selectedSlot.x = (controller.getSlotNumber() % INVENTORY_SLOT_MAX_ROW) * SLOT_SPACING + BACKPACK_SLOT_X;
+        this.selectedSlot.y = (controller.getSlotNumber() / INVENTORY_SLOT_MAX_ROW) * SLOT_SPACING + BACKPACK_SLOT_Y;
     }
 
     @Override
@@ -144,238 +117,172 @@ public class CraftingOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
         g2d.setColor(Color.WHITE);
         g2d.setStroke(new BasicStroke(1));
         g2d.draw(craftingPanel);
-        int pageNumber = craftingSlot + 1;
+        int pageNumber = controller.getCraftingSlot() + 1;
         g2d.drawString("Page: " + pageNumber, (int) (craftingPanel.getX() + craftingPanel.getWidth() - 40 * SCALE), (int) craftingPanel.getY() - 10);
     }
 
     private void renderCraftingSlots(Graphics g) {
-        for (Table table : tables) {
-            if (!table.isActive()) continue;
-            for (int i = 0; i < INVENTORY_SLOT_MAX_ROW; i++) {
-                for (int j = 0; j < INVENTORY_SLOT_MAX_COL; j++) {
-                    int xPos = i * SLOT_SPACING + BACKPACK_SLOT_X;
-                    int yPos = j * SLOT_SPACING + BACKPACK_SLOT_Y;
-
-                    g.drawImage(slotImage, xPos, yPos, slotImage.getWidth(), slotImage.getHeight(), null);
-                    int slotNumber = (j * INVENTORY_SLOT_MAX_ROW + i) + craftingSlot * (INVENTORY_SLOT_MAX_ROW * INVENTORY_SLOT_MAX_COL);
-                    if (slotNumber < table.getRecipes().size())
-                        renderItem(g, table, slotNumber);
+        List<Recipe> recipes = RecipeManager.getInstance().getRecipes();
+        for (int i = 0; i < INVENTORY_SLOT_MAX_ROW; i++) {
+            for (int j = 0; j < INVENTORY_SLOT_MAX_COL; j++) {
+                int xPos = i * SLOT_SPACING + BACKPACK_SLOT_X;
+                int yPos = j * SLOT_SPACING + BACKPACK_SLOT_Y;
+                g.drawImage(slotImage, xPos, yPos, slotImage.getWidth(), slotImage.getHeight(), null);
+                int currentSlot = (j * INVENTORY_SLOT_MAX_ROW + i) + controller.getCraftingSlot() * (INVENTORY_SLOT_MAX_ROW * INVENTORY_SLOT_MAX_COL);
+                if (currentSlot < recipes.size()) {
+                    renderItem(g, recipes.get(currentSlot));
                 }
             }
-            renderItemInfo(g, table);
         }
-
+        renderItemInfo(g, recipes);
     }
 
-    private void renderItem(Graphics g, Table table, int slotNumber) {
-        List<InventoryItem> items = new ArrayList<>(table.getRecipes().keySet());
-        InventoryItem item = items.get(slotNumber);
+    private void renderItem(Graphics g, Recipe recipe) {
+        ItemData itemData = ItemDatabase.getInstance().getItemData(recipe.getOutput());
+        if (itemData == null) return;
+        BufferedImage itemImage = Utils.getInstance().importImage(itemData.imagePath, -1, -1);
 
-        int xPos = (slotNumber % INVENTORY_SLOT_MAX_ROW) * SLOT_SPACING + BACKPACK_SLOT_X + ITEM_OFFSET_X;
-        int yPos = (slotNumber / INVENTORY_SLOT_MAX_ROW) * SLOT_SPACING + BACKPACK_SLOT_Y + ITEM_OFFSET_Y;
-        g.setColor(item.getItemType().getRarity().getColor());
-        g.fillRect(xPos-(int)(ITEM_OFFSET_X/1.1), yPos-(int)(ITEM_OFFSET_Y/1.1), (int)(SLOT_SIZE/1.06), (int)(SLOT_SIZE/1.06));
-        g.drawImage(item.getModel(), xPos, yPos, ITEM_SIZE, ITEM_SIZE, null);
+        int absoluteSlotNumber = RecipeManager.getInstance().getRecipes().indexOf(recipe);
+        int pageOffset = controller.getCraftingSlot() * (INVENTORY_SLOT_MAX_ROW * INVENTORY_SLOT_MAX_COL);
+        int relativeSlotNumber = absoluteSlotNumber - pageOffset;
+
+        int xPos = (relativeSlotNumber % INVENTORY_SLOT_MAX_ROW) * SLOT_SPACING + BACKPACK_SLOT_X + ITEM_OFFSET_X;
+        int yPos = (relativeSlotNumber / INVENTORY_SLOT_MAX_ROW) * SLOT_SPACING + BACKPACK_SLOT_Y + ITEM_OFFSET_Y;
+
+        g.setColor(itemData.rarity.getColor());
+        g.fillRect(xPos - (int)(ITEM_OFFSET_X / 1.1), yPos - (int)(ITEM_OFFSET_Y / 1.1), (int)(SLOT_SIZE / 1.06), (int)(SLOT_SIZE / 1.06));
+        g.drawImage(itemImage, xPos, yPos, ITEM_SIZE, ITEM_SIZE, null);
     }
 
-    private void renderItemInfo(Graphics g, Table table) {
-        List<InventoryItem> items = new ArrayList<>(table.getRecipes().keySet());
-        if (slotNumber >= items.size()) return;
-        InventoryItem item = items.get(slotNumber);
-        if (item != null) renderItemDescription(g, item, table);
+    private void renderItemInfo(Graphics g, List<Recipe> recipes) {
+        int absoluteSlot = controller.getSlotNumber() + (controller.getCraftingSlot() * (INVENTORY_SLOT_MAX_ROW * INVENTORY_SLOT_MAX_COL));
+        if (absoluteSlot >= recipes.size()) return;
+        Recipe recipe = recipes.get(absoluteSlot);
+        if (recipe != null) renderItemDescription(g, recipe);
     }
 
-    private void renderItemDescription(Graphics g, InventoryItem inventoryItem, Table table) {
-        ItemType item = inventoryItem.getItemType();
-        g.setColor(Color.WHITE);
+    private void renderItemDescription(Graphics g, Recipe recipe) {
+        ItemData itemData = ItemDatabase.getInstance().getItemData(recipe.getOutput());
+        if (itemData == null) return;
+        g.setColor(itemData.rarity.getTextColor());
         g.setFont(new Font("Arial", Font.BOLD, FONT_MEDIUM));
-        g.drawString(item.getName(), CRAFT_VAL_ITEM_NAME_X, CRAFT_VAL_ITEM_NAME_Y);
-        g.drawString("Value: " + item.getSellValue(), CRAFT_VAL_TEXT_X, CRAFT_VAL_TEXT_Y);
+        g.drawString(itemData.name, CRAFT_VAL_ITEM_NAME_X, CRAFT_VAL_ITEM_NAME_Y);
+        g.setColor(INV_TEXT_LABEL);
+        g.drawString("Value: ", CRAFT_VAL_TEXT_X, CRAFT_VAL_TEXT_Y);
+        g.setColor(INV_TEXT_VALUE);
+        String valueText = String.valueOf(itemData.sellValue);
+        g.drawString(valueText, CRAFT_VAL_TEXT_X + g.getFontMetrics().stringWidth("Value: "), CRAFT_VAL_TEXT_Y);
+        g.drawImage(coinIcon, CRAFT_VAL_TEXT_X + g.getFontMetrics().stringWidth("Value: " + valueText) + 2, CRAFT_VAL_TEXT_Y - g.getFontMetrics().getAscent() + 1, (int)(COIN_WID/1.5), (int)(COIN_HEI/1.5), null);
+
+        g.setColor(INV_TEXT_DESC);
         g.setFont(new Font("Arial", Font.PLAIN, FONT_MEDIUM));
-        String[] lines = item.getDescription().split("\n");
+
+        int descriptionMaxWidth = (int) (overlay.getX() + overlay.getWidth() - CRAFT_VAL_ITEM_DESC_X - (10 * SCALE));
+        List<String> wrappedLines = wrapText(itemData.description, descriptionMaxWidth, g.getFontMetrics());
+
         int lineHeight = g.getFontMetrics().getHeight();
         int y = CRAFT_VAL_ITEM_DESC_Y;
-        for (String line : lines) {
+        for (String line : wrappedLines) {
             g.drawString(line, CRAFT_VAL_ITEM_DESC_X, y);
             y += lineHeight;
         }
-        renderResources(g, inventoryItem, table, y);
+        renderResources(g, recipe.getIngredients(), y);
     }
 
-    private void renderResources(Graphics g, InventoryItem item, Table table, int yPos) {
-        List<String> lines = new ArrayList<>(List.of("", "Required Resources: "));
-        Map<ItemType, Integer> resources = table.getRecipes().get(item);
-        for (Map.Entry<ItemType, Integer> entry : resources.entrySet()) {
-            ItemType itemType = entry.getKey();
-            Integer quantity = entry.getValue();
-            lines.add(itemType.getName() + ": " + quantity + "x");
+    private void renderResources(Graphics g, Map<String, Integer> resources, int yPos) {
+        Inventory inventory = controller.getGameState().getPlayer().getInventory();
+        Map<String, Integer> playerItems = new HashMap<>();
+        for (InventoryItem item : inventory.getBackpack()) {
+            playerItems.put(item.getItemId(), item.getAmount());
         }
+
+        g.setFont(new Font("Arial", Font.PLAIN, FONT_MEDIUM));
         int lineHeight = g.getFontMetrics().getHeight();
         int y = yPos;
-        for (String line : lines) {
-            if (line.startsWith("Required Resources:")) {
-                g.setColor(Color.WHITE);
-            }
-            else if (!line.isEmpty()) {
-                String itemName = line.split(":")[0];
-                ItemType itemType = ItemType.valueOf(itemName.toUpperCase().replace(" ", "_").replace("_ORE", ""));
-                g.setColor(itemType.getRarity().getColor());
-            }
-            g.drawString(line, CRAFT_VAL_ITEM_DESC_X, y);
+
+        g.setColor(Color.WHITE);
+        y += lineHeight;
+        g.drawString("Required Resources:", CRAFT_VAL_ITEM_DESC_X, y);
+        y += lineHeight;
+
+        for (Map.Entry<String, Integer> entry : resources.entrySet()) {
+            String requiredId = entry.getKey();
+            ItemData requiredData = ItemDatabase.getInstance().getItemData(requiredId);
+            if (requiredData == null) continue;
+
+            int requiredAmount = entry.getValue();
+            int playerAmount = playerItems.getOrDefault(requiredId, 0);
+
+            g.setColor(requiredData.rarity.getTextColor());
+            String resourceText = " - " + requiredData.name + ": " + requiredAmount + "x";
+            g.drawString(resourceText, CRAFT_VAL_ITEM_DESC_X, y);
+
+            Color haveColor = (playerAmount >= requiredAmount) ? new Color(120, 255, 120) : new Color(255, 90, 90);
+            g.setColor(haveColor);
+            String haveText = "(" + playerAmount + ")";
+            int resourceTextWidth = g.getFontMetrics().stringWidth(resourceText);
+            g.drawString(haveText, CRAFT_VAL_ITEM_DESC_X + resourceTextWidth + (int)(5*SCALE), y);
+
             y += lineHeight;
         }
     }
 
-    // Actions
-    private void prevCraftingSlot() {
-        this.craftingSlot = Math.max(craftingSlot-1, 0);
-    }
+    private List<String> wrapText(String text, int maxWidth, FontMetrics fm) {
+        List<String> lines = new ArrayList<>();
+        for (String paragraph : text.split("\n")) {
+            String[] words = paragraph.split(" ");
+            StringBuilder currentLine = new StringBuilder();
 
-    private void nextCraftingSlot() {
-        this.craftingSlot = Math.min(craftingSlot+1, CRAFT_SLOT_CAP);
+            for (String word : words) {
+                if (fm.stringWidth(currentLine + " " + word) <= maxWidth) {
+                    if (!currentLine.isEmpty()) currentLine.append(" ");
+                    currentLine.append(word);
+                }
+                else {
+                    lines.add(currentLine.toString());
+                    currentLine = new StringBuilder(word);
+                }
+            }
+            if (!currentLine.isEmpty()) lines.add(currentLine.toString());
+        }
+        return lines;
     }
 
     @Override
-    public void mouseDragged(MouseEvent e) {
-
-    }
+    public void mouseDragged(MouseEvent e) {}
 
     @Override
-    public void mouseClicked(MouseEvent mouseEvent) {
-
-    }
+    public void mouseClicked(MouseEvent mouseEvent) {}
 
     @Override
     public void mousePressed(MouseEvent e) {
-        setMousePressed(e, smallButtons);
-        setMousePressed(e, mediumButtons);
-        changeSlot(e);
-    }
-
-    private void setMousePressed(MouseEvent e, AbstractButton[] buttons) {
-        Arrays.stream(buttons)
-                .filter(button -> isMouseInButton(e, button))
-                .findFirst()
-                .ifPresent(button -> button.setMousePressed(true));
+        controller.mousePressed(e);
     }
 
     @Override
     public void mouseReleased(MouseEvent e) {
-        releaseSmallButtons(e);
-        releaseMediumButtons(e);
-        Arrays.stream(smallButtons).forEach(AbstractButton::resetMouseSet);
-        Arrays.stream(mediumButtons).forEach(AbstractButton::resetMouseSet);
-    }
-
-    private void releaseSmallButtons(MouseEvent e) {
-        for (SmallButton button : smallButtons) {
-            if (isMouseInButton(e, button) && button.isMousePressed()) {
-                switch (button.getButtonType()) {
-                    case PREV:
-                        prevCraftingSlot();
-                        break;
-                    case NEXT:
-                        nextCraftingSlot();
-                        break;
-                    default: break;
-                }
-                break;
-            }
-        }
-    }
-
-    private void releaseMediumButtons(MouseEvent e) {
-        for (MediumButton button : mediumButtons) {
-            if (isMouseInButton(e, button) && button.isMousePressed()) {
-                if (Objects.requireNonNull(button.getButtonType()) == ButtonType.CRAFT) {
-                    releaseCraftButton();
-                }
-            }
-        }
-    }
-
-    private void releaseCraftButton() {
-        Inventory inventory = gameState.getPlayer().getInventory();
-        for (Table table : tables) {
-            if (table.isActive()) {
-                List<InventoryItem> items = new ArrayList<>(table.getRecipes().keySet());
-                if (slotNumber >= items.size()) return;
-                InventoryItem item = items.get(slotNumber);
-                Map<ItemType, Integer> resources = table.getRecipes().get(item);
-                inventory.craftItem(item, resources);
-                break;
-            }
-        }
+        controller.mouseReleased(e);
     }
 
     @Override
     public void mouseMoved(MouseEvent e) {
-        setMouseMoved(e, smallButtons);
-        setMouseMoved(e, mediumButtons);
+        controller.mouseMoved(e);
     }
 
     @Override
     public void keyPressed(KeyEvent e) {
-        switch (e.getKeyCode()) {
-            case KeyEvent.VK_UP:
-                moveUp();
-                break;
-            case KeyEvent.VK_DOWN:
-                moveDown();
-                break;
-            case KeyEvent.VK_LEFT:
-                moveLeft();
-                break;
-            case KeyEvent.VK_RIGHT:
-                moveRight();
-                break;
-            case KeyEvent.VK_C:
-                releaseCraftButton();
-                break;
-            default: break;
-        }
-    }
-
-    private void moveUp() {
-        int y = slotNumber / INVENTORY_SLOT_MAX_ROW;
-        if (y > 0) slotNumber -= INVENTORY_SLOT_MAX_ROW;
-        setSelectedSlot();
-    }
-
-    private void moveDown() {
-        int y = slotNumber / INVENTORY_SLOT_MAX_ROW;
-        if (y < INVENTORY_SLOT_MAX_COL - 1) slotNumber += INVENTORY_SLOT_MAX_ROW;
-        setSelectedSlot();
-    }
-
-    private void moveLeft() {
-        int x = slotNumber % INVENTORY_SLOT_MAX_ROW;
-        if (x > 0) slotNumber--;
-        setSelectedSlot();
-    }
-
-    private void moveRight() {
-        int x = slotNumber % INVENTORY_SLOT_MAX_ROW;
-        if (x < INVENTORY_SLOT_MAX_ROW - 1) slotNumber++;
-        setSelectedSlot();
-    }
-
-    private void setMouseMoved(MouseEvent e, AbstractButton[] buttons) {
-        Arrays.stream(buttons).forEach(button -> button.setMouseOver(false));
-
-        Arrays.stream(buttons)
-                .filter(button -> isMouseInButton(e, button))
-                .findFirst()
-                .ifPresent(button -> button.setMouseOver(true));
-    }
-
-    private boolean isMouseInButton(MouseEvent e, AbstractButton button) {
-        return button.getButtonHitBox().contains(e.getX(), e.getY());
+        controller.keyPressed(e);
     }
 
     @Override
-    public void reset() {
-        this.tables = gameState.getObjectManager().getObjects(Table.class);
+    public void reset() { }
+
+    // Getters for the controller
+    public SmallButton[] getSmallButtons() {
+        return smallButtons;
     }
 
+    public MediumButton[] getMediumButtons() {
+        return mediumButtons;
+    }
 }

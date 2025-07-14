@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import platformer.model.inventory.ItemType;
 
 import java.util.List;
 import java.util.Map;
@@ -22,7 +21,7 @@ public class Quest {
     private QuestType type;
     private String description;
     private List<QuestObjective> objectives;
-    private Map<ItemType, Integer> itemRewards;
+    private Map<String, Integer> itemRewards;
     private int coinReward, expReward;
     private int levelRequirement;
     private int npcRequest;

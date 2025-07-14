@@ -1,7 +1,5 @@
 package platformer.model.gameObjects;
 
-import platformer.audio.Audio;
-import platformer.audio.types.Sound;
 import platformer.model.entities.Direction;
 import platformer.model.entities.enemies.EnemyManager;
 import platformer.model.entities.player.Player;
@@ -12,10 +10,9 @@ import platformer.model.gameObjects.objects.*;
 import platformer.model.gameObjects.projectiles.Projectile;
 
 import java.awt.geom.Rectangle2D;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
-import static platformer.constants.Constants.*;
 
 /**
  * Handles intersections between game objects and entities.
@@ -25,16 +22,18 @@ public class IntersectionHandler {
 
     private final EnemyManager enemyManager;
     private final ObjectManager objectManager;
+    private final LootHandler lootHandler;
 
     private final Class<? extends GameObject>[] classesToCheck = new Class[]{
             Shop.class, Blacksmith.class, SaveTotem.class, Loot.class, Spike.class,
             Blocker.class, SmashTrap.class, Table.class, Board.class, Dog.class, Npc.class,
-            Lava.class, JumpPad.class
+            Lava.class, JumpPad.class, Herb.class, Container.class
     };
 
-    public IntersectionHandler(EnemyManager enemyManager, ObjectManager objectManager) {
+    public IntersectionHandler(EnemyManager enemyManager, ObjectManager objectManager, LootHandler lootHandler) {
         this.enemyManager = enemyManager;
         this.objectManager = objectManager;
+        this.lootHandler = lootHandler;
     }
 
     // Checker
@@ -61,6 +60,7 @@ public class IntersectionHandler {
     private <T extends GameObject> boolean checkPlayerIntersection(Player p, Class<T> objectClass) {
         boolean check = false;
         for (T object : getObjects(objectClass)) {
+            if (!object.isAlive()) continue;
             boolean intersect = p.getHitBox().intersects(object.getHitBox());
             if (intersect) {
                 check = true;
@@ -104,6 +104,9 @@ public class IntersectionHandler {
             else if (object instanceof Lava) {
                 handleLavaIntersection(p);
             }
+            else if (object instanceof Herb) {
+                ((Herb) object).setActive(intersect);
+            }
         }
         return check;
     }
@@ -140,46 +143,12 @@ public class IntersectionHandler {
      * Handles the interaction between a player and a GameObject.
      *
      * @param hitBox The hitbox of the player.
-     * @param objectType The type of the GameObject.
-     * @param player The player to handle the interaction for.
-     */
-    private <T extends GameObject> void handleObjectInteraction(Rectangle2D.Double hitBox, Class<T> objectType, Player player) {
-        ArrayList<T> objects = new ArrayList<>(getObjects(objectType));
-        for (T object : objects) {
-            if (object.isAlive() && hitBox.intersects(object.getHitBox())) {
-                object.setAlive(false);
-                if (object instanceof Potion) {
-                    applyPotionEffect((Potion) object, player);
-                }
-                else if (object instanceof Coin) {
-                    objectManager.removeGameObject(object);
-                    Audio.getInstance().getAudioPlayer().playSound(Sound.COIN_PICK);
-                    player.changeCoins(1);
-                }
-            }
-        }
-    }
-
-    /**
-     * Handles the interaction between a player and any GameObject.
-     *
-     * @param hitBox The hitbox of the player.
      * @param player The player to handle the interaction for.
      */
     public void handleObjectInteraction(Rectangle2D.Double hitBox, Player player) {
-        handleObjectInteraction(hitBox, Potion.class, player);
-        handleObjectInteraction(hitBox, Coin.class, player);
-    }
-
-    // Apply
-    public void applyPotionEffect(Potion potion, Player player) {
-        if (potion == null) return;
-        switch (potion.getObjType()) {
-            case HEAL_POTION:
-                player.changeHealth(HEAL_POTION_VAL); break;
-            case STAMINA_POTION:
-                player.changeStamina(STAMINA_POTION_VAL); break;
-        }
+        Stream.concat(objectManager.getObjects(Coin.class).stream(), objectManager.getObjects(Potion.class).stream())
+                .filter(object -> object.isAlive() && hitBox.intersects(object.getHitBox()))
+                .forEach(object -> lootHandler.collectItem(object, player));
     }
 
     private <T> List<T> getObjects(Class<T> objectType) {
@@ -195,7 +164,9 @@ public class IntersectionHandler {
         if (object instanceof Loot) return "Loot";
         if (object instanceof Table) return "Table";
         if (object instanceof Board) return "Board";
+        if (object instanceof Herb) return "Herb";
         if (object instanceof Dog) return "Dog";
+        if (object instanceof Container) return "Container";
         if (object instanceof Npc && ((Npc)object).getNpcType() == NpcType.ANITA) return "NpcAnita";
         if (object instanceof Npc && ((Npc)object).getNpcType() == NpcType.NIKOLAS) return "NpcNikolas";
         if (object instanceof Npc && ((Npc)object).getNpcType() == NpcType.SIR_DEJANOVIC) return "NpcSirDejanovic";

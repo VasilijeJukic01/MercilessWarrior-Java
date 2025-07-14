@@ -17,10 +17,14 @@ public final class FilePaths {
     // Levels
     public static final String LEVEL_SPRITES = "/images/levels/level$.png";
     public static final String LEVEL_OBJECT_SPRITES = "/images/levels/levelObjects/$.png";
-    public static final String BACKGROUND_1 = "/images/background1.png";
     public static final String FOREST_SPRITE = "/images/levels/mossyTiles.png";
     public static final String MINIMAP = "/images/levels/minimap.png";
     public static final String MINIMAP_ICONS = "/images/levels/mapIcons.png";
+
+    public static final String FOREST_BG_1 = "/images/levels/backgrounds/forest1.png";
+    public static final String FOREST_BG_2 = "/images/levels/backgrounds/forest2.png";
+    public static final String FOREST_BG_3 = "/images/levels/backgrounds/forest3.png";
+    public static final String FOREST_BG_4 = "/images/levels/backgrounds/forest4.png";
 
     // Enemy
     public static final String SKELETON_SHEET = "/images/enemies/SkeletonSprite.png";
@@ -49,6 +53,7 @@ public final class FilePaths {
     public static final String LAVA_SHEET = "/images/objs/Lava.png";
     public static final String BRICK_SHEET = "/images/objs/Brick.png";
     public static final String JUMP_PAD_SHEET = "/images/objs/JumpPad.png";
+    public static final String HERB_IMG = "/images/objs/Herb.png";
 
     // NPC
     public static final String ANITA_SHEET = "/images/objs/npc/AnitaSprite.png";
@@ -68,6 +73,7 @@ public final class FilePaths {
 
     // Effects
     public static final String PARTICLE_SHEET = "/images/particles/ParticleSprite.png";
+    public static final String SMOKE_SHEET = "/images/particles/Smoke.png";
 
     // Buttons
     public static final String BTN_BUY_SHEET = "/images/buttons/BuyButton.png";
@@ -114,33 +120,14 @@ public final class FilePaths {
     public static final String WHITE_RADIAL_GLOW = "/images/particles/whiteRadialGlow.png";
 
     // Inventory / Shop
-    public static final String HEALTH_ITEM = "/images/inventory/HealthItem.png";
-    public static final String STAMINA_ITEM = "/images/inventory/StaminaItem.png";
-    public static final String IRON_ORE_ITEM = "/images/inventory/IronOre.png";
-    public static final String SILVER_ORE_ITEM = "/images/inventory/SilverOre.png";
-    public static final String COPPER_ORE_ITEM = "/images/inventory/CopperOre.png";
-    public static final String AMETHYST_ORE_ITEM = "/images/inventory/AmethystOre.png";
-    public static final String SONIC_QUARTZ_ORE_ITEM = "/images/inventory/SonicQuartzOre.png";
-    public static final String AZURELITE_ORE_ITEM = "/images/inventory/AzureliteOre.png";
-    public static final String ELECTRICITE_ORE_ITEM = "/images/inventory/ElectriciteOre.png";
-    public static final String MAGMA_ORE_ITEM = "/images/inventory/MagmaOre.png";
-    public static final String ROSALLIUM_ORE_ITEM = "/images/inventory/RosalliumOre.png";
-    public static final String WRAITH_ESSENCE_ITEM = "/images/inventory/WraithEssence.png";
-
-    public static final String WARRIOR_HELMET = "/images/inventory/WarriorHelmet.png";
-    public static final String WARRIOR_ARMOR = "/images/inventory/WarriorArmor.png";
-    public static final String WARRIOR_BRACELETS = "/images/inventory/WarriorBracelets.png";
-    public static final String WARRIOR_TROUSERS = "/images/inventory/WarriorTrousers.png";
-    public static final String WARRIOR_BOOTS = "/images/inventory/WarriorBoots.png";
-
-    public static final String GUARDIAN_ARMOR = "/images/inventory/GuardianArmor.png";
-    public static final String AMETHYST_RING = "/images/inventory/AmethystRing.png";
-    public static final String THUNDERBOLT_CHARM = "/images/inventory/ThunderboltCharm.png";
-
-    public static final String PLAYER_ICON = "/images/inventory/Player.png";
+    public static final String RECIPES_PATH = "/items/recipes.json";
+    public static final String SHOP_INV_PATH = "/items/shop_inventory.json";
+    public static final String LOOT_TABLE_PATH = "/items/loot_tables.json";
 
     // Quests
     public static final String QUESTS_PATH = "/quests/quests.json";
+    public static final String QUEST_COIN_PATH = "/images/quest/CoinIcon.png";
+    public static final String QUEST_EXP_PATH = "/images/quest/ExpIcon.png";
 
     // Tutorial
     public static final String TUTORIAL_BLOCK_PATH = "/images/tutorial/Tutorial1.png";

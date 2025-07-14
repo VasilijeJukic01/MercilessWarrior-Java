@@ -43,17 +43,20 @@ public class ObjectManager implements Publisher {
     private CollisionHandler collisionHandler;
     private IntersectionHandler intersectionHandler;
     private ObjectBreakHandler objectBreakHandler;
+    private LootHandler lootHandler;
 
     private GameObject intersection;
 
     private final BufferedImage[][] objects;
     private final BufferedImage[][] npcs;
+    private final BufferedImage[][] coinAnimations;
 
     Class<? extends GameObject>[] updateClasses = new Class[]{
             Coin.class, Container.class, Potion.class, Spike.class,
             Shop.class, Blocker.class, Blacksmith.class, Dog.class,
             SaveTotem.class, SmashTrap.class, Candle.class, Loot.class,
-            Table.class, Board.class, Npc.class, Lava.class, Brick.class, JumpPad.class
+            Table.class, Board.class, Npc.class, Lava.class, Brick.class,
+            JumpPad.class, Herb.class
     };
     Class<? extends GameObject>[] renderBelow = new Class[] {
             Container.class, Potion.class, Spike.class,
@@ -61,7 +64,7 @@ public class ObjectManager implements Publisher {
     };
     Class<? extends GameObject>[] renderAbove = new Class[] {
             SaveTotem.class, Shop.class, Blacksmith.class, Coin.class,
-            Table.class, Board.class, JumpPad.class
+            Table.class, Board.class, JumpPad.class, Herb.class
     };
     Class<? extends GameObject>[] renderBehind = new Class[] {
             Lava.class
@@ -79,6 +82,7 @@ public class ObjectManager implements Publisher {
         this.gameState = gameState;
         initHandlers();
         this.objects = Animation.getInstance().loadObjects();
+        this.coinAnimations = Animation.getInstance().getCoinAnimations();
         this.npcs = Animation.getInstance().loadNpcs();
         this.projectiles = new ArrayList<>();
         loadImages();
@@ -94,15 +98,21 @@ public class ObjectManager implements Publisher {
 
     private void initHandlers() {
         this.collisionHandler = new CollisionHandler(gameState.getLevelManager(), this);
-        this.intersectionHandler = new IntersectionHandler(gameState.getEnemyManager(), this);
-        this.objectBreakHandler = new ObjectBreakHandler(this);
+        this.lootHandler = new LootHandler(this, gameState.getEffectManager());
+        this.intersectionHandler = new IntersectionHandler(gameState.getEnemyManager(), this, lootHandler);
+        this.objectBreakHandler = new ObjectBreakHandler(this, lootHandler);
     }
 
     public void loadObjects(Level level) {
         level.gatherData();
         this.objectsMap = level.getObjectsMap();
         this.projectiles.clear();
+        configureObjects();
         embedSubscribers();
+    }
+
+    private void configureObjects() {
+        getObjects(Container.class).forEach(container -> lootHandler.generateCrateLoot(container));
     }
 
     // Intersection Handler
@@ -129,7 +139,28 @@ public class ObjectManager implements Publisher {
         intersectionHandler.handleObjectInteraction(hitBox, player);
     }
 
+    /**
+     * Handles the interaction of a player with a herb item.
+     *
+     * @param herb The Herb object to be harvested.
+     */
+    public void harvestHerb(Herb herb) {
+        lootHandler.harvestHerb(herb, gameState.getPlayer());
+    }
+
     // Collision Handler
+    /**
+     * Checks if the player is colliding with a solid object.
+     * This method is used to prevent the player from moving through solid objects.
+     *
+     * @param hitbox The hitbox of the player.
+     * @param dx The desired change in the player's X coordinate.
+     * @return The new X coordinate after collision resolution.
+     */
+    public double checkSolidObjectCollision(Rectangle2D.Double hitbox, double dx) {
+        return collisionHandler.checkSolidObjectCollision(hitbox, dx);
+    }
+
     /**
      * Checks if the player is touching an object.
      *
@@ -203,7 +234,7 @@ public class ObjectManager implements Publisher {
      */
     public void generateLoot(Enemy e) {
         Rectangle2D.Double location = e.getHitBox();
-        objectBreakHandler.generateEnemyLoot(location, e.getEnemyType());
+        lootHandler.generateEnemyLoot(location, e.getEnemyType());
     }
 
     public void checkProjectileDeflect(Rectangle2D.Double attackBox) {
@@ -275,12 +306,13 @@ public class ObjectManager implements Publisher {
     }
 
     // Core
-    private <T extends GameObject> void updateObjects(Class<T> objectClass) {
-        getObjects(objectClass).forEach(GameObject::update);
+    private <T extends GameObject> void updateObjects(Class<T> objectClass, int[][] lvlData) {
+        getObjects(objectClass).forEach(obj -> obj.update(lvlData));
     }
 
     private <T extends GameObject> void renderObjects(Graphics g, int xLevelOffset, int yLevelOffset, Class<T> objectType) {
         try {
+            if (objectType.equals(Coin.class)) return;
             getObjects(objectType).stream()
                     .filter(GameObject::isAlive)
                     .forEach(obj -> obj.render(g, xLevelOffset, yLevelOffset, objects[obj.getObjType().ordinal()]));
@@ -289,7 +321,7 @@ public class ObjectManager implements Publisher {
     }
 
     public void update(int[][] lvlData, Player player) {
-        Arrays.stream(updateClasses).forEach(this::updateObjects);
+        Arrays.stream(updateClasses).forEach(clazz -> updateObjects(clazz, lvlData));
         updateArrowLaunchers(lvlData, player);
         checkEnemyIntersection();
         collisionHandler.updateObjectInAir();
@@ -311,8 +343,18 @@ public class ObjectManager implements Publisher {
 
     public void glowingRender(Graphics g, int xLevelOffset, int yLevelOffset) {
         Arrays.stream(renderAbove).forEach(renderClass -> renderObjects(g, xLevelOffset, yLevelOffset, renderClass));
+        renderCoins(g, xLevelOffset, yLevelOffset);
         renderNpcs(g, xLevelOffset, yLevelOffset);
         renderProjectiles(g, xLevelOffset, yLevelOffset);
+    }
+
+    private void renderCoins(Graphics g, int xLevelOffset, int yLevelOffset) {
+        for (Coin coin : getObjects(Coin.class)) {
+            if (coin.isAlive()) {
+                BufferedImage[] anims = coinAnimations[coin.getCoinType().getAnimationRow()];
+                coin.render(g, xLevelOffset, yLevelOffset, anims);
+            }
+        }
     }
 
     private void renderNpcs(Graphics g, int xLevelOffset, int yLevelOffset) {

@@ -57,8 +57,12 @@ public final class UI {
     public static final int GAME_SLOT_SPACING = scale(60);
     public static final int GAME_SLOT_CAP = 4;
 
-    public static final Color DATABASE_SLOT_COLOR = new Color(20, 70, 20, 220);
-    public static final Color SAVE_SLOT_COLOR = new Color(20, 20, 20, 220);
+    public static final Color DATABASE_SLOT_BG_START = new Color(25, 50, 80, 230);
+    public static final Color DATABASE_SLOT_BG_END = new Color(40, 70, 110, 230);
+    public static final Color SAVE_SLOT_BG_START = new Color(50, 30, 60, 230);
+    public static final Color SAVE_SLOT_BG_END = new Color(75, 45, 85, 230);
+    public static final Color EMPTY_SLOT_BG_START = new Color(40, 40, 40, 230);
+    public static final Color EMPTY_SLOT_BG_END = new Color(60, 60, 60, 230);
 
     public static final int SAVE_BTN_X = scale(345);
     public static final int SAVE_CLOSE_BTN_X = scale(430);
@@ -66,27 +70,39 @@ public final class UI {
     public static final int LOAD_BTN_Y = scale(350);
 
     // Quest UI
-    public static final int QUEST_SLOT_WID = scale(180);
-    public static final int QUEST_SLOT_HEI = scale(50);
-    public static final int QUEST_SLOT_X = scale(330);
-    public static final int QUEST_SLOT_Y = scale(45);
-    public static final int QUEST_SLOT_SPACING = scale(80);
-    public static final int QUEST_SLOT_CAP = 3;
+    public static final int QUEST_SLOT_WID = scale(200);
+    public static final int QUEST_SLOT_HEI = scale(40);
+    public static final int QUEST_SLOT_X = scale(140);
+    public static final int QUEST_SLOT_Y = scale(120);
+    public static final int QUEST_SLOT_SPACING = scale(50);
+    public static final int QUEST_SLOT_CAP = 4;
 
-    public static final int QUEST_TXT_WID = scale(180);
+    public static final int QUEST_TXT_WID = scale(220);
     public static final int QUEST_TXT_HEI = scale(40);
-    public static final int QUEST_TEXT_X = scale(330);
-    public static final int QUEST_TEXT_Y = scale(65);
+    public static final int QUEST_TEXT_X = scale(310);
+    public static final int QUEST_TEXT_Y = scale(45);
 
-    public static final int QUEST_BTN_X = scale(388);
-    public static final int QUEST_BTN_Y = scale(350);
+    public static final int QUEST_BTN_X = scale(213);
+    public static final int QUEST_BTN_Y = scale(358);
+    public static final int QUEST_BTN_PREV_X = scale(153);
+    public static final int QUEST_BTN_NEXT_X = scale(297);
 
-    public static final int QUEST_BTN_PREV_X = scale(330);
-    public static final int QUEST_BTN_NEXT_X = scale(485);
+    public static final int QUEST_DESC_X = scale(400);
+    public static final int QUEST_DESC_Y = scale(120);
 
-    public static final Color QUEST_SLOT_COLOR = new Color(20, 20, 20, 220);
-    public static final Color QUEST_SLOT_REPEATABLE_COLOR = new Color(20, 70, 68, 220);
-    public static final Color QUEST_SLOT_COMPLETE = new Color(22, 70, 20, 220);
+    public static final Color QUEST_SLOT_PROGRESSIVE_BG_START = new Color(30, 40, 50, 230);
+    public static final Color QUEST_SLOT_PROGRESSIVE_BG_END = new Color(45, 60, 75, 230);
+    public static final Color QUEST_SLOT_REPEATABLE_BG_START = new Color(30, 60, 58, 230);
+    public static final Color QUEST_SLOT_REPEATABLE_BG_END = new Color(45, 85, 80, 230);
+    public static final Color QUEST_SLOT_COMPLETED_BG_START = new Color(40, 70, 40, 230);
+    public static final Color QUEST_SLOT_COMPLETED_BG_END = new Color(60, 100, 60, 230);
+    public static final Color QUEST_SELECTED_GLOW_COLOR = new Color(255, 215, 0, 150);
+
+    public static final Color QUEST_HEADER_COLOR = new Color(255, 255, 255);
+    public static final Color QUEST_REWARD_XP_COLOR = new Color(170, 170, 255);
+    public static final Color QUEST_SEPARATOR_COLOR = new Color(100, 100, 100, 200);
+
+    public static final int QUEST_ICON_SIZE = scale(20);
 
     // Controls UI
     public static final int CONTROLS_TXT_WID = scale(180);
@@ -184,15 +200,10 @@ public final class UI {
     public static final int SFX_Y = scale(203);
     public static final int MUSIC_X = scale(525);
     public static final int MUSIC_Y = scale(253);
-    public static final int MUSIC_SLIDER_BTN_X = scale(380);
+    public static final int MUSIC_SLIDER_BTN_X = scale(360);
     public static final int MUSIC_SLIDER_BTN_Y = scale(253);
-    public static final int SFX_SLIDER_BTN_X = scale(380);
+    public static final int SFX_SLIDER_BTN_X = scale(360);
     public static final int SFX_SLIDER_BTN_Y = scale(203);
-
-    public static final int MUSIC_SLIDER_X = scale(360);
-    public static final int MUSIC_SLIDER_Y = scale(254);
-    public static final int SFX_SLIDER_X = scale(360);
-    public static final int SFX_SLIDER_Y = scale(204);
 
     // Overlay UI
     public static final int OVERLAY_WID = scale(300);
@@ -230,7 +241,7 @@ public final class UI {
     public static final int PARTICLE_BTN_Y = scale(175);
     public static final int SHAKE_BTN_PREV_X = scale(390);
     public static final int SHAKE_BTN_NEXT_X = scale(510);
-    public static final int SHAKE_BTN_Y = scale(225);
+    public static final int SHAKE_BTN_Y = scale(205);
 
     public static final int PARTICLE_TEXT_X = scale(290);
     public static final int PARTICLE_TEXT_Y = scale(192);
@@ -238,9 +249,25 @@ public final class UI {
     public static final int PARTICLE_LEVEL_Y = scale(192);
 
     public static final int SHAKE_TEXT_X = scale(290);
-    public static final int SHAKE_TEXT_Y = scale(242);
+    public static final int SHAKE_TEXT_Y = scale(222);
     public static final int SHAKE_STATUS_X = scale(452);
-    public static final int SHAKE_STATUS_Y = scale(242);
+    public static final int SHAKE_STATUS_Y = scale(222);
+
+    public static final int DAMAGE_COUNTER_BTN_PREV_X = scale(390);
+    public static final int DAMAGE_COUNTER_BTN_NEXT_X = scale(510);
+    public static final int DAMAGE_COUNTER_BTN_Y = scale(235);
+    public static final int DAMAGE_COUNTER_TEXT_X = scale(290);
+    public static final int DAMAGE_COUNTER_TEXT_Y = scale(252);
+    public static final int DAMAGE_COUNTER_STATUS_X = scale(452);
+    public static final int DAMAGE_COUNTER_STATUS_Y = scale(252);
+
+    public static final int FULL_SCREEN_BTN_PREV_X = scale(390);
+    public static final int FULL_SCREEN_BTN_NEXT_X = scale(510);
+    public static final int FULL_SCREEN_BTN_Y = scale(265);
+    public static final int FULL_SCREEN_TEXT_X = scale(290);
+    public static final int FULL_SCREEN_TEXT_Y = scale(282);
+    public static final int FULL_SCREEN_STATUS_X = scale(452);
+    public static final int FULL_SCREEN_STATUS_Y = scale(282);
 
     public static final Color TAB_COLOR = new Color(144, 9, 97);
 
@@ -271,6 +298,11 @@ public final class UI {
     public static final int SHOP_TEXT_HEI = scale(60);
     public static final int SLOT_SIZE = scale(40);
 
+    public static final Color SHOP_TEXT_GOLD = new Color(255, 215, 0);
+    public static final Color SHOP_TEXT_CANNOT_AFFORD = new Color(255, 80, 80);
+    public static final Color SHOP_TEXT_DESC = new Color(200, 200, 200);
+    public static final Color SHOP_TEXT_DEFAULT = Color.WHITE;
+
     public static final int SHOP_TEXT_X = scale(330);
     public static final int SHOP_TEXT_Y = scale(45);
     public static final int BUY_BTN_X = scale(166);
@@ -297,18 +329,24 @@ public final class UI {
     public static final int SHOP_SELL_SLOT_Y = scale(120);
 
     public static final int COST_TEXT_X = scale(310);
-    public static final int POCKET_TEXT_X = scale(470);
-    public static final int COST_TEXT_Y = scale(150);
+    public static final int POCKET_TEXT_X = scale(310);
+    public static final int COST_TEXT_Y = scale(170);
+    public static final int POCKET_TEXT_Y = scale(150);
     public static final int SHOP_ITEM_NAME_X = scale(310);
-    public static final int SHOP_ITEM_NAME_Y = scale(170);
+    public static final int SHOP_ITEM_NAME_Y = scale(190);
     public static final int SHOP_ITEM_DESC_X = scale(310);
-    public static final int SHOP_ITEM_DESC_Y = scale(190);
+    public static final int SHOP_ITEM_DESC_Y = scale(210);
 
     public static final int ITEM_SIZE = scale(20);
     public static final int ITEM_OFFSET_X = scale(10);
     public static final int ITEM_OFFSET_Y = scale(8);
     public static final int ITEM_COUNT_OFFSET_X = scale(15);
     public static final int ITEM_COUNT_OFFSET_Y = scale(26);
+
+    public static final int SHOP_SLIDER_BTN_X = scale(320);
+    public static final int SHOP_SLIDER_BTN_Y = scale(280);
+    public static final int SHOP_QUANTITY_TEXT_X = scale(316);
+    public static final int SHOP_QUANTITY_TEXT_Y = scale(280);
 
     public static final int PERKS_OVERLAY_WID = scale(700);
     public static final int PERKS_OVERLAY_HEI = scale(410);
@@ -351,6 +389,14 @@ public final class UI {
     public static final int INV_TEXT_X = scale(310);
     public static final int INV_TEXT_Y = scale(45);
 
+    public static final Color INV_TEXT_DEFAULT = new Color(220, 220, 220);
+    public static final Color INV_TEXT_HEADER = new Color(255, 255, 255);
+    public static final Color INV_TEXT_COINS = new Color(255, 255, 255);
+    public static final Color INV_TEXT_LABEL = new Color(180, 180, 180);
+    public static final Color INV_TEXT_VALUE = new Color(255, 215, 0);
+    public static final Color INV_TEXT_BONUS = new Color(120, 255, 120);
+    public static final Color INV_TEXT_DESC = new Color(200, 200, 200);
+
     public static final int BACKPACK_WID = scale(240);
     public static final int BACKPACK_HEI = scale(240);
     public static final int BACKPACK_X = scale(120);
@@ -366,10 +412,10 @@ public final class UI {
     public static final int EQUIPMENT_SLOT_Y = scale(115);
     public static final int EQUIPMENT_SLOT_SPACING = scale(95);
 
-    public static final int INV_PLAYER_WID = scale(40);
-    public static final int INV_PLAYER_HEI = scale(70);
-    public static final int INV_PLAYER_X = scale(446);
-    public static final int INV_PLAYER_Y = scale(140);
+    public static final int INV_PLAYER_WID = scale(170);
+    public static final int INV_PLAYER_HEI = scale(130);
+    public static final int INV_PLAYER_X = scale(402);
+    public static final int INV_PLAYER_Y = scale(120);
 
     public static final int INV_ITEM_NAME_X = scale(380);
     public static final int INV_ITEM_NAME_Y = scale(300);

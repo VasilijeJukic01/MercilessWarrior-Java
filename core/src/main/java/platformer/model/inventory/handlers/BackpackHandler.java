@@ -3,11 +3,15 @@ package platformer.model.inventory.handlers;
 import platformer.audio.Audio;
 import platformer.audio.types.Sound;
 import platformer.core.Framework;
+import platformer.model.entities.player.Player;
 import platformer.model.inventory.InventoryItem;
-import platformer.model.inventory.ItemType;
+import platformer.model.inventory.ItemData;
 
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static platformer.constants.Constants.HEAL_POTION_VAL;
+import static platformer.constants.Constants.STAMINA_POTION_VAL;
 
 /**
  * Handles the operations related to the backpack in the inventory system.
@@ -22,46 +26,75 @@ public class BackpackHandler {
         this.equipmentHandler = equipmentHandler;
     }
 
-    public void useItem(int index) {
-        // TODO: Implement use item logic
+    public void useItem(int index, Player player) {
+        if (index >= backpack.size()) return;
+        InventoryItem item = backpack.get(index);
+
+        switch (item.getItemId()) {
+            case "HEALTH_POTION":
+                player.changeHealth(HEAL_POTION_VAL);
+                consumeItem(index);
+                break;
+            case "STAMINA_POTION":
+                player.changeStamina(STAMINA_POTION_VAL);
+                consumeItem(index);
+                break;
+            default: break;
+        }
+    }
+
+    private void consumeItem(int index) {
+        InventoryItem item = backpack.get(index);
+        item.setAmount(item.getAmount() - 1);
+        if (item.getAmount() <= 0) backpack.remove(index);
+        refreshAccountItems();
     }
 
     public void dropItem(int index) {
+        dropItem(index, false);
+    }
+
+    public void dropItem(int index, boolean isEquipAction) {
         if (index >= backpack.size()) return;
-        backpack.get(index).removeAmount(-1);
-        if (backpack.get(index).getAmount() <= 0)
-            backpack.remove(index);
+        if (isEquipAction) backpack.remove(index);
+        else {
+            backpack.get(index).setAmount(backpack.get(index).getAmount() - 1);
+            if (backpack.get(index).getAmount() <= 0) backpack.remove(index);
+        }
         refreshAccountItems();
     }
 
-    public void addItemToBackpack(InventoryItem item) {
-        for (InventoryItem inventoryItem : backpack) {
-            if (inventoryItem.getItemType() == item.getItemType()) {
-                inventoryItem.addAmount(item.getAmount());
-                refreshAccountItems();
-                return;
+    public void addItemToBackpack(InventoryItem itemToAdd) {
+        ItemData data = itemToAdd.getData();
+        if (data == null) return;
+        if (data.stackable) {
+            for (InventoryItem existingItem : backpack) {
+                if (existingItem.getItemId().equals(itemToAdd.getItemId())) {
+                    existingItem.addAmount(itemToAdd.getAmount());
+                    refreshAccountItems();
+                    return;
+                }
             }
         }
-        backpack.add(item);
+        backpack.add(itemToAdd);
         refreshAccountItems();
     }
 
-    public void craftItem(InventoryItem item, Map<ItemType, Integer> resources) {
+    public void craftItem(InventoryItem item, Map<String, Integer> resources) {
         if (!hasEnoughResources(resources)) return;
         Audio.getInstance().getAudioPlayer().playSound(Sound.CRAFTING);
         useResources(resources);
         addItemToBackpack(item);
     }
 
-    private boolean hasEnoughResources(Map<ItemType, Integer> resources) {
-        Map<ItemType, InventoryItem> inventoryMap = getInventoryMap();
-        for (Map.Entry<ItemType, Integer> entry : resources.entrySet()) {
+    private boolean hasEnoughResources(Map<String, Integer> resources) {
+        Map<String, InventoryItem> inventoryMap = getInventoryMap();
+        for (Map.Entry<String, Integer> entry : resources.entrySet()) {
             InventoryItem inventoryItem = inventoryMap.get(entry.getKey());
             if (inventoryItem == null || inventoryItem.getAmount() < entry.getValue()) {
                 return false;
             }
         }
-
         return true;
     }
 
@@ -73,31 +106,19 @@ public class BackpackHandler {
      *
      * @param resources A map where the key is the ItemType of the resource and the value is the amount required.
      */
-    private void useResources(Map<ItemType, Integer> resources) {
-        Map<ItemType, InventoryItem> inventoryMap = getInventoryMap();
-        for (Map.Entry<ItemType, Integer> entry : resources.entrySet()) {
+    private void useResources(Map<String, Integer> resources) {
+        Map<String, InventoryItem> inventoryMap = getInventoryMap();
+        for (Map.Entry<String, Integer> entry : resources.entrySet()) {
             InventoryItem inventoryItem = inventoryMap.get(entry.getKey());
-            inventoryItem.removeAmount(-entry.getValue());
+            inventoryItem.setAmount(inventoryItem.getAmount() - entry.getValue());
             if (inventoryItem.getAmount() <= 0) backpack.remove(inventoryItem);
         }
     }
 
-    private Map<ItemType, InventoryItem> getInventoryMap() {
-        Map<ItemType, InventoryItem> inventoryMap = new HashMap<>();
-        backpack.forEach(inventoryItem -> inventoryMap.put(inventoryItem.getItemType(), inventoryItem));
+    private Map<String, InventoryItem> getInventoryMap() {
+        Map<String, InventoryItem> inventoryMap = new HashMap<>();
+        backpack.forEach(inventoryItem -> inventoryMap.put(inventoryItem.getItemId(), inventoryItem));
         return inventoryMap;
-    }
-
-    public void addItemAmountToBackpack(InventoryItem item, int amount) {
-        for (InventoryItem inventoryItem : backpack) {
-            if (inventoryItem.getItemType() == item.getItemType()) {
-                inventoryItem.addAmount(amount);
-                refreshAccountItems();
-                return;
-            }
-        }
-        backpack.add(item);
-        refreshAccountItems();
     }
 
     /**
@@ -109,11 +130,11 @@ public class BackpackHandler {
      */
     private List<String> getFormattedItems() {
         List<String> values = backpack.stream()
-                .map(item -> item + ",0")
+                .map(item -> item.getItemId() + "," + item.getAmount() + ",0")
                 .collect(Collectors.toList());
         values.addAll(Arrays.stream(equipmentHandler.getEquipped())
                 .filter(Objects::nonNull)
-                .map(item -> item + ",1")
+                .map(item -> item.getItemId() + "," + item.getAmount() + ",1")
                 .collect(Collectors.toList()));
         return values;
     }

@@ -1,18 +1,20 @@
 package platformer.model.levels;
 
-import platformer.animation.Animation;
+import com.google.gson.Gson;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
-import platformer.model.entities.effects.particles.AmbientParticle;
-import platformer.model.entities.effects.particles.AmbientParticleFactory;
-import platformer.model.entities.effects.particles.AmbientParticleType;
+import platformer.model.levels.metadata.LevelMetadata;
+import platformer.model.levels.metadata.ObjectMetadata;
 import platformer.state.GameState;
 import platformer.utils.Utils;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.util.Arrays;
-import java.util.Random;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
 
 import static platformer.constants.AnimConstants.*;
 import static platformer.constants.Constants.*;
@@ -29,19 +31,20 @@ public class LevelManager {
 
     private final GameState gameState;
     private final LevelObjectManager levelObjectManager;
+    private final BackgroundManager backgroundManager;
+    private final Map<Point, ObjectMetadata> decorationMetadata;
 
     private BufferedImage[] levelSprite;
     private final Level[][] levels = new Level[MAX_LEVELS][MAX_LEVELS];
     private int levelIndexI = 0, levelIndexJ = 0;
-
-    // Particle Flyweight
-    private final AmbientParticle[] ambientParticles;
-    private final AmbientParticleFactory ambientParticleFactory;
+    private BufferedImage currentBackground;
+    private LevelMetadata currentLevelMetadata;
 
     public LevelManager(GameState gameState) {
         this.gameState = gameState;
-        this.ambientParticleFactory = new AmbientParticleFactory();
-        this.ambientParticles = loadParticles();
+        this.decorationMetadata = new HashMap<>();
+        this.backgroundManager = new BackgroundManager();
+        this.currentBackground = backgroundManager.getDefaultBackground();
         this.levelObjectManager = new LevelObjectManager();
         loadForestSprite();
         buildLevels();
@@ -67,7 +70,7 @@ public class LevelManager {
     private void buildLevels() {
         BufferedImage[][] levelsLayer1 = getAllLevels("1");
         BufferedImage[][] levelsLayer2 = getAllLevels("2");
-        for (int i = 0; i < 2; i++) {
+        for (int i = 0; i < 3; i++) {
             for (int j = 0; j < levelsLayer1.length; j++) {
                 if (levelsLayer1[i][j] != null)
                     levels[i][j] = new Level("level"+i+j, levelsLayer1[i][j], levelsLayer2[i][j]);
@@ -78,7 +81,7 @@ public class LevelManager {
 
     private BufferedImage[][] getAllLevels(String layer) {
         BufferedImage[][] levels = new BufferedImage[MAX_LEVELS][MAX_LEVELS];
-        for (int i = 0; i < 2; i++) {
+        for (int i = 0; i < 3; i++) {
             for (int j = 0; j < levels.length; j++) {
                 BufferedImage levelImg = Utils.getInstance().importImage(LEVEL_SPRITES.replace("$", i+""+j), -1, -1);
                 if (levelImg == null) continue;
@@ -93,36 +96,17 @@ public class LevelManager {
         return levels;
     }
 
-    /**
-     * This method creates and initializes the particles used in the game.
-     * It uses the Flyweight pattern to manage the particles, which helps to save memory.
-     * The ParticleFactory is used to create and manage the Particle objects.
-     * @return An array of Particle objects.
-     */
-    private AmbientParticle[] loadParticles() {
-        AmbientParticle[] ambientParticles = new AmbientParticle[PARTICLES_CAP];
-        Random rand = new Random();
-        for (int i = 0; i < ambientParticles.length; i++) {
-            int xPos = rand.nextInt(GAME_WIDTH-10) + 10;
-            int yPos = rand.nextInt(GAME_HEIGHT-10) + 10;
-            int size = (int)((rand.nextInt(15-5) + 5) * SCALE);
-            String key = "DefaultParticle";
-            BufferedImage[] images = Animation.getInstance().loadFromSprite(PARTICLE_SHEET, DEFAULT_PARTICLE_FRAMES, 0, size, size, 0, PARTICLE_W, PARTICLE_H);
-            AmbientParticleType ambientParticleType = ambientParticleFactory.getParticleImage(key, images);
-            ambientParticles[i] = new AmbientParticle(ambientParticleType, size, xPos, yPos);
-        }
-        return ambientParticles;
-    }
-
     // Level flow
     private void loadLevel() {
         Level newLevel = levels[levelIndexI][levelIndexJ];
         gameState.getPlayer().loadLvlData(newLevel.getLvlData());
         gameState.getEnemyManager().loadEnemies(newLevel);
         gameState.getObjectManager().loadObjects(newLevel);
+        loadMetadata();
         gameState.getSpellManager().initBossSpells();
         gameState.getMinimapManager().changeLevel();
         gameState.getPlayer().activateMinimap(true);
+        loadBackground();
     }
 
     public void loadNextLevel(int dI, int dJ) {
@@ -134,6 +118,39 @@ public class LevelManager {
         else loadLevel();
     }
 
+    private void loadBackground() {
+        if (currentLevelMetadata != null && currentLevelMetadata.getBackgroundId() != null) {
+            this.currentBackground = backgroundManager.getBackground(currentLevelMetadata.getBackgroundId());
+        }
+        else this.currentBackground = backgroundManager.getDefaultBackground();
+    }
+
+    private void loadMetadata() {
+        decorationMetadata.clear();
+        String levelName = "level" + levelIndexI + levelIndexJ;
+        String jsonPath = "/meta/" + levelName + ".json";
+
+        try (InputStream is = getClass().getResourceAsStream(jsonPath)) {
+            if (is == null) {
+                currentLevelMetadata = null;
+                return;
+            }
+            try (InputStreamReader reader = new InputStreamReader(is, StandardCharsets.UTF_8)) {
+                Gson gson = new Gson();
+                LevelMetadata metadata = gson.fromJson(reader, LevelMetadata.class);
+                this.currentLevelMetadata = metadata;
+                if (metadata != null && metadata.getDecorations() != null) {
+                    for (ObjectMetadata meta : metadata.getDecorations()) {
+                        decorationMetadata.put(new Point(meta.getX(), meta.getY()), meta);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            this.currentLevelMetadata = null;
+            Logger.getInstance().notify("Could not load metadata for " + levelName + ": " + e.getMessage(), Message.ERROR);
+        }
+    }
+
     // Render
     private void renderDeco(Graphics g, int xLevelOffset, int yLevelOffset, int layer) {
         Level level = levels[levelIndexI][levelIndexJ];
@@ -142,16 +159,35 @@ public class LevelManager {
                 int decorationIndex = level.getDecoSpriteIndex(i, j);
                 int layerIndex = level.getLayerSpriteIndex(i, j);
                 if (decorationIndex == -1) continue;
-                int x = TILES_SIZE * i - xLevelOffset;
-                int y = TILES_SIZE * j - yLevelOffset;
                 LvlObjType lvlObj = LvlObjType.values()[decorationIndex];
                 if (layerIndex == layer) {
                     BufferedImage model = levelObjectManager.getModels()[decorationIndex];
-                    int xPos = x + (int)(lvlObj.getYOffset() * SCALE);
-                    int yPos = y + (int)(lvlObj.getXOffset() * SCALE);
-                    g.drawImage(model, xPos, yPos, lvlObj.getWid(), lvlObj.getHei(), null);
-                }
+                    ObjectMetadata meta = decorationMetadata.get(new Point(i, j));
+                    double rotation = (meta != null) ? meta.getRotation() : 0.0;
+                    double scaleX = (meta != null) ? meta.getScaleX() : 1.0;
+                    double scaleY = (meta != null) ? meta.getScaleY() : 1.0;
 
+                    if (rotation == 0.0 && scaleX == 1.0 && scaleY == 1.0) {
+                        int xPos = (TILES_SIZE * i - xLevelOffset) + (int) (lvlObj.getYOffset() * SCALE);
+                        int yPos = (TILES_SIZE * j - yLevelOffset) + (int) (lvlObj.getXOffset() * SCALE);
+                        g.drawImage(model, xPos, yPos, lvlObj.getWid(), lvlObj.getHei(), null);
+                    }
+                    else {
+                        Graphics2D g2d = (Graphics2D) g.create();
+                        int drawX = TILES_SIZE * i - xLevelOffset;
+                        int drawY = TILES_SIZE * j - yLevelOffset;
+
+                        int centerX = drawX + lvlObj.getWid() / 2;
+                        int centerY = drawY + lvlObj.getHei() / 2;
+
+                        g2d.translate(centerX, centerY);
+                        g2d.rotate(Math.toRadians(rotation));
+                        g2d.scale(scaleX, scaleY);
+
+                        g2d.drawImage(model, -lvlObj.getWid() / 2, -lvlObj.getHei() / 2, lvlObj.getWid(), lvlObj.getHei(), null);
+                        g2d.dispose();
+                    }
+                }
             }
         }
     }
@@ -170,10 +206,6 @@ public class LevelManager {
                 g.drawImage(levelSprite[tileIndex], x, y, size, size, null);
             }
         }
-    }
-
-    private void renderParticles(Graphics g) {
-        Arrays.stream(ambientParticles).forEach(p -> p.render(g));
     }
 
     /**
@@ -204,7 +236,6 @@ public class LevelManager {
         renderTerrain(g, xLevelOffset, yLevelOffset, true);       // Terrain behind layer
         renderDeco(g, xLevelOffset, yLevelOffset, 4);              // Fourth deco layer
         renderTerrain(g, xLevelOffset, yLevelOffset, false);      // Terrain normal layer
-        renderParticles(g);
     }
 
     public Level getCurrentLevel() {
@@ -231,15 +262,15 @@ public class LevelManager {
     }
 
     // Getters
-    public AmbientParticle[] getParticles() {
-        return ambientParticles;
-    }
-
     public int getLevelIndexI() {
         return levelIndexI;
     }
 
     public int getLevelIndexJ() {
         return levelIndexJ;
+    }
+
+    public BufferedImage getCurrentBackground() {
+        return currentBackground;
     }
 }

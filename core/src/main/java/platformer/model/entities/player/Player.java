@@ -18,6 +18,7 @@ import platformer.model.gameObjects.ObjectManager;
 import platformer.model.gameObjects.projectiles.Projectile;
 import platformer.model.inventory.Inventory;
 import platformer.model.inventory.InventoryBonus;
+import platformer.model.inventory.ItemRarity;
 import platformer.model.minimap.MinimapManager;
 import platformer.model.perks.PerksBonus;
 import platformer.utils.Utils;
@@ -25,6 +26,7 @@ import platformer.utils.Utils;
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Random;
@@ -72,6 +74,7 @@ public class Player extends Entity {
     // Effect
     private int runDustTick = 0;
     private int wallSlideDustTick = 0;
+    private int mythicAuraTick = 0;
 
 
     public Player(int xPos, int yPos, int width, int height, EnemyManager enemyManager, ObjectManager objectManager, MinimapManager minimapManager, EffectManager effectManager) {
@@ -362,13 +365,20 @@ public class Player extends Entity {
         boolean onWall = checkAction(PlayerAction.ON_WALL);
         boolean onObject = checkAction(PlayerAction.ON_OBJECT);
 
-        if (!onObject && !onWall && Utils.getInstance().canMoveHere(hitBox.x+dx, hitBox.y, hitBox.width, hitBox.height, levelData))
-            hitBox.x += dx;
-        else if (dash && Utils.getInstance().canMoveHere(hitBox.x+dx, hitBox.y, hitBox.width, hitBox.height, levelData))
-            hitBox.x += dx;
+        double actualDx = objectManager.checkSolidObjectCollision(hitBox, dx);
+        if (dash && actualDx != dx) {
+            removeAction(PlayerAction.DASH);
+            removeAction(PlayerAction.DASH_HIT);
+            dashTick = 0;
+        }
+
+        if (!onObject && !onWall && Utils.getInstance().canMoveHere(hitBox.x + actualDx, hitBox.y, hitBox.width, hitBox.height, levelData))
+            hitBox.x += actualDx;
+        else if (dash && Utils.getInstance().canMoveHere(hitBox.x + actualDx, hitBox.y, hitBox.width, hitBox.height, levelData))
+            hitBox.x += actualDx;
         else {
-            if (onObject) hitBox.x = objectManager.getXObjectBound(hitBox, dx);
-            else if (!onWall) hitBox.x = Utils.getInstance().getXPosOnTheWall(hitBox, dx);
+            if (onObject) hitBox.x = objectManager.getXObjectBound(hitBox, actualDx);
+            else if (!onWall) hitBox.x = Utils.getInstance().getXPosOnTheWall(hitBox, actualDx);
 
             if (dash) {
                 removeAction(PlayerAction.DASH);
@@ -476,6 +486,10 @@ public class Player extends Entity {
             if (hit) return;
             else addAction(PlayerAction.HIT);
         }
+        else {
+            String healText = String.format("+%.1f", value);
+            effectManager.spawnDamageNumber(healText, getHitBox().getCenterX(), getHitBox().y, HEAL_COLOR);
+        }
         currentHealth += value;
         double healthCap = maxHealth + PerksBonus.getInstance().getBonusHealth();
         double equipmentBonus = InventoryBonus.getInstance().getHealth() * healthCap;
@@ -491,6 +505,8 @@ public class Player extends Entity {
             effectManager.spawnDustParticles(hitBox.getCenterX(), hitBox.getCenterY(), 15 + new Random().nextInt(6), DustType.PLAYER_HIT, flipSign, this);
             double defenseBonus = InventoryBonus.getInstance().getDefense() * value * (-1);
             value += defenseBonus;
+            String dmgText = String.format("%.1f", -value);
+            effectManager.spawnDamageNumber(dmgText, getHitBox().getCenterX(), getHitBox().y, DAMAGE_COLOR);
         }
         changeHealth(value);
         Rectangle2D.Double hBox = (o instanceof Enemy) ? (((Enemy) o).getHitBox()) : (((Projectile) o).getHitBox());
@@ -502,6 +518,10 @@ public class Player extends Entity {
     }
 
     private void changeHealthNoKnockback(double value) {
+        if (value < 0) {
+            String dmgText = String.format("%.1f", -value);
+            effectManager.spawnDamageNumber(dmgText, getHitBox().getCenterX(), getHitBox().y, DAMAGE_COLOR);
+        }
         currentHealth += value;
         double healthCap = maxHealth + PerksBonus.getInstance().getBonusHealth();
         double equipmentBonus = InventoryBonus.getInstance().getHealth() * healthCap;
@@ -510,6 +530,10 @@ public class Player extends Entity {
     }
 
     public void changeStamina(double value) {
+        if (value > 0) {
+            String staminaText = String.format("+%.1f", value);
+            effectManager.spawnDamageNumber(staminaText, getHitBox().getCenterX(), getHitBox().y, STAMINA_COLOR);
+        }
         currentStamina += value;
         double staminaCap = PLAYER_MAX_ST + PerksBonus.getInstance().getBonusPower();
         double equipmentBonus = InventoryBonus.getInstance().getStamina() * staminaCap;
@@ -600,6 +624,7 @@ public class Player extends Entity {
             updateDeath();
             return;
         }
+        updateMythicAura();
         updateAttackBox();
         setAnimation();
         updateHitBlockMove();
@@ -620,6 +645,21 @@ public class Player extends Entity {
             }
         }
         else runDustTick = 0;
+    }
+
+    private void updateMythicAura() {
+        boolean hasMythic = Arrays.stream(inventory.getEquipped())
+                .anyMatch(item -> item != null && item.getData() != null && item.getData().rarity == ItemRarity.MYTHIC);
+
+        if (!hasMythic) return;
+
+        mythicAuraTick++;
+        if (mythicAuraTick >= 5) {
+            mythicAuraTick = 0;
+            double x = getHitBox().getCenterX();
+            double y = getHitBox().getCenterY();
+            effectManager.spawnDustParticles(x, y, 1, DustType.THUNDERBOLT_AURA, flipSign, this);
+        }
     }
 
     public void render(Graphics g, int xLevelOffset, int yLevelOffset) {
