@@ -6,6 +6,7 @@ import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
 import platformer.model.entities.Direction;
 import platformer.model.entities.effects.particles.DustType;
+import platformer.model.entities.enemies.boss.Roric;
 import platformer.model.entities.enemies.boss.SpearWoman;
 import platformer.model.entities.enemies.renderer.*;
 import platformer.model.entities.player.Player;
@@ -43,7 +44,7 @@ public class EnemyManager implements Publisher {
 
     private final GameState gameState;
 
-    private BufferedImage[][] skeletonAnimations, ghoulAnimations, knightAnimations, wraithAnimations, spearWomanAnimations;
+    private BufferedImage[][] skeletonAnimations, ghoulAnimations, knightAnimations, wraithAnimations, spearWomanAnimations, roricAnimations;
 
     private Map<EnemyType, List<Enemy>> enemies = new HashMap<>();
     private final Map<Class<? extends Enemy>, EnemyRenderer<? extends Enemy>> enemyRenderers = new HashMap<>();
@@ -68,6 +69,7 @@ public class EnemyManager implements Publisher {
         this.knightAnimations = Animation.getInstance().loadKnightAnimation(KNIGHT_WIDTH, KNIGHT_HEIGHT);
         this.spearWomanAnimations = Animation.getInstance().loadSpearWomanAnimations(SW_WIDTH, SW_HEIGHT);
         this.wraithAnimations = Animation.getInstance().loadWraithAnimation(WRAITH_WIDTH, WRAITH_HEIGHT);
+        this.roricAnimations = Animation.getInstance().loadRoricAnimations(RORIC_WIDTH, RORIC_HEIGHT);
     }
 
     private void initRenderers() {
@@ -76,6 +78,7 @@ public class EnemyManager implements Publisher {
         this.enemyRenderers.put(SpearWoman.class, new SpearWomanRenderer(spearWomanAnimations));
         this.enemyRenderers.put(Knight.class, new KnightRenderer(knightAnimations));
         this.enemyRenderers.put(Wraith.class, new WraithRenderer(wraithAnimations));
+        this.enemyRenderers.put(Roric.class, new RoricRenderer(roricAnimations));
     }
 
     public void loadEnemies(Level level) {
@@ -113,6 +116,10 @@ public class EnemyManager implements Publisher {
 
     private void renderSpearWoman(Graphics g, int xLevelOffset, int yLevelOffset) {
         renderEnemies(SpearWoman.class, g, xLevelOffset, yLevelOffset);
+    }
+
+    private void renderRoric(Graphics g, int xLevelOffset, int yLevelOffset) {
+        renderEnemies(Roric.class, g, xLevelOffset, yLevelOffset);
     }
 
     private void renderKnights(Graphics g, int xLevelOffset, int yLevelOffset) {
@@ -196,6 +203,8 @@ public class EnemyManager implements Publisher {
             }
         }
         if (intersectingEnemies.isEmpty()) return false;
+        // TODO: Will disable attacking roric later
+        if (intersectingEnemies.stream().anyMatch(e -> e instanceof Roric)) return false;
 
         intersectingEnemies.sort(Comparator.comparingDouble(e -> e.getHitBox().getCenterX() - player.getHitBox().getCenterX()));
 
@@ -351,6 +360,10 @@ public class EnemyManager implements Publisher {
         getEnemies(SpearWoman.class).stream()
                 .filter(SpearWoman::isAlive)
                 .forEach(spearWoman -> spearWoman.update(spearWomanAnimations, levelData, player, gameState.getSpellManager(), gameState.getObjectManager(), gameState.getBossInterface()));
+
+        getEnemies(Roric.class).stream()
+                .filter(Roric::isAlive)
+                .forEach(roric -> roric.update(roricAnimations, levelData, player, gameState.getSpellManager(), gameState.getObjectManager(), gameState.getBossInterface()));
     }
 
     private void updateSpellHitTimers() {
@@ -365,6 +378,7 @@ public class EnemyManager implements Publisher {
             renderKnights(g, xLevelOffset, yLevelOffset);
             renderWraiths(g, xLevelOffset, yLevelOffset);
             renderSpearWoman(g, xLevelOffset, yLevelOffset);
+            renderRoric(g, xLevelOffset, yLevelOffset);
         }
         catch (Exception ignored) {}
     }

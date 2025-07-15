@@ -31,6 +31,7 @@ public final class AnimConstants {
     public static final int KNIGHT_W = 220, KNIGHT_H = 160;
     public static final int WRAITH_W = 800, WRAITH_H = 800;
     public static final int SW_W = 128, SW_H = 115;
+    public static final int RORIC_W = 288, RORIC_H = 128;
 
     public static final int POTION_W = 12, POTION_H = 16;
     public static final int CONTAINER_W = 40, CONTAINER_H = 30;

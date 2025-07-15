@@ -154,6 +154,25 @@ public class Animation {
         return anim;
     }
 
+
+    /**
+     * This boss is a timed fight, so it does not have death and hit animations.
+     */
+    public BufferedImage[][] loadRoricAnimations(int w, int h) {
+        BufferedImage[][] anim = new BufferedImage[20][22];
+
+        anim[Anim.IDLE.ordinal()] = loadFromSprite(RORIC_SHEET, 12, 0, w, h, 0, RORIC_W, RORIC_H);
+        anim[Anim.RUN.ordinal()] = loadFromSprite(RORIC_SHEET, 10, 1, w, h, 0, RORIC_W, RORIC_H);
+        anim[Anim.ATTACK_1.ordinal()] = loadFromSprite(RORIC_SHEET, 10, 9, w, h, 0, RORIC_W, RORIC_H);
+        anim[Anim.ATTACK_2.ordinal()] = loadFromSprite(RORIC_SHEET, 15, 10, w, h, 0, RORIC_W, RORIC_H);
+        anim[Anim.BLOCK.ordinal()] = loadFromSprite(RORIC_SHEET, 19, 14, w, h, 0, RORIC_W, RORIC_H);
+        anim[Anim.SPELL_1.ordinal()] = loadFromSprite(RORIC_SHEET, 17, 13, w, h, 0, RORIC_W, RORIC_H);
+        anim[Anim.SPELL_2.ordinal()] = loadFromSprite(RORIC_SHEET, 10, 7, w, h, 0, RORIC_W, RORIC_H);
+        anim[Anim.SPELL_3.ordinal()] = loadFromSprite(RORIC_SHEET, 12, 11, w, h, 0, RORIC_W, RORIC_H);
+
+        return anim;
+    }
+
     // Objects
     public BufferedImage[][] loadObjects() {
         BufferedImage[][] anim = new BufferedImage[26][17];

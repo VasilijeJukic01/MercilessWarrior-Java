@@ -171,6 +171,18 @@ public final class Constants {
     public static final int SW_AB_WID_REDUCE = scale(48);
     public static final int SW_AB_HEI = scale(54);
 
+    public static final int RORIC_WIDTH = scale(240);
+    public static final int RORIC_HEIGHT = scale(150);
+    public static final int RORIC_X_OFFSET = scale(90);
+    public static final int RORIC_Y_OFFSET = scale(96);
+    public static final int RORIC_HB_WID = scale(15);
+    public static final int RORIC_HB_HEI = scale(50);
+    public static final int RORIC_HB_OFFSET_X = scale(25);
+    public static final int RORIC_HB_OFFSET_Y = scale(15);
+    public static final int RORIC_AB_WID = scale(96);
+    public static final int RORIC_AB_WID_REDUCE = scale(48);
+    public static final int RORIC_AB_HEI = scale(50);
+
     public static final double SKELETON_SPEED_FAST = dScale(0.35);
     public static final double GHOUL_SPEED_FAST = dScale(0.45);
     public static final double KNIGHT_SPEED_FAST = dScale(0.4);

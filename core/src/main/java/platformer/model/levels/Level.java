@@ -1,6 +1,7 @@
 package platformer.model.levels;
 
 import platformer.model.entities.enemies.*;
+import platformer.model.entities.enemies.boss.Roric;
 import platformer.model.entities.enemies.boss.SpearWoman;
 import platformer.model.gameObjects.GameObject;
 import platformer.model.gameObjects.ObjType;
@@ -107,6 +108,9 @@ public class Level {
                 break;
             case WRAITH:
                 addEnemy(new Wraith(i*TILES_SIZE, (j-1)*TILES_SIZE));
+                break;
+            case RORIC:
+                addEnemy(new Roric(i*TILES_SIZE, (j-1)*TILES_SIZE));
                 break;
             default: break;
         }

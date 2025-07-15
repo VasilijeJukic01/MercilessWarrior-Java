@@ -32,6 +32,7 @@ public final class FilePaths {
     public static final String KNIGHT_SHEET = "/images/enemies/KnightSprite.png";
     public static final String WRAITH_SHEET = "/images/enemies/WraithSprite.png";
     public static final String SW_SHEET = "/images/enemies/Bosses/SpearWoman.png";
+    public static final String RORIC_SHEET = "/images/enemies/Bosses/Roric.png";
 
     // Objects
     public static final String POTIONS_SHEET = "/images/objs/potions_sprites.png";
