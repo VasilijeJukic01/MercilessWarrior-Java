@@ -171,7 +171,7 @@ public final class Constants {
     public static final int SW_AB_WID_REDUCE = scale(48);
     public static final int SW_AB_HEI = scale(54);
 
-    public static final int RORIC_WIDTH = scale(240);
+    public static final int RORIC_WIDTH = scale(250);
     public static final int RORIC_HEIGHT = scale(150);
     public static final int RORIC_X_OFFSET = scale(90);
     public static final int RORIC_Y_OFFSET = scale(96);
@@ -364,6 +364,13 @@ public final class Constants {
     public static final int ENEMY_PROJECTILE_DMG = 5;
     public static final int FIREBALL_PROJECTILE_DMG = 10;
     public static final int PLAYER_PROJECTILE_DMG = 10;
+
+    public static final int RORIC_BEAM_WID = scale(600);
+    public static final int RORIC_BEAM_HEI = scale(148);
+    public static final int RORIC_BEAM_HB_HEI = scale(18);
+    public static final int RORIC_BEAM_OFFSET_X_RIGHT = scale(50);
+    public static final int RORIC_BEAM_OFFSET_X_LEFT = scale(10);
+    public static final int RORIC_BEAM_OFFSET_Y = scale(12);
 
     // Spell Constants
     public static final int FLAME_WID = scale(45);

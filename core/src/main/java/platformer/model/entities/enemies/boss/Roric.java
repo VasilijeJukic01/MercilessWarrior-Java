@@ -33,6 +33,7 @@ public class Roric extends Enemy {
         hitBox.y += RORIC_HB_OFFSET_Y;
         initAttackBox();
         super.cooldown = new double[1];
+        super.entityState = Anim.SPELL_1;
     }
 
     // Init
@@ -42,9 +43,7 @@ public class Roric extends Enemy {
     }
 
     private void startFight(ObjectManager objectManager) {
-        if (!start) {
-            setStart(true);
-        }
+        if (!start) setStart(true);
     }
 
     // Core
@@ -53,6 +52,8 @@ public class Roric extends Enemy {
         switch (entityState) {
             case IDLE:
                 idleAction(levelData, player, objectManager); break;
+            case SPELL_1:
+                beamAttack(spellManager); break;
             default: break;
         }
     }
@@ -64,6 +65,7 @@ public class Roric extends Enemy {
 
     public void update(BufferedImage[][] animations, int[][] levelData, Player player, SpellManager spellManager, ObjectManager objectManager, BossInterface bossInterface) {
         updateAnimation(animations);
+        updateBehavior(levelData, player, spellManager, objectManager);
         if (!bossInterface.isActive() && start) bossInterface.setActive(true);
         else if (bossInterface.isActive() && !start) bossInterface.setActive(false);
     }
@@ -82,6 +84,12 @@ public class Roric extends Enemy {
     private void idleAction(int[][] levelData, Player player, ObjectManager objectManager) {
         if (cooldown[Cooldown.ATTACK.ordinal()] == 0) {
             // TODO: Later
+        }
+    }
+
+    private void beamAttack(SpellManager spellManager) {
+        if (animIndex == 9) {
+            spellManager.activateRoricBeam(this);
         }
     }
 

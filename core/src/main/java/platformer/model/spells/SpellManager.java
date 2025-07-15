@@ -1,11 +1,14 @@
 package platformer.model.spells;
 
 import platformer.animation.Animation;
+import platformer.model.entities.Direction;
+import platformer.model.entities.enemies.boss.Roric;
 import platformer.model.entities.player.Player;
 import platformer.state.GameState;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -25,11 +28,13 @@ public class SpellManager {
     // Animations
     private BufferedImage[] lightningAnimations;
     private BufferedImage[] flashAnimations;
+    private BufferedImage[] roricBeamAnimations;
 
     // Spells
     private final Flame flame;
     private List<Lightning> bossLightnings;
     private List<Flash> bossFlashes;
+    private final List<RoricBeam> roricBeams;
 
     // Flags
     private boolean spellHit;
@@ -39,6 +44,7 @@ public class SpellManager {
     public SpellManager(GameState gameState) {
         this.gameState = gameState;
         this.flame = new Flame(SpellType.FLAME_1, 0, 0, FLAME_WID, FLAME_HEI);
+        this.roricBeams = new ArrayList<>();
         initSpellAnimations();
         initBossSpells();
     }
@@ -47,6 +53,7 @@ public class SpellManager {
     private void initSpellAnimations() {
         this.lightningAnimations = loadLightningAnimations();
         this.flashAnimations = loadFlashAnimations();
+        this.roricBeamAnimations = Animation.getInstance().loadRoricProjectiles()[0];
     }
 
     private BufferedImage[] loadLightningAnimations() {
@@ -104,6 +111,18 @@ public class SpellManager {
         checkFlashHit();
     }
 
+    private void updateRoricBeam() {
+        List<RoricBeam> toRemove = new ArrayList<>();
+        for (RoricBeam beam : roricBeams) {
+            if (beam.isActive()) {
+                beam.update(gameState.getPlayer());
+            } else {
+                toRemove.add(beam);
+            }
+        }
+        roricBeams.removeAll(toRemove);
+    }
+
     private void updateSpells(List<? extends Spell> spells) {
         spells.stream()
                 .filter(Spell::isActive)
@@ -114,12 +133,14 @@ public class SpellManager {
     public void update() {
         updateFlames();
         updateLightnings();
+        updateRoricBeam();
     }
 
     public void render(Graphics g, int xLevelOffset, int yLevelOffset) {
         if (flame.isActive()) flame.render(g, xLevelOffset, yLevelOffset);
         renderSpells(bossLightnings, lightningAnimations, g, xLevelOffset, yLevelOffset, LIGHTNING_OFFSET_X);
         renderSpells(bossFlashes, flashAnimations, g, xLevelOffset, yLevelOffset, FLASH_OFFSET_X);
+        renderRoricBeams(g, xLevelOffset, yLevelOffset);
     }
 
     // Render
@@ -130,6 +151,22 @@ public class SpellManager {
                 int x = (int) spell.getHitBox().x - xLevelOffset - offset;
                 int y = (int) spell.getHitBox().y - yLevelOffset + 1;
                 g.drawImage(anim[spell.getAnimIndex()], x, y, spell.getWidth(), spell.getHeight(), null);
+            }
+        }
+    }
+
+    private void renderRoricBeams(Graphics g, int xLevelOffset, int yLevelOffset) {
+        List<RoricBeam> beamsSnapshot = new ArrayList<>(roricBeams);
+        for (RoricBeam beam : beamsSnapshot) {
+            if (beam.isActive()) {
+                int fS = (beam.getDirection() == Direction.LEFT) ? -1 : 1;
+                int x = (int) beam.getHitBox().x - xLevelOffset;
+                int y = (int) beam.getHitBox().y - yLevelOffset - (int) (64 * SCALE);
+
+                if (fS == -1) x += RORIC_BEAM_WID;
+
+                g.drawImage(roricBeamAnimations[beam.getAnimIndex()], x, y, fS * RORIC_BEAM_WID, RORIC_BEAM_HEI, null);
+                beam.hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.CYAN);
             }
         }
     }
@@ -152,12 +189,17 @@ public class SpellManager {
         bossFlashes.get(k).setActive(true);
         bossFlashes.get(n-k-1).setAnimIndex(0);
         bossFlashes.get(n-k-1).setActive(true);
+    }
 
+    public void activateRoricBeam(Roric roric) {
+        Direction dir = roric.getDirection();
+        roricBeams.add(new RoricBeam(SpellType.RORIC_BEAM, (int)roric.getHitBox().x, (int)roric.getHitBox().y, dir));
     }
 
     public void reset() {
         resetSpells(bossLightnings);
         resetSpells(bossFlashes);
+        roricBeams.clear();
     }
 
     private void resetSpells(List<? extends Spell> spells) {

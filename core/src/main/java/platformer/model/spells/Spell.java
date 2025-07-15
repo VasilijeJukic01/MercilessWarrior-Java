@@ -20,7 +20,7 @@ public abstract class Spell implements Renderable<Graphics>, Debug<Graphics> {
     protected int xPos, yPos;
     protected int width, height;
     protected Rectangle2D.Double hitBox;
-    private final int animSpeed = 20;
+    protected int animSpeed = 20;
     protected int animTick, animIndex;
     protected boolean active = true;
 
@@ -51,7 +51,7 @@ public abstract class Spell implements Renderable<Graphics>, Debug<Graphics> {
     }
 
     private void finishAnimation() {
-        if (spellType == SpellType.FLAME_1 || spellType == SpellType.LIGHTNING || spellType == SpellType.FLASH) {
+        if (spellType == SpellType.LIGHTNING || spellType == SpellType.FLASH || spellType == SpellType.RORIC_BEAM) {
             active = false;
         }
     }

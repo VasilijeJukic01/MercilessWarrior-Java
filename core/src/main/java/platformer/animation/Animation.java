@@ -241,6 +241,12 @@ public class Animation {
         return loadFromSprite(FIREBALL_SHEET, 9, 0, FB_WID, FB_HEI,0, FIREBALL_W, FIREBALL_H);
     }
 
+    public BufferedImage[][] loadRoricProjectiles() {
+        BufferedImage[][] anim = new BufferedImage[2][];
+        anim[0] = loadFromSprite(RORIC_SPELLS_SHEET, 5, 8, RORIC_BEAM_WID, RORIC_BEAM_HEI, 0, RORIC_PROJECTILE_W, RORIC_PROJECTILE_H);
+        return anim;
+    }
+
     // Getters
     public BufferedImage[][] getCoinAnimations() {
         return coinAnimations;
