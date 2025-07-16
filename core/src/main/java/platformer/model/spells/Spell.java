@@ -51,7 +51,7 @@ public abstract class Spell implements Renderable<Graphics>, Debug<Graphics> {
     }
 
     private void finishAnimation() {
-        if (spellType == SpellType.LIGHTNING || spellType == SpellType.FLASH || spellType == SpellType.RORIC_BEAM) {
+        if (spellType == SpellType.LIGHTNING || spellType == SpellType.FLASH || spellType == SpellType.RORIC_BEAM || spellType == SpellType.ARROW_RAIN) {
             active = false;
         }
     }

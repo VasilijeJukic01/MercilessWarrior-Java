@@ -245,6 +245,7 @@ public class Animation {
     public BufferedImage[][] loadRoricProjectiles() {
         BufferedImage[][] anim = new BufferedImage[2][];
         anim[0] = loadFromSprite(RORIC_SPELLS_SHEET, 5, 8, RORIC_BEAM_WID, RORIC_BEAM_HEI, 0, RORIC_PROJECTILE_W, RORIC_PROJECTILE_H);
+        anim[1] = loadFromSprite(RORIC_SPELLS_SHEET, 13, 7, RORIC_RAIN_WID, RORIC_RAIN_HEI, 0, RORIC_PROJECTILE_W, RORIC_PROJECTILE_H);
         return anim;
     }
 

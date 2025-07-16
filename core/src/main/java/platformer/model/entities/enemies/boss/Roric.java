@@ -40,7 +40,7 @@ public class Roric extends Enemy {
         hitBox.y += RORIC_HB_OFFSET_Y;
         initAttackBox();
         super.cooldown = new double[1];
-        super.entityState = Anim.IDLE;
+        super.entityState = Anim.SPELL_3;
     }
 
     private void initAttackBox() {
@@ -101,13 +101,16 @@ public class Roric extends Enemy {
     }
 
     private void updateBehavior(int[][] levelData, Player player, SpellManager spellManager, ObjectManager objectManager) {
-        if (cooldown[Cooldown.ATTACK.ordinal()] != 0) return;
+        if (cooldown[Cooldown.ATTACK.ordinal()] > 0) return;
         switch (entityState) {
             case IDLE:
-                idleAction(levelData, player, objectManager);
+                //idleAction(levelData, player, objectManager);
                 break;
             case SPELL_1:
                 beamAttack(spellManager);
+                break;
+            case SPELL_3:
+                handleArrowRainAttack(spellManager, player);
                 break;
             default:
                 break;
@@ -127,13 +130,21 @@ public class Roric extends Enemy {
     // Behavior
     private void idleAction(int[][] levelData, Player player, ObjectManager objectManager) {
         if (cooldown[Cooldown.ATTACK.ordinal()] == 0) {
-            jump(levelData);
+            setEnemyAction(Anim.SPELL_3);
         }
     }
 
     private void beamAttack(SpellManager spellManager) {
         if (animIndex == 9) {
             spellManager.activateRoricBeam(this);
+        }
+    }
+
+    private void handleArrowRainAttack(SpellManager spellManager, Player player) {
+        if (animIndex == 0) attackCheck = false;
+        if (animIndex == 8 && !attackCheck) {
+            spellManager.activateArrowRain(player);
+            attackCheck = true;
         }
     }
 
@@ -163,10 +174,7 @@ public class Roric extends Enemy {
 
     @Override
     protected void updateAnimation(BufferedImage[][] animations) {
-        if (cooldown != null) {
-            coolDownTickUpdate();
-            if ((entityState != Anim.IDLE && entityState != Anim.JUMP_FALL) && cooldown[Cooldown.ATTACK.ordinal()] != 0) return;
-        }
+        coolDownTickUpdate();
 
         animTick++;
         if (animTick >= animSpeed) {
@@ -188,12 +196,9 @@ public class Roric extends Enemy {
 
     private void finishAnimation() {
         animIndex = 0;
-        if (entityState == Anim.JUMP_FALL) {
-            // TESTING //
-            entityState = Anim.SPELL_1;
-            setDirection(direction == Direction.LEFT ? Direction.RIGHT : Direction.LEFT);
+        if (entityState == Anim.JUMP_FALL || entityState == Anim.SPELL_3 || entityState == Anim.SPELL_1) {
+            entityState = Anim.IDLE;
         }
-        else entityState = Anim.IDLE;
     }
 
     @Override

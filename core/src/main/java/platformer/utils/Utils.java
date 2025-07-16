@@ -246,6 +246,24 @@ public class Utils {
     }
 
     /**
+     * Finds the Y-coordinate of the ground directly below a given point.
+     * It "raycasts" downwards until it hits a solid tile.
+     * @param x The x-coordinate to start the search from.
+     * @param y The y-coordinate to start the search from.
+     * @param levelData The level's collision data.
+     * @return The Y-coordinate of the top of the ground tile. Returns the initial y if no ground is found below.
+     */
+    public double getGroundY(double x, double y, int[][] levelData) {
+        int currentTileY = (int) (y / TILES_SIZE);
+        int tileX = (int) (x / TILES_SIZE);
+        if (tileX < 0 || tileX >= levelData.length) return y;
+        for (int i = currentTileY; i < levelData[0].length; i++) {
+            if (isTileSolid(tileX, i, levelData)) return i * TILES_SIZE;
+        }
+        return y;
+    }
+
+    /**
      * This method checks if the entity is on the floor.
      * It checks the solidity of the tiles directly below the entity's hitbox.
      * If any of the tiles are solid, the entity is considered to be on the floor.

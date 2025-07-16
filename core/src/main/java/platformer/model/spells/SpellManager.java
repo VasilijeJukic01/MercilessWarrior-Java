@@ -5,6 +5,7 @@ import platformer.model.entities.Direction;
 import platformer.model.entities.enemies.boss.Roric;
 import platformer.model.entities.player.Player;
 import platformer.state.GameState;
+import platformer.utils.Utils;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -29,12 +30,14 @@ public class SpellManager {
     private BufferedImage[] lightningAnimations;
     private BufferedImage[] flashAnimations;
     private BufferedImage[] roricBeamAnimations;
+    private BufferedImage[] arrowRainAnimations;
 
     // Spells
     private final Flame flame;
     private List<Lightning> bossLightnings;
     private List<Flash> bossFlashes;
     private final List<RoricBeam> roricBeams;
+    private final List<ArrowRain> arrowRains;
 
     // Flags
     private boolean spellHit;
@@ -45,6 +48,7 @@ public class SpellManager {
         this.gameState = gameState;
         this.flame = new Flame(SpellType.FLAME_1, 0, 0, FLAME_WID, FLAME_HEI);
         this.roricBeams = new ArrayList<>();
+        this.arrowRains = new ArrayList<>();
         initSpellAnimations();
         initBossSpells();
     }
@@ -54,6 +58,7 @@ public class SpellManager {
         this.lightningAnimations = loadLightningAnimations();
         this.flashAnimations = loadFlashAnimations();
         this.roricBeamAnimations = Animation.getInstance().loadRoricProjectiles()[0];
+        this.arrowRainAnimations = Animation.getInstance().loadRoricProjectiles()[1];
     }
 
     private BufferedImage[] loadLightningAnimations() {
@@ -123,6 +128,19 @@ public class SpellManager {
         roricBeams.removeAll(toRemove);
     }
 
+    private void updateArrowRain() {
+        List<ArrowRain> toRemove = new ArrayList<>();
+        for (ArrowRain arrow : arrowRains) {
+            if (arrow.isActive()) {
+                arrow.update(gameState.getPlayer());
+                arrow.updateAnimation();
+            } else {
+                toRemove.add(arrow);
+            }
+        }
+        arrowRains.removeAll(toRemove);
+    }
+
     private void updateSpells(List<? extends Spell> spells) {
         spells.stream()
                 .filter(Spell::isActive)
@@ -134,6 +152,7 @@ public class SpellManager {
         updateFlames();
         updateLightnings();
         updateRoricBeam();
+        updateArrowRain();
     }
 
     public void render(Graphics g, int xLevelOffset, int yLevelOffset) {
@@ -141,6 +160,7 @@ public class SpellManager {
         renderSpells(bossLightnings, lightningAnimations, g, xLevelOffset, yLevelOffset, LIGHTNING_OFFSET_X);
         renderSpells(bossFlashes, flashAnimations, g, xLevelOffset, yLevelOffset, FLASH_OFFSET_X);
         renderRoricBeams(g, xLevelOffset, yLevelOffset);
+        renderArrowRain(g, xLevelOffset, yLevelOffset);
     }
 
     // Render
@@ -171,6 +191,17 @@ public class SpellManager {
         }
     }
 
+    private void renderArrowRain(Graphics g, int xLevelOffset, int yLevelOffset) {
+        for (ArrowRain arrow : arrowRains) {
+            if (arrow.isActive()) {
+                int x = (int) arrow.getHitBox().x - xLevelOffset - (int)(127 * SCALE);
+                int y = (int) arrow.getHitBox().y - yLevelOffset;
+                g.drawImage(arrowRainAnimations[arrow.getAnimIndex()], x, y, arrow.getWidth(), arrow.getHeight(), null);
+                arrow.renderHitBox(g, xLevelOffset, yLevelOffset, Color.CYAN);
+            }
+        }
+    }
+
     // Activators
     public void activateLightnings() {
         spellHit = false;
@@ -196,10 +227,18 @@ public class SpellManager {
         roricBeams.add(new RoricBeam(SpellType.RORIC_BEAM, (int)roric.getHitBox().x, (int)roric.getHitBox().y, dir));
     }
 
+    public void activateArrowRain(Player player) {
+        int xPos = (int) (player.getHitBox().getCenterX());
+        double groundY = Utils.getInstance().getGroundY(player.getHitBox().getCenterX(), player.getHitBox().y, gameState.getLevelManager().getCurrentLevel().getLvlData());
+        int yPos = (int) (groundY - (390 * SCALE));
+        arrowRains.add(new ArrowRain(SpellType.ARROW_RAIN, xPos, yPos));
+    }
+
     public void reset() {
         resetSpells(bossLightnings);
         resetSpells(bossFlashes);
         roricBeams.clear();
+        arrowRains.clear();
     }
 
     private void resetSpells(List<? extends Spell> spells) {
