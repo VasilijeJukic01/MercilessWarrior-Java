@@ -11,6 +11,7 @@ import platformer.model.entities.player.Player;
 import platformer.model.gameObjects.ObjectManager;
 import platformer.model.spells.SpellManager;
 import platformer.ui.overlays.hud.BossInterface;
+import platformer.utils.Utils;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
@@ -22,8 +23,14 @@ import static platformer.constants.Constants.*;
 public class Roric extends Enemy {
 
     private int attackOffset;
-
     private boolean start;
+    private double xSpeed = 0;
+
+    // Physics
+    private final double upwardGravity = 0.016 * SCALE;
+    private final double downwardGravity = 0.025 * SCALE;
+    private final double collisionFallSpeed = 0.6 * SCALE;
+    private final double jumpSpeed = -3.1 * SCALE;
 
     public Roric(int xPos, int yPos) {
         super(xPos, yPos, RORIC_WIDTH, RORIC_HEIGHT, EnemyType.RORIC, 16);
@@ -33,10 +40,9 @@ public class Roric extends Enemy {
         hitBox.y += RORIC_HB_OFFSET_Y;
         initAttackBox();
         super.cooldown = new double[1];
-        super.entityState = Anim.SPELL_1;
+        super.entityState = Anim.IDLE;
     }
 
-    // Init
     private void initAttackBox() {
         this.attackBox = new Rectangle2D.Double(xPos - (15 * SCALE), yPos + (15 * SCALE), RORIC_AB_WID, RORIC_AB_HEI);
         this.attackOffset = (int)(33 * SCALE);
@@ -46,28 +52,66 @@ public class Roric extends Enemy {
         if (!start) setStart(true);
     }
 
-    // Core
+    @Override
+    public void update(BufferedImage[][] animations, int[][] levelData, Player player) {
+        // Not used
+    }
+
+    public void update(BufferedImage[][] animations, int[][] levelData, Player player, SpellManager spellManager, ObjectManager objectManager, BossInterface bossInterface) {
+        updateMove(levelData, player, spellManager, objectManager);
+        updateAnimation(animations);
+        if (!bossInterface.isActive() && start) bossInterface.setActive(true);
+        else if (bossInterface.isActive() && !start) bossInterface.setActive(false);
+    }
+
+    private void updateMove(int[][] levelData, Player player, SpellManager spellManager, ObjectManager objectManager) {
+        if (!Utils.getInstance().isEntityOnFloor(hitBox, levelData) && entityState != Anim.IDLE) {
+            inAir = true;
+        }
+        if (inAir) updateInAir(levelData, 0, collisionFallSpeed);
+        else updateBehavior(levelData, player, spellManager, objectManager);
+    }
+
+    /**
+     * Overridden to use separate gravity values for ascending and descending.
+     */
+    protected void updateInAir(int[][] levelData, double gravity, double collisionFallSpeed) {
+        // Jump
+        if (airSpeed < 0) airSpeed += upwardGravity;
+        // Fall
+        else airSpeed += downwardGravity;
+
+        if (Utils.getInstance().canMoveHere(hitBox.x + xSpeed, hitBox.y, hitBox.width, hitBox.height, levelData)) {
+            hitBox.x += xSpeed;
+        }
+        else xSpeed = 0;
+
+        if (Utils.getInstance().canMoveHere(hitBox.x, hitBox.y + airSpeed, hitBox.width, hitBox.height, levelData)) {
+            hitBox.y += airSpeed;
+        }
+        else {
+            hitBox.y = Utils.getInstance().getYPosOnTheCeil(hitBox, airSpeed);
+            if (airSpeed > 0) {
+                airSpeed = 0;
+                inAir = false;
+                xSpeed = 0;
+            }
+            else airSpeed = collisionFallSpeed;
+        }
+    }
+
     private void updateBehavior(int[][] levelData, Player player, SpellManager spellManager, ObjectManager objectManager) {
         if (cooldown[Cooldown.ATTACK.ordinal()] != 0) return;
         switch (entityState) {
             case IDLE:
-                idleAction(levelData, player, objectManager); break;
+                idleAction(levelData, player, objectManager);
+                break;
             case SPELL_1:
-                beamAttack(spellManager); break;
-            default: break;
+                beamAttack(spellManager);
+                break;
+            default:
+                break;
         }
-    }
-
-    @Override
-    public void update(BufferedImage[][] animations, int[][] levelData, Player player) {
-
-    }
-
-    public void update(BufferedImage[][] animations, int[][] levelData, Player player, SpellManager spellManager, ObjectManager objectManager, BossInterface bossInterface) {
-        updateAnimation(animations);
-        updateBehavior(levelData, player, spellManager, objectManager);
-        if (!bossInterface.isActive() && start) bossInterface.setActive(true);
-        else if (bossInterface.isActive() && !start) bossInterface.setActive(false);
     }
 
     @Override
@@ -77,13 +121,13 @@ public class Roric extends Enemy {
 
     @Override
     public void spellHit(double damage) {
-
+        // No implementation (timed boss)
     }
 
     // Behavior
     private void idleAction(int[][] levelData, Player player, ObjectManager objectManager) {
         if (cooldown[Cooldown.ATTACK.ordinal()] == 0) {
-            // TODO: Later
+            jump(levelData);
         }
     }
 
@@ -93,25 +137,66 @@ public class Roric extends Enemy {
         }
     }
 
-    // Update animation
+    private void jump(int[][] levelData) {
+        if (!inAir) {
+            inAir = true;
+            airSpeed = jumpSpeed;
+            setEnemyAction(Anim.JUMP_FALL);
+
+            int currentTileX = (int) (hitBox.x / TILES_SIZE);
+            int levelWidthInTiles = levelData.length;
+
+            int spaceToLeft = currentTileX;
+            int spaceToRight = levelWidthInTiles - currentTileX;
+
+            double jumpHorizontalSpeed = 1.5 * SCALE;
+            if (spaceToRight > spaceToLeft) {
+                this.xSpeed = jumpHorizontalSpeed;
+                setDirection(Direction.RIGHT);
+            }
+            else {
+                this.xSpeed = -jumpHorizontalSpeed;
+                setDirection(Direction.LEFT);
+            }
+        }
+    }
+
     @Override
     protected void updateAnimation(BufferedImage[][] animations) {
-        if (cooldown != null) {             // Pre-Attack cooldown check
+        if (cooldown != null) {
             coolDownTickUpdate();
-            if ((entityState != Anim.IDLE) && cooldown[Cooldown.ATTACK.ordinal()] != 0) return;
+            if ((entityState != Anim.IDLE && entityState != Anim.JUMP_FALL) && cooldown[Cooldown.ATTACK.ordinal()] != 0) return;
         }
+
         animTick++;
         if (animTick >= animSpeed) {
             animTick = 0;
             animIndex++;
-            if (animIndex >= animations[entityState.ordinal()].length) finishAnimation();
+            if (entityState == Anim.JUMP_FALL) {
+                if (airSpeed < 0 && animIndex > 8) {
+                    animIndex = 8;
+                }
+                if (airSpeed >= 0 && animIndex < 9) {
+                    animIndex = 9;
+                }
+            }
+            if (animIndex >= animations[entityState.ordinal()].length) {
+                finishAnimation();
+            }
         }
     }
 
     private void finishAnimation() {
         animIndex = 0;
+        if (entityState == Anim.JUMP_FALL) {
+            // TESTING //
+            entityState = Anim.SPELL_1;
+            setDirection(direction == Direction.LEFT ? Direction.RIGHT : Direction.LEFT);
+        }
+        else entityState = Anim.IDLE;
     }
 
+    @Override
     public void reset() {
         super.reset();
         setDirection(Direction.LEFT);
@@ -128,7 +213,6 @@ public class Roric extends Enemy {
         renderAttackBox(g, xLevelOffset, yLevelOffset);
     }
 
-    // Setters
     public void setStart(boolean start) {
         this.start = start;
         if (start) Audio.getInstance().getAudioPlayer().playSong(Song.BOSS_1);
