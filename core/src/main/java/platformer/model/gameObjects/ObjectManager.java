@@ -69,7 +69,8 @@ public class ObjectManager implements Publisher {
 
     private Map<ObjType, List<GameObject>> objectsMap = new HashMap<>();
 
-    private BufferedImage projectileArrow, projectileRoricArrow;
+    // TODO: Refactor to ProjectileManager later
+    private BufferedImage projectileArrow, projectileRoricArrow, projectileRoricAngledArrow;
     private BufferedImage[] fireball, projectileLightningBall, projectileLightningBall2;
     private final List<Projectile> projectiles;
 
@@ -89,6 +90,7 @@ public class ObjectManager implements Publisher {
     private void loadImages() {
         this.projectileArrow = Utils.getInstance().importImage(ARROW_IMG, ARROW_WID, ARROW_HEI);
         this.projectileRoricArrow = Utils.getInstance().importImage(RORIC_ARROW_IMG, ARROW_WID, ARROW_HEI);
+        this.projectileRoricAngledArrow = Utils.getInstance().importImage(RORIC_ARROW_IMG, ARROW_WID, ARROW_HEI);
         this.projectileLightningBall = Animation.getInstance().loadLightningBall(LIGHTNING_BALL_1_SHEET);
         this.projectileLightningBall2 = Animation.getInstance().loadLightningBall(LIGHTNING_BALL_2_SHEET);
         this.fireball = Animation.getInstance().loadFireBall();
@@ -238,7 +240,7 @@ public class ObjectManager implements Publisher {
     public void checkProjectileDeflect(Rectangle2D.Double attackBox) {
         if (!PerksBonus.getInstance().isDeflect()) return;
         projectiles.stream()
-                .filter(projectile -> projectile.isAlive() && attackBox.intersects(projectile.getHitBox()))
+                .filter(projectile -> projectile.isAlive() && projectile.getHitBox().intersects(attackBox))
                 .forEach(projectile -> projectile.setAlive(false));
     }
 
@@ -267,6 +269,21 @@ public class ObjectManager implements Publisher {
 
     public void shootRoricArrow(Enemy enemy) {
         projectiles.add(new RoricArrow((int)enemy.getHitBox().x, (int)enemy.getHitBox().y, enemy.getDirection()));
+    }
+
+    public void shootRoricAngledArrow(Enemy enemy, Player player) {
+        double spawnX = enemy.getHitBox().getCenterX();
+        double spawnY = enemy.getHitBox().getCenterY();
+        double horizontalOffset = 15 * SCALE;
+        double verticalOffset = 13 * SCALE;
+
+        if (enemy.getDirection() == Direction.LEFT) {
+            spawnX -= horizontalOffset;
+            spawnY -= verticalOffset;
+        }
+
+        double angle = Math.atan2(player.getHitBox().getCenterY() - spawnY, player.getHitBox().getCenterX() - spawnX);
+        projectiles.add(new RoricAngledArrow((int)spawnX, (int)spawnY, angle));
     }
 
     public void shotFireBall(Player player) {
@@ -423,6 +440,9 @@ public class ObjectManager implements Publisher {
             // Roric Arrow
             else if (p instanceof RoricArrow) {
                 p.render(g, xLevelOffset, yLevelOffset, projectileRoricArrow);
+            }
+            else if (p instanceof RoricAngledArrow) {
+                p.render(g, xLevelOffset, yLevelOffset, projectileRoricAngledArrow);
             }
             // Lightning Ball
             else if (p instanceof LightningBall) {

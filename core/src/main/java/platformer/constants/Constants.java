@@ -378,6 +378,7 @@ public final class Constants {
     public static final int RORIC_BEAM_OFFSET_X = scale(-45);
 
     public static final double RORIC_ARROW_SPEED = dScale(2.5);
+    public static final double ANGLED_ARROW_SPEED = dScale(2.8);
     public static final int RORIC_ARROW_OFFSET_X_RIGHT = scale(45);
     public static final int RORIC_ARROW_OFFSET_X_LEFT = scale(-45);
     public static final int RORIC_ARROW_OFFSET_Y = scale(12);

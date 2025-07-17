@@ -24,13 +24,20 @@ public class Roric extends Enemy {
 
     private int attackOffset;
     private boolean start;
+    private boolean preparingAerialAttack = false;
+    private boolean isFloating = false;
     private double xSpeed = 0;
 
     // Physics
     private final double upwardGravity = 0.016 * SCALE;
     private final double downwardGravity = 0.025 * SCALE;
     private final double collisionFallSpeed = 0.6 * SCALE;
-    private final double jumpSpeed = -3.1 * SCALE;
+    private final double jumpSpeed = -3.0 * SCALE;
+
+    private boolean isRepositioning = false;
+    private double repositionTargetX = 0;
+    private final double repositionSpeed = 3.5 * SCALE;
+    private final double repositionDistance = 6.5 * TILES_SIZE;
 
     public Roric(int xPos, int yPos) {
         super(xPos, yPos, RORIC_WIDTH, RORIC_HEIGHT, EnemyType.RORIC, 16);
@@ -40,7 +47,6 @@ public class Roric extends Enemy {
         hitBox.y += RORIC_HB_OFFSET_Y;
         initAttackBox();
         super.cooldown = new double[1];
-        super.entityState = Anim.ATTACK_2;
     }
 
     private void initAttackBox() {
@@ -60,26 +66,51 @@ public class Roric extends Enemy {
     public void update(BufferedImage[][] animations, int[][] levelData, Player player, SpellManager spellManager, ObjectManager objectManager, BossInterface bossInterface) {
         updateMove(levelData, player, spellManager, objectManager);
         updateAnimation(animations);
+        updateAttackBox();
         if (!bossInterface.isActive() && start) bossInterface.setActive(true);
         else if (bossInterface.isActive() && !start) bossInterface.setActive(false);
     }
 
     private void updateMove(int[][] levelData, Player player, SpellManager spellManager, ObjectManager objectManager) {
+        updateBehavior(levelData, player, spellManager, objectManager);
         if (!Utils.getInstance().isEntityOnFloor(hitBox, levelData) && entityState != Anim.IDLE) {
             inAir = true;
         }
         if (inAir) updateInAir(levelData, 0, collisionFallSpeed);
-        else updateBehavior(levelData, player, spellManager, objectManager);
+    }
+
+    private boolean isPlayerInBlindSpot(Player player) {
+        double roricX = hitBox.getCenterX();
+        double roricY = hitBox.getCenterY();
+        double playerX = player.getHitBox().getCenterX();
+        double playerY = player.getHitBox().getCenterY();
+        if (playerY <= roricY) return false;
+
+        double dx = Math.abs(playerX - roricX);
+        double dy = playerY - roricY;
+
+        return (dy > 0 && (dx / dy) < Math.tan(Math.toRadians(30)));
+    }
+
+    private void prepareToFire(Player player) {
+        if (player.getHitBox().getCenterX() < this.hitBox.getCenterX()) setDirection(Direction.LEFT);
+        else setDirection(Direction.RIGHT);
+        setEnemyAction(Anim.SPELL_2);
+        attackCheck = false;
     }
 
     /**
      * Overridden to use separate gravity values for ascending and descending.
      */
+    @Override
     protected void updateInAir(int[][] levelData, double gravity, double collisionFallSpeed) {
-        // Jump
-        if (airSpeed < 0) airSpeed += upwardGravity;
-        // Fall
-        else airSpeed += downwardGravity;
+        if (entityState == Anim.SPELL_2 && isFloating) return;
+        if (!isFloating) {
+            // Jump
+            if (airSpeed < 0) airSpeed += upwardGravity;
+            // Fall
+            else airSpeed += downwardGravity;
+        }
 
         if (Utils.getInstance().canMoveHere(hitBox.x + xSpeed, hitBox.y, hitBox.width, hitBox.height, levelData)) {
             hitBox.x += xSpeed;
@@ -101,16 +132,23 @@ public class Roric extends Enemy {
     }
 
     private void updateBehavior(int[][] levelData, Player player, SpellManager spellManager, ObjectManager objectManager) {
+        if (preparingAerialAttack) {
+            handleAerialAttack(levelData, player, objectManager);
+            return;
+        }
         if (cooldown[Cooldown.ATTACK.ordinal()] > 0) return;
         switch (entityState) {
             case IDLE:
-                //idleAction(levelData, player, objectManager);
+                idleAction(levelData, player, objectManager);
                 break;
-            case ATTACK_2: // Add this case
+            case ATTACK_2:
                 handleArrowAttack(objectManager);
                 break;
             case SPELL_1:
                 beamAttack(spellManager);
+                break;
+            case SPELL_2:
+                // Handled by the aerial attack logic
                 break;
             case SPELL_3:
                 handleArrowRainAttack(spellManager, player);
@@ -133,7 +171,7 @@ public class Roric extends Enemy {
     // Behavior
     private void idleAction(int[][] levelData, Player player, ObjectManager objectManager) {
         if (cooldown[Cooldown.ATTACK.ordinal()] == 0) {
-            setEnemyAction(Anim.SPELL_3);
+            aerialArrowAttack(levelData);
         }
     }
 
@@ -159,6 +197,84 @@ public class Roric extends Enemy {
         }
     }
 
+    private void aerialArrowAttack(int[][] levelData) {
+        preparingAerialAttack = true;
+        jump(levelData);
+    }
+
+    private void handleAerialAttack(int[][] levelData, Player player, ObjectManager objectManager) {
+        if (entityState == Anim.JUMP_FALL && airSpeed >= 0 && !isFloating) {
+            isFloating = true;
+            airSpeed = 0;
+            xSpeed = 0;
+
+            if (isPlayerInBlindSpot(player)) {
+                isRepositioning = true;
+                boolean playerIsToTheLeft = player.getHitBox().getCenterX() < hitBox.getCenterX();
+                double idealDashTarget = playerIsToTheLeft ? hitBox.x + repositionDistance : hitBox.x - repositionDistance;
+                double fallbackDashTarget = playerIsToTheLeft ? hitBox.x - repositionDistance : hitBox.x + repositionDistance;
+
+                if (canDashTo(idealDashTarget, levelData)) {
+                    repositionTargetX = idealDashTarget;
+                }
+                else if (canDashTo(fallbackDashTarget, levelData)) {
+                    repositionTargetX = fallbackDashTarget;
+                }
+                else {
+                    // If both dash options are blocked, don't reposition.
+                    isRepositioning = false;
+                }
+
+                if (!isRepositioning) prepareToFire(player);
+                else {
+                    // Keeping the falling animation frame while repositioning
+                    animIndex = 9;
+                }
+            }
+            else {
+                isRepositioning = false;
+                prepareToFire(player);
+            }
+        }
+
+        // Execute the dash
+        if (isRepositioning) {
+            boolean finishedReposition = false;
+            if (hitBox.x < repositionTargetX) {
+                hitBox.x += repositionSpeed;
+                if (hitBox.x >= repositionTargetX) {
+                    hitBox.x = repositionTargetX;
+                    finishedReposition = true;
+                }
+            }
+            else {
+                hitBox.x -= repositionSpeed;
+                if (hitBox.x <= repositionTargetX) {
+                    hitBox.x = repositionTargetX;
+                    finishedReposition = true;
+                }
+            }
+            if (finishedReposition) {
+                isRepositioning = false;
+                prepareToFire(player);
+            }
+        }
+
+        if (entityState == Anim.SPELL_2 && !isRepositioning) {
+            if (animIndex == 6 && !attackCheck) {
+                objectManager.shootRoricAngledArrow(this, player);
+                attackCheck = true;
+            }
+        }
+
+        if (!inAir && isFloating) {
+            preparingAerialAttack = false;
+            isFloating = false;
+            isRepositioning = false;
+            setEnemyAction(Anim.IDLE);
+        }
+    }
+
     private void jump(int[][] levelData) {
         if (!inAir) {
             inAir = true;
@@ -167,7 +283,6 @@ public class Roric extends Enemy {
 
             int currentTileX = (int) (hitBox.x / TILES_SIZE);
             int levelWidthInTiles = levelData.length;
-
             int spaceToLeft = currentTileX;
             int spaceToRight = levelWidthInTiles - currentTileX;
 
@@ -195,7 +310,7 @@ public class Roric extends Enemy {
                 if (airSpeed < 0 && animIndex > 8) {
                     animIndex = 8;
                 }
-                if (airSpeed >= 0 && animIndex < 9) {
+                if (airSpeed >= 0 && animIndex < 9 && !isFloating) {
                     animIndex = 9;
                 }
             }
@@ -207,9 +322,21 @@ public class Roric extends Enemy {
 
     private void finishAnimation() {
         animIndex = 0;
+        if (entityState == Anim.SPELL_2 && preparingAerialAttack) {
+            isFloating = false;
+            preparingAerialAttack = false;
+            setEnemyAction(Anim.JUMP_FALL);
+            animIndex = 9;
+            return;
+        }
         if (entityState == Anim.JUMP_FALL || entityState == Anim.SPELL_3 || entityState == Anim.SPELL_1 || entityState == Anim.ATTACK_2) {
             entityState = Anim.IDLE;
         }
+    }
+
+    private void updateAttackBox() {
+        attackBox.x = hitBox.x - (40 * SCALE);
+        attackBox.y = hitBox.y;
     }
 
     @Override
@@ -217,6 +344,9 @@ public class Roric extends Enemy {
         super.reset();
         setDirection(Direction.LEFT);
         setEnemyAction(Anim.IDLE);
+        preparingAerialAttack = false;
+        isFloating = false;
+        isRepositioning = false;
     }
 
     @Override
@@ -236,5 +366,9 @@ public class Roric extends Enemy {
 
     public void setAttackCooldown(double value) {
         cooldown[Cooldown.ATTACK.ordinal()] = value;
+    }
+
+    private boolean canDashTo(double targetX, int[][] levelData) {
+        return Utils.getInstance().canMoveHere(targetX, hitBox.y, hitBox.width, hitBox.height, levelData);
     }
 }
