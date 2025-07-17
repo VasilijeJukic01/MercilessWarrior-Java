@@ -7,6 +7,7 @@ import platformer.debug.logger.Message;
 import platformer.model.entities.Direction;
 import platformer.model.entities.effects.particles.DustType;
 import platformer.model.entities.enemies.boss.Roric;
+import platformer.model.entities.enemies.boss.RoricClone;
 import platformer.model.entities.enemies.boss.SpearWoman;
 import platformer.model.entities.enemies.renderer.*;
 import platformer.model.entities.player.Player;
@@ -49,6 +50,7 @@ public class EnemyManager implements Publisher {
     private Map<EnemyType, List<Enemy>> enemies = new HashMap<>();
     private final Map<Class<? extends Enemy>, EnemyRenderer<? extends Enemy>> enemyRenderers = new HashMap<>();
     private final Map<Enemy, Integer> spellHitTimers = new HashMap<>();
+    private final List<RoricClone> roricClones = new ArrayList<>();
 
     private final List<Subscriber> subscribers = new ArrayList<>();
 
@@ -363,12 +365,19 @@ public class EnemyManager implements Publisher {
 
         getEnemies(Roric.class).stream()
                 .filter(Roric::isAlive)
-                .forEach(roric -> roric.update(roricAnimations, levelData, player, gameState.getSpellManager(), gameState.getObjectManager(), gameState.getBossInterface()));
+                .forEach(roric -> roric.update(roricAnimations, levelData, player, gameState.getSpellManager(), this, gameState.getObjectManager(), gameState.getBossInterface()));
+
+        updateClones(levelData, player);
     }
 
     private void updateSpellHitTimers() {
         spellHitTimers.replaceAll((k, v) -> v > 0 ? v - 1 : 0);
         spellHitTimers.keySet().removeIf(enemy -> !enemy.isAlive());
+    }
+
+    private void updateClones(int[][] levelData, Player player) {
+        roricClones.forEach(clone -> clone.update(roricAnimations, levelData, player, gameState.getSpellManager(), this,  gameState.getObjectManager(), gameState.getBossInterface()));
+        roricClones.removeIf(clone -> !clone.isAlive());
     }
 
     public void render(Graphics g, int xLevelOffset, int yLevelOffset) {
@@ -379,8 +388,37 @@ public class EnemyManager implements Publisher {
             renderWraiths(g, xLevelOffset, yLevelOffset);
             renderSpearWoman(g, xLevelOffset, yLevelOffset);
             renderRoric(g, xLevelOffset, yLevelOffset);
+            renderClones(g, xLevelOffset, yLevelOffset);
         }
         catch (Exception ignored) {}
+    }
+
+    private void renderClones(Graphics g, int xLevelOffset, int yLevelOffset) {
+        EnemyRenderer<Roric> renderer = (EnemyRenderer<Roric>) enemyRenderers.get(Roric.class);
+        roricClones.stream()
+                .filter(RoricClone::isAlive)
+                .forEach(clone -> renderer.render(g, clone, xLevelOffset, yLevelOffset));
+    }
+
+    // Activators
+    /**
+     * Method to spawn the clone, called by the real Roric
+     *
+     * @param roric The Roric instance that is being cloned.
+     * @param levelData The 2D array representing the current level's layout.
+     */
+    public void spawnRoricClone(Roric roric, int[][] levelData) {
+        Player player = gameState.getPlayer();
+        double playerX = player.getHitBox().getCenterX();
+        double roricX = roric.getHitBox().getCenterX();
+        int spawnX = (playerX < roricX) ? (int)(roricX + 5 * TILES_SIZE) : (int)(roricX - 5 * TILES_SIZE);
+        int spawnY = (int)roric.getHitBox().y - (int)(TILES_SIZE/2.2);
+        int maxPixelX = levelData.length * TILES_SIZE - RORIC_WIDTH;
+        spawnX = Math.max(0, Math.min(spawnX, maxPixelX));
+
+        RoricClone clone = new RoricClone(spawnX, spawnY);
+        clone.aimAtPlayer(player);
+        roricClones.add(clone);
     }
 
     // Reset
@@ -389,6 +427,7 @@ public class EnemyManager implements Publisher {
                 .flatMap(List::stream)
                 .forEach(Enemy::reset);
         spellHitTimers.clear();
+        roricClones.clear();
     }
 
     public List<Enemy> getAllEnemies() {

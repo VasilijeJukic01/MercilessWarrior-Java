@@ -6,6 +6,7 @@ import platformer.audio.types.Song;
 import platformer.model.entities.Cooldown;
 import platformer.model.entities.Direction;
 import platformer.model.entities.enemies.Enemy;
+import platformer.model.entities.enemies.EnemyManager;
 import platformer.model.entities.enemies.EnemyType;
 import platformer.model.entities.player.Player;
 import platformer.model.gameObjects.ObjectManager;
@@ -25,13 +26,13 @@ public class Roric extends Enemy {
     private boolean start;
     private boolean preparingAerialAttack = false;
     private boolean isFloating = false;
-    private double xSpeed = 0;
+    protected double xSpeed = 0;
 
     // Physics
     private final double upwardGravity = 0.016 * SCALE;
     private final double downwardGravity = 0.025 * SCALE;
     private final double collisionFallSpeed = 0.6 * SCALE;
-    private final double jumpSpeed = -3.0 * SCALE;
+    protected final double jumpSpeed = -3.0 * SCALE;
 
     private boolean isRepositioning = false;
     private double repositionTargetX = 0;
@@ -70,20 +71,20 @@ public class Roric extends Enemy {
         // Not used
     }
 
-    public void update(BufferedImage[][] animations, int[][] levelData, Player player, SpellManager spellManager, ObjectManager objectManager, BossInterface bossInterface) {
+    public void update(BufferedImage[][] animations, int[][] levelData, Player player, SpellManager spellManager, EnemyManager enemyManager, ObjectManager objectManager, BossInterface bossInterface) {
         if (isPerformingSkyfallBarrage) {
             handleSkyfallBarrage(player, spellManager, levelData);
             return;
         }
-        updateMove(levelData, player, spellManager, objectManager);
+        updateMove(levelData, player, spellManager, objectManager, enemyManager);
         updateAnimation(animations);
         updateAttackBox();
         if (!bossInterface.isActive() && start) bossInterface.setActive(true);
         else if (bossInterface.isActive() && !start) bossInterface.setActive(false);
     }
 
-    private void updateMove(int[][] levelData, Player player, SpellManager spellManager, ObjectManager objectManager) {
-        updateBehavior(levelData, player, spellManager, objectManager);
+    void updateMove(int[][] levelData, Player player, SpellManager spellManager, ObjectManager objectManager, EnemyManager enemyManager) {
+        updateBehavior(levelData, player, spellManager, objectManager, enemyManager);
         if (!Utils.getInstance().isEntityOnFloor(hitBox, levelData) && entityState != Anim.IDLE) {
             inAir = true;
         }
@@ -142,7 +143,7 @@ public class Roric extends Enemy {
         }
     }
 
-    private void updateBehavior(int[][] levelData, Player player, SpellManager spellManager, ObjectManager objectManager) {
+    private void updateBehavior(int[][] levelData, Player player, SpellManager spellManager, ObjectManager objectManager, EnemyManager enemyManager) {
         if (preparingAerialAttack) {
             handleAerialAttack(levelData, player, objectManager);
             return;
@@ -164,6 +165,8 @@ public class Roric extends Enemy {
             case SPELL_3:
                 handleArrowRainAttack(spellManager, player);
                 break;
+            case SPELL_4:
+                handlePhantomBarrage(enemyManager, levelData);
             default:
                 break;
         }
@@ -182,11 +185,11 @@ public class Roric extends Enemy {
     // Behavior
     private void idleAction(int[][] levelData, Player player, ObjectManager objectManager) {
         if (cooldown[Cooldown.ATTACK.ordinal()] == 0) {
-            startSkyfallBarrage();
+            setEnemyAction(Anim.SPELL_4);
         }
     }
 
-    private void handleArrowAttack(ObjectManager objectManager) {
+    protected void handleArrowAttack(ObjectManager objectManager) {
         if (animIndex == 0) attackCheck = false;
         if (animIndex == 9 && !attackCheck) {
             objectManager.shootRoricArrow(this);
@@ -301,6 +304,19 @@ public class Roric extends Enemy {
         }
     }
 
+    private void handlePhantomBarrage(EnemyManager enemyManager, int[][] levelData) {
+        if (entityState == Anim.SPELL_4 && animIndex == 0 && !attackCheck) {
+            attackCheck = true;
+            startPhantomBarrage(enemyManager, levelData);
+        }
+    }
+
+    private void startPhantomBarrage(EnemyManager enemyManager, int[][] levelData) {
+        aerialArrowAttack(levelData);
+        enemyManager.spawnRoricClone(this, levelData);
+        setAttackCooldown(15);
+    }
+
     private void jump(int[][] levelData) {
         if (!inAir) {
             inAir = true;
@@ -366,8 +382,9 @@ public class Roric extends Enemy {
         }
     }
 
-    private void finishAnimation() {
+    protected void finishAnimation() {
         animIndex = 0;
+        attackCheck = false;
         if (entityState == Anim.SPELL_2 && preparingAerialAttack) {
             isFloating = false;
             preparingAerialAttack = false;
@@ -380,7 +397,7 @@ public class Roric extends Enemy {
         }
     }
 
-    private void updateAttackBox() {
+    protected void updateAttackBox() {
         attackBox.x = hitBox.x - (40 * SCALE);
         attackBox.y = hitBox.y;
     }
