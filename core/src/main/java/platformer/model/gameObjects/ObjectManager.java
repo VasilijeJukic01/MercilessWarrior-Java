@@ -10,10 +10,7 @@ import platformer.model.entities.player.Player;
 import platformer.model.gameObjects.npc.Npc;
 import platformer.model.gameObjects.objects.Container;
 import platformer.model.gameObjects.objects.*;
-import platformer.model.gameObjects.projectiles.Arrow;
-import platformer.model.gameObjects.projectiles.Fireball;
-import platformer.model.gameObjects.projectiles.LightningBall;
-import platformer.model.gameObjects.projectiles.Projectile;
+import platformer.model.gameObjects.projectiles.*;
 import platformer.model.levels.Level;
 import platformer.model.perks.PerksBonus;
 import platformer.model.quests.QuestManager;
@@ -72,7 +69,7 @@ public class ObjectManager implements Publisher {
 
     private Map<ObjType, List<GameObject>> objectsMap = new HashMap<>();
 
-    private BufferedImage projectileArrow;
+    private BufferedImage projectileArrow, projectileRoricArrow;
     private BufferedImage[] fireball, projectileLightningBall, projectileLightningBall2;
     private final List<Projectile> projectiles;
 
@@ -91,6 +88,7 @@ public class ObjectManager implements Publisher {
     // Init
     private void loadImages() {
         this.projectileArrow = Utils.getInstance().importImage(ARROW_IMG, ARROW_WID, ARROW_HEI);
+        this.projectileRoricArrow = Utils.getInstance().importImage(RORIC_ARROW_IMG, ARROW_WID, ARROW_HEI);
         this.projectileLightningBall = Animation.getInstance().loadLightningBall(LIGHTNING_BALL_1_SHEET);
         this.projectileLightningBall2 = Animation.getInstance().loadLightningBall(LIGHTNING_BALL_2_SHEET);
         this.fireball = Animation.getInstance().loadFireBall();
@@ -267,6 +265,10 @@ public class ObjectManager implements Publisher {
         projectiles.add(new Arrow((int)arrowLauncher.getHitBox().x, (int)arrowLauncher.getHitBox().y, direction));
     }
 
+    public void shootRoricArrow(Enemy enemy) {
+        projectiles.add(new RoricArrow((int)enemy.getHitBox().x, (int)enemy.getHitBox().y, enemy.getDirection()));
+    }
+
     public void shotFireBall(Player player) {
         Direction direction = (player.getFlipSign() == 1) ? Direction.LEFT : Direction.RIGHT;
         projectiles.add(new Fireball((int)player.getHitBox().x, (int)player.getHitBox().y, direction));
@@ -417,6 +419,10 @@ public class ObjectManager implements Publisher {
             // Arrow
             if (p instanceof Arrow) {
                 p.render(g, xLevelOffset, yLevelOffset, projectileArrow);
+            }
+            // Roric Arrow
+            else if (p instanceof RoricArrow) {
+                p.render(g, xLevelOffset, yLevelOffset, projectileRoricArrow);
             }
             // Lightning Ball
             else if (p instanceof LightningBall) {

@@ -40,7 +40,7 @@ public class Roric extends Enemy {
         hitBox.y += RORIC_HB_OFFSET_Y;
         initAttackBox();
         super.cooldown = new double[1];
-        super.entityState = Anim.SPELL_3;
+        super.entityState = Anim.ATTACK_2;
     }
 
     private void initAttackBox() {
@@ -106,6 +106,9 @@ public class Roric extends Enemy {
             case IDLE:
                 //idleAction(levelData, player, objectManager);
                 break;
+            case ATTACK_2: // Add this case
+                handleArrowAttack(objectManager);
+                break;
             case SPELL_1:
                 beamAttack(spellManager);
                 break;
@@ -131,6 +134,14 @@ public class Roric extends Enemy {
     private void idleAction(int[][] levelData, Player player, ObjectManager objectManager) {
         if (cooldown[Cooldown.ATTACK.ordinal()] == 0) {
             setEnemyAction(Anim.SPELL_3);
+        }
+    }
+
+    private void handleArrowAttack(ObjectManager objectManager) {
+        if (animIndex == 0) attackCheck = false;
+        if (animIndex == 9 && !attackCheck) {
+            objectManager.shootRoricArrow(this);
+            attackCheck = true;
         }
     }
 
@@ -196,7 +207,7 @@ public class Roric extends Enemy {
 
     private void finishAnimation() {
         animIndex = 0;
-        if (entityState == Anim.JUMP_FALL || entityState == Anim.SPELL_3 || entityState == Anim.SPELL_1) {
+        if (entityState == Anim.JUMP_FALL || entityState == Anim.SPELL_3 || entityState == Anim.SPELL_1 || entityState == Anim.ATTACK_2) {
             entityState = Anim.IDLE;
         }
     }

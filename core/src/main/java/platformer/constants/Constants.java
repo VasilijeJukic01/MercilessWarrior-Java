@@ -377,6 +377,11 @@ public final class Constants {
     public static final int RORIC_RAIN_HB_WID = scale(90);
     public static final int RORIC_BEAM_OFFSET_X = scale(-45);
 
+    public static final double RORIC_ARROW_SPEED = dScale(2.5);
+    public static final int RORIC_ARROW_OFFSET_X_RIGHT = scale(45);
+    public static final int RORIC_ARROW_OFFSET_X_LEFT = scale(-45);
+    public static final int RORIC_ARROW_OFFSET_Y = scale(12);
+
     // Spell Constants
     public static final int FLAME_WID = scale(45);
     public static final int FLAME_HEI = scale(35);
