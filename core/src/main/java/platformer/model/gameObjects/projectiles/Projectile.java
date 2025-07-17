@@ -147,9 +147,7 @@ public abstract class Projectile {
         g.drawRect((int)hitBox.x-xLevelOffset, (int)hitBox.y-yLevelOffset, (int)hitBox.width, (int)hitBox.height);
     }
 
-    public Rectangle2D.Double getHitBox() {
-        return hitBox;
-    }
+    public abstract Shape getHitBox();
 
     public boolean isAlive() {
         return alive;

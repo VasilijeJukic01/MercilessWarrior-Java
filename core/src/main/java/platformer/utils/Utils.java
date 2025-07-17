@@ -427,10 +427,10 @@ public class Utils {
     }
 
     public boolean isProjectileHitLevel(int[][] lvlData, Projectile projectile) {
-        double wid = projectile.getHitBox().getWidth();
-        double hei = projectile.getHitBox().getHeight();
+        double wid = projectile.getHitBox().getBounds().width;
+        double hei = projectile.getHitBox().getBounds().height;
         if (projectile instanceof LightningBall) hei = ARROW_HEI;
-        return isSolid(projectile.getHitBox().x + wid, projectile.getHitBox().y + hei, lvlData);
+        return isSolid(projectile.getHitBox().getBounds().x + wid, projectile.getHitBox().getBounds().y + hei, lvlData);
     }
 
     // Other

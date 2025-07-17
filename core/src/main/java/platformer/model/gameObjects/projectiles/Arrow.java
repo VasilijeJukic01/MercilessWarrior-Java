@@ -33,4 +33,9 @@ public class Arrow extends Projectile {
         g.drawImage((BufferedImage)animations, x, y, fS * ARROW_WID, ARROW_HEI, null);
         renderHitBox(g, xLevelOffset, yLevelOffset, Color.BLUE);
     }
+
+    @Override
+    public Shape getHitBox() {
+        return super.hitBox;
+    }
 }

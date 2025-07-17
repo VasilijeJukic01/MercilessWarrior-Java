@@ -45,4 +45,9 @@ public class RoricArrow extends Projectile {
         renderHitBox(g, xLevelOffset, yLevelOffset, Color.MAGENTA);
     }
 
+    @Override
+    public Shape getHitBox() {
+        return super.hitBox;
+    }
+
 }

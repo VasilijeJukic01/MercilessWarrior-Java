@@ -48,4 +48,9 @@ public class LightningBall extends Projectile {
         renderHitBox(g, xLevelOffset, yLevelOffset, Color.BLUE);
     }
 
+    @Override
+    public Shape getHitBox() {
+        return super.hitBox;
+    }
+
 }

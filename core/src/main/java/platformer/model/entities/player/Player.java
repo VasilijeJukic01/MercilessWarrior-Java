@@ -509,8 +509,10 @@ public class Player extends Entity {
             effectManager.spawnDamageNumber(dmgText, getHitBox().getCenterX(), getHitBox().y, DAMAGE_COLOR);
         }
         changeHealth(value);
-        Rectangle2D.Double hBox = (o instanceof Enemy) ? (((Enemy) o).getHitBox()) : (((Projectile) o).getHitBox());
-        if (hBox.x < hitBox.x) pushDirection = Direction.RIGHT;
+        Rectangle2D sourceBounds;
+        if (o instanceof Enemy) sourceBounds = ((Enemy) o).getHitBox().getBounds2D();
+        else sourceBounds = ((Projectile) o).getHitBox().getBounds2D();
+        if (sourceBounds.getCenterX() < hitBox.getCenterX()) pushDirection = Direction.RIGHT;
         else pushDirection = Direction.LEFT;
         this.inAir = true;
         this.airSpeed = -1.2 * SCALE;
