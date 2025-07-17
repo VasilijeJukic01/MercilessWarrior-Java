@@ -773,6 +773,14 @@ public class Player extends Entity {
     }
 
     // Getters
+    public double getHorizontalSpeed() {
+        double currentSpeed = checkAction(PlayerAction.LAVA) ? LAVA_PLAYER_SPEED : PLAYER_SPEED;
+        if (checkAction(PlayerAction.DASH)) currentSpeed *= DASH_SPEED;
+        if (checkAction(PlayerAction.LEFT) && !checkAction(PlayerAction.RIGHT)) return -currentSpeed;
+        else if (checkAction(PlayerAction.RIGHT) && !checkAction(PlayerAction.LEFT)) return currentSpeed;
+        return 0;
+    }
+
     public int getAttackDmg() {
         return checkAction(PlayerAction.TRANSFORM) ? transformAttackDmg : attackDmg;
     }

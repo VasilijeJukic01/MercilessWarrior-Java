@@ -16,6 +16,7 @@ import platformer.utils.Utils;
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+import java.util.Random;
 
 import static platformer.constants.Constants.*;
 
@@ -42,6 +43,9 @@ public class Roric extends Enemy {
     private int skyfallBeamCount = 0;
     private int skyfallBeamTimer = 0;
     private static final int SKYFALL_BEAM_COOLDOWN = 200;
+    private static final double PREDICTION_FACTOR = 75.0;
+
+    private final Random random = new Random();
 
     public Roric(int xPos, int yPos) {
         super(xPos, yPos, RORIC_WIDTH, RORIC_HEIGHT, EnemyType.RORIC, 16);
@@ -68,7 +72,7 @@ public class Roric extends Enemy {
 
     public void update(BufferedImage[][] animations, int[][] levelData, Player player, SpellManager spellManager, ObjectManager objectManager, BossInterface bossInterface) {
         if (isPerformingSkyfallBarrage) {
-            handleSkyfallBarrage(player, spellManager);
+            handleSkyfallBarrage(player, spellManager, levelData);
             return;
         }
         updateMove(levelData, player, spellManager, objectManager);
@@ -320,12 +324,20 @@ public class Roric extends Enemy {
         }
     }
 
-    private void handleSkyfallBarrage(Player player, SpellManager spellManager) {
+    private void handleSkyfallBarrage(Player player, SpellManager spellManager, int[][] levelData) {
         skyfallBeamTimer++;
         if (skyfallBeamTimer >= SKYFALL_BEAM_COOLDOWN) {
             skyfallBeamTimer = 0;
             if (skyfallBeamCount < 4) {
-                spellManager.spawnSkyBeamAt((int) player.getHitBox().getCenterX());
+                double playerSpeedX = player.getHorizontalSpeed();
+                double targetX = player.getHitBox().getCenterX();
+                if (playerSpeedX != 0 && random.nextBoolean()) {
+                    targetX += playerSpeedX * PREDICTION_FACTOR;
+                }
+                int levelWidthInTiles = levelData.length;
+                int maxPixelX = levelWidthInTiles * TILES_SIZE;
+                targetX = Math.max(0, Math.min(targetX, maxPixelX));
+                spellManager.spawnSkyBeamAt((int) targetX);
                 skyfallBeamCount++;
             }
             else reappear();
