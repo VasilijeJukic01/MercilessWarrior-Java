@@ -18,6 +18,7 @@ public class RoricRenderer implements EnemyRenderer<Roric> {
 
     @Override
     public void render(Graphics g, Roric roric, int xLevelOffset, int yLevelOffset) {
+        if (!roric.isVisible()) return;
         int fC = roric.getFlipCoefficient(), fS = roric.getFlipSign();
         int x = (int) roric.getHitBox().x - RORIC_X_OFFSET - xLevelOffset + fC;
         int y = (int) roric.getHitBox().y - RORIC_Y_OFFSET - yLevelOffset + (int)roric.getPushOffset() + 1;

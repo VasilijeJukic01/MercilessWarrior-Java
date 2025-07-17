@@ -230,16 +230,20 @@ public class SpellManager {
         }
     }
 
+    // TODO: For refactoring later
     private void renderSkyBeams(Graphics g, int xLevelOffset, int yLevelOffset) {
-        for (RoricSkyBeam beam : skyBeams) {
+        List<RoricSkyBeam> beamsSnapshot = new ArrayList<>(skyBeams);
+        for (RoricSkyBeam beam : beamsSnapshot) {
             if (beam.isActive()) {
                 int x = (int) beam.getHitBox().x - xLevelOffset;
                 int y = (int) beam.getHitBox().y - yLevelOffset;
                 BufferedImage frame = skyBeamAnimations[beam.getAnimIndex()];
                 BufferedImage rotatedFrame = Utils.getInstance().rotateImage(frame, 90);
-                int drawX = x + (beam.getWidth() - rotatedFrame.getWidth()) / 2 - (int)(67 * SCALE);
+                int offset = beam.isTargeted() ? (int)(150 * SCALE) : (int)(67 * SCALE);
+                int drawX = x + (beam.getWidth() - rotatedFrame.getWidth()) / 2 - offset;
                 int drawY = y + (beam.getHeight() - rotatedFrame.getHeight()) / 2 - (int)(180 * SCALE);
-                g.drawImage(rotatedFrame, drawX, drawY, null);
+                int renderWidth = beam.isTargeted() ? RORIC_BEAM_HEI + (int) (190 * SCALE) : RORIC_BEAM_HEI;
+                g.drawImage(rotatedFrame, drawX, drawY, renderWidth, RORIC_BEAM_WID, null);
                 beam.renderHitBox(g, xLevelOffset, yLevelOffset, Color.CYAN);
             }
         }
@@ -283,7 +287,13 @@ public class SpellManager {
         int maxPixelX = levelWidthInTiles * TILES_SIZE;
         int xPos = rand.nextInt(maxPixelX);
         int yPos = 0;
-        skyBeams.add(new RoricSkyBeam(SpellType.RORIC_SKY_BEAM, xPos, yPos));
+        skyBeams.add(new RoricSkyBeam(SpellType.RORIC_SKY_BEAM, xPos, yPos, false));
+    }
+
+    public void spawnSkyBeamAt(int xPos) {
+        int xOffset = (int) (24 * SCALE);
+        int yPos = 0;
+        skyBeams.add(new RoricSkyBeam(SpellType.RORIC_SKY_BEAM, xPos - xOffset, yPos, true));
     }
 
     public void startSkyBeams() {

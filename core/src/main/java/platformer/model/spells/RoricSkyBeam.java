@@ -4,15 +4,18 @@ import platformer.model.entities.player.Player;
 
 import java.awt.*;
 
-import static platformer.constants.Constants.RORIC_BEAM_HEI;
-import static platformer.constants.Constants.RORIC_BEAM_WID;
+import static platformer.constants.Constants.*;
 
 public class RoricSkyBeam extends Spell {
 
-    public RoricSkyBeam(SpellType spellType, int xPos, int yPos) {
+    private final boolean isTargeted;
+
+    public RoricSkyBeam(SpellType spellType, int xPos, int yPos, boolean isTargeted) {
         super(spellType, xPos, yPos, RORIC_BEAM_HEI, RORIC_BEAM_WID);
+        this.isTargeted = isTargeted;
         super.animSpeed = 25;
-        initHitBox(width / 10.0, height);
+        int offset = isTargeted ? (int) (25 * SCALE) : 0;
+        initHitBox(width / 10.0 + offset, height);
     }
 
     public void update(Player player) {
@@ -33,5 +36,9 @@ public class RoricSkyBeam extends Spell {
     @Override
     public void attackBoxRenderer(Graphics g, int xLevelOffset, int yLevelOffset) {
 
+    }
+
+    public boolean isTargeted() {
+        return isTargeted;
     }
 }

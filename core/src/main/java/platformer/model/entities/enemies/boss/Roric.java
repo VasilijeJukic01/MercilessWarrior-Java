@@ -19,10 +19,8 @@ import java.awt.image.BufferedImage;
 
 import static platformer.constants.Constants.*;
 
-// TODO:
 public class Roric extends Enemy {
 
-    private int attackOffset;
     private boolean start;
     private boolean preparingAerialAttack = false;
     private boolean isFloating = false;
@@ -39,6 +37,12 @@ public class Roric extends Enemy {
     private final double repositionSpeed = 3.5 * SCALE;
     private final double repositionDistance = 6.5 * TILES_SIZE;
 
+    private boolean isVisible = true;
+    private boolean isPerformingSkyfallBarrage = false;
+    private int skyfallBeamCount = 0;
+    private int skyfallBeamTimer = 0;
+    private static final int SKYFALL_BEAM_COOLDOWN = 200;
+
     public Roric(int xPos, int yPos) {
         super(xPos, yPos, RORIC_WIDTH, RORIC_HEIGHT, EnemyType.RORIC, 16);
         super.setDirection(Direction.LEFT);
@@ -51,7 +55,6 @@ public class Roric extends Enemy {
 
     private void initAttackBox() {
         this.attackBox = new Rectangle2D.Double(xPos - (15 * SCALE), yPos + (15 * SCALE), RORIC_AB_WID, RORIC_AB_HEI);
-        this.attackOffset = (int)(33 * SCALE);
     }
 
     private void startFight(ObjectManager objectManager) {
@@ -64,6 +67,10 @@ public class Roric extends Enemy {
     }
 
     public void update(BufferedImage[][] animations, int[][] levelData, Player player, SpellManager spellManager, ObjectManager objectManager, BossInterface bossInterface) {
+        if (isPerformingSkyfallBarrage) {
+            handleSkyfallBarrage(player, spellManager);
+            return;
+        }
         updateMove(levelData, player, spellManager, objectManager);
         updateAnimation(animations);
         updateAttackBox();
@@ -140,7 +147,6 @@ public class Roric extends Enemy {
         switch (entityState) {
             case IDLE:
                 idleAction(levelData, player, objectManager);
-                spellManager.startSkyBeams();
                 break;
             case ATTACK_2:
                 handleArrowAttack(objectManager);
@@ -172,7 +178,7 @@ public class Roric extends Enemy {
     // Behavior
     private void idleAction(int[][] levelData, Player player, ObjectManager objectManager) {
         if (cooldown[Cooldown.ATTACK.ordinal()] == 0) {
-            aerialArrowAttack(levelData);
+            startSkyfallBarrage();
         }
     }
 
@@ -201,6 +207,21 @@ public class Roric extends Enemy {
     private void aerialArrowAttack(int[][] levelData) {
         preparingAerialAttack = true;
         jump(levelData);
+    }
+
+    private void startSkyfallBarrage() {
+        this.isVisible = false;
+        this.isPerformingSkyfallBarrage = true;
+        this.skyfallBeamCount = 0;
+        this.skyfallBeamTimer = 0;
+        setAttackCooldown(8);
+    }
+
+    private void reappear() {
+        this.isVisible = true;
+        this.isPerformingSkyfallBarrage = false;
+        this.hitBox.x = 12.5 * TILES_SIZE;
+        this.setEnemyAction(Anim.IDLE);
     }
 
     private void handleAerialAttack(int[][] levelData, Player player, ObjectManager objectManager) {
@@ -299,6 +320,18 @@ public class Roric extends Enemy {
         }
     }
 
+    private void handleSkyfallBarrage(Player player, SpellManager spellManager) {
+        skyfallBeamTimer++;
+        if (skyfallBeamTimer >= SKYFALL_BEAM_COOLDOWN) {
+            skyfallBeamTimer = 0;
+            if (skyfallBeamCount < 4) {
+                spellManager.spawnSkyBeamAt((int) player.getHitBox().getCenterX());
+                skyfallBeamCount++;
+            }
+            else reappear();
+        }
+    }
+
     @Override
     protected void updateAnimation(BufferedImage[][] animations) {
         coolDownTickUpdate();
@@ -371,5 +404,9 @@ public class Roric extends Enemy {
 
     private boolean canDashTo(double targetX, int[][] levelData) {
         return Utils.getInstance().canMoveHere(targetX, hitBox.y, hitBox.width, hitBox.height, levelData);
+    }
+
+    public boolean isVisible() {
+        return isVisible;
     }
 }
