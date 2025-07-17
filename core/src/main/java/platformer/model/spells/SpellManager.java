@@ -4,6 +4,7 @@ import platformer.animation.Animation;
 import platformer.model.entities.Direction;
 import platformer.model.entities.enemies.boss.Roric;
 import platformer.model.entities.player.Player;
+import platformer.model.levels.Level;
 import platformer.state.GameState;
 import platformer.utils.Utils;
 
@@ -31,6 +32,7 @@ public class SpellManager {
     private BufferedImage[] flashAnimations;
     private BufferedImage[] roricBeamAnimations;
     private BufferedImage[] arrowRainAnimations;
+    private BufferedImage[] skyBeamAnimations;
 
     // Spells
     private final Flame flame;
@@ -38,9 +40,14 @@ public class SpellManager {
     private List<Flash> bossFlashes;
     private final List<RoricBeam> roricBeams;
     private final List<ArrowRain> arrowRains;
+    private final List<RoricSkyBeam> skyBeams;
 
     // Flags
     private boolean spellHit;
+
+    private boolean isSkyBeamActive = false;
+    private int skyBeamSpawnTimer = 0;
+    private final int skyBeamSpawnCooldown = 200;
 
     private final Random rand = new Random();
 
@@ -49,6 +56,7 @@ public class SpellManager {
         this.flame = new Flame(SpellType.FLAME_1, 0, 0, FLAME_WID, FLAME_HEI);
         this.roricBeams = new ArrayList<>();
         this.arrowRains = new ArrayList<>();
+        this.skyBeams = new ArrayList<>();
         initSpellAnimations();
         initBossSpells();
     }
@@ -59,6 +67,7 @@ public class SpellManager {
         this.flashAnimations = loadFlashAnimations();
         this.roricBeamAnimations = Animation.getInstance().loadRoricProjectiles()[0];
         this.arrowRainAnimations = Animation.getInstance().loadRoricProjectiles()[1];
+        this.skyBeamAnimations = Animation.getInstance().createSkyBeamAnimation();
     }
 
     private BufferedImage[] loadLightningAnimations() {
@@ -147,12 +156,30 @@ public class SpellManager {
                 .forEach(Spell::updateAnimation);
     }
 
+    private void updateSkyBeams() {
+        if (isSkyBeamActive) {
+            skyBeamSpawnTimer++;
+            if (skyBeamSpawnTimer >= skyBeamSpawnCooldown) {
+                skyBeamSpawnTimer = 0;
+                spawnSkyBeam();
+            }
+        }
+
+        List<RoricSkyBeam> toRemove = new ArrayList<>();
+        for (RoricSkyBeam beam : skyBeams) {
+            if (beam.isActive()) beam.update(gameState.getPlayer());
+            else toRemove.add(beam);
+        }
+        skyBeams.removeAll(toRemove);
+    }
+
     // Core
     public void update() {
         updateFlames();
         updateLightnings();
         updateRoricBeam();
         updateArrowRain();
+        updateSkyBeams();
     }
 
     public void render(Graphics g, int xLevelOffset, int yLevelOffset) {
@@ -161,6 +188,7 @@ public class SpellManager {
         renderSpells(bossFlashes, flashAnimations, g, xLevelOffset, yLevelOffset, FLASH_OFFSET_X);
         renderRoricBeams(g, xLevelOffset, yLevelOffset);
         renderArrowRain(g, xLevelOffset, yLevelOffset);
+        renderSkyBeams(g, xLevelOffset, yLevelOffset);
     }
 
     // Render
@@ -202,6 +230,21 @@ public class SpellManager {
         }
     }
 
+    private void renderSkyBeams(Graphics g, int xLevelOffset, int yLevelOffset) {
+        for (RoricSkyBeam beam : skyBeams) {
+            if (beam.isActive()) {
+                int x = (int) beam.getHitBox().x - xLevelOffset;
+                int y = (int) beam.getHitBox().y - yLevelOffset;
+                BufferedImage frame = skyBeamAnimations[beam.getAnimIndex()];
+                BufferedImage rotatedFrame = Utils.getInstance().rotateImage(frame, 90);
+                int drawX = x + (beam.getWidth() - rotatedFrame.getWidth()) / 2 - (int)(67 * SCALE);
+                int drawY = y + (beam.getHeight() - rotatedFrame.getHeight()) / 2 - (int)(180 * SCALE);
+                g.drawImage(rotatedFrame, drawX, drawY, null);
+                beam.renderHitBox(g, xLevelOffset, yLevelOffset, Color.CYAN);
+            }
+        }
+    }
+
     // Activators
     public void activateLightnings() {
         spellHit = false;
@@ -234,11 +277,31 @@ public class SpellManager {
         arrowRains.add(new ArrowRain(SpellType.ARROW_RAIN, xPos, yPos));
     }
 
+    private void spawnSkyBeam() {
+        Level currentLevel = gameState.getLevelManager().getCurrentLevel();
+        int levelWidthInTiles = currentLevel.getLevelTilesWidth();
+        int maxPixelX = levelWidthInTiles * TILES_SIZE;
+        int xPos = rand.nextInt(maxPixelX);
+        int yPos = 0;
+        skyBeams.add(new RoricSkyBeam(SpellType.RORIC_SKY_BEAM, xPos, yPos));
+    }
+
+    public void startSkyBeams() {
+        this.isSkyBeamActive = true;
+    }
+
+    public void stopSkyBeams() {
+        this.isSkyBeamActive = false;
+    }
+
     public void reset() {
         resetSpells(bossLightnings);
         resetSpells(bossFlashes);
         roricBeams.clear();
         arrowRains.clear();
+        skyBeams.clear();
+        isSkyBeamActive = false;
+        skyBeamSpawnTimer = 0;
     }
 
     private void resetSpells(List<? extends Spell> spells) {

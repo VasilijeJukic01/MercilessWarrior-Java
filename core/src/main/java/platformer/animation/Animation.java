@@ -249,6 +249,18 @@ public class Animation {
         return anim;
     }
 
+    public BufferedImage[] createSkyBeamAnimation() {
+        BufferedImage[] skyBeamAnimations = new BufferedImage[8];
+        BufferedImage[] originalFrames = loadRoricProjectiles()[0];
+        BufferedImage[] beamFrames = new BufferedImage[4];
+        System.arraycopy(originalFrames, 0, beamFrames, 0, 4);
+        BufferedImage[] reversedFrames = Utils.getInstance().reverseArray(beamFrames.clone());
+        System.arraycopy(reversedFrames, 0, skyBeamAnimations, 0, 4);
+        System.arraycopy(beamFrames, 0, skyBeamAnimations, 4, 4);
+
+        return skyBeamAnimations;
+    }
+
     // Getters
     public BufferedImage[][] getCoinAnimations() {
         return coinAnimations;

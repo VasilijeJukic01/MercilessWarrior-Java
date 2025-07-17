@@ -140,6 +140,7 @@ public class Roric extends Enemy {
         switch (entityState) {
             case IDLE:
                 idleAction(levelData, player, objectManager);
+                spellManager.startSkyBeams();
                 break;
             case ATTACK_2:
                 handleArrowAttack(objectManager);
