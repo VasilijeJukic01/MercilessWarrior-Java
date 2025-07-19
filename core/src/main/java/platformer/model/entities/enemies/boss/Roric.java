@@ -24,6 +24,7 @@ import static platformer.constants.Constants.*;
 public class Roric extends Enemy {
 
     private boolean start;
+    private int phase = 2;
     private boolean preparingAerialAttack = false;
     private boolean isFloating = false;
     protected double xSpeed = 0;
@@ -210,7 +211,7 @@ public class Roric extends Enemy {
     // Behavior
     private void idleAction(int[][] levelData, Player player, ObjectManager objectManager) {
         if (cooldown[Cooldown.ATTACK.ordinal()] == 0) {
-            setEnemyAction(Anim.ATTACK_3);
+            startAerialArrowAttack(levelData);
         }
     }
 
@@ -236,7 +237,7 @@ public class Roric extends Enemy {
         }
     }
 
-    private void aerialArrowAttack(int[][] levelData) {
+    private void startAerialArrowAttack(int[][] levelData) {
         preparingAerialAttack = true;
         jump(levelData);
     }
@@ -316,7 +317,8 @@ public class Roric extends Enemy {
 
         if (entityState == Anim.SPELL_2 && !isRepositioning) {
             if (animIndex == 6 && !attackCheck) {
-                objectManager.shootRoricAngledArrow(this, player);
+                if (phase == 1) objectManager.shootRoricAngledArrow(this, player);
+                else objectManager.shootTrapArrow(this, player);
                 attackCheck = true;
             }
         }
@@ -337,7 +339,7 @@ public class Roric extends Enemy {
     }
 
     private void startPhantomBarrage(EnemyManager enemyManager, int[][] levelData) {
-        aerialArrowAttack(levelData);
+        startAerialArrowAttack(levelData);
         enemyManager.spawnRoricClone(this, levelData);
         setAttackCooldown(15);
     }

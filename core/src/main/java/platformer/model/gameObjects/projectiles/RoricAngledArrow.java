@@ -1,12 +1,16 @@
 package platformer.model.gameObjects.projectiles;
 
 import platformer.debug.DebugSettings;
+import platformer.model.entities.Direction;
 import platformer.model.entities.player.Player;
+import platformer.model.gameObjects.ObjectManager;
+import platformer.utils.Utils;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,13 +19,18 @@ import static platformer.constants.Constants.*;
 
 public class RoricAngledArrow extends Projectile {
 
-    private final double angle;
+    private final Direction creatorDirection;
 
+    private final double angle;
     private Polygon polygonHitbox;
 
-    public RoricAngledArrow(int xPos, int yPos, double angle) {
+    private final boolean spawnsTrapOnImpact;
+
+    public RoricAngledArrow(int xPos, int yPos, double angle, boolean spawnsTrap, Direction creatorDirection) {
         super(PRType.RORIC_ANGLED_ARROW, null);
         this.angle = angle;
+        this.spawnsTrapOnImpact = spawnsTrap;
+        this.creatorDirection = creatorDirection;
         initHitBox(xPos, yPos);
     }
 
@@ -53,10 +62,26 @@ public class RoricAngledArrow extends Projectile {
     }
 
     @Override
-    public void updatePosition(Player player) {
+    public void updatePosition(Player player, ObjectManager objectManager, int[][] levelData) {
+        if (!alive) return;
         int dx = (int)(Math.cos(angle) * ANGLED_ARROW_SPEED);
         int dy = (int)(Math.sin(angle) * ANGLED_ARROW_SPEED);
         polygonHitbox.translate(dx, dy);
+
+        Rectangle2D bounds = polygonHitbox.getBounds2D();
+        Rectangle2D.Double checkHitbox = new Rectangle2D.Double(bounds.getX(), bounds.getY(), bounds.getWidth(), bounds.getHeight());
+        if (Utils.getInstance().isEntityOnFloor(checkHitbox, levelData)) {
+            this.alive = false;
+            if (spawnsTrapOnImpact)
+                objectManager.spawnRoricTrap((int) polygonHitbox.getBounds2D().getCenterX(), (int) (polygonHitbox.getBounds2D().getMaxY()), creatorDirection);
+        }
+    }
+
+    @Override
+    public void updatePosition(Player player) {
+//        int dx = (int)(Math.cos(angle) * ANGLED_ARROW_SPEED);
+//        int dy = (int)(Math.sin(angle) * ANGLED_ARROW_SPEED);
+//        polygonHitbox.translate(dx, dy);
     }
 
     @Override

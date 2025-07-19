@@ -14,6 +14,7 @@ import platformer.model.entities.effects.EffectManager;
 import platformer.model.entities.effects.particles.DustType;
 import platformer.model.entities.enemies.Enemy;
 import platformer.model.entities.enemies.EnemyManager;
+import platformer.model.gameObjects.GameObject;
 import platformer.model.gameObjects.ObjectManager;
 import platformer.model.gameObjects.projectiles.Projectile;
 import platformer.model.inventory.Inventory;
@@ -498,7 +499,7 @@ public class Player extends Entity {
     }
 
     public void changeHealth(double value, Object o) {
-        if (!(o instanceof Enemy) && !(o instanceof Projectile)) return;
+        if (!(o instanceof Enemy) && !(o instanceof Projectile) && !(o instanceof GameObject)) return;
         boolean hit = checkAction(PlayerAction.HIT);
         if (hit) return;
         if (value < 0) {
@@ -511,7 +512,8 @@ public class Player extends Entity {
         changeHealth(value);
         Rectangle2D sourceBounds;
         if (o instanceof Enemy) sourceBounds = ((Enemy) o).getHitBox().getBounds2D();
-        else sourceBounds = ((Projectile) o).getHitBox().getBounds2D();
+        else if (o instanceof Projectile) sourceBounds = ((Projectile) o).getHitBox().getBounds2D();
+        else sourceBounds = ((GameObject) o).getHitBox().getBounds2D();
         if (sourceBounds.getCenterX() < hitBox.getCenterX()) pushDirection = Direction.RIGHT;
         else pushDirection = Direction.LEFT;
         this.inAir = true;

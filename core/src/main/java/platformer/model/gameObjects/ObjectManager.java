@@ -54,7 +54,7 @@ public class ObjectManager implements Publisher {
             Shop.class, Blocker.class, Blacksmith.class, Dog.class,
             SaveTotem.class, SmashTrap.class, Candle.class, Loot.class,
             Table.class, Board.class, Npc.class, Lava.class, Brick.class,
-            JumpPad.class, Herb.class
+            JumpPad.class, Herb.class, RoricTrap.class
     };
     Class<? extends GameObject>[] renderBelow = new Class[] {
             Container.class, Potion.class, Spike.class,
@@ -62,7 +62,7 @@ public class ObjectManager implements Publisher {
     };
     Class<? extends GameObject>[] renderAbove = new Class[] {
             SaveTotem.class, Shop.class, Blacksmith.class, Coin.class,
-            Table.class, Board.class, JumpPad.class, Herb.class
+            Table.class, Board.class, JumpPad.class, Herb.class, RoricTrap.class
     };
     Class<? extends GameObject>[] renderBehind = new Class[] {
             Lava.class
@@ -285,7 +285,21 @@ public class ObjectManager implements Publisher {
         }
 
         double angle = Math.atan2(player.getHitBox().getCenterY() - spawnY, player.getHitBox().getCenterX() - spawnX);
-        projectiles.add(new RoricAngledArrow((int)spawnX, (int)spawnY, angle));
+        projectiles.add(new RoricAngledArrow((int)spawnX, (int)spawnY, angle, false, enemy.getDirection()));
+    }
+
+    public void shootTrapArrow(Enemy enemy, Player player) {
+        double spawnX = enemy.getHitBox().getCenterX();
+        double spawnY = enemy.getHitBox().getCenterY();
+        double horizontalOffset = 15 * SCALE;
+        double verticalOffset = 13 * SCALE;
+
+        if (enemy.getDirection() == Direction.LEFT) {
+            spawnX -= horizontalOffset;
+            spawnY -= verticalOffset;
+        }
+        double angle = Math.atan2(player.getHitBox().getCenterY() - spawnY, player.getHitBox().getCenterX() - spawnX);
+        projectiles.add(new RoricAngledArrow((int)spawnX, (int)spawnY, angle, true, enemy.getDirection()));
     }
 
     public void spawnCelestialOrb(Roric roric, double angle) {
@@ -330,6 +344,10 @@ public class ObjectManager implements Publisher {
             blocker.setAnimate(value);
             if (!value) blocker.stop();
         }
+    }
+
+    public void spawnRoricTrap(int x, int y, Direction direction) {
+        addGameObject(new RoricTrap(x, y - (int)(65 * SCALE), direction));
     }
 
     // Core
@@ -417,6 +435,7 @@ public class ObjectManager implements Publisher {
         for (Projectile projectile : projectiles) {
             if (projectile.isAlive()) {
                 projectile.updatePosition(player);
+                projectile.updatePosition(player, this, lvlData);
                 if (projectile.getHitBox().intersects(player.getHitBox())) {
                     player.changeHealth(-PLAYER_PROJECTILE_DMG, projectile);
                     projectile.setAlive(false);

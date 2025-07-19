@@ -5,6 +5,7 @@ import platformer.animation.graphics.WaveAnim;
 import platformer.debug.DebugSettings;
 import platformer.model.entities.Direction;
 import platformer.model.entities.player.Player;
+import platformer.model.gameObjects.ObjectManager;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
@@ -92,6 +93,10 @@ public abstract class Projectile {
         else updateFireballHitBox(X, Y);
 
         if (animate) updateAnimation();
+    }
+
+    public void updatePosition(Player player, ObjectManager objectManager, int[][] levelData) {
+        // This method can be overridden by subclasses to implement specific behavior
     }
 
     private void updateArrowHitBox(double X, double Y) {

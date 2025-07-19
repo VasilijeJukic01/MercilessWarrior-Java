@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 
+// TODO: Refactor this too
 /**
  * Handles intersections between game objects and entities.
  */
@@ -27,7 +28,7 @@ public class IntersectionHandler {
     private final Class<? extends GameObject>[] classesToCheck = new Class[]{
             Shop.class, Blacksmith.class, SaveTotem.class, Loot.class, Spike.class,
             Blocker.class, SmashTrap.class, Table.class, Board.class, Dog.class, Npc.class,
-            Lava.class, JumpPad.class, Herb.class, Container.class
+            Lava.class, JumpPad.class, Herb.class, Container.class, RoricTrap.class
     };
 
     public IntersectionHandler(EnemyManager enemyManager, ObjectManager objectManager, LootHandler lootHandler) {
@@ -106,6 +107,11 @@ public class IntersectionHandler {
             }
             else if (object instanceof Herb) {
                 ((Herb) object).setActive(intersect);
+            }
+            else if (intersect && object instanceof RoricTrap) {
+                if (!object.isAnimate()) {
+                    p.changeHealth(-RoricTrap.TRAP_DAMAGE, object);
+                }
             }
         }
         return check;

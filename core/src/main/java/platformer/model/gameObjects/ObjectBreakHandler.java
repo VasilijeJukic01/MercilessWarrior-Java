@@ -40,6 +40,12 @@ public class ObjectBreakHandler {
                 breakContainer(container);
             }
         }
+
+        for (RoricTrap trap : getObjects(RoricTrap.class)) {
+            if (trap.isAlive() && !trap.isAnimate() && attackBox.intersects(trap.getHitBox())) {
+                trap.hit(10);
+            }
+        }
     }
 
     /**

@@ -386,6 +386,11 @@ public final class Constants {
     public static final int CELESTIAL_ORB_WID = scale(40);
     public static final int CELESTIAL_ORB_HEI = scale(40);
 
+    public static final int RORIC_TRAP_WID = scale(150);
+    public static final int RORIC_TRAP_HEI = scale(120);
+    public static final int RORIC_TRAP_HB_WID = scale(23);
+    public static final int RORIC_TRAP_HB_HEI = scale(32);
+
     // Spell Constants
     public static final int FLAME_WID = scale(45);
     public static final int FLAME_HEI = scale(35);
