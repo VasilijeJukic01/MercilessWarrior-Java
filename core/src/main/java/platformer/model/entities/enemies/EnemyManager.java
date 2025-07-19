@@ -299,6 +299,12 @@ public class EnemyManager implements Publisher {
         }
     }
 
+    public void checkEnemyProjectileHit(List<Projectile> projectiles) {
+        projectiles.stream()
+                .filter(Projectile::isAlive)
+                .forEach(this::checkEnemyProjectileHit);
+    }
+
     public void checkEnemyProjectileHit(Projectile projectile) {
         for (Skeleton skeleton : getEnemies(Skeleton.class)) {
             if (skeleton.isAlive() && skeleton.getEnemyAction() != Anim.DEATH && projectile.getHitBox().intersects(skeleton.getHitBox())) {
@@ -361,11 +367,11 @@ public class EnemyManager implements Publisher {
 
         getEnemies(SpearWoman.class).stream()
                 .filter(SpearWoman::isAlive)
-                .forEach(spearWoman -> spearWoman.update(spearWomanAnimations, levelData, player, gameState.getSpellManager(), gameState.getObjectManager(), gameState.getBossInterface()));
+                .forEach(spearWoman -> spearWoman.update(spearWomanAnimations, levelData, player, gameState.getSpellManager(), gameState.getObjectManager(), gameState.getProjectileManager(), gameState.getBossInterface()));
 
         getEnemies(Roric.class).stream()
                 .filter(Roric::isAlive)
-                .forEach(roric -> roric.update(roricAnimations, levelData, player, gameState.getSpellManager(), this, gameState.getObjectManager(), gameState.getBossInterface()));
+                .forEach(roric -> roric.update(roricAnimations, levelData, player, gameState.getSpellManager(), this, gameState.getObjectManager(), gameState.getProjectileManager(), gameState.getBossInterface()));
 
         updateClones(levelData, player);
     }
@@ -376,7 +382,7 @@ public class EnemyManager implements Publisher {
     }
 
     private void updateClones(int[][] levelData, Player player) {
-        roricClones.forEach(clone -> clone.update(roricAnimations, levelData, player, gameState.getSpellManager(), this,  gameState.getObjectManager(), gameState.getBossInterface()));
+        roricClones.forEach(clone -> clone.update(roricAnimations, levelData, player, gameState.getSpellManager(), this,  gameState.getObjectManager(), gameState.getProjectileManager(), gameState.getBossInterface()));
         roricClones.removeIf(clone -> !clone.isAlive());
     }
 

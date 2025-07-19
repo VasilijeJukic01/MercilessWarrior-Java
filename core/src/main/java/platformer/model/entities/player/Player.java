@@ -17,6 +17,7 @@ import platformer.model.entities.enemies.EnemyManager;
 import platformer.model.gameObjects.GameObject;
 import platformer.model.gameObjects.ObjectManager;
 import platformer.model.gameObjects.projectiles.Projectile;
+import platformer.model.gameObjects.projectiles.ProjectileManager;
 import platformer.model.inventory.Inventory;
 import platformer.model.inventory.InventoryBonus;
 import platformer.model.inventory.ItemRarity;
@@ -41,6 +42,7 @@ public class Player extends Entity {
 
     private final EnemyManager enemyManager;
     private final ObjectManager objectManager;
+    private final ProjectileManager projectileManager;
     private final MinimapManager minimapManager;
     private final EffectManager effectManager;
     private int[][] levelData;
@@ -78,10 +80,11 @@ public class Player extends Entity {
     private int mythicAuraTick = 0;
 
 
-    public Player(int xPos, int yPos, int width, int height, EnemyManager enemyManager, ObjectManager objectManager, MinimapManager minimapManager, EffectManager effectManager) {
+    public Player(int xPos, int yPos, int width, int height, EnemyManager enemyManager, ObjectManager objectManager, ProjectileManager projectileManager, MinimapManager minimapManager, EffectManager effectManager) {
         super(xPos, yPos, width, height, PLAYER_MAX_HP);
         this.enemyManager = enemyManager;
         this.objectManager = objectManager;
+        this.projectileManager = projectileManager;
         this.minimapManager = minimapManager;
         this.effectManager = effectManager;
         loadAnimations();
@@ -145,7 +148,7 @@ public class Player extends Entity {
         if (spellState == 1 && animIndex >= animations[entityState.ordinal()].length-5)
             animIndex = 2;
         else if (fireball && animIndex == 3)
-            objectManager.shotFireBall(this);
+            projectileManager.activateFireball(this);
     }
 
     private void finishAnimation() {
@@ -430,7 +433,7 @@ public class Player extends Entity {
         if (contactMade) Audio.getInstance().getAudioPlayer().playHitSound();
         else if (!dash) Audio.getInstance().getAudioPlayer().playSlashSound();
         objectManager.checkObjectBreak(attackBox);
-        objectManager.checkProjectileDeflect(attackBox);
+        projectileManager.checkProjectileDeflect(attackBox);
     }
 
     private void checkOnObject() {

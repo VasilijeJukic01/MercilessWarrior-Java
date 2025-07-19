@@ -10,6 +10,7 @@ import platformer.model.entities.enemies.EnemyManager;
 import platformer.model.entities.enemies.EnemyType;
 import platformer.model.entities.player.Player;
 import platformer.model.gameObjects.ObjectManager;
+import platformer.model.gameObjects.projectiles.ProjectileManager;
 import platformer.model.spells.SpellManager;
 import platformer.ui.overlays.hud.BossInterface;
 import platformer.utils.Utils;
@@ -87,9 +88,9 @@ public class Roric extends Enemy {
         // Not used
     }
 
-    public void update(BufferedImage[][] animations, int[][] levelData, Player player, SpellManager spellManager, EnemyManager enemyManager, ObjectManager objectManager, BossInterface bossInterface) {
+    public void update(BufferedImage[][] animations, int[][] levelData, Player player, SpellManager spellManager, EnemyManager enemyManager, ObjectManager objectManager, ProjectileManager projectileManager, BossInterface bossInterface) {
         if (isPerformingCelestialRain) {
-            handleCelestialRain(player, objectManager);
+            handleCelestialRain(player, projectileManager);
             updateAnimation(animations);
             return;
         }
@@ -97,20 +98,20 @@ public class Roric extends Enemy {
             handleSkyfallBarrage(player, spellManager, levelData);
             return;
         }
-        updateMove(levelData, player, spellManager, objectManager, enemyManager);
+        updateMove(levelData, player, spellManager, objectManager, projectileManager, enemyManager);
         updateAnimation(animations);
         updateAttackBox();
         if (!bossInterface.isActive() && start) bossInterface.setActive(true);
         else if (bossInterface.isActive() && !start) bossInterface.setActive(false);
     }
 
-    void updateMove(int[][] levelData, Player player, SpellManager spellManager, ObjectManager objectManager, EnemyManager enemyManager) {
+    void updateMove(int[][] levelData, Player player, SpellManager spellManager, ObjectManager objectManager, ProjectileManager projectileManager, EnemyManager enemyManager) {
         if (celestialTeleportRequested) {
             celestialTeleportRequested = false;
             handleRoricTeleport(this, levelData);
             return;
         }
-        updateBehavior(levelData, player, spellManager, objectManager, enemyManager);
+        updateBehavior(levelData, player, spellManager, objectManager, projectileManager, enemyManager);
         if (!Utils.getInstance().isEntityOnFloor(hitBox, levelData) && entityState != Anim.IDLE) {
             inAir = true;
         }
@@ -169,9 +170,9 @@ public class Roric extends Enemy {
         }
     }
 
-    private void updateBehavior(int[][] levelData, Player player, SpellManager spellManager, ObjectManager objectManager, EnemyManager enemyManager) {
+    private void updateBehavior(int[][] levelData, Player player, SpellManager spellManager, ObjectManager objectManager, ProjectileManager projectileManager, EnemyManager enemyManager) {
         if (preparingAerialAttack) {
-            handleAerialAttack(levelData, player, objectManager);
+            handleAerialAttack(levelData, player, projectileManager);
             return;
         }
         if (cooldown[Cooldown.ATTACK.ordinal()] > 0) return;
@@ -180,7 +181,7 @@ public class Roric extends Enemy {
                 idleAction(levelData, player, objectManager);
                 break;
             case ATTACK_2:
-                handleArrowAttack(objectManager);
+                handleArrowAttack(projectileManager);
                 break;
             case SPELL_1:
                 beamAttack(spellManager);
@@ -215,10 +216,10 @@ public class Roric extends Enemy {
         }
     }
 
-    protected void handleArrowAttack(ObjectManager objectManager) {
+    protected void handleArrowAttack(ProjectileManager projectileManager) {
         if (animIndex == 0) attackCheck = false;
         if (animIndex == 9 && !attackCheck) {
-            objectManager.shootRoricArrow(this);
+            projectileManager.activateRoricArrow(this);
             attackCheck = true;
         }
     }
@@ -257,7 +258,7 @@ public class Roric extends Enemy {
         this.setEnemyAction(Anim.IDLE);
     }
 
-    private void handleAerialAttack(int[][] levelData, Player player, ObjectManager objectManager) {
+    private void handleAerialAttack(int[][] levelData, Player player, ProjectileManager projectileManager) {
         if (entityState == Anim.JUMP_FALL && airSpeed >= 0 && !isFloating) {
             isFloating = true;
             airSpeed = 0;
@@ -317,8 +318,8 @@ public class Roric extends Enemy {
 
         if (entityState == Anim.SPELL_2 && !isRepositioning) {
             if (animIndex == 6 && !attackCheck) {
-                if (phase == 1) objectManager.shootRoricAngledArrow(this, player);
-                else objectManager.shootTrapArrow(this, player);
+                if (phase == 1) projectileManager.activateRoricAngledArrow(this, player);
+                else projectileManager.activateTrapArrow(this, player);
                 attackCheck = true;
             }
         }
@@ -344,7 +345,7 @@ public class Roric extends Enemy {
         setAttackCooldown(15);
     }
 
-    private void handleCelestialRain(Player player, ObjectManager objectManager) {
+    private void handleCelestialRain(Player player, ProjectileManager projectileManager) {
         celestialRainTimer++;
 
         if (isSpawningVolley) {
@@ -356,7 +357,7 @@ public class Roric extends Enemy {
                 double startAngle = currentSpawnAngle;
 
                 double angle = startAngle + (orbInVolleyIndex * angleIncrement);
-                objectManager.spawnCelestialOrb(this, angle);
+                projectileManager.activateCelestialOrb(this, angle);
                 orbInVolleyIndex++;
 
                 if (orbInVolleyIndex >= PROJECTILES_PER_VOLLEY) {

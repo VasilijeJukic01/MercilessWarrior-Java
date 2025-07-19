@@ -10,6 +10,7 @@ import platformer.model.entities.enemies.Enemy;
 import platformer.model.entities.enemies.EnemyType;
 import platformer.model.entities.player.Player;
 import platformer.model.gameObjects.ObjectManager;
+import platformer.model.gameObjects.projectiles.ProjectileManager;
 import platformer.model.spells.SpellManager;
 import platformer.observer.Publisher;
 import platformer.observer.Subscriber;
@@ -89,7 +90,7 @@ public class SpearWoman extends Enemy implements Publisher {
     }
 
     // Core
-    private void updateBehavior(int[][] levelData, Player player, SpellManager spellManager, ObjectManager objectManager) {
+    private void updateBehavior(int[][] levelData, Player player, SpellManager spellManager, ObjectManager objectManager, ProjectileManager projectileManager) {
         if (cooldown[Cooldown.ATTACK.ordinal()] != 0) return;
         switch (entityState) {
             case IDLE:
@@ -102,12 +103,12 @@ public class SpearWoman extends Enemy implements Publisher {
             case SPELL_1:
                 rapidSlashAction(levelData, player); break;
             case SPELL_2:
-                lightningBallAction(objectManager); break;
+                lightningBallAction(projectileManager); break;
             case SPELL_3:
                 thunderSlamAction(player, spellManager); break;
             case SPELL_4:
                 notify("SPAWN_AURA", this);
-                multiLightningBallAction(objectManager, spellManager);
+                multiLightningBallAction(projectileManager, spellManager);
                 break;
             case DEATH:
                 objectManager.activateBlockers(false);
@@ -156,9 +157,9 @@ public class SpearWoman extends Enemy implements Publisher {
         if (!attackCheck) checkPlayerHit(attackBox, player);
     }
 
-    private void lightningBallAction(ObjectManager objectManager) {
+    private void lightningBallAction(ProjectileManager projectileManager) {
         if (animIndex == 7 && !shooting) {
-            objectManager.shootLightningBall(this);
+            projectileManager.activateLightningBall(this);
             Audio.getInstance().getAudioPlayer().playSound(Sound.LIGHTNING_2);
             shooting = true;
         }
@@ -190,9 +191,9 @@ public class SpearWoman extends Enemy implements Publisher {
         }
     }
 
-    private void multiLightningBallAction(ObjectManager objectManager, SpellManager spellManager) {
-        if (specialAttackIndex == 1) oscillationProjectiles(objectManager);
-        else trackingProjectiles(spellManager, objectManager);
+    private void multiLightningBallAction(ProjectileManager projectileManager, SpellManager spellManager) {
+        if (specialAttackIndex == 1) oscillationProjectiles(projectileManager);
+        else trackingProjectiles(spellManager, projectileManager);
     }
 
     private void dashSlash(int[][] levelData) {
@@ -292,18 +293,18 @@ public class SpearWoman extends Enemy implements Publisher {
 
 
     // Projectiles
-    private void oscillationProjectiles(ObjectManager objectManager) {
+    private void oscillationProjectiles(ProjectileManager projectileManager) {
         if (animIndex == 1 && !shooting) {
-            if (multiShootFlag == 1) objectManager.multiLightningBallShoot(this);
-            if (multiShootFlag == 4) objectManager.multiLightningBallShoot2(this);
+            if (multiShootFlag == 1) projectileManager.activateMultiLightningBallVariation1(this);
+            if (multiShootFlag == 4) projectileManager.activateMultiLightningBallVariation2(this);
             multiShootFlag = (multiShootFlag + 1) % 5;
             shooting = true;
         }
     }
 
-    private void trackingProjectiles(SpellManager spellManager, ObjectManager objectManager) {
+    private void trackingProjectiles(SpellManager spellManager, ProjectileManager projectileManager) {
         if (animIndex == 1 && !shooting) {
-            if (multiShootFlag == 1) objectManager.followingLightningBallShoot(this);
+            if (multiShootFlag == 1) projectileManager.activateTrackingLightningBall(this);
             if (multiShootFlag == 0) {
                 if (canFlash) spellManager.activateFlashes();
                 canFlash = !canFlash;
@@ -317,18 +318,18 @@ public class SpearWoman extends Enemy implements Publisher {
     @Override
     public void update(BufferedImage[][] animations, int[][] levelData, Player player) {}
 
-    public void update(BufferedImage[][] animations, int[][] levelData, Player player, SpellManager spellManager, ObjectManager objectManager, BossInterface bossInterface) {
-        updateMove(levelData, player, spellManager, objectManager);
+    public void update(BufferedImage[][] animations, int[][] levelData, Player player, SpellManager spellManager, ObjectManager objectManager, ProjectileManager projectileManager, BossInterface bossInterface) {
+        updateMove(levelData, player, spellManager, objectManager, projectileManager);
         updateAnimation(animations);
         updateAttackBox();
         if (!bossInterface.isActive() && start) bossInterface.setActive(true);
         else if (bossInterface.isActive() && !start) bossInterface.setActive(false);
     }
 
-    public void updateMove(int[][] levelData, Player player, SpellManager spellManager, ObjectManager objectManager) {
+    public void updateMove(int[][] levelData, Player player, SpellManager spellManager, ObjectManager objectManager, ProjectileManager projectileManager) {
         if (!Utils.getInstance().isEntityOnFloor(hitBox, levelData) && !isAirFreeze()) inAir = true;
         if (inAir) updateInAir(levelData, gravity, collisionFallSpeed);
-        else updateBehavior(levelData, player, spellManager, objectManager);
+        else updateBehavior(levelData, player, spellManager, objectManager, projectileManager);
     }
 
     private void updateAttackBox() {

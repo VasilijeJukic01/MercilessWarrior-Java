@@ -5,6 +5,7 @@ import platformer.model.entities.Direction;
 import platformer.model.entities.enemies.EnemyManager;
 import platformer.model.entities.player.Player;
 import platformer.model.gameObjects.ObjectManager;
+import platformer.model.gameObjects.projectiles.ProjectileManager;
 import platformer.model.spells.SpellManager;
 import platformer.ui.overlays.hud.BossInterface;
 
@@ -25,7 +26,7 @@ public class RoricClone extends Roric {
     }
 
     @Override
-    public void update(BufferedImage[][] animations, int[][] levelData, Player player, SpellManager spellManager, EnemyManager enemyManager, ObjectManager objectManager, BossInterface bossInterface) {
+    public void update(BufferedImage[][] animations, int[][] levelData, Player player, SpellManager spellManager, EnemyManager enemyManager, ObjectManager objectManager, ProjectileManager projectileManager, BossInterface bossInterface) {
         if (!attackStarted) {
             setEnemyAction(Anim.ATTACK_2);
             attackStarted = true;
@@ -35,7 +36,7 @@ public class RoricClone extends Roric {
         super.updateAttackBox();
 
         if (getEnemyAction() == Anim.ATTACK_2) {
-            super.handleArrowAttack(objectManager);
+            super.handleArrowAttack(projectileManager);
         }
     }
 

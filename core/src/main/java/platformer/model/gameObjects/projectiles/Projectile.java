@@ -152,6 +152,10 @@ public abstract class Projectile {
         g.drawRect((int)hitBox.x-xLevelOffset, (int)hitBox.y-yLevelOffset, (int)hitBox.width, (int)hitBox.height);
     }
 
+    public PRType getPrType() {
+        return prType;
+    }
+
     public abstract Shape getHitBox();
 
     public boolean isAlive() {

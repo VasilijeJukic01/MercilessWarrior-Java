@@ -132,16 +132,10 @@ public class IntersectionHandler {
     }
 
     /**
-     * Checks if any enemy intersects with a projectile.
-     *
-     * @param projectiles The list of projectiles to check.
+     * Checks if any enemy intersects with a trap.
      */
-    public void checkEnemyIntersection(List<Projectile> projectiles) {
+    public void checkEnemyIntersection() {
         getObjects(Spike.class).forEach(enemyManager::checkEnemyTrapHit);
-
-        projectiles.stream()
-                .filter(Projectile::isAlive)
-                .forEach(enemyManager::checkEnemyProjectileHit);
     }
 
     // Handle

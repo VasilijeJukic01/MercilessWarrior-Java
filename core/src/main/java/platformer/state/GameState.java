@@ -12,6 +12,7 @@ import platformer.model.entities.enemies.EnemyManager;
 import platformer.model.entities.player.Player;
 import platformer.model.entities.player.PlayerAction;
 import platformer.model.gameObjects.ObjectManager;
+import platformer.model.gameObjects.projectiles.ProjectileManager;
 import platformer.model.levels.LevelManager;
 import platformer.model.minimap.MinimapManager;
 import platformer.model.perks.PerksBonus;
@@ -51,6 +52,7 @@ public class GameState extends AbstractState implements State, Subscriber {
     private LevelManager levelManager;
     private ObjectManager objectManager;
     private EnemyManager enemyManager;
+    private ProjectileManager projectileManager;
     private SpellManager spellManager;
     private PerksManager perksManager;
     private QuestManager questManager;
@@ -106,6 +108,7 @@ public class GameState extends AbstractState implements State, Subscriber {
         this.effectManager = new EffectManager();
         this.enemyManager = new EnemyManager(this);
         this.objectManager = new ObjectManager(this);
+        this.projectileManager = new ProjectileManager(this);
         this.overlayManager = new OverlayManager(this);
         this.spellManager = new SpellManager(this);
         this.dialogueManager = new DialogueManager(this);
@@ -117,7 +120,7 @@ public class GameState extends AbstractState implements State, Subscriber {
     }
 
     private void initPlayer() {
-        this.player = new Player(PLAYER_X, PLAYER_Y, PLAYER_WIDTH, PLAYER_HEIGHT, enemyManager, objectManager, minimapManager, effectManager);
+        this.player = new Player(PLAYER_X, PLAYER_Y, PLAYER_WIDTH, PLAYER_HEIGHT, enemyManager, objectManager, projectileManager, minimapManager, effectManager);
         this.player.loadLvlData(levelManager.getCurrentLevel().getLvlData());
         this.player.setSpawn(levelManager.getCurrentLevel().getPlayerSpawn("LEFT"));
     }
@@ -291,6 +294,7 @@ public class GameState extends AbstractState implements State, Subscriber {
         this.enemyManager.render(g, xLevelOffset, yLevelOffset);
         this.player.render(g, xLevelOffset, yLevelOffset);
         this.objectManager.secondRender(g, xLevelOffset, yLevelOffset);
+        this.projectileManager.render(g, xLevelOffset, yLevelOffset);
         this.spellManager.render(g, xLevelOffset, yLevelOffset);
         this.effectManager.renderForegroundEffects(g, xLevelOffset, yLevelOffset);
 
@@ -343,6 +347,7 @@ public class GameState extends AbstractState implements State, Subscriber {
         updateCamera();
         enemyManager.update(levelManager.getCurrentLevel().getLvlData(), player);
         objectManager.update(levelManager.getCurrentLevel().getLvlData(), player);
+        projectileManager.update(levelManager.getCurrentLevel().getLvlData(), player);
         lightManager.update();
         spellManager.update();
         minimapManager.update();
@@ -405,6 +410,7 @@ public class GameState extends AbstractState implements State, Subscriber {
         enemyManager.reset();
         player.reset();
         objectManager.reset();
+        projectileManager.reset();
         spellManager.reset();
         overlayManager.reset();
         if (!isRespawning) minimapManager.reset();
@@ -445,6 +451,11 @@ public class GameState extends AbstractState implements State, Subscriber {
     public ObjectManager getObjectManager() {
         return objectManager;
     }
+
+    public ProjectileManager getProjectileManager() {
+        return projectileManager;
+    }
+
 
     public LevelManager getLevelManager() {
         return levelManager;
