@@ -20,9 +20,9 @@ import java.util.*;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
 /**
- * OpenAL class that implements the AudioPlayer interface.
- * It is responsible for loading and playing audio files.
- * It uses the OpenAL library to play audio files.
+ * An implementation of the {@link AudioPlayer} interface using the OpenAL library (via LWJGL).
+ * This class is responsible for initializing the audio device, loading all sound files into buffers,
+ * managing sound sources, and handling playback logic.
  */
 public class OpenAL implements AudioPlayer<Song, Sound, Ambience>  {
 
@@ -47,6 +47,10 @@ public class OpenAL implements AudioPlayer<Song, Sound, Ambience>  {
     private static final double SOUNDS_PROGRESS = 0.3;
     private static final double AMBIENCE_PROGRESS = 0.2;
 
+    /**
+     * Initializes the OpenAL audio system. This involves setting up the audio device and context,
+     * and loading all songs, sound effects, and ambient sounds from files into OpenAL buffers.
+     */
     public OpenAL() {
         progressTracker.updateStatus("Initializing audio system");
         progressTracker.updateProgress(0.01);
@@ -71,6 +75,10 @@ public class OpenAL implements AudioPlayer<Song, Sound, Ambience>  {
         Logger.getInstance().notify("Audio loaded successfully!", Message.INFORMATION);
     }
 
+    /**
+     * Initializes the OpenAL device and creates a context.
+     * @throws IllegalStateException if the audio device or context cannot be created.
+     */
     private void initAL() {
         long device = ALC10.alcOpenDevice((ByteBuffer) null);
         if (device == NULL) {
@@ -134,6 +142,12 @@ public class OpenAL implements AudioPlayer<Song, Sound, Ambience>  {
     }
 
     // Core
+    /**
+     * Loads a single audio file (must be .wav) into an OpenAL buffer.
+     *
+     * @param file The path to the audio file within the resources.
+     * @return The integer ID of the generated OpenAL buffer.
+     */
     private int loadBuffers(String file) {
         int buffer = AL10.alGenBuffers();
         if (file.endsWith(".wav")) {
@@ -144,6 +158,9 @@ public class OpenAL implements AudioPlayer<Song, Sound, Ambience>  {
         return buffer;
     }
 
+    /**
+     * Sets the listener's position and velocity to default values at the center of the world.
+     */
     public void setListenerData() {
         AL10.alListener3f(AL10.AL_POSITION, 0, 0, 0);
         AL10.alListener3f(AL10.AL_VELOCITY, 0, 0, 0);
@@ -306,6 +323,12 @@ public class OpenAL implements AudioPlayer<Song, Sound, Ambience>  {
         updateSoundVolume();
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * This implementation deletes all OpenAL buffers and sources, then properly closes the
+     * OpenAL device and context to prevent resource leaks.
+     */
     @Override
     public void destroy() {
         songs.forEach(AL10::alDeleteBuffers);

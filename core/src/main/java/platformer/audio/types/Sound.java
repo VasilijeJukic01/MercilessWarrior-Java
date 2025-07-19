@@ -2,6 +2,10 @@ package platformer.audio.types;
 
 import platformer.utils.ValueEnum;
 
+/**
+ * Enum representing all available sound effects in the game.
+ * Implements {@link platformer.utils.ValueEnum} to associate each enum constant with its corresponding file name (without the .wav extension).
+ */
 public enum Sound implements ValueEnum<String> {
     SLASH_1("SwordSlash1"),             // 0
     SLASH_2("SwordSlash2"),             // 1
@@ -35,10 +39,11 @@ public enum Sound implements ValueEnum<String> {
     CRAFTING("Crafting"),               // 29
     BTN_CLICK("ButtonClick");           // 30
 
+    private static final String PREFIX = "sfx/";
     private final String value;
 
-    Sound(String value) {
-        this.value = value;
+    Sound(String fileName) {
+        this.value = PREFIX + fileName;
     }
 
     @Override

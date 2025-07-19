@@ -5,8 +5,9 @@ import platformer.audio.types.Song;
 import platformer.audio.types.Sound;
 
 /**
- * Singleton class that is responsible for creating an instance of the AudioPlayer.
- * The AudioPlayer is responsible for playing the audio in the game.
+ * The main public access point for the game's audio system.
+ * This class follows the Singleton pattern to provide a single, globally accessible instance of the {@link AudioPlayer}.
+ * Other parts of the game should interact with this class to play sounds, music, and ambient tracks.
  */
 public class Audio {
 
@@ -29,6 +30,9 @@ public class Audio {
         return instance;
     }
 
+    /**
+     * Initializes the audio player implementation.
+     */
     private void init() {
         this.audioPlayer = new OpenAL();
     }

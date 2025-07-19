@@ -11,6 +11,11 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+/**
+ * A utility class to load and hold audio data from a .wav file.
+ * The data is stored in a format suitable for use with OpenAL.
+ * This class implements {@link AutoCloseable} to allow for easy resource management using try-with-resources statements.
+ */
 public class WaveData implements AutoCloseable {
 
     public final int format;
@@ -23,6 +28,13 @@ public class WaveData implements AutoCloseable {
         this.data = data;
     }
 
+    /**
+     * Creates a WaveData object by loading and decoding a .wav file.
+     *
+     * @param file The path to the .wav file.
+     * @return A new WaveData object containing the audio information.
+     * @throws RuntimeException if the WAV file fails to load or is in an unsupported format.
+     */
     public static WaveData create(String file) {
         try {
             AudioInputStream ais = AudioSystem.getAudioInputStream(new File(file));
@@ -45,6 +57,9 @@ public class WaveData implements AutoCloseable {
         }
     }
 
+    /**
+     * Clears the ByteBuffer to help release its memory.
+     */
     @Override
     public void close() {
         data.clear();
