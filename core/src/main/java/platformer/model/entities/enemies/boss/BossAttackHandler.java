@@ -16,14 +16,14 @@ import static platformer.physics.CollisionDetector.canMoveHere;
 
 public class BossAttackHandler {
 
-    private final SpearWoman spearWoman;
+    private final Lancer lancer;
     private final Rectangle2D.Double hitBox;
 
     private final List<Anim> actions;
 
-    public BossAttackHandler(SpearWoman spearWoman, List<Anim> actions) {
-        this.spearWoman = spearWoman;
-        this.hitBox = spearWoman.getHitBox();
+    public BossAttackHandler(Lancer lancer, List<Anim> actions) {
+        this.lancer = lancer;
+        this.hitBox = lancer.getHitBox();
         this.actions = actions;
     }
 
@@ -35,7 +35,7 @@ public class BossAttackHandler {
         double leftTeleport = playerX - tiles * TILES_SIZE;
         int k = rand.nextInt(2);
         doTeleport(levelData, k, rightTeleport, leftTeleport);
-        spearWoman.setDirection((playerX < hitBox.x) ? Direction.LEFT : Direction.RIGHT);
+        lancer.setDirection((playerX < hitBox.x) ? Direction.LEFT : Direction.RIGHT);
     }
 
     private void doTeleport(int[][] levelData, int k, double rightTeleport, double leftTeleport) {
@@ -60,20 +60,20 @@ public class BossAttackHandler {
         Random rand = new Random();
         double targetX;
         if (rand.nextInt(2) == 0) {
-            spearWoman.setDirection(Direction.LEFT);
+            lancer.setDirection(Direction.LEFT);
             targetX = 23 * TILES_SIZE;
         }
         else {
-            spearWoman.setDirection(Direction.RIGHT);
+            lancer.setDirection(Direction.RIGHT);
             targetX = 3 * TILES_SIZE;
         }
-        performTeleport(targetX, spearWoman.getYPos());
+        performTeleport(targetX, lancer.getYPos());
     }
 
     private void dashSlashAttack(int[][] levelData, Player player) {
         teleport(levelData, player, 8);
-        Audio.getInstance().getAudioPlayer().playSound(Sound.SW_ROAR_1);
-        spearWoman.setAttackCooldown(5.5);
+        Audio.getInstance().getAudioPlayer().playSound(Sound.LANCER_ROAR_1);
+        lancer.setAttackCooldown(5.5);
     }
 
     private int multiLightningBallAttack() {
@@ -83,33 +83,33 @@ public class BossAttackHandler {
 
     private void classicAttack(int[][] levelData, Player player) {
         teleport(levelData, player, 3);
-        spearWoman.setAttackCooldown(5.5);
+        lancer.setAttackCooldown(5.5);
     }
 
     public void attack(int[][] levelData, Player player, Anim prevAnim) {
         Random rand = new Random();
-        spearWoman.attackReset();
+        lancer.attackReset();
 
         Anim next;
         do {
             next = actions.get(rand.nextInt(actions.size()));
         } while (next == prevAnim || next == Anim.ATTACK_2);
-        spearWoman.setEnemyAction(next);
+        lancer.setEnemyAction(next);
 
-        switch (spearWoman.getEnemyAction()) {
+        switch (lancer.getEnemyAction()) {
             case ATTACK_1:
             case SPELL_1:
-                spearWoman.prepareForClassicAttack();
+                lancer.prepareForClassicAttack();
                 classicAttack(levelData, player); break;
             case ATTACK_3:
-                spearWoman.changeAttackBox();
+                lancer.changeAttackBox();
                 dashSlashAttack(levelData, player); break;
             case SPELL_2:
                 lightningBallAttack(); break;
             case SPELL_3:
                 thunderSlamAttack(); break;
             case SPELL_4:
-                spearWoman.setSpecialAttackIndex(multiLightningBallAttack()); break;
+                lancer.setSpecialAttackIndex(multiLightningBallAttack()); break;
             default: break;
 
         }
@@ -117,10 +117,10 @@ public class BossAttackHandler {
     }
 
     private void performTeleport(double newX, double newY) {
-        spearWoman.notify("TELEPORT_OUT", new Point((int) hitBox.getCenterX(), (int) hitBox.getCenterY()));
+        lancer.notify("TELEPORT_OUT", new Point((int) hitBox.getCenterX(), (int) hitBox.getCenterY()));
         hitBox.x = newX;
         hitBox.y = newY;
-        spearWoman.notify("TELEPORT_IN", new Point((int) hitBox.getCenterX(), (int) hitBox.getCenterY()));
+        lancer.notify("TELEPORT_IN", new Point((int) hitBox.getCenterX(), (int) hitBox.getCenterY()));
     }
 
 }

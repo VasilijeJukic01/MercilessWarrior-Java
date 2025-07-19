@@ -2,7 +2,7 @@ package platformer.observer;
 
 import platformer.model.entities.effects.EffectManager;
 import platformer.model.entities.effects.particles.DustType;
-import platformer.model.entities.enemies.boss.SpearWoman;
+import platformer.model.entities.enemies.boss.Lancer;
 import platformer.state.GameState;
 
 import java.awt.*;
@@ -50,13 +50,13 @@ public class EventHandler {
     }
 
     private void handleSpawnAuraEvent(Object arg) {
-        if (arg instanceof SpearWoman boss) {
+        if (arg instanceof Lancer boss) {
             effectManager.spawnAura(boss, 40);
         }
     }
 
     private void handleClearAuraEvent(Object arg) {
-        if (arg instanceof SpearWoman boss) {
+        if (arg instanceof Lancer boss) {
             effectManager.clearAura(boss);
         }
     }

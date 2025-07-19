@@ -2,7 +2,7 @@ package platformer.model.levels;
 
 import platformer.model.entities.enemies.*;
 import platformer.model.entities.enemies.boss.Roric;
-import platformer.model.entities.enemies.boss.SpearWoman;
+import platformer.model.entities.enemies.boss.Lancer;
 import platformer.model.gameObjects.GameObject;
 import platformer.model.gameObjects.ObjType;
 import platformer.model.gameObjects.npc.Npc;
@@ -100,8 +100,8 @@ public class Level {
             case GHOUL:
                 addEnemy(new Ghoul(i*TILES_SIZE, (j-1)*TILES_SIZE));
                 break;
-            case SPEAR_WOMAN:
-                addEnemy(new SpearWoman(i*TILES_SIZE, (j-1)*TILES_SIZE));
+            case LANCER:
+                addEnemy(new Lancer(i*TILES_SIZE, (j-1)*TILES_SIZE));
                 break;
             case KNIGHT:
                 addEnemy(new Knight(i*TILES_SIZE, (j-1)*TILES_SIZE));

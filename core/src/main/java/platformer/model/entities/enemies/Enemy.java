@@ -100,7 +100,7 @@ public abstract class Enemy extends Entity implements Debug<Graphics> {
         else if (enemyType == EnemyType.GHOUL) return distance <= GHOUL_ATT_RANGE;
         else if (enemyType == EnemyType.KNIGHT) return distance <= KNIGHT_ATT_RANGE;
         else if (enemyType == EnemyType.WRAITH) return distance <= WRAITH_ATT_RANGE;
-        else if (enemyType == EnemyType.SPEAR_WOMAN) return distance <= SW_ATT_RANGE;
+        else if (enemyType == EnemyType.LANCER) return distance <= LANCER_ATT_RANGE;
         return false;
     }
 
@@ -122,7 +122,7 @@ public abstract class Enemy extends Entity implements Debug<Graphics> {
             boolean canBlock = player.checkAction(PlayerAction.CAN_BLOCK);
             if (!canBlock) player.changeHealth(-enemyType.getDamage(), this);
         }
-        else if (enemyType == EnemyType.GHOUL || enemyType == EnemyType.SPEAR_WOMAN) return;
+        else if (enemyType == EnemyType.GHOUL || enemyType == EnemyType.LANCER) return;
         attackCheck = true;
     }
 

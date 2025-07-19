@@ -13,7 +13,6 @@ AB - Attack Box
 HP - Health
 ST - Stamina
 CD - Cooldown
-SW - Spear Woman
 LB - Lightning Ball
 FB - Fireball
 
@@ -161,15 +160,15 @@ public final class Constants {
     public static final int WRAITH_AB_WID = scale(100);
     public static final int WRAITH_AB_HEI = scale(45);
 
-    public static final int SW_WIDTH = scale(153);
-    public static final int SW_HEIGHT = scale(138);
-    public static final int SW_X_OFFSET = scale(54);
-    public static final int SW_Y_OFFSET = scale(63);
-    public static final int SW_HB_WID = scale(25);
-    public static final int SW_HB_HEI = scale(50);
-    public static final int SW_AB_WID = scale(96);
-    public static final int SW_AB_WID_REDUCE = scale(48);
-    public static final int SW_AB_HEI = scale(54);
+    public static final int LANCER_WIDTH = scale(153);
+    public static final int LANCER_HEIGHT = scale(138);
+    public static final int LANCER_X_OFFSET = scale(54);
+    public static final int LANCER_Y_OFFSET = scale(63);
+    public static final int LANCER_HB_WID = scale(25);
+    public static final int LANCER_HB_HEI = scale(50);
+    public static final int LANCER_AB_WID = scale(96);
+    public static final int LANCER_AB_WID_REDUCE = scale(48);
+    public static final int LANCER_AB_HEI = scale(54);
 
     public static final int RORIC_WIDTH = scale(250);
     public static final int RORIC_HEIGHT = scale(150);
@@ -194,7 +193,7 @@ public final class Constants {
     public static final double GHOUL_ATT_RANGE = RANGE * 2;
     public static final double KNIGHT_ATT_RANGE = RANGE / 1.3;
     public static final double WRAITH_ATT_RANGE = RANGE;
-    public static final double SW_ATT_RANGE = RANGE * 1.8;
+    public static final double LANCER_ATT_RANGE = RANGE * 1.8;
     public static final double ENEMY_SPEED_SLOW = dScale(0.2);
 
     // Object Constants

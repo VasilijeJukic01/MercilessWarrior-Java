@@ -8,7 +8,7 @@ import platformer.model.entities.Direction;
 import platformer.model.entities.effects.particles.DustType;
 import platformer.model.entities.enemies.boss.Roric;
 import platformer.model.entities.enemies.boss.RoricClone;
-import platformer.model.entities.enemies.boss.SpearWoman;
+import platformer.model.entities.enemies.boss.Lancer;
 import platformer.model.entities.enemies.renderer.*;
 import platformer.model.entities.player.Player;
 import platformer.model.entities.player.PlayerAction;
@@ -45,7 +45,7 @@ public class EnemyManager implements Publisher {
 
     private final GameState gameState;
 
-    private BufferedImage[][] skeletonAnimations, ghoulAnimations, knightAnimations, wraithAnimations, spearWomanAnimations, roricAnimations;
+    private BufferedImage[][] skeletonAnimations, ghoulAnimations, knightAnimations, wraithAnimations, lancerAnimations, roricAnimations;
 
     private Map<EnemyType, List<Enemy>> enemies = new HashMap<>();
     private final Map<Class<? extends Enemy>, EnemyRenderer<? extends Enemy>> enemyRenderers = new HashMap<>();
@@ -69,7 +69,7 @@ public class EnemyManager implements Publisher {
         this.skeletonAnimations = Animation.getInstance().loadSkeletonAnimations(SKELETON_WIDTH, SKELETON_HEIGHT);
         this.ghoulAnimations = Animation.getInstance().loadGhoulAnimation(GHOUL_WIDTH, GHOUL_HEIGHT);
         this.knightAnimations = Animation.getInstance().loadKnightAnimation(KNIGHT_WIDTH, KNIGHT_HEIGHT);
-        this.spearWomanAnimations = Animation.getInstance().loadSpearWomanAnimations(SW_WIDTH, SW_HEIGHT);
+        this.lancerAnimations = Animation.getInstance().loadLancerAnimations(LANCER_WIDTH, LANCER_HEIGHT);
         this.wraithAnimations = Animation.getInstance().loadWraithAnimation(WRAITH_WIDTH, WRAITH_HEIGHT);
         this.roricAnimations = Animation.getInstance().loadRoricAnimations(RORIC_WIDTH, RORIC_HEIGHT);
     }
@@ -77,7 +77,7 @@ public class EnemyManager implements Publisher {
     private void initRenderers() {
         this.enemyRenderers.put(Skeleton.class, new SkeletonRenderer(skeletonAnimations));
         this.enemyRenderers.put(Ghoul.class, new GhoulRenderer(ghoulAnimations));
-        this.enemyRenderers.put(SpearWoman.class, new SpearWomanRenderer(spearWomanAnimations));
+        this.enemyRenderers.put(Lancer.class, new LancerRenderer(lancerAnimations));
         this.enemyRenderers.put(Knight.class, new KnightRenderer(knightAnimations));
         this.enemyRenderers.put(Wraith.class, new WraithRenderer(wraithAnimations));
         this.enemyRenderers.put(Roric.class, new RoricRenderer(roricAnimations));
@@ -86,7 +86,7 @@ public class EnemyManager implements Publisher {
     public void loadEnemies(Level level) {
         this.enemies = level.getEnemiesMap();
         reset();
-        getEnemies(SpearWoman.class).forEach(spearWoman -> spearWoman.addSubscriber(gameState));
+        getEnemies(Lancer.class).forEach(lancer -> lancer.addSubscriber(gameState));
     }
 
     // Render
@@ -116,8 +116,8 @@ public class EnemyManager implements Publisher {
         renderEnemies(Ghoul.class, g, xLevelOffset, yLevelOffset);
     }
 
-    private void renderSpearWoman(Graphics g, int xLevelOffset, int yLevelOffset) {
-        renderEnemies(SpearWoman.class, g, xLevelOffset, yLevelOffset);
+    private void renderLancer(Graphics g, int xLevelOffset, int yLevelOffset) {
+        renderEnemies(Lancer.class, g, xLevelOffset, yLevelOffset);
     }
 
     private void renderRoric(Graphics g, int xLevelOffset, int yLevelOffset) {
@@ -158,7 +158,7 @@ public class EnemyManager implements Publisher {
             case GHOUL:
                 notify(QuestObjectiveType.KILL, ObjectiveTarget.GHOUL);
                 break;
-            case SPEAR_WOMAN:
+            case LANCER:
                 notify(QuestObjectiveType.KILL, ObjectiveTarget.LANCER);
                 break;
             default: break;
@@ -315,12 +315,12 @@ public class EnemyManager implements Publisher {
                 checkEnemyDying(skeleton, gameState.getPlayer());
             }
         }
-        for (SpearWoman spearWoman : getEnemies(SpearWoman.class)) {
-            if (projectile instanceof Fireball && spearWoman.isAlive() && spearWoman.getEnemyAction() != Anim.DEATH) {
-                if (!projectile.getHitBox().intersects(spearWoman.getHitBox())) continue;
-                spearWoman.hit(FIREBALL_PROJECTILE_DMG, false, false);
+        for (Lancer lancer : getEnemies(Lancer.class)) {
+            if (projectile instanceof Fireball && lancer.isAlive() && lancer.getEnemyAction() != Anim.DEATH) {
+                if (!projectile.getHitBox().intersects(lancer.getHitBox())) continue;
+                lancer.hit(FIREBALL_PROJECTILE_DMG, false, false);
                 projectile.setAlive(false);
-                checkEnemyDying(spearWoman, gameState.getPlayer());
+                checkEnemyDying(lancer, gameState.getPlayer());
             }
         }
     }
@@ -365,9 +365,9 @@ public class EnemyManager implements Publisher {
         updateEnemies(Knight.class, knightAnimations, levelData, player);
         updateEnemies(Wraith.class, wraithAnimations, levelData, player);
 
-        getEnemies(SpearWoman.class).stream()
-                .filter(SpearWoman::isAlive)
-                .forEach(spearWoman -> spearWoman.update(spearWomanAnimations, levelData, player, gameState.getSpellManager(), gameState.getObjectManager(), gameState.getProjectileManager(), gameState.getBossInterface()));
+        getEnemies(Lancer.class).stream()
+                .filter(Lancer::isAlive)
+                .forEach(lancer -> lancer.update(lancerAnimations, levelData, player, gameState.getSpellManager(), gameState.getObjectManager(), gameState.getProjectileManager(), gameState.getBossInterface()));
 
         getEnemies(Roric.class).stream()
                 .filter(Roric::isAlive)
@@ -392,7 +392,7 @@ public class EnemyManager implements Publisher {
             renderGhouls(g, xLevelOffset, yLevelOffset);
             renderKnights(g, xLevelOffset, yLevelOffset);
             renderWraiths(g, xLevelOffset, yLevelOffset);
-            renderSpearWoman(g, xLevelOffset, yLevelOffset);
+            renderLancer(g, xLevelOffset, yLevelOffset);
             renderRoric(g, xLevelOffset, yLevelOffset);
             renderClones(g, xLevelOffset, yLevelOffset);
         }

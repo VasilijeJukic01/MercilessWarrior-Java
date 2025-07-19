@@ -135,21 +135,21 @@ public class Animation {
     }
 
     // Boss
-    public BufferedImage[][] loadSpearWomanAnimations(int w, int h) {
+    public BufferedImage[][] loadLancerAnimations(int w, int h) {
         BufferedImage[][] anim = new BufferedImage[20][25];
 
-        anim[Anim.IDLE.ordinal()] = loadFromSprite(SW_SHEET,        8, 0, w, h, 0, SW_W, SW_H);
-        anim[Anim.RUN.ordinal()] = loadFromSprite(SW_SHEET,         8, 2, w, h, 0, SW_W, SW_H);
-        anim[Anim.ATTACK_1.ordinal()] = loadFromSprite(SW_SHEET,    5, 10, w, h, 0, SW_W, SW_H);
-        anim[Anim.ATTACK_2.ordinal()] = loadFromSprite(SW_SHEET,    5, 11, w, h, 0, SW_W, SW_H);
-        anim[Anim.ATTACK_3.ordinal()] = loadFromSprite(SW_SHEET,    6, 12, w, h, 0, SW_W, SW_H);
-        anim[Anim.BLOCK.ordinal()] = loadFromSprite(SW_SHEET,       16, 16, w, h, 0, SW_W, SW_H);
-        anim[Anim.HIT.ordinal()] = loadFromSprite(SW_SHEET,         4, 23, w, h, 0, SW_W, SW_H);
-        anim[Anim.DEATH.ordinal()] = loadFromSprite(SW_SHEET,       9, 24, w, h, 0, SW_W, SW_H);
-        anim[Anim.SPELL_1.ordinal()] = loadFromSprite(SW_SHEET,     14, 13, w, h, 0, SW_W, SW_H);
-        anim[Anim.SPELL_2.ordinal()] = loadFromSprite(SW_SHEET,     11, 14, w, h, 0, SW_W, SW_H);
-        anim[Anim.SPELL_3.ordinal()] = loadFromSprite(SW_SHEET,     22, 15, w, h, 0, SW_W, SW_H);
-        anim[Anim.SPELL_4.ordinal()] = loadFromSprite(SW_SHEET,     2, 15, w, h, 1, SW_W, SW_H);
+        anim[Anim.IDLE.ordinal()] = loadFromSprite(LANCER_SHEET,        8, 0, w, h, 0, SW_W, SW_H);
+        anim[Anim.RUN.ordinal()] = loadFromSprite(LANCER_SHEET,         8, 2, w, h, 0, SW_W, SW_H);
+        anim[Anim.ATTACK_1.ordinal()] = loadFromSprite(LANCER_SHEET,    5, 10, w, h, 0, SW_W, SW_H);
+        anim[Anim.ATTACK_2.ordinal()] = loadFromSprite(LANCER_SHEET,    5, 11, w, h, 0, SW_W, SW_H);
+        anim[Anim.ATTACK_3.ordinal()] = loadFromSprite(LANCER_SHEET,    6, 12, w, h, 0, SW_W, SW_H);
+        anim[Anim.BLOCK.ordinal()] = loadFromSprite(LANCER_SHEET,       16, 16, w, h, 0, SW_W, SW_H);
+        anim[Anim.HIT.ordinal()] = loadFromSprite(LANCER_SHEET,         4, 23, w, h, 0, SW_W, SW_H);
+        anim[Anim.DEATH.ordinal()] = loadFromSprite(LANCER_SHEET,       9, 24, w, h, 0, SW_W, SW_H);
+        anim[Anim.SPELL_1.ordinal()] = loadFromSprite(LANCER_SHEET,     14, 13, w, h, 0, SW_W, SW_H);
+        anim[Anim.SPELL_2.ordinal()] = loadFromSprite(LANCER_SHEET,     11, 14, w, h, 0, SW_W, SW_H);
+        anim[Anim.SPELL_3.ordinal()] = loadFromSprite(LANCER_SHEET,     22, 15, w, h, 0, SW_W, SW_H);
+        anim[Anim.SPELL_4.ordinal()] = loadFromSprite(LANCER_SHEET,     2, 15, w, h, 1, SW_W, SW_H);
 
         return anim;
     }

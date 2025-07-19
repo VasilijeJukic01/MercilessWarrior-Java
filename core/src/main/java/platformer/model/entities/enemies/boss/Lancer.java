@@ -27,7 +27,7 @@ import java.util.Objects;
 import static platformer.constants.Constants.*;
 import static platformer.physics.CollisionDetector.*;
 
-public class SpearWoman extends Enemy implements Publisher {
+public class Lancer extends Enemy implements Publisher {
 
     private final BossAttackHandler handler;
 
@@ -50,10 +50,10 @@ public class SpearWoman extends Enemy implements Publisher {
     private final double gravity = 0.1 * SCALE;
     private final double collisionFallSpeed = 0.5 * SCALE;
 
-    public SpearWoman(int xPos, int yPos) {
-        super(xPos, yPos, SW_WIDTH, SW_HEIGHT, EnemyType.SPEAR_WOMAN, 18);
+    public Lancer(int xPos, int yPos) {
+        super(xPos, yPos, LANCER_WIDTH, LANCER_HEIGHT, EnemyType.LANCER, 18);
         super.setDirection(Direction.LEFT);
-        initHitBox(SW_HB_WID, SW_HB_HEI);
+        initHitBox(LANCER_HB_WID, LANCER_HB_HEI);
         initAttackBox();
         super.cooldown = new double[1];
         this.handler = new BossAttackHandler(this, actions);
@@ -61,7 +61,7 @@ public class SpearWoman extends Enemy implements Publisher {
 
     // Init
     private void initAttackBox() {
-        this.attackBox = new Rectangle2D.Double(xPos, yPos-1, SW_AB_WID, SW_AB_HEI);
+        this.attackBox = new Rectangle2D.Double(xPos, yPos-1, LANCER_AB_WID, LANCER_AB_HEI);
         this.attackOffset = (int)(33 * SCALE);
     }
 
@@ -140,7 +140,7 @@ public class SpearWoman extends Enemy implements Publisher {
 
     private void classicAttackAction(int[][] levelData, Player player) {
         if (animIndex == 0) {
-            Audio.getInstance().getAudioPlayer().playSound(Sound.SW_ROAR_2);
+            Audio.getInstance().getAudioPlayer().playSound(Sound.LANCER_ROAR_2);
             attackCheck = false;
         }
         if (animIndex == 2) movingAttack(levelData, 30);
@@ -152,7 +152,7 @@ public class SpearWoman extends Enemy implements Publisher {
         if (slashCount == 0) dashSlash(levelData);
         else if (animIndex == 2) {
             movingAttack(levelData, 30);
-            Audio.getInstance().getAudioPlayer().playSound(Sound.SW_ROAR_1);
+            Audio.getInstance().getAudioPlayer().playSound(Sound.LANCER_ROAR_1);
         }
         if (!attackCheck) checkPlayerHit(attackBox, player);
     }
@@ -171,7 +171,7 @@ public class SpearWoman extends Enemy implements Publisher {
     }
 
     private void rapidSlashAction(int[][] levelData, Player player) {
-        if (animIndex == 0) Audio.getInstance().getAudioPlayer().playSound(Sound.SW_ROAR_3);
+        if (animIndex == 0) Audio.getInstance().getAudioPlayer().playSound(Sound.LANCER_ROAR_3);
         else if (animIndex == 12 && rapidSlashCount < 1) {
             rapidSlashCount++;
             animIndex = 2;
@@ -184,7 +184,7 @@ public class SpearWoman extends Enemy implements Publisher {
 
     private void thunderSlamAction(Player player, SpellManager spellManager) {
         if (animIndex > 5 && animIndex < 16) checkPlayerHit(attackBox, player);
-        if (animIndex == 11) Audio.getInstance().getAudioPlayer().playSound(Sound.SW_ROAR_2);
+        if (animIndex == 11) Audio.getInstance().getAudioPlayer().playSound(Sound.LANCER_ROAR_2);
         else if (animIndex == 13) {
             spellManager.activateLightnings();
             notify("SHAKE_SCREEN");
@@ -349,14 +349,14 @@ public class SpearWoman extends Enemy implements Publisher {
     }
 
     public void changeAttackBox() {
-        if (entityState == Anim.ATTACK_1 || entityState == Anim.ATTACK_3) attackBox.width = SW_AB_WID_REDUCE;
-        if (direction == Direction.RIGHT) attackBox.x = SW_AB_WID / 2.0;
+        if (entityState == Anim.ATTACK_1 || entityState == Anim.ATTACK_3) attackBox.width = LANCER_AB_WID_REDUCE;
+        if (direction == Direction.RIGHT) attackBox.x = LANCER_AB_WID / 2.0;
         else attackBox.x = xPos;
     }
 
     // Reset
     public void attackReset() {
-        attackBox.width = SW_AB_WID;
+        attackBox.width = LANCER_AB_WID;
         attackBox.x = xPos;
         shootCount = 0;
     }

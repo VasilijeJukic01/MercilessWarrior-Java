@@ -32,9 +32,9 @@ public enum Sound implements ValueEnum<String> {
     LIGHTNING_1("Lightning1"),          // 22
     LIGHTNING_2("Lightning2"),          // 23
     LIGHTNING_3("Lightning3"),          // 24
-    SW_ROAR_1("Boss1Roar1"),            // 25
-    SW_ROAR_2("Boss1Roar2"),            // 26
-    SW_ROAR_3("Boss1Roar3"),            // 27
+    LANCER_ROAR_1("Boss1Roar1"),        // 25
+    LANCER_ROAR_2("Boss1Roar2"),        // 26
+    LANCER_ROAR_3("Boss1Roar3"),        // 27
     FIREBALL("FireballLaunch"),         // 28
     CRAFTING("Crafting"),               // 29
     BTN_CLICK("ButtonClick");           // 30

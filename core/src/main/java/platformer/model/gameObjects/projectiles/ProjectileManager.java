@@ -4,7 +4,7 @@ import platformer.animation.Animation;
 import platformer.model.entities.Direction;
 import platformer.model.entities.enemies.Enemy;
 import platformer.model.entities.enemies.boss.Roric;
-import platformer.model.entities.enemies.boss.SpearWoman;
+import platformer.model.entities.enemies.boss.Lancer;
 import platformer.model.entities.player.Player;
 import platformer.model.perks.PerksBonus;
 import platformer.state.GameState;
@@ -192,22 +192,22 @@ public class ProjectileManager {
     }
 
     /**
-     * Spawns a single lightning ball from SpearWoman.
+     * Spawns a single lightning ball from Lancer.
      *
-     * @param spearWoman The SpearWoman instance casting the spell.
+     * @param lancer The Lancer instance casting the spell.
      */
-    public void activateLightningBall(SpearWoman spearWoman) {
-        Direction direction = (spearWoman.getFlipSign() == 1) ? Direction.LEFT : Direction.RIGHT;
-        projectiles.add(new LightningBall((int)spearWoman.getHitBox().x, (int)spearWoman.getHitBox().y, direction));
+    public void activateLightningBall(Lancer lancer) {
+        Direction direction = (lancer.getFlipSign() == 1) ? Direction.LEFT : Direction.RIGHT;
+        projectiles.add(new LightningBall((int) lancer.getHitBox().x, (int) lancer.getHitBox().y, direction));
     }
 
     /**
      * Spawns a volley of oscillating lightning balls (Variation 1).
      *
-     * @param spearWoman The SpearWoman instance casting the spell.
+     * @param lancer The Lancer instance casting the spell.
      */
-    public void activateMultiLightningBallVariation1(SpearWoman spearWoman) {
-        double x = spearWoman.getHitBox().x, y = spearWoman.getHitBox().y;
+    public void activateMultiLightningBallVariation1(Lancer lancer) {
+        double x = lancer.getHitBox().x, y = lancer.getHitBox().y;
         projectiles.add(new LightningBall((int)(x / 1.1), (int)(y * 1.3), Direction.DOWN));
         projectiles.add(new LightningBall((int)x, (int)(y * 1.3), Direction.DEGREE_45));
         projectiles.add(new LightningBall((int)(x * 1.1), (int)(y * 1.2), Direction.DEGREE_30));
@@ -218,10 +218,10 @@ public class ProjectileManager {
     /**
      * Spawns a volley of oscillating lightning balls (Variation 2).
      *
-     * @param spearWoman The SpearWoman instance casting the spell.
+     * @param lancer The Lancer instance casting the spell.
      */
-    public void activateMultiLightningBallVariation2(SpearWoman spearWoman) {
-        double x = spearWoman.getHitBox().x, y = spearWoman.getHitBox().y;
+    public void activateMultiLightningBallVariation2(Lancer lancer) {
+        double x = lancer.getHitBox().x, y = lancer.getHitBox().y;
         projectiles.add(new LightningBall((int)x, (int)(y * 1.3), Direction.DEGREE_60));
         projectiles.add(new LightningBall((int)(x / 1.15), (int)(y * 1.3), Direction.N_DEGREE_60));
     }
@@ -229,10 +229,10 @@ public class ProjectileManager {
     /**
      * Spawns a lightning ball that tracks the player.
      *
-     * @param spearWoman The SpearWoman instance casting the spell.
+     * @param lancer The Lancer instance casting the spell.
      */
-    public void activateTrackingLightningBall(SpearWoman spearWoman) {
-        projectiles.add(new LightningBall((int)(spearWoman.getHitBox().x/1.1), (int)(spearWoman.getHitBox().y*1.3), Direction.TRACK));
+    public void activateTrackingLightningBall(Lancer lancer) {
+        projectiles.add(new LightningBall((int)(lancer.getHitBox().x/1.1), (int)(lancer.getHitBox().y*1.3), Direction.TRACK));
     }
 
     // Reset
