@@ -12,6 +12,10 @@ import static platformer.constants.Constants.*;
 import static platformer.constants.FilePaths.SLIDER_IMG;
 import static platformer.constants.FilePaths.SLIDE_BTN_SHEET;
 
+/**
+ * A UI component representing a slider with a draggable button.
+ * This is used for settings that require a continuous range of values, such as audio volume.
+ */
 public class SliderButton extends AbstractButton {
 
     private BufferedImage[] images;
@@ -52,6 +56,12 @@ public class SliderButton extends AbstractButton {
         g.drawImage(images[imageIndex], buttonX - SLIDER_BTN_SIZE/2, yPos + (int)(8*SCALE), SLIDER_BTN_SIZE, SLIDER_BTN_SIZE, null);
     }
 
+    /**
+     * Updates the position of the slider's button based on the mouse's x-coordinate.
+     * The position is clamped within the bounds of the slider track.
+     *
+     * @param value The x-coordinate of the mouse cursor.
+     */
     public void updateSlider(int value) {
         if (value < minValue) buttonX = minValue;
         else buttonX = Math.min(value, maxValue);
@@ -59,10 +69,18 @@ public class SliderButton extends AbstractButton {
         buttonHitBox.x = buttonX - SLIDER_BTN_SIZE / 2;
     }
 
+    /**
+     * Recalculates the slider's normalized value (0.0 to 1.0) based on the button's position.
+     */
     private void updateValue() {
         value = ((buttonX - minValue)*1.0f)/(maxValue - minValue);
     }
 
+    /**
+     * Gets the current value of the slider.
+     *
+     * @return A float value between 0.0 and 1.0, representing the slider's position.
+     */
     public float getValue() {
         return value;
     }

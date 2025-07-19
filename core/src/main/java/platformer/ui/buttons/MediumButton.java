@@ -11,6 +11,9 @@ import static platformer.constants.Constants.MEDIUM_BTN_HEI;
 import static platformer.constants.Constants.MEDIUM_BTN_WID;
 import static platformer.constants.FilePaths.*;
 
+/**
+ * Represents a medium-sized button used for a variety of actions within UI overlays.
+ */
 public class MediumButton extends AbstractButton {
 
     private BufferedImage[] images;

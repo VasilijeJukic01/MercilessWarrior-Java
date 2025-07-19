@@ -10,6 +10,10 @@ import static platformer.constants.AnimConstants.SMALL_BTN_W;
 import static platformer.constants.Constants.SOUND_BTN_SIZE;
 import static platformer.constants.FilePaths.AUDIO_BTN_SHEET;
 
+/**
+ * A specialized button for controlling audio settings (Music and SFX).
+ * This button manages its visual state based on whether it is muted, hovered over, or pressed.
+ */
 public class AudioButton extends AbstractButton {
 
     private BufferedImage[][] images;
@@ -46,6 +50,10 @@ public class AudioButton extends AbstractButton {
         g.drawImage(images[imageIndexI][imageIndexJ], xPos, yPos, width, height, null);
     }
 
+    /**
+     * Determines the correct indices for the sprite array based on the button's state.
+     * The first index (I) corresponds to the muted state, and the second index (J) corresponds to the mouse interaction state.
+     */
     private void updateImageIndex() {
         imageIndexI = muted ? 0 : 1;
         imageIndexJ = 0;

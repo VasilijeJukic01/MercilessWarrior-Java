@@ -1,5 +1,8 @@
 package platformer.ui.buttons;
 
+/**
+ * This enum is used to determine a button's behavior, appearance, and associated actions.
+ */
 public enum ButtonType {
     PLAY,       // 0
     OPTIONS,    // 1

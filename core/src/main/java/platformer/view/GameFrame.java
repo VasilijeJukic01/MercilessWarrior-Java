@@ -8,7 +8,17 @@ import java.awt.*;
 import java.net.URL;
 
 /**
- * The main frame of the game.
+ * The main window container for the game.
+ * <p>
+ * This class extends {@link JFrame} and serves as the top-level frame of the application.
+ * It is responsible for:
+ * <ul>
+ *     <li>Initializing the window with a title, icon, and default close operation.</li>
+ *     <li>Holding and displaying the {@link GamePanel}, which is the primary drawing surface.</li>
+ *     <li>Managing the transition between windowed and fullscreen modes.</li>
+ *     <li>Attaching a {@link GameFocusListener} to handle window focus events, which is
+ *         important for pausing the game or resetting player input when the window loses focus.</li>
+ * </ul>
  */
 @SuppressWarnings("FieldCanBeLocal")
 public class GameFrame extends JFrame {
@@ -24,6 +34,9 @@ public class GameFrame extends JFrame {
         this.addWindowFocusListener(new GameFocusListener(game));
     }
 
+    /**
+     * Initializes the frame's properties such as title, icon, and default close behavior.
+     */
     private void initFrame() {
         this.setTitle("Merciless Warrior");
         URL iconURL = getClass().getResource("/images/icon.png");
@@ -35,6 +48,12 @@ public class GameFrame extends JFrame {
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
 
+    /**
+     * Initializes and adds the {@link GamePanel} to this frame.
+     * The panel is where all game rendering occurs.
+     *
+     * @param game The main {@link Game} instance.
+     */
     private void initPanel(Game game) {
         this.gamePanel = new GamePanel(game);
         this.gamePanel.requestFocus();
@@ -43,54 +62,70 @@ public class GameFrame extends JFrame {
     }
 
     /**
-     * Toggles the game frame between full screen and windowed mode.
-     * If entering full screen, it saves the current window bounds and panel size.
-     * If exiting full screen, it restores the previous bounds and panel size.
+     * Toggles the game frame between fullscreen and windowed mode by delegating
+     * to the appropriate helper methods. This method acts as the public entry point
+     * and controller for the fullscreen state change.
      */
     public void toggleFullScreen() {
-        GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-        GraphicsDevice gd = ge.getDefaultScreenDevice();
+        isFullScreen = !isFullScreen;
+        GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+        if (isFullScreen) enterFullScreen(gd);
+        else exitFullScreen(gd);
+        gamePanel.requestFocusInWindow();
+    }
 
-        if (!isFullScreen) {
-            previousWindowBounds = getBounds();
-            previousPanelSize = gamePanel.getCurrentSize();
+    /**
+     * Handles the logic for transitioning the window into fullscreen mode.
+     *
+     * @param device The graphics device to use for fullscreen operations.
+     */
+    private void enterFullScreen(GraphicsDevice device) {
+        saveCurrentWindowState();
+        dispose();
+        setUndecorated(true);
+        setResizable(true);
 
-            setResizable(true);
-            dispose();
-            setUndecorated(true);
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        gamePanel.updateSize(screenSize.width, screenSize.height);
 
-            Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-            int screenWidth = screenSize.width;
-            int screenHeight = screenSize.height;
-
-            if (gd.isFullScreenSupported()) {
-                gamePanel.updateSize(screenWidth, screenHeight);
-                gd.setFullScreenWindow(this);
-            }
-            else {
-                gamePanel.updateSize(screenWidth, screenHeight);
-                setBounds(0, 0, screenWidth, screenHeight);
-                setVisible(true);
-            }
-
-            isFullScreen = true;
-        }
+        if (device.isFullScreenSupported()) device.setFullScreenWindow(this);
         else {
-            if (gd.isFullScreenSupported()) gd.setFullScreenWindow(null);
-            dispose();
-            setUndecorated(false);
-            setResizable(false);
-
-            if (previousPanelSize != null)
-                gamePanel.updateSize(previousPanelSize.width, previousPanelSize.height);
-
-            if (previousWindowBounds != null) setBounds(previousWindowBounds);
-
+            // Fallback for systems that don't support exclusive fullscreen mode.
+            setBounds(device.getDefaultConfiguration().getBounds());
             setVisible(true);
-            pack();
-            isFullScreen = false;
         }
-        gamePanel.requestFocus();
+    }
+
+    /**
+     * Handles the logic for transitioning the window out of fullscreen and back to windowed mode.
+     *
+     * @param device The graphics device used for fullscreen operations.
+     */
+    private void exitFullScreen(GraphicsDevice device) {
+        if (device.isFullScreenSupported()) device.setFullScreenWindow(null);
+        dispose();
+        setUndecorated(false);
+        setResizable(false);
+        setVisible(true);
+        restorePreviousWindowState();
+    }
+
+    /**
+     * Saves the current size and position of the window and panel before entering fullscreen.
+     */
+    private void saveCurrentWindowState() {
+        previousWindowBounds = getBounds();
+        previousPanelSize = gamePanel.getCurrentSize();
+    }
+
+    /**
+     * Restores the window and panel to their saved size and position after exiting fullscreen.
+     */
+    private void restorePreviousWindowState() {
+        if (previousPanelSize != null)
+            gamePanel.updateSize(previousPanelSize.width, previousPanelSize.height);
+        if (previousWindowBounds != null) setBounds(previousWindowBounds);
+        pack();
     }
 
     public boolean isFullScreen() {

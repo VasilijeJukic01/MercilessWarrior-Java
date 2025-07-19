@@ -12,6 +12,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+/**
+ * Utility class providing various helper methods.
+ */
 public class Utils {
 
     private static volatile Utils instance = null;

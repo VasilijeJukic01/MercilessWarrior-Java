@@ -21,6 +21,14 @@ public abstract class AbstractButton implements GameButton<Graphics> {
     protected Rectangle buttonHitBox;
     protected boolean mouseOver, mousePressed;
 
+    /**
+     * Constructs a new AbstractButton with specified dimensions and position.
+     *
+     * @param xPos   The x-coordinate of the button's top-left corner.
+     * @param yPos   The y-coordinate of the button's top-left corner.
+     * @param width  The width of the button.
+     * @param height The height of the button.
+     */
     public AbstractButton(int xPos, int yPos, int width, int height) {
         this.xPos = xPos;
         this.yPos = yPos;
@@ -29,11 +37,19 @@ public abstract class AbstractButton implements GameButton<Graphics> {
         this.buttonHitBox = new Rectangle(xPos, yPos, width, height);
     }
 
+    /**
+     * Resets the mouse interaction states (mouseOver and mousePressed) to false.
+     * This is typically called after a mouse release event.
+     */
     public void resetMouseSet() {
         this.mouseOver = false;
         this.mousePressed = false;
     }
 
+    /**
+     * Abstract method that must be implemented by subclasses to load their specific
+     * image assets (spritesheets).
+     */
     protected abstract void loadButtons();
 
     public Rectangle getButtonHitBox() {
