@@ -24,6 +24,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static platformer.constants.Constants.*;
+import static platformer.physics.CollisionDetector.canLauncherSeeEntity;
 
 /**
  * This class manages all the game objects in the game.
@@ -312,7 +313,7 @@ public class ObjectManager implements Publisher {
 
             if (arrowLauncherTile < playerTopTile || arrowLauncherTile > playerBottomTile) ready = false;
             if (!isPlayerInRangeForTrap(arrowLauncher, player) || !isPlayerInFrontOfTrap(arrowLauncher, player)) ready = false;
-            if (!Utils.getInstance().canLauncherSeePlayer(lvlData, player.getHitBox(), arrowLauncher.getHitBox(), arrowLauncherTile)) ready = false;
+            if (!canLauncherSeeEntity(lvlData, player.getHitBox(), arrowLauncher.getHitBox(), arrowLauncherTile)) ready = false;
 
             if (ready) arrowLauncher.setAnimate(true);
             arrowLauncher.update();

@@ -4,7 +4,6 @@ import platformer.debug.DebugSettings;
 import platformer.model.entities.Direction;
 import platformer.model.entities.player.Player;
 import platformer.model.gameObjects.ObjectManager;
-import platformer.utils.Utils;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
@@ -16,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static platformer.constants.Constants.*;
+import static platformer.physics.CollisionDetector.isEntityOnFloor;
 
 public class RoricAngledArrow extends Projectile {
 
@@ -70,7 +70,7 @@ public class RoricAngledArrow extends Projectile {
 
         Rectangle2D bounds = polygonHitbox.getBounds2D();
         Rectangle2D.Double checkHitbox = new Rectangle2D.Double(bounds.getX(), bounds.getY(), bounds.getWidth(), bounds.getHeight());
-        if (Utils.getInstance().isEntityOnFloor(checkHitbox, levelData)) {
+        if (isEntityOnFloor(checkHitbox, levelData)) {
             this.alive = false;
             if (spawnsTrapOnImpact)
                 objectManager.spawnRoricTrap((int) polygonHitbox.getBounds2D().getCenterX(), (int) (polygonHitbox.getBounds2D().getMaxY()), creatorDirection);

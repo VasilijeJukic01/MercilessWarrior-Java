@@ -5,7 +5,6 @@ import platformer.audio.Audio;
 import platformer.audio.types.Sound;
 import platformer.model.entities.Direction;
 import platformer.model.entities.player.Player;
-import platformer.utils.Utils;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
@@ -13,6 +12,7 @@ import java.util.List;
 import java.util.Random;
 
 import static platformer.constants.Constants.TILES_SIZE;
+import static platformer.physics.CollisionDetector.canMoveHere;
 
 public class BossAttackHandler {
 
@@ -40,13 +40,13 @@ public class BossAttackHandler {
 
     private void doTeleport(int[][] levelData, int k, double rightTeleport, double leftTeleport) {
         double targetX = hitBox.x;
-        if (k == 0 && Utils.getInstance().canMoveHere(rightTeleport, hitBox.y, hitBox.width, hitBox.height, levelData))
+        if (k == 0 && canMoveHere(rightTeleport, hitBox.y, hitBox.width, hitBox.height, levelData))
             targetX = rightTeleport;
-        else if (k == 0 && Utils.getInstance().canMoveHere(leftTeleport, hitBox.y, hitBox.width, hitBox.height, levelData))
+        else if (k == 0 && canMoveHere(leftTeleport, hitBox.y, hitBox.width, hitBox.height, levelData))
             targetX = leftTeleport;
-        else if (k == 1 && Utils.getInstance().canMoveHere(leftTeleport, hitBox.y, hitBox.width, hitBox.height, levelData))
+        else if (k == 1 && canMoveHere(leftTeleport, hitBox.y, hitBox.width, hitBox.height, levelData))
             targetX = leftTeleport;
-        else if (k == 1 && Utils.getInstance().canMoveHere(rightTeleport, hitBox.y, hitBox.width, hitBox.height, levelData))
+        else if (k == 1 && canMoveHere(rightTeleport, hitBox.y, hitBox.width, hitBox.height, levelData))
             targetX = rightTeleport;
         performTeleport(targetX, hitBox.y);
     }

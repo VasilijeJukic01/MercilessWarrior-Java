@@ -18,6 +18,7 @@ import static platformer.constants.AnimConstants.*;
 import static platformer.constants.Constants.*;
 import static platformer.constants.FilePaths.FLASH_SHEET;
 import static platformer.constants.FilePaths.LIGHTNING_SHEET;
+import static platformer.physics.CollisionDetector.getGroundY;
 
 /**
  * This class is responsible for managing all the spells in the game.
@@ -276,7 +277,7 @@ public class SpellManager {
 
     public void activateArrowRain(Player player) {
         int xPos = (int) (player.getHitBox().getCenterX());
-        double groundY = Utils.getInstance().getGroundY(player.getHitBox().getCenterX(), player.getHitBox().y, gameState.getLevelManager().getCurrentLevel().getLvlData());
+        double groundY = getGroundY(player.getHitBox().getCenterX(), player.getHitBox().y, gameState.getLevelManager().getCurrentLevel().getLvlData());
         int yPos = (int) (groundY - (390 * SCALE));
         arrowRains.add(new ArrowRain(SpellType.ARROW_RAIN, xPos, yPos));
     }

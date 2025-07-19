@@ -25,7 +25,6 @@ import platformer.observer.Subscriber;
 import platformer.ui.dialogue.DialogueManager;
 import platformer.ui.overlays.OverlayManager;
 import platformer.ui.overlays.hud.BossInterface;
-import platformer.utils.Utils;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
@@ -34,6 +33,7 @@ import java.awt.event.WindowEvent;
 import java.util.Random;
 
 import static platformer.constants.Constants.*;
+import static platformer.physics.CollisionDetector.isEntityOnExit;
 
 /**
  * State of the game when the player is actively playing the game.
@@ -328,7 +328,7 @@ public class GameState extends AbstractState implements State, Subscriber {
 
     private void checkLevelExit() {
         if (player.checkAction(PlayerAction.DASH)) return;
-        int exitStatus = Utils.getInstance().isEntityOnExit(levelManager.getCurrentLevel(), player.getHitBox());
+        int exitStatus = isEntityOnExit(levelManager.getCurrentLevel(), player.getHitBox());
 
         if (exitStatus == RIGHT_EXIT) goToRightLevel();
         else if (exitStatus == LEFT_EXIT) goToLeftLevel();

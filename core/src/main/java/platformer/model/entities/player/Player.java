@@ -23,7 +23,6 @@ import platformer.model.inventory.InventoryBonus;
 import platformer.model.inventory.ItemRarity;
 import platformer.model.minimap.MinimapManager;
 import platformer.model.perks.PerksBonus;
-import platformer.utils.Utils;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
@@ -36,6 +35,7 @@ import java.util.Random;
 import static platformer.constants.Constants.*;
 import static platformer.constants.FilePaths.PLAYER_SHEET;
 import static platformer.constants.FilePaths.PLAYER_TRANSFORM_SHEET;
+import static platformer.physics.CollisionDetector.*;
 
 @SuppressWarnings("FieldCanBeLocal")
 public class Player extends Entity {
@@ -118,7 +118,7 @@ public class Player extends Entity {
 
     public void loadLvlData(int[][] levelData) {
         this.levelData = levelData;
-        if (!Utils.getInstance().isEntityOnFloor(hitBox, levelData)) inAir = true;
+        if (!isEntityOnFloor(hitBox, levelData)) inAir = true;
     }
 
     public void setSpawn(Point p) {
@@ -269,7 +269,7 @@ public class Player extends Entity {
         removeAction(PlayerAction.MOVE);
         checkOnObject();
         boolean onObject = checkAction(PlayerAction.ON_OBJECT);
-        if (!inAir && !Utils.getInstance().isEntityOnFloor(hitBox, levelData) && !onObject) inAir = true;
+        if (!inAir && !isEntityOnFloor(hitBox, levelData) && !onObject) inAir = true;
 
         boolean canTransform = checkAction(PlayerAction.CAN_TRANSFORM);
         boolean canBlock = checkAction(PlayerAction.CAN_BLOCK);
@@ -320,11 +320,11 @@ public class Player extends Entity {
             else airSpeed += downwardGravity;
         }
 
-        if (Utils.getInstance().canMoveHere(hitBox.x, hitBox.y + airSpeed + 1, hitBox.width, hitBox.height, levelData)) {
+        if (canMoveHere(hitBox.x, hitBox.y + airSpeed + 1, hitBox.width, hitBox.height, levelData)) {
             hitBox.y += airSpeed;
         }
         else {
-            hitBox.y = Utils.getInstance().getYPosOnTheCeil(hitBox, airSpeed);
+            hitBox.y = getYPosOnTheCeil(hitBox, airSpeed);
             if (airSpeed > 0) {
                 removeAction(PlayerAction.WALL_PUSH);
                 inAir = false;
@@ -349,10 +349,10 @@ public class Player extends Entity {
 
         if (onWall) removeAction(PlayerAction.ATTACK);
 
-        boolean leftSideCheck = Utils.getInstance().isOnWall(hitBox, levelData, Direction.LEFT);
-        boolean rightSideCheck = Utils.getInstance().isOnWall(hitBox, levelData, Direction.RIGHT);
+        boolean leftSideCheck = isOnWall(hitBox, levelData, Direction.LEFT);
+        boolean rightSideCheck = isOnWall(hitBox, levelData, Direction.RIGHT);
 
-        if (!onWall && ((left && leftSideCheck) || (right && rightSideCheck)) && !Utils.getInstance().isEntityOnFloor(hitBox, levelData)) {
+        if (!onWall && ((left && leftSideCheck) || (right && rightSideCheck)) && !isEntityOnFloor(hitBox, levelData)) {
             if ((flipSign == -1 && rightSideCheck) || (flipSign == 1 && leftSideCheck)) return;
             addActions(PlayerAction.ON_WALL, PlayerAction.WALL_PUSH);
             currentJumps = 1;
@@ -376,13 +376,13 @@ public class Player extends Entity {
             dashTick = 0;
         }
 
-        if (!onObject && !onWall && Utils.getInstance().canMoveHere(hitBox.x + actualDx, hitBox.y, hitBox.width, hitBox.height, levelData))
+        if (!onObject && !onWall && canMoveHere(hitBox.x + actualDx, hitBox.y, hitBox.width, hitBox.height, levelData))
             hitBox.x += actualDx;
-        else if (dash && Utils.getInstance().canMoveHere(hitBox.x + actualDx, hitBox.y, hitBox.width, hitBox.height, levelData))
+        else if (dash && canMoveHere(hitBox.x + actualDx, hitBox.y, hitBox.width, hitBox.height, levelData))
             hitBox.x += actualDx;
         else {
             if (onObject) hitBox.x = objectManager.getXObjectBound(hitBox, actualDx);
-            else if (!onWall) hitBox.x = Utils.getInstance().getXPosOnTheWall(hitBox, actualDx);
+            else if (!onWall) hitBox.x = getXPosOnTheWall(hitBox, actualDx);
 
             if (dash) {
                 removeAction(PlayerAction.DASH);
@@ -699,7 +699,7 @@ public class Player extends Entity {
         hitBox.x = xPos;
         hitBox.y = yPos;
         initAttackBox();
-        if (!Utils.getInstance().isEntityOnFloor(hitBox, levelData)) inAir = true;
+        if (!isEntityOnFloor(hitBox, levelData)) inAir = true;
     }
 
     private void resetHealth() {

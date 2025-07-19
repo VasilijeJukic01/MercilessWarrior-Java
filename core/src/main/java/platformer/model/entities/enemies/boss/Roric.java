@@ -13,7 +13,6 @@ import platformer.model.gameObjects.ObjectManager;
 import platformer.model.gameObjects.projectiles.ProjectileManager;
 import platformer.model.spells.SpellManager;
 import platformer.ui.overlays.hud.BossInterface;
-import platformer.utils.Utils;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
@@ -21,6 +20,7 @@ import java.awt.image.BufferedImage;
 import java.util.Random;
 
 import static platformer.constants.Constants.*;
+import static platformer.physics.CollisionDetector.*;
 
 public class Roric extends Enemy {
 
@@ -112,7 +112,7 @@ public class Roric extends Enemy {
             return;
         }
         updateBehavior(levelData, player, spellManager, objectManager, projectileManager, enemyManager);
-        if (!Utils.getInstance().isEntityOnFloor(hitBox, levelData) && entityState != Anim.IDLE) {
+        if (!isEntityOnFloor(hitBox, levelData) && entityState != Anim.IDLE) {
             inAir = true;
         }
         if (inAir) updateInAir(levelData, 0, collisionFallSpeed);
@@ -151,16 +151,16 @@ public class Roric extends Enemy {
             else airSpeed += downwardGravity;
         }
 
-        if (Utils.getInstance().canMoveHere(hitBox.x + xSpeed, hitBox.y, hitBox.width, hitBox.height, levelData)) {
+        if (canMoveHere(hitBox.x + xSpeed, hitBox.y, hitBox.width, hitBox.height, levelData)) {
             hitBox.x += xSpeed;
         }
         else xSpeed = 0;
 
-        if (Utils.getInstance().canMoveHere(hitBox.x, hitBox.y + airSpeed, hitBox.width, hitBox.height, levelData)) {
+        if (canMoveHere(hitBox.x, hitBox.y + airSpeed, hitBox.width, hitBox.height, levelData)) {
             hitBox.y += airSpeed;
         }
         else {
-            hitBox.y = Utils.getInstance().getYPosOnTheCeil(hitBox, airSpeed);
+            hitBox.y = getYPosOnTheCeil(hitBox, airSpeed);
             if (airSpeed > 0) {
                 airSpeed = 0;
                 inAir = false;
@@ -521,7 +521,7 @@ public class Roric extends Enemy {
     }
 
     private boolean canDashTo(double targetX, int[][] levelData) {
-        return Utils.getInstance().canMoveHere(targetX, hitBox.y, hitBox.width, hitBox.height, levelData);
+        return canMoveHere(targetX, hitBox.y, hitBox.width, hitBox.height, levelData);
     }
 
     public boolean isVisible() {

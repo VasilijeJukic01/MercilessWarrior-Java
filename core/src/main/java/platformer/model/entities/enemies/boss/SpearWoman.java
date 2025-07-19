@@ -15,7 +15,6 @@ import platformer.model.spells.SpellManager;
 import platformer.observer.Publisher;
 import platformer.observer.Subscriber;
 import platformer.ui.overlays.hud.BossInterface;
-import platformer.utils.Utils;
 
 import java.awt.*;
 import java.awt.geom.Point2D;
@@ -26,6 +25,7 @@ import java.util.List;
 import java.util.Objects;
 
 import static platformer.constants.Constants.*;
+import static platformer.physics.CollisionDetector.*;
 
 public class SpearWoman extends Enemy implements Publisher {
 
@@ -205,8 +205,8 @@ public class SpearWoman extends Enemy implements Publisher {
             if (direction == Direction.LEFT) xSpeed = -enemySpeed;
             else xSpeed = enemySpeed;
 
-            if (Utils.getInstance().canMoveHere(hitBox.x + xSpeed * 80, hitBox.y, hitBox.width, hitBox.height, levelData))
-                if (Utils.getInstance().isFloor(hitBox, xSpeed * 80, levelData, direction))
+            if (canMoveHere(hitBox.x + xSpeed * 80, hitBox.y, hitBox.width, hitBox.height, levelData))
+                if (isFloor(hitBox, xSpeed * 80, levelData, direction))
                     hitBox.x += xSpeed * 80;
 
             Point2D.Double endPos = new Point2D.Double(hitBox.getCenterX(), hitBox.y);
@@ -220,8 +220,8 @@ public class SpearWoman extends Enemy implements Publisher {
         if (direction == Direction.LEFT) xSpeed = -enemySpeed;
         else xSpeed = enemySpeed;
 
-        if (Utils.getInstance().canMoveHere(hitBox.x + xSpeed * speed, hitBox.y, hitBox.width, hitBox.height, levelData))
-            if (Utils.getInstance().isFloor(hitBox, xSpeed * speed, levelData, direction))
+        if (canMoveHere(hitBox.x + xSpeed * speed, hitBox.y, hitBox.width, hitBox.height, levelData))
+            if (isFloor(hitBox, xSpeed * speed, levelData, direction))
                 hitBox.x += xSpeed * speed;
     }
 
@@ -327,7 +327,7 @@ public class SpearWoman extends Enemy implements Publisher {
     }
 
     public void updateMove(int[][] levelData, Player player, SpellManager spellManager, ObjectManager objectManager, ProjectileManager projectileManager) {
-        if (!Utils.getInstance().isEntityOnFloor(hitBox, levelData) && !isAirFreeze()) inAir = true;
+        if (!isEntityOnFloor(hitBox, levelData) && !isAirFreeze()) inAir = true;
         if (inAir) updateInAir(levelData, gravity, collisionFallSpeed);
         else updateBehavior(levelData, player, spellManager, objectManager, projectileManager);
     }

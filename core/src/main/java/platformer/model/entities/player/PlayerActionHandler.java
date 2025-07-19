@@ -10,11 +10,11 @@ import platformer.model.entities.effects.EffectManager;
 import platformer.model.entities.effects.particles.DustType;
 import platformer.model.gameObjects.ObjectManager;
 import platformer.model.perks.PerksBonus;
-import platformer.utils.Utils;
 
 import java.awt.geom.Rectangle2D;
 
 import static platformer.constants.Constants.*;
+import static platformer.physics.CollisionDetector.*;
 
 /**
  * Handles player actions and object interaction.
@@ -34,20 +34,20 @@ public class PlayerActionHandler {
     }
 
     public boolean canJump(int[][] levelData, boolean left, boolean right, boolean doubleJump) {
-        if (Utils.getInstance().isOnWall(hitBox, levelData, Direction.LEFT) && left && !right) return false;
-        if (Utils.getInstance().isOnWall(hitBox, levelData, Direction.RIGHT) && right && !left) return false;
+        if (isOnWall(hitBox, levelData, Direction.LEFT) && left && !right) return false;
+        if (isOnWall(hitBox, levelData, Direction.RIGHT) && right && !left) return false;
         boolean onWall = player.checkAction(PlayerAction.ON_WALL);
         if (player.isInAir() && doubleJump && onWall) return false;
         if (player.isInAir() && player.getCurrentJumps() != 1) return false;
         int tileX = (int)(hitBox.x / TILES_SIZE);
         int tileY = (int)((hitBox.y - 5) / TILES_SIZE);
         boolean onObject = player.checkAction(PlayerAction.ON_OBJECT);
-        return !onObject || !Utils.getInstance().isTileSolid(tileX, tileY, levelData);
+        return !onObject || !isTileSolid(tileX, tileY, levelData);
     }
 
     public void doDash() {
         if (player.getCooldown()[Cooldown.DASH.ordinal()] != 0) return;
-        if (Utils.getInstance().isTouchingWall(hitBox,Direction.LEFT) || Utils.getInstance().isTouchingWall(hitBox,Direction.RIGHT)) return;
+        if (isTouchingWall(hitBox,Direction.LEFT) || isTouchingWall(hitBox,Direction.RIGHT)) return;
         if (dashCount > 0) return;
         boolean dash = player.checkAction(PlayerAction.DASH);
         boolean canDash = player.checkAction(PlayerAction.CAN_DASH);

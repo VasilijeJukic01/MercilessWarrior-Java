@@ -18,6 +18,7 @@ import java.util.List;
 
 import static platformer.constants.Constants.*;
 import static platformer.constants.FilePaths.*;
+import static platformer.physics.CollisionDetector.isProjectileHitLevel;
 
 /**
  * Manages all projectiles in the game, including their creation, updates, and rendering.
@@ -57,7 +58,7 @@ public class ProjectileManager {
                     player.changeHealth(-PLAYER_PROJECTILE_DMG, projectile);
                     projectile.setAlive(false);
                 }
-                else if (Utils.getInstance().isProjectileHitLevel(lvlData, projectile)) {
+                else if (isProjectileHitLevel(lvlData, projectile)) {
                     projectile.setAlive(false);
                 }
                 else if (projectile instanceof Fireball)

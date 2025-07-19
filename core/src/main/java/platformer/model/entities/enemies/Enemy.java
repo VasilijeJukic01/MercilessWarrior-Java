@@ -7,13 +7,13 @@ import platformer.model.entities.Direction;
 import platformer.model.entities.Entity;
 import platformer.model.entities.player.Player;
 import platformer.model.entities.player.PlayerAction;
-import platformer.utils.Utils;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 
 import static platformer.constants.Constants.*;
+import static platformer.physics.CollisionDetector.isSightClear;
 
 /**
  * Abstract base class for all enemies in the game.
@@ -77,7 +77,7 @@ public abstract class Enemy extends Entity implements Debug<Graphics> {
         int yTileEnemy = (int)(hitBox.y / TILES_SIZE) + 1;
         if (yTilePlayer != yTileEnemy) return false;
         if (!isPlayerInSight(player)) return false;
-        return (Utils.getInstance().isSightClear(levelData, hitBox, player.getHitBox(), yTileEnemy));
+        return (isSightClear(levelData, hitBox, player.getHitBox(), yTileEnemy));
     }
 
     protected void directToPlayer(Player player) {
