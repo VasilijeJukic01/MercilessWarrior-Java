@@ -5,7 +5,8 @@ public enum PRType {
     LIGHTNING_BALL(4),      // 1
     FIREBALL(4),            // 2
     RORIC_ARROW(1),         // 3
-    RORIC_ANGLED_ARROW(1);	// 4
+    RORIC_ANGLED_ARROW(1),	// 4
+    CELESTIAL_ORB(4);		// 5
 
     private final int sprites;
 

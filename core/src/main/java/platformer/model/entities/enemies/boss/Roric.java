@@ -46,6 +46,21 @@ public class Roric extends Enemy {
     private static final int SKYFALL_BEAM_COOLDOWN = 200;
     private static final double PREDICTION_FACTOR = 75.0;
 
+    private boolean isPerformingCelestialRain = false;
+    private boolean celestialTeleportRequested = false;
+    private int celestialRainTimer = 0;
+    private final int celestialRainDuration = 200 * 10;
+    private int volleyTimer = 0;
+    private final int volleyCooldown = 25;
+    private double currentSpawnAngle = 0;
+    private static final int PROJECTILES_PER_VOLLEY = 10;
+    private static final double CELESTIAL_RAIN_ARC_DEGREES = 360.0;
+
+    private boolean isSpawningVolley = false;
+    private int orbInVolleyIndex = 0;
+    private int orbSpawnTimer = 0;
+    private final int orbSpawnCooldown = 5;
+
     private final Random random = new Random();
 
     public Roric(int xPos, int yPos) {
@@ -72,6 +87,11 @@ public class Roric extends Enemy {
     }
 
     public void update(BufferedImage[][] animations, int[][] levelData, Player player, SpellManager spellManager, EnemyManager enemyManager, ObjectManager objectManager, BossInterface bossInterface) {
+        if (isPerformingCelestialRain) {
+            handleCelestialRain(player, objectManager);
+            updateAnimation(animations);
+            return;
+        }
         if (isPerformingSkyfallBarrage) {
             handleSkyfallBarrage(player, spellManager, levelData);
             return;
@@ -84,6 +104,11 @@ public class Roric extends Enemy {
     }
 
     void updateMove(int[][] levelData, Player player, SpellManager spellManager, ObjectManager objectManager, EnemyManager enemyManager) {
+        if (celestialTeleportRequested) {
+            celestialTeleportRequested = false;
+            handleRoricTeleport(this, levelData);
+            return;
+        }
         updateBehavior(levelData, player, spellManager, objectManager, enemyManager);
         if (!Utils.getInstance().isEntityOnFloor(hitBox, levelData) && entityState != Anim.IDLE) {
             inAir = true;
@@ -185,7 +210,7 @@ public class Roric extends Enemy {
     // Behavior
     private void idleAction(int[][] levelData, Player player, ObjectManager objectManager) {
         if (cooldown[Cooldown.ATTACK.ordinal()] == 0) {
-            setEnemyAction(Anim.SPELL_4);
+            setEnemyAction(Anim.ATTACK_3);
         }
     }
 
@@ -317,6 +342,54 @@ public class Roric extends Enemy {
         setAttackCooldown(15);
     }
 
+    private void handleCelestialRain(Player player, ObjectManager objectManager) {
+        celestialRainTimer++;
+
+        if (isSpawningVolley) {
+            orbSpawnTimer++;
+            if (orbSpawnTimer >= orbSpawnCooldown) {
+                orbSpawnTimer = 0;
+                double arcInRadians = Math.toRadians(CELESTIAL_RAIN_ARC_DEGREES);
+                double angleIncrement = arcInRadians / (PROJECTILES_PER_VOLLEY- 1);
+                double startAngle = currentSpawnAngle;
+
+                double angle = startAngle + (orbInVolleyIndex * angleIncrement);
+                objectManager.spawnCelestialOrb(this, angle);
+                orbInVolleyIndex++;
+
+                if (orbInVolleyIndex >= PROJECTILES_PER_VOLLEY) {
+                    isSpawningVolley = false;
+                    currentSpawnAngle += Math.toRadians(25);
+                }
+            }
+        }
+        else {
+            volleyTimer++;
+            if (volleyTimer >= volleyCooldown) {
+                volleyTimer = 0;
+                isSpawningVolley = true;
+                orbInVolleyIndex = 0;
+                orbSpawnTimer = 0;
+            }
+        }
+
+        if (celestialRainTimer >= celestialRainDuration) stopCelestialRain();
+    }
+
+    private void startCelestialRain() {
+        this.inAir = true;
+        this.airSpeed = 0;
+        this.isPerformingCelestialRain = true;
+        this.celestialRainTimer = 0;
+        this.volleyTimer = 0;
+        this.currentSpawnAngle = 0;
+    }
+
+    private void stopCelestialRain() {
+        this.isPerformingCelestialRain = false;
+        this.isSpawningVolley = false;
+    }
+
     private void jump(int[][] levelData) {
         if (!inAir) {
             inAir = true;
@@ -385,6 +458,10 @@ public class Roric extends Enemy {
     protected void finishAnimation() {
         animIndex = 0;
         attackCheck = false;
+        if (entityState == Anim.ATTACK_3) {
+            celestialTeleportRequested = true;
+            return;
+        }
         if (entityState == Anim.SPELL_2 && preparingAerialAttack) {
             isFloating = false;
             preparingAerialAttack = false;
@@ -400,6 +477,15 @@ public class Roric extends Enemy {
     protected void updateAttackBox() {
         attackBox.x = hitBox.x - (40 * SCALE);
         attackBox.y = hitBox.y;
+    }
+
+    private void handleRoricTeleport(Roric roric, int[][] levelData) {
+        double targetX = (levelData.length * TILES_SIZE) / 2.0;
+        double targetY = 4 * TILES_SIZE;
+        Rectangle2D.Double hitBox = roric.getHitBox();
+        hitBox.x = targetX - (hitBox.width / 2.0);
+        hitBox.y = targetY;
+        startCelestialRain();
     }
 
     @Override
@@ -437,5 +523,9 @@ public class Roric extends Enemy {
 
     public boolean isVisible() {
         return isVisible;
+    }
+
+    public boolean isPerformingCelestialRain() {
+        return isPerformingCelestialRain;
     }
 }

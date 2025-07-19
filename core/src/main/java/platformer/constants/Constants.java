@@ -383,6 +383,9 @@ public final class Constants {
     public static final int RORIC_ARROW_OFFSET_X_LEFT = scale(-45);
     public static final int RORIC_ARROW_OFFSET_Y = scale(12);
 
+    public static final int CELESTIAL_ORB_WID = scale(40);
+    public static final int CELESTIAL_ORB_HEI = scale(40);
+
     // Spell Constants
     public static final int FLAME_WID = scale(45);
     public static final int FLAME_HEI = scale(35);
@@ -449,6 +452,8 @@ public final class Constants {
 
     public static final int PLAYER_LIGHT_RADIUS = scale(75);
     public static final int CANDLE_LIGHT_RADIUS = scale(100);
+    public static final int RORIC_AURA_WID = scale(100);
+    public static final int RORIC_AURA_HEI = scale(100);
 
     // Camera Constants
     public static final double CAMERA_LERP_FACTOR_X = 0.08;

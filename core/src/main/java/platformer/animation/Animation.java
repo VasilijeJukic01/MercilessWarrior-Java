@@ -166,6 +166,7 @@ public class Animation {
         anim[Anim.JUMP_FALL.ordinal()] = loadFromSprite(RORIC_SHEET, 22, 6, w, h, 0, RORIC_W, RORIC_H);
         anim[Anim.ATTACK_1.ordinal()] = loadFromSprite(RORIC_SHEET, 10, 10, w, h, 0, RORIC_W, RORIC_H);
         anim[Anim.ATTACK_2.ordinal()] = loadFromSprite(RORIC_SHEET, 15, 11, w, h, 0, RORIC_W, RORIC_H);
+        anim[Anim.ATTACK_3.ordinal()] = anim[Anim.IDLE.ordinal()];
         anim[Anim.BLOCK.ordinal()] = loadFromSprite(RORIC_SHEET, 19, 14, w, h, 0, RORIC_W, RORIC_H);
         anim[Anim.SPELL_1.ordinal()] = loadFromSprite(RORIC_SHEET, 17, 13, w, h, 0, RORIC_W, RORIC_H);
         anim[Anim.SPELL_2.ordinal()] = loadFromSprite(RORIC_SHEET, 10, 7, w, h, 0, RORIC_W, RORIC_H);
@@ -243,9 +244,10 @@ public class Animation {
     }
 
     public BufferedImage[][] loadRoricProjectiles() {
-        BufferedImage[][] anim = new BufferedImage[2][];
+        BufferedImage[][] anim = new BufferedImage[3][];
         anim[0] = loadFromSprite(RORIC_SPELLS_SHEET, 5, 8, RORIC_BEAM_WID, RORIC_BEAM_HEI, 0, RORIC_PROJECTILE_W, RORIC_PROJECTILE_H);
         anim[1] = loadFromSprite(RORIC_SPELLS_SHEET, 13, 7, RORIC_RAIN_WID, RORIC_RAIN_HEI, 0, RORIC_PROJECTILE_W, RORIC_PROJECTILE_H);
+        anim[2] = loadFromSprite(CELESTIAL_PROJECTILE_SHEET, 4, 0, CELESTIAL_ORB_WID, CELESTIAL_ORB_HEI, 0, CELESTIAL_PROJECTILE_W, CELESTIAL_PROJECTILE_H);
         return anim;
     }
 
@@ -259,6 +261,11 @@ public class Animation {
         System.arraycopy(beamFrames, 0, skyBeamAnimations, 4, 4);
 
         return skyBeamAnimations;
+    }
+
+    // Effects
+    public BufferedImage[] loadRoricAuraEffect() {
+        return loadFromSprite(RORIC_AURA_SHEET, 4, 0, RORIC_AURA_WID, RORIC_AURA_HEI, 0, RORIC_AURA_W, RORIC_AURA_H);
     }
 
     // Getters

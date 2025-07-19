@@ -5,6 +5,7 @@ import platformer.audio.Audio;
 import platformer.audio.types.Sound;
 import platformer.model.entities.Direction;
 import platformer.model.entities.enemies.Enemy;
+import platformer.model.entities.enemies.boss.Roric;
 import platformer.model.entities.enemies.boss.SpearWoman;
 import platformer.model.entities.player.Player;
 import platformer.model.gameObjects.npc.Npc;
@@ -71,7 +72,7 @@ public class ObjectManager implements Publisher {
 
     // TODO: Refactor to ProjectileManager later
     private BufferedImage projectileArrow, projectileRoricArrow, projectileRoricAngledArrow;
-    private BufferedImage[] fireball, projectileLightningBall, projectileLightningBall2;
+    private BufferedImage[] fireball, projectileLightningBall, projectileLightningBall2, celestialOrb;
     private final List<Projectile> projectiles;
 
     private final List<Subscriber> subscribers = new ArrayList<>();
@@ -93,6 +94,7 @@ public class ObjectManager implements Publisher {
         this.projectileRoricAngledArrow = Utils.getInstance().importImage(RORIC_ARROW_IMG, ARROW_WID, ARROW_HEI);
         this.projectileLightningBall = Animation.getInstance().loadLightningBall(LIGHTNING_BALL_1_SHEET);
         this.projectileLightningBall2 = Animation.getInstance().loadLightningBall(LIGHTNING_BALL_2_SHEET);
+        this.celestialOrb= Animation.getInstance().loadRoricProjectiles()[2];
         this.fireball = Animation.getInstance().loadFireBall();
     }
 
@@ -286,6 +288,12 @@ public class ObjectManager implements Publisher {
         projectiles.add(new RoricAngledArrow((int)spawnX, (int)spawnY, angle));
     }
 
+    public void spawnCelestialOrb(Roric roric, double angle) {
+        int spawnX = (int) roric.getHitBox().getCenterX();
+        int spawnY = (int) roric.getHitBox().getCenterY();
+        projectiles.add(new CelestialOrb(spawnX, spawnY, angle));
+    }
+
     public void shotFireBall(Player player) {
         Direction direction = (player.getFlipSign() == 1) ? Direction.LEFT : Direction.RIGHT;
         projectiles.add(new Fireball((int)player.getHitBox().x, (int)player.getHitBox().y, direction));
@@ -443,6 +451,10 @@ public class ObjectManager implements Publisher {
             }
             else if (p instanceof RoricAngledArrow) {
                 p.render(g, xLevelOffset, yLevelOffset, projectileRoricAngledArrow);
+            }
+            // Celestial Orb
+            else if (p instanceof CelestialOrb) {
+                p.render(g, xLevelOffset, yLevelOffset, celestialOrb);
             }
             // Lightning Ball
             else if (p instanceof LightningBall) {

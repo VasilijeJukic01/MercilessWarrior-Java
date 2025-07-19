@@ -55,6 +55,7 @@ public final class FilePaths {
     public static final String BRICK_SHEET = "/images/objs/Brick.png";
     public static final String JUMP_PAD_SHEET = "/images/objs/JumpPad.png";
     public static final String HERB_IMG = "/images/objs/Herb.png";
+    public static final String CELESTIAL_PROJECTILE_SHEET = "/images/objs/CelestialProjectile.png";
 
     // NPC
     public static final String ANITA_SHEET = "/images/objs/npc/AnitaSprite.png";
@@ -77,6 +78,7 @@ public final class FilePaths {
     // Effects
     public static final String PARTICLE_SHEET = "/images/particles/ParticleSprite.png";
     public static final String SMOKE_SHEET = "/images/particles/Smoke.png";
+    public static final String RORIC_AURA_SHEET = "/images/particles/RoricAuraEffect.png";
 
     // Buttons
     public static final String BTN_BUY_SHEET = "/images/buttons/BuyButton.png";
