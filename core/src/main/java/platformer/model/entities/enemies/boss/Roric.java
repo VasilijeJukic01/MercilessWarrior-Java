@@ -50,6 +50,7 @@ public class Roric extends Enemy {
     protected final double jumpSpeed = -3.0 * SCALE;
 
     // Current state
+    private SpellManager spellManager;
     private Player currentPlayerTarget;
     private int[][] currentLevelData;
 
@@ -96,6 +97,7 @@ public class Roric extends Enemy {
      * @param bossInterface The UI component for the boss health bar.
      */
     public void update(BufferedImage[][] animations, int[][] levelData, Player player, SpellManager spellManager, EnemyManager enemyManager, ObjectManager objectManager, ProjectileManager projectileManager, BossInterface bossInterface) {
+        this.spellManager = spellManager;
         this.currentPlayerTarget = player;
         this.currentLevelData = levelData;
         if (!start && isPlayerCloseForAttack(player)) {
@@ -219,7 +221,7 @@ public class Roric extends Enemy {
         }
         else {
             attackBox.width = RORIC_AB_WID;
-            attackBox.x = hitBox.x - (40 * SCALE);
+            attackBox.x = hitBox.x - attackBoxOffsetX;
         }
         attackBox.y = hitBox.y;
     }
@@ -343,12 +345,17 @@ public class Roric extends Enemy {
         this.animIndex = index;
     }
 
+    // Dependency Injection
     public Player getCurrentPlayerTarget() {
         return currentPlayerTarget;
     }
 
     public int[][] getLevelDataForAI() {
         return currentLevelData;
+    }
+
+    public SpellManager getSpellManager() {
+        return spellManager;
     }
 
     public void setAttackCooldown(double value) {

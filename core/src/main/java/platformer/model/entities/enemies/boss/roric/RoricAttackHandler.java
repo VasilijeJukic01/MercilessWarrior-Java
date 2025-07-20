@@ -95,7 +95,6 @@ public class RoricAttackHandler {
                 handleBeamAttack(spellManager);
                 break;
             case ARROW_RAIN:
-                handleArrowRainAttack(spellManager, player);
                 break;
             case PHANTOM_BARRAGE:
                 handlePhantomBarrage(enemyManager, levelData);
@@ -138,6 +137,7 @@ public class RoricAttackHandler {
                 else roric.setDirection(Direction.RIGHT);
                 roric.setState(RoricState.ARROW_RAIN);
                 roric.setEnemyAction(Anim.SPELL_3);
+                roric.getSpellManager().startArrowRainTelegraph(player);
                 break;
             case 3:
                 roric.setState(RoricState.PHANTOM_BARRAGE);
@@ -275,16 +275,6 @@ public class RoricAttackHandler {
      */
     private void handleBeamAttack(SpellManager spellManager) {
         if (roric.getAnimIndex() == 9) spellManager.activateRoricBeam(roric);
-    }
-
-    /**
-     * Activates a rain of arrows targeting the player's location during the SPELL_3 animation.
-     */
-    private void handleArrowRainAttack(SpellManager spellManager, Player player) {
-        if (roric.getAnimIndex() == 8 && !roric.isAttackCheck()) {
-            spellManager.activateArrowRain(player);
-            roric.setAttackCheck(true);
-        }
     }
 
     /**
@@ -445,6 +435,14 @@ public class RoricAttackHandler {
      * For most attacks, this is back to IDLE. For aerial attacks, it transitions back to JUMPING to allow Roric to complete his fall.
      */
     public void finishAnimation() {
+        if (roric.getState() == RoricState.ARROW_RAIN) {
+            SpellManager spellManager = roric.getSpellManager();
+            if (spellManager != null) {
+                spellManager.activateArrowRain();
+                spellManager.stopArrowRainTelegraph();
+            }
+        }
+
         roric.setAttackCheck(false);
         roric.setAnimIndex(0);
 
@@ -453,7 +451,8 @@ public class RoricAttackHandler {
             roric.setState(RoricState.JUMPING);
             roric.setEnemyAction(Anim.JUMP_FALL);
             roric.setAnimIndex(9);
-        } else {
+        }
+        else {
             roric.setState(RoricState.IDLE);
             roric.setEnemyAction(Anim.IDLE);
             roric.setAttackCooldown(RORIC_IDLE_COOLDOWN);
