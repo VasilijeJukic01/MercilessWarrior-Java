@@ -11,6 +11,7 @@ import static platformer.constants.Constants.*;
 public class RoricBeam extends Spell {
 
     private final Direction direction;
+    private boolean hasHitPlayer = false;
 
     public RoricBeam(SpellType spellType, int xPos, int yPos, Direction direction) {
         super(spellType, xPos, yPos, RORIC_BEAM_WID, RORIC_BEAM_HEI);
@@ -26,12 +27,27 @@ public class RoricBeam extends Spell {
         super.hitBox = new Rectangle2D.Double(beamX, yPos + RORIC_BEAM_OFFSET_Y, RORIC_BEAM_WID, RORIC_BEAM_HB_HEI);
     }
 
+    @Override
     public void update(Player player) {
         if (!active) return;
-        if (hitBox.intersects(player.getHitBox())) {
-            // player.changeHealth(-RORIC_BEAM_DMG, this);
+        if (!hasHitPlayer && animIndex > 0) {
+            if (hitBox.intersects(player.getHitBox())) {
+                player.changeHealth(-15, this);
+                hasHitPlayer = true;
+            }
         }
         updateAnimation();
+    }
+
+    @Override
+    public Direction getKnockbackDirection() {
+        return this.direction;
+    }
+
+    @Override
+    public void reset() {
+        super.reset();
+        hasHitPlayer = false;
     }
 
     @Override

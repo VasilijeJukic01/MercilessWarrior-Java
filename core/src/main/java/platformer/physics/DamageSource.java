@@ -1,5 +1,7 @@
 package platformer.physics;
 
+import platformer.model.entities.Direction;
+
 import java.awt.geom.Rectangle2D;
 
 /**
@@ -16,4 +18,16 @@ public interface DamageSource {
      * @return The Rectangle2D bounds of the object causing the damage.
      */
     Rectangle2D.Double getHitBox();
+
+    /**
+     * Optionally provides an explicit knockback direction that this damage source should apply.
+     * Most objects will not override this and will return null, causing knockback to be
+     * calculated based on relative positions. Special objects like horizontal beams
+     * will override this to enforce a specific knockback direction.
+     *
+     * @return The Direction of knockback (LEFT or RIGHT), or null for default behavior.
+     */
+    default Direction getKnockbackDirection() {
+        return null;
+    }
 }

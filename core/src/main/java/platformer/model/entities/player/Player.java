@@ -513,8 +513,12 @@ public class Player extends Entity {
         changeHealth(value);
         Rectangle2D sourceBounds = source.getHitBox();
         if (source instanceof Projectile) sourceBounds = source.getHitBox().getBounds2D();
-        if (sourceBounds.getCenterX() < hitBox.getCenterX()) pushDirection = Direction.RIGHT;
-        else pushDirection = Direction.LEFT;
+        Direction explicitKnockback = source.getKnockbackDirection();
+        if (explicitKnockback != null) this.pushDirection = explicitKnockback;
+        else {
+            if (sourceBounds.getCenterX() < hitBox.getCenterX()) this.pushDirection = Direction.RIGHT;
+            else this.pushDirection = Direction.LEFT;
+        }
         this.inAir = true;
         this.airSpeed = -1.2 * SCALE;
         Logger.getInstance().notify("Damage received: " + value, Message.INFORMATION);

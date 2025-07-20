@@ -69,7 +69,8 @@ public class ProjectileManager {
     }
 
     public void render(Graphics g, int xLevelOffset, int yLevelOffset) {
-        for (Projectile p : projectiles) {
+        List<Projectile> projectilesSnapshot = new ArrayList<>(projectiles);
+        for (Projectile p : projectilesSnapshot) {
             switch (p.getPrType()) {
                 case ARROW:
                     p.render(g, xLevelOffset, yLevelOffset, arrow);

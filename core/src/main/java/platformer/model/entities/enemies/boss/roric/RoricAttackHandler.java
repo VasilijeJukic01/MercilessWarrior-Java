@@ -120,7 +120,7 @@ public class RoricAttackHandler {
         Player player = roric.getCurrentPlayerTarget();
         if (player == null) return;
 
-        int choice = random.nextInt(5);
+        int choice = random.nextInt(8);
         switch (choice) {
             case 0:
                 roric.setState(RoricState.JUMPING);
@@ -150,6 +150,18 @@ public class RoricAttackHandler {
                 roric.setEnemyAction(Anim.IDLE);
                 roric.setAttackCheck(false);
                 break;
+            case 5:
+                roric.setState(RoricState.ARROW_ATTACK);
+                roric.setEnemyAction(Anim.ATTACK_2);
+                break;
+            case 6:
+                roric.setState(RoricState.SKYFALL_BARRAGE);
+                startSkyfallBarrage();
+                break;
+            case 7:
+                startCelestialRain(levelData);
+                break;
+
         }
     }
 
