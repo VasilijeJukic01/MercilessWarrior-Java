@@ -1,8 +1,9 @@
-package platformer.model.entities.enemies.boss;
+package platformer.model.entities.enemies.boss.roric;
 
 import platformer.animation.Anim;
 import platformer.model.entities.Direction;
 import platformer.model.entities.enemies.EnemyManager;
+import platformer.model.entities.enemies.boss.Roric;
 import platformer.model.entities.player.Player;
 import platformer.model.gameObjects.ObjectManager;
 import platformer.model.gameObjects.projectiles.ProjectileManager;
@@ -69,10 +70,6 @@ public class RoricClone extends Roric {
         else this.alive = false;
     }
 
-    /**
-     * FIX: Override the parent's animation logic to ensure the clone's own
-     * finishAnimation() method is called.
-     */
     @Override
     protected void updateAnimation(BufferedImage[][] animations) {
         animTick++;

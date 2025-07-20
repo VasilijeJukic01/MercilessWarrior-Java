@@ -7,7 +7,7 @@ import platformer.debug.logger.Message;
 import platformer.model.entities.Direction;
 import platformer.model.entities.effects.particles.DustType;
 import platformer.model.entities.enemies.boss.Roric;
-import platformer.model.entities.enemies.boss.RoricClone;
+import platformer.model.entities.enemies.boss.roric.RoricClone;
 import platformer.model.entities.enemies.boss.Lancer;
 import platformer.model.entities.enemies.renderer.*;
 import platformer.model.entities.player.Player;

@@ -204,8 +204,23 @@ public class Roric extends Enemy {
         }
     }
 
+    /**
+     * Dynamically updates the position and size of Roric's attack box based on the current attack animation.
+     * For the {@code ATTACK_1} (Arrow Strike), the hitbox is narrowed and positioned directly in front of Roric
+     * to match the swing of his blade. For other states, it reverts to a default configuration.
+     */
     protected void updateAttackBox() {
-        attackBox.x = hitBox.x - attackBoxOffsetX;
+        if (entityState == Anim.ATTACK_1) {
+            attackBox.width = RORIC_AB_WID_REDUCE;
+            if (getDirection() == Direction.RIGHT) {
+                attackBox.x = hitBox.x + hitBox.width;
+            }
+            else attackBox.x = hitBox.x - RORIC_AB_WID_REDUCE;
+        }
+        else {
+            attackBox.width = RORIC_AB_WID;
+            attackBox.x = hitBox.x - (40 * SCALE);
+        }
         attackBox.y = hitBox.y;
     }
 

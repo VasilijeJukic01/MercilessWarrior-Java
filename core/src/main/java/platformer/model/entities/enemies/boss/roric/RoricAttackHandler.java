@@ -49,6 +49,9 @@ public class RoricAttackHandler {
     private static final int VOLLEY_COOLDOWN = 25;
     private static final int CELESTIAL_RAIN_DURATION = 2000;
 
+    // Arrow Strike State
+    private static final double BLADE_STRIKE_TELEPORT_COOLDOWN = 10;
+
     private final Random random = new Random();
 
     public RoricAttackHandler(Roric roric) {
@@ -71,6 +74,9 @@ public class RoricAttackHandler {
                 break;
             case JUMPING:
                 handleJumpingState();
+                break;
+            case ARROW_STRIKE:
+                handleBladeStrikeAttack(player);
                 break;
             case AERIAL_ATTACK:
                 if (!roric.isInAir()) {
@@ -138,8 +144,11 @@ public class RoricAttackHandler {
                 roric.setEnemyAction(Anim.SPELL_4);
                 break;
             case 4:
-                roric.setState(RoricState.SKYFALL_BARRAGE);
-                startSkyfallBarrage();
+                teleport(levelData, player, 1);
+                roric.setState(RoricState.ARROW_STRIKE);
+                roric.setAttackCooldown(BLADE_STRIKE_TELEPORT_COOLDOWN);
+                roric.setEnemyAction(Anim.IDLE);
+                roric.setAttackCheck(false);
                 break;
         }
     }
@@ -155,6 +164,25 @@ public class RoricAttackHandler {
             roric.setXSpeed(0);
             roric.setState(RoricState.AERIAL_ATTACK);
             aerialAttackPerformedThisJump = true;
+        }
+    }
+
+    /**
+     * Handles the logic for the Blade Strike attack. The attack hitbox becomes active only during
+     * specific animation frames (5 through 8) to synchronize with the visual sword swing.
+     * The `attackCheck` flag ensures damage is applied only once per swing.
+     *
+     * @param player The player entity to check for hits.
+     */
+    private void handleBladeStrikeAttack(Player player) {
+        if (roric.getCooldown()[0] > 0) return;
+        if (roric.getEnemyAction() != Anim.ATTACK_1) {
+            roric.setEnemyAction(Anim.ATTACK_1);
+            roric.setAttackCheck(false);
+        }
+        if (roric.getAnimIndex() >= 5 && roric.getAnimIndex() <= 8 && !roric.isAttackCheck()) {
+            roric.checkPlayerHit(roric.getAttackBox(), player);
+            roric.setAttackCheck(true);
         }
     }
 
@@ -430,6 +458,36 @@ public class RoricAttackHandler {
             roric.setEnemyAction(Anim.IDLE);
             roric.setAttackCooldown(RORIC_IDLE_COOLDOWN);
         }
+    }
+
+    /**
+     * Helper method to teleport Roric near the player. It attempts to teleport to either the left or right
+     * of the player, picking a valid location that is not inside a wall.
+     *
+     * @param levelData The level's collision map.
+     * @param player    The player entity to teleport near.
+     * @param tiles     The distance, in tiles, to teleport away from the player.
+     */
+    private void teleport(int[][] levelData, Player player, int tiles) {
+        Random rand = new Random();
+        double playerX = player.getHitBox().x;
+        double rightTeleport = playerX + tiles * TILES_SIZE;
+        double leftTeleport = playerX - tiles * TILES_SIZE;
+        int k = rand.nextInt(2);
+
+        double targetX = roric.getHitBox().x;
+        if (k == 0 && canMoveHere(rightTeleport, roric.getHitBox().y, roric.getHitBox().width, roric.getHitBox().height, levelData))
+            targetX = rightTeleport;
+        else if (canMoveHere(leftTeleport, roric.getHitBox().y, roric.getHitBox().width, roric.getHitBox().height, levelData))
+            targetX = leftTeleport;
+
+        performTeleport(targetX, roric.getHitBox().y);
+        roric.setDirection((playerX < roric.getHitBox().x) ? Direction.LEFT : Direction.RIGHT);
+    }
+
+    private void performTeleport(double newX, double newY) {
+        roric.getHitBox().x = newX;
+        roric.getHitBox().y = newY;
     }
 
     /**

@@ -7,6 +7,7 @@ package platformer.model.entities.enemies.boss.roric;
 public enum RoricState {
     IDLE,
     JUMPING,
+    ARROW_STRIKE,
     AERIAL_ATTACK,
     REPOSITIONING,
     BEAM_ATTACK,

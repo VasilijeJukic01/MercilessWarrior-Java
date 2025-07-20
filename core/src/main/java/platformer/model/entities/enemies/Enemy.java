@@ -117,7 +117,7 @@ public abstract class Enemy extends Entity implements Debug<Graphics> {
     }
 
     // Attack
-    protected void checkPlayerHit(Rectangle2D.Double attackBox, Player player) {
+    public void checkPlayerHit(Rectangle2D.Double attackBox, Player player) {
         if (attackBox.intersects(player.getHitBox())) {
             boolean canBlock = player.checkAction(PlayerAction.CAN_BLOCK);
             if (!canBlock) player.changeHealth(-enemyType.getDamage(), this);
