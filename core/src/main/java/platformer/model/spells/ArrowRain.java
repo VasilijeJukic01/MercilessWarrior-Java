@@ -9,8 +9,7 @@ import static platformer.constants.Constants.*;
 
 public class ArrowRain extends Spell {
 
-    // TODO: Use this later
-    private final int damageCooldown = 20;
+    private static final int DAMAGE_COOLDOWN = 20;
     private int currentDamageCooldown = 0;
 
     public ArrowRain(SpellType spellType, int xPos, int yPos) {
@@ -24,15 +23,18 @@ public class ArrowRain extends Spell {
 
     public void update(Player player) {
         if (!active) return;
-
-        if (currentDamageCooldown > 0) {
-            currentDamageCooldown--;
-        }
-
+        if (currentDamageCooldown > 0) currentDamageCooldown--;
         if (currentDamageCooldown == 0 && hitBox.intersects(player.getHitBox())) {
-            // player.changeHealth(-10, this);
-            currentDamageCooldown = damageCooldown;
+            player.changeHealth(-10, this);
+            currentDamageCooldown = DAMAGE_COOLDOWN;
         }
+        updateAnimation();
+    }
+
+    @Override
+    public void reset() {
+        super.reset();
+        currentDamageCooldown = 0;
     }
 
     @Override

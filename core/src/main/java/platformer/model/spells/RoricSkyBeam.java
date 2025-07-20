@@ -9,6 +9,7 @@ import static platformer.constants.Constants.*;
 public class RoricSkyBeam extends Spell {
 
     private final boolean isTargeted;
+    private boolean hasHitPlayer = false;
 
     public RoricSkyBeam(SpellType spellType, int xPos, int yPos, boolean isTargeted) {
         super(spellType, xPos, yPos, RORIC_BEAM_HEI, RORIC_BEAM_WID);
@@ -18,14 +19,22 @@ public class RoricSkyBeam extends Spell {
         initHitBox(width / 10.0 + offset, height);
     }
 
+    @Override
     public void update(Player player) {
         if (!active) return;
-        updateAnimation();
-        if (animIndex >= 3 && animIndex <= 5) {
+        if (!hasHitPlayer && animIndex >= 3 && animIndex <= 5) {
             if (hitBox.intersects(player.getHitBox())) {
-                // player.changeHealth(-15, this);
+                player.changeHealth(-15, this);
+                hasHitPlayer = true;
             }
         }
+        updateAnimation();
+    }
+
+    @Override
+    public void reset() {
+        super.reset();
+        hasHitPlayer = false;
     }
 
     @Override

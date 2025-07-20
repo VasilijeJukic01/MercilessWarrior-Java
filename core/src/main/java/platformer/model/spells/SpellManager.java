@@ -43,12 +43,12 @@ public class SpellManager {
     private final List<ArrowRain> arrowRains;
     private final List<RoricSkyBeam> skyBeams;
 
-    // Flags
-    private boolean spellHit;
-
     private boolean isSkyBeamActive = false;
     private int skyBeamSpawnTimer = 0;
-    private final int skyBeamSpawnCooldown = 200;
+    private static final int SKY_BEAM_SPAWN_COOLDOWN = 200;
+
+    private boolean isTelegraphingArrowRain = false;
+    private Point telegraphPosition;
 
     private final Random rand = new Random();
 
@@ -84,29 +84,6 @@ public class SpellManager {
         this.bossFlashes = gameState.getLevelManager().getCurrentLevel().getSpells(Flash.class);
     }
 
-    // Checks
-    public void checkLightningHit() {
-        checkSpellHit(bossLightnings, 0, 5, -20);
-    }
-
-    public void checkFlashHit() {
-        checkSpellHit(bossFlashes, 12, 16, -10);
-    }
-
-    private void checkSpellHit(List<? extends Spell> spells, int indexFrom, int indexTo, int dmg) {
-        if (spellHit) return;
-        Player player = gameState.getPlayer();
-        for (Spell spell : spells) {
-            int animIndex = spell.getAnimIndex();
-            if (!spell.isActive()) continue;
-            if (!spell.getHitBox().intersects(player.getHitBox())) continue;
-            if (animIndex > indexFrom && animIndex < indexTo) {
-                spellHit = true;
-                player.changeHealth(dmg);
-            }
-        }
-    }
-
     // Updates
     private void updateFlames() {
         Player player = gameState.getPlayer();
@@ -118,68 +95,30 @@ public class SpellManager {
         flame.setActive(gameState.getPlayer().getSpellState() != 0);
     }
 
-    private void updateLightnings() {
-        updateSpells(bossLightnings);
-        updateSpells(bossFlashes);
-
-        checkLightningHit();
-        checkFlashHit();
-    }
-
-    private void updateRoricBeam() {
-        List<RoricBeam> toRemove = new ArrayList<>();
-        for (RoricBeam beam : roricBeams) {
-            if (beam.isActive()) {
-                beam.update(gameState.getPlayer());
-            } else {
-                toRemove.add(beam);
-            }
-        }
-        roricBeams.removeAll(toRemove);
-    }
-
-    private void updateArrowRain() {
-        List<ArrowRain> toRemove = new ArrayList<>();
-        for (ArrowRain arrow : arrowRains) {
-            if (arrow.isActive()) {
-                arrow.update(gameState.getPlayer());
-                arrow.updateAnimation();
-            } else {
-                toRemove.add(arrow);
-            }
-        }
-        arrowRains.removeAll(toRemove);
-    }
-
-    private void updateSpells(List<? extends Spell> spells) {
-        spells.stream()
-                .filter(Spell::isActive)
-                .forEach(Spell::updateAnimation);
-    }
-
     private void updateSkyBeams() {
         if (isSkyBeamActive) {
             skyBeamSpawnTimer++;
-            if (skyBeamSpawnTimer >= skyBeamSpawnCooldown) {
+            if (skyBeamSpawnTimer >= SKY_BEAM_SPAWN_COOLDOWN) {
                 skyBeamSpawnTimer = 0;
                 spawnSkyBeam();
             }
         }
+        updateSpells(skyBeams);
+    }
 
-        List<RoricSkyBeam> toRemove = new ArrayList<>();
-        for (RoricSkyBeam beam : skyBeams) {
-            if (beam.isActive()) beam.update(gameState.getPlayer());
-            else toRemove.add(beam);
-        }
-        skyBeams.removeAll(toRemove);
+    private void updateSpells(List<? extends Spell> spells) {
+        Player player = gameState.getPlayer();
+        spells.removeIf(spell -> !isStaticSpell(spell) && !spell.isActive());
+        spells.forEach(spell -> spell.update(player));
     }
 
     // Core
     public void update() {
         updateFlames();
-        updateLightnings();
-        updateRoricBeam();
-        updateArrowRain();
+        updateSpells(bossLightnings);
+        updateSpells(bossFlashes);
+        updateSpells(roricBeams);
+        updateSpells(arrowRains);
         updateSkyBeams();
     }
 
@@ -190,6 +129,7 @@ public class SpellManager {
         renderRoricBeams(g, xLevelOffset, yLevelOffset);
         renderArrowRain(g, xLevelOffset, yLevelOffset);
         renderSkyBeams(g, xLevelOffset, yLevelOffset);
+        renderArrowRainTelegraph(g, xLevelOffset, yLevelOffset);
     }
 
     // Render
@@ -223,12 +163,34 @@ public class SpellManager {
     private void renderArrowRain(Graphics g, int xLevelOffset, int yLevelOffset) {
         for (ArrowRain arrow : arrowRains) {
             if (arrow.isActive()) {
-                int x = (int) arrow.getHitBox().x - xLevelOffset - (int)(127 * SCALE);
+                int x = (int) arrow.getHitBox().x - xLevelOffset - (int)(135 * SCALE);
                 int y = (int) arrow.getHitBox().y - yLevelOffset;
                 g.drawImage(arrowRainAnimations[arrow.getAnimIndex()], x, y, arrow.getWidth(), arrow.getHeight(), null);
                 arrow.renderHitBox(g, xLevelOffset, yLevelOffset, Color.CYAN);
             }
         }
+    }
+
+    private void renderArrowRainTelegraph(Graphics g, int xLevelOffset, int yLevelOffset) {
+        if (!isTelegraphingArrowRain || telegraphPosition == null) return;
+
+        Graphics2D g2d = (Graphics2D) g.create();
+
+        int width = (int) (RORIC_RAIN_HB_WID * 1.5);
+        int height = (int) (12 * SCALE);
+        int drawX = telegraphPosition.x - xLevelOffset - (width / 2);
+        double groundY = getGroundY(telegraphPosition.x, telegraphPosition.y, gameState.getLevelManager().getCurrentLevel().getLvlData());
+        int drawY = (int)groundY - yLevelOffset - (height / 2);
+        float pulse = (float) (0.75 + 0.25 * Math.sin(System.currentTimeMillis() / 150.0));
+        g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, pulse));
+
+        Color colorCenter = new Color(255, 40, 40, 180);
+        Color colorEdge = new Color(180, 0, 20, 100);
+        GradientPaint gp = new GradientPaint(drawX, drawY, colorEdge, drawX + width / 2, drawY, colorCenter, true);
+        g2d.setPaint(gp);
+        g2d.fillRoundRect(drawX, drawY, width, height, 10, 10);
+
+        g2d.dispose();
     }
 
     // TODO: For refactoring later
@@ -252,7 +214,6 @@ public class SpellManager {
 
     // Activators
     public void activateLightnings() {
-        spellHit = false;
         for (Lightning bossLightning : bossLightnings) {
             bossLightning.setAnimIndex(0);
             bossLightning.setActive(true);
@@ -261,7 +222,6 @@ public class SpellManager {
     }
 
     public void activateFlashes() {
-        spellHit = false;
         int n = bossFlashes.size();
         int k = rand.nextInt(n);
         bossFlashes.get(k).setAnimIndex(0);
@@ -275,10 +235,11 @@ public class SpellManager {
         roricBeams.add(new RoricBeam(SpellType.RORIC_BEAM, (int)roric.getHitBox().x, (int)roric.getHitBox().y, dir));
     }
 
-    public void activateArrowRain(Player player) {
-        int xPos = (int) (player.getHitBox().getCenterX());
-        double groundY = getGroundY(player.getHitBox().getCenterX(), player.getHitBox().y, gameState.getLevelManager().getCurrentLevel().getLvlData());
-        int yPos = (int) (groundY - (390 * SCALE));
+    public void activateArrowRain() {
+        if (telegraphPosition == null) return;
+        int xPos = telegraphPosition.x;
+        double groundY = getGroundY(telegraphPosition.x, telegraphPosition.y, gameState.getLevelManager().getCurrentLevel().getLvlData());
+        int yPos = (int) (groundY - (405 * SCALE));
         arrowRains.add(new ArrowRain(SpellType.ARROW_RAIN, xPos, yPos));
     }
 
@@ -305,6 +266,19 @@ public class SpellManager {
         this.isSkyBeamActive = false;
     }
 
+    public void startArrowRainTelegraph(Player player) {
+        this.isTelegraphingArrowRain = true;
+        this.telegraphPosition = new Point((int) player.getHitBox().getCenterX(), (int) player.getHitBox().getCenterY());
+    }
+
+    public void stopArrowRainTelegraph() {
+        this.isTelegraphingArrowRain = false;
+    }
+
+    private boolean isStaticSpell(Spell spell) {
+        return spell instanceof Lightning || spell instanceof Flash;
+    }
+
     public void reset() {
         resetSpells(bossLightnings);
         resetSpells(bossFlashes);
@@ -312,6 +286,7 @@ public class SpellManager {
         arrowRains.clear();
         skyBeams.clear();
         isSkyBeamActive = false;
+        isTelegraphingArrowRain = false;
         skyBeamSpawnTimer = 0;
     }
 

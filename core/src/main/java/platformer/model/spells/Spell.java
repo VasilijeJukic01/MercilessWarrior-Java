@@ -5,6 +5,7 @@ import platformer.audio.types.Sound;
 import platformer.debug.Debug;
 import platformer.debug.DebugSettings;
 import platformer.model.Renderable;
+import platformer.model.entities.player.Player;
 import platformer.physics.DamageSource;
 
 import java.awt.*;
@@ -56,6 +57,8 @@ public abstract class Spell implements DamageSource, Renderable<Graphics>, Debug
             active = false;
         }
     }
+
+    public abstract void update(Player player);
 
     @Override
     public void render(Graphics g, int xLevelOffset, int yLevelOffset) {
