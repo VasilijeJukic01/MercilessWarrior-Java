@@ -319,10 +319,10 @@ public final class CollisionDetector {
      * @return {@code true} if the projectile is hitting a solid tile, {@code false} otherwise.
      */
     public static boolean isProjectileHitLevel(int[][] lvlData, Projectile projectile) {
-        double wid = projectile.getHitBox().getBounds().width;
-        double hei = projectile.getHitBox().getBounds().height;
+        double wid = projectile.getShapeBounds().getBounds().width;
+        double hei = projectile.getShapeBounds().getBounds().height;
         if (projectile instanceof LightningBall) hei = ARROW_HEI;
-        return isSolid(projectile.getHitBox().getBounds().x + wid, projectile.getHitBox().getBounds().y + hei, lvlData);
+        return isSolid(projectile.getShapeBounds().getBounds().x + wid, projectile.getShapeBounds().getBounds().y + hei, lvlData);
     }
 
     /**

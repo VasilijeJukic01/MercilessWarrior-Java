@@ -12,9 +12,7 @@ import platformer.model.entities.Direction;
 import platformer.model.entities.Entity;
 import platformer.model.entities.effects.EffectManager;
 import platformer.model.entities.effects.particles.DustType;
-import platformer.model.entities.enemies.Enemy;
 import platformer.model.entities.enemies.EnemyManager;
-import platformer.model.gameObjects.GameObject;
 import platformer.model.gameObjects.ObjectManager;
 import platformer.model.gameObjects.projectiles.Projectile;
 import platformer.model.gameObjects.projectiles.ProjectileManager;
@@ -23,6 +21,7 @@ import platformer.model.inventory.InventoryBonus;
 import platformer.model.inventory.ItemRarity;
 import platformer.model.minimap.MinimapManager;
 import platformer.model.perks.PerksBonus;
+import platformer.physics.DamageSource;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
@@ -501,8 +500,7 @@ public class Player extends Entity {
         currentHealth = Math.max(Math.min(currentHealth, healthCap), 0);
     }
 
-    public void changeHealth(double value, Object o) {
-        if (!(o instanceof Enemy) && !(o instanceof Projectile) && !(o instanceof GameObject)) return;
+    public void changeHealth(double value, DamageSource source) {
         boolean hit = checkAction(PlayerAction.HIT);
         if (hit) return;
         if (value < 0) {
@@ -513,10 +511,8 @@ public class Player extends Entity {
             effectManager.spawnDamageNumber(dmgText, getHitBox().getCenterX(), getHitBox().y, DAMAGE_COLOR);
         }
         changeHealth(value);
-        Rectangle2D sourceBounds;
-        if (o instanceof Enemy) sourceBounds = ((Enemy) o).getHitBox().getBounds2D();
-        else if (o instanceof Projectile) sourceBounds = ((Projectile) o).getHitBox().getBounds2D();
-        else sourceBounds = ((GameObject) o).getHitBox().getBounds2D();
+        Rectangle2D sourceBounds = source.getHitBox();
+        if (source instanceof Projectile) sourceBounds = source.getHitBox().getBounds2D();
         if (sourceBounds.getCenterX() < hitBox.getCenterX()) pushDirection = Direction.RIGHT;
         else pushDirection = Direction.LEFT;
         this.inAir = true;

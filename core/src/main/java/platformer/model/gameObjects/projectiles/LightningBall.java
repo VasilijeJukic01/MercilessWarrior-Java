@@ -49,7 +49,7 @@ public class LightningBall extends Projectile {
     }
 
     @Override
-    public Shape getHitBox() {
+    public Shape getShapeBounds() {
         return super.hitBox;
     }
 

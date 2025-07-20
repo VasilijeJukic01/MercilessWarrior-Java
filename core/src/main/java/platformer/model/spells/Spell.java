@@ -5,6 +5,7 @@ import platformer.audio.types.Sound;
 import platformer.debug.Debug;
 import platformer.debug.DebugSettings;
 import platformer.model.Renderable;
+import platformer.physics.DamageSource;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
@@ -14,7 +15,7 @@ import java.awt.geom.Rectangle2D;
  * Contains common fields and methods for all spells.
  */
 @SuppressWarnings("FieldCanBeLocal")
-public abstract class Spell implements Renderable<Graphics>, Debug<Graphics> {
+public abstract class Spell implements DamageSource, Renderable<Graphics>, Debug<Graphics> {
 
     protected final SpellType spellType;
     protected int xPos, yPos;

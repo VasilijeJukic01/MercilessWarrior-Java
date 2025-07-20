@@ -54,7 +54,7 @@ public class ProjectileManager {
             if (projectile.isAlive()) {
                 projectile.updatePosition(player);
                 projectile.updatePosition(player, gameState.getObjectManager(), lvlData);
-                if (projectile.getHitBox().intersects(player.getHitBox())) {
+                if (projectile.getShapeBounds().intersects(player.getHitBox())) {
                     player.changeHealth(-PLAYER_PROJECTILE_DMG, projectile);
                     projectile.setAlive(false);
                 }
@@ -106,7 +106,7 @@ public class ProjectileManager {
     public void checkProjectileDeflect(Rectangle2D.Double attackBox) {
         if (!PerksBonus.getInstance().isDeflect()) return;
         projectiles.stream()
-                .filter(projectile -> projectile.isAlive() && projectile.getHitBox().intersects(attackBox))
+                .filter(projectile -> projectile.isAlive() && projectile.getShapeBounds().intersects(attackBox))
                 .forEach(projectile -> projectile.setAlive(false));
     }
 

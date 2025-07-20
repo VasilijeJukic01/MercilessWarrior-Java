@@ -307,7 +307,7 @@ public class EnemyManager implements Publisher {
 
     public void checkEnemyProjectileHit(Projectile projectile) {
         for (Skeleton skeleton : getEnemies(Skeleton.class)) {
-            if (skeleton.isAlive() && skeleton.getEnemyAction() != Anim.DEATH && projectile.getHitBox().intersects(skeleton.getHitBox())) {
+            if (skeleton.isAlive() && skeleton.getEnemyAction() != Anim.DEATH && projectile.getShapeBounds().intersects(skeleton.getHitBox())) {
                 skeleton.hit(ENEMY_PROJECTILE_DMG, false, false);
                 Direction projectileDirection = projectile.getDirection();
                 skeleton.setPushDirection(projectileDirection == Direction.LEFT ? Direction.RIGHT : Direction.LEFT);
@@ -317,7 +317,7 @@ public class EnemyManager implements Publisher {
         }
         for (Lancer lancer : getEnemies(Lancer.class)) {
             if (projectile instanceof Fireball && lancer.isAlive() && lancer.getEnemyAction() != Anim.DEATH) {
-                if (!projectile.getHitBox().intersects(lancer.getHitBox())) continue;
+                if (!projectile.getShapeBounds().intersects(lancer.getHitBox())) continue;
                 lancer.hit(FIREBALL_PROJECTILE_DMG, false, false);
                 projectile.setAlive(false);
                 checkEnemyDying(lancer, gameState.getPlayer());

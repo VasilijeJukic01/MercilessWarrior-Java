@@ -85,7 +85,7 @@ public class ObjectBreakHandler {
 
             for (Projectile projectile : projectiles) {
                 if (projectile.isAlive()) {
-                    if (projectile.getHitBox().intersects(container.getHitBox())) breakContainer(container);
+                    if (projectile.getShapeBounds().intersects(container.getHitBox())) breakContainer(container);
                 }
             }
         }
@@ -95,7 +95,7 @@ public class ObjectBreakHandler {
 
             for (Projectile projectile : projectiles) {
                 if (projectile.isAlive()) {
-                    if (projectile.getHitBox().intersects(brick.getHitBox())) breakBrick(brick);
+                    if (projectile.getShapeBounds().intersects(brick.getHitBox())) breakBrick(brick);
                 }
             }
         }

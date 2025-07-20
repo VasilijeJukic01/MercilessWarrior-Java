@@ -6,13 +6,14 @@ import platformer.debug.DebugSettings;
 import platformer.model.entities.Direction;
 import platformer.model.entities.player.Player;
 import platformer.model.gameObjects.ObjectManager;
+import platformer.physics.DamageSource;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
 
 import static platformer.constants.Constants.*;
 
-public abstract class Projectile {
+public abstract class Projectile implements DamageSource {
 
     protected GraphicsAnimation<Point> waveMovement;
 
@@ -156,7 +157,11 @@ public abstract class Projectile {
         return prType;
     }
 
-    public abstract Shape getHitBox();
+    public abstract Shape getShapeBounds();
+
+    public Rectangle2D.Double getHitBox() {
+        return hitBox;
+    }
 
     public boolean isAlive() {
         return alive;

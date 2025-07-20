@@ -7,6 +7,7 @@ import platformer.model.entities.Direction;
 import platformer.model.entities.Entity;
 import platformer.model.entities.player.Player;
 import platformer.model.entities.player.PlayerAction;
+import platformer.physics.DamageSource;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
@@ -20,7 +21,7 @@ import static platformer.physics.CollisionDetector.isSightClear;
  * An enemy is a type of entity that can interact with the player and the game world.
  */
 @SuppressWarnings("FieldCanBeLocal")
-public abstract class Enemy extends Entity implements Debug<Graphics> {
+public abstract class Enemy extends Entity implements DamageSource, Debug<Graphics> {
 
     private final EnemyType enemyType;
     protected double enemySpeed = ENEMY_SPEED_SLOW;

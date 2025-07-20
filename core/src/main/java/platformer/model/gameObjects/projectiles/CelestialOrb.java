@@ -52,7 +52,7 @@ public class CelestialOrb extends Projectile {
     }
 
     @Override
-    public Shape getHitBox() {
+    public Shape getShapeBounds() {
         return hitBox;
     }
 }

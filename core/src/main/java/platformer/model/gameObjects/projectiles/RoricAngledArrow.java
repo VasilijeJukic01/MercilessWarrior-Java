@@ -110,7 +110,7 @@ public class RoricAngledArrow extends Projectile {
     }
 
     @Override
-    public Shape getHitBox() {
+    public Shape getShapeBounds() {
         return polygonHitbox;
     }
 }
