@@ -9,7 +9,8 @@ import platformer.utils.ValueEnum;
 public enum Song implements ValueEnum<String> {
     MENU("MenuTheme"),          // 0
     FOREST_1("ForestTheme"),    // 1
-    BOSS_1("LancerTheme");      // 2
+    BOSS_1("LancerTheme"),      // 2
+    BOSS_2("RoricTheme");       // 3
 
     private static final String PREFIX = "soundtracks/";
     private final String value;

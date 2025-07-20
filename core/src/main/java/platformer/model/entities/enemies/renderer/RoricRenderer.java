@@ -3,6 +3,7 @@ package platformer.model.entities.enemies.renderer;
 import platformer.animation.Animation;
 import platformer.model.entities.Direction;
 import platformer.model.entities.enemies.boss.Roric;
+import platformer.model.entities.enemies.boss.roric.RoricState;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
@@ -32,7 +33,7 @@ public class RoricRenderer implements EnemyRenderer<Roric> {
         if (roric.getDirection() == Direction.RIGHT) x -= (int)(25 * SCALE);
         else if (fS == -1) x -= (int) (21 * SCALE);
         g.drawImage(animations[roric.getEnemyAction().ordinal()][roric.getAnimIndex()], x, y, RORIC_WIDTH * fS, RORIC_HEIGHT, null);
-        if (roric.isPerformingCelestialRain()) renderAura(g, roric, xLevelOffset, yLevelOffset);
+        if (roric.getState() == RoricState.CELESTIAL_RAIN) renderAura(g, roric, xLevelOffset, yLevelOffset);
         roric.hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.BLUE);
         roric.attackBoxRenderer(g, xLevelOffset, yLevelOffset);
     }

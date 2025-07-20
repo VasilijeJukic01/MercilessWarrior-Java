@@ -1,0 +1,460 @@
+package platformer.model.entities.enemies.boss.roric;
+
+import platformer.animation.Anim;
+import platformer.model.entities.Direction;
+import platformer.model.entities.enemies.EnemyManager;
+import platformer.model.entities.enemies.boss.Roric;
+import platformer.model.entities.player.Player;
+import platformer.model.gameObjects.projectiles.ProjectileManager;
+import platformer.model.spells.SpellManager;
+import java.util.Random;
+import static platformer.constants.Constants.*;
+import static platformer.physics.CollisionDetector.canMoveHere;
+
+/**
+ * Handles the AI, attack patterns, and state transitions for the {@link Roric} boss.
+ * This class acts as the "cognitive layer" for the boss, implementing a state machine that dictates Roric's behavior.
+ * It makes decisions based on the current state, and player position, abstracting this complex logic from the core {@code Roric} entity class.
+ *
+ * @see Roric
+ * @see RoricState
+ */
+public class RoricAttackHandler {
+
+    private final Roric roric;
+
+    // Aerial State & Repositioning
+    private boolean isFloating = false;
+    private boolean isRepositioning = false;
+    private boolean aerialAttackPerformedThisJump = false;
+    private double repositionTargetX = 0;
+    private static final double REPOSITION_SPEED = 3.5 * SCALE;
+    private static final double REPOSITION_DISTANCE = 6.5 * TILES_SIZE;
+
+    // Skyfall Barrage State
+    private int skyfallBeamCount = 0;
+    private int skyfallBeamTimer = 0;
+    private static final int SKYFALL_BEAM_COOLDOWN = 200;
+    private static final double PREDICTION_FACTOR = 75.0;
+
+    // Celestial Rain State
+    private boolean isSpawningVolley = false;
+    private int celestialRainTimer = 0;
+    private int volleyTimer = 0;
+    private double currentSpawnAngle = 0;
+    private int orbInVolleyIndex = 0;
+    private int orbSpawnTimer = 0;
+    private static final int ORB_SPAWN_COOLDOWN = 5;
+    private static final int PROJECTILES_PER_VOLLEY = 10;
+    private static final int VOLLEY_COOLDOWN = 25;
+    private static final int CELESTIAL_RAIN_DURATION = 2000;
+
+    private final Random random = new Random();
+
+    public RoricAttackHandler(Roric roric) {
+        this.roric = roric;
+    }
+
+    /**
+     * The main update loop for the AI. It acts as the central hub of the state machine, executing behavior corresponding to Roric's current {@link RoricState}.
+     *
+     * @param levelData        The level's collision map.
+     * @param player           The player entity.
+     * @param spellManager     Manager for creating spell effects.
+     * @param enemyManager     Manager for creating enemy entities (clones).
+     * @param projectileManager Manager for creating projectiles.
+     */
+    public void update(int[][] levelData, Player player, SpellManager spellManager, EnemyManager enemyManager, ProjectileManager projectileManager) {
+        switch (roric.getState()) {
+            case IDLE:
+                handleIdleState(levelData);
+                break;
+            case JUMPING:
+                handleJumpingState();
+                break;
+            case AERIAL_ATTACK:
+                if (!roric.isInAir()) {
+                    finishAnimation();
+                    return;
+                }
+                handleAerialAttack(levelData, player, projectileManager);
+                break;
+            case REPOSITIONING:
+                handleRepositioning(player);
+                break;
+            case ARROW_ATTACK:
+                handleArrowAttack(projectileManager);
+                break;
+            case BEAM_ATTACK:
+                handleBeamAttack(spellManager);
+                break;
+            case ARROW_RAIN:
+                handleArrowRainAttack(spellManager, player);
+                break;
+            case PHANTOM_BARRAGE:
+                handlePhantomBarrage(enemyManager, levelData);
+                break;
+            case SKYFALL_BARRAGE:
+                handleSkyfallBarrage(player, spellManager, levelData);
+                break;
+            case CELESTIAL_RAIN:
+                handleCelestialRain(projectileManager);
+                break;
+        }
+    }
+
+    /**
+     * The decision-making node of the state machine. In the IDLE state, Roric waits for his global
+     * attack cooldown. Once ready, he randomly chooses and transitions to a new attack state.
+     *
+     * @param levelData The level's collision map.
+     */
+    private void handleIdleState(int[][] levelData) {
+        if (roric.getCooldown()[0] > 0) return;
+
+        Player player = roric.getCurrentPlayerTarget();
+        if (player == null) return;
+
+        int choice = random.nextInt(5);
+        switch (choice) {
+            case 0:
+                roric.setState(RoricState.JUMPING);
+                roric.jump(levelData);
+                break;
+            case 1:
+                roric.setState(RoricState.BEAM_ATTACK);
+                roric.setEnemyAction(Anim.SPELL_1);
+                break;
+            case 2:
+                if (player.getHitBox().getCenterX() < roric.getHitBox().getCenterX()) {
+                    roric.setDirection(Direction.LEFT);
+                }
+                else roric.setDirection(Direction.RIGHT);
+                roric.setState(RoricState.ARROW_RAIN);
+                roric.setEnemyAction(Anim.SPELL_3);
+                break;
+            case 3:
+                roric.setState(RoricState.PHANTOM_BARRAGE);
+                roric.setEnemyAction(Anim.SPELL_4);
+                break;
+            case 4:
+                roric.setState(RoricState.SKYFALL_BARRAGE);
+                startSkyfallBarrage();
+                break;
+        }
+    }
+
+    /**
+     * Handles Roric's jumping state. If he has sufficient air speed, he transitions to the AERIAL_ATTACK state.
+     * This is where he can perform aerial maneuvers and attacks.
+     */
+    private void handleJumpingState() {
+        if (roric.getAirSpeed() >= 0 && !isFloating && !aerialAttackPerformedThisJump) {
+            isFloating = true;
+            roric.setAirSpeed(0);
+            roric.setXSpeed(0);
+            roric.setState(RoricState.AERIAL_ATTACK);
+            aerialAttackPerformedThisJump = true;
+        }
+    }
+
+    /**
+     * Handles Roric's primary aerial maneuver. He attempts to fire a trap arrow at the player.
+     * If the player is in a geometric "blind spot" directly underneath him, he will perform a quick dash to reposition.
+     *
+     * @param levelData         The level's collision map.
+     * @param player            The player entity.
+     * @param projectileManager Manager to spawn projectiles.
+     */
+    private void handleAerialAttack(int[][] levelData, Player player, ProjectileManager projectileManager) {
+        if (isRepositioning) return;
+
+        if (roric.getEnemyAction() != Anim.SPELL_2) {
+            if (isPlayerInBlindSpot(player)) {
+                roric.setState(RoricState.REPOSITIONING);
+                setupRepositioning(player, levelData);
+            }
+            else roric.prepareToFire(player);
+        }
+
+        if (roric.getEnemyAction() == Anim.SPELL_2) {
+            if (roric.getAnimIndex() == 6 && !roric.isAttackCheck()) {
+                projectileManager.activateTrapArrow(roric, player);
+                roric.setAttackCheck(true);
+            }
+        }
+    }
+
+    /**
+     * Calculates the target position for an aerial repositioning dash.
+     *
+     * @param player The player entity.
+     * @param levelData The level's collision map.
+     */
+    private void setupRepositioning(Player player, int[][] levelData) {
+        isRepositioning = true;
+        boolean playerIsToTheLeft = player.getHitBox().getCenterX() < roric.getHitBox().getCenterX();
+        double idealDashTarget = playerIsToTheLeft ? roric.getHitBox().x + REPOSITION_DISTANCE : roric.getHitBox().x - REPOSITION_DISTANCE;
+        double fallbackDashTarget = playerIsToTheLeft ? roric.getHitBox().x - REPOSITION_DISTANCE : roric.getHitBox().x + REPOSITION_DISTANCE;
+
+        if (canDashTo(idealDashTarget, levelData)) repositionTargetX = idealDashTarget;
+        else if (canDashTo(fallbackDashTarget, levelData)) repositionTargetX = fallbackDashTarget;
+        else {
+            isRepositioning = false;
+            roric.setState(RoricState.AERIAL_ATTACK);
+            roric.prepareToFire(player);
+            return;
+        }
+        roric.setAnimIndex(9);
+    }
+
+    /**
+     * Executes the aerial dash, performing a linear interpolation of the position towards the target.
+     *
+     * @param player The player entity.
+     */
+    private void handleRepositioning(Player player) {
+        boolean finishedReposition = false;
+        if (roric.getHitBox().x < repositionTargetX) {
+            roric.getHitBox().x += REPOSITION_SPEED;
+            if (roric.getHitBox().x >= repositionTargetX) finishedReposition = true;
+        }
+        else {
+            roric.getHitBox().x -= REPOSITION_SPEED;
+            if (roric.getHitBox().x <= repositionTargetX) finishedReposition = true;
+        }
+
+        if (finishedReposition) {
+            roric.getHitBox().x = repositionTargetX;
+            isRepositioning = false;
+            roric.setState(RoricState.AERIAL_ATTACK);
+            roric.prepareToFire(player);
+        }
+    }
+
+    /**
+     * Fires a straight projectile during the ATTACK_2 animation.
+     */
+    private void handleArrowAttack(ProjectileManager projectileManager) {
+        if (roric.getAnimIndex() == 9 && !roric.isAttackCheck()) {
+            projectileManager.activateRoricArrow(roric);
+            roric.setAttackCheck(true);
+        }
+    }
+
+    /**
+     * Activates a beam attack during the SPELL_1 animation.
+     */
+    private void handleBeamAttack(SpellManager spellManager) {
+        if (roric.getAnimIndex() == 9) spellManager.activateRoricBeam(roric);
+    }
+
+    /**
+     * Activates a rain of arrows targeting the player's location during the SPELL_3 animation.
+     */
+    private void handleArrowRainAttack(SpellManager spellManager, Player player) {
+        if (roric.getAnimIndex() == 8 && !roric.isAttackCheck()) {
+            spellManager.activateArrowRain(player);
+            roric.setAttackCheck(true);
+        }
+    }
+
+    /**
+     * Initiates the Phantom Barrage attack. Roric jumps and spawns a clone that fires at the player.
+     *
+     * @param enemyManager Manager used to spawn the Roric clone.
+     * @param levelData    The level's collision map.
+     */
+    private void handlePhantomBarrage(EnemyManager enemyManager, int[][] levelData) {
+        if (roric.getAnimIndex() == 0 && !roric.isAttackCheck()) {
+            roric.setAttackCheck(true);
+            roric.setState(RoricState.JUMPING);
+            roric.jump(levelData);
+            enemyManager.spawnRoricClone(roric, levelData);
+            roric.setAttackCooldown(15);
+        }
+    }
+
+    /**
+     * Handles the Skyfall Barrage attack, where Roric is off-screen.
+     * It periodically spawns sky beams that target the player's predicted future position using a simple kinematic model with a stochastic element.
+     *
+     * @param player       The player entity.
+     * @param spellManager The spell manager to create the beams.
+     * @param levelData    The level's collision map.
+     */
+    private void handleSkyfallBarrage(Player player, SpellManager spellManager, int[][] levelData) {
+        skyfallBeamTimer++;
+        if (skyfallBeamTimer >= SKYFALL_BEAM_COOLDOWN) {
+            skyfallBeamTimer = 0;
+            if (skyfallBeamCount < 4) {
+                double playerSpeedX = player.getHorizontalSpeed();
+                double targetX = player.getHitBox().getCenterX() + playerSpeedX * PREDICTION_FACTOR * (random.nextDouble() + 0.5);
+                targetX = Math.max(0, Math.min(targetX, levelData.length * TILES_SIZE));
+                spellManager.spawnSkyBeamAt((int) targetX);
+                skyfallBeamCount++;
+            }
+            else reappear();
+        }
+    }
+
+    /**
+     * Makes Roric reappear on one side of the arena after the Skyfall Barrage.
+     */
+    private void reappear() {
+        roric.setVisible(true);
+
+        Player player = roric.getCurrentPlayerTarget();
+        if (player != null) {
+            double playerX = player.getHitBox().getCenterX();
+            double arenaCenterX = (roric.getLevelDataForAI().length * TILES_SIZE) / 2.0;
+            if (playerX < arenaCenterX) {
+                roric.getHitBox().x = 20 * TILES_SIZE;
+                roric.setDirection(Direction.LEFT);
+            }
+            else {
+                roric.getHitBox().x = 5 * TILES_SIZE;
+                roric.setDirection(Direction.RIGHT);
+            }
+        }
+        // Fallback
+        else {
+            roric.getHitBox().x = 12.5 * TILES_SIZE;
+        }
+
+        roric.setState(RoricState.IDLE);
+        roric.setEnemyAction(Anim.IDLE);
+        roric.setAttackCooldown(RORIC_IDLE_COOLDOWN);
+    }
+
+    /**
+     * Handles the Celestial Rain attack. Roric becomes stationary and spawns rotating volleys of celestial orbs
+     * in a "bullet hell" spiral pattern. The angle of each volley is incremented to create the rotation.
+     *
+     * @param projectileManager The projectile manager to create the orbs.
+     */
+    private void handleCelestialRain(ProjectileManager projectileManager) {
+        celestialRainTimer++;
+        if (isSpawningVolley) {
+            orbSpawnTimer++;
+            if (orbSpawnTimer >= ORB_SPAWN_COOLDOWN) {
+                orbSpawnTimer = 0;
+                double angleIncrement = Math.toRadians(360.0 / PROJECTILES_PER_VOLLEY);
+                double angle = currentSpawnAngle + (orbInVolleyIndex * angleIncrement);
+                projectileManager.activateCelestialOrb(roric, angle);
+                orbInVolleyIndex++;
+                if (orbInVolleyIndex >= PROJECTILES_PER_VOLLEY) {
+                    isSpawningVolley = false;
+                    currentSpawnAngle += Math.toRadians(25);
+                }
+            }
+        }
+        else {
+            volleyTimer++;
+            if (volleyTimer >= VOLLEY_COOLDOWN) {
+                volleyTimer = 0;
+                isSpawningVolley = true;
+                orbInVolleyIndex = 0;
+            }
+        }
+        if (celestialRainTimer >= CELESTIAL_RAIN_DURATION) stopCelestialRain();
+    }
+
+    /**
+     * Initiates the Skyfall Barrage by making Roric disappear.
+     */
+    private void startSkyfallBarrage() {
+        roric.setVisible(false);
+        skyfallBeamCount = 0;
+        skyfallBeamTimer = 0;
+        roric.setAttackCooldown(8);
+    }
+
+    /**
+     * Initiates the Celestial Rain attack by moving Roric to the center of the arena.
+     */
+    public void startCelestialRain(int[][] levelData) {
+        roric.getHitBox().x = (levelData.length * TILES_SIZE) / 2.0 - (roric.getHitBox().width / 2.0);
+        roric.getHitBox().y = 4 * TILES_SIZE;
+        roric.setInAir(true);
+        roric.setAirSpeed(0);
+        roric.setState(RoricState.CELESTIAL_RAIN);
+        celestialRainTimer = 0;
+        volleyTimer = 0;
+        currentSpawnAngle = 0;
+    }
+
+    /**
+     * Stops the Celestial Rain attack, resetting the state and cooldowns.
+     */
+    private void stopCelestialRain() {
+        isSpawningVolley = false;
+        roric.setState(RoricState.IDLE);
+        roric.setEnemyAction(Anim.IDLE);
+        roric.setAttackCooldown(RORIC_IDLE_COOLDOWN);
+    }
+
+    /**
+     * Determines if the player is in Roric's "blind spot" directly below him.
+     * This is a geometric check using trigonometry. It defines a conical region beneath Roric where he cannot effectively aim his aerial projectiles.
+     * The condition `dx/dy < tan(30°)`checks if the angle from the vertical is less than 30 degrees.
+     *
+     * @param player The player entity.
+     * @return True if the player is in the blind spot, false otherwise.
+     */
+    private boolean isPlayerInBlindSpot(Player player) {
+        double dx = Math.abs(player.getHitBox().getCenterX() - roric.getHitBox().getCenterX());
+        double dy = player.getHitBox().getCenterY() - roric.getHitBox().getCenterY();
+        return (dy > 0 && (dx / dy) < Math.tan(Math.toRadians(30)));
+    }
+
+    private boolean canDashTo(double targetX, int[][] levelData) {
+        return canMoveHere(targetX, roric.getHitBox().y, roric.getHitBox().width, roric.getHitBox().height, levelData);
+    }
+
+    /**
+     * Called when an attack animation finishes. It transitions Roric to the next logical state.
+     * For most attacks, this is back to IDLE. For aerial attacks, it transitions back to JUMPING to allow Roric to complete his fall.
+     */
+    public void finishAnimation() {
+        roric.setAttackCheck(false);
+        roric.setAnimIndex(0);
+
+        if (roric.getState() == RoricState.AERIAL_ATTACK || roric.getState() == RoricState.REPOSITIONING) {
+            isFloating = false;
+            roric.setState(RoricState.JUMPING);
+            roric.setEnemyAction(Anim.JUMP_FALL);
+            roric.setAnimIndex(9);
+        } else {
+            roric.setState(RoricState.IDLE);
+            roric.setEnemyAction(Anim.IDLE);
+            roric.setAttackCooldown(RORIC_IDLE_COOLDOWN);
+        }
+    }
+
+    /**
+     * Called when Roric lands on the ground, resetting aerial state flags to allow for the next jump cycle.
+     */
+    public void onLanding() {
+        this.aerialAttackPerformedThisJump = false;
+        this.isFloating = false;
+    }
+
+    /**
+     * Resets the handler's state variables for a new fight.
+     */
+    public void reset() {
+        isFloating = false;
+        isRepositioning = false;
+        aerialAttackPerformedThisJump = false;
+        skyfallBeamCount = 0;
+        skyfallBeamTimer = 0;
+        celestialRainTimer = 0;
+        isSpawningVolley = false;
+        roric.setVisible(true);
+    }
+
+    public boolean isFloating() {
+        return isFloating;
+    }
+}

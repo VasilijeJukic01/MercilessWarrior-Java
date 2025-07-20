@@ -104,9 +104,7 @@ public final class Constants {
     public static final double GHOUL_ATT_CD = 10;
     public static final double GHOUL_DASH_CD = 6;
 
-    // Shop Constants
-    public static final int HEALTH_VAL = 40;
-    public static final int STAMINA_VAL = 40;
+    public static final double RORIC_IDLE_COOLDOWN = 10.0;
 
     // Level Constants
     public static final int MAX_LEVELS = 4;
@@ -364,7 +362,7 @@ public final class Constants {
     public static final int FIREBALL_PROJECTILE_DMG = 10;
     public static final int PLAYER_PROJECTILE_DMG = 10;
 
-    public static final int RORIC_BEAM_WID = scale(600);
+    public static final int RORIC_BEAM_WID = scale(800);
     public static final int RORIC_BEAM_HEI = scale(148);
     public static final int RORIC_BEAM_HB_HEI = scale(18);
     public static final int RORIC_BEAM_OFFSET_X_RIGHT = scale(50);

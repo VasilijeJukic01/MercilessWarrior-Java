@@ -14,14 +14,14 @@ import java.util.Random;
 import static platformer.constants.Constants.TILES_SIZE;
 import static platformer.physics.CollisionDetector.canMoveHere;
 
-public class BossAttackHandler {
+public class LancerAttackHandler {
 
     private final Lancer lancer;
     private final Rectangle2D.Double hitBox;
 
     private final List<Anim> actions;
 
-    public BossAttackHandler(Lancer lancer, List<Anim> actions) {
+    public LancerAttackHandler(Lancer lancer, List<Anim> actions) {
         this.lancer = lancer;
         this.hitBox = lancer.getHitBox();
         this.actions = actions;

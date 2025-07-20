@@ -164,6 +164,10 @@ public abstract class Enemy extends Entity implements Debug<Graphics> {
         return alive;
     }
 
+    public boolean isVisible() {
+        return true;
+    }
+
     public void setEnemyAction(Anim enemyAction) {
         this.entityState = enemyAction;
         this.animIndex = 0;

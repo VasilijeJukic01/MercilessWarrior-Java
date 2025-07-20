@@ -29,7 +29,7 @@ import static platformer.physics.CollisionDetector.*;
 
 public class Lancer extends Enemy implements Publisher {
 
-    private final BossAttackHandler handler;
+    private final LancerAttackHandler handler;
 
     private static final List<Subscriber> subscribers = new ArrayList<>();
 
@@ -56,7 +56,7 @@ public class Lancer extends Enemy implements Publisher {
         initHitBox(LANCER_HB_WID, LANCER_HB_HEI);
         initAttackBox();
         super.cooldown = new double[1];
-        this.handler = new BossAttackHandler(this, actions);
+        this.handler = new LancerAttackHandler(this, actions);
     }
 
     // Init

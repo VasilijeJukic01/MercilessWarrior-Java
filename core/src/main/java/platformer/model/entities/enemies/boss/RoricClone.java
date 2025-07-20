@@ -32,11 +32,14 @@ public class RoricClone extends Roric {
             attackStarted = true;
         }
 
-        super.updateAnimation(animations);
-        super.updateAttackBox();
+        updateAnimation(animations);
+        updateAttackBox();
 
         if (getEnemyAction() == Anim.ATTACK_2) {
-            super.handleArrowAttack(projectileManager);
+            if (getAnimIndex() == 9 && !isAttackCheck()) {
+                projectileManager.activateRoricArrow(this);
+                setAttackCheck(true);
+            }
         }
     }
 
@@ -59,13 +62,17 @@ public class RoricClone extends Roric {
     protected void finishAnimation() {
         if (getEnemyAction() == Anim.ATTACK_2) {
             shotCounter++;
-            super.attackCheck = false;
-            if (shotCounter < SHOTS_TO_FIRE) animIndex = 0;
+            setAttackCheck(false);
+            if (shotCounter < SHOTS_TO_FIRE) setAnimIndex(0);
             else this.alive = false;
         }
-        else setEnemyAction(Anim.IDLE);
+        else this.alive = false;
     }
 
+    /**
+     * FIX: Override the parent's animation logic to ensure the clone's own
+     * finishAnimation() method is called.
+     */
     @Override
     protected void updateAnimation(BufferedImage[][] animations) {
         animTick++;
@@ -73,7 +80,7 @@ public class RoricClone extends Roric {
             animTick = 0;
             animIndex++;
             if (animIndex >= animations[entityState.ordinal()].length) {
-                finishAnimation();
+                this.finishAnimation();
             }
         }
     }

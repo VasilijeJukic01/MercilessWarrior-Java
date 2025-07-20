@@ -177,7 +177,7 @@ public class LightManager {
     private void enemyFilter(Graphics2D g2d, int xLevelOffset, int yLevelOffset) {
         List<Enemy> enemies = gameState.getEnemyManager().getAllEnemies();
         for (Enemy enemy : enemies) {
-            if (!enemy.isAlive()) continue;
+            if (!enemy.isAlive() || !enemy.isVisible()) continue;
             int enemyX = (int) (enemy.getHitBox().x + enemy.getHitBox().width / 2 - xLevelOffset) - PLAYER_LIGHT_RADIUS;
             int enemyY = (int) (enemy.getHitBox().y + enemy.getHitBox().height / 2 - yLevelOffset) - PLAYER_LIGHT_RADIUS;
             g2d.drawImage(whiteLight, enemyX, enemyY, null);
