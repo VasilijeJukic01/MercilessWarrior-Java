@@ -21,11 +21,13 @@ public class WaveData implements AutoCloseable {
     public final int format;
     public final int samplerate;
     public final ByteBuffer data;
+    private final AudioFormat audioFormat;
 
-    private WaveData(int format, int samplerate, ByteBuffer data) {
+    private WaveData(int format, int samplerate, ByteBuffer data, AudioFormat audioFormat) {
         this.format = format;
         this.samplerate = samplerate;
         this.data = data;
+        this.audioFormat = audioFormat;
     }
 
     /**
@@ -51,7 +53,7 @@ public class WaveData implements AutoCloseable {
             buffer.flip();
 
             int format = baseFormat.getChannels() == 1 ? AL10.AL_FORMAT_MONO16 : AL10.AL_FORMAT_STEREO16;
-            return new WaveData(format, (int) baseFormat.getSampleRate(), buffer);
+            return new WaveData(format, (int) baseFormat.getSampleRate(), buffer, baseFormat);
         } catch (IOException | UnsupportedAudioFileException e) {
             throw new RuntimeException("Failed to load WAV file: " + file, e);
         }
@@ -63,5 +65,9 @@ public class WaveData implements AutoCloseable {
     @Override
     public void close() {
         data.clear();
+    }
+
+    public AudioFormat getAudioFormat() {
+        return audioFormat;
     }
 }

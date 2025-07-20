@@ -19,6 +19,15 @@ public interface AudioPlayer<U, V, W> {
     void playSong(U song);
 
     /**
+     * Plays the specified song from a given offset. If another song is already playing, it should be stopped first.
+     * Songs are typically looped.
+     *
+     * @param song The song to play.
+     * @param offsetMs The time offset in milliseconds from which to start playing.
+     */
+    void playSong(U song, int offsetMs);
+
+    /**
      * Stops the currently playing song.
      */
     void stopSong();

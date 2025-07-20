@@ -12,6 +12,8 @@ import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
 import platformer.utils.loading.LoadingProgressTracker;
 import platformer.utils.ValueEnum;
+
+import javax.sound.sampled.AudioFormat;
 import java.nio.ByteBuffer;
 
 import java.nio.IntBuffer;
@@ -25,6 +27,8 @@ import static org.lwjgl.system.MemoryUtil.NULL;
  * managing sound sources, and handling playback logic.
  */
 public class OpenAL implements AudioPlayer<Song, Sound, Ambience>  {
+
+    private final Map<Integer, AudioFileProperties> songProperties = new HashMap<>();
 
     private final List<Integer> songs = new ArrayList<>();
     private final List<OpenALSource> songSources = new ArrayList<>();
@@ -96,7 +100,7 @@ public class OpenAL implements AudioPlayer<Song, Sound, Ambience>  {
     }
 
     // Data
-    private void loadAudio(ValueEnum<String>[] audioArray, List<Integer> buffers, List<OpenALSource> sources, double progressStart, double progressTotal) {
+    private void loadAudio(ValueEnum<String>[] audioArray, List<Integer> buffers, List<OpenALSource> sources, Map<Integer, AudioFileProperties> propertiesMap, double progressStart, double progressTotal) {
         int totalFiles = audioArray.length;
         double progressPerFile = progressTotal / totalFiles;
         double currentProgress = progressStart;
@@ -104,8 +108,11 @@ public class OpenAL implements AudioPlayer<Song, Sound, Ambience>  {
         for (ValueEnum<String> audio : audioArray) {
             String id = audio.getValue();
 
-            buffers.add(loadBuffers("audio/" + id + ".wav"));
-            sources.add(new OpenALSource());
+            int bufferId = loadBuffer("audio/" + id + ".wav", propertiesMap);
+            if (bufferId != -1) {
+                buffers.add(bufferId);
+                sources.add(new OpenALSource());
+            }
 
             try {
                 Thread.sleep(50);
@@ -126,19 +133,19 @@ public class OpenAL implements AudioPlayer<Song, Sound, Ambience>  {
 
     private void loadSongs() {
         Song[] songArray = Song.values();
-        loadAudio(songArray, songs, songSources,  INIT_PROGRESS, SONGS_PROGRESS);
+        loadAudio(songArray, songs, songSources, songProperties, INIT_PROGRESS, SONGS_PROGRESS);
         updateSongVolume();
     }
 
     private void loadSounds() {
         Sound[] soundArray = Sound.values();
-        loadAudio(soundArray, sounds, soundSources,  INIT_PROGRESS + SONGS_PROGRESS, SOUNDS_PROGRESS);
+        loadAudio(soundArray, sounds, soundSources,  null, INIT_PROGRESS + SONGS_PROGRESS, SOUNDS_PROGRESS);
         updateSoundVolume();
     }
 
     private void loadAmbiences() {
         Ambience[] ambienceArray = Ambience.values();
-        loadAudio(ambienceArray, ambiences, ambienceSources, INIT_PROGRESS + SONGS_PROGRESS + SOUNDS_PROGRESS, AMBIENCE_PROGRESS);
+        loadAudio(ambienceArray, ambiences, ambienceSources, null, INIT_PROGRESS + SONGS_PROGRESS + SOUNDS_PROGRESS, AMBIENCE_PROGRESS);
     }
 
     // Core
@@ -146,13 +153,22 @@ public class OpenAL implements AudioPlayer<Song, Sound, Ambience>  {
      * Loads a single audio file (must be .wav) into an OpenAL buffer.
      *
      * @param file The path to the audio file within the resources.
-     * @return The integer ID of the generated OpenAL buffer.
+     * @param propertiesMap A map to store the audio properties for this buffer, or null if properties are not needed.
+     * @return The integer ID of the generated OpenAL buffer, or -1 on failure.
      */
-    private int loadBuffers(String file) {
+    private int loadBuffer(String file, Map<Integer, AudioFileProperties> propertiesMap) {
         int buffer = AL10.alGenBuffers();
         if (file.endsWith(".wav")) {
             try (WaveData waveFile = WaveData.create(Objects.requireNonNull(getClass().getClassLoader().getResource(file)).getFile())) {
                 AL10.alBufferData(buffer, waveFile.format, waveFile.data, waveFile.samplerate);
+                if (propertiesMap != null) {
+                    AudioFormat format = waveFile.getAudioFormat();
+                    propertiesMap.put(buffer, new AudioFileProperties(waveFile.samplerate, format.getChannels(), 16));
+                }
+            }
+            catch (Exception e) {
+                Logger.getInstance().notify("Could not load audio file: " + file, Message.ERROR);
+                return -1;
             }
         }
         return buffer;
@@ -169,10 +185,24 @@ public class OpenAL implements AudioPlayer<Song, Sound, Ambience>  {
     // Mediator
     @Override
     public void playSong(Song song) {
+        playSong(song, 0);
+    }
+
+    @Override
+    public void playSong(Song song, int offsetMs) {
         stopSong();
         currentSong = song.ordinal();
         if (!songMute) setMusicVolume(musicVolume);
-        songSources.get(currentSong).play(songs.get(currentSong), false);
+
+        int bufferId = songs.get(currentSong);
+        AudioFileProperties props = songProperties.get(bufferId);
+        int byteOffset = 0;
+        if (props != null && offsetMs > 0) {
+            double bytesPerSecond = props.sampleRate * props.channels * (props.bitsPerSample / 8.0);
+            byteOffset = (int) (bytesPerSecond * (offsetMs / 1000.0));
+        }
+
+        songSources.get(currentSong).play(bufferId, false, byteOffset);
         songSources.get(currentSong).loop(true);
 
         if (song == Song.FOREST_1) playAmbience(Ambience.FOREST);

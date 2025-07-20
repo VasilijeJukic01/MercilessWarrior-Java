@@ -1,6 +1,7 @@
 package platformer.audio;
 
 import org.lwjgl.openal.AL10;
+import org.lwjgl.openal.AL11;
 
 import java.util.Random;
 
@@ -34,7 +35,21 @@ public class OpenALSource {
      * @param varyPitch If true, a slight random pitch variation is applied to the sound to prevent audio fatigue from repetitive sound effects.
      */
     public void play(int buffer, boolean varyPitch) {
+        play(buffer, varyPitch, 0);
+    }
+
+    /**
+     * Plays an audio buffer on this source from a specific byte offset.
+     *
+     * @param buffer The ID of the OpenAL buffer to play.
+     * @param varyPitch If true, a slight random pitch variation is applied.
+     * @param byteOffset The byte offset to start playing from.
+     */
+    public void play(int buffer, boolean varyPitch, int byteOffset) {
         AL10.alSourcei(sourceID, AL10.AL_BUFFER, buffer);
+        if (byteOffset > 0) {
+            AL11.alSourcei(sourceID, AL11.AL_BYTE_OFFSET, byteOffset);
+        }
         // Audio Fatigue
         if (varyPitch) {
             float pitch = 0.95f + (random.nextFloat() * 0.1f);
