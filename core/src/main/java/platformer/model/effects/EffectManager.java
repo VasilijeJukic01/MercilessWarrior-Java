@@ -78,47 +78,15 @@ public class EffectManager {
         int adjustedCount = (int) (count * settings.getParticleDensity());
 
         for (int i = 0; i < adjustedCount; i++) {
-            int size = 0;
             double yOffset = 0;
-            switch (type) {
-                case IMPACT:
-                    size = (int) ((rand.nextInt(6) + 3) * SCALE);
-                    break;
-                case RUNNING:
-                    size = (int) ((rand.nextInt(5) + 4) * SCALE);
-                    break;
-                case DASH:
-                    yOffset = (rand.nextDouble() - 0.5) * (target.getHitBox().height * 0.8);
-                    size = (int) ((rand.nextInt(4) + 4) * SCALE);
-                    break;
-                case IMPACT_SPARK:
-                    size = (int) ((rand.nextInt(3) + 2) * SCALE);
-                    break;
-                case SW_TELEPORT:
-                    size = (int) ((rand.nextInt(10) + 5) * SCALE);
-                    break;
-                case SW_CHANNELING_AURA:
-                case SW_AURA_PULSE:
-                    size = (int)((rand.nextInt(3) + 3)  *  SCALE);
-                    break;
-                case SW_AURA_CRACKLE:
-                    size = (int)((rand.nextInt(2) + 1) * SCALE);
-                    break;
-                case WALL_JUMP:
-                    size = (int) ((rand.nextInt(4) + 3) * SCALE);
-                    break;
-                case JUMP_PAD:
-                    yOffset = target.getHitBox().height * 0.5;
-                    size = (int) ((rand.nextInt(6) + 3) * SCALE);
-                    break;
-                case THUNDERBOLT_AURA:
-                    size = (int)((new Random().nextInt(2) + 2) * SCALE);
-                    break;
-                case HERB_CUT:
-                    size = (int) ((rand.nextInt(3) + 2) * SCALE);
-                    break;
+            if (type == DustType.DASH) {
+                yOffset = (rand.nextDouble() - 0.5) * (target.getHitBox().height * 0.8);
             }
-            DustParticle particle = new DustParticle((int) x, (int) (y + yOffset), size, type, flipSign, target);
+            else if (type == DustType.JUMP_PAD) {
+                yOffset = target.getHitBox().height * 0.5;
+            }
+
+            DustParticle particle = ParticleFactory.createParticle((int) x, (int) (y + yOffset), 0, type, flipSign, target);
 
             if (type == DustType.WALL_SLIDE) backgroundParticles.add(particle);
             else foregroundParticles.add(particle);
