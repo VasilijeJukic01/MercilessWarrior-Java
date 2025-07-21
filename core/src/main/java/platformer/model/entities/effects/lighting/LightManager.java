@@ -33,8 +33,11 @@ public class LightManager {
     private Color[] gradient;
     private float[] gradientFraction;
 
-    private int animTick = 0, alpha = 130;
+    private int animTick = 0, alpha = 130, ambientAlpha = 130;
     private double pulseTimer = 0.0;
+
+    private int flashDuration = 0;
+    private float flashIntensity = 0.0f;
 
     public LightManager(GameState gameState) {
         this.gameState = gameState;
@@ -80,15 +83,19 @@ public class LightManager {
 
     // Update
     public void update() {
-        if (alpha < 130) updateFading();
+        if (alpha < ambientAlpha) updateFading();
         updatePulse();
+        updateFlash();
     }
 
     private void updateFading() {
         animTick++;
         if (animTick >= LIGHT_ANIM_SPEED) {
             animTick = 0;
-            alpha += 20;
+            alpha += 50;
+            if (alpha > ambientAlpha) {
+                alpha = ambientAlpha;
+            }
         }
     }
 
@@ -100,6 +107,20 @@ public class LightManager {
         pulseTimer += 0.02;
         if (pulseTimer > Math.PI * 2) {
             pulseTimer -= Math.PI * 2;
+        }
+    }
+
+    /**
+     * Manages the screen flash effect. If a flash is active, it rapidly decreases
+     * the flash intensity over its duration, creating a quick burst of light that fades away.
+     */
+    private void updateFlash() {
+        if (flashDuration > 0) {
+            flashDuration--;
+            flashIntensity *= 0.85f;
+            if (flashDuration == 0) {
+                flashIntensity = 0.0f;
+            }
         }
     }
 
@@ -124,6 +145,11 @@ public class LightManager {
             g2d.setColor(new Color(0, 0, 0, alpha));
             g2d.fill(darkLayer);
             glowObjects(g2d, xLevelOffset, yLevelOffset);
+
+            if (flashIntensity > 0) {
+                g2d.setColor(new Color(1.0f, 1.0f, 1.0f, flashIntensity));
+                g2d.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+            }
         }
         catch (Exception ignored) {}
     }
@@ -177,7 +203,7 @@ public class LightManager {
     private void enemyFilter(Graphics2D g2d, int xLevelOffset, int yLevelOffset) {
         List<Enemy> enemies = gameState.getEnemyManager().getAllEnemies();
         for (Enemy enemy : enemies) {
-            if (!enemy.isAlive() || !enemy.isVisible()) continue;
+            if (!enemy.isAlive() || !enemy.isVisible() || gameState.isDarkPhase()) continue;
             int enemyX = (int) (enemy.getHitBox().x + enemy.getHitBox().width / 2 - xLevelOffset) - PLAYER_LIGHT_RADIUS;
             int enemyY = (int) (enemy.getHitBox().y + enemy.getHitBox().height / 2 - yLevelOffset) - PLAYER_LIGHT_RADIUS;
             g2d.drawImage(whiteLight, enemyX, enemyY, null);
@@ -235,6 +261,17 @@ public class LightManager {
         int playerY = (int) (player.getHitBox().y + player.getHitBox().height / 2 - yLevelOffset);
         playerLight.setFrame(playerX - PLAYER_LIGHT_RADIUS, playerY - PLAYER_LIGHT_RADIUS, playerLight.getWidth(), playerLight.getHeight());
         return new Area(playerLight);
+    }
+
+    // Ambient
+    /**
+     * Sets the base ambient darkness level of the screen.
+     *
+     * @param darkness The alpha value for the dark overlay (0-255). Higher is darker.
+     */
+    public void setAmbientDarkness(int darkness) {
+        this.ambientAlpha = darkness;
+        this.alpha = darkness;
     }
 
     // Setters

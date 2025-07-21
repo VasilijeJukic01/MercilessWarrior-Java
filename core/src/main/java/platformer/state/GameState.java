@@ -66,6 +66,7 @@ public class GameState extends AbstractState implements State, Subscriber {
     // State
     private PlayingState state;
     private boolean isRespawning;
+    private boolean isDarkPhase = false;
 
     // Camera
     private double cameraX, cameraY;
@@ -266,8 +267,9 @@ public class GameState extends AbstractState implements State, Subscriber {
             player.update();
             effectManager.update();
         }
-
         else handleGameState();
+
+        eventHandler.continuousUpdate();
 
         if (state == PlayingState.DIALOGUE)
             overlayManager.update(PlayingState.DIALOGUE);
@@ -289,12 +291,16 @@ public class GameState extends AbstractState implements State, Subscriber {
         effectManager.renderAmbientEffects(g);
         this.levelManager.render(g, xLevelOffset, yLevelOffset);
         this.objectManager.render(g, xLevelOffset, yLevelOffset);
+        if (isDarkPhase) {
+            enemyManager.render(g, xLevelOffset, yLevelOffset);
+            projectileManager.render(g, xLevelOffset, yLevelOffset);
+        }
         this.lightManager.render(g, xLevelOffset, yLevelOffset);
         this.effectManager.renderBackgroundEffects(g, xLevelOffset, yLevelOffset);
-        this.enemyManager.render(g, xLevelOffset, yLevelOffset);
+        if (!isDarkPhase) this.enemyManager.render(g, xLevelOffset, yLevelOffset);
         this.player.render(g, xLevelOffset, yLevelOffset);
         this.objectManager.secondRender(g, xLevelOffset, yLevelOffset);
-        this.projectileManager.render(g, xLevelOffset, yLevelOffset);
+        if (!isDarkPhase) this.projectileManager.render(g, xLevelOffset, yLevelOffset);
         this.spellManager.render(g, xLevelOffset, yLevelOffset);
         this.effectManager.renderForegroundEffects(g, xLevelOffset, yLevelOffset);
 
@@ -456,7 +462,6 @@ public class GameState extends AbstractState implements State, Subscriber {
         return projectileManager;
     }
 
-
     public LevelManager getLevelManager() {
         return levelManager;
     }
@@ -509,5 +514,13 @@ public class GameState extends AbstractState implements State, Subscriber {
         if (state == PlayingState.PAUSE) Audio.getInstance().getAudioPlayer().unpauseSounds();
         this.state = newOverlay;
         if (state == PlayingState.PAUSE) Audio.getInstance().getAudioPlayer().pauseSounds();
+    }
+
+    public boolean isDarkPhase() {
+        return isDarkPhase;
+    }
+
+    public void setDarkPhase(boolean darkPhase) {
+        isDarkPhase = darkPhase;
     }
 }
