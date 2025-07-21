@@ -6,7 +6,7 @@ import platformer.model.entities.enemies.EnemyManager;
 import platformer.model.entities.enemies.boss.Roric;
 import platformer.model.entities.player.Player;
 import platformer.model.gameObjects.ObjectManager;
-import platformer.model.gameObjects.projectiles.ProjectileManager;
+import platformer.model.projectiles.ProjectileManager;
 import platformer.model.spells.SpellManager;
 import platformer.ui.overlays.hud.BossInterface;
 

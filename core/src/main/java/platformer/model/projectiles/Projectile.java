@@ -1,4 +1,4 @@
-package platformer.model.gameObjects.projectiles;
+package platformer.model.projectiles;
 
 import platformer.animation.graphics.GraphicsAnimation;
 import platformer.animation.graphics.WaveAnim;

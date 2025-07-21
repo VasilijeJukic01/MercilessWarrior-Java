@@ -5,7 +5,7 @@ public class DebugSettings {
     private static volatile DebugSettings instance = null;
 
     private boolean debugMode;
-    private boolean roricDebugMode = true;
+    private boolean roricDebugMode = false;
     private int roricFightStartOffsetMs = 90000;
 
     private DebugSettings() {}

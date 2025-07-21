@@ -1,4 +1,4 @@
-package platformer.model.gameObjects.projectiles;
+package platformer.model.projectiles;
 
 import platformer.debug.DebugSettings;
 import platformer.model.entities.Direction;

@@ -4,7 +4,7 @@ import platformer.audio.Audio;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
 import platformer.model.gameObjects.objects.*;
-import platformer.model.gameObjects.projectiles.Projectile;
+import platformer.model.projectiles.Projectile;
 import platformer.model.quests.ObjectiveTarget;
 import platformer.model.quests.QuestObjectiveType;
 import platformer.model.spells.Flame;

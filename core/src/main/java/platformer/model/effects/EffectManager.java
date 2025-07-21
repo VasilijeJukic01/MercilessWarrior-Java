@@ -1,10 +1,10 @@
-package platformer.model.entities.effects;
+package platformer.model.effects;
 
 import platformer.animation.Animation;
 import platformer.core.Framework;
 import platformer.core.Settings;
+import platformer.model.effects.particles.*;
 import platformer.model.entities.Entity;
-import platformer.model.entities.effects.particles.*;
 import platformer.model.entities.player.Player;
 import platformer.ui.text.DamageNumber;
 import platformer.ui.text.ItemPickupText;

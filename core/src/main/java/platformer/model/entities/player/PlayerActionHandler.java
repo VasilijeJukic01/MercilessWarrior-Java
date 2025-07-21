@@ -6,8 +6,8 @@ import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
 import platformer.model.entities.Cooldown;
 import platformer.model.entities.Direction;
-import platformer.model.entities.effects.EffectManager;
-import platformer.model.entities.effects.particles.DustType;
+import platformer.model.effects.EffectManager;
+import platformer.model.effects.particles.DustType;
 import platformer.model.gameObjects.ObjectManager;
 import platformer.model.perks.PerksBonus;
 

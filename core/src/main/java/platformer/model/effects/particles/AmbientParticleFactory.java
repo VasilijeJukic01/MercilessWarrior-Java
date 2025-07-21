@@ -1,4 +1,4 @@
-package platformer.model.entities.effects.particles;
+package platformer.model.effects.particles;
 
 import java.awt.image.BufferedImage;
 import java.util.HashMap;

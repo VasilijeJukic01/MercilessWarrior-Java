@@ -5,7 +5,7 @@ import platformer.model.entities.Direction;
 import platformer.model.entities.enemies.EnemyManager;
 import platformer.model.entities.enemies.boss.Roric;
 import platformer.model.entities.player.Player;
-import platformer.model.gameObjects.projectiles.ProjectileManager;
+import platformer.model.projectiles.ProjectileManager;
 import platformer.model.spells.SpellManager;
 import java.util.Random;
 import static platformer.constants.Constants.*;

@@ -1,7 +1,7 @@
 package platformer.observer.events;
 
-import platformer.model.entities.effects.EffectManager;
-import platformer.model.entities.effects.particles.DustType;
+import platformer.model.effects.EffectManager;
+import platformer.model.effects.particles.DustType;
 import platformer.model.entities.enemies.boss.Lancer;
 import platformer.observer.EventHandler;
 import platformer.observer.Subscriber;

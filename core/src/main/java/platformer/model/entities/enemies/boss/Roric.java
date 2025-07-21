@@ -14,7 +14,7 @@ import platformer.model.entities.enemies.boss.roric.RoricPhaseManager;
 import platformer.model.entities.enemies.boss.roric.RoricState;
 import platformer.model.entities.player.Player;
 import platformer.model.gameObjects.ObjectManager;
-import platformer.model.gameObjects.projectiles.ProjectileManager;
+import platformer.model.projectiles.ProjectileManager;
 import platformer.model.spells.SpellManager;
 import platformer.observer.Publisher;
 import platformer.observer.Subscriber;

@@ -7,7 +7,6 @@ import platformer.model.entities.player.PlayerAction;
 import platformer.model.gameObjects.npc.Npc;
 import platformer.model.gameObjects.npc.NpcType;
 import platformer.model.gameObjects.objects.*;
-import platformer.model.gameObjects.projectiles.Projectile;
 
 import java.awt.geom.Rectangle2D;
 import java.util.List;
