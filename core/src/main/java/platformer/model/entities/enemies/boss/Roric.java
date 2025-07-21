@@ -118,6 +118,7 @@ public class Roric extends Enemy implements Publisher {
                 Audio.getInstance().getAudioPlayer().playSong(Song.BOSS_2, DebugSettings.getInstance().getRoricFightStartOffsetMs());
             }
             else Audio.getInstance().getAudioPlayer().playSong(Song.BOSS_2);
+            attackHandler.startOpeningAttack(player);
         }
         phaseManager.update();
         // Delegate to handler (for specials)
@@ -184,10 +185,12 @@ public class Roric extends Enemy implements Publisher {
                 inAir = false;
                 airSpeed = 0;
                 xSpeed = 0;
-                attackHandler.onLanding();
-                setState(RoricState.IDLE);
-                setEnemyAction(Anim.IDLE);
-                setAttackCooldown(RORIC_IDLE_COOLDOWN * phaseManager.getCooldownModifier());
+                boolean actionQueuedAndHandled = attackHandler.onLanding();
+                if (!actionQueuedAndHandled) {
+                    setState(RoricState.IDLE);
+                    setEnemyAction(Anim.IDLE);
+                    setAttackCooldown(RORIC_IDLE_COOLDOWN * phaseManager.getCooldownModifier());
+                }
             }
             else airSpeed = collisionFallSpeed;
         }

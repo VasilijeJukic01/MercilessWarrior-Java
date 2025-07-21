@@ -25,6 +25,7 @@ public class RoricAttackHandler {
     private final RoricPhaseManager phaseManager;
 
     // Aerial State & Repositioning
+    private RoricState queuedActionAfterJump = null;
     private boolean isFloating = false;
     private boolean isRepositioning = false;
     private boolean aerialAttackPerformedThisJump = false;
@@ -129,15 +130,10 @@ public class RoricAttackHandler {
                 roric.jump(levelData);
                 break;
             case BEAM_ATTACK:
-                targetPlayer(player);
-                roric.setState(RoricState.BEAM_ATTACK);
-                roric.setEnemyAction(Anim.SPELL_1);
+                repositionForRangedAttack(RoricState.BEAM_ATTACK, levelData, player);
                 break;
             case ARROW_RAIN:
-                targetPlayer(player);
-                roric.setState(RoricState.ARROW_RAIN);
-                roric.setEnemyAction(Anim.SPELL_3);
-                roric.getSpellManager().startArrowRainTelegraph(player);
+                repositionForRangedAttack(RoricState.ARROW_RAIN, levelData, player);
                 break;
             case PHANTOM_BARRAGE:
                 roric.setState(RoricState.PHANTOM_BARRAGE);
@@ -147,14 +143,12 @@ public class RoricAttackHandler {
                 teleport(levelData, player, 1);
                 targetPlayer(player);
                 roric.setState(RoricState.ARROW_STRIKE);
-                roric.setAttackCooldown(BLADE_STRIKE_TELEPORT_COOLDOWN);
+                roric.setAttackCooldown(BLADE_STRIKE_TELEPORT_COOLDOWN * phaseManager.getCooldownModifier());
                 roric.setEnemyAction(Anim.IDLE);
                 roric.setAttackCheck(false);
                 break;
             case ARROW_ATTACK:
-                targetPlayer(player);
-                roric.setState(RoricState.ARROW_ATTACK);
-                roric.setEnemyAction(Anim.ATTACK_2);
+                repositionForRangedAttack(RoricState.ARROW_ATTACK, levelData, player);
                 break;
             case SKYFALL_BARRAGE:
                 roric.setState(RoricState.SKYFALL_BARRAGE);
@@ -172,12 +166,14 @@ public class RoricAttackHandler {
      * This is where he can perform aerial maneuvers and attacks.
      */
     private void handleJumpingState() {
-        if (roric.getAirSpeed() >= 0 && !isFloating && !aerialAttackPerformedThisJump) {
-            isFloating = true;
-            roric.setAirSpeed(0);
-            roric.setXSpeed(0);
-            roric.setState(RoricState.AERIAL_ATTACK);
-            aerialAttackPerformedThisJump = true;
+        if (queuedActionAfterJump == null) {
+            if (roric.getAirSpeed() >= 0 && !isFloating && !aerialAttackPerformedThisJump) {
+                isFloating = true;
+                roric.setAirSpeed(0);
+                roric.setXSpeed(0);
+                roric.setState(RoricState.AERIAL_ATTACK);
+                aerialAttackPerformedThisJump = true;
+            }
         }
     }
 
@@ -226,6 +222,55 @@ public class RoricAttackHandler {
                 else projectileManager.activateRoricAngledArrow(roric, player);
                 roric.setAttackCheck(true);
             }
+        }
+    }
+
+    /**
+     * Executes a repositioning maneuver (jump or teleport) before a ranged attack, based on the current phase.
+     *
+     * @param attackState The attack Roric should perform after repositioning.
+     * @param levelData The level's collision data.
+     * @param player The player entity.
+     */
+    private void repositionForRangedAttack(RoricState attackState, int[][] levelData, Player player) {
+        RoricPhaseManager.RoricPhase phase = phaseManager.getCurrentPhase();
+        boolean shouldTeleport = false;
+
+        switch (phase) {
+            case INTRO:
+                // Phase 1: Always jump
+                break;
+            case ASSAULT:
+                // Phase 2: 50/50 jump or teleport
+                if (random.nextBoolean()) shouldTeleport = true;
+                break;
+            case FINALE:
+                // Phase 5: Always teleport
+                shouldTeleport = true;
+                break;
+            default:
+                // Phases 3 and 4 will also teleport
+                shouldTeleport = true;
+                break;
+        }
+
+        if (shouldTeleport) {
+            teleport(levelData, player, 8);
+            targetPlayer(player);
+            roric.setState(attackState);
+            switch (attackState) {
+                case BEAM_ATTACK: roric.setEnemyAction(Anim.SPELL_1); break;
+                case ARROW_RAIN:
+                    roric.setEnemyAction(Anim.SPELL_3);
+                    roric.getSpellManager().startArrowRainTelegraph(player);
+                    break;
+                case ARROW_ATTACK: roric.setEnemyAction(Anim.ATTACK_2); break;
+            }
+        }
+        else {
+            this.queuedActionAfterJump = attackState;
+            roric.setState(RoricState.JUMPING);
+            roric.jump(levelData);
         }
     }
 
@@ -537,11 +582,28 @@ public class RoricAttackHandler {
     }
 
     /**
-     * Called when Roric lands on the ground, resetting aerial state flags to allow for the next jump cycle.
+     * Called when Roric lands on the ground, resetting aerial state flags and executing any queued actions.
      */
-    public void onLanding() {
+    public boolean onLanding() {
         this.aerialAttackPerformedThisJump = false;
         this.isFloating = false;
+
+        if (queuedActionAfterJump != null) {
+            Player player = roric.getCurrentPlayerTarget();
+            if (player != null) targetPlayer(player);
+            roric.setState(queuedActionAfterJump);
+            switch (queuedActionAfterJump) {
+                case BEAM_ATTACK: roric.setEnemyAction(Anim.SPELL_1); break;
+                case ARROW_RAIN:
+                    roric.setEnemyAction(Anim.SPELL_3);
+                    roric.getSpellManager().startArrowRainTelegraph(player);
+                    break;
+                case ARROW_ATTACK: roric.setEnemyAction(Anim.ATTACK_2); break;
+            }
+            queuedActionAfterJump = null;
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -564,6 +626,22 @@ public class RoricAttackHandler {
     }
 
     /**
+     * Initiates Roric's scripted opening attack sequence.
+     * This method is called once at the very beginning of the fight.
+     *
+     * @param player The player to target.
+     */
+    public void startOpeningAttack(Player player) {
+        int[][] levelData = roric.getLevelDataForAI();
+        double centerX = (levelData.length * TILES_SIZE) / 2.0;
+        double startY = roric.getHitBox().y;
+        performTeleport(centerX, startY);
+        targetPlayer(player);
+        roric.setState(RoricState.BEAM_ATTACK);
+        roric.setEnemyAction(Anim.SPELL_1);
+    }
+
+    /**
      * Resets the handler's state variables for a new fight.
      */
     public void reset() {
@@ -575,6 +653,7 @@ public class RoricAttackHandler {
         celestialRainTimer = 0;
         isSpawningVolley = false;
         roric.setVisible(true);
+        queuedActionAfterJump = null;
     }
 
     public boolean isFloating() {
