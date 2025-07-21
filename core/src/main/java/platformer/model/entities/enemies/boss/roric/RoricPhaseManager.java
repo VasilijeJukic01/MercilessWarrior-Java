@@ -23,7 +23,7 @@ public class RoricPhaseManager {
 
     // Phase timings
     private static final long PHASE_2_START_TIME = 53 * 1000;
-    private static final long PHASE_3_START_TIME = 93 * 1000;
+    private static final long PHASE_3_START_TIME = (int) (92.75 * 1000);
     private static final long PHASE_4_START_TIME = 106 * 1000;
     private static final long PHASE_5_START_TIME = 132 * 1000;
 
@@ -37,7 +37,13 @@ public class RoricPhaseManager {
     private final List<RoricState> phaseTwoAttacks = new ArrayList<>(phaseOneAttacks);
     private final List<RoricState> phaseThreeAttacks = List.of(RoricState.ARROW_ATTACK);
     private final List<RoricState> phaseFourAttacks = List.of(RoricState.CELESTIAL_RAIN);
-    private final List<RoricState> phaseFiveAttacks = new ArrayList<>(phaseTwoAttacks);
+    private final List<RoricState> phaseFiveAttacks = Arrays.asList(
+            RoricState.ARROW_ATTACK,
+            RoricState.PHANTOM_BARRAGE,
+            RoricState.BEAM_ATTACK,
+            RoricState.ARROW_RAIN,
+            RoricState.ARROW_STRIKE
+    );
 
     private long fightStartTime = 0;
     private long lastSkybeamSpawnTime = 0;
@@ -48,7 +54,6 @@ public class RoricPhaseManager {
     public RoricPhaseManager(Roric roric) {
         this.roric = roric;
         phaseTwoAttacks.add(RoricState.SKYFALL_BARRAGE);
-        phaseFiveAttacks.add(RoricState.PHANTOM_BARRAGE);
     }
 
     /**
@@ -121,10 +126,10 @@ public class RoricPhaseManager {
      * @return true if a trap should be spawned, false otherwise.
      */
     public boolean shouldAerialAttackDropTrap() {
-        if (currentPhase == RoricPhase.ASSAULT || currentPhase == RoricPhase.FINALE) {
-            // TODO: Change 100% chances in finale
+        if (currentPhase == RoricPhase.ASSAULT) {
             return random.nextBoolean();
         }
+        else if (currentPhase == RoricPhase.FINALE) return true;
         return false;
     }
 
@@ -132,10 +137,32 @@ public class RoricPhaseManager {
      * Gets the global cooldown multiplier for the current phase.
      * This can be used to speed up the fight in later phases.
      *
-     * @return A multiplier (e.g., 1.0 for normal, 0.75 for 25% faster).
+     * @return A multiplier (e.g., 1.0 for normal, 0.60 for 40% faster).
      */
     public double getCooldownModifier() {
-        if (currentPhase == RoricPhase.FINALE) return 0.7;
+        if (currentPhase == RoricPhase.FINALE) return 0.6;
+        return 1.0;
+    }
+
+    /**
+     * Gets the animation speed modifier for the current phase.
+     * A value less than 1.0 means faster animations.
+     *
+     * @return A multiplier for animation speed (e.g., 0.6 for 40% faster).
+     */
+    public double getAnimationSpeedModifier() {
+        if (currentPhase == RoricPhase.BRIDGE) return 0.8;
+        return 1.0;
+    }
+
+    /**
+     * Gets the arrow speed multiplier for the current phase.
+     * A value greater than 1.0 means faster arrows.
+     *
+     * @return A multiplier for arrow speed (e.g., 1.5 for 50% faster).
+     */
+    public double getArrowSpeedMultiplier() {
+        if (currentPhase == RoricPhase.BRIDGE) return 1.8;
         return 1.0;
     }
 

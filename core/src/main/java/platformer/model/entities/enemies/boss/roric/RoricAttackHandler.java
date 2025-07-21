@@ -51,7 +51,7 @@ public class RoricAttackHandler {
     private static final int CELESTIAL_RAIN_DURATION = 5500;
 
     // Arrow Strike State
-    private static final double BLADE_STRIKE_TELEPORT_COOLDOWN = 10;
+    private static final double BLADE_STRIKE_TELEPORT_COOLDOWN = 9;
 
     private final Random random = new Random();
 
@@ -129,14 +129,12 @@ public class RoricAttackHandler {
                 roric.jump(levelData);
                 break;
             case BEAM_ATTACK:
+                targetPlayer(player);
                 roric.setState(RoricState.BEAM_ATTACK);
                 roric.setEnemyAction(Anim.SPELL_1);
                 break;
             case ARROW_RAIN:
-                if (player.getHitBox().getCenterX() < roric.getHitBox().getCenterX()) {
-                    roric.setDirection(Direction.LEFT);
-                }
-                else roric.setDirection(Direction.RIGHT);
+                targetPlayer(player);
                 roric.setState(RoricState.ARROW_RAIN);
                 roric.setEnemyAction(Anim.SPELL_3);
                 roric.getSpellManager().startArrowRainTelegraph(player);
@@ -147,12 +145,14 @@ public class RoricAttackHandler {
                 break;
             case ARROW_STRIKE:
                 teleport(levelData, player, 1);
+                targetPlayer(player);
                 roric.setState(RoricState.ARROW_STRIKE);
                 roric.setAttackCooldown(BLADE_STRIKE_TELEPORT_COOLDOWN);
                 roric.setEnemyAction(Anim.IDLE);
                 roric.setAttackCheck(false);
                 break;
             case ARROW_ATTACK:
+                targetPlayer(player);
                 roric.setState(RoricState.ARROW_ATTACK);
                 roric.setEnemyAction(Anim.ATTACK_2);
                 break;
@@ -281,7 +281,7 @@ public class RoricAttackHandler {
      */
     private void handleArrowAttack(ProjectileManager projectileManager) {
         if (roric.getAnimIndex() == 9 && !roric.isAttackCheck()) {
-            projectileManager.activateRoricArrow(roric);
+            projectileManager.activateRoricArrow(roric, phaseManager.getArrowSpeedMultiplier());
             roric.setAttackCheck(true);
         }
     }
@@ -305,7 +305,7 @@ public class RoricAttackHandler {
             roric.setState(RoricState.JUMPING);
             roric.jump(levelData);
             enemyManager.spawnRoricClone(roric, levelData);
-            roric.setAttackCooldown(15);
+            roric.setAttackCooldown(15 * phaseManager.getCooldownModifier());
         }
     }
 
@@ -358,7 +358,7 @@ public class RoricAttackHandler {
 
         roric.setState(RoricState.IDLE);
         roric.setEnemyAction(Anim.IDLE);
-        roric.setAttackCooldown(RORIC_IDLE_COOLDOWN);
+        roric.setAttackCooldown(RORIC_IDLE_COOLDOWN * phaseManager.getCooldownModifier());
     }
 
     /**
@@ -446,6 +446,13 @@ public class RoricAttackHandler {
         return canMoveHere(targetX, roric.getHitBox().y, roric.getHitBox().width, roric.getHitBox().height, levelData);
     }
 
+    private void targetPlayer(Player player) {
+        if (player.getHitBox().getCenterX() < roric.getHitBox().getCenterX()) {
+            roric.setDirection(Direction.LEFT);
+        }
+        else roric.setDirection(Direction.RIGHT);
+    }
+
     /**
      * Called when an attack animation finishes. It transitions Roric to the next logical state.
      * For most attacks, this is back to IDLE. For aerial attacks, it transitions back to JUMPING to allow Roric to complete his fall.
@@ -471,7 +478,7 @@ public class RoricAttackHandler {
         else {
             roric.setState(RoricState.IDLE);
             roric.setEnemyAction(Anim.IDLE);
-            roric.setAttackCooldown(RORIC_IDLE_COOLDOWN);
+            roric.setAttackCooldown(RORIC_IDLE_COOLDOWN * phaseManager.getCooldownModifier());
             if (phaseManager.getCurrentPhase() == RoricPhaseManager.RoricPhase.BRIDGE)
                 teleportToSide();
         }
@@ -535,6 +542,25 @@ public class RoricAttackHandler {
     public void onLanding() {
         this.aerialAttackPerformedThisJump = false;
         this.isFloating = false;
+    }
+
+    /**
+     * Forces Roric to immediately stop his current action and return to an idle state.
+     * This is crucial for clean phase transitions.
+     */
+    public void interruptAndIdle() {
+        if (phaseManager.getCurrentPhase() == RoricPhaseManager.RoricPhase.ASSAULT) return;
+        isFloating = false;
+        isSpawningVolley = false;
+        isRepositioning = false;
+        skyfallBeamCount = 0;
+        celestialRainTimer = 0;
+
+        roric.getSpellManager().stopArrowRainTelegraph();
+        roric.setState(RoricState.IDLE);
+        roric.setEnemyAction(Anim.IDLE);
+        roric.setAttackCooldown(0);
+        roric.setVisible(true);
     }
 
     /**

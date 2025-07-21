@@ -38,7 +38,7 @@ public class RoricClone extends Roric {
 
         if (getEnemyAction() == Anim.ATTACK_2) {
             if (getAnimIndex() == 9 && !isAttackCheck()) {
-                projectileManager.activateRoricArrow(this);
+                projectileManager.activateRoricArrow(this, 1.0);
                 setAttackCheck(true);
             }
         }

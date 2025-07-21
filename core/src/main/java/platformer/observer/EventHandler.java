@@ -56,16 +56,13 @@ public class EventHandler {
                 break;
             case "PHASE_CHANGE":
                 if (o[1] instanceof RoricPhaseManager.RoricPhase newPhase) {
+                    Roric roric = getRoricInstance();
+                    if (roric != null) roric.getAttackHandler().interruptAndIdle();
                     handlePhaseChange(newPhase);
                 }
                 break;
             case "SPAWN_RANDOM_SKYBEAM":
                 gameState.getSpellManager().spawnSkyBeam();
-                break;
-            case "FIRE_FAST_ARROW":
-                if (o[1] instanceof Roric r) {
-                    gameState.getProjectileManager().activateRoricArrow(r);
-                }
                 break;
         }
     }
@@ -127,5 +124,9 @@ public class EventHandler {
             gameState.setDarkPhase(false);
             gameState.getLightManager().setAmbientDarkness(130);
         }
+    }
+
+    private Roric getRoricInstance() {
+        return gameState.getEnemyManager().getRoricInstance();
     }
 }

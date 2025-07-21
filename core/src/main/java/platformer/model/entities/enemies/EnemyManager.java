@@ -441,6 +441,10 @@ public class EnemyManager implements Publisher {
         return Utils.getInstance().getAllItems(enemies);
     }
 
+    public Roric getRoricInstance() {
+        return getEnemies(Roric.class).stream().findFirst().orElse(null);
+    }
+
     private <T> List<T> getEnemies(Class<T> enemyType) {
         return getAllEnemies().stream()
                 .filter(enemyType::isInstance)

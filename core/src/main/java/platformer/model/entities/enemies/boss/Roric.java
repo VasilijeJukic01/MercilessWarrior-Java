@@ -187,7 +187,7 @@ public class Roric extends Enemy implements Publisher {
                 attackHandler.onLanding();
                 setState(RoricState.IDLE);
                 setEnemyAction(Anim.IDLE);
-                setAttackCooldown(RORIC_IDLE_COOLDOWN);
+                setAttackCooldown(RORIC_IDLE_COOLDOWN * phaseManager.getCooldownModifier());
             }
             else airSpeed = collisionFallSpeed;
         }
@@ -205,7 +205,8 @@ public class Roric extends Enemy implements Publisher {
     protected void updateAnimation(BufferedImage[][] animations) {
         coolDownTickUpdate();
         animTick++;
-        if (animTick >= animSpeed) {
+        double effectiveAnimSpeed = animSpeed * phaseManager.getAnimationSpeedModifier();
+        if (animTick >= effectiveAnimSpeed) {
             animTick = 0;
             animIndex++;
             if (entityState == Anim.JUMP_FALL) {
@@ -344,6 +345,10 @@ public class Roric extends Enemy implements Publisher {
 
     public RoricState getState() {
         return state;
+    }
+
+    public RoricAttackHandler getAttackHandler() {
+        return attackHandler;
     }
 
     public void setState(RoricState state) {

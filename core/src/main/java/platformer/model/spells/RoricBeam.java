@@ -30,7 +30,7 @@ public class RoricBeam extends Spell {
     @Override
     public void update(Player player) {
         if (!active) return;
-        if (!hasHitPlayer && animIndex > 0) {
+        if (!hasHitPlayer && animIndex >= 0 && animIndex < 2) {
             if (hitBox.intersects(player.getHitBox())) {
                 player.changeHealth(-15, this);
                 hasHitPlayer = true;

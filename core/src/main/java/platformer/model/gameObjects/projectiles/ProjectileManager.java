@@ -136,9 +136,10 @@ public class ProjectileManager {
      * Spawns a straight-firing arrow from an enemy.
      *
      * @param enemy The enemy shooting the arrow.
+     * @param speedMultiplier A multiplier for the arrow's speed.
      */
-    public void activateRoricArrow(Enemy enemy) {
-        projectiles.add(new RoricArrow((int)enemy.getHitBox().x, (int)enemy.getHitBox().y, enemy.getDirection()));
+    public void activateRoricArrow(Enemy enemy, double speedMultiplier) {
+        projectiles.add(new RoricArrow((int)enemy.getHitBox().x, (int)enemy.getHitBox().y, enemy.getDirection(), speedMultiplier));
     }
 
     /**

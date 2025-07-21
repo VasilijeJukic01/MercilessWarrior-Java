@@ -11,8 +11,11 @@ import static platformer.constants.Constants.*;
 
 public class RoricArrow extends Projectile {
 
-    public RoricArrow(int xPos, int yPos, Direction direction) {
+    private final double speed;
+
+    public RoricArrow(int xPos, int yPos, Direction direction, double speedMultiplier) {
         super(PRType.RORIC_ARROW, direction);
+        this.speed = RORIC_ARROW_SPEED * speedMultiplier;
         initHitBox(xPos, yPos);
     }
 
@@ -24,7 +27,7 @@ public class RoricArrow extends Projectile {
     @Override
     public void updatePosition(Player player) {
         double xDirection = (direction == Direction.LEFT) ? -1 : 1;
-        hitBox.x += xDirection * RORIC_ARROW_SPEED;
+        hitBox.x += xDirection * speed;
     }
 
     @Override
