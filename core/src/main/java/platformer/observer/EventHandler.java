@@ -3,16 +3,24 @@ package platformer.observer;
 import platformer.model.entities.effects.EffectManager;
 import platformer.model.entities.effects.particles.DustType;
 import platformer.model.entities.enemies.boss.Lancer;
+import platformer.model.entities.enemies.boss.Roric;
+import platformer.model.entities.enemies.boss.roric.RoricPhaseManager;
 import platformer.state.GameState;
 
 import java.awt.*;
 import java.awt.geom.Point2D;
 import java.util.Random;
 
+// TODO: Decouple this event handler
 public class EventHandler {
 
-    private GameState gameState;
+    private final GameState gameState;
     private final EffectManager effectManager;
+
+    private boolean isPhaseThreeActive = false;
+    private final long[] phaseThreeTimings = { 94500, 95300, 96100, 97800, 99400, 101100, 101800, 102600 };
+    private int phaseThreeShotIndex = 0;
+    private long fightStartTime = 0;
 
     public EventHandler(GameState gameState, EffectManager effectManager) {
         this.gameState = gameState;
@@ -24,6 +32,7 @@ public class EventHandler {
         String eventType = (String) o[0];
 
         switch (eventType) {
+            // Lancer events
             case "TELEPORT_OUT":
             case "TELEPORT_IN":
                 handleTeleportEvent(o[1]);
@@ -40,6 +49,34 @@ public class EventHandler {
             case "DASH_SLASH":
                 handleDashSlashEvent(o[1], o[2], o[3]);
                 break;
+            case "START_FIGHT":
+                if (o.length > 1 && o[1] instanceof Long) {
+                    this.fightStartTime = (long) o[1];
+                }
+                break;
+            case "PHASE_CHANGE":
+                if (o[1] instanceof RoricPhaseManager.RoricPhase newPhase) {
+                    handlePhaseChange(newPhase);
+                }
+                break;
+            case "SPAWN_RANDOM_SKYBEAM":
+                gameState.getSpellManager().spawnSkyBeam();
+                break;
+            case "FIRE_FAST_ARROW":
+                if (o[1] instanceof Roric r) {
+                    gameState.getProjectileManager().activateRoricArrow(r);
+                }
+                break;
+        }
+    }
+
+    public void continuousUpdate() {
+        if (isPhaseThreeActive) {
+            long elapsedTime = System.currentTimeMillis() - fightStartTime;
+            if (phaseThreeShotIndex < phaseThreeTimings.length && elapsedTime >= phaseThreeTimings[phaseThreeShotIndex]) {
+                gameState.getLightManager().setAlpha(0);
+                phaseThreeShotIndex++;
+            }
         }
     }
 
@@ -76,6 +113,19 @@ public class EventHandler {
                 double spawnY = startPos.y + (rand.nextDouble() * hitboxHeight);
                 effectManager.spawnDustParticles(spawnX, spawnY, 1, DustType.SW_DASH_SLASH, 0, null);
             }
+        }
+    }
+
+    private void handlePhaseChange(RoricPhaseManager.RoricPhase newPhase) {
+        isPhaseThreeActive = (newPhase == RoricPhaseManager.RoricPhase.BRIDGE);
+        if (isPhaseThreeActive) {
+            gameState.setDarkPhase(true);
+            gameState.getLightManager().setAmbientDarkness(240);
+            phaseThreeShotIndex = 0;
+        }
+        else {
+            gameState.setDarkPhase(false);
+            gameState.getLightManager().setAmbientDarkness(130);
         }
     }
 }

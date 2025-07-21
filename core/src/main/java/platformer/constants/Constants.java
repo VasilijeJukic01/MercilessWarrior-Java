@@ -192,6 +192,7 @@ public final class Constants {
     public static final double KNIGHT_ATT_RANGE = RANGE / 1.3;
     public static final double WRAITH_ATT_RANGE = RANGE;
     public static final double LANCER_ATT_RANGE = RANGE * 1.8;
+    public static final double RORIC_ATT_RANGE = RANGE * 1.8;
     public static final double ENEMY_SPEED_SLOW = dScale(0.2);
 
     // Object Constants

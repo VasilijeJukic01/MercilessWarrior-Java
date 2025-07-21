@@ -5,6 +5,8 @@ public class DebugSettings {
     private static volatile DebugSettings instance = null;
 
     private boolean debugMode;
+    private boolean roricDebugMode = true;
+    private int roricFightStartOffsetMs = 90000;
 
     private DebugSettings() {}
 
@@ -25,6 +27,22 @@ public class DebugSettings {
 
     public boolean isDebugMode() {
         return debugMode;
+    }
+
+    public boolean isRoricDebugMode() {
+        return roricDebugMode;
+    }
+
+    public void setRoricDebugMode(boolean roricDebugMode) {
+        this.roricDebugMode = roricDebugMode;
+    }
+
+    public int getRoricFightStartOffsetMs() {
+        return roricFightStartOffsetMs;
+    }
+
+    public void setRoricFightStartOffsetMs(int roricFightStartOffsetMs) {
+        this.roricFightStartOffsetMs = roricFightStartOffsetMs;
     }
 
 }

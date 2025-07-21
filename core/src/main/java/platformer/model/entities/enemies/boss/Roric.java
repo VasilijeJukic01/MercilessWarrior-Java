@@ -3,22 +3,28 @@ package platformer.model.entities.enemies.boss;
 import platformer.animation.Anim;
 import platformer.audio.Audio;
 import platformer.audio.types.Song;
+import platformer.debug.DebugSettings;
 import platformer.model.entities.Cooldown;
 import platformer.model.entities.Direction;
 import platformer.model.entities.enemies.Enemy;
 import platformer.model.entities.enemies.EnemyManager;
 import platformer.model.entities.enemies.EnemyType;
 import platformer.model.entities.enemies.boss.roric.RoricAttackHandler;
+import platformer.model.entities.enemies.boss.roric.RoricPhaseManager;
 import platformer.model.entities.enemies.boss.roric.RoricState;
 import platformer.model.entities.player.Player;
 import platformer.model.gameObjects.ObjectManager;
 import platformer.model.gameObjects.projectiles.ProjectileManager;
 import platformer.model.spells.SpellManager;
+import platformer.observer.Publisher;
+import platformer.observer.Subscriber;
 import platformer.ui.overlays.hud.BossInterface;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+import java.util.List;
 
 import static platformer.constants.Constants.*;
 import static platformer.physics.CollisionDetector.*;
@@ -35,11 +41,12 @@ import static platformer.physics.CollisionDetector.*;
  * @see RoricAttackHandler
  * @see RoricState
  */
-public class Roric extends Enemy {
+public class Roric extends Enemy implements Publisher {
 
     private final RoricAttackHandler attackHandler;
+    private final RoricPhaseManager phaseManager;
     private RoricState state = RoricState.IDLE;
-    private boolean start;
+    private boolean start = false;
     private boolean isVisible = true;
 
     // Physics
@@ -58,12 +65,15 @@ public class Roric extends Enemy {
     private final int attackBoxOffsetX = (int) (40 * SCALE);
     private final int jumpOffsetX = (int) (1.5 * SCALE);
 
+    private static final List<Subscriber> subscribers = new ArrayList<>();
+
     public Roric(int xPos, int yPos) {
         super(xPos, yPos, RORIC_WIDTH, RORIC_HEIGHT, EnemyType.RORIC, 16);
         super.setDirection(Direction.LEFT);
         initHitBox();
         initAttackBox();
-        this.attackHandler = new RoricAttackHandler(this);
+        this.phaseManager = new RoricPhaseManager(this);
+        this.attackHandler = new RoricAttackHandler(this, phaseManager);
         super.cooldown = new double[1];
     }
 
@@ -102,8 +112,14 @@ public class Roric extends Enemy {
         this.currentLevelData = levelData;
         if (!start && isPlayerCloseForAttack(player)) {
             start = true;
-            Audio.getInstance().getAudioPlayer().playSong(Song.BOSS_2);
+            phaseManager.startFight();
+            notify("START_FIGHT", phaseManager.getFightStartTime());
+            if (DebugSettings.getInstance().isRoricDebugMode()) {
+                Audio.getInstance().getAudioPlayer().playSong(Song.BOSS_2, DebugSettings.getInstance().getRoricFightStartOffsetMs());
+            }
+            else Audio.getInstance().getAudioPlayer().playSong(Song.BOSS_2);
         }
+        phaseManager.update();
         // Delegate to handler (for specials)
         if (state == RoricState.SKYFALL_BARRAGE || state == RoricState.CELESTIAL_RAIN) {
             attackHandler.update(levelData, player, spellManager, enemyManager, projectileManager);
@@ -283,6 +299,7 @@ public class Roric extends Enemy {
         setEnemyAction(Anim.IDLE);
         this.state = RoricState.IDLE;
         this.attackHandler.reset();
+        this.phaseManager.reset();
         this.start = false;
         this.inAir = false;
         this.airSpeed = 0;
@@ -297,6 +314,26 @@ public class Roric extends Enemy {
     @Override
     public void attackBoxRenderer(Graphics g, int xLevelOffset, int yLevelOffset) {
         if (isVisible) renderAttackBox(g, xLevelOffset, yLevelOffset);
+    }
+
+    // Observer
+    @Override
+    public void addSubscriber(Subscriber s) {
+        if (s != null && !subscribers.contains(s)) {
+            subscribers.add(s);
+        }
+    }
+
+    @Override
+    public void removeSubscriber(Subscriber s) {
+        subscribers.remove(s);
+    }
+
+    @Override
+    public <T> void notify(T... o) {
+        for (Subscriber s : subscribers) {
+            s.update(o);
+        }
     }
 
     // Getters & Setters
@@ -343,6 +380,10 @@ public class Roric extends Enemy {
 
     public void setAnimIndex(int index) {
         this.animIndex = index;
+    }
+
+    public boolean isStart() {
+        return start;
     }
 
     // Dependency Injection

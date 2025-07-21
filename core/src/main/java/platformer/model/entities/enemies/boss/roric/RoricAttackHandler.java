@@ -22,6 +22,7 @@ import static platformer.physics.CollisionDetector.canMoveHere;
 public class RoricAttackHandler {
 
     private final Roric roric;
+    private final RoricPhaseManager phaseManager;
 
     // Aerial State & Repositioning
     private boolean isFloating = false;
@@ -47,15 +48,16 @@ public class RoricAttackHandler {
     private static final int ORB_SPAWN_COOLDOWN = 5;
     private static final int PROJECTILES_PER_VOLLEY = 10;
     private static final int VOLLEY_COOLDOWN = 25;
-    private static final int CELESTIAL_RAIN_DURATION = 2000;
+    private static final int CELESTIAL_RAIN_DURATION = 5500;
 
     // Arrow Strike State
     private static final double BLADE_STRIKE_TELEPORT_COOLDOWN = 10;
 
     private final Random random = new Random();
 
-    public RoricAttackHandler(Roric roric) {
+    public RoricAttackHandler(Roric roric, RoricPhaseManager phaseManager) {
         this.roric = roric;
+        this.phaseManager = phaseManager;
     }
 
     /**
@@ -115,22 +117,22 @@ public class RoricAttackHandler {
      * @param levelData The level's collision map.
      */
     private void handleIdleState(int[][] levelData) {
-        if (roric.getCooldown()[0] > 0) return;
+        if (!roric.isStart() || roric.getCooldown()[0] > 0) return;
 
         Player player = roric.getCurrentPlayerTarget();
         if (player == null) return;
 
-        int choice = random.nextInt(8);
-        switch (choice) {
-            case 0:
+        RoricState nextAttack = phaseManager.chooseNextAttack();
+        switch (nextAttack) {
+            case JUMPING:
                 roric.setState(RoricState.JUMPING);
                 roric.jump(levelData);
                 break;
-            case 1:
+            case BEAM_ATTACK:
                 roric.setState(RoricState.BEAM_ATTACK);
                 roric.setEnemyAction(Anim.SPELL_1);
                 break;
-            case 2:
+            case ARROW_RAIN:
                 if (player.getHitBox().getCenterX() < roric.getHitBox().getCenterX()) {
                     roric.setDirection(Direction.LEFT);
                 }
@@ -139,26 +141,26 @@ public class RoricAttackHandler {
                 roric.setEnemyAction(Anim.SPELL_3);
                 roric.getSpellManager().startArrowRainTelegraph(player);
                 break;
-            case 3:
+            case PHANTOM_BARRAGE:
                 roric.setState(RoricState.PHANTOM_BARRAGE);
                 roric.setEnemyAction(Anim.SPELL_4);
                 break;
-            case 4:
+            case ARROW_STRIKE:
                 teleport(levelData, player, 1);
                 roric.setState(RoricState.ARROW_STRIKE);
                 roric.setAttackCooldown(BLADE_STRIKE_TELEPORT_COOLDOWN);
                 roric.setEnemyAction(Anim.IDLE);
                 roric.setAttackCheck(false);
                 break;
-            case 5:
+            case ARROW_ATTACK:
                 roric.setState(RoricState.ARROW_ATTACK);
                 roric.setEnemyAction(Anim.ATTACK_2);
                 break;
-            case 6:
+            case SKYFALL_BARRAGE:
                 roric.setState(RoricState.SKYFALL_BARRAGE);
                 startSkyfallBarrage();
                 break;
-            case 7:
+            case CELESTIAL_RAIN:
                 startCelestialRain(levelData);
                 break;
 
@@ -219,7 +221,9 @@ public class RoricAttackHandler {
 
         if (roric.getEnemyAction() == Anim.SPELL_2) {
             if (roric.getAnimIndex() == 6 && !roric.isAttackCheck()) {
-                projectileManager.activateTrapArrow(roric, player);
+                boolean dropTrap = phaseManager.shouldAerialAttackDropTrap();
+                if (dropTrap) projectileManager.activateTrapArrow(roric, player);
+                else projectileManager.activateRoricAngledArrow(roric, player);
                 roric.setAttackCheck(true);
             }
         }
@@ -468,6 +472,8 @@ public class RoricAttackHandler {
             roric.setState(RoricState.IDLE);
             roric.setEnemyAction(Anim.IDLE);
             roric.setAttackCooldown(RORIC_IDLE_COOLDOWN);
+            if (phaseManager.getCurrentPhase() == RoricPhaseManager.RoricPhase.BRIDGE)
+                teleportToSide();
         }
     }
 
@@ -494,6 +500,28 @@ public class RoricAttackHandler {
 
         performTeleport(targetX, roric.getHitBox().y);
         roric.setDirection((playerX < roric.getHitBox().x) ? Direction.LEFT : Direction.RIGHT);
+    }
+
+    /**
+     * Teleports Roric to either the far left or far right of the arena.
+     * This is specifically for the dynamic repositioning in Phase 3.
+     */
+    public void teleportToSide() {
+        int[][] levelData = roric.getLevelDataForAI();
+        Player player = roric.getCurrentPlayerTarget();
+        if (levelData == null || player == null) return;
+
+        double leftSideX = 3.0 * TILES_SIZE;
+        double rightSideX = (levelData.length - 5.0) * TILES_SIZE;
+
+        if (player.getHitBox().getCenterX() < (levelData.length * TILES_SIZE) / 2.0) {
+            performTeleport(rightSideX, roric.getHitBox().y);
+            roric.setDirection(Direction.LEFT);
+        }
+        else {
+            performTeleport(leftSideX, roric.getHitBox().y);
+            roric.setDirection(Direction.RIGHT);
+        }
     }
 
     private void performTeleport(double newX, double newY) {

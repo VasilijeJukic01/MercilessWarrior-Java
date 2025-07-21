@@ -102,6 +102,7 @@ public abstract class Enemy extends Entity implements DamageSource, Debug<Graphi
         else if (enemyType == EnemyType.KNIGHT) return distance <= KNIGHT_ATT_RANGE;
         else if (enemyType == EnemyType.WRAITH) return distance <= WRAITH_ATT_RANGE;
         else if (enemyType == EnemyType.LANCER) return distance <= LANCER_ATT_RANGE;
+        else if (enemyType == EnemyType.RORIC) return distance <= RORIC_ATT_RANGE;
         return false;
     }
 

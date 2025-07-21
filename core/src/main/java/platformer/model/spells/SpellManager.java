@@ -243,7 +243,7 @@ public class SpellManager {
         arrowRains.add(new ArrowRain(SpellType.ARROW_RAIN, xPos, yPos));
     }
 
-    private void spawnSkyBeam() {
+    public void spawnSkyBeam() {
         Level currentLevel = gameState.getLevelManager().getCurrentLevel();
         int levelWidthInTiles = currentLevel.getLevelTilesWidth();
         int maxPixelX = levelWidthInTiles * TILES_SIZE;

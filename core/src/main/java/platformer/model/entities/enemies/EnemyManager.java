@@ -87,6 +87,7 @@ public class EnemyManager implements Publisher {
         this.enemies = level.getEnemiesMap();
         reset();
         getEnemies(Lancer.class).forEach(lancer -> lancer.addSubscriber(gameState));
+        getEnemies(Roric.class).forEach(roric -> roric.addSubscriber(gameState));
     }
 
     // Render
@@ -448,6 +449,10 @@ public class EnemyManager implements Publisher {
     }
 
     // Emit Events
+    public void notifyRoricEvent(String eventType) {
+        getEnemies(Roric.class).stream().findFirst().ifPresent(roric -> roric.notify(eventType, roric));
+    }
+
     @Override
     public void addSubscriber(Subscriber s) {
         this.subscribers.add(s);
