@@ -23,8 +23,11 @@ import platformer.model.quests.ObjectiveTarget;
 import platformer.model.quests.QuestManager;
 import platformer.model.quests.QuestObjectiveType;
 import platformer.model.spells.Flame;
+import platformer.observer.EventHandler;
 import platformer.observer.Publisher;
 import platformer.observer.Subscriber;
+import platformer.observer.events.LancerEventHandler;
+import platformer.observer.events.RoricEventHandler;
 import platformer.state.GameState;
 import platformer.utils.Utils;
 
@@ -86,8 +89,8 @@ public class EnemyManager implements Publisher {
     public void loadEnemies(Level level) {
         this.enemies = level.getEnemiesMap();
         reset();
-        getEnemies(Lancer.class).forEach(lancer -> lancer.addSubscriber(gameState));
-        getEnemies(Roric.class).forEach(roric -> roric.addSubscriber(gameState));
+        getEnemies(Lancer.class).forEach(lancer -> lancer.addSubscriber(findHandler(LancerEventHandler.class)));
+        getEnemies(Roric.class).forEach(roric -> roric.addSubscriber(findHandler(RoricEventHandler.class)));
     }
 
     // Render
@@ -453,8 +456,11 @@ public class EnemyManager implements Publisher {
     }
 
     // Emit Events
-    public void notifyRoricEvent(String eventType) {
-        getEnemies(Roric.class).stream().findFirst().ifPresent(roric -> roric.notify(eventType, roric));
+    private Subscriber findHandler(Class<? extends EventHandler> handlerClass) {
+        for (Object sub : gameState.getEventHandlers()) {
+            if (handlerClass.isInstance(sub)) return (Subscriber) sub;
+        }
+        return null;
     }
 
     @Override

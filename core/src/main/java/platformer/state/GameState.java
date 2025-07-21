@@ -21,7 +21,8 @@ import platformer.model.quests.QuestManager;
 import platformer.model.spells.SpellManager;
 import platformer.model.tutorial.TutorialManager;
 import platformer.observer.EventHandler;
-import platformer.observer.Subscriber;
+import platformer.observer.events.LancerEventHandler;
+import platformer.observer.events.RoricEventHandler;
 import platformer.ui.dialogue.DialogueManager;
 import platformer.ui.overlays.OverlayManager;
 import platformer.ui.overlays.hud.BossInterface;
@@ -30,6 +31,8 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 import static platformer.constants.Constants.*;
@@ -39,14 +42,14 @@ import static platformer.physics.CollisionDetector.isEntityOnExit;
  * State of the game when the player is actively playing the game.
  * In this state, the player can move around the game world, interact with objects, fight enemies, and perform other game actions.
  */
-public class GameState extends AbstractState implements State, Subscriber {
+public class GameState extends AbstractState implements State {
 
     private Player player;
 
     private final GameStateController gameStateController;
 
-    // Observer
-    private EventHandler eventHandler;
+    // Events
+    private final List<EventHandler> eventHandlers = new ArrayList<>();
 
     // Managers
     private LevelManager levelManager;
@@ -97,6 +100,7 @@ public class GameState extends AbstractState implements State, Subscriber {
     private void init() {
         this.bossInterface = new BossInterface();
         initManagers();
+        initEventHandlers();
         initPlayer();
         loadStartLevel();
         loadFromDatabase();
@@ -117,7 +121,11 @@ public class GameState extends AbstractState implements State, Subscriber {
         this.questManager = new QuestManager(this);
         this.minimapManager = new MinimapManager(this);
         this.tutorialManager = new TutorialManager(this);
-        this.eventHandler = new EventHandler(this, this.effectManager);
+    }
+
+    private void initEventHandlers() {
+        this.eventHandlers.add(new LancerEventHandler(this));
+        this.eventHandlers.add(new RoricEventHandler(this));
     }
 
     private void initPlayer() {
@@ -193,35 +201,6 @@ public class GameState extends AbstractState implements State, Subscriber {
         questManager.reset();
     }
 
-    // Level Borders
-    /**
-     * @deprecated Replaced by {@link #updateCamera()} which uses linear interpolation for smooth movement.
-     * This border-based method can cause jerky camera movement.
-     */
-    @Deprecated
-    private void xBorderUpdate() {
-        int playerXPos = (int)player.getHitBox().x;
-        int dx = playerXPos - xLevelOffset;
-
-        if (dx > RIGHT_BORDER) xLevelOffset += dx - RIGHT_BORDER;
-        else if (dx < LEFT_BORDER) xLevelOffset += dx - LEFT_BORDER;
-        xLevelOffset = Math.max(Math.min(xLevelOffset, xMaxLevelOffset), 0);
-    }
-
-    /**
-     * @deprecated Replaced by {@link #updateCamera()} which uses linear interpolation for smooth movement.
-     * This border-based method can cause jerky camera movement.
-     */
-    @Deprecated
-    private void yBorderUpdate() {
-        int playerYPos = (int)player.getHitBox().y;
-        int dy = playerYPos - yLevelOffset;
-
-        if (dy < TOP_BORDER) yLevelOffset += dy - TOP_BORDER;
-        else if (dy > BOTTOM_BORDER) yLevelOffset += dy - BOTTOM_BORDER;
-        yLevelOffset = Math.max(Math.min(yLevelOffset, yMaxLevelOffset), 0);
-    }
-
     /**
      * Updates the camera position based on the player's position.
      * The camera smoothly follows the player using linear interpolation (LARP).
@@ -251,6 +230,10 @@ public class GameState extends AbstractState implements State, Subscriber {
         this.screenShakeIntensity = intensity;
     }
 
+    private void updateEventHandlers() {
+        eventHandlers.forEach(EventHandler::continuousUpdate);
+    }
+
     // Core
     @Override
     public void update() {
@@ -269,7 +252,7 @@ public class GameState extends AbstractState implements State, Subscriber {
         }
         else handleGameState();
 
-        eventHandler.continuousUpdate();
+        updateEventHandlers();
 
         if (state == PlayingState.DIALOGUE)
             overlayManager.update(PlayingState.DIALOGUE);
@@ -434,12 +417,6 @@ public class GameState extends AbstractState implements State, Subscriber {
         player.resetDirections();
     }
 
-    // Observer
-    @Override
-    public <T> void update(T... o) {
-        eventHandler.handleEvent(o);
-    }
-
     // Getters & Setters
     public PlayingState getActiveState() {
         if (state == PlayingState.DYING) return null;
@@ -522,5 +499,9 @@ public class GameState extends AbstractState implements State, Subscriber {
 
     public void setDarkPhase(boolean darkPhase) {
         isDarkPhase = darkPhase;
+    }
+
+    public List<EventHandler> getEventHandlers() {
+        return eventHandlers;
     }
 }

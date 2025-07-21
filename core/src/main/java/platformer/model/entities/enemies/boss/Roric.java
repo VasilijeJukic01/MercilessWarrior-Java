@@ -354,6 +354,10 @@ public class Roric extends Enemy implements Publisher {
         return attackHandler;
     }
 
+    public RoricPhaseManager getPhaseManager() {
+        return phaseManager;
+    }
+
     public void setState(RoricState state) {
         this.state = state;
     }
