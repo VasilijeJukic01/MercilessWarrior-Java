@@ -41,7 +41,7 @@ public class RoricAngledArrow extends Projectile {
 
         AffineTransform at = new AffineTransform();
         at.translate(xPos, yPos);
-        at.rotate(angle, ARROW_WID / 2.0, ARROW_HEI / 2.0);
+        at.rotate(angle, ARROW_WID / (1.0 * SCALE), ARROW_HEI / (1.0 * SCALE));
 
         Shape rotatedShape = at.createTransformedShape(initialPolygon);
         PathIterator pi = rotatedShape.getPathIterator(null);
@@ -79,24 +79,23 @@ public class RoricAngledArrow extends Projectile {
 
     @Override
     public void updatePosition(Player player) {
-//        int dx = (int)(Math.cos(angle) * ANGLED_ARROW_SPEED);
-//        int dy = (int)(Math.sin(angle) * ANGLED_ARROW_SPEED);
-//        polygonHitbox.translate(dx, dy);
+
     }
 
     @Override
     public void render(Graphics g, int xLevelOffset, int yLevelOffset, Object animations) {
         if (!(animations instanceof BufferedImage)) return;
         Graphics2D g2d = (Graphics2D) g.create();
+        try {
+            int drawX = polygonHitbox.xpoints[0] - xLevelOffset;
+            int drawY = polygonHitbox.ypoints[0] - yLevelOffset;
+            g2d.translate(drawX, drawY);
+            g2d.rotate(angle);
+            g2d.drawImage((BufferedImage) animations, 0, -ARROW_HEI / (int)(1.0 * SCALE), ARROW_WID, ARROW_HEI, null);
 
-        int drawX = polygonHitbox.xpoints[0] - xLevelOffset;
-        int drawY = polygonHitbox.ypoints[0] - yLevelOffset;
-        AffineTransform at = new AffineTransform();
-        at.translate(drawX, drawY);
-        at.rotate(angle);
-        g2d.setTransform(at);
-        g2d.drawImage((BufferedImage) animations, 0, -ARROW_HEI / 2, ARROW_WID, ARROW_HEI, null);
-        g2d.dispose();
+        } finally {
+            g2d.dispose();
+        }
         renderHitBox(g, xLevelOffset, yLevelOffset, Color.CYAN);
     }
 

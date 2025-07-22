@@ -6,7 +6,6 @@ import platformer.model.entities.enemies.boss.Roric;
 import platformer.model.entities.enemies.boss.roric.RoricState;
 
 import java.awt.*;
-import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 
 import static platformer.constants.Constants.*;
@@ -49,23 +48,21 @@ public class RoricRenderer implements EnemyRenderer<Roric> {
 
         int auraAnimIndex = (int) ((System.currentTimeMillis() / 100) % auraAnimations.length);
         BufferedImage auraFrame = auraAnimations[auraAnimIndex];
-        int originalWidth = auraFrame.getWidth();
-        int originalHeight = auraFrame.getHeight();
-        int scaledWidth = (int) (originalWidth * scale);
-        int scaledHeight = (int) (originalHeight * scale);
-        int auraX = (int) (roric.getHitBox().getCenterX() - xLevelOffset - (scaledWidth / 2.0));
-        int auraY = (int) (roric.getHitBox().getCenterY() - yLevelOffset - (scaledHeight / 2.0));
+        int scaledWidth = (int) (auraFrame.getWidth() * scale);
+        int scaledHeight = (int) (auraFrame.getHeight() * scale);
+        int centerX = (int) (roric.getHitBox().getCenterX() - xLevelOffset);
+        int centerY = (int) (roric.getHitBox().getCenterY() - yLevelOffset);
 
         Graphics2D g2d = (Graphics2D) g.create();
-        g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha));
+        try {
+            g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha));
+            g2d.translate(centerX, centerY);
+            g2d.rotate(auraRotationAngle);
+            g2d.drawImage(auraFrame, -scaledWidth / 2, -scaledHeight / 2, scaledWidth, scaledHeight, null);
 
-        // Rotation
-        AffineTransform transform = new AffineTransform();
-        transform.rotate(auraRotationAngle, roric.getHitBox().getCenterX() - xLevelOffset, roric.getHitBox().getCenterY() - yLevelOffset);
-        g2d.setTransform(transform);
-        g2d.drawImage(auraFrame, auraX, auraY, scaledWidth, scaledHeight, null);
-        g2d.dispose();
-
+        } finally {
+            g2d.dispose();
+        }
         auraRotationAngle += AURA_ROTATION_SPEED;
         if (auraRotationAngle > Math.PI * 2) auraRotationAngle -= Math.PI * 2;
     }

@@ -20,7 +20,7 @@ public class LightningBall extends Projectile {
 
     private void initHitBox(int xPos, int yPos) {
         int xOffset = (direction == Direction.RIGHT) ? -LB_OFFSET_X : LB_OFFSET_X;
-        super.hitBox = new Rectangle2D.Double(xPos+xOffset, yPos+LB_OFFSET_Y, LB_WID/3.5, LB_HEI/3.5);
+        super.hitBox = new Rectangle2D.Double(xPos+xOffset, yPos+LB_OFFSET_Y, LB_WID/ (1.75 * SCALE), LB_HEI/ (1.75 * SCALE));
         setWaveMovement();
     }
 

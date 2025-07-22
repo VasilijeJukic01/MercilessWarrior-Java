@@ -12,7 +12,7 @@ public class CelestialOrb extends Projectile {
     private final double angle;
     private static final double SPEED = 1.7 * SCALE;
     private double rotationAngle = 0;
-    private static final double ROTATION_SPEED = 0.05;
+    private static final double ROTATION_SPEED = 0.025 * SCALE;
 
     public CelestialOrb(int xPos, int yPos, double angle) {
         super(PRType.CELESTIAL_ORB, null);
@@ -22,7 +22,7 @@ public class CelestialOrb extends Projectile {
     }
 
     private void initHitBox(int xPos, int yPos) {
-        super.hitBox = new Rectangle2D.Double(xPos, yPos, CELESTIAL_ORB_WID / 3.0, CELESTIAL_ORB_HEI / 3.0);
+        super.hitBox = new Rectangle2D.Double(xPos, yPos, CELESTIAL_ORB_WID /(1.5 * SCALE), CELESTIAL_ORB_HEI / (1.5 * SCALE));
     }
 
     @Override
@@ -38,15 +38,19 @@ public class CelestialOrb extends Projectile {
         if (!(animations instanceof BufferedImage[])) return;
         BufferedImage[] animArray = (BufferedImage[]) animations;
 
-        int x = (int) (hitBox.getCenterX() - xLevelOffset - (CELESTIAL_ORB_WID / 2.0));
-        int y = (int) (hitBox.getCenterY() - yLevelOffset - (CELESTIAL_ORB_HEI / 2.0));
+        int centerX = (int) (hitBox.getCenterX() - xLevelOffset);
+        int centerY = (int) (hitBox.getCenterY() - yLevelOffset);
+        int renderWidth = CELESTIAL_ORB_WID;
+        int renderHeight = CELESTIAL_ORB_HEI;
 
         Graphics2D g2d = (Graphics2D) g.create();
-        AffineTransform transform = new AffineTransform();
-        transform.rotate(rotationAngle, x + CELESTIAL_ORB_WID / 2.0, y + CELESTIAL_ORB_HEI / 2.0);
-        g2d.setTransform(transform);
-        g2d.drawImage(animArray[animIndex], x, y, CELESTIAL_ORB_WID, CELESTIAL_ORB_HEI, null);
-        g2d.dispose();
+        try {
+            g2d.translate(centerX, centerY);
+            g2d.rotate(rotationAngle);
+            g2d.drawImage(animArray[animIndex], -renderWidth / 2, -renderHeight / 2, renderWidth, renderHeight, null);
+        } finally {
+            g2d.dispose();
+        }
 
         renderHitBox(g, xLevelOffset, yLevelOffset, Color.red);
     }

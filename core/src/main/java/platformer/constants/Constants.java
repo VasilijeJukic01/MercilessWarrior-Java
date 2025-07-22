@@ -349,7 +349,7 @@ public final class Constants {
     public static final int LB_OFFSET_Y = scale(15);
 
     public static final int LB_PERIOD = scale(50);
-    public static final int LB_T = scale(1);
+    public static final double LB_T = dScale(1);
     public static final int LB_D = scale(25);
 
     public static final int FB_WID = scale(50);
