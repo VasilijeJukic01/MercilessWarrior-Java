@@ -16,4 +16,9 @@ public interface EventHandler {
      * Called continuously every frame to handle time-based or ongoing events.
      */
     void continuousUpdate();
+
+    /**
+     * Resets the handler's internal state to its default values.
+     */
+    void reset();
 }

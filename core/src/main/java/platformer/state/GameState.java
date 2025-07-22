@@ -410,6 +410,7 @@ public class GameState extends AbstractState implements State {
         effectManager.reset();
         lightManager.reset();
         rainManager.reset();
+        eventHandlers.forEach(EventHandler::reset);
         if (!isRespawning) minimapManager.reset();
         isRespawning = false;
     }

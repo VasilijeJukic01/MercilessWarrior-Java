@@ -218,4 +218,15 @@ public class RoricEventHandler implements EventHandler, Subscriber {
     private void handleCloneSpawn(Point location) {
         effectManager.spawnDustParticles(location.getX(), location.getY(), 50, DustType.RORIC_SUMMON, 0, null);
     }
+
+    @Override
+    public void reset() {
+        isPhaseThreeActive = false;
+        isFinaleActive = false;
+        phaseThreeShotIndex = 0;
+        finaleFlashIndex = 0;
+        fightStartTime = 0;
+        celestialAuraActive = false;
+        roricInstance = null;
+    }
 }

@@ -105,4 +105,9 @@ public class LancerEventHandler implements EventHandler, Subscriber {
     public void continuousUpdate() {
 
     }
+
+    @Override
+    public void reset() {
+
+    }
 }
