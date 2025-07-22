@@ -38,6 +38,7 @@ public class LightManager {
 
     private int flashDuration = 0;
     private float flashIntensity = 0.0f;
+    private Color filterColor = null;
 
     public LightManager(GameState gameState) {
         this.gameState = gameState;
@@ -96,6 +97,7 @@ public class LightManager {
             if (alpha > ambientAlpha) {
                 alpha = ambientAlpha;
             }
+            if (filterColor != null) filterColor = null;
         }
     }
 
@@ -145,6 +147,11 @@ public class LightManager {
             g2d.setColor(new Color(0, 0, 0, alpha));
             g2d.fill(darkLayer);
             glowObjects(g2d, xLevelOffset, yLevelOffset);
+
+            if (filterColor != null) {
+                g2d.setColor(filterColor);
+                g2d.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+            }
 
             if (flashIntensity > 0) {
                 g2d.setColor(new Color(1.0f, 1.0f, 1.0f, flashIntensity));
@@ -275,8 +282,22 @@ public class LightManager {
     }
 
     // Setters
+    /**
+     * Activates a full-screen color filter and sets the ambient darkness to zero.
+     * The effect will automatically fade back to normal over a short duration as handled by the updateFading() method.
+     *
+     * @param color The color of the filter to apply (alpha component is used for intensity).
+     */
+    public void setAlphaWithFilter(int alpha, Color color) {
+        this.alpha = alpha;
+        this.filterColor = color;
+        this.animTick = 0;
+    }
+
     public void setAlpha(int alpha) {
         this.alpha = alpha;
+        this.filterColor = null;
+        this.animTick = 0;
     }
 
 }

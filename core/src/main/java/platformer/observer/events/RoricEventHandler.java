@@ -11,8 +11,6 @@ import platformer.state.GameState;
 import java.awt.*;
 import java.util.Random;
 
-import static platformer.constants.Constants.SCALE;
-
 /**
  * Handles all event logic for the {@link Roric} boss fight, including phase transitions and time-based attacks.
  * <p>
@@ -44,6 +42,11 @@ public class RoricEventHandler implements EventHandler, Subscriber {
     private final long[] phaseThreeTimings = { 94500, 95300, 96100, 97800, 99400, 101100, 101800, 102600 };
     private int phaseThreeShotIndex = 0;
     private long fightStartTime = 0;
+
+    // Finale Phase
+    private boolean isFinaleActive = false;
+    private final long[] finaleFlashTimings = { 132600, 134200, 135800, 137400, 139100, 140700, 142400, 144100, 145700, 147400, 149100, 150800, 152400, 154000, 155600, 157200, 159000 };
+    private int finaleFlashIndex = 0;
 
     public RoricEventHandler(GameState gameState, EffectManager effectManager) {
         this.gameState = gameState;
@@ -134,6 +137,14 @@ public class RoricEventHandler implements EventHandler, Subscriber {
         if (celestialAuraActive && roricInstance != null) {
             effectManager.spawnDustParticles(roricInstance.getHitBox().getCenterX(), roricInstance.getHitBox().getCenterY(), 3, DustType.CELESTIAL_AURA, 0, roricInstance);
         }
+        if (isFinaleActive) {
+            long elapsedTime = System.currentTimeMillis() - fightStartTime;
+            if (finaleFlashIndex < finaleFlashTimings.length && elapsedTime >= finaleFlashTimings[finaleFlashIndex]) {
+                gameState.getLightManager().setAlphaWithFilter(0, new Color(100, 255, 120, 100));
+                gameState.triggerScreenShake(30, 20.0);
+                finaleFlashIndex++;
+            }
+        }
     }
 
     /**
@@ -147,11 +158,13 @@ public class RoricEventHandler implements EventHandler, Subscriber {
             handleCelestialRainEnd(gameState.getEnemyManager().getRoricInstance());
         }
         isPhaseThreeActive = (newPhase == RoricPhaseManager.RoricPhase.BRIDGE);
+        isFinaleActive = (newPhase == RoricPhaseManager.RoricPhase.FINALE);
         if (isPhaseThreeActive) {
             gameState.setDarkPhase(true);
             gameState.getLightManager().setAmbientDarkness(240);
             phaseThreeShotIndex = 0;
         }
+        else if (isFinaleActive) finaleFlashIndex = 0;
         else {
             gameState.setDarkPhase(false);
             gameState.getLightManager().setAmbientDarkness(130);

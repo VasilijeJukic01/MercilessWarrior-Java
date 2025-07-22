@@ -34,6 +34,9 @@ public class RoricAttackHandler {
     private double repositionTargetX = 0;
     private static final double REPOSITION_SPEED = 3.5 * SCALE;
     private static final double REPOSITION_DISTANCE = 6.5 * TILES_SIZE;
+    private static final double MIN_DISTANCE_AFTER_TELEPORT = 3 * TILES_SIZE;
+    private static final int ARENA_EDGE_BUFFER_TILES = 3;
+    private static final int ARENA_CENTER_BUFFER_TILES = 2;
 
     // Skyfall Barrage State
     private int skyfallBeamCount = 0;
@@ -360,18 +363,20 @@ public class RoricAttackHandler {
     private void handlePhantomBarrage(EnemyManager enemyManager, int[][] levelData) {
         if (roric.getAnimIndex() == 0 && !roric.isAttackCheck()) {
             roric.setAttackCheck(true);
-
             Player player = roric.getCurrentPlayerTarget();
+            if (player == null) return;
+
             double playerX = player.getHitBox().getCenterX();
-            double roricX = roric.getHitBox().getCenterX();
-            int spawnX = (playerX < roricX) ? (int)(roricX + 5 * TILES_SIZE) : (int)(roricX - 5 * TILES_SIZE);
+            boolean roricGoesRight = playerX < (levelData.length * TILES_SIZE) / 2.0;
+            double leftSideX = 3.0 * TILES_SIZE;
+            double rightSideX = (levelData.length - 3.0) * TILES_SIZE;
+            int spawnX = roricGoesRight ? (int)leftSideX : (int)rightSideX;
             int spawnY = (int)roric.getHitBox().y - (int)(TILES_SIZE/2.2);
-            int maxPixelX = levelData.length * TILES_SIZE - RORIC_WIDTH;
-            spawnX = Math.max(0, Math.min(spawnX, maxPixelX));
+            teleportToSide();
+            targetPlayer(player);
 
             roric.notify("RORIC_CLONE_SPAWN", new Point(spawnX, (int)roric.getHitBox().getCenterY()));
 
-            enemyManager.spawnRoricClone(spawnX, spawnY);
             roric.setState(RoricState.JUMPING);
             roric.jump(levelData);
             enemyManager.spawnRoricClone(spawnX, spawnY);
@@ -582,25 +587,51 @@ public class RoricAttackHandler {
     }
 
     /**
-     * Teleports Roric to either the far left or far right of the arena.
-     * This is specifically for the dynamic repositioning in Phase 3.
+     * Teleports Roric to a strategic, semi-random location on either the left or right side of the arena.
+     * <p>
+     * This method implements tactical repositioning. It first randomly selects a target side (left or right).
+     * It then calculates a potential teleport location within that side's safe zone.
+     * To prevent Roric from teleporting directly onto the player, it checks if this location is too close. If it is,
+     * Roric will forcefully teleport to the *other* side of the arena instead. This ensures the player
+     * always has a minimum amount of space to react, making the attack feel fair but unpredictable.
      */
     public void teleportToSide() {
         int[][] levelData = roric.getLevelDataForAI();
         Player player = roric.getCurrentPlayerTarget();
         if (levelData == null || player == null) return;
 
-        double leftSideX = 3.0 * TILES_SIZE;
-        double rightSideX = (levelData.length - 5.0) * TILES_SIZE;
+        int levelWidthInTiles = levelData[0].length;
+        int centerTile = levelWidthInTiles / 2;
+        int leftZoneStart = ARENA_EDGE_BUFFER_TILES;
+        int leftZoneEnd = centerTile - ARENA_CENTER_BUFFER_TILES;
+        int rightZoneStart = centerTile + ARENA_CENTER_BUFFER_TILES;
+        int rightZoneEnd = levelWidthInTiles - ARENA_EDGE_BUFFER_TILES;
 
-        if (player.getHitBox().getCenterX() < (levelData.length * TILES_SIZE) / 2.0) {
-            performTeleport(rightSideX, roric.getHitBox().y);
-            roric.setDirection(Direction.LEFT);
-        }
-        else {
-            performTeleport(leftSideX, roric.getHitBox().y);
-            roric.setDirection(Direction.RIGHT);
-        }
+        boolean tryRightSideFirst = random.nextBoolean();
+        double potentialTargetX = tryRightSideFirst ? calcRandomXInZone(rightZoneStart, rightZoneEnd) : calcRandomXInZone(leftZoneStart, leftZoneEnd);
+
+        boolean finalGoToRight = tryRightSideFirst;
+        double distance = Math.abs(player.getHitBox().getCenterX() - potentialTargetX);
+        if (distance < MIN_DISTANCE_AFTER_TELEPORT) finalGoToRight = !tryRightSideFirst;
+
+        double finalTargetX = finalGoToRight ? calcRandomXInZone(rightZoneStart, rightZoneEnd) : calcRandomXInZone(leftZoneStart, leftZoneEnd);
+
+        performTeleport(finalTargetX, roric.getHitBox().y);
+        targetPlayer(player);
+    }
+
+    /**
+     * Calculates a random horizontal pixel coordinate within a specified tile-based zone.
+     *
+     * @param startTile The starting tile index of the zone (inclusive).
+     * @param endTile   The ending tile index of the zone (inclusive).
+     * @return A random double value representing the x-coordinate in pixels.
+     */
+    private double calcRandomXInZone(int startTile, int endTile) {
+        int range = endTile - startTile;
+        if (range <= 0) return startTile * TILES_SIZE;
+        int randomTile = startTile + random.nextInt(range);
+        return randomTile * TILES_SIZE;
     }
 
     private void performTeleport(double newX, double newY) {
