@@ -39,8 +39,7 @@ public class ParticleFactory {
         behaviorCache.put(DustType.RORIC_TELEPORT_IN, new RoricTeleportInBehavior());
         behaviorCache.put(DustType.RORIC_BEAM_CHARGE, new BeamChargeBehavior());
         behaviorCache.put(DustType.CELESTIAL_AURA, new CelestialAuraBehavior());
-        behaviorCache.put(DustType.SUMMON_RUPTURE, new SummonRuptureBehavior());
-        behaviorCache.put(DustType.SUMMON_VORTEX, new SummonVortexBehavior());
+        behaviorCache.put(DustType.RORIC_SUMMON, new RoricSummonBehavior());
     }
 
     /**

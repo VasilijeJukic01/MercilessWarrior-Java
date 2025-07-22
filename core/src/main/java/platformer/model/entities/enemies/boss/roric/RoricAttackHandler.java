@@ -360,9 +360,21 @@ public class RoricAttackHandler {
     private void handlePhantomBarrage(EnemyManager enemyManager, int[][] levelData) {
         if (roric.getAnimIndex() == 0 && !roric.isAttackCheck()) {
             roric.setAttackCheck(true);
+
+            Player player = roric.getCurrentPlayerTarget();
+            double playerX = player.getHitBox().getCenterX();
+            double roricX = roric.getHitBox().getCenterX();
+            int spawnX = (playerX < roricX) ? (int)(roricX + 5 * TILES_SIZE) : (int)(roricX - 5 * TILES_SIZE);
+            int spawnY = (int)roric.getHitBox().y - (int)(TILES_SIZE/2.2);
+            int maxPixelX = levelData.length * TILES_SIZE - RORIC_WIDTH;
+            spawnX = Math.max(0, Math.min(spawnX, maxPixelX));
+
+            roric.notify("RORIC_CLONE_SPAWN", new Point(spawnX, (int)roric.getHitBox().getCenterY()));
+
+            enemyManager.spawnRoricClone(spawnX, spawnY);
             roric.setState(RoricState.JUMPING);
             roric.jump(levelData);
-            enemyManager.spawnRoricClone(roric, levelData);
+            enemyManager.spawnRoricClone(spawnX, spawnY);
             roric.setAttackCooldown(15 * phaseManager.getCooldownModifier());
         }
     }

@@ -112,6 +112,7 @@ public class RoricEventHandler implements EventHandler, Subscriber {
                 if (o[1] instanceof Roric r) handleCelestialRainEnd(r);
                 break;
             case "RORIC_CLONE_SPAWN":
+            case "RORIC_CLONE_DESPAWN":
                 if (o[1] instanceof Point loc) handleCloneSpawn(loc);
                 break;
         }
@@ -201,7 +202,6 @@ public class RoricEventHandler implements EventHandler, Subscriber {
     }
 
     private void handleCloneSpawn(Point location) {
-        effectManager.spawnDustParticles(location.getX(), location.getY(), 30, DustType.SUMMON_RUPTURE, 0, null);
-        effectManager.spawnDustParticles(location.getX(), location.getY() - 30 * SCALE, 50, DustType.SUMMON_VORTEX, 0, null);
+        effectManager.spawnDustParticles(location.getX(), location.getY(), 50, DustType.RORIC_SUMMON, 0, null);
     }
 }

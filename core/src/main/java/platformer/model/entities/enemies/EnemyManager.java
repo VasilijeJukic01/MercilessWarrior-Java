@@ -414,20 +414,15 @@ public class EnemyManager implements Publisher {
     /**
      * Method to spawn the clone, called by the real Roric
      *
-     * @param roric The Roric instance that is being cloned.
-     * @param levelData The 2D array representing the current level's layout.
+     * @param spawnX The x-coordinate where the clone should spawn.
+     * @param spawnY The y-coordinate where the clone should spawn.
      */
-    public void spawnRoricClone(Roric roric, int[][] levelData) {
+    public void spawnRoricClone(int spawnX, int spawnY) {
         Player player = gameState.getPlayer();
-        double playerX = player.getHitBox().getCenterX();
-        double roricX = roric.getHitBox().getCenterX();
-        int spawnX = (playerX < roricX) ? (int)(roricX + 5 * TILES_SIZE) : (int)(roricX - 5 * TILES_SIZE);
-        int spawnY = (int)roric.getHitBox().y - (int)(TILES_SIZE/2.2);
-        int maxPixelX = levelData.length * TILES_SIZE - RORIC_WIDTH;
-        spawnX = Math.max(0, Math.min(spawnX, maxPixelX));
-
         RoricClone clone = new RoricClone(spawnX, spawnY);
         clone.aimAtPlayer(player);
+        Subscriber handler = findHandler(RoricEventHandler.class);
+        if (handler != null) clone.addSubscriber(handler);
         roricClones.add(clone);
     }
 

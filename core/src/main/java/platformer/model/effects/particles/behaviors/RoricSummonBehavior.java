@@ -4,32 +4,32 @@ import platformer.model.effects.particles.DustParticle;
 import platformer.model.effects.particles.ParticleBehavior;
 
 import java.awt.*;
-import java.awt.geom.Rectangle2D;
 import java.util.Random;
 
 import static platformer.constants.Constants.SCALE;
 
-public class SummonRuptureBehavior implements ParticleBehavior {
+public class RoricSummonBehavior implements ParticleBehavior {
 
     @Override
     public void init(DustParticle p, Random rand) {
-        double width = (rand.nextInt(3) + 2) * SCALE;
-        double height = (rand.nextInt(10) + 15) * SCALE;
-        p.setParticleShape(new Rectangle2D.Double(0, 0, width, height));
+        double size = (rand.nextInt(10) + 5) * SCALE;
+        p.getParticleShape().width = size;
+        p.getParticleShape().height = size;
 
-        p.setParticleColor(new Color(120, 255, 150, 200));
-        p.setCurrentAlpha(1.0f);
-        p.setAlphaFadeSpeed(0.04f);
-        p.setXSpeed((rand.nextDouble() - 0.5) * 1.5 * SCALE);
-        p.setYSpeed(-(rand.nextDouble() * 2.0 + 2.5) * SCALE);
-        p.setGravity(0.1 * SCALE);
+        p.setParticleColor(new Color(150, 255, 170, 200));
+        p.setCurrentAlpha(0.9f);
+        p.setAlphaFadeSpeed(0.025f);
+        double angle = rand.nextDouble() * 2 * Math.PI;
+        double speed = (rand.nextDouble() * 2.0 + 1.5) * SCALE;
+        p.setXSpeed(Math.cos(angle) * speed);
+        p.setYSpeed(Math.sin(angle) * speed);
+        p.setGravity(0);
     }
 
     @Override
     public void update(DustParticle p) {
         p.getParticleShape().x += p.getXSpeed();
         p.getParticleShape().y += p.getYSpeed();
-        p.setYSpeed(p.getYSpeed() + p.getGravity());
     }
 
     @Override
