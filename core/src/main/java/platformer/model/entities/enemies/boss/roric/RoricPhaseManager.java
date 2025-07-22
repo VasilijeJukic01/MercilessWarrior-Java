@@ -3,10 +3,10 @@ package platformer.model.entities.enemies.boss.roric;
 import platformer.debug.DebugSettings;
 import platformer.model.entities.enemies.boss.Roric;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Manages the multi-phase structure of the Roric boss fight.
@@ -27,23 +27,11 @@ public class RoricPhaseManager {
     private static final long PHASE_4_START_TIME = 106 * 1000;
     private static final long PHASE_5_START_TIME = 132 * 1000;
 
-    private final List<RoricState> phaseOneAttacks = Arrays.asList(
-            RoricState.ARROW_ATTACK,
-            RoricState.JUMPING,
-            RoricState.BEAM_ATTACK,
-            RoricState.ARROW_RAIN,
-            RoricState.ARROW_STRIKE
-    );
-    private final List<RoricState> phaseTwoAttacks = new ArrayList<>(phaseOneAttacks);
-    private final List<RoricState> phaseThreeAttacks = List.of(RoricState.ARROW_ATTACK);
-    private final List<RoricState> phaseFourAttacks = List.of(RoricState.CELESTIAL_RAIN);
-    private final List<RoricState> phaseFiveAttacks = Arrays.asList(
-            RoricState.ARROW_ATTACK,
-            RoricState.PHANTOM_BARRAGE,
-            RoricState.BEAM_ATTACK,
-            RoricState.ARROW_RAIN,
-            RoricState.ARROW_STRIKE
-    );
+    private RoricShuffleBag phaseOneBag;
+    private RoricShuffleBag phaseTwoBag;
+    private RoricShuffleBag phaseThreeBag;
+    private RoricShuffleBag phaseFourBag;
+    private RoricShuffleBag phaseFiveBag;
 
     private long fightStartTime = 0;
     private long lastSkybeamSpawnTime = 0;
@@ -53,7 +41,21 @@ public class RoricPhaseManager {
 
     public RoricPhaseManager(Roric roric) {
         this.roric = roric;
-        phaseTwoAttacks.add(RoricState.SKYFALL_BARRAGE);
+       initShuffleBag();
+    }
+
+    private void initShuffleBag() {
+        List<RoricState> baseAttacks = List.of(
+                RoricState.BEAM_ATTACK,
+                RoricState.ARROW_RAIN,
+                RoricState.ARROW_STRIKE,
+                RoricState.ARROW_ATTACK
+        );
+        this.phaseOneBag = new RoricShuffleBag(buildAttacks(baseAttacks, RoricState.JUMPING,RoricState.ARROW_ATTACK));
+        this.phaseTwoBag = new RoricShuffleBag(buildAttacks(phaseOneBag.getMasterList(), RoricState.SKYFALL_BARRAGE, RoricState.SKYFALL_BARRAGE));
+        this.phaseThreeBag = new RoricShuffleBag(List.of(RoricState.ARROW_ATTACK));
+        this.phaseFourBag = new RoricShuffleBag(List.of(RoricState.CELESTIAL_RAIN));
+        this.phaseFiveBag = new RoricShuffleBag(buildAttacks(baseAttacks, RoricState.PHANTOM_BARRAGE, RoricState.PHANTOM_BARRAGE));
     }
 
     /**
@@ -105,19 +107,18 @@ public class RoricPhaseManager {
     }
 
     /**
-     * Selects a random, valid attack for Roric to perform based on the current phase.
+     * Draws a random, fair attack for Roric to perform based on the current phase's Shuffle Bag.
      *
      * @return A {@link RoricState} representing the chosen attack.
      */
     public RoricState chooseNextAttack() {
-        List<RoricState> availableAttacks = switch (currentPhase) {
-            case INTRO -> phaseOneAttacks;
-            case ASSAULT -> phaseTwoAttacks;
-            case BRIDGE -> phaseThreeAttacks;
-            case STORM -> phaseFourAttacks;
-            case FINALE -> phaseFiveAttacks;
+        return switch (currentPhase) {
+            case INTRO -> phaseOneBag.draw();
+            case ASSAULT -> phaseTwoBag.draw();
+            case BRIDGE -> phaseThreeBag.draw();
+            case STORM -> phaseFourBag.draw();
+            case FINALE -> phaseFiveBag.draw();
         };
-        return availableAttacks.get(random.nextInt(availableAttacks.size()));
     }
 
     /**
@@ -131,6 +132,17 @@ public class RoricPhaseManager {
         }
         else if (currentPhase == RoricPhase.FINALE) return true;
         return false;
+    }
+
+    /**
+     * A helper method to build an attack list by combining a base list with additional attacks.
+     *
+     * @param base The base list of RoricState attacks.
+     * @param additions A varargs array of additional RoricState attacks to add.
+     * @return A new, combined list of attacks.
+     */
+    private static List<RoricState> buildAttacks(List<RoricState> base, RoricState... additions) {
+        return Stream.concat(base.stream(), Stream.of(additions)).collect(Collectors.toList());
     }
 
     /**
