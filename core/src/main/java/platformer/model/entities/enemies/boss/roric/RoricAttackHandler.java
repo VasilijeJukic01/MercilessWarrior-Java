@@ -677,6 +677,7 @@ public class RoricAttackHandler {
         isFloating = false;
         isSpawningVolley = false;
         isRepositioning = false;
+        roric.setAttackCheck(false);
         skyfallBeamCount = 0;
         celestialRainTimer = 0;
 
