@@ -99,7 +99,8 @@ public final class FilePaths {
     // UI
     public static final String MENU_SPRITES = "/images/menu/background/Background$.png";
     public static final String MENU_LOGO = "/images/menu/menuLogo.png";
-    public static final String BOSS_BAR = "/images/enemies/boss/LancerBar.png";
+    public static final String LANCER_BOSS_BAR = "/images/enemies/boss/LancerBar.png";
+    public static final String RORIC_BOSS_BAR = "/images/enemies/boss/RoricBar.png";
     public static final String PLAYER_HUD = "/images/playerHUD.png";
     public static final String PLAYER_PORTRAIT = "/images/portraitHUD.png";
     public static final String PAUSE_TXT = "/images/buttons/PauseText.png";

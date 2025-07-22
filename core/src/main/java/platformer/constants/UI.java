@@ -180,10 +180,10 @@ public final class UI {
     public static final int COOLDOWN_SLOT_X = scale(707);
     public static final int COOLDOWN_SLOT_SPACING = scale(30);
 
-    public static final int BOSS_BAR_WID = scale(500);
-    public static final int BOSS_BAR_HEI = scale(50);
-    public static final int BOSS_BAR_X = scale(180);
-    public static final int BOSS_BAR_Y = scale(80);
+    public static final int BOSS_BAR_WID = scale(300);
+    public static final int BOSS_BAR_HEI = scale(30);
+    public static final int BOSS_BAR_X = scale(300);
+    public static final int BOSS_BAR_Y = scale(20);
 
     // Dialogue UI
     public static final int DIALOGUE_BOX_X = scale(270);

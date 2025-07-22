@@ -249,8 +249,8 @@ public class Roric extends Enemy implements Publisher {
 
     private void updateBossInterface(BossInterface bossInterface) {
         if (bossInterface != null) {
-            if (!bossInterface.isActive() && start) bossInterface.setActive(true);
-            else if (bossInterface.isActive() && !start) bossInterface.setActive(false);
+            if (!bossInterface.isActive() && start) bossInterface.injectBoss(this);
+            else if (bossInterface.isActive() && !start) bossInterface.reset();
         }
     }
 

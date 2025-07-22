@@ -322,8 +322,8 @@ public class Lancer extends Enemy implements Publisher {
         updateMove(levelData, player, spellManager, objectManager, projectileManager);
         updateAnimation(animations);
         updateAttackBox();
-        if (!bossInterface.isActive() && start) bossInterface.setActive(true);
-        else if (bossInterface.isActive() && !start) bossInterface.setActive(false);
+        if (!bossInterface.isActive() && start) bossInterface.injectBoss(this);
+        else if (bossInterface.isActive() && !start) bossInterface.reset();
     }
 
     public void updateMove(int[][] levelData, Player player, SpellManager spellManager, ObjectManager objectManager, ProjectileManager projectileManager) {
