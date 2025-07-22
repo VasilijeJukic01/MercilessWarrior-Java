@@ -34,6 +34,13 @@ public class ParticleFactory {
         behaviorCache.put(DustType.JUMP_PAD, new JumpPadBehavior());
         behaviorCache.put(DustType.THUNDERBOLT_AURA, new MythicAuraBehavior());
         behaviorCache.put(DustType.HERB_CUT, new HerbCutBehavior());
+        behaviorCache.put(DustType.ETHEREAL_DASH, new EtherealDashBehavior());
+        behaviorCache.put(DustType.RORIC_TELEPORT_OUT, new RoricTeleportOutBehavior());
+        behaviorCache.put(DustType.RORIC_TELEPORT_IN, new RoricTeleportInBehavior());
+        behaviorCache.put(DustType.RORIC_BEAM_CHARGE, new BeamChargeBehavior());
+        behaviorCache.put(DustType.CELESTIAL_AURA, new CelestialAuraBehavior());
+        behaviorCache.put(DustType.SUMMON_RUPTURE, new SummonRuptureBehavior());
+        behaviorCache.put(DustType.SUMMON_VORTEX, new SummonVortexBehavior());
     }
 
     /**

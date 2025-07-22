@@ -36,6 +36,7 @@ public class DustParticle {
     private double pulsePhase;
     private int lineLength;
     private double lineAngle;
+    private Point2D.Double startPoint, controlPoint, endPoint;
 
     public DustParticle(int x, int y, int size, DustType type, ParticleBehavior behavior, Entity target, int playerFlipSign) {
         this.particleShape = new Rectangle2D.Double(x, y, size, size);

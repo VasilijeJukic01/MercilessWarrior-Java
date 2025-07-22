@@ -125,7 +125,7 @@ public class GameState extends AbstractState implements State {
 
     private void initEventHandlers() {
         this.eventHandlers.add(new LancerEventHandler(this));
-        this.eventHandlers.add(new RoricEventHandler(this));
+        this.eventHandlers.add(new RoricEventHandler(this, effectManager));
     }
 
     private void initPlayer() {

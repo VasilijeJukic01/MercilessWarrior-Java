@@ -121,6 +121,16 @@ public class EffectManager {
         itemTextCooldown = ITEM_TEXT_COOLDOWN_MAX;
     }
 
+    /**
+     * Clears all active foreground particles of a specific type associated with a target entity.
+     *
+     * @param target The entity to clear particles for.
+     * @param type The DustType of the particles to clear.
+     */
+    public void clearParticlesByType(Entity target, DustType type) {
+        foregroundParticles.removeIf(p -> p.getTarget() == target && p.getType() == type);
+    }
+
     // Core
     public void update() {
         if (itemTextCooldown > 0) itemTextCooldown--;

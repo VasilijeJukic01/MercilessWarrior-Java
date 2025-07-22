@@ -70,6 +70,7 @@ public class Roric extends Enemy implements Publisher {
     public Roric(int xPos, int yPos) {
         super(xPos, yPos, RORIC_WIDTH, RORIC_HEIGHT, EnemyType.RORIC, 16);
         super.setDirection(Direction.LEFT);
+        super.inAir = true;
         initHitBox();
         initAttackBox();
         this.phaseManager = new RoricPhaseManager(this);
@@ -269,6 +270,7 @@ public class Roric extends Enemy implements Publisher {
         int spaceToRight = levelData.length - currentTileX;
         this.xSpeed = (spaceToRight > currentTileX) ? jumpOffsetX : -jumpOffsetX;
         setDirection(xSpeed > 0 ? Direction.RIGHT : Direction.LEFT);
+        notify("JUMPED", this);
     }
 
     /**

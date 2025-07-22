@@ -7,6 +7,8 @@ import platformer.model.entities.enemies.boss.Roric;
 import platformer.model.entities.player.Player;
 import platformer.model.projectiles.ProjectileManager;
 import platformer.model.spells.SpellManager;
+
+import java.awt.*;
 import java.util.Random;
 import static platformer.constants.Constants.*;
 import static platformer.physics.CollisionDetector.canMoveHere;
@@ -53,6 +55,9 @@ public class RoricAttackHandler {
 
     // Arrow Strike State
     private static final double BLADE_STRIKE_TELEPORT_COOLDOWN = 9;
+
+    // Beam Attack State
+    private boolean beamFiredThisAttack = false;
 
     private final Random random = new Random();
 
@@ -131,6 +136,8 @@ public class RoricAttackHandler {
                 break;
             case BEAM_ATTACK:
                 repositionForRangedAttack(RoricState.BEAM_ATTACK, levelData, player);
+                roric.notify("BEAM_CHARGE_START", roric);
+                beamFiredThisAttack = false;
                 break;
             case ARROW_RAIN:
                 repositionForRangedAttack(RoricState.ARROW_RAIN, levelData, player);
@@ -157,7 +164,6 @@ public class RoricAttackHandler {
             case CELESTIAL_RAIN:
                 startCelestialRain(levelData);
                 break;
-
         }
     }
 
@@ -304,6 +310,9 @@ public class RoricAttackHandler {
      */
     private void handleRepositioning(Player player) {
         boolean finishedReposition = false;
+        if (isRepositioning) {
+            roric.notify("REPOSITIONING", roric);
+        }
         if (roric.getHitBox().x < repositionTargetX) {
             roric.getHitBox().x += REPOSITION_SPEED;
             if (roric.getHitBox().x >= repositionTargetX) finishedReposition = true;
@@ -335,7 +344,11 @@ public class RoricAttackHandler {
      * Activates a beam attack during the SPELL_1 animation.
      */
     private void handleBeamAttack(SpellManager spellManager) {
-        if (roric.getAnimIndex() == 9) spellManager.activateRoricBeam(roric);
+        if (roric.getAnimIndex() == 9 && !beamFiredThisAttack) {
+            spellManager.activateRoricBeam(roric);
+            roric.notify("BEAM_CHARGE_END", roric);
+            beamFiredThisAttack = true;
+        }
     }
 
     /**
@@ -461,6 +474,7 @@ public class RoricAttackHandler {
         celestialRainTimer = 0;
         volleyTimer = 0;
         currentSpawnAngle = 0;
+        roric.notify("CELESTIAL_RAIN_START", roric);
     }
 
     /**
@@ -471,6 +485,7 @@ public class RoricAttackHandler {
         roric.setState(RoricState.IDLE);
         roric.setEnemyAction(Anim.IDLE);
         roric.setAttackCooldown(RORIC_IDLE_COOLDOWN);
+        roric.notify("CELESTIAL_RAIN_END", roric);
     }
 
     /**
@@ -525,7 +540,7 @@ public class RoricAttackHandler {
             roric.setEnemyAction(Anim.IDLE);
             roric.setAttackCooldown(RORIC_IDLE_COOLDOWN * phaseManager.getCooldownModifier());
             if (phaseManager.getCurrentPhase() == RoricPhaseManager.RoricPhase.BRIDGE)
-                teleportToSide();
+                if (random.nextInt(100) < 30) teleportToSide();
         }
     }
 
@@ -577,8 +592,10 @@ public class RoricAttackHandler {
     }
 
     private void performTeleport(double newX, double newY) {
+        roric.notify("RORIC_TELEPORT_OUT", new Point((int) roric.getHitBox().getCenterX(), (int) roric.getHitBox().getCenterY()));
         roric.getHitBox().x = newX;
         roric.getHitBox().y = newY;
+        roric.notify("RORIC_TELEPORT_IN", new Point((int) roric.getHitBox().getCenterX(), (int) roric.getHitBox().getCenterY()));
     }
 
     /**
@@ -587,6 +604,8 @@ public class RoricAttackHandler {
     public boolean onLanding() {
         this.aerialAttackPerformedThisJump = false;
         this.isFloating = false;
+
+        roric.notify("LANDED", roric);
 
         if (queuedActionAfterJump != null) {
             Player player = roric.getCurrentPlayerTarget();
@@ -639,6 +658,8 @@ public class RoricAttackHandler {
         targetPlayer(player);
         roric.setState(RoricState.BEAM_ATTACK);
         roric.setEnemyAction(Anim.SPELL_1);
+        roric.notify("BEAM_CHARGE_START", roric);
+        beamFiredThisAttack = false;
     }
 
     /**

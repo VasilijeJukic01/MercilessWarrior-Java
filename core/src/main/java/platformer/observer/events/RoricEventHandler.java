@@ -1,10 +1,17 @@
 package platformer.observer.events;
 
+import platformer.model.effects.EffectManager;
+import platformer.model.effects.particles.DustType;
 import platformer.model.entities.enemies.boss.Roric;
 import platformer.model.entities.enemies.boss.roric.RoricPhaseManager;
 import platformer.observer.EventHandler;
 import platformer.observer.Subscriber;
 import platformer.state.GameState;
+
+import java.awt.*;
+import java.util.Random;
+
+import static platformer.constants.Constants.SCALE;
 
 /**
  * Handles all event logic for the {@link Roric} boss fight, including phase transitions and time-based attacks.
@@ -26,6 +33,11 @@ import platformer.state.GameState;
 public class RoricEventHandler implements EventHandler, Subscriber {
 
     private final GameState gameState;
+    private final EffectManager effectManager;
+    private Roric roricInstance = null;
+
+    // Rain Phase
+    private boolean celestialAuraActive = false;
 
     // Bridge Phase
     private boolean isPhaseThreeActive = false;
@@ -33,8 +45,9 @@ public class RoricEventHandler implements EventHandler, Subscriber {
     private int phaseThreeShotIndex = 0;
     private long fightStartTime = 0;
 
-    public RoricEventHandler(GameState gameState) {
+    public RoricEventHandler(GameState gameState, EffectManager effectManager) {
         this.gameState = gameState;
+        this.effectManager = effectManager;
     }
 
     /**
@@ -71,6 +84,36 @@ public class RoricEventHandler implements EventHandler, Subscriber {
                     gameState.getProjectileManager().activateRoricArrow(r, speedMultiplier);
                 }
                 break;
+            case "JUMPED":
+                if (o[1] instanceof Roric r) handleJumpEvent(r);
+                break;
+            case "LANDED":
+                if (o[1] instanceof Roric r) handleLandEvent(r);
+                break;
+            case "REPOSITIONING":
+                if (o[1] instanceof Roric r) handleRepositioningEvent(r);
+                break;
+            case "RORIC_TELEPORT_OUT":
+                if (o[1] instanceof Point loc) handleRoricTeleportOut(loc);
+                break;
+            case "RORIC_TELEPORT_IN":
+                if (o[1] instanceof Point loc) handleRoricTeleportIn(loc);
+                break;
+            case "BEAM_CHARGE_START":
+                if (o[1] instanceof Roric r) handleBeamChargeStart(r);
+                break;
+            case "BEAM_CHARGE_END":
+                if (o[1] instanceof Roric r) handleBeamChargeEnd(r);
+                break;
+            case "CELESTIAL_RAIN_START":
+                if (o[1] instanceof Roric r) handleCelestialRainStart(r);
+                break;
+            case "CELESTIAL_RAIN_END":
+                if (o[1] instanceof Roric r) handleCelestialRainEnd(r);
+                break;
+            case "RORIC_CLONE_SPAWN":
+                if (o[1] instanceof Point loc) handleCloneSpawn(loc);
+                break;
         }
     }
 
@@ -87,6 +130,9 @@ public class RoricEventHandler implements EventHandler, Subscriber {
                 phaseThreeShotIndex++;
             }
         }
+        if (celestialAuraActive && roricInstance != null) {
+            effectManager.spawnDustParticles(roricInstance.getHitBox().getCenterX(), roricInstance.getHitBox().getCenterY(), 3, DustType.CELESTIAL_AURA, 0, roricInstance);
+        }
     }
 
     /**
@@ -96,6 +142,9 @@ public class RoricEventHandler implements EventHandler, Subscriber {
      * @param newPhase The new phase of the Roric fight.
      */
     private void handlePhaseChange(RoricPhaseManager.RoricPhase newPhase) {
+        if (celestialAuraActive && newPhase != RoricPhaseManager.RoricPhase.STORM) {
+            handleCelestialRainEnd(gameState.getEnemyManager().getRoricInstance());
+        }
         isPhaseThreeActive = (newPhase == RoricPhaseManager.RoricPhase.BRIDGE);
         if (isPhaseThreeActive) {
             gameState.setDarkPhase(true);
@@ -106,5 +155,53 @@ public class RoricEventHandler implements EventHandler, Subscriber {
             gameState.setDarkPhase(false);
             gameState.getLightManager().setAmbientDarkness(130);
         }
+    }
+
+    private void handleJumpEvent(Roric roric) {
+        effectManager.spawnDustParticles(roric.getHitBox().getCenterX(), roric.getHitBox().getMaxY(), 10, DustType.IMPACT, 0, roric);
+    }
+
+    private void handleLandEvent(Roric roric) {
+        effectManager.spawnDustParticles(roric.getHitBox().getCenterX(), roric.getHitBox().getMaxY(), 15, DustType.IMPACT, 0, roric);
+    }
+
+    private void handleRepositioningEvent(Roric roric) {
+        Random rand = new Random();
+        double spreadFactor = 0.6;
+        double xOffset = (rand.nextDouble() - 0.5) * (roric.getHitBox().getWidth() * spreadFactor);
+        double yOffset = (rand.nextDouble() - 0.5) * (roric.getHitBox().getHeight() * spreadFactor);
+        effectManager.spawnDustParticles(roric.getHitBox().getCenterX() + xOffset, roric.getHitBox().getCenterY() + yOffset, 2, DustType.ETHEREAL_DASH, 0, roric);
+    }
+
+    private void handleRoricTeleportOut(Point location) {
+        effectManager.spawnDustParticles(location.getX(), location.getY(), 50, DustType.RORIC_TELEPORT_OUT, 0, null);
+    }
+
+    private void handleRoricTeleportIn(Point location) {
+        effectManager.spawnDustParticles(location.getX(), location.getY(), 40, DustType.RORIC_TELEPORT_IN, 0, null);
+    }
+
+    private void handleBeamChargeStart(Roric roric) {
+        effectManager.spawnDustParticles(roric.getHitBox().getCenterX(), roric.getHitBox().getCenterY(), 60, DustType.RORIC_BEAM_CHARGE, 0, roric);
+    }
+
+    private void handleBeamChargeEnd(Roric roric) {
+        effectManager.clearParticlesByType(roric, DustType.RORIC_BEAM_CHARGE);
+    }
+
+    private void handleCelestialRainStart(Roric roric) {
+        this.celestialAuraActive = true;
+        this.roricInstance = roric;
+    }
+
+    private void handleCelestialRainEnd(Roric roric) {
+        this.celestialAuraActive = false;
+        effectManager.clearParticlesByType(roric, DustType.CELESTIAL_AURA);
+        this.roricInstance = null;
+    }
+
+    private void handleCloneSpawn(Point location) {
+        effectManager.spawnDustParticles(location.getX(), location.getY(), 30, DustType.SUMMON_RUPTURE, 0, null);
+        effectManager.spawnDustParticles(location.getX(), location.getY() - 30 * SCALE, 50, DustType.SUMMON_VORTEX, 0, null);
     }
 }
