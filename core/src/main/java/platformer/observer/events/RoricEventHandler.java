@@ -68,6 +68,7 @@ public class RoricEventHandler implements EventHandler, Subscriber {
         switch (eventType) {
             case "START_FIGHT":
                 if (o.length > 1 && o[1] instanceof Long) {
+                    gameState.getRainManager().startRaining();
                     this.fightStartTime = (long) o[1];
                 }
                 break;

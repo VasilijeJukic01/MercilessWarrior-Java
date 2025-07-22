@@ -7,6 +7,7 @@ import platformer.core.Game;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
 import platformer.model.effects.EffectManager;
+import platformer.model.effects.RainManager;
 import platformer.model.effects.lighting.LightManager;
 import platformer.model.entities.enemies.EnemyManager;
 import platformer.model.entities.player.Player;
@@ -65,6 +66,7 @@ public class GameState extends AbstractState implements State {
     private MinimapManager minimapManager;
     private TutorialManager tutorialManager;
     private EffectManager effectManager;
+    private RainManager rainManager;
 
     // State
     private PlayingState state;
@@ -111,6 +113,7 @@ public class GameState extends AbstractState implements State {
         this.perksManager = new PerksManager();
         this.levelManager = new LevelManager(this);
         this.effectManager = new EffectManager();
+        this.rainManager = new RainManager();
         this.enemyManager = new EnemyManager(this);
         this.objectManager = new ObjectManager(this);
         this.projectileManager = new ProjectileManager(this);
@@ -239,6 +242,7 @@ public class GameState extends AbstractState implements State {
     public void update() {
         updateScreenShake();
         updateFlash();
+        rainManager.update();
         checkPlayerDeath();
         if (state == PlayingState.PAUSE)
             overlayManager.update(PlayingState.PAUSE);
@@ -272,6 +276,7 @@ public class GameState extends AbstractState implements State {
 
         g.drawImage(levelManager.getCurrentBackground(), 0, 0, null);
         effectManager.renderAmbientEffects(g);
+        rainManager.render(g);
         this.levelManager.render(g, xLevelOffset, yLevelOffset);
         this.objectManager.render(g, xLevelOffset, yLevelOffset);
         if (isDarkPhase) {
@@ -402,6 +407,9 @@ public class GameState extends AbstractState implements State {
         projectileManager.reset();
         spellManager.reset();
         overlayManager.reset();
+        effectManager.reset();
+        lightManager.reset();
+        rainManager.reset();
         if (!isRespawning) minimapManager.reset();
         isRespawning = false;
     }
@@ -477,6 +485,10 @@ public class GameState extends AbstractState implements State {
 
     public EffectManager getEffectManager() {
         return effectManager;
+    }
+
+    public RainManager getRainManager() {
+        return rainManager;
     }
 
     public BossInterface getBossInterface() {

@@ -215,4 +215,13 @@ public class EffectManager {
         } catch (Exception ignored) {}
     }
 
+    public void reset() {
+        foregroundParticles.clear();
+        backgroundParticles.clear();
+        damageNumbers.clear();
+        itemPickupTexts.clear();
+        itemTextYOffset = 0;
+        itemTextCooldown = 0;
+    }
+
 }

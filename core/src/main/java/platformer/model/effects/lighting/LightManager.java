@@ -300,4 +300,11 @@ public class LightManager {
         this.animTick = 0;
     }
 
+    public void reset() {
+        setAmbientDarkness(130);
+        this.filterColor = null;
+        this.flashIntensity = 0;
+        this.flashDuration = 0;
+    }
+
 }
