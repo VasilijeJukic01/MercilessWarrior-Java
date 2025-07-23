@@ -8,6 +8,7 @@ import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
 import platformer.model.effects.EffectManager;
 import platformer.model.effects.RainManager;
+import platformer.model.effects.TimeCycleManager;
 import platformer.model.effects.lighting.LightManager;
 import platformer.model.entities.enemies.EnemyManager;
 import platformer.model.entities.player.Player;
@@ -67,6 +68,7 @@ public class GameState extends AbstractState implements State {
     private TutorialManager tutorialManager;
     private EffectManager effectManager;
     private RainManager rainManager;
+    private TimeCycleManager timeCycleManager;
 
     // State
     private PlayingState state;
@@ -124,6 +126,7 @@ public class GameState extends AbstractState implements State {
         this.questManager = new QuestManager(this);
         this.minimapManager = new MinimapManager(this);
         this.tutorialManager = new TutorialManager(this);
+        this.timeCycleManager = new TimeCycleManager();
     }
 
     private void initEventHandlers() {
@@ -340,7 +343,8 @@ public class GameState extends AbstractState implements State {
         enemyManager.update(levelManager.getCurrentLevel().getLvlData(), player);
         objectManager.update(levelManager.getCurrentLevel().getLvlData(), player);
         projectileManager.update(levelManager.getCurrentLevel().getLvlData(), player);
-        lightManager.update();
+        timeCycleManager.update();
+        lightManager.update(timeCycleManager);
         spellManager.update();
         minimapManager.update();
         effectManager.update();
@@ -490,6 +494,10 @@ public class GameState extends AbstractState implements State {
 
     public RainManager getRainManager() {
         return rainManager;
+    }
+
+    public TimeCycleManager getTimeCycleManager() {
+        return timeCycleManager;
     }
 
     public BossInterface getBossInterface() {

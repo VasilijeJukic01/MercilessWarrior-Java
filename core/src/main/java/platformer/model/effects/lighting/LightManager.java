@@ -1,15 +1,16 @@
 package platformer.model.effects.lighting;
 
+import platformer.model.effects.TimeCycleManager;
 import platformer.model.entities.enemies.Enemy;
-import platformer.model.entities.player.Player;
 import platformer.model.gameObjects.objects.Candle;
+import platformer.model.gameObjects.objects.SaveTotem;
 import platformer.model.gameObjects.objects.Shop;
 import platformer.state.GameState;
 import platformer.utils.Utils;
 
 import java.awt.*;
-import java.awt.geom.Area;
-import java.awt.geom.Ellipse2D;
+import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.RescaleOp;
 import java.util.List;
@@ -19,32 +20,50 @@ import static platformer.constants.Constants.*;
 import static platformer.constants.FilePaths.*;
 
 /**
- * Manages the light effects in the game.
+ * Manages all screen-wide lighting and color effects for the game.
  * <p>
- * The light effects are used to create a dark atmosphere in the game. Effects are created by using gradients and images.
+ * This class is responsible for creating a dynamic and atmospheric environment by orchestrating several layers of visual effects:
+ * <ul>
+ *     <li><b>Ambient Darkness:</b> A base layer of darkness that changes with the in-game time.</li>
+ *     <li><b>Dynamic Light Sources:</b> Uses a highly optimized "lightmap" technique to render soft, feathered light from the player, candles, and other objects.</li>
+ *     <li><b>Day/Night Cycle Tinting:</b> Applies a full-screen color tint that smoothly transitions between dawn, day, dusk, and night.</li>
+ *     <li><b>Glow and Bloom Effects:</b> Renders cosmetic glows on top of light sources to make them feel brighter and more intense.</li>
+ *     <li><b>Special Effects:</b> Handles temporary, full-screen flashes.</li>
+ * </ul>
+ * @see TimeCycleManager
+ * @see GameState
  */
 public class LightManager {
 
     private final GameState gameState;
 
+    /** An off-screen buffer where all light sources are erased from a darkness layer before being drawn. */
+    private final BufferedImage lightmap;
+
     private BufferedImage orangeLight, whiteLight, whiteRadialLight;
-    private Ellipse2D playerLight;
+    private BufferedImage playerLightTexture, candleLightTexture, totemLightTexture;
 
-    private Color[] gradient;
-    private float[] gradientFraction;
-
-    private int animTick = 0, alpha = 130, ambientAlpha = 130;
+    private Color ambientDarkness;
+    private int animTick = 0, currentAmbientAlpha = 130, ambientAlpha = 130;
     private double pulseTimer = 0.0;
+    private boolean ambientDarknessOverridden = false;
 
     private int flashDuration = 0;
     private float flashIntensity = 0.0f;
     private Color filterColor = null;
 
+    // TimeCycle
+    private double currentTimeOfDay = 0.5;
+    private Color timeCycleTintColor = new Color(0, 0, 0, 0);
+    private static final float MIN_CANDLE_GLOW_ALPHA = 0.2f;
+    private static final float MAX_CANDLE_GLOW_ALPHA = 1.0f;
+
     public LightManager(GameState gameState) {
         this.gameState = gameState;
+        this.lightmap = new BufferedImage(GAME_WIDTH, GAME_HEIGHT, BufferedImage.TYPE_INT_ARGB);
+        this.ambientDarkness = new Color(0, 0, 0, currentAmbientAlpha);
         initLightImages();
-        initGradient();
-        initLights();
+        initLightTextures();
     }
 
     // Init
@@ -58,47 +77,143 @@ public class LightManager {
     }
 
     /**
-     * Initializes the gradient used for the light effects.
-     * <p>
-     * The gradient is used to create a smooth transition between the light and the dark areas.
+     * Pre-renders the circular light gradients into reusable BufferedImage textures.
+     * This is a core optimization that avoids creating expensive {@link RadialGradientPaint} objects every frame, significantly improving rendering performance.
      */
-    private void initGradient() {
-        this.gradient = new Color[5];
-        this.gradientFraction = new float[5];
-        gradient[0] = new Color(0, 0, 0, 0);
-        gradient[1] = new Color(0, 0, 0, 10);
-        gradient[2] = new Color(0, 0, 0, 20);
-        gradient[3] = new Color(0, 0, 0, 40);
-        gradient[4] = new Color(0, 0, 0, alpha);
+    private void initLightTextures() {
+        int playerDiameter = (int)(PLAYER_LIGHT_RADIUS * 2.5f);
+        playerLightTexture = createLightTexture(playerDiameter, new float[]{0f, 1f}, new Color[]{Color.WHITE, new Color(1.0f, 1.0f, 1.0f, 0f)});
 
-        gradientFraction[0] = 0f;
-        gradientFraction[1] = 0.25f;
-        gradientFraction[2] = 0.5f;
-        gradientFraction[3] = 0.75f;
-        gradientFraction[4] = 1f;
+        int candleDiameter = (int)(CANDLE_LIGHT_RADIUS * 2.6f);
+        candleLightTexture = createLightTexture(candleDiameter, new float[]{0f, 1f}, new Color[]{Color.WHITE, new Color(1.0f, 1.0f, 1.0f, 0f)});
+
+        int totemDiameter = (int)(CANDLE_LIGHT_RADIUS * 1.6f);
+        totemLightTexture = createLightTexture(totemDiameter, new float[]{0f, 1f}, new Color[]{Color.WHITE, new Color(1.0f, 1.0f, 1.0f, 0f)});
     }
 
-    private void initLights() {
-        this.playerLight = new Ellipse2D.Double(0, 0, 2 * PLAYER_LIGHT_RADIUS, 2 * PLAYER_LIGHT_RADIUS);
+    /**
+     * A helper method for {@link #initLightTextures()} that creates a single circular gradient texture.
+     *
+     * @param diameter The diameter of the light texture.
+     * @param fractions The fractions for the gradient stops (e.g., {0f, 1f}).
+     * @param colors The colors corresponding to the gradient stops.
+     * @return A BufferedImage containing the pre-rendered light gradient.
+     */
+    private BufferedImage createLightTexture(int diameter, float[] fractions, Color[] colors) {
+        BufferedImage texture = new BufferedImage(diameter, diameter, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2d = texture.createGraphics();
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        Point2D center = new Point2D.Float(diameter / 2.0f, diameter / 2.0f);
+        float radius = diameter / 2.0f;
+        RadialGradientPaint p = new RadialGradientPaint(center, radius, fractions, colors);
+        g2d.setPaint(p);
+        g2d.fillRect(0, 0, diameter, diameter);
+        g2d.dispose();
+        return texture;
     }
 
     // Update
-    public void update() {
-        if (alpha < ambientAlpha) updateFading();
+    /**
+     * The main update loop for the LightManager.
+     * It synchronizes with the {@link TimeCycleManager}.
+     *
+     * @param timeManager The manager that provides the current in-game time.
+     */
+    public void update(TimeCycleManager timeManager) {
+        this.currentTimeOfDay = timeManager.getGameTimeNormalized();
+        calculateTimeCycleEffects(timeManager);
+        updateAmbientDarknessAndEffects();
         updatePulse();
         updateFlash();
     }
 
-    private void updateFading() {
-        animTick++;
-        if (animTick >= LIGHT_ANIM_SPEED) {
-            animTick = 0;
-            alpha += 50;
-            if (alpha > ambientAlpha) {
-                alpha = ambientAlpha;
-            }
-            if (filterColor != null) filterColor = null;
+    /**
+     * Calculates the natural, baseline color tint and ambient darkness for the current time of day.
+     * It interpolates between predefined keyframes (Night, Dawn, Day, Dusk).
+     *
+     * @param timeManager The manager providing the current time.
+     */
+    private void calculateTimeCycleEffects(TimeCycleManager timeManager) {
+        double time = timeManager.getGameTimeNormalized();
+        int tintAlpha, darknessAlpha;
+        Color tint;
+
+        Color nightTint = new Color(0, 5, 40, 10);
+        Color dawnTint = new Color(130, 140, 200);
+        Color dayTint = new Color(255, 255, 230);
+        Color duskTint = new Color(251, 169, 111);
+
+        // Night to Dawn
+        if (time >= 0 && time < 0.25) {
+            float progress = (float)(time / 0.25);
+            tint = interpolateColor(nightTint, dawnTint, progress);
+            tintAlpha = interpolate(100, 35, progress);
+            darknessAlpha = interpolate(220, 130, progress);
         }
+        // Dawn to Day
+        else if (time >= 0.25 && time < 0.50) {
+            float progress = (float)((time - 0.25) / 0.25);
+            tint = interpolateColor(dawnTint, dayTint, progress);
+            tintAlpha = interpolate(35, 15, progress);
+            darknessAlpha = interpolate(130, 80, progress);
+        }
+        // Day to Dusk
+        else if (time >= 0.50 && time < 0.75) {
+            float progress = (float)((time - 0.50) / 0.25);
+            tint = interpolateColor(dayTint, duskTint, progress);
+            tintAlpha = interpolate(15, 50, progress);
+            darknessAlpha = interpolate(80, 160, progress);
+        }
+        // Dusk to Night
+        else {
+            float progress = (float)((time - 0.75) / 0.25);
+            tint = interpolateColor(duskTint, nightTint, progress);
+            tintAlpha = interpolate(50, 100, progress);
+            darknessAlpha = interpolate(160, 220, progress);
+        }
+        this.timeCycleTintColor = new Color(tint.getRed(), tint.getGreen(), tint.getBlue(), tintAlpha);
+        this.ambientAlpha = darknessAlpha;
+    }
+
+    /**
+     * Manages the gradual return to the natural ambient darkness after a special effect (like a flash) has temporarily altered it.
+     * Also handles the timed removal of color filters.
+     */
+    private void updateAmbientDarknessAndEffects() {
+        if (filterColor != null) {
+            animTick++;
+            if (animTick >= LIGHT_ANIM_SPEED) {
+                animTick = 0;
+                filterColor = null;
+            }
+        }
+        if (ambientDarknessOverridden) {
+            this.ambientDarkness = new Color(0, 0, 0, currentAmbientAlpha);
+            return;
+        }
+        double time = currentTimeOfDay;
+        int targetAlpha;
+
+        // Night
+        if (time < 0.25 || time >= 0.75) targetAlpha = 220;
+        // Dawn
+        else if (time < 0.5) {
+            float dawnProgress = (float)((time - 0.25) / 0.25);
+            targetAlpha = interpolate(220, 80, dawnProgress);
+        }
+        // Day to Dusk
+        else {
+            float duskProgress = (float)((time - 0.5) / 0.25);
+            targetAlpha = interpolate(80, 220, duskProgress);
+        }
+
+        if (currentAmbientAlpha < targetAlpha) {
+            currentAmbientAlpha = Math.min(currentAmbientAlpha + 2, targetAlpha);
+        }
+        else if (currentAmbientAlpha > targetAlpha) {
+            currentAmbientAlpha = Math.max(currentAmbientAlpha - 2, targetAlpha);
+        }
+        this.ambientDarkness = new Color(0, 0, 0, currentAmbientAlpha);
     }
 
     /**
@@ -128,48 +243,108 @@ public class LightManager {
 
     // Render
     /**
-     * Renders the light effects in the game. This includes the player's light, the light from candles, shops, and enemies.
-     * It also handles the fading effect of the light.
-     *
+     * The main rendering method for the lighting system. It orchestrates the drawing of all lighting layers in the correct order to produce the final composite image.
+     * <p>
+     * The rendering order is:
+     * <ol>
+     *     <li>The dynamic lightmap (darkness with light sources "erased") is drawn.</li>
+     *     <li>The time-of-day color tint is drawn over everything.</li>
+     *     <li>Cosmetic glow effects are drawn on top of the tinted scene.</li>
+     *     <li>Finally, any full-screen flash effects are drawn on the very top.</li>
+     * </ol>
      * @param g Graphics object used for drawing the light effects.
-     * @param xLevelOffset The horizontal offset of the level.
-     * @param yLevelOffset The vertical offset of the level.
+     * @param xLevelOffset The horizontal camera offset of the level.
+     * @param yLevelOffset The vertical camera offset of the level.
      */
     public void render(Graphics g, int xLevelOffset, int yLevelOffset) {
-        gradient[4] = new Color(0, 0, 0, alpha);
-        try {
-            Graphics2D g2d = (Graphics2D) g;
-            Area darkLayer = new Area(new Rectangle(0, 0, GAME_WIDTH, GAME_HEIGHT));
-
-            darkLayer.subtract(getPlayerLightArea(xLevelOffset, yLevelOffset));
-            fillWithRadialGradient(g2d, getPlayerLightArea(xLevelOffset, yLevelOffset), PLAYER_LIGHT_RADIUS);
-
-            g2d.setColor(new Color(0, 0, 0, alpha));
-            g2d.fill(darkLayer);
-            glowObjects(g2d, xLevelOffset, yLevelOffset);
-
-            if (filterColor != null) {
-                g2d.setColor(filterColor);
-                g2d.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
-            }
-
-            if (flashIntensity > 0) {
-                g2d.setColor(new Color(1.0f, 1.0f, 1.0f, flashIntensity));
-                g2d.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
-            }
-        }
-        catch (Exception ignored) {}
+        renderLightmap(xLevelOffset, yLevelOffset);
+        g.drawImage(lightmap, 0, 0, null);
+        renderTimeCycleTint(g);
+        glowObjects((Graphics2D)g, xLevelOffset, yLevelOffset);
+        renderFlashEffects(g);
     }
 
     /**
-     * Applies light effects to various game objects such as the player, candles, shops, and enemies.
+     * Renders the full-screen color tint based on the current time of day.
      *
-     * @param g2d Graphics2D object used for drawing the light effects.
-     * @param xLevelOffset The horizontal offset of the level.
-     * @param yLevelOffset The vertical offset of the level.
+     * @param g The graphics context.
+     */
+    private void renderTimeCycleTint(Graphics g) {
+        if (timeCycleTintColor.getAlpha() > 0) {
+            g.setColor(timeCycleTintColor);
+            g.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+        }
+    }
+
+    /**
+     * Renders any active top-layer flash effects.
+     *
+     * @param g The graphics context.
+     */
+    private void renderFlashEffects(Graphics g) {
+        if (filterColor != null) {
+            g.setColor(filterColor);
+            g.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+        }
+        if (flashIntensity > 0) {
+            g.setColor(new Color(1.0f, 1.0f, 1.0f, flashIntensity));
+            g.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+        }
+    }
+
+    /**
+     * Constructs the lightmap by filling it with the current ambient darkness, then using the pre-rendered light textures
+     * with a {@link AlphaComposite#DST_OUT} composite to "erase" the areas where light sources are present.
+     * This all happens on an off-screen buffer for maximum performance.
+     *
+     * @param xLevelOffset The horizontal camera offset.
+     * @param yLevelOffset The vertical camera offset.
+     */
+    private void renderLightmap(int xLevelOffset, int yLevelOffset) {
+        Graphics2D g2d = lightmap.createGraphics();
+        g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.CLEAR));
+        g2d.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+        g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER));
+        g2d.setColor(ambientDarkness);
+        g2d.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+        g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.DST_OUT));
+
+        drawLightSource(g2d, playerLightTexture, gameState.getPlayer().getHitBox(), xLevelOffset, yLevelOffset);
+
+        if (ambientDarkness.getAlpha() > 100) {
+            for (Candle candle : gameState.getObjectManager().getObjects(Candle.class)) {
+                if (candle.isAlive()) drawLightSource(g2d, candleLightTexture, candle.getHitBox(), xLevelOffset, yLevelOffset);
+            }
+            for (SaveTotem totem : gameState.getObjectManager().getObjects(SaveTotem.class)) {
+                if (totem.isAlive()) drawLightSource(g2d, totemLightTexture, totem.getHitBox(), xLevelOffset, yLevelOffset);
+            }
+        }
+        g2d.dispose();
+    }
+
+    /**
+     * A highly optimized helper method that draws a pre-rendered light texture onto the lightmap.
+     *
+     * @param g2d The graphics context (usually of the lightmap).
+     * @param texture The pre-rendered light texture to draw.
+     * @param hitbox The hitbox of the object emitting the light.
+     * @param xLevelOffset The horizontal camera offset.
+     * @param yLevelOffset The vertical camera offset.
+     */
+    private void drawLightSource(Graphics2D g2d, BufferedImage texture, Rectangle2D.Double hitbox, int xLevelOffset, int yLevelOffset) {
+        int x = (int) (hitbox.getCenterX() - xLevelOffset - texture.getWidth() / 2.0);
+        int y = (int) (hitbox.getCenterY() - yLevelOffset - texture.getHeight() / 2.0);
+        g2d.drawImage(texture, x, y, null);
+    }
+
+    /**
+     * Renders all cosmetic "glow" effects for light-emitting objects. These are drawn on top of the main lighting pass.
+     *
+     * @param g2d The main graphics context.
+     * @param xLevelOffset The horizontal camera offset.
+     * @param yLevelOffset The vertical camera offset.
      */
     private void glowObjects(Graphics2D g2d, int xLevelOffset, int yLevelOffset) {
-        playerFilter(g2d, xLevelOffset, yLevelOffset);
         candleFilter(g2d, xLevelOffset, yLevelOffset);
         gameState.getObjectManager().glowingRender(g2d, xLevelOffset, yLevelOffset);
         shopFilter(g2d, xLevelOffset, yLevelOffset);
@@ -177,34 +352,42 @@ public class LightManager {
     }
 
     // Filters
-    private void playerFilter(Graphics2D g2d, int xLevelOffset, int yLevelOffset) {
-        Player player = gameState.getPlayer();
-        int playerX = (int) (player.getHitBox().x + player.getHitBox().width / 2 - xLevelOffset) - PLAYER_LIGHT_RADIUS;
-        int playerY = (int) (player.getHitBox().y + player.getHitBox().height / 2 - yLevelOffset) - PLAYER_LIGHT_RADIUS;
-        g2d.drawImage(whiteLight, playerX, playerY, null);
-    }
-
     private void candleFilter(Graphics2D g2d, int xLevelOffset, int yLevelOffset) {
         double pulseScale = 0.975 + 0.025 * Math.sin(pulseTimer);
         List<Candle> candles = gameState.getObjectManager().getObjects(Candle.class);
+        float glowAlpha = getSmoothGlowAlpha();
+
         for (Candle candle : candles) {
-            int glowWidth = (int) (2 * CANDLE_LIGHT_RADIUS * pulseScale);
-            int glowHeight = (int) (2 * CANDLE_LIGHT_RADIUS * pulseScale);
-            int candleX = (int) (candle.getHitBox().x + candle.getHitBox().width / 2 - xLevelOffset) - glowWidth / 2;
-            int candleY = (int) (candle.getHitBox().y + candle.getHitBox().height / 2 - yLevelOffset) - glowHeight / 2;
+            int glowWidth = (int) (2.5 * CANDLE_LIGHT_RADIUS * pulseScale);
+            int glowHeight = (int) (2.5 * CANDLE_LIGHT_RADIUS * pulseScale);
+            int candleX = (int) (candle.getHitBox().getCenterX() - xLevelOffset) - glowWidth / 2;
+            int candleY = (int) (candle.getHitBox().getCenterY() - yLevelOffset) - glowHeight / 2;
+
+            Composite originalComposite = g2d.getComposite();
+
+            float whiteGlowAlpha = glowAlpha * 0.7f;
+            g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, whiteGlowAlpha));
             g2d.drawImage(whiteRadialLight, candleX, candleY, glowWidth, glowHeight, null);
-            gameState.getObjectManager().candleRender(g2d, xLevelOffset, yLevelOffset, candle);
+            g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, glowAlpha));
             g2d.drawImage(orangeLight, candleX, candleY, glowWidth, glowHeight, null);
+            g2d.setComposite(originalComposite);
+            gameState.getObjectManager().candleRender(g2d, xLevelOffset, yLevelOffset, candle);
         }
     }
 
     private void shopFilter(Graphics2D g2d, int xLevelOffset, int yLevelOffset) {
+        float glowAlpha = getSmoothGlowAlpha();
         List<Shop> shops = gameState.getObjectManager().getObjects(Shop.class);
+
+        Composite originalComposite = g2d.getComposite();
+
+        g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, glowAlpha));
         for (Shop shop : shops) {
-            int shopX = (int) (shop.getHitBox().x + shop.getHitBox().width / 2 - xLevelOffset) - CANDLE_LIGHT_RADIUS;
-            int shopY = (int) (shop.getHitBox().y + shop.getHitBox().height / 2 - yLevelOffset) - CANDLE_LIGHT_RADIUS;
+            int shopX = (int) (shop.getHitBox().getCenterX() - xLevelOffset) - CANDLE_LIGHT_RADIUS;
+            int shopY = (int) (shop.getHitBox().getCenterY() - yLevelOffset) - CANDLE_LIGHT_RADIUS;
             g2d.drawImage(orangeLight, shopX, shopY, null);
         }
+        g2d.setComposite(originalComposite);
     }
 
     private void enemyFilter(Graphics2D g2d, int xLevelOffset, int yLevelOffset) {
@@ -217,68 +400,81 @@ public class LightManager {
         }
     }
 
-    // Player light
     /**
-     * Fills a given area with a radial gradient to create a light effect.
+     * Calculates an oscillating alpha value for cosmetic glows based on the time of day.
+     * This makes glows fade during the day and brighten at night in a natural, cyclical pattern.
+     * <p>
+     * <b>Flow:</b>
+     * <ol>
+     *     <li><b>Cosine Wave:</b> The function uses {@code Math.cos(currentTimeOfDay * 2 * Math.PI)}.
+     *     As {@code currentTimeOfDay} goes from 0.0 (midnight) to 1.0 (next midnight), the input to the cosine
+     *     function goes from 0 to 2π, completing one full wave. The cosine function naturally returns a value
+     *     in the range [-1.0, 1.0]. It is at its peak (+1.0) at the start/end (midnight) and at its trough (-1.0)
+     *     in the middle (noon).</li>
+
+     *     <li><b>Normalization:</b> The cosine output of [-1.0, 1.0] is not a useful range for alpha values.
+     *     We normalize it to the range [0.0, 1.0] by using the formula {@code (cos + 1) / 2.0}.
+     *     This maps -1.0 to 0.0 (noon, minimum glow) and +1.0 to 1.0 (midnight, maximum glow).</li>
      *
-     * @param g2d Graphics2D object used for drawing the light effects.
-     * @param area The area to be filled with the radial gradient.
-     * @param radius The radius of the radial gradient.
-     */
-    private void fillWithRadialGradient(Graphics2D g2d, Area area, int radius) {
-        RadialGradientPaint gradientPaint = new RadialGradientPaint(
-                new Point(area.getBounds().x + radius, area.getBounds().y + radius),
-                radius + 1,
-                gradientFraction,
-                gradient);
-        g2d.setPaint(gradientPaint);
-        g2d.fill(area);
-    }
-
-    /**
-     * Creates the area of the player's light based on the player's position and the level offsets.
+     *     <li><b>Linear Interpolation (Lerp):</b> Finally, we map this normalized [0.0, 1.0] value to our desired
+     *     alpha range, which is from {@link #MIN_CANDLE_GLOW_ALPHA} to {@link #MAX_CANDLE_GLOW_ALPHA}.
+     *     The formula {@code min + normalized * (max - min)} is a standard linear interpolation, scaling the
+     *     normalized value to the final output range.</li>
+     * </ol>
+     * The result is a smooth, continuous alpha value that is highest at night and lowest during the day.
      *
-     * @param xLevelOffset The horizontal offset of the level.
-     * @param yLevelOffset The vertical offset of the level.
-     * @return The area of the player's light.
+     * @return A float alpha value between {@link #MIN_CANDLE_GLOW_ALPHA} and {@link #MAX_CANDLE_GLOW_ALPHA}.
      */
-    private Area getPlayerLightArea(int xLevelOffset, int yLevelOffset) {
-        Area playerArea = calculatePlayerLight(xLevelOffset, yLevelOffset);
-
-        int xPos = playerArea.getBounds().x + PLAYER_LIGHT_RADIUS;
-        int yPos = playerArea.getBounds().y + PLAYER_LIGHT_RADIUS;
-        RadialGradientPaint paint = new RadialGradientPaint(xPos, yPos, 2 * PLAYER_LIGHT_RADIUS, gradientFraction, gradient);
-        Graphics2D g2d = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB).createGraphics();
-        g2d.setPaint(paint);
-        g2d.fill(playerArea);
-
-        return new Area(playerArea);
-    }
-
-    /**
-     * Calculates the area of the player's light based on the player's position and the level offsets.
-     *
-     * @param xLevelOffset The horizontal offset of the level.
-     * @param yLevelOffset The vertical offset of the level.
-     * @return The area of the player's light.
-     */
-    private Area calculatePlayerLight(int xLevelOffset, int yLevelOffset) {
-        Player player = gameState.getPlayer();
-        int playerX = (int) (player.getHitBox().x + player.getHitBox().width / 2 - xLevelOffset);
-        int playerY = (int) (player.getHitBox().y + player.getHitBox().height / 2 - yLevelOffset);
-        playerLight.setFrame(playerX - PLAYER_LIGHT_RADIUS, playerY - PLAYER_LIGHT_RADIUS, playerLight.getWidth(), playerLight.getHeight());
-        return new Area(playerLight);
+    private float getSmoothGlowAlpha() {
+        double cos = Math.cos(currentTimeOfDay * 2 * Math.PI);
+        double normalized = (cos + 1) / 2.0;
+        return (float) (MIN_CANDLE_GLOW_ALPHA + normalized * (MAX_CANDLE_GLOW_ALPHA - MIN_CANDLE_GLOW_ALPHA));
     }
 
     // Ambient
     /**
-     * Sets the base ambient darkness level of the screen.
+     * Forces the ambient darkness to a specific level, ignoring the day-night cycle.
+     * This override will remain in effect until {@link #releaseAmbientDarkness()} is called.
      *
-     * @param darkness The alpha value for the dark overlay (0-255). Higher is darker.
+     * @param darkness The alpha value (0-255) to lock the ambient darkness to.
      */
-    public void setAmbientDarkness(int darkness) {
-        this.ambientAlpha = darkness;
-        this.alpha = darkness;
+    public void overrideAmbientDarkness(int darkness) {
+        this.ambientDarknessOverridden = true;
+        this.currentAmbientAlpha = darkness;
+    }
+
+    /**
+     * Releases the manual override on ambient darkness, allowing the day-night cycle to resume control of the lighting.
+     */
+    public void releaseAmbientDarkness() {
+        this.ambientDarknessOverridden = false;
+    }
+
+    // Helper
+    /**
+     * Linearly interpolates between two integer values. Used for smooth transitions of alpha values.
+     *
+     * @param start The starting value.
+     * @param end The ending value.
+     * @param progress The progress of the interpolation (0.0 to 1.0).
+     * @return The interpolated integer value.
+     */
+    private int interpolate(int start, int end, float progress) {
+        return (int) (start + (end - start) * progress);
+    }
+
+    /**
+     * Linearly interpolates between two Color objects, component by component (R, G, B).
+     * @param c1 The starting color.
+     * @param c2 The ending color.
+     * @param progress The progress of the interpolation (0.0 to 1.0).
+     * @return The new, interpolated Color.
+     */
+    private Color interpolateColor(Color c1, Color c2, float progress) {
+        int r = (int) (c1.getRed() + (c2.getRed() - c1.getRed()) * progress);
+        int g = (int) (c1.getGreen() + (c2.getGreen() - c1.getGreen()) * progress);
+        int b = (int) (c1.getBlue() + (c2.getBlue() - c1.getBlue()) * progress);
+        return new Color(r, g, b);
     }
 
     // Setters
@@ -289,19 +485,26 @@ public class LightManager {
      * @param color The color of the filter to apply (alpha component is used for intensity).
      */
     public void setAlphaWithFilter(int alpha, Color color) {
-        this.alpha = alpha;
+        this.currentAmbientAlpha = alpha;
         this.filterColor = color;
         this.animTick = 0;
     }
 
     public void setAlpha(int alpha) {
-        this.alpha = alpha;
+        this.currentAmbientAlpha = alpha;
+        this.ambientDarkness = new Color(0, 0, 0, alpha);
+        this.filterColor = null;
+        this.animTick = 0;
+    }
+
+    public void setCurrentAmbientAlpha(int currentAmbientAlpha) {
+        this.currentAmbientAlpha = currentAmbientAlpha;
         this.filterColor = null;
         this.animTick = 0;
     }
 
     public void reset() {
-        setAmbientDarkness(130);
+        releaseAmbientDarkness();
         this.filterColor = null;
         this.flashIntensity = 0;
         this.flashDuration = 0;

@@ -134,7 +134,7 @@ public class RoricEventHandler implements EventHandler, Subscriber {
         if (isPhaseThreeActive) {
             long elapsedTime = System.currentTimeMillis() - fightStartTime;
             if (phaseThreeShotIndex < phaseThreeTimings.length && elapsedTime >= phaseThreeTimings[phaseThreeShotIndex]) {
-                gameState.getLightManager().setAlpha(0);
+                gameState.getLightManager().setCurrentAmbientAlpha(0);
                 phaseThreeShotIndex++;
             }
         }
@@ -165,13 +165,13 @@ public class RoricEventHandler implements EventHandler, Subscriber {
         isFinaleActive = (newPhase == RoricPhaseManager.RoricPhase.FINALE);
         if (isPhaseThreeActive) {
             gameState.setDarkPhase(true);
-            gameState.getLightManager().setAmbientDarkness(240);
+            gameState.getLightManager().overrideAmbientDarkness(240);
             phaseThreeShotIndex = 0;
         }
         else if (isFinaleActive) finaleFlashIndex = 0;
         else {
             gameState.setDarkPhase(false);
-            gameState.getLightManager().setAmbientDarkness(130);
+            gameState.getLightManager().releaseAmbientDarkness();
         }
     }
 
@@ -251,5 +251,6 @@ public class RoricEventHandler implements EventHandler, Subscriber {
         roricInstance = null;
         isPaused = false;
         pauseStartTime = 0;
+        gameState.getLightManager().releaseAmbientDarkness();
     }
 }
