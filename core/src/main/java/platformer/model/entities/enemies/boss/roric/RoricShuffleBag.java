@@ -1,6 +1,7 @@
 package platformer.model.entities.enemies.boss.roric;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
@@ -28,6 +29,8 @@ public class RoricShuffleBag {
     private final List<RoricState> currentBag;
     private final Random random;
 
+    private RoricState lastDrawnItem = null;
+
     RoricShuffleBag(List<RoricState> attacks) {
         this.masterList = new ArrayList<>(attacks);
         this.currentBag = new ArrayList<>();
@@ -45,16 +48,33 @@ public class RoricShuffleBag {
      */
     public RoricState draw() {
         if (currentBag.isEmpty()) reshuffle();
-        return currentBag.remove(random.nextInt(currentBag.size()));
+        RoricState drawnItem = currentBag.remove(random.nextInt(currentBag.size()));
+        this.lastDrawnItem = drawnItem;
+        return drawnItem;
     }
 
     /**
      * Resets the bag by clearing its current contents and refilling it with all the attacks from the master list.
+     * It guarantees the first item in the new bag is different from the last item drawn, if possible.
      * This is called automatically when the bag becomes empty.
      */
     private void reshuffle() {
         currentBag.clear();
         currentBag.addAll(masterList);
+        Collections.shuffle(currentBag);
+
+        if (lastDrawnItem != null && !currentBag.isEmpty() && currentBag.get(0) == lastDrawnItem) {
+            if (currentBag.size() > 1) {
+                int swapIndex = -1;
+                for (int i = 1; i < currentBag.size(); i++) {
+                    if (currentBag.get(i) != lastDrawnItem) {
+                        swapIndex = i;
+                        break;
+                    }
+                }
+                if (swapIndex != -1) Collections.swap(currentBag, 0, swapIndex);
+            }
+        }
     }
 
     public List<RoricState> getMasterList() {

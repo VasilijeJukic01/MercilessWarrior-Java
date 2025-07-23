@@ -12,6 +12,7 @@ import java.awt.*;
 import java.util.Random;
 import static platformer.constants.Constants.*;
 import static platformer.physics.CollisionDetector.canMoveHere;
+import static platformer.physics.CollisionDetector.getGroundY;
 
 /**
  * Handles the AI, attack patterns, and state transitions for the {@link Roric} boss.
@@ -367,11 +368,12 @@ public class RoricAttackHandler {
             if (player == null) return;
 
             double playerX = player.getHitBox().getCenterX();
+            double groundY = getGroundY((levelData.length * TILES_SIZE) / 2.0, 0, levelData);
             boolean roricGoesRight = playerX < (levelData.length * TILES_SIZE) / 2.0;
-            double leftSideX = 3.0 * TILES_SIZE;
-            double rightSideX = (levelData.length - 3.0) * TILES_SIZE;
+            double leftSideX = 2.0 * TILES_SIZE;
+            double rightSideX = (levelData.length - 4.0) * TILES_SIZE;
             int spawnX = roricGoesRight ? (int)leftSideX : (int)rightSideX;
-            int spawnY = (int)roric.getHitBox().y - (int)(TILES_SIZE/2.2);
+            int spawnY = (int)(groundY - TILES_SIZE * 2 );
             teleportToSide();
             targetPlayer(player);
 
@@ -600,7 +602,7 @@ public class RoricAttackHandler {
         Player player = roric.getCurrentPlayerTarget();
         if (levelData == null || player == null) return;
 
-        int levelWidthInTiles = levelData[0].length;
+        int levelWidthInTiles = levelData.length;
         int centerTile = levelWidthInTiles / 2;
         int leftZoneStart = ARENA_EDGE_BUFFER_TILES;
         int leftZoneEnd = centerTile - ARENA_CENTER_BUFFER_TILES;
