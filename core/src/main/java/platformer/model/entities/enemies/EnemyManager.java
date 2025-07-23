@@ -426,6 +426,16 @@ public class EnemyManager implements Publisher {
         roricClones.add(clone);
     }
 
+    public void pauseRoricTimer() {
+        Roric roric = getRoricInstance();
+        if (roric != null) roric.getPhaseManager().pauseFightTimer();
+    }
+
+    public void unpauseRoricTimer() {
+        Roric roric = getRoricInstance();
+        if (roric != null) roric.getPhaseManager().unpauseFightTimer();
+    }
+
     // Reset
     public void reset() {
         enemies.values().stream()

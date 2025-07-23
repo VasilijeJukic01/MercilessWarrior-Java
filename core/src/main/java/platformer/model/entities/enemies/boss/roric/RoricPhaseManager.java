@@ -36,6 +36,8 @@ public class RoricPhaseManager {
     private long fightStartTime = 0;
     private long lastSkybeamSpawnTime = 0;
     private RoricPhase currentPhase = RoricPhase.INTRO;
+    private boolean isPaused = false;
+    private long pauseStartTime = 0;
 
     private final Random random = new Random();
 
@@ -179,11 +181,35 @@ public class RoricPhaseManager {
     }
 
     /**
+     * Pauses the fight timer if the fight is active.
+     */
+    public void pauseFightTimer() {
+        if (fightStartTime != 0 && !isPaused) {
+            isPaused = true;
+            pauseStartTime = System.currentTimeMillis();
+        }
+    }
+
+    /**
+     * Unpauses the fight timer and adjusts the start time to account for the pause duration.
+     */
+    public void unpauseFightTimer() {
+        if (fightStartTime != 0 && isPaused) {
+            long pauseDuration = System.currentTimeMillis() - pauseStartTime;
+            fightStartTime += pauseDuration;
+            isPaused = false;
+            pauseStartTime = 0;
+        }
+    }
+
+    /**
      * Resets the manager to its initial state for a new fight.
      */
     public void reset() {
         fightStartTime = 0;
         currentPhase = RoricPhase.INTRO;
+        isPaused = false;
+        pauseStartTime = 0;
     }
 
     // Getters

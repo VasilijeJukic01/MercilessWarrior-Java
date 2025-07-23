@@ -18,6 +18,18 @@ public interface EventHandler {
     void continuousUpdate();
 
     /**
+     * Called when the game state is paused.
+     * Implementations can use this to stop any ongoing processes or animations.
+     */
+    default void pause() {}
+
+    /**
+     * Called when the game state is unpaused.
+     * Implementations can use this to resume any paused processes or animations.
+     */
+    default void unpause() {}
+
+    /**
      * Resets the handler's internal state to its default values.
      */
     void reset();

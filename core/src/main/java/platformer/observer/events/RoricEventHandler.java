@@ -48,6 +48,9 @@ public class RoricEventHandler implements EventHandler, Subscriber {
     private final long[] finaleFlashTimings = { 132600, 134200, 135800, 137400, 139100, 140700, 142400, 144100, 145700, 147400, 149100, 150800, 152400, 154000, 155600, 157200, 159000 };
     private int finaleFlashIndex = 0;
 
+    private boolean isPaused = false;
+    private long pauseStartTime = 0;
+
     public RoricEventHandler(GameState gameState, EffectManager effectManager) {
         this.gameState = gameState;
         this.effectManager = effectManager;
@@ -220,6 +223,24 @@ public class RoricEventHandler implements EventHandler, Subscriber {
     }
 
     @Override
+    public void pause() {
+        if (fightStartTime != 0 && !isPaused) {
+            isPaused = true;
+            pauseStartTime = System.currentTimeMillis();
+        }
+    }
+
+    @Override
+    public void unpause() {
+        if (fightStartTime != 0 && isPaused) {
+            long pauseDuration = System.currentTimeMillis() - pauseStartTime;
+            fightStartTime += pauseDuration;
+            isPaused = false;
+            pauseStartTime = 0;
+        }
+    }
+
+    @Override
     public void reset() {
         isPhaseThreeActive = false;
         isFinaleActive = false;
@@ -228,5 +249,7 @@ public class RoricEventHandler implements EventHandler, Subscriber {
         fightStartTime = 0;
         celestialAuraActive = false;
         roricInstance = null;
+        isPaused = false;
+        pauseStartTime = 0;
     }
 }

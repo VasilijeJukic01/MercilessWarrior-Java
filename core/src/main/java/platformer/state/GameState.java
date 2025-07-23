@@ -242,7 +242,6 @@ public class GameState extends AbstractState implements State {
     public void update() {
         updateScreenShake();
         updateFlash();
-        rainManager.update();
         checkPlayerDeath();
         if (state == PlayingState.PAUSE)
             overlayManager.update(PlayingState.PAUSE);
@@ -255,8 +254,6 @@ public class GameState extends AbstractState implements State {
             effectManager.update();
         }
         else handleGameState();
-
-        updateEventHandlers();
 
         if (state == PlayingState.DIALOGUE)
             overlayManager.update(PlayingState.DIALOGUE);
@@ -316,6 +313,7 @@ public class GameState extends AbstractState implements State {
         try {
             checkLevelExit();
             updateManagers();
+            updateEventHandlers();
         }
         catch (Exception ignored) {}
     }
@@ -346,6 +344,7 @@ public class GameState extends AbstractState implements State {
         spellManager.update();
         minimapManager.update();
         effectManager.update();
+        rainManager.update();
         player.update();
         if (state == PlayingState.SHOP) overlayManager.update(PlayingState.SHOP);
         else if (state == PlayingState.BLACKSMITH) overlayManager.update(PlayingState.BLACKSMITH);
@@ -502,9 +501,19 @@ public class GameState extends AbstractState implements State {
     }
 
     public void setOverlay(PlayingState newOverlay) {
-        if (state == PlayingState.PAUSE) Audio.getInstance().getAudioPlayer().unpauseSounds();
+        if (state == PlayingState.PAUSE) {
+            Audio.getInstance().getAudioPlayer().unpauseSounds();
+            Audio.getInstance().getAudioPlayer().unpauseSong();
+            enemyManager.unpauseRoricTimer();
+            eventHandlers.forEach(EventHandler::unpause);
+        }
         this.state = newOverlay;
-        if (state == PlayingState.PAUSE) Audio.getInstance().getAudioPlayer().pauseSounds();
+        if (state == PlayingState.PAUSE) {
+            Audio.getInstance().getAudioPlayer().pauseSounds();
+            Audio.getInstance().getAudioPlayer().pauseSong();
+            enemyManager.pauseRoricTimer();
+            eventHandlers.forEach(EventHandler::pause);
+        }
     }
 
     public boolean isDarkPhase() {

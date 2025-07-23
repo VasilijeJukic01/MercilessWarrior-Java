@@ -405,6 +405,7 @@ public class Lancer extends Enemy implements Publisher {
     public void setStart(boolean start) {
         this.start = start;
         if (start) Audio.getInstance().getAudioPlayer().playSong(Song.BOSS_1);
+        else Audio.getInstance().getAudioPlayer().playSong(Song.FOREST_1);
     }
 
     public void setAttackCooldown(double value) {
