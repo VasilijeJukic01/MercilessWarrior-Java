@@ -53,6 +53,8 @@ public final class AnimConstants {
     public static final int JUMP_PAD_W = 512, JUMP_PAD_H = 512;
     public static final int HERB_W = 512, HERB_H = 512;
 
+    public static final int TIME_CYCLE_W = 385, TIME_CYCLE_H = 377;
+
     // Spells & Projectiles
     public static final int LIGHTNING_W = 128, LIGHTNING_H = 512;
     public static final int FLASH_W = 192, FLASH_H = 984;

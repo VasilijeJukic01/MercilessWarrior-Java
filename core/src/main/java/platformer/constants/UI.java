@@ -159,6 +159,11 @@ public final class UI {
     public static final int PORT_X = scale(18);
     public static final int PORT_Y = scale(22);
 
+    public static final int TIME_CYCLE_ICON_WID = scale(25);
+    public static final int TIME_CYCLE_ICON_HEI = scale(24);
+    public static final int TIME_CYCLE_ICON_X = scale(41);
+    public static final int TIME_CYCLE_ICON_Y = scale(71);
+
     public static final int COINS_X = scale(90);
     public static final int COINS_Y = scale(82);
     public static final int LVL_X = scale(170);

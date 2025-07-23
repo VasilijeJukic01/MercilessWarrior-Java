@@ -2,6 +2,7 @@ package platformer.model.entities.player;
 
 import platformer.core.Account;
 import platformer.core.Framework;
+import platformer.model.effects.TimeCycleManager;
 import platformer.model.inventory.InventoryBonus;
 import platformer.model.levels.Spawn;
 import platformer.model.minimap.MinimapManager;
@@ -26,9 +27,9 @@ public class PlayerDataManager {
     private int level = 1;
     private int upgradeTokens = 0;
 
-    public PlayerDataManager(Player player, MinimapManager minimapManager) {
+    public PlayerDataManager(Player player, MinimapManager minimapManager, TimeCycleManager timeCycleManager) {
         this.player = player;
-        this.userInterface = new UserInterface(player, minimapManager);
+        this.userInterface = new UserInterface(player, minimapManager, timeCycleManager);
         loadPlayerData();
     }
 

@@ -6,6 +6,7 @@ import platformer.audio.Audio;
 import platformer.audio.types.Sound;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
+import platformer.model.effects.TimeCycleManager;
 import platformer.model.entities.AttackState;
 import platformer.model.entities.Cooldown;
 import platformer.model.entities.Direction;
@@ -79,7 +80,7 @@ public class Player extends Entity {
     private int mythicAuraTick = 0;
 
 
-    public Player(int xPos, int yPos, int width, int height, EnemyManager enemyManager, ObjectManager objectManager, ProjectileManager projectileManager, MinimapManager minimapManager, EffectManager effectManager) {
+    public Player(int xPos, int yPos, int width, int height, EnemyManager enemyManager, ObjectManager objectManager, ProjectileManager projectileManager, MinimapManager minimapManager, EffectManager effectManager, TimeCycleManager timeCycleManager) {
         super(xPos, yPos, width, height, PLAYER_MAX_HP);
         this.enemyManager = enemyManager;
         this.objectManager = objectManager;
@@ -87,7 +88,7 @@ public class Player extends Entity {
         this.minimapManager = minimapManager;
         this.effectManager = effectManager;
         loadAnimations();
-        init();
+        init(timeCycleManager);
     }
 
     // Init
@@ -96,20 +97,20 @@ public class Player extends Entity {
         this.transformAnimations = Animation.getInstance().loadPlayerAnimations(width, height, PLAYER_TRANSFORM_SHEET);
     }
 
-    private void init() {
+    private void init(TimeCycleManager timeCycleManager) {
         this.cooldown = new double[4];
         addAction(PlayerAction.CAN_DASH);
         initHitBox(PLAYER_HB_WID, PLAYER_HB_HEI);
         initAttackBox();
-        initManagers();
+        initManagers(timeCycleManager);
     }
 
     private void initAttackBox() {
         this.attackBox = new Rectangle2D.Double(xPos, yPos-1, PLAYER_AB_WID, PLAYER_AB_HEI);
     }
 
-    private void initManagers() {
-        this.playerDataManager = new PlayerDataManager(this, minimapManager);
+    private void initManagers(TimeCycleManager timeCycleManager) {
+        this.playerDataManager = new PlayerDataManager(this, minimapManager, timeCycleManager);
         this.minimapHandler = new PlayerMinimapHandler(this, minimapManager);
         this.actionHandler = new PlayerActionHandler(this, effectManager);
         this.inventory = new Inventory();

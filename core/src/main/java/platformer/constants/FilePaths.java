@@ -103,6 +103,7 @@ public final class FilePaths {
     public static final String RORIC_BOSS_BAR = "/images/enemies/boss/RoricBar.png";
     public static final String PLAYER_HUD = "/images/playerHUD.png";
     public static final String PLAYER_PORTRAIT = "/images/portraitHUD.png";
+    public static final String TIME_CYCLE_ICONS = "/images/player/hud/TimeCycleSheet.png";
     public static final String PAUSE_TXT = "/images/buttons/PauseText.png";
     public static final String DEAD_TXT = "/images/buttons/DeadText.png";
     public static final String RESPAWN_TXT = "/images/buttons/RespawnText.png";

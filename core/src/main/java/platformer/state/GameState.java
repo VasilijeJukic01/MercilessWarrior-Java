@@ -135,7 +135,7 @@ public class GameState extends AbstractState implements State {
     }
 
     private void initPlayer() {
-        this.player = new Player(PLAYER_X, PLAYER_Y, PLAYER_WIDTH, PLAYER_HEIGHT, enemyManager, objectManager, projectileManager, minimapManager, effectManager);
+        this.player = new Player(PLAYER_X, PLAYER_Y, PLAYER_WIDTH, PLAYER_HEIGHT, enemyManager, objectManager, projectileManager, minimapManager, effectManager, timeCycleManager);
         this.player.loadLvlData(levelManager.getCurrentLevel().getLvlData());
         this.player.setSpawn(levelManager.getCurrentLevel().getPlayerSpawn("LEFT"));
     }
