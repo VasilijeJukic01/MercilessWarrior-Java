@@ -9,7 +9,7 @@ package platformer.model.effects;
 public class TimeCycleManager {
 
     /* The duration of a full in-game day in real-world seconds. */
-    public static final double SECONDS_PER_GAME_DAY = 600.0; // 10 minutes
+    public static final double SECONDS_PER_GAME_DAY = 1440.0; // 24 minutes
     private static final int UPS = 200;
     private double gameTime = 0;
 

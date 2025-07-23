@@ -44,9 +44,11 @@ public class LightManager {
     private BufferedImage playerLightTexture, candleLightTexture, totemLightTexture;
 
     private Color ambientDarkness;
-    private int animTick = 0, currentAmbientAlpha = 130, ambientAlpha = 130;
+    private int animTick = 0, fadeBackAnimTick = 0;
+    private int currentAmbientAlpha = 130, ambientAlpha = 130;
     private double pulseTimer = 0.0;
     private boolean ambientDarknessOverridden = false;
+    private boolean isFadingBack = false;
 
     private int flashDuration = 0;
     private float flashIntensity = 0.0f;
@@ -134,6 +136,7 @@ public class LightManager {
      * @param timeManager The manager providing the current time.
      */
     private void calculateTimeCycleEffects(TimeCycleManager timeManager) {
+        if (ambientDarknessOverridden) return;
         double time = timeManager.getGameTimeNormalized();
         int tintAlpha, darknessAlpha;
         Color tint;
@@ -176,8 +179,7 @@ public class LightManager {
     }
 
     /**
-     * Manages the gradual return to the natural ambient darkness after a special effect (like a flash) has temporarily altered it.
-     * Also handles the timed removal of color filters.
+     * Manages the ambient darkness, distinguishing between smooth day/night transitions, fast recovery from effects, and a persistent override state.
      */
     private void updateAmbientDarknessAndEffects() {
         if (filterColor != null) {
@@ -187,31 +189,32 @@ public class LightManager {
                 filterColor = null;
             }
         }
+        int targetAlpha = this.ambientAlpha;
+
         if (ambientDarknessOverridden) {
-            this.ambientDarkness = new Color(0, 0, 0, currentAmbientAlpha);
-            return;
+            if (currentAmbientAlpha < targetAlpha) {
+                currentAmbientAlpha = Math.min(currentAmbientAlpha + 2, targetAlpha);
+            }
         }
-        double time = currentTimeOfDay;
-        int targetAlpha;
-
-        // Night
-        if (time < 0.25 || time >= 0.75) targetAlpha = 220;
-        // Dawn
-        else if (time < 0.5) {
-            float dawnProgress = (float)((time - 0.25) / 0.25);
-            targetAlpha = interpolate(220, 80, dawnProgress);
+        // Faster recovery from effect
+        else if (isFadingBack) {
+            fadeBackAnimTick++;
+            if (fadeBackAnimTick >= LIGHT_ANIM_SPEED / 2) {
+                fadeBackAnimTick = 0;
+                currentAmbientAlpha += 50;
+                if (currentAmbientAlpha >= targetAlpha) {
+                    currentAmbientAlpha = targetAlpha;
+                    isFadingBack = false;
+                }
+            }
         }
-        // Day to Dusk
         else {
-            float duskProgress = (float)((time - 0.5) / 0.25);
-            targetAlpha = interpolate(80, 220, duskProgress);
-        }
-
-        if (currentAmbientAlpha < targetAlpha) {
-            currentAmbientAlpha = Math.min(currentAmbientAlpha + 2, targetAlpha);
-        }
-        else if (currentAmbientAlpha > targetAlpha) {
-            currentAmbientAlpha = Math.max(currentAmbientAlpha - 2, targetAlpha);
+            if (currentAmbientAlpha < targetAlpha) {
+                currentAmbientAlpha = Math.min(currentAmbientAlpha + 2, targetAlpha);
+            }
+            else if (currentAmbientAlpha > targetAlpha) {
+                currentAmbientAlpha = Math.max(currentAmbientAlpha - 2, targetAlpha);
+            }
         }
         this.ambientDarkness = new Color(0, 0, 0, currentAmbientAlpha);
     }
@@ -270,6 +273,7 @@ public class LightManager {
      * @param g The graphics context.
      */
     private void renderTimeCycleTint(Graphics g) {
+        if (ambientDarknessOverridden) return;
         if (timeCycleTintColor.getAlpha() > 0) {
             g.setColor(timeCycleTintColor);
             g.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
@@ -440,6 +444,8 @@ public class LightManager {
      */
     public void overrideAmbientDarkness(int darkness) {
         this.ambientDarknessOverridden = true;
+        this.isFadingBack = false;
+        this.ambientAlpha = darkness;
         this.currentAmbientAlpha = darkness;
     }
 
@@ -487,27 +493,39 @@ public class LightManager {
     public void setAlphaWithFilter(int alpha, Color color) {
         this.currentAmbientAlpha = alpha;
         this.filterColor = color;
-        this.animTick = 0;
+        if (!ambientDarknessOverridden) {
+            this.isFadingBack = true;
+            this.fadeBackAnimTick = 0;
+        }
     }
 
     public void setAlpha(int alpha) {
         this.currentAmbientAlpha = alpha;
-        this.ambientDarkness = new Color(0, 0, 0, alpha);
         this.filterColor = null;
-        this.animTick = 0;
+        if (!ambientDarknessOverridden) {
+            this.isFadingBack = true;
+            this.fadeBackAnimTick = 0;
+        }
     }
 
     public void setCurrentAmbientAlpha(int currentAmbientAlpha) {
         this.currentAmbientAlpha = currentAmbientAlpha;
+        if (!ambientDarknessOverridden) {
+            this.isFadingBack = true;
+            this.fadeBackAnimTick = 0;
+        }
         this.filterColor = null;
-        this.animTick = 0;
     }
 
     public void reset() {
         releaseAmbientDarkness();
+        this.ambientAlpha = 130;
+        this.currentAmbientAlpha = 130;
         this.filterColor = null;
         this.flashIntensity = 0;
         this.flashDuration = 0;
+        this.isFadingBack = false;
+        this.fadeBackAnimTick = 0;
     }
 
 }
