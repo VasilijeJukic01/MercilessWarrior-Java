@@ -4,6 +4,7 @@ import platformer.animation.Anim;
 import platformer.animation.Animation;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
+import platformer.model.effects.ScreenEffectsManager;
 import platformer.model.entities.Direction;
 import platformer.model.effects.particles.DustType;
 import platformer.model.entities.enemies.boss.Roric;
@@ -47,6 +48,7 @@ import static platformer.constants.Constants.*;
 public class EnemyManager implements Publisher {
 
     private final GameState gameState;
+    private ScreenEffectsManager screenEffectsManager;
 
     private BufferedImage[][] skeletonAnimations, ghoulAnimations, knightAnimations, wraithAnimations, lancerAnimations, roricAnimations;
 
@@ -254,7 +256,7 @@ public class EnemyManager implements Publisher {
      */
     private void spawnParticles(Rectangle2D.Double box, Player player, Enemy enemy, boolean isCritical) {
         if (isCritical) {
-            gameState.triggerScreenFlash();
+            screenEffectsManager.triggerFlash();
             gameState.getEffectManager().spawnDustParticles(box.getCenterX(), box.getCenterY(), 25, DustType.CRITICAL_HIT, player.getFlipSign(), null);
         }
         else if (enemy.getEnemyAction() != Anim.BLOCK) {
@@ -484,5 +486,9 @@ public class EnemyManager implements Publisher {
                 .filter(s -> s instanceof QuestManager)
                 .findFirst()
                 .ifPresent(s -> s.update(o));
+    }
+
+    public void injectScreenEffectsManager(ScreenEffectsManager screenEffectsManager) {
+        this.screenEffectsManager = screenEffectsManager;
     }
 }

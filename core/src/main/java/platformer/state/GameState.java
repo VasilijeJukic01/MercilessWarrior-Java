@@ -9,6 +9,7 @@ import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
 import platformer.model.effects.EffectManager;
 import platformer.model.effects.RainManager;
+import platformer.model.effects.ScreenEffectsManager;
 import platformer.model.effects.TimeCycleManager;
 import platformer.model.effects.lighting.LightManager;
 import platformer.model.entities.enemies.EnemyManager;
@@ -30,6 +31,7 @@ import platformer.observer.events.RoricEventHandler;
 import platformer.ui.dialogue.DialogueManager;
 import platformer.ui.overlays.OverlayManager;
 import platformer.ui.overlays.hud.BossInterface;
+import platformer.view.Camera;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
@@ -37,7 +39,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 import static platformer.constants.Constants.*;
 import static platformer.physics.CollisionDetector.isEntityOnExit;
@@ -51,7 +52,9 @@ public class GameState extends AbstractState implements State {
     private GameContext context;
 
     private GameWorld world;
+    private final Camera camera;
     private final GameStateController gameStateController;
+    private final ScreenEffectsManager screenEffectsManager;
 
     // Events
     private final List<EventHandler> eventHandlers = new ArrayList<>();
@@ -68,28 +71,15 @@ public class GameState extends AbstractState implements State {
     private boolean isRespawning;
     private boolean isDarkPhase = false;
 
-    // Camera
-    private double cameraX, cameraY;
-    private int xLevelOffset;
-    private int xMaxLevelOffset;
-    private int yLevelOffset;
-    private int yMaxLevelOffset;
-
     private BossInterface bossInterface;
-
-    // Effects
-    private int screenFlashAlpha = 0;
-    private final int flashFadeSpeed = 25;
-    private int screenShakeDuration = 0;
-    private double screenShakeIntensity = 0;
-    private final Random random = new Random();
 
     public GameState(Game game) {
         super(game);
+        this.screenEffectsManager = new ScreenEffectsManager(game);
         init();
         this.gameStateController = new GameStateController(this);
-        this.cameraX = getPlayer().getHitBox().x;
-        this.cameraY = getPlayer().getHitBox().y;
+        this.camera = new Camera(getPlayer().getHitBox().x, getPlayer().getHitBox().y);
+        this.camera.updateLevelBounds(getLevelManager().getCurrentLevel());
     }
 
     // Init
@@ -116,11 +106,13 @@ public class GameState extends AbstractState implements State {
                 minimapManager,
                 perksManager,
                 questManager,
-                tutorialManager
+                tutorialManager,
+                screenEffectsManager
         );
 
         this.world = new GameWorld(context);
 
+        this.getEnemyManager().injectScreenEffectsManager(screenEffectsManager);
         this.getObjectManager().lateInit();
         this.getSpellManager().lateInit();
         this.questManager.registerObservers();
@@ -129,7 +121,6 @@ public class GameState extends AbstractState implements State {
 
         this.getObjectManager().loadObjects(this.getLevelManager().getCurrentLevel());
         loadFromDatabase();
-        calculateLevelOffset();
     }
 
     private void initEventHandlers() {
@@ -152,12 +143,7 @@ public class GameState extends AbstractState implements State {
         this.overlayManager.reset();
         this.questManager.reset();
         reset();
-        calculateLevelOffset();
-    }
-
-    private void calculateLevelOffset() {
-        this.xMaxLevelOffset = getLevelManager().getCurrentLevel().getXMaxLevelOffset();
-        this.yMaxLevelOffset = getLevelManager().getCurrentLevel().getYMaxLevelOffset();
+        camera.updateLevelBounds(getLevelManager().getCurrentLevel());
     }
 
     private void goToLevel(int dI, int dJ, String message) {
@@ -172,7 +158,7 @@ public class GameState extends AbstractState implements State {
         world.levelLoadReset(spawn);
         minimapManager.changeLevel();
         getPlayer().activateMinimap(true);
-        calculateLevelOffset();
+        camera.updateLevelBounds(getLevelManager().getCurrentLevel());
         overlayManager.reset();
         questManager.reset();
         Logger.getInstance().notify(message, Message.NOTIFICATION);
@@ -194,38 +180,13 @@ public class GameState extends AbstractState implements State {
         goToLevel(1, 0, "Bottom level loaded.");
     }
 
-    private void updateCamera() {
-        float targetX = (float) getPlayer().getHitBox().x - (GAME_WIDTH / 2.0f);
-        float targetY = (float) getPlayer().getHitBox().y - (GAME_HEIGHT / 2.0f);
-
-        cameraX += (targetX - cameraX) * CAMERA_LERP_FACTOR_X;
-        cameraY += (targetY - cameraY) * CAMERA_LERP_FACTOR_Y;
-
-        xLevelOffset = (int) cameraX;
-        yLevelOffset = (int) cameraY;
-
-        xLevelOffset = Math.max(0, Math.min(xLevelOffset, xMaxLevelOffset));
-        yLevelOffset = Math.max(0, Math.min(yLevelOffset, yMaxLevelOffset));
-    }
-
-    public void triggerScreenFlash() {
-        this.screenFlashAlpha = 200;
-    }
-
-    public void triggerScreenShake(int duration, double intensity) {
-        if (!game.getSettings().isScreenShake()) return;
-        this.screenShakeDuration = duration;
-        this.screenShakeIntensity = intensity;
-    }
-
     private void updateEventHandlers() {
         eventHandlers.forEach(EventHandler::continuousUpdate);
     }
 
     @Override
     public void update() {
-        updateScreenShake();
-        updateFlash();
+        screenEffectsManager.update();
         checkPlayerDeath();
         if (state == PlayingState.PAUSE)
             overlayManager.update(PlayingState.PAUSE);
@@ -247,29 +208,14 @@ public class GameState extends AbstractState implements State {
     @Override
     public void render(Graphics g) {
         Graphics2D g2d = (Graphics2D) g;
-        int shakeOffsetX = 0;
-        int shakeOffsetY = 0;
 
-        if (screenShakeDuration > 0) {
-            shakeOffsetX = (int) ((random.nextDouble() - 0.5) * screenShakeIntensity);
-            shakeOffsetY = (int) ((random.nextDouble() - 0.5) * screenShakeIntensity);
-            g2d.translate(shakeOffsetX, shakeOffsetY);
-        }
-
-        world.render(g, xLevelOffset, yLevelOffset, isDarkPhase);
-
-        if (screenFlashAlpha > 0) {
-            g.setColor(new Color(255, 255, 255, screenFlashAlpha));
-            g.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
-        }
+        screenEffectsManager.beginFrame(g2d);
+        world.render(g2d, camera.getXOffset(), camera.getYOffset(), isDarkPhase);
+        screenEffectsManager.renderFlash(g2d);
 
         getPlayer().getPlayerStatusManager().getUserInterface().render(g);
         bossInterface.render(g);
         overlayManager.render(g);
-
-        if (screenShakeDuration > 0) {
-            g2d.translate(-shakeOffsetX, -shakeOffsetY);
-        }
     }
 
     private void handleGameState() {
@@ -277,7 +223,7 @@ public class GameState extends AbstractState implements State {
             checkLevelExit();
             world.update();
             minimapManager.update();
-            updateCamera();
+            camera.update(getPlayer().getHitBox());
             updateEventHandlers();
 
             if (state == PlayingState.SHOP) overlayManager.update(PlayingState.SHOP);
@@ -305,17 +251,6 @@ public class GameState extends AbstractState implements State {
         boolean gameOver = getPlayer().checkAction(PlayerAction.GAME_OVER);
         if (dying) setOverlay(PlayingState.DYING);
         if (gameOver) setOverlay(PlayingState.GAME_OVER);
-    }
-
-    private void updateFlash() {
-        if (screenFlashAlpha > 0) {
-            screenFlashAlpha -= flashFadeSpeed;
-            if (screenFlashAlpha < 0) screenFlashAlpha = 0;
-        }
-    }
-
-    private void updateScreenShake() {
-        if (screenShakeDuration > 0) screenShakeDuration--;
     }
 
     @Override

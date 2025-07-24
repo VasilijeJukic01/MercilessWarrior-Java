@@ -2,6 +2,7 @@ package platformer.observer.events;
 
 import platformer.core.GameContext;
 import platformer.model.effects.EffectManager;
+import platformer.model.effects.ScreenEffectsManager;
 import platformer.model.effects.particles.DustType;
 import platformer.model.entities.enemies.boss.Lancer;
 import platformer.observer.EventHandler;
@@ -28,12 +29,12 @@ import java.util.Random;
  */
 public class LancerEventHandler implements EventHandler, Subscriber {
 
-    private final GameState gameState;
+    private final ScreenEffectsManager screenEffectsManager;
     private final EffectManager effectManager;
 
     public LancerEventHandler(GameContext context) {
         this.effectManager = context.getEffectManager();
-        this.gameState = context.getGameState();
+        this.screenEffectsManager = context.getScreenEffectsManager();
     }
 
     /**
@@ -87,7 +88,7 @@ public class LancerEventHandler implements EventHandler, Subscriber {
     }
 
     private void handleShakeScreenEvent() {
-        gameState.triggerScreenShake(30, 15.0);
+        screenEffectsManager.triggerShake(30, 15.0);
     }
 
     private void handleDashSlashEvent(Object start, Object end, Object height) {

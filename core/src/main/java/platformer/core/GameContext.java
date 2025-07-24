@@ -4,6 +4,7 @@ package platformer.core;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import platformer.model.effects.EffectManager;
+import platformer.model.effects.ScreenEffectsManager;
 import platformer.model.effects.lighting.LightManager;
 import platformer.model.effects.RainManager;
 import platformer.model.effects.TimeCycleManager;
@@ -39,4 +40,5 @@ public final class GameContext {
     private final PerksManager perksManager;
     private final QuestManager questManager;
     private final TutorialManager tutorialManager;
+    private final ScreenEffectsManager screenEffectsManager;
 }

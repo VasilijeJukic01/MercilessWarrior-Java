@@ -2,6 +2,7 @@ package platformer.observer.events;
 
 import platformer.core.GameContext;
 import platformer.model.effects.EffectManager;
+import platformer.model.effects.ScreenEffectsManager;
 import platformer.model.effects.particles.DustType;
 import platformer.model.entities.enemies.boss.Roric;
 import platformer.model.entities.enemies.boss.roric.RoricPhaseManager;
@@ -32,6 +33,7 @@ import java.util.Random;
 public class RoricEventHandler implements EventHandler, Subscriber {
 
     private final GameState gameState;
+    private final ScreenEffectsManager screenEffectsManager;
     private final EffectManager effectManager;
     private Roric roricInstance = null;
 
@@ -55,6 +57,7 @@ public class RoricEventHandler implements EventHandler, Subscriber {
     public RoricEventHandler(GameContext context) {
         this.gameState = context.getGameState();
         this.effectManager = context.getEffectManager();
+        this.screenEffectsManager = context.getScreenEffectsManager();
     }
 
     /**
@@ -146,7 +149,7 @@ public class RoricEventHandler implements EventHandler, Subscriber {
             long elapsedTime = System.currentTimeMillis() - fightStartTime;
             if (finaleFlashIndex < finaleFlashTimings.length && elapsedTime >= finaleFlashTimings[finaleFlashIndex]) {
                 gameState.getLightManager().setAlphaWithFilter(0, new Color(100, 255, 120, 100));
-                gameState.triggerScreenShake(30, 20.0);
+                screenEffectsManager.triggerShake(30, 20.0);
                 finaleFlashIndex++;
             }
         }
