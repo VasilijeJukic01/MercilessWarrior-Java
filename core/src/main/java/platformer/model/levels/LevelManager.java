@@ -194,8 +194,17 @@ public class LevelManager {
 
     private void renderTerrain(Graphics g, int xLevelOffset, int yLevelOffset, boolean behind) {
         Level level = levels[levelIndexI][levelIndexJ];
-        for (int i = 0; i < level.getLvlData().length; i++) {
-            for (int j = 0; j < level.getLvlData()[0].length; j++) {
+        int xStart = xLevelOffset / TILES_SIZE;
+        int xEnd = (xLevelOffset + GAME_WIDTH) / TILES_SIZE + 1;
+        int yStart = yLevelOffset / TILES_SIZE;
+        int yEnd = (yLevelOffset + GAME_HEIGHT) / TILES_SIZE + 1;
+        xStart = Math.max(0, xStart);
+        xEnd = Math.min(level.getLevelTilesWidth(), xEnd);
+        yStart = Math.max(0, yStart);
+        yEnd = Math.min(level.getLevelTilesHeight(), yEnd);
+
+        for (int i = xStart; i < xEnd; i++) {
+            for (int j = yStart; j < yEnd; j++) {
                 int tileIndex = level.getSpriteIndex(i, j);
                 if ((!behind && tileIndex < 255) || tileIndex == -1) continue; // Invalid index
                 if (behind && tileIndex >= 255) continue; // Layer behind

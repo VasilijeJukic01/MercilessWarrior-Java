@@ -51,6 +51,8 @@ public class SaveGameOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
 
     @Override
     public void render(Graphics g) {
+        g.setColor(new Color(0, 0, 0, 150));
+        g.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
         OverlayLayer.getInstance().renderOverlay(g);
         g.drawImage(saveText, SAVE_LOAD_TEXT_X, SAVE_LOAD_TEXT_Y, saveText.getWidth(), saveText.getHeight(), null);
         Framework.getInstance().getSaveController().getGameSlots().forEach(s -> s.render(g));

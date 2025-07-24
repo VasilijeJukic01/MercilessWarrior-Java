@@ -191,7 +191,7 @@ public class GameState extends AbstractState implements State {
     public void update() {
         screenEffectsManager.update();
         checkPlayerDeath();
-        if (state == PlayingState.PAUSE || state == PlayingState.SAVE || state == PlayingState.GAME_OVER) {
+        if (state != null && state != PlayingState.DIALOGUE && state != PlayingState.DYING) {
             overlayManager.update(state);
         }
         else if (state == PlayingState.DYING) {
@@ -344,12 +344,14 @@ public class GameState extends AbstractState implements State {
     public void setOverlay(PlayingState newOverlay) {
         if (state == PlayingState.PAUSE) {
             Audio.getInstance().getAudioPlayer().unpauseSounds();
+            Audio.getInstance().getAudioPlayer().unpauseSong();
             getEnemyManager().unpauseRoricTimer();
             eventHandlers.forEach(EventHandler::unpause);
         }
         this.state = newOverlay;
         if (state == PlayingState.PAUSE) {
             Audio.getInstance().getAudioPlayer().pauseSounds();
+            Audio.getInstance().getAudioPlayer().pauseSong();
             getEnemyManager().pauseRoricTimer();
             eventHandlers.forEach(EventHandler::pause);
         }

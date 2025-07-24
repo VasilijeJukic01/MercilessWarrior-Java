@@ -87,6 +87,8 @@ public class CraftingOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
 
     @Override
     public void render(Graphics g) {
+        g.setColor(new Color(0, 0, 0, 150));
+        g.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
         Graphics2D g2d = (Graphics2D) g;
         renderOverlay(g2d);
         renderCraftingPanel(g2d);

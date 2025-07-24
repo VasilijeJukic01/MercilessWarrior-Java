@@ -162,6 +162,7 @@ public class RoricEventHandler implements EventHandler, Subscriber {
      * @param newPhase The new phase of the Roric fight.
      */
     private void handlePhaseChange(RoricPhaseManager.RoricPhase newPhase) {
+        gameState.getSpellManager().stopArrowRainTelegraph();
         if (celestialAuraActive && newPhase != RoricPhaseManager.RoricPhase.STORM) {
             handleCelestialRainEnd(gameState.getEnemyManager().getRoricInstance());
         }
