@@ -70,14 +70,13 @@ public class ObjectManager implements Publisher {
 
     public ObjectManager(GameState gameState) {
         this.gameState = gameState;
-        initHandlers();
         this.objects = Animation.getInstance().loadObjects();
         this.coinAnimations = Animation.getInstance().getCoinAnimations();
         this.npcs = Animation.getInstance().loadNpcs();
     }
 
     // Init
-    private void initHandlers() {
+    public void lateInit() {
         this.collisionHandler = new CollisionHandler(gameState.getLevelManager(), this);
         this.lootHandler = new LootHandler(this, gameState.getEffectManager());
         this.intersectionHandler = new IntersectionHandler(gameState.getEnemyManager(), this, lootHandler);

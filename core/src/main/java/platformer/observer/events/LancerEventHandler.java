@@ -1,5 +1,6 @@
 package platformer.observer.events;
 
+import platformer.core.GameContext;
 import platformer.model.effects.EffectManager;
 import platformer.model.effects.particles.DustType;
 import platformer.model.entities.enemies.boss.Lancer;
@@ -30,9 +31,9 @@ public class LancerEventHandler implements EventHandler, Subscriber {
     private final GameState gameState;
     private final EffectManager effectManager;
 
-    public LancerEventHandler(GameState gameState) {
-        this.gameState = gameState;
-        this.effectManager = gameState.getEffectManager();
+    public LancerEventHandler(GameContext context) {
+        this.effectManager = context.getEffectManager();
+        this.gameState = context.getGameState();
     }
 
     /**

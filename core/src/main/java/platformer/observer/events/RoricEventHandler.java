@@ -1,5 +1,6 @@
 package platformer.observer.events;
 
+import platformer.core.GameContext;
 import platformer.model.effects.EffectManager;
 import platformer.model.effects.particles.DustType;
 import platformer.model.entities.enemies.boss.Roric;
@@ -51,9 +52,9 @@ public class RoricEventHandler implements EventHandler, Subscriber {
     private boolean isPaused = false;
     private long pauseStartTime = 0;
 
-    public RoricEventHandler(GameState gameState, EffectManager effectManager) {
-        this.gameState = gameState;
-        this.effectManager = effectManager;
+    public RoricEventHandler(GameContext context) {
+        this.gameState = context.getGameState();
+        this.effectManager = context.getEffectManager();
     }
 
     /**

@@ -4,6 +4,7 @@ import platformer.animation.Anim;
 import platformer.animation.Animation;
 import platformer.audio.Audio;
 import platformer.audio.types.Sound;
+import platformer.core.GameContext;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
 import platformer.model.effects.TimeCycleManager;
@@ -80,29 +81,29 @@ public class Player extends Entity {
     private int mythicAuraTick = 0;
 
 
-    public Player(int xPos, int yPos, int width, int height, EnemyManager enemyManager, ObjectManager objectManager, ProjectileManager projectileManager, MinimapManager minimapManager, EffectManager effectManager, TimeCycleManager timeCycleManager) {
+    public Player(int xPos, int yPos, int width, int height, GameContext context) {
         super(xPos, yPos, width, height, PLAYER_MAX_HP);
-        this.enemyManager = enemyManager;
-        this.objectManager = objectManager;
-        this.projectileManager = projectileManager;
-        this.minimapManager = minimapManager;
-        this.effectManager = effectManager;
-        loadAnimations();
-        init(timeCycleManager);
+        this.enemyManager = context.getEnemyManager();
+        this.objectManager = context.getObjectManager();
+        this.projectileManager = context.getProjectileManager();
+        this.minimapManager = context.getMinimapManager();
+        this.effectManager = context.getEffectManager();
+        init(context);
     }
 
     // Init
-    private void loadAnimations() {
-        this.animations = Animation.getInstance().loadPlayerAnimations(width, height, PLAYER_SHEET);
-        this.transformAnimations = Animation.getInstance().loadPlayerAnimations(width, height, PLAYER_TRANSFORM_SHEET);
-    }
-
-    private void init(TimeCycleManager timeCycleManager) {
+    private void init(GameContext context) {
         this.cooldown = new double[4];
         addAction(PlayerAction.CAN_DASH);
         initHitBox(PLAYER_HB_WID, PLAYER_HB_HEI);
         initAttackBox();
-        initManagers(timeCycleManager);
+        initManagers(context.getTimeCycleManager());
+        loadAnimations();
+    }
+
+    private void loadAnimations() {
+        this.animations = Animation.getInstance().loadPlayerAnimations(width, height, PLAYER_SHEET);
+        this.transformAnimations = Animation.getInstance().loadPlayerAnimations(width, height, PLAYER_TRANSFORM_SHEET);
     }
 
     private void initAttackBox() {

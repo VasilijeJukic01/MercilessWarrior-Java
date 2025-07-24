@@ -58,11 +58,14 @@ public class SpellManager {
         this.roricBeams = new ArrayList<>();
         this.arrowRains = new ArrayList<>();
         this.skyBeams = new ArrayList<>();
+    }
+
+    // Init
+    public void lateInit() {
         initSpellAnimations();
         initBossSpells();
     }
 
-    // Init
     private void initSpellAnimations() {
         this.lightningAnimations = loadLightningAnimations();
         this.flashAnimations = loadFlashAnimations();
