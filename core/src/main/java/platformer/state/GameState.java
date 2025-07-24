@@ -1,5 +1,7 @@
 package platformer.state;
 
+import lombok.Getter;
+import lombok.Setter;
 import platformer.audio.Audio;
 import platformer.controller.GameStateController;
 import platformer.core.Framework;
@@ -57,21 +59,22 @@ public class GameState extends AbstractState implements State {
     private final ScreenEffectsManager screenEffectsManager;
 
     // Events
-    private final List<EventHandler> eventHandlers = new ArrayList<>();
+    @Getter private final List<EventHandler> eventHandlers = new ArrayList<>();
 
-    private PerksManager perksManager;
-    private QuestManager questManager;
-    private OverlayManager overlayManager;
-    private DialogueManager dialogueManager;
-    private MinimapManager minimapManager;
-    private TutorialManager tutorialManager;
+    // Managers
+    @Getter private PerksManager perksManager;
+    @Getter private QuestManager questManager;
+    @Getter private OverlayManager overlayManager;
+    @Getter private DialogueManager dialogueManager;
+    @Getter private MinimapManager minimapManager;
+    @Getter private TutorialManager tutorialManager;
 
     // State
     private PlayingState state;
     private boolean isRespawning;
-    private boolean isDarkPhase = false;
+    @Getter @Setter private boolean isDarkPhase;
 
-    private BossInterface bossInterface;
+    @Getter private BossInterface bossInterface;
 
     public GameState(Game game) {
         super(game);
@@ -188,21 +191,15 @@ public class GameState extends AbstractState implements State {
     public void update() {
         screenEffectsManager.update();
         checkPlayerDeath();
-        if (state == PlayingState.PAUSE)
-            overlayManager.update(PlayingState.PAUSE);
-        else if (state == PlayingState.SAVE)
-            overlayManager.update(PlayingState.SAVE);
-        else if (state == PlayingState.GAME_OVER)
-            overlayManager.update(PlayingState.GAME_OVER);
+        if (state == PlayingState.PAUSE || state == PlayingState.SAVE || state == PlayingState.GAME_OVER) {
+            overlayManager.update(state);
+        }
         else if (state == PlayingState.DYING) {
             getPlayer().update();
             getEffectManager().update();
-        } else {
-            handleGameState();
         }
-
-        if (state == PlayingState.DIALOGUE)
-            overlayManager.update(PlayingState.DIALOGUE);
+        else handleGameState();
+        if (state == PlayingState.DIALOGUE) overlayManager.update(PlayingState.DIALOGUE);
     }
 
     @Override
@@ -221,19 +218,11 @@ public class GameState extends AbstractState implements State {
     private void handleGameState() {
         try {
             checkLevelExit();
+            updateEventHandlers();
             world.update();
             minimapManager.update();
             camera.update(getPlayer().getHitBox());
-            updateEventHandlers();
-
-            if (state == PlayingState.SHOP) overlayManager.update(PlayingState.SHOP);
-            else if (state == PlayingState.BLACKSMITH) overlayManager.update(PlayingState.BLACKSMITH);
-            else if (state == PlayingState.INVENTORY) overlayManager.update(PlayingState.INVENTORY);
-            else if (state == PlayingState.CRAFTING) overlayManager.update(PlayingState.CRAFTING);
-            else if (state == PlayingState.LOOTING) overlayManager.update(PlayingState.LOOTING);
-            else if (state == PlayingState.QUEST) overlayManager.update(PlayingState.QUEST);
-            else if (state == PlayingState.MINIMAP) overlayManager.update(PlayingState.MINIMAP);
-            else if (state == PlayingState.TUTORIAL) overlayManager.update(PlayingState.TUTORIAL);
+            overlayManager.update(state);
         } catch (Exception ignored) { }
     }
 
@@ -310,6 +299,7 @@ public class GameState extends AbstractState implements State {
         return state;
     }
 
+    // Facade
     public Player getPlayer() {
         return world.getPlayer();
     }
@@ -346,38 +336,7 @@ public class GameState extends AbstractState implements State {
         return world.getLightManager();
     }
 
-    public PerksManager getPerksManager() {
-        return perksManager;
-    }
-
-    public QuestManager getQuestManager() {
-        return questManager;
-    }
-
-    public MinimapManager getMinimapManager() {
-        return minimapManager;
-    }
-
-    public OverlayManager getOverlayManager() {
-        return overlayManager;
-    }
-
-    public DialogueManager getDialogueManager() {
-        return dialogueManager;
-    }
-
-    public TutorialManager getTutorialManager() {
-        return tutorialManager;
-    }
-
-    public BossInterface getBossInterface() {
-        return bossInterface;
-    }
-
-    public List<EventHandler> getEventHandlers() {
-        return eventHandlers;
-    }
-
+    // Getters and Setters
     public void setRespawning(boolean respawning) {
         isRespawning = respawning;
     }
@@ -394,13 +353,5 @@ public class GameState extends AbstractState implements State {
             getEnemyManager().pauseRoricTimer();
             eventHandlers.forEach(EventHandler::pause);
         }
-    }
-
-    public boolean isDarkPhase() {
-        return isDarkPhase;
-    }
-
-    public void setDarkPhase(boolean darkPhase) {
-        isDarkPhase = darkPhase;
     }
 }

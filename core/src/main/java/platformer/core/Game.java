@@ -33,9 +33,9 @@ public class Game implements Runnable {
     private final int FPS_LOCK = 144;
     private final int UPS_LOCK = 200;
     private int currentFps = 0;
+    private int frameCountForDisplay = 0;
     private int currentUpdates = 0;
 
-    private float originalScale;
     private int originalGameWidth;
     private int originalGameHeight;
 
@@ -47,7 +47,6 @@ public class Game implements Runnable {
     }
 
     private void init() {
-        this.originalScale = SCALE;
         this.originalGameWidth = GAME_WIDTH;
         this.originalGameHeight = GAME_HEIGHT;
         this.gameFrame = new GameFrame(this);
@@ -118,7 +117,7 @@ public class Game implements Runnable {
         final double timePerUpdate = 1000000000.0 / UPS_LOCK;
         long previousTime = System.nanoTime();
         long lastCheck = System.currentTimeMillis();
-        int frames = 0, updates = 0;
+        int updates = 0;
         double dF = 0, dU = 0;
 
         while (true) {
@@ -129,7 +128,7 @@ public class Game implements Runnable {
 
             previousTime = currentTime;
 
-            if (dU >= 1) {
+            while (dU >= 1) {
                 this.update();
                 updates++;
                 dU--;
@@ -137,18 +136,29 @@ public class Game implements Runnable {
 
             if (dF >= 1) {
                 this.gameFrame.getGamePanel().repaint();
-                frames++;
                 dF--;
             }
 
             if (System.currentTimeMillis() - lastCheck >= 1000) {
                 lastCheck = System.currentTimeMillis();
-                currentFps = frames;
+                synchronized (this) {
+                    currentFps = frameCountForDisplay;
+                    frameCountForDisplay = 0;
+                }
                 currentUpdates = updates;
-                frames = 0;
                 updates = 0;
             }
+            try {
+                Thread.sleep(1);
+            } catch (InterruptedException ignored) { }
         }
+    }
+
+    /**
+     * This method is called every time a frame is rendered to keep track of the number of frames displayed.
+     */
+    public synchronized void frameRendered() {
+        frameCountForDisplay++;
     }
 
     // Mediator

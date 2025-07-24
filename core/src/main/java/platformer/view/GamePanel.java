@@ -93,6 +93,7 @@ public class GamePanel extends JPanel {
         super.paintComponent(g);
         renderGame(g);
         renderInfo(g);
+        this.game.frameRendered();
     }
 
     /**
