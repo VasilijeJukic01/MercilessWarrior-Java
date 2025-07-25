@@ -2,9 +2,9 @@ package platformer.model.effects.lighting;
 
 import platformer.model.effects.TimeCycleManager;
 import platformer.model.entities.enemies.Enemy;
-import platformer.model.gameObjects.objects.Candle;
-import platformer.model.gameObjects.objects.SaveTotem;
-import platformer.model.gameObjects.objects.Shop;
+import platformer.model.gameObjects.GameObject;
+import platformer.model.gameObjects.objects.*;
+import platformer.model.gameObjects.objects.Container;
 import platformer.state.GameState;
 import platformer.utils.Utils;
 
@@ -39,9 +39,10 @@ public class LightManager {
 
     /** An off-screen buffer where all light sources are erased from a darkness layer before being drawn. */
     private final BufferedImage lightmap;
+    private static final int LIGHTMAP_SCALE = 2;
 
-    private BufferedImage orangeLight, whiteLight, whiteRadialLight;
-    private BufferedImage playerLightTexture, candleLightTexture, totemLightTexture;
+    private BufferedImage orangeLight, whiteRadialLight;
+    private BufferedImage playerLightTexture, enemyLightTexture, candleLightTexture, objectLightTexture;
 
     private Color ambientDarkness;
     private int animTick = 0, fadeBackAnimTick = 0;
@@ -62,7 +63,7 @@ public class LightManager {
 
     public LightManager(GameState gameState) {
         this.gameState = gameState;
-        this.lightmap = new BufferedImage(GAME_WIDTH, GAME_HEIGHT, BufferedImage.TYPE_INT_ARGB);
+        this.lightmap = new BufferedImage(GAME_WIDTH / LIGHTMAP_SCALE, GAME_HEIGHT / LIGHTMAP_SCALE, BufferedImage.TYPE_INT_ARGB);
         this.ambientDarkness = new Color(0, 0, 0, currentAmbientAlpha);
         initLightImages();
         initLightTextures();
@@ -71,10 +72,8 @@ public class LightManager {
     // Init
     private void initLightImages() {
         this.orangeLight = Utils.getInstance().importImage(ORANGE_GLOW, 2 * CANDLE_LIGHT_RADIUS, 2 * CANDLE_LIGHT_RADIUS);
-        BufferedImage whiteGlow = Utils.getInstance().importImage(WHITE_GLOW, 2 * PLAYER_LIGHT_RADIUS, 2 * PLAYER_LIGHT_RADIUS);
         BufferedImage whiteRadialGlow = Utils.getInstance().importImage(WHITE_RADIAL_GLOW, 2 * CANDLE_LIGHT_RADIUS, 2 * CANDLE_LIGHT_RADIUS);
         RescaleOp rescaleOp = new RescaleOp(new float[]{1.0f, 1.0f, 1.0f, 0.5f}, new float[4], null);
-        this.whiteLight = rescaleOp.filter(whiteGlow, null);
         this.whiteRadialLight = rescaleOp.filter(whiteRadialGlow, null);
     }
 
@@ -86,11 +85,14 @@ public class LightManager {
         int playerDiameter = (int)(PLAYER_LIGHT_RADIUS * 2.5f);
         playerLightTexture = createLightTexture(playerDiameter, new float[]{0f, 1f}, new Color[]{Color.WHITE, new Color(1.0f, 1.0f, 1.0f, 0f)});
 
+        int enemyDiameter = (int)(PLAYER_LIGHT_RADIUS * 2.0f);
+        enemyLightTexture = createLightTexture(enemyDiameter, new float[]{0f, 1f}, new Color[]{Color.WHITE, new Color(1.0f, 1.0f, 1.0f, 0f)});
+
         int candleDiameter = (int)(CANDLE_LIGHT_RADIUS * 2.6f);
         candleLightTexture = createLightTexture(candleDiameter, new float[]{0f, 1f}, new Color[]{Color.WHITE, new Color(1.0f, 1.0f, 1.0f, 0f)});
 
-        int totemDiameter = (int)(CANDLE_LIGHT_RADIUS * 1.6f);
-        totemLightTexture = createLightTexture(totemDiameter, new float[]{0f, 1f}, new Color[]{Color.WHITE, new Color(1.0f, 1.0f, 1.0f, 0f)});
+        int objectDiameter = (int)(CANDLE_LIGHT_RADIUS * 1.6f);
+        objectLightTexture = createLightTexture(objectDiameter, new float[]{0f, 1f}, new Color[]{Color.WHITE, new Color(1.0f, 1.0f, 1.0f, 0f)});
     }
 
     /**
@@ -261,7 +263,12 @@ public class LightManager {
      */
     public void render(Graphics g, int xLevelOffset, int yLevelOffset) {
         renderLightmap(xLevelOffset, yLevelOffset);
-        g.drawImage(lightmap, 0, 0, null);
+
+        Graphics2D g2d = (Graphics2D) g;
+        g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+        g2d.drawImage(lightmap, 0, 0, GAME_WIDTH, GAME_HEIGHT, null);
+        g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+
         renderTimeCycleTint(g);
         glowObjects((Graphics2D)g, xLevelOffset, yLevelOffset);
         renderFlashEffects(g);
@@ -306,6 +313,7 @@ public class LightManager {
      */
     private void renderLightmap(int xLevelOffset, int yLevelOffset) {
         Graphics2D g2d = lightmap.createGraphics();
+        g2d.scale(1.0 / LIGHTMAP_SCALE, 1.0 / LIGHTMAP_SCALE);
         g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.CLEAR));
         g2d.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
         g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER));
@@ -314,16 +322,41 @@ public class LightManager {
         g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.DST_OUT));
 
         drawLightSource(g2d, playerLightTexture, gameState.getPlayer().getHitBox(), xLevelOffset, yLevelOffset);
-
-        if (ambientDarkness.getAlpha() > 100) {
-            for (Candle candle : gameState.getObjectManager().getObjects(Candle.class)) {
-                if (candle.isAlive()) drawLightSource(g2d, candleLightTexture, candle.getHitBox(), xLevelOffset, yLevelOffset);
-            }
-            for (SaveTotem totem : gameState.getObjectManager().getObjects(SaveTotem.class)) {
-                if (totem.isAlive()) drawLightSource(g2d, totemLightTexture, totem.getHitBox(), xLevelOffset, yLevelOffset);
-            }
-        }
+        renderAllLightSources(g2d, xLevelOffset, yLevelOffset);
         g2d.dispose();
+    }
+
+    private void renderAllLightSources(Graphics2D g2d, int xLevelOffset, int yLevelOffset) {
+        if (ambientDarkness.getAlpha() > 100) {
+            renderCandleLights(g2d, xLevelOffset, yLevelOffset);
+            renderGameObjectLights(g2d, xLevelOffset, yLevelOffset);
+            renderEnemyLights(g2d, xLevelOffset, yLevelOffset);
+        }
+    }
+
+    private void renderCandleLights(Graphics2D g2d, int xLevelOffset, int yLevelOffset) {
+        for (Candle candle : gameState.getObjectManager().getObjects(Candle.class)) {
+            if (candle.isAlive()) drawLightSource(g2d, candleLightTexture, candle.getHitBox(), xLevelOffset, yLevelOffset);
+        }
+    }
+
+    private void renderGameObjectLights(Graphics2D g2d, int xLevelOffset, int yLevelOffset) {
+        List<Class<?>> sources = getLightSourceClasses();
+        for (Class<?> s : sources) renderLightsForClass(g2d, s, xLevelOffset, yLevelOffset);
+    }
+
+    @SuppressWarnings("unchecked")
+    private void renderLightsForClass(Graphics2D g2d, Class<?> lightSourceClass, int xLevelOffset, int yLevelOffset) {
+        List<GameObject> objects = (List<GameObject>) gameState.getObjectManager().getObjects(lightSourceClass);
+        for (GameObject obj : objects) {
+            if (obj.isAlive()) drawLightSource(g2d, objectLightTexture, obj.getHitBox(), xLevelOffset, yLevelOffset);
+        }
+    }
+
+    private void renderEnemyLights(Graphics2D g2d, int xLevelOffset, int yLevelOffset) {
+        for (Enemy enemy : gameState.getEnemyManager().getAllEnemies()) {
+            if (enemy.isAlive() && enemy.isVisible()) drawLightSource(g2d, enemyLightTexture, enemy.getHitBox(), xLevelOffset, yLevelOffset);
+        }
     }
 
     /**
@@ -352,56 +385,40 @@ public class LightManager {
         candleFilter(g2d, xLevelOffset, yLevelOffset);
         gameState.getObjectManager().glowingRender(g2d, xLevelOffset, yLevelOffset);
         shopFilter(g2d, xLevelOffset, yLevelOffset);
-        enemyFilter(g2d, xLevelOffset, yLevelOffset);
     }
 
     // Filters
-    private void candleFilter(Graphics2D g2d, int xLevelOffset, int yLevelOffset) {
+    private <T extends GameObject> void glowFilter(Graphics2D g2d, int xLevelOffset, int yLevelOffset, Class<T> clazz, boolean isCandle) {
         double pulseScale = 0.975 + 0.025 * Math.sin(pulseTimer);
-        List<Candle> candles = gameState.getObjectManager().getObjects(Candle.class);
+        List<T> objects = gameState.getObjectManager().getObjects(clazz);
         float glowAlpha = getSmoothGlowAlpha();
 
-        for (Candle candle : candles) {
+        for (T object : objects) {
             int glowWidth = (int) (2.5 * CANDLE_LIGHT_RADIUS * pulseScale);
             int glowHeight = (int) (2.5 * CANDLE_LIGHT_RADIUS * pulseScale);
-            int candleX = (int) (candle.getHitBox().getCenterX() - xLevelOffset) - glowWidth / 2;
-            int candleY = (int) (candle.getHitBox().getCenterY() - yLevelOffset) - glowHeight / 2;
+            int x = (int) (object.getHitBox().getCenterX() - xLevelOffset) - glowWidth / 2;
+            int y = (int) (object.getHitBox().getCenterY() - yLevelOffset) - glowHeight / 2;
 
             Composite originalComposite = g2d.getComposite();
 
             float whiteGlowAlpha = glowAlpha * 0.7f;
             g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, whiteGlowAlpha));
-            g2d.drawImage(whiteRadialLight, candleX, candleY, glowWidth, glowHeight, null);
+            g2d.drawImage(whiteRadialLight, x, y, glowWidth, glowHeight, null);
             g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, glowAlpha));
-            g2d.drawImage(orangeLight, candleX, candleY, glowWidth, glowHeight, null);
+            g2d.drawImage(orangeLight, x, y, glowWidth, glowHeight, null);
             g2d.setComposite(originalComposite);
-            gameState.getObjectManager().candleRender(g2d, xLevelOffset, yLevelOffset, candle);
+
+            if (isCandle && object instanceof Candle candle)
+                gameState.getObjectManager().candleRender(g2d, xLevelOffset, yLevelOffset, candle);
         }
+    }
+
+    private void candleFilter(Graphics2D g2d, int xLevelOffset, int yLevelOffset) {
+        glowFilter(g2d, xLevelOffset, yLevelOffset, Candle.class, true);
     }
 
     private void shopFilter(Graphics2D g2d, int xLevelOffset, int yLevelOffset) {
-        float glowAlpha = getSmoothGlowAlpha();
-        List<Shop> shops = gameState.getObjectManager().getObjects(Shop.class);
-
-        Composite originalComposite = g2d.getComposite();
-
-        g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, glowAlpha));
-        for (Shop shop : shops) {
-            int shopX = (int) (shop.getHitBox().getCenterX() - xLevelOffset) - CANDLE_LIGHT_RADIUS;
-            int shopY = (int) (shop.getHitBox().getCenterY() - yLevelOffset) - CANDLE_LIGHT_RADIUS;
-            g2d.drawImage(orangeLight, shopX, shopY, null);
-        }
-        g2d.setComposite(originalComposite);
-    }
-
-    private void enemyFilter(Graphics2D g2d, int xLevelOffset, int yLevelOffset) {
-        List<Enemy> enemies = gameState.getEnemyManager().getAllEnemies();
-        for (Enemy enemy : enemies) {
-            if (!enemy.isAlive() || !enemy.isVisible() || gameState.isDarkPhase()) continue;
-            int enemyX = (int) (enemy.getHitBox().x + enemy.getHitBox().width / 2 - xLevelOffset) - PLAYER_LIGHT_RADIUS;
-            int enemyY = (int) (enemy.getHitBox().y + enemy.getHitBox().height / 2 - yLevelOffset) - PLAYER_LIGHT_RADIUS;
-            g2d.drawImage(whiteLight, enemyX, enemyY, null);
-        }
+        glowFilter(g2d, xLevelOffset, yLevelOffset, Shop.class, false);
     }
 
     /**
@@ -481,6 +498,20 @@ public class LightManager {
         int g = (int) (c1.getGreen() + (c2.getGreen() - c1.getGreen()) * progress);
         int b = (int) (c1.getBlue() + (c2.getBlue() - c1.getBlue()) * progress);
         return new Color(r, g, b);
+    }
+
+    /**
+     * Returns a list of classes that represent light sources in the game.
+     * This is used to dynamically render all light-emitting objects without hardcoding each type.
+     *
+     * @return A list of Class objects representing light sources.
+     */
+    private List<Class<?>> getLightSourceClasses() {
+        return List.of(
+                Container.class, Blocker.class, Dog.class, SmashTrap.class,
+                SaveTotem.class, Shop.class, Blacksmith.class, Table.class,
+                Board.class, JumpPad.class, Herb.class, RoricTrap.class
+        );
     }
 
     // Setters

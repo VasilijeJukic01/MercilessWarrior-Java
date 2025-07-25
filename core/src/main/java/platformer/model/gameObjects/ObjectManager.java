@@ -54,11 +54,12 @@ public class ObjectManager implements Publisher {
     };
     Class<? extends GameObject>[] renderBelow = new Class[] {
             Container.class, Potion.class, Spike.class,
-            Blocker.class, Dog.class, SmashTrap.class, Loot.class, Brick.class
-    };
-    Class<? extends GameObject>[] renderAbove = new Class[] {
+            Blocker.class, Dog.class, SmashTrap.class, Loot.class, Brick.class,
             SaveTotem.class, Shop.class, Blacksmith.class, Coin.class,
             Table.class, Board.class, JumpPad.class, Herb.class, RoricTrap.class
+    };
+    Class<? extends GameObject>[] renderAbove = new Class[] {
+            Shop.class
     };
     Class<? extends GameObject>[] renderBehind = new Class[] {
             Lava.class
@@ -272,6 +273,8 @@ public class ObjectManager implements Publisher {
 
     public void secondRender(Graphics g, int xLevelOffset, int yLevelOffset) {
         Arrays.stream(renderBehind).forEach(renderClass -> renderObjects(g, xLevelOffset, yLevelOffset, renderClass));
+        renderCoins(g, xLevelOffset, yLevelOffset);
+        renderNpcs(g, xLevelOffset, yLevelOffset);
     }
 
     public void candleRender(Graphics g, int xLevelOffset, int yLevelOffset, Candle c) {
@@ -280,8 +283,6 @@ public class ObjectManager implements Publisher {
 
     public void glowingRender(Graphics g, int xLevelOffset, int yLevelOffset) {
         Arrays.stream(renderAbove).forEach(renderClass -> renderObjects(g, xLevelOffset, yLevelOffset, renderClass));
-        renderCoins(g, xLevelOffset, yLevelOffset);
-        renderNpcs(g, xLevelOffset, yLevelOffset);
     }
 
     private void renderCoins(Graphics g, int xLevelOffset, int yLevelOffset) {
