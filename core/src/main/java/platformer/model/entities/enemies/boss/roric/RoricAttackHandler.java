@@ -117,6 +117,9 @@ public class RoricAttackHandler {
             case CELESTIAL_RAIN:
                 handleCelestialRain(projectileManager);
                 break;
+            case COOLDOWN:
+                handleCooldownState();
+                break;
         }
     }
 
@@ -471,6 +474,10 @@ public class RoricAttackHandler {
         if (celestialRainTimer >= CELESTIAL_RAIN_DURATION) stopCelestialRain();
     }
 
+    private void handleCooldownState() {
+        if (roric.getCooldown()[0] <= 0) roric.setState(RoricState.IDLE);
+    }
+
     /**
      * Initiates the Skyfall Barrage by making Roric disappear.
      */
@@ -684,9 +691,12 @@ public class RoricAttackHandler {
         celestialRainTimer = 0;
 
         roric.getSpellManager().stopArrowRainTelegraph();
-        roric.setState(RoricState.IDLE);
+        roric.setState(RoricState.COOLDOWN);
         roric.setEnemyAction(Anim.IDLE);
-        roric.setAttackCooldown(0);
+        if (phaseManager.getCurrentPhase() == RoricPhaseManager.RoricPhase.FINALE) {
+            roric.setAttackCooldown(RORIC_IDLE_COOLDOWN * 4);
+        }
+        else roric.setAttackCooldown(0);
         roric.setVisible(true);
     }
 

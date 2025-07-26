@@ -48,7 +48,20 @@ public class RoricShuffleBag {
      */
     public RoricState draw() {
         if (currentBag.isEmpty()) reshuffle();
-        RoricState drawnItem = currentBag.remove(random.nextInt(currentBag.size()));
+
+        if (currentBag.size() > 1) {
+            List<RoricState> possibleDraws = new ArrayList<>();
+            for (RoricState item : currentBag) {
+                if (item != lastDrawnItem) possibleDraws.add(item);
+            }
+            RoricState drawnItem;
+            if (!possibleDraws.isEmpty()) drawnItem = possibleDraws.get(random.nextInt(possibleDraws.size()));
+            else drawnItem = currentBag.get(0);
+            currentBag.remove(drawnItem);
+            this.lastDrawnItem = drawnItem;
+            return drawnItem;
+        }
+        RoricState drawnItem = currentBag.remove(0);
         this.lastDrawnItem = drawnItem;
         return drawnItem;
     }

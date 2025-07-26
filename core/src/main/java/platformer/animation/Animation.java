@@ -227,12 +227,13 @@ public class Animation {
     }
 
     public BufferedImage[][] loadNpcs() {
-        BufferedImage[][] anim = new BufferedImage[4][6];
+        BufferedImage[][] anim = new BufferedImage[5][6];
 
         anim[NpcType.ANITA.ordinal()] = loadNpcAnimation(ANITA_SHEET, 4, 0, NpcType.ANITA);
         anim[NpcType.NIKOLAS.ordinal()] = loadNpcAnimation(NIKOLAS_SHEET, 4, 0, NpcType.NIKOLAS);
         anim[NpcType.SIR_DEJANOVIC.ordinal()] = loadNpcAnimation(SIR_DEJANOVIC_SHEET, 4, 0, NpcType.SIR_DEJANOVIC);
         anim[NpcType.KRYSANTHE.ordinal()] = loadNpcAnimation(KRYSANTHE_SHEET, 8, 0, NpcType.KRYSANTHE);
+        anim[NpcType.RORIC.ordinal()] = loadFromSprite(RORIC_SHEET, 12, 0, NpcType.RORIC.getWid(), NpcType.RORIC.getHei(), 0, RORIC_W, RORIC_H);
 
         return anim;
     }

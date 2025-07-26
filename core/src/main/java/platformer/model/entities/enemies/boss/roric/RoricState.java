@@ -15,5 +15,6 @@ public enum RoricState {
     ARROW_ATTACK,
     PHANTOM_BARRAGE,
     SKYFALL_BARRAGE,
-    CELESTIAL_RAIN
+    CELESTIAL_RAIN,
+    COOLDOWN
 }
