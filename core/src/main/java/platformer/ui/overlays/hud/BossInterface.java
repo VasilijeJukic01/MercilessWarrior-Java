@@ -8,6 +8,7 @@ import platformer.utils.Utils;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
+import static platformer.constants.Constants.FONT_DAMAGE;
 import static platformer.constants.FilePaths.LANCER_BOSS_BAR;
 import static platformer.constants.FilePaths.RORIC_BOSS_BAR;
 import static platformer.constants.UI.*;
@@ -31,13 +32,27 @@ public class BossInterface {
 
     public void render(Graphics g) {
         if (active) {
-            if (boss instanceof Lancer) renderBossBar(g, bossBars[0]);
-            else if (boss instanceof Roric) renderBossBar(g, bossBars[1]);
+            if (boss instanceof Lancer) {
+                renderBossBar(g, bossBars[0]);
+                renderBossName(g, "Lancer");
+            }
+            else if (boss instanceof Roric) {
+                renderBossBar(g, bossBars[1]);
+                renderBossName(g, "Roric");
+            }
         }
     }
 
     private void renderBossBar(Graphics g, BufferedImage bossBar) {
         g.drawImage(bossBar, BOSS_BAR_X, BOSS_BAR_Y, BOSS_BAR_WID, BOSS_BAR_HEI, null);
+    }
+
+    private void renderBossName(Graphics g, String bossName) {
+        g.setColor(Color.WHITE);
+        g.setFont(new Font("Arial", Font.BOLD, FONT_DAMAGE));
+        FontMetrics fm = g.getFontMetrics();
+        int x = BOSS_BAR_X + (BOSS_BAR_WID - fm.stringWidth(bossName)) / 2;
+        g.drawString(bossName, x, BOSS_BAR_Y);
     }
 
     public void reset() {
