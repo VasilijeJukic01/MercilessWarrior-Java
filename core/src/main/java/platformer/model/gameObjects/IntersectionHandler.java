@@ -170,6 +170,7 @@ public class IntersectionHandler {
         if (object instanceof Npc && ((Npc)object).getNpcType() == NpcType.NIKOLAS) return "NpcNikolas";
         if (object instanceof Npc && ((Npc)object).getNpcType() == NpcType.SIR_DEJANOVIC) return "NpcSirDejanovic";
         if (object instanceof Npc && ((Npc)object).getNpcType() == NpcType.KRYSANTHE) return "NpcKrysanthe";
+        if (object instanceof Npc && ((Npc)object).getNpcType() == NpcType.RORIC) return "NpcRoric";
         return null;
     }
 

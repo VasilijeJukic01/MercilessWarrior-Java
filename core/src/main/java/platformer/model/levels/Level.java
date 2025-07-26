@@ -55,7 +55,7 @@ public class Level {
         npcMap.put("level02", List.of(NpcType.ANITA));
         npcMap.put("level11", List.of(NpcType.NIKOLAS));
         npcMap.put("level10", List.of(NpcType.SIR_DEJANOVIC));
-        npcMap.put("level13", List.of(NpcType.KRYSANTHE));
+        npcMap.put("level13", List.of(NpcType.RORIC));
     }
 
     public Level(String name, BufferedImage layer1Img, BufferedImage layer2Img) {

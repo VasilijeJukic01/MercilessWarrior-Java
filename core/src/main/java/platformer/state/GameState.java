@@ -28,6 +28,7 @@ import platformer.model.spells.SpellManager;
 import platformer.model.tutorial.TutorialManager;
 import platformer.model.world.GameWorld;
 import platformer.observer.EventHandler;
+import platformer.observer.events.GameFlowEventHandler;
 import platformer.observer.events.LancerEventHandler;
 import platformer.observer.events.RoricEventHandler;
 import platformer.ui.dialogue.DialogueManager;
@@ -54,7 +55,7 @@ public class GameState extends AbstractState implements State {
     private GameContext context;
 
     private GameWorld world;
-    private final Camera camera;
+    @Getter private final Camera camera;
     private final GameStateController gameStateController;
     private final ScreenEffectsManager screenEffectsManager;
 
@@ -127,8 +128,12 @@ public class GameState extends AbstractState implements State {
     }
 
     private void initEventHandlers() {
+        GameFlowEventHandler gameFlowManager = new GameFlowEventHandler(context);
         this.eventHandlers.add(new LancerEventHandler(context));
         this.eventHandlers.add(new RoricEventHandler(context));
+        this.eventHandlers.add(gameFlowManager);
+
+        dialogueManager.addSubscriber(gameFlowManager);
     }
 
     private void loadFromDatabase() {

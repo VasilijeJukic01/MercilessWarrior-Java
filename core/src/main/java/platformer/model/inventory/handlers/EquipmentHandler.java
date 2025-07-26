@@ -43,7 +43,7 @@ public class EquipmentHandler {
      */
     public void equipItem(BackpackHandler backpackHandler, int index) {
         List<InventoryItem> backpack = backpackHandler.getBackpack();
-        if (index >= backpack.size()) return;
+        if (index >= backpack.size() || index == -1) return;
         InventoryItem itemToEquip = backpack.get(index);
         ItemData data = itemToEquip.getData();
         if (data == null || data.equip == null || !data.equip.canEquip) return;
