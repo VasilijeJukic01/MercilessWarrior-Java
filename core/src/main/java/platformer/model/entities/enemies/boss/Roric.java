@@ -400,6 +400,10 @@ public class Roric extends Enemy implements Publisher {
         return start;
     }
 
+    public void setAlive(boolean alive) {
+        super.alive = alive;
+    }
+
     // Dependency Injection
     public Player getCurrentPlayerTarget() {
         return currentPlayerTarget;

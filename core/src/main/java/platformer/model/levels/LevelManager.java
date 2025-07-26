@@ -116,6 +116,7 @@ public class LevelManager {
     // Level flow
     private void loadLevel() {
         Level newLevel = levels[levelIndexI][levelIndexJ];
+        this.currentLevel = newLevel;
         gameState.getPlayer().loadLvlData(newLevel.getLvlData());
         gameState.getEnemyManager().loadEnemies(newLevel);
         gameState.getObjectManager().loadObjects(newLevel);
@@ -310,5 +311,9 @@ public class LevelManager {
 
     public BufferedImage getCurrentBackground() {
         return currentBackground;
+    }
+
+    public boolean isInArena() {
+        return currentLevel == arenaLevel;
     }
 }

@@ -18,7 +18,7 @@ public class RoricPhaseManager {
     private final Roric roric;
 
     public enum RoricPhase {
-        INTRO, ASSAULT, BRIDGE, STORM, FINALE
+        INTRO, ASSAULT, BRIDGE, STORM, FINALE, VICTORY
     }
 
     // Phase timings
@@ -26,6 +26,7 @@ public class RoricPhaseManager {
     private static final long PHASE_3_START_TIME = (int) (92.75 * 1000);
     private static final long PHASE_4_START_TIME = 106 * 1000;
     private static final long PHASE_5_START_TIME = 132 * 1000;
+    private static final long PHASE_6_START_TIME = 162 * 1000;
 
     private RoricShuffleBag phaseOneBag;
     private RoricShuffleBag phaseTwoBag;
@@ -81,7 +82,10 @@ public class RoricPhaseManager {
         long elapsedTime = System.currentTimeMillis() - fightStartTime;
         RoricPhase oldPhase = currentPhase;
 
-        if (elapsedTime >= PHASE_5_START_TIME) {
+        if (elapsedTime >= PHASE_6_START_TIME) {
+            currentPhase = RoricPhase.VICTORY;
+        }
+        else if (elapsedTime >= PHASE_5_START_TIME) {
             currentPhase = RoricPhase.FINALE;
         }
         else if (elapsedTime >= PHASE_4_START_TIME) {
@@ -120,6 +124,7 @@ public class RoricPhaseManager {
             case BRIDGE -> phaseThreeBag.draw();
             case STORM -> phaseFourBag.draw();
             case FINALE -> phaseFiveBag.draw();
+            case VICTORY -> RoricState.IDLE;
         };
     }
 

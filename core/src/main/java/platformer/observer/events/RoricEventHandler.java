@@ -7,10 +7,13 @@ import platformer.model.effects.particles.DustType;
 import platformer.model.entities.enemies.boss.Roric;
 import platformer.model.entities.enemies.boss.roric.RoricPhaseManager;
 import platformer.observer.EventHandler;
+import platformer.observer.Publisher;
 import platformer.observer.Subscriber;
 import platformer.state.GameState;
 
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 /**
@@ -30,7 +33,7 @@ import java.util.Random;
  * @see Subscriber
  * @see EventHandler
  */
-public class RoricEventHandler implements EventHandler, Subscriber {
+public class RoricEventHandler implements EventHandler, Subscriber, Publisher {
 
     private final GameState gameState;
     private final ScreenEffectsManager screenEffectsManager;
@@ -53,6 +56,8 @@ public class RoricEventHandler implements EventHandler, Subscriber {
 
     private boolean isPaused = false;
     private long pauseStartTime = 0;
+
+    private final List<Subscriber> subscribers = new ArrayList<>();
 
     public RoricEventHandler(GameContext context) {
         this.gameState = context.getGameState();
@@ -163,6 +168,11 @@ public class RoricEventHandler implements EventHandler, Subscriber {
      */
     private void handlePhaseChange(RoricPhaseManager.RoricPhase newPhase) {
         gameState.getSpellManager().stopArrowRainTelegraph();
+        if (newPhase == RoricPhaseManager.RoricPhase.VICTORY) {
+            Roric roric = gameState.getEnemyManager().getRoricInstance();
+            if (roric != null) roric.setAlive(false);
+            notify("FIGHT_WON", "RORIC");
+        }
         if (celestialAuraActive && newPhase != RoricPhaseManager.RoricPhase.STORM) {
             handleCelestialRainEnd(gameState.getEnemyManager().getRoricInstance());
         }
@@ -257,5 +267,25 @@ public class RoricEventHandler implements EventHandler, Subscriber {
         isPaused = false;
         pauseStartTime = 0;
         gameState.getLightManager().releaseAmbientDarkness();
+    }
+
+    // Observer
+    @Override
+    public void addSubscriber(Subscriber s) {
+        if (s != null && !subscribers.contains(s)) {
+            subscribers.add(s);
+        }
+    }
+
+    @Override
+    public void removeSubscriber(Subscriber s) {
+        subscribers.remove(s);
+    }
+
+    @Override
+    public <T> void notify(T... o) {
+        for (Subscriber s : subscribers) {
+            s.update(o);
+        }
     }
 }

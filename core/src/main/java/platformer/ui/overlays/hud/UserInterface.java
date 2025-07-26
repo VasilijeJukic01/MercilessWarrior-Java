@@ -27,6 +27,7 @@ public class UserInterface {
     private final QuickUsePanel quickUsePanel;
     private final MinimapPanel minimapPanel;
     private final TimeCycleManager timeCycleManager;
+    private boolean minimapVisible = true;
 
     private BufferedImage statusBar, portrait;
     private int healthWidth;
@@ -106,7 +107,8 @@ public class UserInterface {
         g.drawImage(portrait, PORT_X, PORT_Y, PORT_WID, PORT_HEI, null);
         renderCooldown(g);
         quickUsePanel.render(g);
-        minimapPanel.render(g);
+        if (!minimapVisible) renderUnknownLocation(g);
+        else minimapPanel.render(g);
     }
 
     private void renderStatusBar(Graphics g) {
@@ -145,6 +147,31 @@ public class UserInterface {
 
     private void renderCooldown(Graphics g) {
         abilities.forEach(ability -> ability.render(g, player));
+    }
+
+    private void renderUnknownLocation(Graphics g) {
+        Graphics2D g2d = (Graphics2D) g;
+        Composite originalComposite = g2d.getComposite();
+        g2d.setColor(new Color(0, 0, 0, 150));
+        g2d.fillRoundRect(RADAR_X, RADAR_Y, RADAR_WID, RADAR_HEI, 10, 10);
+        g2d.setComposite(originalComposite);
+        g2d.setColor(Color.WHITE);
+        g2d.setStroke(new BasicStroke(3));
+        g2d.drawRoundRect(RADAR_X, RADAR_Y, RADAR_WID, RADAR_HEI, 10, 10);
+        g.setColor(new Color(200, 200, 200, 200));
+        g.setFont(new Font("Arial", Font.ITALIC, FONT_MEDIUM));
+        String text = "Unknown Location";
+        FontMetrics fm = g.getFontMetrics();
+        int textWidth = fm.stringWidth(text);
+
+        int textX = RADAR_X + (RADAR_WID - textWidth) / 2;
+        int textY = RADAR_Y + (RADAR_HEI - fm.getHeight()) / 2 + fm.getAscent();
+
+        g.drawString(text, textX, textY);
+    }
+
+    public void setMinimapVisible(boolean visible) {
+        this.minimapVisible = visible;
     }
 
 }

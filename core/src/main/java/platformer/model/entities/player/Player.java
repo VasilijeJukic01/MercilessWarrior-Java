@@ -16,6 +16,7 @@ import platformer.model.effects.EffectManager;
 import platformer.model.effects.particles.DustType;
 import platformer.model.entities.enemies.EnemyManager;
 import platformer.model.gameObjects.ObjectManager;
+import platformer.model.levels.LevelManager;
 import platformer.model.projectiles.Projectile;
 import platformer.model.projectiles.ProjectileManager;
 import platformer.model.inventory.Inventory;
@@ -42,6 +43,7 @@ import static platformer.physics.CollisionDetector.*;
 public class Player extends Entity {
 
     private final EnemyManager enemyManager;
+    private final LevelManager levelManager;
     private final ObjectManager objectManager;
     private final ProjectileManager projectileManager;
     private final MinimapManager minimapManager;
@@ -84,6 +86,7 @@ public class Player extends Entity {
     public Player(int xPos, int yPos, int width, int height, GameContext context) {
         super(xPos, yPos, width, height, PLAYER_MAX_HP);
         this.enemyManager = context.getEnemyManager();
+        this.levelManager = context.getLevelManager();
         this.objectManager = context.getObjectManager();
         this.projectileManager = context.getProjectileManager();
         this.minimapManager = context.getMinimapManager();
@@ -628,7 +631,7 @@ public class Player extends Entity {
 
     // Core
     public void update() {
-        playerDataManager.update();
+        playerDataManager.update(!levelManager.isInArena());
         if (currentHealth <= 0) {
             updateDeath();
             return;

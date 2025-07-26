@@ -92,6 +92,7 @@ public class ObjectManager implements Publisher {
     }
 
     private void configureObjects() {
+        if (lootHandler == null) return;
         getObjects(Container.class).forEach(container -> lootHandler.generateCrateLoot(container));
     }
 

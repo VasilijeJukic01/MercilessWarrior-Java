@@ -43,7 +43,7 @@ public class PlayerDataManager {
     }
 
     // Core
-    public void update() {
+    public void update(boolean isMinimapVisible) {
         double currentHealth = player.getCurrentHealth();
         double maxHealth = PLAYER_MAX_HP + PerksBonus.getInstance().getBonusHealth();
         double equipmentBonusHealth = InventoryBonus.getInstance().getHealth() * maxHealth;
@@ -54,6 +54,7 @@ public class PlayerDataManager {
         double equipmentBonusStamina = InventoryBonus.getInstance().getStamina() * maxStamina;
         maxStamina += equipmentBonusStamina;
 
+        userInterface.setMinimapVisible(isMinimapVisible);
         userInterface.update(currentHealth, maxHealth, currentStamina, maxStamina, exp, 1000*level);
     }
 
