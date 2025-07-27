@@ -101,6 +101,8 @@ public class ShopOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
 
     @Override
     public void render(Graphics g) {
+        g.setColor(new Color(0, 0, 0, 150));
+        g.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
         renderOverlay(g);
         renderPanels((Graphics2D) g);
         renderButtons(g);

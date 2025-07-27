@@ -2,13 +2,14 @@ package platformer.model.gameObjects.objects;
 
 import platformer.model.gameObjects.GameObject;
 import platformer.model.gameObjects.ObjType;
-import platformer.utils.Utils;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 
 import static platformer.constants.Constants.*;
+import static platformer.physics.CollisionDetector.canMoveHere;
+import static platformer.physics.CollisionDetector.getYPosOnTheCeil;
 
 public class Coin extends GameObject {
 
@@ -69,12 +70,12 @@ public class Coin extends GameObject {
      */
     private void updatePhysics(int[][] levelData) {
         airSpeed += COIN_GRAVITY;
-        if (Utils.getInstance().canMoveHere(hitBox.x, hitBox.y + airSpeed, hitBox.width, hitBox.height, levelData)) {
+        if (canMoveHere(hitBox.x, hitBox.y + airSpeed, hitBox.width, hitBox.height, levelData)) {
             hitBox.y += airSpeed;
         }
         else {
             if (airSpeed < 0) {
-                hitBox.y = Utils.getInstance().getYPosOnTheCeil(hitBox, airSpeed);
+                hitBox.y = getYPosOnTheCeil(hitBox, airSpeed);
                 airSpeed *= -0.4;
             }
             else {
@@ -87,7 +88,7 @@ public class Coin extends GameObject {
         }
 
         if (inAir) {
-            if (Utils.getInstance().canMoveHere(hitBox.x + xSpeed, hitBox.y, hitBox.width, hitBox.height, levelData)) {
+            if (canMoveHere(hitBox.x + xSpeed, hitBox.y, hitBox.width, hitBox.height, levelData)) {
                 hitBox.x += xSpeed;
             }
             // Bounce

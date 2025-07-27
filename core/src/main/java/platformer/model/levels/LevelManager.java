@@ -36,6 +36,8 @@ public class LevelManager {
 
     private BufferedImage[] levelSprite;
     private final Level[][] levels = new Level[MAX_LEVELS][MAX_LEVELS];
+    private Level arenaLevel;
+    private Level currentLevel;
     private int levelIndexI = 0, levelIndexJ = 0;
     private BufferedImage currentBackground;
     private LevelMetadata currentLevelMetadata;
@@ -48,6 +50,7 @@ public class LevelManager {
         this.levelObjectManager = new LevelObjectManager();
         loadForestSprite();
         buildLevels();
+        this.currentLevel = levels[levelIndexI][levelIndexJ];
     }
 
     // Init
@@ -76,7 +79,21 @@ public class LevelManager {
                     levels[i][j] = new Level("level"+i+j, levelsLayer1[i][j], levelsLayer2[i][j]);
             }
         }
+        buildArenaLevels();
         Logger.getInstance().notify("Levels built successfully!", Message.NOTIFICATION);
+    }
+
+    /**
+     * This method builds the arena levels.
+     * It loads the arena level image and creates a new Level object for it.
+     */
+    private void buildArenaLevels() {
+        BufferedImage arenaImg = Utils.getInstance().importImage(LEVEL_SPRITES.replace("$", "arena1"), -1, -1);
+        if (arenaImg != null) {
+            BufferedImage arenaLayer1 = arenaImg.getSubimage(0, 0, arenaImg.getWidth()/2, arenaImg.getHeight());
+            BufferedImage arenaLayer2 = arenaImg.getSubimage(arenaImg.getWidth()/2, 0, arenaImg.getWidth()/2, arenaImg.getHeight());
+            arenaLevel = new Level("arena1", arenaLayer1, arenaLayer2);
+        }
     }
 
     private BufferedImage[][] getAllLevels(String layer) {
@@ -99,6 +116,7 @@ public class LevelManager {
     // Level flow
     private void loadLevel() {
         Level newLevel = levels[levelIndexI][levelIndexJ];
+        this.currentLevel = newLevel;
         gameState.getPlayer().loadLvlData(newLevel.getLvlData());
         gameState.getEnemyManager().loadEnemies(newLevel);
         gameState.getObjectManager().loadObjects(newLevel);
@@ -151,9 +169,20 @@ public class LevelManager {
         }
     }
 
+    public void switchToArena() {
+        if (arenaLevel != null) {
+            this.currentLevel = arenaLevel;
+        }
+        else Logger.getInstance().notify("Arena level is not loaded!", Message.ERROR);
+    }
+
+    public void returnToMainMap() {
+        this.currentLevel = levels[levelIndexI][levelIndexJ];
+    }
+
     // Render
     private void renderDeco(Graphics g, int xLevelOffset, int yLevelOffset, int layer) {
-        Level level = levels[levelIndexI][levelIndexJ];
+        Level level = currentLevel;
         for (int i = 0; i < level.getLvlData().length; i++) {
             for (int j = 0; j < level.getLvlData()[0].length; j++) {
                 int decorationIndex = level.getDecoSpriteIndex(i, j);
@@ -193,9 +222,18 @@ public class LevelManager {
     }
 
     private void renderTerrain(Graphics g, int xLevelOffset, int yLevelOffset, boolean behind) {
-        Level level = levels[levelIndexI][levelIndexJ];
-        for (int i = 0; i < level.getLvlData().length; i++) {
-            for (int j = 0; j < level.getLvlData()[0].length; j++) {
+        Level level = currentLevel;
+        int xStart = xLevelOffset / TILES_SIZE;
+        int xEnd = (xLevelOffset + GAME_WIDTH) / TILES_SIZE + 1;
+        int yStart = yLevelOffset / TILES_SIZE;
+        int yEnd = (yLevelOffset + GAME_HEIGHT) / TILES_SIZE + 1;
+        xStart = Math.max(0, xStart);
+        xEnd = Math.min(level.getLevelTilesWidth(), xEnd);
+        yStart = Math.max(0, yStart);
+        yEnd = Math.min(level.getLevelTilesHeight(), yEnd);
+
+        for (int i = xStart; i < xEnd; i++) {
+            for (int j = yStart; j < yEnd; j++) {
                 int tileIndex = level.getSpriteIndex(i, j);
                 if ((!behind && tileIndex < 255) || tileIndex == -1) continue; // Invalid index
                 if (behind && tileIndex >= 255) continue; // Layer behind
@@ -239,7 +277,7 @@ public class LevelManager {
     }
 
     public Level getCurrentLevel() {
-        return levels[levelIndexI][levelIndexJ];
+        return currentLevel;
     }
 
     /**
@@ -251,6 +289,7 @@ public class LevelManager {
             if (spawn.getId() == spawnId) {
                 this.levelIndexI = spawn.getLevelI();
                 this.levelIndexJ = spawn.getLevelJ();
+                this.currentLevel = levels[levelIndexI][levelIndexJ];
                 loadLevel();
                 return;
             }
@@ -272,5 +311,9 @@ public class LevelManager {
 
     public BufferedImage getCurrentBackground() {
         return currentBackground;
+    }
+
+    public boolean isInArena() {
+        return currentLevel == arenaLevel;
     }
 }

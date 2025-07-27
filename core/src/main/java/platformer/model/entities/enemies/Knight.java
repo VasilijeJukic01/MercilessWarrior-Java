@@ -6,13 +6,13 @@ import platformer.audio.types.Sound;
 import platformer.model.entities.Direction;
 import platformer.model.entities.player.Player;
 import platformer.model.entities.player.PlayerAction;
-import platformer.utils.Utils;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 
 import static platformer.constants.Constants.*;
+import static platformer.physics.CollisionDetector.*;
 
 public class Knight extends Enemy {
 
@@ -94,8 +94,8 @@ public class Knight extends Enemy {
             animSpeed = 20;
         }
         double enemyXSpeed = (direction == Direction.LEFT) ? -enemySpeed : enemySpeed;
-        if (Utils.getInstance().canMoveHere(hitBox.x + enemyXSpeed, hitBox.y, hitBox.width, hitBox.height, levelData)) {
-            if (Utils.getInstance().isFloor(hitBox, enemyXSpeed, levelData, direction)) {
+        if (canMoveHere(hitBox.x + enemyXSpeed, hitBox.y, hitBox.width, hitBox.height, levelData)) {
+            if (isFloor(hitBox, enemyXSpeed, levelData, direction)) {
                 hitBox.x += enemyXSpeed;
                 return;
             }
@@ -126,7 +126,7 @@ public class Knight extends Enemy {
     }
 
     public void updateMove(int[][] levelData, Player player) {
-        if (!Utils.getInstance().isEntityOnFloor(hitBox, levelData)) inAir = true;
+        if (!isEntityOnFloor(hitBox, levelData)) inAir = true;
         if (inAir) updateInAir(levelData, gravity, collisionFallSpeed);
         else updateBehavior(levelData, player);
     }

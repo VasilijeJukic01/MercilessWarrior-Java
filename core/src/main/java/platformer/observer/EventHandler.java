@@ -1,81 +1,36 @@
 package platformer.observer;
 
-import platformer.model.entities.effects.EffectManager;
-import platformer.model.entities.effects.particles.DustType;
-import platformer.model.entities.enemies.boss.SpearWoman;
-import platformer.state.GameState;
+/**
+ * Defines a contract for classes that manage continuous, frame-by-frame event logic.
+ * <p>
+ * The EventHandler interface is designed for logic that must be evaluated in every game update loop.
+ * This allows {@link platformer.state.GameState} to manage various event-driven systems without needing
+ * to know their internal implementation details; it simply calls {@code continuousUpdate()} on all registered handlers.
+ *
+ * @see Subscriber
+ * @see platformer.state.GameState
+ */
+public interface EventHandler {
 
-import java.awt.*;
-import java.awt.geom.Point2D;
-import java.util.Random;
+    /**
+     * Called continuously every frame to handle time-based or ongoing events.
+     */
+    void continuousUpdate();
 
-public class EventHandler {
+    /**
+     * Called when the game state is paused.
+     * Implementations can use this to stop any ongoing processes or animations.
+     */
+    default void pause() {}
 
-    private GameState gameState;
-    private final EffectManager effectManager;
+    /**
+     * Called when the game state is unpaused.
+     * Implementations can use this to resume any paused processes or animations.
+     */
+    default void unpause() {}
 
-    public EventHandler(GameState gameState, EffectManager effectManager) {
-        this.gameState = gameState;
-        this.effectManager = effectManager;
-    }
-
-    public <T> void handleEvent(T... o) {
-        if (o == null || !(o[0] instanceof String)) return;
-        String eventType = (String) o[0];
-
-        switch (eventType) {
-            case "TELEPORT_OUT":
-            case "TELEPORT_IN":
-                handleTeleportEvent(o[1]);
-                break;
-            case "SPAWN_AURA":
-                handleSpawnAuraEvent(o[1]);
-                break;
-            case "CLEAR_AURA":
-                handleClearAuraEvent(o[1]);
-                break;
-            case "SHAKE_SCREEN":
-                handleShakeScreenEvent(o[0]);
-                break;
-            case "DASH_SLASH":
-                handleDashSlashEvent(o[1], o[2], o[3]);
-                break;
-        }
-    }
-
-    private void handleTeleportEvent(Object arg) {
-        if (arg instanceof Point location) {
-            effectManager.spawnDustParticles(location.getX(), location.getY(), 30, DustType.SW_TELEPORT, 0, null);
-        }
-    }
-
-    private void handleSpawnAuraEvent(Object arg) {
-        if (arg instanceof SpearWoman boss) {
-            effectManager.spawnAura(boss, 40);
-        }
-    }
-
-    private void handleClearAuraEvent(Object arg) {
-        if (arg instanceof SpearWoman boss) {
-            effectManager.clearAura(boss);
-        }
-    }
-
-    private void handleShakeScreenEvent(Object arg) {
-        if ("SHAKE_SCREEN".equals(arg)) {
-            gameState.triggerScreenShake(30, 15.0);
-        }
-    }
-
-    private void handleDashSlashEvent(Object start, Object end, Object height) {
-        if (start instanceof Point2D.Double startPos && end instanceof Point2D.Double endPos && height instanceof Double hitboxHeight) {
-            Random rand = new Random();
-            for (int i = 0; i < 30; i++) {
-                double t = rand.nextDouble();
-                double spawnX = startPos.x + t * (endPos.x - startPos.x);
-                double spawnY = startPos.y + (rand.nextDouble() * hitboxHeight);
-                effectManager.spawnDustParticles(spawnX, spawnY, 1, DustType.SW_DASH_SLASH, 0, null);
-            }
-        }
-    }
+    /**
+     * Resets the handler's internal state to its default values.
+     */
+    void reset();
 }

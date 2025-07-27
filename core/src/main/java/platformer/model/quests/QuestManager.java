@@ -36,10 +36,9 @@ public class QuestManager implements Subscriber {
         this.gameState = gameState;
         loadQuests(QUESTS_PATH);
         initSlots();
-        initObservers();
     }
 
-    private void initObservers() {
+    public void registerObservers() {
         gameState.getEnemyManager().addSubscriber(this);
         gameState.getObjectManager().addSubscriber(this);
         gameState.getPerksManager().addSubscriber(this);

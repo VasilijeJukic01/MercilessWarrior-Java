@@ -4,16 +4,19 @@ import platformer.animation.Anim;
 import platformer.animation.Animation;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
+import platformer.model.effects.ScreenEffectsManager;
 import platformer.model.entities.Direction;
-import platformer.model.entities.effects.particles.DustType;
-import platformer.model.entities.enemies.boss.SpearWoman;
+import platformer.model.effects.particles.DustType;
+import platformer.model.entities.enemies.boss.Roric;
+import platformer.model.entities.enemies.boss.roric.RoricClone;
+import platformer.model.entities.enemies.boss.Lancer;
 import platformer.model.entities.enemies.renderer.*;
 import platformer.model.entities.player.Player;
 import platformer.model.entities.player.PlayerAction;
 import platformer.model.gameObjects.GameObject;
 import platformer.model.gameObjects.objects.Spike;
-import platformer.model.gameObjects.projectiles.Fireball;
-import platformer.model.gameObjects.projectiles.Projectile;
+import platformer.model.projectiles.Fireball;
+import platformer.model.projectiles.Projectile;
 import platformer.model.inventory.InventoryBonus;
 import platformer.model.levels.Level;
 import platformer.model.perks.PerksBonus;
@@ -21,8 +24,11 @@ import platformer.model.quests.ObjectiveTarget;
 import platformer.model.quests.QuestManager;
 import platformer.model.quests.QuestObjectiveType;
 import platformer.model.spells.Flame;
+import platformer.observer.EventHandler;
 import platformer.observer.Publisher;
 import platformer.observer.Subscriber;
+import platformer.observer.events.LancerEventHandler;
+import platformer.observer.events.RoricEventHandler;
 import platformer.state.GameState;
 import platformer.utils.Utils;
 
@@ -42,12 +48,14 @@ import static platformer.constants.Constants.*;
 public class EnemyManager implements Publisher {
 
     private final GameState gameState;
+    private ScreenEffectsManager screenEffectsManager;
 
-    private BufferedImage[][] skeletonAnimations, ghoulAnimations, knightAnimations, wraithAnimations, spearWomanAnimations;
+    private BufferedImage[][] skeletonAnimations, ghoulAnimations, knightAnimations, wraithAnimations, lancerAnimations, roricAnimations;
 
     private Map<EnemyType, List<Enemy>> enemies = new HashMap<>();
     private final Map<Class<? extends Enemy>, EnemyRenderer<? extends Enemy>> enemyRenderers = new HashMap<>();
     private final Map<Enemy, Integer> spellHitTimers = new HashMap<>();
+    private final List<RoricClone> roricClones = new ArrayList<>();
 
     private final List<Subscriber> subscribers = new ArrayList<>();
 
@@ -66,22 +74,25 @@ public class EnemyManager implements Publisher {
         this.skeletonAnimations = Animation.getInstance().loadSkeletonAnimations(SKELETON_WIDTH, SKELETON_HEIGHT);
         this.ghoulAnimations = Animation.getInstance().loadGhoulAnimation(GHOUL_WIDTH, GHOUL_HEIGHT);
         this.knightAnimations = Animation.getInstance().loadKnightAnimation(KNIGHT_WIDTH, KNIGHT_HEIGHT);
-        this.spearWomanAnimations = Animation.getInstance().loadSpearWomanAnimations(SW_WIDTH, SW_HEIGHT);
+        this.lancerAnimations = Animation.getInstance().loadLancerAnimations(LANCER_WIDTH, LANCER_HEIGHT);
         this.wraithAnimations = Animation.getInstance().loadWraithAnimation(WRAITH_WIDTH, WRAITH_HEIGHT);
+        this.roricAnimations = Animation.getInstance().loadRoricAnimations(RORIC_WIDTH, RORIC_HEIGHT);
     }
 
     private void initRenderers() {
         this.enemyRenderers.put(Skeleton.class, new SkeletonRenderer(skeletonAnimations));
         this.enemyRenderers.put(Ghoul.class, new GhoulRenderer(ghoulAnimations));
-        this.enemyRenderers.put(SpearWoman.class, new SpearWomanRenderer(spearWomanAnimations));
+        this.enemyRenderers.put(Lancer.class, new LancerRenderer(lancerAnimations));
         this.enemyRenderers.put(Knight.class, new KnightRenderer(knightAnimations));
         this.enemyRenderers.put(Wraith.class, new WraithRenderer(wraithAnimations));
+        this.enemyRenderers.put(Roric.class, new RoricRenderer(roricAnimations));
     }
 
     public void loadEnemies(Level level) {
         this.enemies = level.getEnemiesMap();
         reset();
-        getEnemies(SpearWoman.class).forEach(spearWoman -> spearWoman.addSubscriber(gameState));
+        getEnemies(Lancer.class).forEach(lancer -> lancer.addSubscriber(findHandler(LancerEventHandler.class)));
+        getEnemies(Roric.class).forEach(roric -> roric.addSubscriber(findHandler(RoricEventHandler.class)));
     }
 
     // Render
@@ -111,8 +122,12 @@ public class EnemyManager implements Publisher {
         renderEnemies(Ghoul.class, g, xLevelOffset, yLevelOffset);
     }
 
-    private void renderSpearWoman(Graphics g, int xLevelOffset, int yLevelOffset) {
-        renderEnemies(SpearWoman.class, g, xLevelOffset, yLevelOffset);
+    private void renderLancer(Graphics g, int xLevelOffset, int yLevelOffset) {
+        renderEnemies(Lancer.class, g, xLevelOffset, yLevelOffset);
+    }
+
+    private void renderRoric(Graphics g, int xLevelOffset, int yLevelOffset) {
+        renderEnemies(Roric.class, g, xLevelOffset, yLevelOffset);
     }
 
     private void renderKnights(Graphics g, int xLevelOffset, int yLevelOffset) {
@@ -149,7 +164,7 @@ public class EnemyManager implements Publisher {
             case GHOUL:
                 notify(QuestObjectiveType.KILL, ObjectiveTarget.GHOUL);
                 break;
-            case SPEAR_WOMAN:
+            case LANCER:
                 notify(QuestObjectiveType.KILL, ObjectiveTarget.LANCER);
                 break;
             default: break;
@@ -196,6 +211,8 @@ public class EnemyManager implements Publisher {
             }
         }
         if (intersectingEnemies.isEmpty()) return false;
+        // TODO: Will disable attacking roric later
+        if (intersectingEnemies.stream().anyMatch(e -> e instanceof Roric)) return false;
 
         intersectingEnemies.sort(Comparator.comparingDouble(e -> e.getHitBox().getCenterX() - player.getHitBox().getCenterX()));
 
@@ -239,7 +256,7 @@ public class EnemyManager implements Publisher {
      */
     private void spawnParticles(Rectangle2D.Double box, Player player, Enemy enemy, boolean isCritical) {
         if (isCritical) {
-            gameState.triggerScreenFlash();
+            screenEffectsManager.triggerFlash();
             gameState.getEffectManager().spawnDustParticles(box.getCenterX(), box.getCenterY(), 25, DustType.CRITICAL_HIT, player.getFlipSign(), null);
         }
         else if (enemy.getEnemyAction() != Anim.BLOCK) {
@@ -288,9 +305,15 @@ public class EnemyManager implements Publisher {
         }
     }
 
+    public void checkEnemyProjectileHit(List<Projectile> projectiles) {
+        projectiles.stream()
+                .filter(Projectile::isAlive)
+                .forEach(this::checkEnemyProjectileHit);
+    }
+
     public void checkEnemyProjectileHit(Projectile projectile) {
         for (Skeleton skeleton : getEnemies(Skeleton.class)) {
-            if (skeleton.isAlive() && skeleton.getEnemyAction() != Anim.DEATH && projectile.getHitBox().intersects(skeleton.getHitBox())) {
+            if (skeleton.isAlive() && skeleton.getEnemyAction() != Anim.DEATH && projectile.getShapeBounds().intersects(skeleton.getHitBox())) {
                 skeleton.hit(ENEMY_PROJECTILE_DMG, false, false);
                 Direction projectileDirection = projectile.getDirection();
                 skeleton.setPushDirection(projectileDirection == Direction.LEFT ? Direction.RIGHT : Direction.LEFT);
@@ -298,12 +321,12 @@ public class EnemyManager implements Publisher {
                 checkEnemyDying(skeleton, gameState.getPlayer());
             }
         }
-        for (SpearWoman spearWoman : getEnemies(SpearWoman.class)) {
-            if (projectile instanceof Fireball && spearWoman.isAlive() && spearWoman.getEnemyAction() != Anim.DEATH) {
-                if (!projectile.getHitBox().intersects(spearWoman.getHitBox())) continue;
-                spearWoman.hit(FIREBALL_PROJECTILE_DMG, false, false);
+        for (Lancer lancer : getEnemies(Lancer.class)) {
+            if (projectile instanceof Fireball && lancer.isAlive() && lancer.getEnemyAction() != Anim.DEATH) {
+                if (!projectile.getShapeBounds().intersects(lancer.getHitBox())) continue;
+                lancer.hit(FIREBALL_PROJECTILE_DMG, false, false);
                 projectile.setAlive(false);
-                checkEnemyDying(spearWoman, gameState.getPlayer());
+                checkEnemyDying(lancer, gameState.getPlayer());
             }
         }
     }
@@ -348,14 +371,25 @@ public class EnemyManager implements Publisher {
         updateEnemies(Knight.class, knightAnimations, levelData, player);
         updateEnemies(Wraith.class, wraithAnimations, levelData, player);
 
-        getEnemies(SpearWoman.class).stream()
-                .filter(SpearWoman::isAlive)
-                .forEach(spearWoman -> spearWoman.update(spearWomanAnimations, levelData, player, gameState.getSpellManager(), gameState.getObjectManager(), gameState.getBossInterface()));
+        getEnemies(Lancer.class).stream()
+                .filter(Lancer::isAlive)
+                .forEach(lancer -> lancer.update(lancerAnimations, levelData, player, gameState.getSpellManager(), gameState.getObjectManager(), gameState.getProjectileManager(), gameState.getBossInterface()));
+
+        getEnemies(Roric.class).stream()
+                .filter(Roric::isAlive)
+                .forEach(roric -> roric.update(roricAnimations, levelData, player, gameState.getSpellManager(), this, gameState.getObjectManager(), gameState.getProjectileManager(), gameState.getBossInterface()));
+
+        updateClones(levelData, player);
     }
 
     private void updateSpellHitTimers() {
         spellHitTimers.replaceAll((k, v) -> v > 0 ? v - 1 : 0);
         spellHitTimers.keySet().removeIf(enemy -> !enemy.isAlive());
+    }
+
+    private void updateClones(int[][] levelData, Player player) {
+        roricClones.forEach(clone -> clone.update(roricAnimations, levelData, player, gameState.getSpellManager(), this,  gameState.getObjectManager(), gameState.getProjectileManager(), gameState.getBossInterface()));
+        roricClones.removeIf(clone -> !clone.isAlive());
     }
 
     public void render(Graphics g, int xLevelOffset, int yLevelOffset) {
@@ -364,9 +398,44 @@ public class EnemyManager implements Publisher {
             renderGhouls(g, xLevelOffset, yLevelOffset);
             renderKnights(g, xLevelOffset, yLevelOffset);
             renderWraiths(g, xLevelOffset, yLevelOffset);
-            renderSpearWoman(g, xLevelOffset, yLevelOffset);
+            renderLancer(g, xLevelOffset, yLevelOffset);
+            renderRoric(g, xLevelOffset, yLevelOffset);
+            renderClones(g, xLevelOffset, yLevelOffset);
         }
         catch (Exception ignored) {}
+    }
+
+    private void renderClones(Graphics g, int xLevelOffset, int yLevelOffset) {
+        EnemyRenderer<Roric> renderer = (EnemyRenderer<Roric>) enemyRenderers.get(Roric.class);
+        roricClones.stream()
+                .filter(RoricClone::isAlive)
+                .forEach(clone -> renderer.render(g, clone, xLevelOffset, yLevelOffset));
+    }
+
+    // Activators
+    /**
+     * Method to spawn the clone, called by the real Roric
+     *
+     * @param spawnX The x-coordinate where the clone should spawn.
+     * @param spawnY The y-coordinate where the clone should spawn.
+     */
+    public void spawnRoricClone(int spawnX, int spawnY) {
+        Player player = gameState.getPlayer();
+        RoricClone clone = new RoricClone(spawnX, spawnY);
+        clone.aimAtPlayer(player);
+        Subscriber handler = findHandler(RoricEventHandler.class);
+        if (handler != null) clone.addSubscriber(handler);
+        roricClones.add(clone);
+    }
+
+    public void pauseRoricTimer() {
+        Roric roric = getRoricInstance();
+        if (roric != null) roric.getPhaseManager().pauseFightTimer();
+    }
+
+    public void unpauseRoricTimer() {
+        Roric roric = getRoricInstance();
+        if (roric != null) roric.getPhaseManager().unpauseFightTimer();
     }
 
     // Reset
@@ -375,10 +444,15 @@ public class EnemyManager implements Publisher {
                 .flatMap(List::stream)
                 .forEach(Enemy::reset);
         spellHitTimers.clear();
+        roricClones.clear();
     }
 
     public List<Enemy> getAllEnemies() {
         return Utils.getInstance().getAllItems(enemies);
+    }
+
+    public Roric getRoricInstance() {
+        return getEnemies(Roric.class).stream().findFirst().orElse(null);
     }
 
     private <T> List<T> getEnemies(Class<T> enemyType) {
@@ -389,6 +463,13 @@ public class EnemyManager implements Publisher {
     }
 
     // Emit Events
+    private Subscriber findHandler(Class<? extends EventHandler> handlerClass) {
+        for (Object sub : gameState.getEventHandlers()) {
+            if (handlerClass.isInstance(sub)) return (Subscriber) sub;
+        }
+        return null;
+    }
+
     @Override
     public void addSubscriber(Subscriber s) {
         this.subscribers.add(s);
@@ -405,5 +486,9 @@ public class EnemyManager implements Publisher {
                 .filter(s -> s instanceof QuestManager)
                 .findFirst()
                 .ifPresent(s -> s.update(o));
+    }
+
+    public void injectScreenEffectsManager(ScreenEffectsManager screenEffectsManager) {
+        this.screenEffectsManager = screenEffectsManager;
     }
 }

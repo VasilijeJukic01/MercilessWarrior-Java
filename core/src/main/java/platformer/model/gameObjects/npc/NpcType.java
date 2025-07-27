@@ -2,6 +2,8 @@ package platformer.model.gameObjects.npc;
 
 import java.awt.*;
 
+import static platformer.constants.AnimConstants.RORIC_H;
+import static platformer.constants.AnimConstants.RORIC_W;
 import static platformer.constants.Constants.SCALE;
 
 public enum NpcType {
@@ -17,7 +19,9 @@ public enum NpcType {
     ),
     KRYSANTHE(8, new Color(0xFF70EE), "Krysanthe", DialogueBehavior.RANDOM,
             scale(110), scale(90), scale(80), scale(42), scale(10), scale(60), 220, 160
-    );
+    ),
+    RORIC(12, new Color(0x9CDD4A), "Roric", DialogueBehavior.SEQUENTIAL,
+    scale(250), scale(150), scale(80), scale(50), scale(90), scale(96), RORIC_W, RORIC_H);
 
     private final int sprites;
     private final String name;

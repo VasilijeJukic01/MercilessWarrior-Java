@@ -7,11 +7,12 @@ import platformer.model.gameObjects.objects.Brick;
 import platformer.model.gameObjects.objects.Container;
 import platformer.model.gameObjects.objects.Loot;
 import platformer.model.levels.LevelManager;
-import platformer.utils.Utils;
 
 import java.awt.geom.Rectangle2D;
 import java.util.List;
 import java.util.stream.Stream;
+
+import static platformer.physics.CollisionDetector.canMoveHere;
 
 /**
  * Handles collisions between game objects and entities.
@@ -265,7 +266,7 @@ public class CollisionHandler {
 
     // Helper
     private boolean canMove(double x, double y, double w, double h) {
-        return Utils.getInstance().canMoveHere(x, y, w, h, levelManager.getCurrentLevel().getLvlData());
+        return canMoveHere(x, y, w, h, levelManager.getCurrentLevel().getLvlData());
     }
 
     private <T> List<T> getObjects(Class<T> objectType) {

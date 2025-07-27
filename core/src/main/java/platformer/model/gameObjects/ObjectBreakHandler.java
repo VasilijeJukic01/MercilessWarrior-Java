@@ -4,7 +4,7 @@ import platformer.audio.Audio;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
 import platformer.model.gameObjects.objects.*;
-import platformer.model.gameObjects.projectiles.Projectile;
+import platformer.model.projectiles.Projectile;
 import platformer.model.quests.ObjectiveTarget;
 import platformer.model.quests.QuestObjectiveType;
 import platformer.model.spells.Flame;
@@ -38,6 +38,12 @@ public class ObjectBreakHandler {
             boolean isFlame = flame.getHitBox().intersects(container.getHitBox()) && flame.isActive();
             if (attackBox.intersects(container.getHitBox()) || isFlame) {
                 breakContainer(container);
+            }
+        }
+
+        for (RoricTrap trap : getObjects(RoricTrap.class)) {
+            if (trap.isAlive() && !trap.isAnimate() && attackBox.intersects(trap.getHitBox())) {
+                trap.hit(10);
             }
         }
     }
@@ -79,7 +85,7 @@ public class ObjectBreakHandler {
 
             for (Projectile projectile : projectiles) {
                 if (projectile.isAlive()) {
-                    if (projectile.getHitBox().intersects(container.getHitBox())) breakContainer(container);
+                    if (projectile.getShapeBounds().intersects(container.getHitBox())) breakContainer(container);
                 }
             }
         }
@@ -89,7 +95,7 @@ public class ObjectBreakHandler {
 
             for (Projectile projectile : projectiles) {
                 if (projectile.isAlive()) {
-                    if (projectile.getHitBox().intersects(brick.getHitBox())) breakBrick(brick);
+                    if (projectile.getShapeBounds().intersects(brick.getHitBox())) breakBrick(brick);
                 }
             }
         }

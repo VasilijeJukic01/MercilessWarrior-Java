@@ -7,13 +7,13 @@ import platformer.model.entities.player.PlayerAction;
 import platformer.model.gameObjects.npc.Npc;
 import platformer.model.gameObjects.npc.NpcType;
 import platformer.model.gameObjects.objects.*;
-import platformer.model.gameObjects.projectiles.Projectile;
 
 import java.awt.geom.Rectangle2D;
 import java.util.List;
 import java.util.stream.Stream;
 
 
+// TODO: Refactor this too
 /**
  * Handles intersections between game objects and entities.
  */
@@ -27,7 +27,7 @@ public class IntersectionHandler {
     private final Class<? extends GameObject>[] classesToCheck = new Class[]{
             Shop.class, Blacksmith.class, SaveTotem.class, Loot.class, Spike.class,
             Blocker.class, SmashTrap.class, Table.class, Board.class, Dog.class, Npc.class,
-            Lava.class, JumpPad.class, Herb.class, Container.class
+            Lava.class, JumpPad.class, Herb.class, Container.class, RoricTrap.class
     };
 
     public IntersectionHandler(EnemyManager enemyManager, ObjectManager objectManager, LootHandler lootHandler) {
@@ -107,6 +107,11 @@ public class IntersectionHandler {
             else if (object instanceof Herb) {
                 ((Herb) object).setActive(intersect);
             }
+            else if (intersect && object instanceof RoricTrap) {
+                if (!object.isAnimate()) {
+                    p.changeHealth(-RoricTrap.TRAP_DAMAGE, object);
+                }
+            }
         }
         return check;
     }
@@ -126,16 +131,10 @@ public class IntersectionHandler {
     }
 
     /**
-     * Checks if any enemy intersects with a projectile.
-     *
-     * @param projectiles The list of projectiles to check.
+     * Checks if any enemy intersects with a trap.
      */
-    public void checkEnemyIntersection(List<Projectile> projectiles) {
+    public void checkEnemyIntersection() {
         getObjects(Spike.class).forEach(enemyManager::checkEnemyTrapHit);
-
-        projectiles.stream()
-                .filter(Projectile::isAlive)
-                .forEach(enemyManager::checkEnemyProjectileHit);
     }
 
     // Handle
@@ -171,6 +170,7 @@ public class IntersectionHandler {
         if (object instanceof Npc && ((Npc)object).getNpcType() == NpcType.NIKOLAS) return "NpcNikolas";
         if (object instanceof Npc && ((Npc)object).getNpcType() == NpcType.SIR_DEJANOVIC) return "NpcSirDejanovic";
         if (object instanceof Npc && ((Npc)object).getNpcType() == NpcType.KRYSANTHE) return "NpcKrysanthe";
+        if (object instanceof Npc && ((Npc)object).getNpcType() == NpcType.RORIC) return "NpcRoric";
         return null;
     }
 

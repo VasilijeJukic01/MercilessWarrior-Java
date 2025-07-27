@@ -3,12 +3,13 @@ package platformer.model.entities;
 import platformer.animation.Anim;
 import platformer.debug.Debug;
 import platformer.debug.DebugSettings;
-import platformer.utils.Utils;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
 
 import static platformer.constants.Constants.*;
+import static platformer.physics.CollisionDetector.canMoveHere;
+import static platformer.physics.CollisionDetector.getYPosOnTheCeil;
 
 /**
  * This is the abstract base class for all entities in the game.
@@ -92,7 +93,7 @@ public abstract class Entity implements Debug<Graphics> {
      */
     protected void pushBack(Direction pushDirection, int[][] lvlData, double speed, double enemySpeed) {
         double xSpeed = (pushDirection == Direction.LEFT) ? -enemySpeed : enemySpeed;
-        if (Utils.getInstance().canMoveHere(hitBox.x + xSpeed * speed, hitBox.y, hitBox.width, hitBox.height, lvlData)) {
+        if (canMoveHere(hitBox.x + xSpeed * speed, hitBox.y, hitBox.width, hitBox.height, lvlData)) {
             hitBox.x += xSpeed * speed;
         }
     }
@@ -106,12 +107,12 @@ public abstract class Entity implements Debug<Graphics> {
      * @param collisionFallSpeed The fall speed when the entity collides with something.
      */
     protected void updateInAir(int[][] levelData, double gravity, double collisionFallSpeed) {
-        if (Utils.getInstance().canMoveHere(hitBox.x, hitBox.y + airSpeed, hitBox.width, hitBox.height, levelData)) {
+        if (canMoveHere(hitBox.x, hitBox.y + airSpeed, hitBox.width, hitBox.height, levelData)) {
             hitBox.y += airSpeed;
             airSpeed += gravity;
         }
         else {
-            hitBox.y = Utils.getInstance().getYPosOnTheCeil(hitBox, airSpeed);
+            hitBox.y = getYPosOnTheCeil(hitBox, airSpeed);
             if (airSpeed > 0) {
                 airSpeed = 0;
                 inAir = false;

@@ -11,6 +11,9 @@ import static platformer.constants.Constants.BIG_BTN_HEI;
 import static platformer.constants.Constants.BIG_BTN_WID;
 import static platformer.constants.FilePaths.MENU_BTN_SHEET;
 
+/**
+ * Represents a large-sized button, typically used for primary actions in the main menu.
+ */
 public class BigButton extends AbstractButton {
 
     private BufferedImage[] images;

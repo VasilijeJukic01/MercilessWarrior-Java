@@ -41,7 +41,7 @@ public class Loot extends GameObject {
     }
 
     private void randomizeItems(EnemyType enemyType) {
-        if (enemyType == EnemyType.SPEAR_WOMAN) generateBossLoot();
+        if (enemyType == EnemyType.LANCER) generateBossLoot();
         else generateStandardLoot(enemyType);
 
     }

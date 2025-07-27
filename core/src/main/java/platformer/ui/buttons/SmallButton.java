@@ -11,6 +11,9 @@ import static platformer.constants.AnimConstants.SMALL_BTN_W;
 import static platformer.constants.Constants.CRE_BTN_SIZE;
 import static platformer.constants.FilePaths.CRE_BTN_SHEET;
 
+/**
+ * Represents a small-sized button, typically used for navigation.
+ */
 public class SmallButton extends AbstractButton {
 
     private BufferedImage[] images;

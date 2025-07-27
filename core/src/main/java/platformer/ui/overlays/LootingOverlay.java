@@ -81,6 +81,8 @@ public class LootingOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
 
     @Override
     public void render(Graphics g) {
+        g.setColor(new Color(0, 0, 0, 150));
+        g.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
         OverlayLayer.getInstance().renderOverlay(g);
         renderSlots(g);
         renderItems(g);

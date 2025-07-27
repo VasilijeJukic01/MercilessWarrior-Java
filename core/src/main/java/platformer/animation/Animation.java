@@ -135,28 +135,49 @@ public class Animation {
     }
 
     // Boss
-    public BufferedImage[][] loadSpearWomanAnimations(int w, int h) {
+    public BufferedImage[][] loadLancerAnimations(int w, int h) {
         BufferedImage[][] anim = new BufferedImage[20][25];
 
-        anim[Anim.IDLE.ordinal()] = loadFromSprite(SW_SHEET,        8, 0, w, h, 0, SW_W, SW_H);
-        anim[Anim.RUN.ordinal()] = loadFromSprite(SW_SHEET,         8, 2, w, h, 0, SW_W, SW_H);
-        anim[Anim.ATTACK_1.ordinal()] = loadFromSprite(SW_SHEET,    5, 10, w, h, 0, SW_W, SW_H);
-        anim[Anim.ATTACK_2.ordinal()] = loadFromSprite(SW_SHEET,    5, 11, w, h, 0, SW_W, SW_H);
-        anim[Anim.ATTACK_3.ordinal()] = loadFromSprite(SW_SHEET,    6, 12, w, h, 0, SW_W, SW_H);
-        anim[Anim.BLOCK.ordinal()] = loadFromSprite(SW_SHEET,       16, 16, w, h, 0, SW_W, SW_H);
-        anim[Anim.HIT.ordinal()] = loadFromSprite(SW_SHEET,         4, 23, w, h, 0, SW_W, SW_H);
-        anim[Anim.DEATH.ordinal()] = loadFromSprite(SW_SHEET,       9, 24, w, h, 0, SW_W, SW_H);
-        anim[Anim.SPELL_1.ordinal()] = loadFromSprite(SW_SHEET,     14, 13, w, h, 0, SW_W, SW_H);
-        anim[Anim.SPELL_2.ordinal()] = loadFromSprite(SW_SHEET,     11, 14, w, h, 0, SW_W, SW_H);
-        anim[Anim.SPELL_3.ordinal()] = loadFromSprite(SW_SHEET,     22, 15, w, h, 0, SW_W, SW_H);
-        anim[Anim.SPELL_4.ordinal()] = loadFromSprite(SW_SHEET,     2, 15, w, h, 1, SW_W, SW_H);
+        anim[Anim.IDLE.ordinal()] = loadFromSprite(LANCER_SHEET,        8, 0, w, h, 0, SW_W, SW_H);
+        anim[Anim.RUN.ordinal()] = loadFromSprite(LANCER_SHEET,         8, 2, w, h, 0, SW_W, SW_H);
+        anim[Anim.ATTACK_1.ordinal()] = loadFromSprite(LANCER_SHEET,    5, 10, w, h, 0, SW_W, SW_H);
+        anim[Anim.ATTACK_2.ordinal()] = loadFromSprite(LANCER_SHEET,    5, 11, w, h, 0, SW_W, SW_H);
+        anim[Anim.ATTACK_3.ordinal()] = loadFromSprite(LANCER_SHEET,    6, 12, w, h, 0, SW_W, SW_H);
+        anim[Anim.BLOCK.ordinal()] = loadFromSprite(LANCER_SHEET,       16, 16, w, h, 0, SW_W, SW_H);
+        anim[Anim.HIT.ordinal()] = loadFromSprite(LANCER_SHEET,         4, 23, w, h, 0, SW_W, SW_H);
+        anim[Anim.DEATH.ordinal()] = loadFromSprite(LANCER_SHEET,       9, 24, w, h, 0, SW_W, SW_H);
+        anim[Anim.SPELL_1.ordinal()] = loadFromSprite(LANCER_SHEET,     14, 13, w, h, 0, SW_W, SW_H);
+        anim[Anim.SPELL_2.ordinal()] = loadFromSprite(LANCER_SHEET,     11, 14, w, h, 0, SW_W, SW_H);
+        anim[Anim.SPELL_3.ordinal()] = loadFromSprite(LANCER_SHEET,     22, 15, w, h, 0, SW_W, SW_H);
+        anim[Anim.SPELL_4.ordinal()] = loadFromSprite(LANCER_SHEET,     2, 15, w, h, 1, SW_W, SW_H);
+
+        return anim;
+    }
+
+
+    /**
+     * This boss is a timed fight, so it does not have death and hit animations.
+     */
+    public BufferedImage[][] loadRoricAnimations(int w, int h) {
+        BufferedImage[][] anim = new BufferedImage[21][22];
+
+        anim[Anim.IDLE.ordinal()] = loadFromSprite(RORIC_SHEET, 12, 0, w, h, 0, RORIC_W, RORIC_H);
+        anim[Anim.RUN.ordinal()] = loadFromSprite(RORIC_SHEET, 10, 1, w, h, 0, RORIC_W, RORIC_H);
+        anim[Anim.JUMP_FALL.ordinal()] = loadFromSprite(RORIC_SHEET, 22, 6, w, h, 0, RORIC_W, RORIC_H);
+        anim[Anim.ATTACK_1.ordinal()] = loadFromSprite(RORIC_SHEET, 10, 10, w, h, 0, RORIC_W, RORIC_H);
+        anim[Anim.ATTACK_2.ordinal()] = loadFromSprite(RORIC_SHEET, 15, 11, w, h, 0, RORIC_W, RORIC_H);
+        anim[Anim.ATTACK_3.ordinal()] = anim[Anim.IDLE.ordinal()];
+        anim[Anim.BLOCK.ordinal()] = loadFromSprite(RORIC_SHEET, 19, 14, w, h, 0, RORIC_W, RORIC_H);
+        anim[Anim.SPELL_1.ordinal()] = loadFromSprite(RORIC_SHEET, 17, 13, w, h, 0, RORIC_W, RORIC_H);
+        anim[Anim.SPELL_2.ordinal()] = loadFromSprite(RORIC_SHEET, 10, 7, w, h, 0, RORIC_W, RORIC_H);
+        anim[Anim.SPELL_3.ordinal()] = loadFromSprite(RORIC_SHEET, 12, 12, w, h, 0, RORIC_W, RORIC_H);
 
         return anim;
     }
 
     // Objects
     public BufferedImage[][] loadObjects() {
-        BufferedImage[][] anim = new BufferedImage[26][17];
+        BufferedImage[][] anim = new BufferedImage[27][17];
 
         anim[ObjType.STAMINA_POTION.ordinal()] = loadFromSprite(POTIONS_SHEET, 7, 0, POTION_WID, POTION_HEI, 0, POTION_W, POTION_H);
         anim[ObjType.HEAL_POTION.ordinal()] = loadFromSprite(POTIONS_SHEET, 7, 1, POTION_WID, POTION_HEI, 0, POTION_W, POTION_H);
@@ -184,6 +205,8 @@ public class Animation {
         anim[ObjType.SPIKE_LEFT.ordinal()] = new BufferedImage[]{Utils.getInstance().rotateImage(anim[ObjType.SPIKE_UP.ordinal()][5], 270)};
         anim[ObjType.SPIKE_RIGHT.ordinal()] = new BufferedImage[]{Utils.getInstance().rotateImage(anim[ObjType.SPIKE_UP.ordinal()][5], 90)};
         anim[ObjType.HERB.ordinal()] = loadFromSprite(HERB_IMG, 1, 0, HERB_WID, HERB_HEI, 0, HERB_W, HERB_H);
+        anim[ObjType.RORIC_TRAP.ordinal()] = loadFromSprite(RORIC_SPELLS_SHEET, 8, 6, RORIC_TRAP_WID, RORIC_TRAP_HEI, 0, RORIC_PROJECTILE_W, RORIC_PROJECTILE_H);
+
 
         return anim;
     }
@@ -204,12 +227,13 @@ public class Animation {
     }
 
     public BufferedImage[][] loadNpcs() {
-        BufferedImage[][] anim = new BufferedImage[4][6];
+        BufferedImage[][] anim = new BufferedImage[5][6];
 
         anim[NpcType.ANITA.ordinal()] = loadNpcAnimation(ANITA_SHEET, 4, 0, NpcType.ANITA);
         anim[NpcType.NIKOLAS.ordinal()] = loadNpcAnimation(NIKOLAS_SHEET, 4, 0, NpcType.NIKOLAS);
         anim[NpcType.SIR_DEJANOVIC.ordinal()] = loadNpcAnimation(SIR_DEJANOVIC_SHEET, 4, 0, NpcType.SIR_DEJANOVIC);
         anim[NpcType.KRYSANTHE.ordinal()] = loadNpcAnimation(KRYSANTHE_SHEET, 8, 0, NpcType.KRYSANTHE);
+        anim[NpcType.RORIC.ordinal()] = loadFromSprite(RORIC_SHEET, 12, 0, NpcType.RORIC.getWid(), NpcType.RORIC.getHei(), 0, RORIC_W, RORIC_H);
 
         return anim;
     }
@@ -220,6 +244,31 @@ public class Animation {
 
     public BufferedImage[] loadFireBall() {
         return loadFromSprite(FIREBALL_SHEET, 9, 0, FB_WID, FB_HEI,0, FIREBALL_W, FIREBALL_H);
+    }
+
+    public BufferedImage[][] loadRoricProjectiles() {
+        BufferedImage[][] anim = new BufferedImage[3][];
+        anim[0] = loadFromSprite(RORIC_SPELLS_SHEET, 5, 8, RORIC_BEAM_WID, RORIC_BEAM_HEI, 0, RORIC_PROJECTILE_W, RORIC_PROJECTILE_H);
+        anim[1] = loadFromSprite(RORIC_SPELLS_SHEET, 13, 7, RORIC_RAIN_WID, RORIC_RAIN_HEI, 0, RORIC_PROJECTILE_W, RORIC_PROJECTILE_H);
+        anim[2] = loadFromSprite(CELESTIAL_PROJECTILE_SHEET, 4, 0, CELESTIAL_ORB_WID, CELESTIAL_ORB_HEI, 0, CELESTIAL_PROJECTILE_W, CELESTIAL_PROJECTILE_H);
+        return anim;
+    }
+
+    public BufferedImage[] createSkyBeamAnimation() {
+        BufferedImage[] skyBeamAnimations = new BufferedImage[8];
+        BufferedImage[] originalFrames = loadRoricProjectiles()[0];
+        BufferedImage[] beamFrames = new BufferedImage[4];
+        System.arraycopy(originalFrames, 0, beamFrames, 0, 4);
+        BufferedImage[] reversedFrames = Utils.getInstance().reverseArray(beamFrames.clone());
+        System.arraycopy(reversedFrames, 0, skyBeamAnimations, 0, 4);
+        System.arraycopy(beamFrames, 0, skyBeamAnimations, 4, 4);
+
+        return skyBeamAnimations;
+    }
+
+    // Effects
+    public BufferedImage[] loadRoricAuraEffect() {
+        return loadFromSprite(RORIC_AURA_SHEET, 4, 0, RORIC_AURA_WID, RORIC_AURA_HEI, 0, RORIC_AURA_W, RORIC_AURA_H);
     }
 
     // Getters

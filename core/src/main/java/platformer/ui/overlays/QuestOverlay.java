@@ -86,6 +86,8 @@ public class QuestOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
 
     @Override
     public void render(Graphics g) {
+        g.setColor(new Color(0, 0, 0, 150));
+        g.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
         renderOverlay(g);
         renderQuestListPanel((Graphics2D) g);
         renderQuestSlots(g);

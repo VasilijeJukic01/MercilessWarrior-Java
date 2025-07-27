@@ -10,14 +10,14 @@ import static platformer.constants.Constants.SCALE;
 public class WaveAnim implements GraphicsAnimation<Point> {
 
     private Direction direction;
-    private int x, y;                   // Current point
-    private int xOffset, yOffset;       // Starting point
-    private int dx;
+    private double x, y;                   // Current point
+    private double xOffset, yOffset;       // Starting point
+    private double dx;
     private int amplitudeY;
     private int periodY;
     private double time;
 
-    public WaveAnim(int xOffset, int yOffset, int dx, int amplitudeY, int periodY, double time) {
+    public WaveAnim(int xOffset, int yOffset, double dx, int amplitudeY, int periodY, double time) {
         this.xOffset = this.x = xOffset;
         this.yOffset = this.y = yOffset;
         this.dx = dx;
@@ -35,14 +35,14 @@ public class WaveAnim implements GraphicsAnimation<Point> {
             x = xOffset;
         }
         time += 0.5 * SCALE;
-        return new Point(x, y);
+        return new Point((int) x, (int) y);
     }
 
-    public void setDx(int dx) {
+    public void setDx(double dx) {
         this.dx = dx;
     }
 
-    public int getDx() {
+    public double getDx() {
         return dx;
     }
 

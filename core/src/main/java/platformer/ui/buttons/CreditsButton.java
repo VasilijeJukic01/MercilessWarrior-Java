@@ -10,6 +10,9 @@ import static platformer.constants.AnimConstants.SMALL_BTN_W;
 import static platformer.constants.Constants.CRE_BTN_SIZE;
 import static platformer.constants.FilePaths.CREDITS_BTN_SHEET;
 
+/**
+ * A specific button used to navigate to the game's credits screen.
+ */
 public class CreditsButton extends AbstractButton {
 
     private BufferedImage[] images;

@@ -3,6 +3,7 @@ package platformer.model.gameObjects;
 import platformer.debug.Debug;
 import platformer.debug.DebugSettings;
 import platformer.model.AdvancedRenderable;
+import platformer.physics.DamageSource;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
@@ -11,7 +12,7 @@ import java.awt.image.BufferedImage;
 /**
  * Abstract class representing a game object in the game.
  */
-public abstract class GameObject implements AdvancedRenderable<Graphics>, Debug<Graphics> {
+public abstract class GameObject implements DamageSource, AdvancedRenderable<Graphics>, Debug<Graphics> {
 
     protected ObjType objType;
     protected int xPos, yPos;

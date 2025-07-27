@@ -9,6 +9,8 @@ import platformer.debug.logger.Message;
 import platformer.model.gameObjects.GameObject;
 import platformer.model.gameObjects.npc.DialogueBehavior;
 import platformer.model.gameObjects.npc.Npc;
+import platformer.observer.Publisher;
+import platformer.observer.Subscriber;
 import platformer.state.GameState;
 import platformer.state.PlayingState;
 
@@ -24,12 +26,14 @@ import static platformer.constants.FilePaths.OBJECT_DIALOGUES;
  * This class is responsible for managing dialogues in the game.
  * It reads dialogue data, activates dialogues for game objects, and updates the dialogue state.
  */
-public class DialogueManager {
+public class DialogueManager implements Publisher {
 
     private final GameState gameState;
     private final DialogueOverlay overlay;
 
     private final Map<String, List<Dialogue>> dialogues;
+
+    private final List<Subscriber> subscribers = new ArrayList<>();
 
     public DialogueManager(GameState gameState) {
         this.gameState = gameState;
@@ -108,7 +112,16 @@ public class DialogueManager {
      */
     public void acceptQuestion() {
         if (overlay.getQuestion() == null || !overlay.isOnLastQuestion()) return;
-        String questName = overlay.getQuestion().getAnswers().get(0).getNext().replace("Quest: ", "");
+        String nextAction = overlay.getQuestion().getAnswers().get(0).getNext();
+
+        if (nextAction.equals("FIGHT_RORIC")) {
+            gameState.setOverlay(null);
+            overlay.reset();
+            notify("START_FIGHT", "RORIC");
+            return;
+        }
+
+        String questName = nextAction.replace("Quest: ", "");
         gameState.getQuestManager().startNPCQuest(questName);
         updateDialogue("QUESTION");
     }
@@ -156,6 +169,26 @@ public class DialogueManager {
         return dialogues.get(id).stream()
                 .filter(d -> !d.isActivated())
                 .collect(Collectors.toList());
+    }
+
+    // Observer
+    @Override
+    public void addSubscriber(Subscriber s) {
+        if (s != null && !subscribers.contains(s)) {
+            subscribers.add(s);
+        }
+    }
+
+    @Override
+    public void removeSubscriber(Subscriber s) {
+        subscribers.remove(s);
+    }
+
+    @Override
+    public <T> void notify(T... o) {
+        for (Subscriber s : subscribers) {
+            s.update(o);
+        }
     }
 
 }

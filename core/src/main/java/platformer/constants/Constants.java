@@ -13,7 +13,6 @@ AB - Attack Box
 HP - Health
 ST - Stamina
 CD - Cooldown
-SW - Spear Woman
 LB - Lightning Ball
 FB - Fireball
 
@@ -59,7 +58,7 @@ public final class Constants {
     public static final int XP_CAP = 10000;
     public static final int PLAYER_MAX_HP = 100;
     public static final int PLAYER_MAX_ST = 100;
-    public static final double PLAYER_SPEED = dScale(0.55);
+    public static final double PLAYER_SPEED = dScale(0.65);
     public static final double LAVA_PLAYER_SPEED = dScale(0.3);
     public static final double PLAYER_BOOST = dScale(0.65);
 
@@ -105,9 +104,7 @@ public final class Constants {
     public static final double GHOUL_ATT_CD = 10;
     public static final double GHOUL_DASH_CD = 6;
 
-    // Shop Constants
-    public static final int HEALTH_VAL = 40;
-    public static final int STAMINA_VAL = 40;
+    public static final double RORIC_IDLE_COOLDOWN = 10.0;
 
     // Level Constants
     public static final int MAX_LEVELS = 4;
@@ -161,15 +158,27 @@ public final class Constants {
     public static final int WRAITH_AB_WID = scale(100);
     public static final int WRAITH_AB_HEI = scale(45);
 
-    public static final int SW_WIDTH = scale(153);
-    public static final int SW_HEIGHT = scale(138);
-    public static final int SW_X_OFFSET = scale(54);
-    public static final int SW_Y_OFFSET = scale(63);
-    public static final int SW_HB_WID = scale(25);
-    public static final int SW_HB_HEI = scale(50);
-    public static final int SW_AB_WID = scale(96);
-    public static final int SW_AB_WID_REDUCE = scale(48);
-    public static final int SW_AB_HEI = scale(54);
+    public static final int LANCER_WIDTH = scale(153);
+    public static final int LANCER_HEIGHT = scale(138);
+    public static final int LANCER_X_OFFSET = scale(54);
+    public static final int LANCER_Y_OFFSET = scale(63);
+    public static final int LANCER_HB_WID = scale(25);
+    public static final int LANCER_HB_HEI = scale(50);
+    public static final int LANCER_AB_WID = scale(96);
+    public static final int LANCER_AB_WID_REDUCE = scale(48);
+    public static final int LANCER_AB_HEI = scale(54);
+
+    public static final int RORIC_WIDTH = scale(250);
+    public static final int RORIC_HEIGHT = scale(150);
+    public static final int RORIC_X_OFFSET = scale(90);
+    public static final int RORIC_Y_OFFSET = scale(96);
+    public static final int RORIC_HB_WID = scale(15);
+    public static final int RORIC_HB_HEI = scale(50);
+    public static final int RORIC_HB_OFFSET_X = scale(25);
+    public static final int RORIC_HB_OFFSET_Y = scale(15);
+    public static final int RORIC_AB_WID = scale(96);
+    public static final int RORIC_AB_WID_REDUCE = scale(48);
+    public static final int RORIC_AB_HEI = scale(50);
 
     public static final double SKELETON_SPEED_FAST = dScale(0.35);
     public static final double GHOUL_SPEED_FAST = dScale(0.45);
@@ -182,7 +191,8 @@ public final class Constants {
     public static final double GHOUL_ATT_RANGE = RANGE * 2;
     public static final double KNIGHT_ATT_RANGE = RANGE / 1.3;
     public static final double WRAITH_ATT_RANGE = RANGE;
-    public static final double SW_ATT_RANGE = RANGE * 1.8;
+    public static final double LANCER_ATT_RANGE = RANGE * 1.8;
+    public static final double RORIC_ATT_RANGE = RANGE * 1.8;
     public static final double ENEMY_SPEED_SLOW = dScale(0.2);
 
     // Object Constants
@@ -339,7 +349,7 @@ public final class Constants {
     public static final int LB_OFFSET_Y = scale(15);
 
     public static final int LB_PERIOD = scale(50);
-    public static final int LB_T = scale(1);
+    public static final double LB_T = dScale(1);
     public static final int LB_D = scale(25);
 
     public static final int FB_WID = scale(50);
@@ -352,6 +362,32 @@ public final class Constants {
     public static final int ENEMY_PROJECTILE_DMG = 5;
     public static final int FIREBALL_PROJECTILE_DMG = 10;
     public static final int PLAYER_PROJECTILE_DMG = 10;
+
+    public static final int RORIC_BEAM_WID = scale(800);
+    public static final int RORIC_BEAM_HEI = scale(148);
+    public static final int RORIC_BEAM_HB_HEI = scale(18);
+    public static final int RORIC_BEAM_OFFSET_X_RIGHT = scale(50);
+    public static final int RORIC_BEAM_OFFSET_X_LEFT = scale(10);
+    public static final int RORIC_BEAM_OFFSET_Y = scale(12);
+
+    public static final int RORIC_RAIN_WID = scale(370);
+    public static final int RORIC_RAIN_HEI = scale(400);
+    public static final int RORIC_RAIN_HB_WID = scale(90);
+    public static final int RORIC_BEAM_OFFSET_X = scale(-45);
+
+    public static final double RORIC_ARROW_SPEED = dScale(2.5);
+    public static final double ANGLED_ARROW_SPEED = dScale(2.8);
+    public static final int RORIC_ARROW_OFFSET_X_RIGHT = scale(45);
+    public static final int RORIC_ARROW_OFFSET_X_LEFT = scale(-45);
+    public static final int RORIC_ARROW_OFFSET_Y = scale(12);
+
+    public static final int CELESTIAL_ORB_WID = scale(40);
+    public static final int CELESTIAL_ORB_HEI = scale(40);
+
+    public static final int RORIC_TRAP_WID = scale(150);
+    public static final int RORIC_TRAP_HEI = scale(120);
+    public static final int RORIC_TRAP_HB_WID = scale(23);
+    public static final int RORIC_TRAP_HB_HEI = scale(32);
 
     // Spell Constants
     public static final int FLAME_WID = scale(45);
@@ -419,6 +455,8 @@ public final class Constants {
 
     public static final int PLAYER_LIGHT_RADIUS = scale(75);
     public static final int CANDLE_LIGHT_RADIUS = scale(100);
+    public static final int RORIC_AURA_WID = scale(100);
+    public static final int RORIC_AURA_HEI = scale(100);
 
     // Camera Constants
     public static final double CAMERA_LERP_FACTOR_X = 0.08;

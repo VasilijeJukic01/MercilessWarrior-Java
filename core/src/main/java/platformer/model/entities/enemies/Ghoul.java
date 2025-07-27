@@ -6,7 +6,6 @@ import platformer.audio.types.Sound;
 import platformer.model.entities.Cooldown;
 import platformer.model.entities.Direction;
 import platformer.model.entities.player.Player;
-import platformer.utils.Utils;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
@@ -14,6 +13,7 @@ import java.awt.image.BufferedImage;
 import java.util.Random;
 
 import static platformer.constants.Constants.*;
+import static platformer.physics.CollisionDetector.*;
 
 public class Ghoul extends Enemy {
 
@@ -120,8 +120,8 @@ public class Ghoul extends Enemy {
             animSpeed = 15;
         }
         double enemyXSpeed = (direction == Direction.LEFT) ? -enemySpeed : enemySpeed;
-        if (Utils.getInstance().canMoveHere(hitBox.x + enemyXSpeed, hitBox.y, hitBox.width, hitBox.height, levelData)) {
-            if (Utils.getInstance().isFloor(hitBox, enemyXSpeed, levelData, direction)) {
+        if (canMoveHere(hitBox.x + enemyXSpeed, hitBox.y, hitBox.width, hitBox.height, levelData)) {
+            if (isFloor(hitBox, enemyXSpeed, levelData, direction)) {
                 hitBox.x += enemyXSpeed;
                 return;
             }
@@ -143,8 +143,8 @@ public class Ghoul extends Enemy {
         if (direction == Direction.LEFT) xSpeed = -enemySpeed;
         else xSpeed = enemySpeed;
 
-        if (Utils.getInstance().canMoveHere(hitBox.x + xSpeed * 12, hitBox.y, hitBox.width, hitBox.height, levelData))
-            if (Utils.getInstance().isFloor(hitBox, xSpeed * 12, levelData, direction)) {
+        if (canMoveHere(hitBox.x + xSpeed * 12, hitBox.y, hitBox.width, hitBox.height, levelData))
+            if (isFloor(hitBox, xSpeed * 12, levelData, direction)) {
                 hitBox.x += xSpeed * 12;
                 blocker = false;
                 return;
@@ -170,7 +170,7 @@ public class Ghoul extends Enemy {
     }
 
     public void updateMove(int[][] levelData, Player player) {
-        if (!Utils.getInstance().isEntityOnFloor(hitBox, levelData)) inAir = true;
+        if (!isEntityOnFloor(hitBox, levelData)) inAir = true;
         if (inAir) updateInAir(levelData, gravity, collisionFallSpeed);
         else updateBehavior(levelData, player);
     }

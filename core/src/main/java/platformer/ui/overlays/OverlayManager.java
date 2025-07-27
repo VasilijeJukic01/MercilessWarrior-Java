@@ -41,6 +41,7 @@ public class OverlayManager {
 
     // Core
     public void update(PlayingState playingState) {
+        if (playingState == null) return;
         Overlay<MouseEvent, KeyEvent, Graphics> overlay = overlays.get(playingState);
         if (overlay != null) {
             overlay.update();

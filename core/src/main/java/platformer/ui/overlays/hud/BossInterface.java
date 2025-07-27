@@ -1,11 +1,16 @@
 package platformer.ui.overlays.hud;
 
+import platformer.model.entities.enemies.Enemy;
+import platformer.model.entities.enemies.boss.Lancer;
+import platformer.model.entities.enemies.boss.Roric;
 import platformer.utils.Utils;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
-import static platformer.constants.FilePaths.BOSS_BAR;
+import static platformer.constants.Constants.FONT_DAMAGE;
+import static platformer.constants.FilePaths.LANCER_BOSS_BAR;
+import static platformer.constants.FilePaths.RORIC_BOSS_BAR;
 import static platformer.constants.UI.*;
 
 /**
@@ -15,17 +20,49 @@ import static platformer.constants.UI.*;
 public class BossInterface {
 
     private boolean active;
+    private Enemy boss;
 
-    private final BufferedImage bossBar;
+    private final BufferedImage[] bossBars;
 
     public BossInterface() {
-        this.bossBar = Utils.getInstance().importImage(BOSS_BAR, -1, -1);
+        this.bossBars = new BufferedImage[2];
+        bossBars[0] = Utils.getInstance().importImage(LANCER_BOSS_BAR, -1, -1);
+        bossBars[1] = Utils.getInstance().importImage(RORIC_BOSS_BAR, -1, -1);
     }
 
     public void render(Graphics g) {
         if (active) {
-            g.drawImage(bossBar, BOSS_BAR_X, BOSS_BAR_Y, BOSS_BAR_WID, BOSS_BAR_HEI, null);
+            if (boss instanceof Lancer) {
+                renderBossBar(g, bossBars[0]);
+                renderBossName(g, "Lancer");
+            }
+            else if (boss instanceof Roric) {
+                renderBossBar(g, bossBars[1]);
+                renderBossName(g, "Roric");
+            }
         }
+    }
+
+    private void renderBossBar(Graphics g, BufferedImage bossBar) {
+        g.drawImage(bossBar, BOSS_BAR_X, BOSS_BAR_Y, BOSS_BAR_WID, BOSS_BAR_HEI, null);
+    }
+
+    private void renderBossName(Graphics g, String bossName) {
+        g.setColor(Color.WHITE);
+        g.setFont(new Font("Arial", Font.BOLD, FONT_DAMAGE));
+        FontMetrics fm = g.getFontMetrics();
+        int x = BOSS_BAR_X + (BOSS_BAR_WID - fm.stringWidth(bossName)) / 2;
+        g.drawString(bossName, x, BOSS_BAR_Y);
+    }
+
+    public void reset() {
+        this.active = false;
+        this.boss = null;
+    }
+
+    public void injectBoss(Enemy boss) {
+        this.boss = boss;
+        this.active = true;
     }
 
     public void setActive(boolean active) {

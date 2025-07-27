@@ -20,7 +20,7 @@ public class Npc extends GameObject {
 
     public Npc(ObjType objType, int xPos, int yPos, NpcType npcType) {
         super(objType, xPos - (int)(25*SCALE), yPos + npcType.getHei() - TILES_SIZE);
-        super.animSpeed = 34;
+        configureAnimSpeed();
         this.npcType = npcType;
         generateHitBox();
     }
@@ -28,8 +28,19 @@ public class Npc extends GameObject {
     private void generateHitBox() {
         super.animate = true;
         initHitBox(npcType.getHitboxWidth(), npcType.getHitboxHeight());
+        configureHitboxOffsets();
         super.xOffset = npcType.getXOffset();
         super.yOffset = npcType.getYOffset();
+    }
+
+    private void configureAnimSpeed() {
+        if (npcType == NpcType.RORIC) super.animSpeed = 20;
+        else super.animSpeed = 34;
+    }
+
+    private void configureHitboxOffsets() {
+        if (npcType != NpcType.RORIC) return;
+        hitBox.y -= (int)(100 * SCALE);
     }
 
     @Override

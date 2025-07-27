@@ -5,6 +5,8 @@ import platformer.audio.types.Sound;
 import platformer.debug.Debug;
 import platformer.debug.DebugSettings;
 import platformer.model.Renderable;
+import platformer.model.entities.player.Player;
+import platformer.physics.DamageSource;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
@@ -14,13 +16,13 @@ import java.awt.geom.Rectangle2D;
  * Contains common fields and methods for all spells.
  */
 @SuppressWarnings("FieldCanBeLocal")
-public abstract class Spell implements Renderable<Graphics>, Debug<Graphics> {
+public abstract class Spell implements DamageSource, Renderable<Graphics>, Debug<Graphics> {
 
     protected final SpellType spellType;
     protected int xPos, yPos;
     protected int width, height;
     protected Rectangle2D.Double hitBox;
-    private final int animSpeed = 20;
+    protected int animSpeed = 20;
     protected int animTick, animIndex;
     protected boolean active = true;
 
@@ -51,10 +53,12 @@ public abstract class Spell implements Renderable<Graphics>, Debug<Graphics> {
     }
 
     private void finishAnimation() {
-        if (spellType == SpellType.FLAME_1 || spellType == SpellType.LIGHTNING || spellType == SpellType.FLASH) {
+        if (spellType == SpellType.LIGHTNING || spellType == SpellType.FLASH || spellType == SpellType.RORIC_BEAM || spellType == SpellType.ARROW_RAIN || spellType == SpellType.RORIC_SKY_BEAM) {
             active = false;
         }
     }
+
+    public abstract void update(Player player);
 
     @Override
     public void render(Graphics g, int xLevelOffset, int yLevelOffset) {

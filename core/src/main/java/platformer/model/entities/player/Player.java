@@ -4,24 +4,27 @@ import platformer.animation.Anim;
 import platformer.animation.Animation;
 import platformer.audio.Audio;
 import platformer.audio.types.Sound;
+import platformer.core.GameContext;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
+import platformer.model.effects.TimeCycleManager;
 import platformer.model.entities.AttackState;
 import platformer.model.entities.Cooldown;
 import platformer.model.entities.Direction;
 import platformer.model.entities.Entity;
-import platformer.model.entities.effects.EffectManager;
-import platformer.model.entities.effects.particles.DustType;
-import platformer.model.entities.enemies.Enemy;
+import platformer.model.effects.EffectManager;
+import platformer.model.effects.particles.DustType;
 import platformer.model.entities.enemies.EnemyManager;
 import platformer.model.gameObjects.ObjectManager;
-import platformer.model.gameObjects.projectiles.Projectile;
+import platformer.model.levels.LevelManager;
+import platformer.model.projectiles.Projectile;
+import platformer.model.projectiles.ProjectileManager;
 import platformer.model.inventory.Inventory;
 import platformer.model.inventory.InventoryBonus;
 import platformer.model.inventory.ItemRarity;
 import platformer.model.minimap.MinimapManager;
 import platformer.model.perks.PerksBonus;
-import platformer.utils.Utils;
+import platformer.physics.DamageSource;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
@@ -34,12 +37,15 @@ import java.util.Random;
 import static platformer.constants.Constants.*;
 import static platformer.constants.FilePaths.PLAYER_SHEET;
 import static platformer.constants.FilePaths.PLAYER_TRANSFORM_SHEET;
+import static platformer.physics.CollisionDetector.*;
 
 @SuppressWarnings("FieldCanBeLocal")
 public class Player extends Entity {
 
     private final EnemyManager enemyManager;
+    private final LevelManager levelManager;
     private final ObjectManager objectManager;
+    private final ProjectileManager projectileManager;
     private final MinimapManager minimapManager;
     private final EffectManager effectManager;
     private int[][] levelData;
@@ -77,36 +83,38 @@ public class Player extends Entity {
     private int mythicAuraTick = 0;
 
 
-    public Player(int xPos, int yPos, int width, int height, EnemyManager enemyManager, ObjectManager objectManager, MinimapManager minimapManager, EffectManager effectManager) {
+    public Player(int xPos, int yPos, int width, int height, GameContext context) {
         super(xPos, yPos, width, height, PLAYER_MAX_HP);
-        this.enemyManager = enemyManager;
-        this.objectManager = objectManager;
-        this.minimapManager = minimapManager;
-        this.effectManager = effectManager;
-        loadAnimations();
-        init();
+        this.enemyManager = context.getEnemyManager();
+        this.levelManager = context.getLevelManager();
+        this.objectManager = context.getObjectManager();
+        this.projectileManager = context.getProjectileManager();
+        this.minimapManager = context.getMinimapManager();
+        this.effectManager = context.getEffectManager();
+        init(context);
     }
 
     // Init
-    private void loadAnimations() {
-        this.animations = Animation.getInstance().loadPlayerAnimations(width, height, PLAYER_SHEET);
-        this.transformAnimations = Animation.getInstance().loadPlayerAnimations(width, height, PLAYER_TRANSFORM_SHEET);
-    }
-
-    private void init() {
+    private void init(GameContext context) {
         this.cooldown = new double[4];
         addAction(PlayerAction.CAN_DASH);
         initHitBox(PLAYER_HB_WID, PLAYER_HB_HEI);
         initAttackBox();
-        initManagers();
+        initManagers(context.getTimeCycleManager());
+        loadAnimations();
+    }
+
+    private void loadAnimations() {
+        this.animations = Animation.getInstance().loadPlayerAnimations(width, height, PLAYER_SHEET);
+        this.transformAnimations = Animation.getInstance().loadPlayerAnimations(width, height, PLAYER_TRANSFORM_SHEET);
     }
 
     private void initAttackBox() {
         this.attackBox = new Rectangle2D.Double(xPos, yPos-1, PLAYER_AB_WID, PLAYER_AB_HEI);
     }
 
-    private void initManagers() {
-        this.playerDataManager = new PlayerDataManager(this, minimapManager);
+    private void initManagers(TimeCycleManager timeCycleManager) {
+        this.playerDataManager = new PlayerDataManager(this, minimapManager, timeCycleManager);
         this.minimapHandler = new PlayerMinimapHandler(this, minimapManager);
         this.actionHandler = new PlayerActionHandler(this, effectManager);
         this.inventory = new Inventory();
@@ -114,7 +122,7 @@ public class Player extends Entity {
 
     public void loadLvlData(int[][] levelData) {
         this.levelData = levelData;
-        if (!Utils.getInstance().isEntityOnFloor(hitBox, levelData)) inAir = true;
+        if (!isEntityOnFloor(hitBox, levelData)) inAir = true;
     }
 
     public void setSpawn(Point p) {
@@ -144,7 +152,7 @@ public class Player extends Entity {
         if (spellState == 1 && animIndex >= animations[entityState.ordinal()].length-5)
             animIndex = 2;
         else if (fireball && animIndex == 3)
-            objectManager.shotFireBall(this);
+            projectileManager.activateFireball(this);
     }
 
     private void finishAnimation() {
@@ -265,7 +273,7 @@ public class Player extends Entity {
         removeAction(PlayerAction.MOVE);
         checkOnObject();
         boolean onObject = checkAction(PlayerAction.ON_OBJECT);
-        if (!inAir && !Utils.getInstance().isEntityOnFloor(hitBox, levelData) && !onObject) inAir = true;
+        if (!inAir && !isEntityOnFloor(hitBox, levelData) && !onObject) inAir = true;
 
         boolean canTransform = checkAction(PlayerAction.CAN_TRANSFORM);
         boolean canBlock = checkAction(PlayerAction.CAN_BLOCK);
@@ -316,11 +324,11 @@ public class Player extends Entity {
             else airSpeed += downwardGravity;
         }
 
-        if (Utils.getInstance().canMoveHere(hitBox.x, hitBox.y + airSpeed + 1, hitBox.width, hitBox.height, levelData)) {
+        if (canMoveHere(hitBox.x, hitBox.y + airSpeed + 1, hitBox.width, hitBox.height, levelData)) {
             hitBox.y += airSpeed;
         }
         else {
-            hitBox.y = Utils.getInstance().getYPosOnTheCeil(hitBox, airSpeed);
+            hitBox.y = getYPosOnTheCeil(hitBox, airSpeed);
             if (airSpeed > 0) {
                 removeAction(PlayerAction.WALL_PUSH);
                 inAir = false;
@@ -345,10 +353,10 @@ public class Player extends Entity {
 
         if (onWall) removeAction(PlayerAction.ATTACK);
 
-        boolean leftSideCheck = Utils.getInstance().isOnWall(hitBox, levelData, Direction.LEFT);
-        boolean rightSideCheck = Utils.getInstance().isOnWall(hitBox, levelData, Direction.RIGHT);
+        boolean leftSideCheck = isOnWall(hitBox, levelData, Direction.LEFT);
+        boolean rightSideCheck = isOnWall(hitBox, levelData, Direction.RIGHT);
 
-        if (!onWall && ((left && leftSideCheck) || (right && rightSideCheck)) && !Utils.getInstance().isEntityOnFloor(hitBox, levelData)) {
+        if (!onWall && ((left && leftSideCheck) || (right && rightSideCheck)) && !isEntityOnFloor(hitBox, levelData)) {
             if ((flipSign == -1 && rightSideCheck) || (flipSign == 1 && leftSideCheck)) return;
             addActions(PlayerAction.ON_WALL, PlayerAction.WALL_PUSH);
             currentJumps = 1;
@@ -372,13 +380,13 @@ public class Player extends Entity {
             dashTick = 0;
         }
 
-        if (!onObject && !onWall && Utils.getInstance().canMoveHere(hitBox.x + actualDx, hitBox.y, hitBox.width, hitBox.height, levelData))
+        if (!onObject && !onWall && canMoveHere(hitBox.x + actualDx, hitBox.y, hitBox.width, hitBox.height, levelData))
             hitBox.x += actualDx;
-        else if (dash && Utils.getInstance().canMoveHere(hitBox.x + actualDx, hitBox.y, hitBox.width, hitBox.height, levelData))
+        else if (dash && canMoveHere(hitBox.x + actualDx, hitBox.y, hitBox.width, hitBox.height, levelData))
             hitBox.x += actualDx;
         else {
             if (onObject) hitBox.x = objectManager.getXObjectBound(hitBox, actualDx);
-            else if (!onWall) hitBox.x = Utils.getInstance().getXPosOnTheWall(hitBox, actualDx);
+            else if (!onWall) hitBox.x = getXPosOnTheWall(hitBox, actualDx);
 
             if (dash) {
                 removeAction(PlayerAction.DASH);
@@ -429,7 +437,7 @@ public class Player extends Entity {
         if (contactMade) Audio.getInstance().getAudioPlayer().playHitSound();
         else if (!dash) Audio.getInstance().getAudioPlayer().playSlashSound();
         objectManager.checkObjectBreak(attackBox);
-        objectManager.checkProjectileDeflect(attackBox);
+        projectileManager.checkProjectileDeflect(attackBox);
     }
 
     private void checkOnObject() {
@@ -497,8 +505,7 @@ public class Player extends Entity {
         currentHealth = Math.max(Math.min(currentHealth, healthCap), 0);
     }
 
-    public void changeHealth(double value, Object o) {
-        if (!(o instanceof Enemy) && !(o instanceof Projectile)) return;
+    public void changeHealth(double value, DamageSource source) {
         boolean hit = checkAction(PlayerAction.HIT);
         if (hit) return;
         if (value < 0) {
@@ -509,9 +516,14 @@ public class Player extends Entity {
             effectManager.spawnDamageNumber(dmgText, getHitBox().getCenterX(), getHitBox().y, DAMAGE_COLOR);
         }
         changeHealth(value);
-        Rectangle2D.Double hBox = (o instanceof Enemy) ? (((Enemy) o).getHitBox()) : (((Projectile) o).getHitBox());
-        if (hBox.x < hitBox.x) pushDirection = Direction.RIGHT;
-        else pushDirection = Direction.LEFT;
+        Rectangle2D sourceBounds = source.getHitBox();
+        if (source instanceof Projectile) sourceBounds = source.getHitBox().getBounds2D();
+        Direction explicitKnockback = source.getKnockbackDirection();
+        if (explicitKnockback != null) this.pushDirection = explicitKnockback;
+        else {
+            if (sourceBounds.getCenterX() < hitBox.getCenterX()) this.pushDirection = Direction.RIGHT;
+            else this.pushDirection = Direction.LEFT;
+        }
         this.inAir = true;
         this.airSpeed = -1.2 * SCALE;
         Logger.getInstance().notify("Damage received: " + value, Message.INFORMATION);
@@ -619,7 +631,7 @@ public class Player extends Entity {
 
     // Core
     public void update() {
-        playerDataManager.update();
+        playerDataManager.update(!levelManager.isInArena());
         if (currentHealth <= 0) {
             updateDeath();
             return;
@@ -692,7 +704,7 @@ public class Player extends Entity {
         hitBox.x = xPos;
         hitBox.y = yPos;
         initAttackBox();
-        if (!Utils.getInstance().isEntityOnFloor(hitBox, levelData)) inAir = true;
+        if (!isEntityOnFloor(hitBox, levelData)) inAir = true;
     }
 
     private void resetHealth() {
@@ -771,6 +783,14 @@ public class Player extends Entity {
     }
 
     // Getters
+    public double getHorizontalSpeed() {
+        double currentSpeed = checkAction(PlayerAction.LAVA) ? LAVA_PLAYER_SPEED : PLAYER_SPEED;
+        if (checkAction(PlayerAction.DASH)) currentSpeed *= DASH_SPEED;
+        if (checkAction(PlayerAction.LEFT) && !checkAction(PlayerAction.RIGHT)) return -currentSpeed;
+        else if (checkAction(PlayerAction.RIGHT) && !checkAction(PlayerAction.LEFT)) return currentSpeed;
+        return 0;
+    }
+
     public int getAttackDmg() {
         return checkAction(PlayerAction.TRANSFORM) ? transformAttackDmg : attackDmg;
     }

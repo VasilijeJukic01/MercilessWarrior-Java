@@ -31,7 +31,8 @@ public final class FilePaths {
     public static final String GHOUL_SHEET = "/images/enemies/GhoulSprite.png";
     public static final String KNIGHT_SHEET = "/images/enemies/KnightSprite.png";
     public static final String WRAITH_SHEET = "/images/enemies/WraithSprite.png";
-    public static final String SW_SHEET = "/images/enemies/Bosses/SpearWoman.png";
+    public static final String LANCER_SHEET = "/images/enemies/boss/Lancer.png";
+    public static final String RORIC_SHEET = "/images/enemies/boss/Roric.png";
 
     // Objects
     public static final String POTIONS_SHEET = "/images/objs/potions_sprites.png";
@@ -54,6 +55,7 @@ public final class FilePaths {
     public static final String BRICK_SHEET = "/images/objs/Brick.png";
     public static final String JUMP_PAD_SHEET = "/images/objs/JumpPad.png";
     public static final String HERB_IMG = "/images/objs/Herb.png";
+    public static final String CELESTIAL_PROJECTILE_SHEET = "/images/objs/CelestialProjectile.png";
 
     // NPC
     public static final String ANITA_SHEET = "/images/objs/npc/AnitaSprite.png";
@@ -70,10 +72,13 @@ public final class FilePaths {
     public static final String LIGHTNING_BALL_1_SHEET = "/images/objs/lightningBall.png";
     public static final String LIGHTNING_BALL_2_SHEET = "/images/objs/lightningBall2.png";
     public static final String FIREBALL_SHEET = "/images/player/fireBallSheet.png";
+    public static final String RORIC_SPELLS_SHEET = "/images/enemies/boss/RoricProjectiles.png";
+    public static final String RORIC_ARROW_IMG = "/images/enemies/boss/RoricArrow.png";
 
     // Effects
     public static final String PARTICLE_SHEET = "/images/particles/ParticleSprite.png";
     public static final String SMOKE_SHEET = "/images/particles/Smoke.png";
+    public static final String RORIC_AURA_SHEET = "/images/particles/RoricAuraEffect.png";
 
     // Buttons
     public static final String BTN_BUY_SHEET = "/images/buttons/BuyButton.png";
@@ -94,9 +99,11 @@ public final class FilePaths {
     // UI
     public static final String MENU_SPRITES = "/images/menu/background/Background$.png";
     public static final String MENU_LOGO = "/images/menu/menuLogo.png";
-    public static final String BOSS_BAR = "/images/enemies/Bosses/BossBar.png";
+    public static final String LANCER_BOSS_BAR = "/images/enemies/boss/LancerBar.png";
+    public static final String RORIC_BOSS_BAR = "/images/enemies/boss/RoricBar.png";
     public static final String PLAYER_HUD = "/images/playerHUD.png";
     public static final String PLAYER_PORTRAIT = "/images/portraitHUD.png";
+    public static final String TIME_CYCLE_ICONS = "/images/player/hud/TimeCycleSheet.png";
     public static final String PAUSE_TXT = "/images/buttons/PauseText.png";
     public static final String DEAD_TXT = "/images/buttons/DeadText.png";
     public static final String RESPAWN_TXT = "/images/buttons/RespawnText.png";

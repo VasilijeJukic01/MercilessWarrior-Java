@@ -79,6 +79,28 @@
       ]
     },
     {
+      "object": "NpcRoric",
+      "id": "0",
+      "once": true,
+      "lines": [
+        "So, the mortal arrives. Your steps have echoed in the halls of fate for some time.",
+        "You seek to challenge me? To unravel what has been woven?",
+        "Let's dance!"
+      ],
+      "question": {
+        "answers": [
+          {
+            "answer": "Yes",
+            "next": "FIGHT_RORIC"
+          },
+          {
+            "answer": "No",
+            "next": ""
+          }
+        ]
+      }
+    },
+    {
       "object": "NpcAnita",
       "id": "0",
       "once": false,

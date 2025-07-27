@@ -2,6 +2,7 @@ package platformer.model.entities.player;
 
 import platformer.core.Account;
 import platformer.core.Framework;
+import platformer.model.effects.TimeCycleManager;
 import platformer.model.inventory.InventoryBonus;
 import platformer.model.levels.Spawn;
 import platformer.model.minimap.MinimapManager;
@@ -26,9 +27,9 @@ public class PlayerDataManager {
     private int level = 1;
     private int upgradeTokens = 0;
 
-    public PlayerDataManager(Player player, MinimapManager minimapManager) {
+    public PlayerDataManager(Player player, MinimapManager minimapManager, TimeCycleManager timeCycleManager) {
         this.player = player;
-        this.userInterface = new UserInterface(player, minimapManager);
+        this.userInterface = new UserInterface(player, minimapManager, timeCycleManager);
         loadPlayerData();
     }
 
@@ -42,7 +43,7 @@ public class PlayerDataManager {
     }
 
     // Core
-    public void update() {
+    public void update(boolean isMinimapVisible) {
         double currentHealth = player.getCurrentHealth();
         double maxHealth = PLAYER_MAX_HP + PerksBonus.getInstance().getBonusHealth();
         double equipmentBonusHealth = InventoryBonus.getInstance().getHealth() * maxHealth;
@@ -53,6 +54,7 @@ public class PlayerDataManager {
         double equipmentBonusStamina = InventoryBonus.getInstance().getStamina() * maxStamina;
         maxStamina += equipmentBonusStamina;
 
+        userInterface.setMinimapVisible(isMinimapVisible);
         userInterface.update(currentHealth, maxHealth, currentStamina, maxStamina, exp, 1000*level);
     }
 

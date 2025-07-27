@@ -1,7 +1,8 @@
 package platformer.model.levels;
 
 import platformer.model.entities.enemies.*;
-import platformer.model.entities.enemies.boss.SpearWoman;
+import platformer.model.entities.enemies.boss.Roric;
+import platformer.model.entities.enemies.boss.Lancer;
 import platformer.model.gameObjects.GameObject;
 import platformer.model.gameObjects.ObjType;
 import platformer.model.gameObjects.npc.Npc;
@@ -54,7 +55,7 @@ public class Level {
         npcMap.put("level02", List.of(NpcType.ANITA));
         npcMap.put("level11", List.of(NpcType.NIKOLAS));
         npcMap.put("level10", List.of(NpcType.SIR_DEJANOVIC));
-        npcMap.put("level13", List.of(NpcType.KRYSANTHE));
+        npcMap.put("level13", List.of(NpcType.RORIC));
     }
 
     public Level(String name, BufferedImage layer1Img, BufferedImage layer2Img) {
@@ -99,14 +100,17 @@ public class Level {
             case GHOUL:
                 addEnemy(new Ghoul(i*TILES_SIZE, (j-1)*TILES_SIZE));
                 break;
-            case SPEAR_WOMAN:
-                addEnemy(new SpearWoman(i*TILES_SIZE, (j-1)*TILES_SIZE));
+            case LANCER:
+                addEnemy(new Lancer(i*TILES_SIZE, (j-1)*TILES_SIZE));
                 break;
             case KNIGHT:
                 addEnemy(new Knight(i*TILES_SIZE, (j-1)*TILES_SIZE));
                 break;
             case WRAITH:
                 addEnemy(new Wraith(i*TILES_SIZE, (j-1)*TILES_SIZE));
+                break;
+            case RORIC:
+                addEnemy(new Roric(i*TILES_SIZE, (j-1)*TILES_SIZE));
                 break;
             default: break;
         }

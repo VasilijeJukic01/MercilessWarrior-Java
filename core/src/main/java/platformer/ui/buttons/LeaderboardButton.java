@@ -10,6 +10,9 @@ import static platformer.constants.AnimConstants.SMALL_BTN_W;
 import static platformer.constants.Constants.CRE_BTN_SIZE;
 import static platformer.constants.FilePaths.LEADERBOARD_BTN_SHEET;
 
+/**
+ * A specific button used to navigate to the game's leaderboard screen.
+ */
 public class LeaderboardButton extends AbstractButton {
 
     private BufferedImage[] images;

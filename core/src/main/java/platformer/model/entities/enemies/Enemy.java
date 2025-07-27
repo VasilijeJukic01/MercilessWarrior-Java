@@ -7,20 +7,21 @@ import platformer.model.entities.Direction;
 import platformer.model.entities.Entity;
 import platformer.model.entities.player.Player;
 import platformer.model.entities.player.PlayerAction;
-import platformer.utils.Utils;
+import platformer.physics.DamageSource;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 
 import static platformer.constants.Constants.*;
+import static platformer.physics.CollisionDetector.isSightClear;
 
 /**
  * Abstract base class for all enemies in the game.
  * An enemy is a type of entity that can interact with the player and the game world.
  */
 @SuppressWarnings("FieldCanBeLocal")
-public abstract class Enemy extends Entity implements Debug<Graphics> {
+public abstract class Enemy extends Entity implements DamageSource, Debug<Graphics> {
 
     private final EnemyType enemyType;
     protected double enemySpeed = ENEMY_SPEED_SLOW;
@@ -77,7 +78,7 @@ public abstract class Enemy extends Entity implements Debug<Graphics> {
         int yTileEnemy = (int)(hitBox.y / TILES_SIZE) + 1;
         if (yTilePlayer != yTileEnemy) return false;
         if (!isPlayerInSight(player)) return false;
-        return (Utils.getInstance().isSightClear(levelData, hitBox, player.getHitBox(), yTileEnemy));
+        return (isSightClear(levelData, hitBox, player.getHitBox(), yTileEnemy));
     }
 
     protected void directToPlayer(Player player) {
@@ -100,7 +101,8 @@ public abstract class Enemy extends Entity implements Debug<Graphics> {
         else if (enemyType == EnemyType.GHOUL) return distance <= GHOUL_ATT_RANGE;
         else if (enemyType == EnemyType.KNIGHT) return distance <= KNIGHT_ATT_RANGE;
         else if (enemyType == EnemyType.WRAITH) return distance <= WRAITH_ATT_RANGE;
-        else if (enemyType == EnemyType.SPEAR_WOMAN) return distance <= SW_ATT_RANGE;
+        else if (enemyType == EnemyType.LANCER) return distance <= LANCER_ATT_RANGE;
+        else if (enemyType == EnemyType.RORIC) return distance <= RORIC_ATT_RANGE;
         return false;
     }
 
@@ -117,12 +119,12 @@ public abstract class Enemy extends Entity implements Debug<Graphics> {
     }
 
     // Attack
-    protected void checkPlayerHit(Rectangle2D.Double attackBox, Player player) {
+    public void checkPlayerHit(Rectangle2D.Double attackBox, Player player) {
         if (attackBox.intersects(player.getHitBox())) {
             boolean canBlock = player.checkAction(PlayerAction.CAN_BLOCK);
             if (!canBlock) player.changeHealth(-enemyType.getDamage(), this);
         }
-        else if (enemyType == EnemyType.GHOUL || enemyType == EnemyType.SPEAR_WOMAN) return;
+        else if (enemyType == EnemyType.GHOUL || enemyType == EnemyType.LANCER) return;
         attackCheck = true;
     }
 
@@ -162,6 +164,10 @@ public abstract class Enemy extends Entity implements Debug<Graphics> {
 
     public boolean isAlive() {
         return alive;
+    }
+
+    public boolean isVisible() {
+        return true;
     }
 
     public void setEnemyAction(Anim enemyAction) {
