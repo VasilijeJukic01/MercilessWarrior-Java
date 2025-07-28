@@ -54,6 +54,13 @@ services:
       - db-game
       - redis
 
+  analytics-service:
+    build: ./analytics-service
+    depends_on:
+      - kafka
+    volumes:
+      - ./data:/app/data
+
   kafka:
     image: bitnami/kafka:3.7
     ports:
