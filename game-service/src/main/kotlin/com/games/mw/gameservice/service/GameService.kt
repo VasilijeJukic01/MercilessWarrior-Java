@@ -6,6 +6,7 @@ import com.games.mw.gameservice.model.Item
 import com.games.mw.gameservice.model.Perk
 import com.games.mw.gameservice.model.Settings
 import com.games.mw.gameservice.requests.AccountDataDTO
+import com.games.mw.gameservice.service.stream.EventProducerService
 import io.github.resilience4j.circuitbreaker.CircuitBreaker
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry
 import io.github.resilience4j.kotlin.circuitbreaker.executeSuspendFunction
@@ -39,6 +40,7 @@ class GameService(
     private val webClientBuilder: WebClient.Builder,
     private val retry: Retry,
     circuitBreakerRegistry: CircuitBreakerRegistry,
+    private val eventProducer: EventProducerService
 ) {
 
     sealed interface GameError {
