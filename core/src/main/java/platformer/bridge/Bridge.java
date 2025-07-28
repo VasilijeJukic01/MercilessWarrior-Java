@@ -21,13 +21,12 @@ public interface Bridge {
     int createAccount(String username, String password);
 
     /**
-     * Loads the account data for the given username and password.
+     * Loads the account data for the given username.
      *
-     * @param name the username of the account
-     * @param password the password of the account
+     * @param username the username of the account
      * @return the account data
      */
-    Account loadAccountData(String name, String password);
+    Account fetchAccountData(String username);
 
     /**
      * Loads the account data for the given account id.

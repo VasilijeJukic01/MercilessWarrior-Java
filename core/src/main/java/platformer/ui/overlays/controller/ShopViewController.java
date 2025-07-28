@@ -1,7 +1,10 @@
 package platformer.ui.overlays.controller;
 
+import platformer.bridge.requests.ShopTransactionRequest;
+import platformer.core.Framework;
 import platformer.model.gameObjects.objects.Shop;
 import platformer.model.inventory.Inventory;
+import platformer.model.inventory.InventoryItem;
 import platformer.model.inventory.ItemData;
 import platformer.state.GameState;
 import platformer.ui.buttons.AbstractButton;
@@ -86,14 +89,33 @@ public class ShopViewController {
     private void buyItem() {
         if (isSelling) return;
         int absoluteIndex = buySlotNumber + (buySelectedSlot * (SHOP_SLOT_MAX_ROW * SHOP_SLOT_MAX_COL));
-        getActiveShop().ifPresent(shop -> shop.buyItem(gameState.getPlayer(), absoluteIndex, quantityToTrade));
+        getActiveShop().ifPresent(shop -> {
+            ShopTransactionRequest request = new ShopTransactionRequest(
+                    Framework.getInstance().getAccount().getAccountID(),
+                    Framework.getInstance().getAccount().getName(),
+                    shop.getShopItems().get(absoluteIndex).getItemId(),
+                    quantityToTrade
+            );
+            boolean success = Framework.getInstance().getConnector().buyItem(request);
+            if (success) shop.buyItem(gameState.getPlayer(), absoluteIndex, quantityToTrade);
+        });
         updateSliderVisibility();
     }
 
     private void sellItem() {
         if (!isSelling) return;
         int absoluteIndex = sellSlotNumber + (sellSelectedSlot * (SHOP_SLOT_MAX_ROW * SHOP_SLOT_MAX_COL));
-        getActiveShop().ifPresent(shop -> shop.sellItem(gameState.getPlayer(), absoluteIndex, quantityToTrade));
+        getActiveShop().ifPresent(shop -> {
+            InventoryItem itemToSell = gameState.getPlayer().getInventory().getBackpack().get(absoluteIndex);
+            ShopTransactionRequest request = new ShopTransactionRequest(
+                    Framework.getInstance().getAccount().getAccountID(),
+                    Framework.getInstance().getAccount().getName(),
+                    itemToSell.getItemId(),
+                    quantityToTrade
+            );
+            boolean success = Framework.getInstance().getConnector().sellItem(request);
+            if (success) shop.sellItem(gameState.getPlayer(), absoluteIndex, quantityToTrade);
+        });
         updateSliderVisibility();
     }
 

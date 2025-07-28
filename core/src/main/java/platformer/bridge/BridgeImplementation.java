@@ -48,9 +48,9 @@ public class BridgeImplementation implements Bridge {
     }
 
     @Override
-    public Account loadAccountData(String user, String password) {
+    public Account fetchAccountData(String user) {
         try {
-            return accountMapper.toEntity().apply(gameServiceClient.loadAccountData(user, password));
+            return accountMapper.toEntity().apply(gameServiceClient.fetchAccountData(user));
         } catch (IOException e) {
             Logger.getInstance().notify("Loading data from database failed. Switching to Default profile.", Message.ERROR);
             return new Account();

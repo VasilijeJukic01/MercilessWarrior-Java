@@ -3,7 +3,11 @@ package platformer.launcher.controller;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import platformer.AppCore;
+import platformer.bridge.client.GameServiceClient;
+import platformer.debug.logger.Logger;
+import platformer.debug.logger.Message;
 import platformer.launcher.view.LoadingView;
+import platformer.model.inventory.GameDataCache;
 import platformer.utils.loading.LoadingProgressTracker;
 
 /**
@@ -34,13 +38,30 @@ public class LoadingController {
 
         Thread gameThread = new Thread(() -> {
             try {
-                LoadingProgressTracker.getInstance().update(0.05, "Initializing game engine");
+                GameServiceClient client = new GameServiceClient();
+                boolean loggedIn = client.loginAndStoreToken(playerName, password);
 
-                String[] gameArgs = new String[] {
-                    playerName,
-                    password,
-                    enableCheats ? "Yes" : "No",
-                    fullScreen ? "Yes" : "No"
+                if (loggedIn) {
+                    LoadingProgressTracker.getInstance().update(0.05, "Fetching game data from server...");
+                    try {
+                        GameDataCache.getInstance().cacheItemData(client.getMasterItems());
+                        GameDataCache.getInstance().cacheShopInventory("DEFAULT_SHOP", client.getShopInventory("DEFAULT_SHOP"));
+                        Logger.getInstance().notify("Successfully loaded master data from server.", Message.INFORMATION);
+                    } catch (Exception e) {
+                        Logger.getInstance().notify("Could not fetch server data.", Message.WARNING);
+                    }
+                }
+            } catch (Exception e) {
+                Logger.getInstance().notify("An unexpected error occurred during online data fetch. Forcing offline mode.", Message.ERROR);
+            }
+
+            try {
+                LoadingProgressTracker.getInstance().update(0.1, "Initializing game engine");
+                String[] gameArgs = new String[]{
+                        playerName,
+                        password,
+                        enableCheats ? "Yes" : "No",
+                        fullScreen ? "Yes" : "No"
                 };
 
                 AppCore.main(gameArgs);

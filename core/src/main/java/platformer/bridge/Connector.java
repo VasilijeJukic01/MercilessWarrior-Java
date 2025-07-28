@@ -23,7 +23,7 @@ public class Connector {
     }
 
     public Account getData() {
-        return bridge.loadAccountData(launcherPrompt.getName(), launcherPrompt.getPassword());
+        return bridge.fetchAccountData(launcherPrompt.getName());
     }
 
     public List<BoardItem> loadLeaderboardData() {

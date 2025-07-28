@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import platformer.audio.Audio;
 import platformer.audio.types.Sound;
+import platformer.bridge.requests.ShopItemDTO;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
 import platformer.model.entities.player.Player;
@@ -50,6 +51,16 @@ public class Shop extends GameObject implements Publisher {
     }
 
     private void loadShopInventory(String shopId) {
+        // [Online] Try to load from server cache
+        if (GameDataCache.getInstance().isShopCached(shopId)) {
+            List<ShopItemDTO> inventory = GameDataCache.getInstance().getShopInventory(shopId);
+            for (ShopItemDTO dto : inventory) {
+                shopItems.add(new ShopItem(dto.getItemId(), dto.getStock(), dto.getCost()));
+            }
+            return;
+        }
+
+        // [Offline] Fallback to local JSON file
         try (InputStreamReader reader = new InputStreamReader(Objects.requireNonNull(getClass().getResourceAsStream(SHOP_INV_PATH)))) {
             Type type = new TypeToken<Map<String, List<Map<String, Object>>>>() {}.getType();
             Map<String, List<Map<String, Object>>> allShops = new Gson().fromJson(reader, type);
