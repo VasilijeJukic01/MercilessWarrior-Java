@@ -1,5 +1,6 @@
 package platformer.bridge;
 
+import platformer.bridge.requests.ShopTransactionRequest;
 import platformer.core.Account;
 import platformer.model.BoardItem;
 
@@ -41,5 +42,21 @@ public interface Bridge {
      * @param account the account data
      */
     void updateAccountData(Account account);
+
+    /**
+     * Performs a buy transaction in the shop.
+     *
+     * @param request the shop transaction request containing details of the transaction
+     * @return true if the transaction was successful, false otherwise
+     */
+    boolean buyItem(ShopTransactionRequest request);
+
+    /**
+     * Performs a sell transaction in the shop.
+     *
+     * @param request the shop transaction request containing details of the transaction
+     * @return true if the transaction was successful, false otherwise
+     */
+    boolean sellItem(ShopTransactionRequest request);
 
 }

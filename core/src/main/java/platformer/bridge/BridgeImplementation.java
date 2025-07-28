@@ -6,6 +6,7 @@ import platformer.bridge.mapper.LeaderboardMapper;
 import platformer.bridge.mapper.Mapper;
 import platformer.bridge.requests.AccountDataDTO;
 import platformer.bridge.requests.BoardItemDTO;
+import platformer.bridge.requests.ShopTransactionRequest;
 import platformer.core.Account;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
@@ -72,6 +73,26 @@ public class BridgeImplementation implements Bridge {
             gameServiceClient.updateAccountData(accountMapper.toDto().apply(account));
         } catch (IOException e) {
             Logger.getInstance().notify("Failed to update account data!", Message.ERROR);
+        }
+    }
+
+    @Override
+    public boolean buyItem(ShopTransactionRequest request) {
+        try {
+            return gameServiceClient.buyItem(request);
+        } catch (IOException e) {
+            Logger.getInstance().notify("Failed to send buy request!", Message.ERROR);
+            return false;
+        }
+    }
+
+    @Override
+    public boolean sellItem(ShopTransactionRequest request) {
+        try {
+            return gameServiceClient.sellItem(request);
+        } catch (IOException e) {
+            Logger.getInstance().notify("Failed to send sell request!", Message.ERROR);
+            return false;
         }
     }
 }

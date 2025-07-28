@@ -104,5 +104,45 @@ public class GameServiceClient {
         if (responseCode != 200) Logger.getInstance().notify("Account data update failed!", Message.ERROR);
         else Logger.getInstance().notify("Account data updated successfully!", Message.INFORMATION);
     }
+
+    public boolean buyItem(ShopTransactionRequest request) throws IOException {
+        String url = API_GATEWAY_URL + "/shop/buy";
+        HttpURLConnection conn = HttpRequestHandler.createPostConnection(url, "application/json");
+        conn.setRequestProperty("Authorization", "Bearer " + TokenStorage.getInstance().getToken());
+
+        String jsonPayload = gson.toJson(request);
+        HttpRequestHandler.sendJsonPayload(conn, jsonPayload);
+
+        int responseCode = conn.getResponseCode();
+        if (responseCode == 200) {
+            Logger.getInstance().notify("Purchase successful!", Message.INFORMATION);
+            return true;
+        }
+        else {
+            String error = HttpRequestHandler.getResponse(conn);
+            Logger.getInstance().notify("Purchase failed: " + error, Message.ERROR);
+            return false;
+        }
+    }
+
+    public boolean sellItem(ShopTransactionRequest request) throws IOException {
+        String url = API_GATEWAY_URL + "/shop/sell";
+        HttpURLConnection conn = HttpRequestHandler.createPostConnection(url, "application/json");
+        conn.setRequestProperty("Authorization", "Bearer " + TokenStorage.getInstance().getToken());
+
+        String jsonPayload = gson.toJson(request);
+        HttpRequestHandler.sendJsonPayload(conn, jsonPayload);
+
+        int responseCode = conn.getResponseCode();
+        if (responseCode == 200) {
+            Logger.getInstance().notify("Sale successful!", Message.INFORMATION);
+            return true;
+        }
+        else {
+            String error = HttpRequestHandler.getResponse(conn);
+            Logger.getInstance().notify("Sale failed: " + error, Message.ERROR);
+            return false;
+        }
+    }
 }
 

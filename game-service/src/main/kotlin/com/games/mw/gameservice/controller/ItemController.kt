@@ -1,8 +1,10 @@
 package com.games.mw.gameservice.controller
 
 import com.games.mw.gameservice.model.Item
+import com.games.mw.gameservice.requests.ItemMasterDTO
 import com.games.mw.gameservice.service.ItemService.ItemError
 import com.games.mw.gameservice.service.ItemService
+import com.games.mw.gameservice.service.ShopService
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
@@ -11,8 +13,15 @@ import org.springframework.web.bind.annotation.*
 @RestController
 @RequestMapping("/items")
 class ItemController(
-    private val itemService: ItemService
+    private val itemService: ItemService,
+    private val shopService: ShopService
 ) {
+
+    @GetMapping("/master")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    fun getMasterItemList(@RequestHeader("Authorization") token: String): ResponseEntity<List<ItemMasterDTO>> {
+        return ResponseEntity.ok(shopService.getAllMasterItems())
+    }
 
     @GetMapping("/settings/{settingsId}")
     @PreAuthorize("@permissionService.isOwnerOfSettings(#settingsId) or hasRole('ADMIN')")

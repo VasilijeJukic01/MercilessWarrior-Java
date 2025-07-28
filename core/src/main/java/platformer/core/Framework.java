@@ -108,6 +108,10 @@ public class Framework {
         return account;
     }
 
+    public Connector getConnector() {
+        return connector;
+    }
+
     public GameSaveController getSaveController() {
         return saveController;
     }

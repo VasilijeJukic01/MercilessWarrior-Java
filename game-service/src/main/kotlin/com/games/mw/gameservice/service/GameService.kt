@@ -2,10 +2,14 @@ package com.games.mw.gameservice.service
 
 import arrow.core.Either
 import arrow.core.raise.either
+import arrow.core.right
+import com.games.mw.events.ShopTransaction
+import com.games.mw.events.TransactionType
 import com.games.mw.gameservice.model.Item
 import com.games.mw.gameservice.model.Perk
 import com.games.mw.gameservice.model.Settings
 import com.games.mw.gameservice.requests.AccountDataDTO
+import com.games.mw.gameservice.requests.ShopTransactionRequest
 import com.games.mw.gameservice.service.stream.EventProducerService
 import io.github.resilience4j.circuitbreaker.CircuitBreaker
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry
@@ -19,6 +23,8 @@ import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import org.springframework.web.reactive.function.client.awaitBody
+import java.time.Instant
+import java.util.*
 
 /**
  * Service for managing game account data.
@@ -43,12 +49,21 @@ class GameService(
     private val eventProducer: EventProducerService
 ) {
 
+    // Shop transactions logic will stay here for now due complexity
+
     sealed interface GameError {
         data class AuthServiceInteractionError(val statusCode: HttpStatus, val message: String?) : GameError
         data class SettingsOperationFailed(val underlyingError: SettingsService.SettingsError) : GameError
         data class ItemOperationFailed(val underlyingError: ItemService.ItemError) : GameError
         data class PerkOperationFailed(val underlyingError: PerkService.PerkError) : GameError
         data class UnknownSource(val throwable: Throwable) : GameError
+    }
+
+    sealed interface TransactionError {
+        data class InsufficientFunds(val message: String = "Not enough coins.") : TransactionError
+        data class ItemNotFound(val message: String = "Item not found in shop or inventory.") : TransactionError
+        data class InsufficientStock(val message: String = "Not enough items in stock.") : TransactionError
+        data class Unknown(val throwable: Throwable) : TransactionError
     }
 
     private val authServiceCircuitBreaker: CircuitBreaker = circuitBreakerRegistry.circuitBreaker("authServiceGame")
@@ -145,6 +160,77 @@ class GameService(
             perkService.insertPerk(Perk(name = it, settings = settings))
                 .mapLeft { GameError.PerkOperationFailed(it) }.bind()
         }
+    }
+
+    @Transactional
+    suspend fun processBuyTransaction(request: ShopTransactionRequest): Either<TransactionError, String> = either {
+        // TODO: Replace with actual item price logic, e.g., fetching from a database or configuration
+        val itemPrice = 10
+
+        val settings = settingsService.getSettingsByUserId(request.userId).getOrNull()
+            ?: raise(TransactionError.ItemNotFound("Settings not found for user."))
+
+        val totalCost = itemPrice * request.quantity
+        if (settings.coins < totalCost) {
+            raise(TransactionError.InsufficientFunds())
+        }
+
+        settings.coins -= totalCost
+        settingsService.updateSettings(request.userId, settings)
+            .mapLeft { TransactionError.Unknown(RuntimeException(it.toString())) }
+            .bind()
+
+        // TODO: Replace with actual item existence check and stock management
+        itemService.insertItem(Item(name = request.itemId, amount = request.quantity, settings = settings))
+            .mapLeft { TransactionError.Unknown(RuntimeException(it.toString())) }
+            .bind()
+
+        val event = ShopTransaction.newBuilder()
+            .setEventId(UUID.randomUUID().toString())
+            .setTimestamp(Instant.now().toEpochMilli())
+            .setUserId(request.userId)
+            .setUsername(request.username)
+            .setTransactionType(TransactionType.BUY)
+            .setItemId(request.itemId)
+            .setQuantity(request.quantity)
+            .setUnitPrice(itemPrice)
+            .setTotalPrice(totalCost)
+            .build()
+        eventProducer.sendShopTransaction(event)
+
+        "Purchase successful".right().bind()
+    }
+
+    @Transactional
+    suspend fun processSellTransaction(request: ShopTransactionRequest): Either<TransactionError, String> = either {
+        // TODO: Replace with actual item sell value logic, e.g., fetching from a database or configuration
+        val itemSellValue = 5
+
+        val settings = settingsService.getSettingsByUserId(request.userId).getOrNull()
+            ?: raise(TransactionError.ItemNotFound("Settings not found for user."))
+
+        val totalGain = itemSellValue * request.quantity
+        settings.coins += totalGain
+        settingsService.updateSettings(request.userId, settings)
+            .mapLeft { TransactionError.Unknown(RuntimeException(it.toString())) }
+            .bind()
+
+        // TODO: Replace with actual item existence check and stock management
+
+        val event = ShopTransaction.newBuilder()
+            .setEventId(UUID.randomUUID().toString())
+            .setTimestamp(Instant.now().toEpochMilli())
+            .setUserId(request.userId)
+            .setUsername(request.username)
+            .setTransactionType(TransactionType.SELL)
+            .setItemId(request.itemId)
+            .setQuantity(request.quantity)
+            .setUnitPrice(itemSellValue)
+            .setTotalPrice(totalGain)
+            .build()
+        eventProducer.sendShopTransaction(event)
+
+        "Sale successful".right().bind()
     }
 
     // Private

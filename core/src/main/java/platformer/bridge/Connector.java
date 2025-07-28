@@ -1,5 +1,6 @@
 package platformer.bridge;
 
+import platformer.bridge.requests.ShopTransactionRequest;
 import platformer.core.Account;
 import platformer.core.LauncherPrompt;
 import platformer.model.BoardItem;
@@ -31,5 +32,13 @@ public class Connector {
 
     public void updateAccountData(Account account) {
         bridge.updateAccountData(account);
+    }
+
+    public boolean buyItem(ShopTransactionRequest request) {
+        return bridge.buyItem(request);
+    }
+
+    public boolean sellItem(ShopTransactionRequest request) {
+        return bridge.sellItem(request);
     }
 }
