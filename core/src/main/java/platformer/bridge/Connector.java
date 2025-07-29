@@ -1,10 +1,12 @@
 package platformer.bridge;
 
 import platformer.bridge.requests.ShopTransactionRequest;
+import platformer.bridge.requests.ShopTransactionResponse;
 import platformer.core.Account;
 import platformer.core.LauncherPrompt;
 import platformer.model.BoardItem;
 
+import java.io.IOException;
 import java.util.List;
 
 public class Connector {
@@ -34,11 +36,11 @@ public class Connector {
         bridge.updateAccountData(account);
     }
 
-    public boolean buyItem(ShopTransactionRequest request) {
+    public ShopTransactionResponse buyItem(ShopTransactionRequest request) throws IOException {
         return bridge.buyItem(request);
     }
 
-    public boolean sellItem(ShopTransactionRequest request) {
+    public ShopTransactionResponse sellItem(ShopTransactionRequest request) throws IOException {
         return bridge.sellItem(request);
     }
 }

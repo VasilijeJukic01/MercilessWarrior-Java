@@ -1,9 +1,12 @@
 package platformer.bridge;
 
+import platformer.bridge.requests.ShopItemDTO;
 import platformer.bridge.requests.ShopTransactionRequest;
+import platformer.bridge.requests.ShopTransactionResponse;
 import platformer.core.Account;
 import platformer.model.BoardItem;
 
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -43,19 +46,28 @@ public interface Bridge {
     void updateAccountData(Account account);
 
     /**
+     * Fetches the inventory for a specific shop from the game service.
+     *
+     * @param shopId the ID of the shop
+     * @return a list of shop items
+     * @throws IOException if a network error occurs
+     */
+    List<ShopItemDTO> getShopInventory(String shopId) throws IOException;
+
+    /**
      * Performs a buy transaction in the shop.
      *
      * @param request the shop transaction request containing details of the transaction
-     * @return true if the transaction was successful, false otherwise
+     * @return the transaction response with a message and the updated shop inventory
      */
-    boolean buyItem(ShopTransactionRequest request);
+    ShopTransactionResponse buyItem(ShopTransactionRequest request) throws IOException;
 
     /**
      * Performs a sell transaction in the shop.
      *
      * @param request the shop transaction request containing details of the transaction
-     * @return true if the transaction was successful, false otherwise
+     * @return the transaction response with a message and the updated shop inventory
      */
-    boolean sellItem(ShopTransactionRequest request);
+    ShopTransactionResponse sellItem(ShopTransactionRequest request) throws IOException;
 
 }

@@ -1,6 +1,9 @@
 package com.games.mw.gameservice.domain.shop
 
+import arrow.core.Either
+import arrow.core.raise.either
 import com.games.mw.gameservice.config.game.ShopConfig
+import com.games.mw.gameservice.domain.account.settings.SettingsService
 import com.games.mw.gameservice.domain.item.model.ItemMaster
 import com.games.mw.gameservice.domain.item.repository.ItemMasterRepository
 import com.games.mw.gameservice.domain.shop.repository.ShopInventoryRepository
@@ -15,8 +18,14 @@ class ShopService(
     private val itemMasterRepository: ItemMasterRepository,
     private val shopInventoryRepository: ShopInventoryRepository,
     private val userShopStockRepository: UserShopStockRepository,
+    private val settingsService: SettingsService,
     private val shopConfig: ShopConfig
 ) {
+
+    sealed interface ShopError {
+        data class SettingsNotFound(val message: String = "Settings not found for user.") : ShopError
+        data class Unknown(val throwable: Throwable) : ShopError
+    }
 
     @Transactional(readOnly = true)
     fun getAllMasterItems(): List<ItemMasterDTO> {
@@ -34,8 +43,17 @@ class ShopService(
         }
     }
 
-    @Transactional(readOnly = true)
-    fun getShopInventoryForUser(shopId: String, settingsId: Long): List<ShopItemDTO> {
+    suspend fun getShopInventoryByUserId(shopId: String, userId: Long): Either<ShopError, List<ShopItemDTO>> = either {
+        val settings = settingsService.getSettingsByUserId(userId).getOrNull()
+            ?: raise(ShopError.SettingsNotFound())
+
+        val settingsId = settings.id
+            ?: raise(ShopError.Unknown(IllegalStateException("Settings ID not found for user.")))
+
+        getShopInventoryForUser(shopId, settingsId)
+    }
+
+    internal fun getShopInventoryForUser(shopId: String, settingsId: Long): List<ShopItemDTO> {
         val currentPeriod = shopConfig.getCurrentResetPeriod()
         val masterInventory = shopInventoryRepository.findByShopId(shopId)
 

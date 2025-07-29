@@ -144,7 +144,7 @@ public class GameServiceClient {
         }
     }
 
-    public boolean buyItem(ShopTransactionRequest request) throws IOException {
+    public ShopTransactionResponse buyItem(ShopTransactionRequest request) throws IOException {
         String url = API_GATEWAY_URL + "/shop/buy";
         HttpURLConnection conn = HttpRequestHandler.createPostConnection(url, "application/json");
         conn.setRequestProperty("Authorization", "Bearer " + TokenStorage.getInstance().getToken());
@@ -153,18 +153,19 @@ public class GameServiceClient {
         HttpRequestHandler.sendJsonPayload(conn, jsonPayload);
 
         int responseCode = conn.getResponseCode();
+        String responseBody = HttpRequestHandler.getResponse(conn);
+
         if (responseCode == 200) {
             Logger.getInstance().notify("Purchase successful!", Message.INFORMATION);
-            return true;
+            return gson.fromJson(responseBody, ShopTransactionResponse.class);
         }
         else {
-            String error = HttpRequestHandler.getResponse(conn);
-            Logger.getInstance().notify("Purchase failed: " + error, Message.ERROR);
-            return false;
+            Logger.getInstance().notify("Purchase failed: " + responseBody, Message.ERROR);
+            return null;
         }
     }
 
-    public boolean sellItem(ShopTransactionRequest request) throws IOException {
+    public ShopTransactionResponse sellItem(ShopTransactionRequest request) throws IOException {
         String url = API_GATEWAY_URL + "/shop/sell";
         HttpURLConnection conn = HttpRequestHandler.createPostConnection(url, "application/json");
         conn.setRequestProperty("Authorization", "Bearer " + TokenStorage.getInstance().getToken());
@@ -173,14 +174,15 @@ public class GameServiceClient {
         HttpRequestHandler.sendJsonPayload(conn, jsonPayload);
 
         int responseCode = conn.getResponseCode();
+        String responseBody = HttpRequestHandler.getResponse(conn);
+
         if (responseCode == 200) {
             Logger.getInstance().notify("Sale successful!", Message.INFORMATION);
-            return true;
+            return gson.fromJson(responseBody, ShopTransactionResponse.class);
         }
         else {
-            String error = HttpRequestHandler.getResponse(conn);
-            Logger.getInstance().notify("Sale failed: " + error, Message.ERROR);
-            return false;
+            Logger.getInstance().notify("Sale failed: " + responseBody, Message.ERROR);
+            return null;
         }
     }
 }

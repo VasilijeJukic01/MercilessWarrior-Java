@@ -4,9 +4,7 @@ import platformer.bridge.client.GameServiceClient;
 import platformer.bridge.mapper.AccountMapper;
 import platformer.bridge.mapper.LeaderboardMapper;
 import platformer.bridge.mapper.Mapper;
-import platformer.bridge.requests.AccountDataDTO;
-import platformer.bridge.requests.BoardItemDTO;
-import platformer.bridge.requests.ShopTransactionRequest;
+import platformer.bridge.requests.*;
 import platformer.core.Account;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
@@ -77,22 +75,17 @@ public class BridgeImplementation implements Bridge {
     }
 
     @Override
-    public boolean buyItem(ShopTransactionRequest request) {
-        try {
-            return gameServiceClient.buyItem(request);
-        } catch (IOException e) {
-            Logger.getInstance().notify("Failed to send buy request!", Message.ERROR);
-            return false;
-        }
+    public List<ShopItemDTO> getShopInventory(String shopId) throws IOException {
+        return gameServiceClient.getShopInventory(shopId);
     }
 
     @Override
-    public boolean sellItem(ShopTransactionRequest request) {
-        try {
-            return gameServiceClient.sellItem(request);
-        } catch (IOException e) {
-            Logger.getInstance().notify("Failed to send sell request!", Message.ERROR);
-            return false;
-        }
+    public ShopTransactionResponse buyItem(ShopTransactionRequest request) throws IOException {
+        return gameServiceClient.buyItem(request);
+    }
+
+    @Override
+    public ShopTransactionResponse sellItem(ShopTransactionRequest request) throws IOException {
+        return gameServiceClient.sellItem(request);
     }
 }

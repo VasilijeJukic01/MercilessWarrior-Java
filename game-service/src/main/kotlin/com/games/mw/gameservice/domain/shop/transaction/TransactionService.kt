@@ -16,10 +16,12 @@ import com.games.mw.gameservice.domain.shop.model.ShopInventory
 import com.games.mw.gameservice.domain.shop.model.UserShopStock
 import com.games.mw.gameservice.domain.item.repository.ItemMasterRepository
 import com.games.mw.gameservice.domain.item.repository.ItemRepository
+import com.games.mw.gameservice.domain.shop.ShopService
 import com.games.mw.gameservice.domain.shop.repository.ShopInventoryRepository
 import com.games.mw.gameservice.domain.shop.repository.UserShopStockRepository
 import com.games.mw.gameservice.domain.shop.transaction.requests.ShopTransactionRequest
 import com.games.mw.gameservice.domain.shop.stream.EventProducerService
+import com.games.mw.gameservice.domain.shop.transaction.requests.ShopTransactionResponse
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.Instant
@@ -29,6 +31,7 @@ import java.util.UUID
 class TransactionService(
     private val settingsService: SettingsService,
     private val itemService: ItemService,
+    private val shopService: ShopService,
     private val userShopStockRepository: UserShopStockRepository,
     private val shopInventoryRepository: ShopInventoryRepository,
     private val itemMasterRepository: ItemMasterRepository,
@@ -52,17 +55,21 @@ class TransactionService(
     )
 
     @Transactional
-    suspend fun processBuyTransaction(request: ShopTransactionRequest): Either<TransactionError, String> = either {
+    suspend fun processBuyTransaction(request: ShopTransactionRequest): Either<TransactionError, ShopTransactionResponse> = either {
         val context = createContext(request).bind()
         executeBuy(context).bind()
-        "Purchase successful".right().bind()
+
+        val updatedInventory = shopService.getShopInventoryForUser(context.shopId, context.settings.id!!)
+        ShopTransactionResponse("Purchase successful", updatedInventory).right().bind()
     }
 
     @Transactional
-    suspend fun processSellTransaction(request: ShopTransactionRequest): Either<TransactionError, String> = either {
+    suspend fun processSellTransaction(request: ShopTransactionRequest): Either<TransactionError, ShopTransactionResponse> = either {
         val context = createContext(request).bind()
         executeSell(context).bind()
-        "Sale successful".right().bind()
+
+        val updatedInventory = shopService.getShopInventoryForUser(context.shopId, context.settings.id!!)
+        ShopTransactionResponse("Sale successful", updatedInventory).right().bind()
     }
 
     // Private

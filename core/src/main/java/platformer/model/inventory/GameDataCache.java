@@ -3,6 +3,7 @@ package platformer.model.inventory;
 import platformer.bridge.requests.ItemMasterDTO;
 import platformer.bridge.requests.ShopItemDTO;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,7 +17,7 @@ public class GameDataCache {
     private static volatile GameDataCache instance;
 
     private Map<String, ItemData> itemDataCache;
-    private final Map<String, List<ShopItemDTO>> shopInventoryCache = new HashMap<>();
+    private final Map<String, List<ShopItem>> shopInventoryCache = new HashMap<>();
 
     private GameDataCache() {}
 
@@ -32,16 +33,26 @@ public class GameDataCache {
     }
 
     public void cacheItemData(List<ItemMasterDTO> items) {
-        if (this.itemDataCache == null) {
-            this.itemDataCache = new HashMap<>();
-        }
+        if (this.itemDataCache == null) this.itemDataCache = new HashMap<>();
         this.itemDataCache.clear();
         for (ItemMasterDTO dto : items) {
             this.itemDataCache.put(dto.getItemId(), convertToItemData(dto));
         }
     }
 
+    public void cacheItemDataFromMap(Map<String, ItemData> items) {
+        this.itemDataCache = items;
+    }
+
     public void cacheShopInventory(String shopId, List<ShopItemDTO> inventory) {
+        List<ShopItem> shopItems = new ArrayList<>();
+        for (ShopItemDTO dto : inventory) {
+            shopItems.add(new ShopItem(dto.getItemId(), dto.getStock(), dto.getCost()));
+        }
+        this.shopInventoryCache.put(shopId, shopItems);
+    }
+
+    public void cacheShopInventoryFromList(String shopId, List<ShopItem> inventory) {
         this.shopInventoryCache.put(shopId, inventory);
     }
 
@@ -49,16 +60,12 @@ public class GameDataCache {
         return itemDataCache;
     }
 
-    public List<ShopItemDTO> getShopInventory(String shopId) {
+    public List<ShopItem> getShopInventory(String shopId) {
         return shopInventoryCache.get(shopId);
     }
 
     public boolean isItemDataCached() {
         return itemDataCache != null && !itemDataCache.isEmpty();
-    }
-
-    public boolean isShopCached(String shopId) {
-        return shopInventoryCache.containsKey(shopId);
     }
 
     private ItemData convertToItemData(ItemMasterDTO dto) {
@@ -78,5 +85,4 @@ public class GameDataCache {
         }
         return data;
     }
-
 }

@@ -123,10 +123,10 @@ public final class FilePaths {
     public static final String CREDITS_TXT = "/images/buttons/CreditsText.png";
 
     public static final String ORANGE_GLOW = "/images/particles/orangeGlow.png";
-    public static final String WHITE_GLOW = "/images/particles/whiteGlow.png";
     public static final String WHITE_RADIAL_GLOW = "/images/particles/whiteRadialGlow.png";
 
     // Inventory / Shop
+    public static final String ITEMS_PATH = "/items/items.json";
     public static final String RECIPES_PATH = "/items/recipes.json";
     public static final String SHOP_INV_PATH = "/items/shop_inventory.json";
     public static final String LOOT_TABLE_PATH = "/items/loot_tables.json";

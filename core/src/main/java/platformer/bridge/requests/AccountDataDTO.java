@@ -13,8 +13,8 @@ import java.util.List;
 @AllArgsConstructor
 public class AccountDataDTO {
     private String username;
-    private int accountId;
-    private int settingsId;
+    private long accountId;
+    private long settingsId;
     private int spawn;
     private int coins;
     private int tokens;

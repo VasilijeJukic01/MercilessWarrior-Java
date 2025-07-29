@@ -3,6 +3,8 @@ package platformer.controller;
 import platformer.core.Account;
 import platformer.core.Framework;
 import platformer.core.Game;
+import platformer.debug.logger.Logger;
+import platformer.debug.logger.Message;
 import platformer.model.levels.LevelManager;
 import platformer.model.levels.Spawn;
 import platformer.state.GameState;
@@ -106,8 +108,22 @@ public class GameSaveController {
 
     private void getSlotAccountData(GameSlot s) {
         Framework.getInstance().getAccount().unload();
-        if (s.getAccount() == null) return;
-        Framework.getInstance().getAccount().copyFromSlot(s.getAccount());
+
+        if (s.isDatabaseSlot()) {
+            Logger.getInstance().notify("Cloud save selected. Fetching latest data from server...", Message.INFORMATION);
+            Account freshCloudAccount = Framework.getInstance().getStorageStrategy().fetchAccountData(Framework.getInstance().getAccount().getName(), 0);
+            Framework.getInstance().getAccount().copyFromSlot(freshCloudAccount);
+            Framework.getInstance().getCloud().copyFromSlot(freshCloudAccount);
+        }
+        else {
+            if (s.getAccount() == null) return;
+            Framework.getInstance().getAccount().copyFromSlot(s.getAccount());
+        }
+
+        if (game.getCurrentState() instanceof GameState gameState) {
+            gameState.refreshAllFromAccount();
+        }
+
         Framework.getInstance().getAccount().startGameTimer();
     }
 

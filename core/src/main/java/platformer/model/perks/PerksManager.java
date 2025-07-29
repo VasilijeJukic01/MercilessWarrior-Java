@@ -211,6 +211,14 @@ public class PerksManager implements Publisher {
                 .ifPresent(s -> s.update(o));
     }
 
+    public void reset() {
+        PerksBonus.getInstance().reset();
+        perks.clear();
+        unlocked.clear();
+        initPerks();
+        initLock();
+    }
+
     private boolean isSafe(int i, int j, int n, int m) {
         return i >= 0 && j >= 0 && i < m && j < n;
     }

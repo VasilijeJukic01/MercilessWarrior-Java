@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import platformer.audio.Audio;
 import platformer.controller.GameStateController;
+import platformer.core.Account;
 import platformer.core.Framework;
 import platformer.core.Game;
 import platformer.core.GameContext;
@@ -154,6 +155,27 @@ public class GameState extends AbstractState implements State {
         this.questManager.reset();
         reset();
         camera.updateLevelBounds(getLevelManager().getCurrentLevel());
+    }
+
+    /**
+     * Performs a soft refresh of the player's data after an online transaction.
+     */
+    public void refreshPlayerDataFromAccount() {
+        Account currentAccount = Framework.getInstance().getAccount();
+        getPlayer().getPlayerDataManager().refreshFromAccount(currentAccount);
+    }
+
+    /**
+     * Fully refreshes all player-related data from the master account object.
+     * This is called after loading a save to ensure the live player object reflects the new data.
+     */
+    public void refreshAllFromAccount() {
+        if (world == null || world.getPlayer() == null) return;
+        getPlayer().getPlayerDataManager().loadPlayerData();
+        perksManager.reset();
+        perksManager.loadUnlockedPerks(Framework.getInstance().getAccount().getPerks());
+        getPlayer().getInventory().fillItems(Framework.getInstance().getAccount().getItems());
+        Logger.getInstance().notify("Player data fully refreshed from loaded save.", Message.INFORMATION);
     }
 
     private void goToLevel(int dI, int dJ, String message) {
