@@ -32,11 +32,17 @@ public class ItemDatabase {
     }
 
     private void loadItems() {
+        // [Online] Try to load from server cache
+        if (GameDataCache.getInstance().isItemDataCached()) {
+            this.itemData = GameDataCache.getInstance().getItemData();
+            return;
+        }
+
+        // [Offline] Fallback to local JSON file
         try (InputStreamReader reader = new InputStreamReader(Objects.requireNonNull(getClass().getResourceAsStream("/items/items.json")))) {
             Type type = new TypeToken<Map<String, ItemData>>() {}.getType();
             itemData = new Gson().fromJson(reader, type);
         } catch (Exception e) {
-            e.printStackTrace();
             itemData = Collections.emptyMap();
         }
     }

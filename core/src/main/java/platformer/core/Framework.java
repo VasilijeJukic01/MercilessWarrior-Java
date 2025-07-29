@@ -1,11 +1,16 @@
 package platformer.core;
 
+import platformer.bridge.storage.OfflineStorageStrategy;
+import platformer.bridge.storage.OnlineStorageStrategy;
+import platformer.bridge.storage.StorageStrategy;
 import platformer.controller.GameSaveController;
 import platformer.controller.KeyboardController;
 import platformer.bridge.Connector;
 import platformer.model.BoardItem;
+import platformer.model.inventory.GameDataCache;
 import platformer.serialization.GameSerializer;
 import platformer.serialization.Serializer;
+import platformer.state.GameState;
 
 import java.util.List;
 
@@ -23,6 +28,7 @@ public class Framework {
     private Connector connector;
     private Serializer<Account, List<Account>> serializer;
     private Account cloud, account;
+    private StorageStrategy storageStrategy;
     private GameSaveController saveController;
     private List<BoardItem> leaderboard;
 
@@ -47,6 +53,15 @@ public class Framework {
         this.keyboardController = new KeyboardController();
         this.connector = new Connector(launcherPrompt);
         this.serializer = new GameSerializer();
+
+        if (TokenStorage.getInstance().getToken() != null) {
+            this.storageStrategy = new OnlineStorageStrategy(new Connector(launcherPrompt));
+        }
+        else this.storageStrategy = new OfflineStorageStrategy();
+
+        GameDataCache.getInstance().cacheItemDataFromMap(storageStrategy.getMasterItems());
+        GameDataCache.getInstance().cacheShopInventoryFromList("DEFAULT_SHOP", storageStrategy.getShopInventory("DEFAULT_SHOP"));
+
         initAccount();
         initLeaderboard();
         initGame();
@@ -54,7 +69,8 @@ public class Framework {
     }
 
     private void initAccount() {
-        this.cloud = connector.getData();
+        // this.cloud = connector.getData();
+        this.cloud = storageStrategy.fetchAccountData(launcherPrompt.getName(), 0);
         this.cloud.setEnableCheats(launcherPrompt.isEnableCheats());
         this.account = new Account(cloud);
     }
@@ -72,6 +88,15 @@ public class Framework {
     public void cloudSave() {
         connector.updateAccountData(account);
         initAccount();
+    }
+
+    public void refreshAccountData() {
+        if (!storageStrategy.isOnline()) return;
+        Account refreshedAccount = storageStrategy.fetchAccountData(account.getName(), 0);
+        this.account.copyFromSlot(refreshedAccount);
+        if (game.getCurrentState() instanceof GameState) {
+            ((GameState) game.getCurrentState()).refreshPlayerDataFromAccount();
+        }
     }
 
     public void localSave(int slot) {
@@ -106,6 +131,10 @@ public class Framework {
 
     public Account getAccount() {
         return account;
+    }
+
+    public StorageStrategy getStorageStrategy() {
+        return storageStrategy;
     }
 
     public GameSaveController getSaveController() {

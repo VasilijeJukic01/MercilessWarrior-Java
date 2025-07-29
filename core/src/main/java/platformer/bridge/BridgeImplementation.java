@@ -4,8 +4,7 @@ import platformer.bridge.client.GameServiceClient;
 import platformer.bridge.mapper.AccountMapper;
 import platformer.bridge.mapper.LeaderboardMapper;
 import platformer.bridge.mapper.Mapper;
-import platformer.bridge.requests.AccountDataDTO;
-import platformer.bridge.requests.BoardItemDTO;
+import platformer.bridge.requests.*;
 import platformer.core.Account;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
@@ -47,9 +46,9 @@ public class BridgeImplementation implements Bridge {
     }
 
     @Override
-    public Account loadAccountData(String user, String password) {
+    public Account fetchAccountData(String user) {
         try {
-            return accountMapper.toEntity().apply(gameServiceClient.loadAccountData(user, password));
+            return accountMapper.toEntity().apply(gameServiceClient.fetchAccountData(user));
         } catch (IOException e) {
             Logger.getInstance().notify("Loading data from database failed. Switching to Default profile.", Message.ERROR);
             return new Account();
@@ -73,5 +72,20 @@ public class BridgeImplementation implements Bridge {
         } catch (IOException e) {
             Logger.getInstance().notify("Failed to update account data!", Message.ERROR);
         }
+    }
+
+    @Override
+    public List<ShopItemDTO> getShopInventory(String shopId) throws IOException {
+        return gameServiceClient.getShopInventory(shopId);
+    }
+
+    @Override
+    public ShopTransactionResponse buyItem(ShopTransactionRequest request) throws IOException {
+        return gameServiceClient.buyItem(request);
+    }
+
+    @Override
+    public ShopTransactionResponse sellItem(ShopTransactionRequest request) throws IOException {
+        return gameServiceClient.sellItem(request);
     }
 }

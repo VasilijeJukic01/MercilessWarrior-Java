@@ -1,9 +1,12 @@
 package platformer.bridge;
 
+import platformer.bridge.requests.ShopTransactionRequest;
+import platformer.bridge.requests.ShopTransactionResponse;
 import platformer.core.Account;
 import platformer.core.LauncherPrompt;
 import platformer.model.BoardItem;
 
+import java.io.IOException;
 import java.util.List;
 
 public class Connector {
@@ -22,7 +25,7 @@ public class Connector {
     }
 
     public Account getData() {
-        return bridge.loadAccountData(launcherPrompt.getName(), launcherPrompt.getPassword());
+        return bridge.fetchAccountData(launcherPrompt.getName());
     }
 
     public List<BoardItem> loadLeaderboardData() {
@@ -31,5 +34,13 @@ public class Connector {
 
     public void updateAccountData(Account account) {
         bridge.updateAccountData(account);
+    }
+
+    public ShopTransactionResponse buyItem(ShopTransactionRequest request) throws IOException {
+        return bridge.buyItem(request);
+    }
+
+    public ShopTransactionResponse sellItem(ShopTransactionRequest request) throws IOException {
+        return bridge.sellItem(request);
     }
 }

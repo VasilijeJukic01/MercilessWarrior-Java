@@ -26,7 +26,20 @@ public class PerksBonus {
     }
 
     public void reset() {
-        instance = new PerksBonus();
+        bonusAttack = 0;
+        bonusHealth = 0;
+        bonusPower = 0;
+        bonusExp = 0;
+        bonusCoin = 0;
+        criticalHitChance = 0;
+        bonusCooldown = 0;
+        dashCooldown = 0;
+        fireball = false;
+        transform = false;
+        restorePower = false;
+        deflect = false;
+        lavaWalk = false;
+        dashSlash = false;
     }
 
     public int getBonusAttack() {

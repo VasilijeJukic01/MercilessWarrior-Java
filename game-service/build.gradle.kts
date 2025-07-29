@@ -4,6 +4,8 @@ plugins {
     java
     id("org.springframework.boot") version "3.2.6"
     id("io.spring.dependency-management") version "1.1.5"
+    id("com.github.johnrengelman.shadow") version "8.1.1"
+    id("com.github.davidmc24.gradle.plugin.avro") version "1.9.1"
     kotlin("jvm") version "2.0.0"
     kotlin("plugin.spring") version "2.0.0"
 }
@@ -15,6 +17,10 @@ java {
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(17))
     }
+}
+
+avro {
+    kotlin { }
 }
 
 configurations {
@@ -33,6 +39,7 @@ configurations {
 
 repositories {
     mavenCentral()
+    maven { url = uri("https://packages.confluent.io/maven/") }
 }
 
 dependencyManagement {
@@ -77,6 +84,10 @@ dependencies {
     // Database
     runtimeOnly("org.postgresql:postgresql")
 
+    // Streaming & Avro
+    implementation("org.springframework.kafka:spring-kafka")
+    implementation("io.confluent:kafka-avro-serializer:7.6.0")
+
     // Lombok
     compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")
@@ -91,6 +102,14 @@ dependencies {
 kotlin {
     compilerOptions {
         freeCompilerArgs.addAll("-Xjsr305=strict")
+    }
+}
+
+sourceSets {
+    main {
+        kotlin {
+            srcDir("$buildDir/generated-main-avro-kotlin")
+        }
     }
 }
 

@@ -42,6 +42,20 @@ public class PlayerDataManager {
         loadSpawnPoint(account);
     }
 
+    /**
+     * Refreshes the player's live data from the provided Account object.
+     * This is a "soft refresh" used after online transactions to avoid a full level reload.
+     *
+     * @param account The updated account data from the server.
+     */
+    public void refreshFromAccount(Account account) {
+        this.coins = account.getCoins();
+        this.upgradeTokens = account.getTokens();
+        this.level = account.getLevel();
+        this.exp = account.getExp();
+        player.getInventory().fillItems(account.getItems());
+    }
+
     // Core
     public void update(boolean isMinimapVisible) {
         double currentHealth = player.getCurrentHealth();

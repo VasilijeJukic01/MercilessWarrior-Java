@@ -3,12 +3,15 @@ package platformer.model.gameObjects;
 import platformer.animation.Animation;
 import platformer.audio.Audio;
 import platformer.audio.types.Sound;
+import platformer.bridge.storage.StorageStrategy;
+import platformer.core.Framework;
 import platformer.model.entities.Direction;
 import platformer.model.entities.enemies.Enemy;
 import platformer.model.entities.player.Player;
 import platformer.model.gameObjects.npc.Npc;
 import platformer.model.gameObjects.objects.Container;
 import platformer.model.gameObjects.objects.*;
+import platformer.model.inventory.ShopItem;
 import platformer.model.levels.Level;
 import platformer.model.quests.QuestManager;
 import platformer.observer.Publisher;
@@ -94,6 +97,14 @@ public class ObjectManager implements Publisher {
     private void configureObjects() {
         if (lootHandler == null) return;
         getObjects(Container.class).forEach(container -> lootHandler.generateCrateLoot(container));
+        StorageStrategy storageStrategy = Framework.getInstance().getStorageStrategy();
+        getObjects(Shop.class).forEach(shop -> {
+            List<ShopItem> inventory = storageStrategy.getShopInventory("DEFAULT_SHOP");
+            if (inventory != null) {
+                shop.getShopItems().clear();
+                shop.getShopItems().addAll(inventory);
+            }
+        });
     }
 
     // Intersection Handler
@@ -339,6 +350,17 @@ public class ObjectManager implements Publisher {
     public void reset() {
         objectsMap.clear();
         loadObjects(gameState.getLevelManager().getCurrentLevel());
+    }
+
+    public void refreshShopData() {
+        StorageStrategy storageStrategy = Framework.getInstance().getStorageStrategy();
+        getObjects(Shop.class).forEach(shop -> {
+            List<ShopItem> inventory = storageStrategy.getShopInventory("DEFAULT_SHOP");
+            if (inventory != null) {
+                shop.getShopItems().clear();
+                shop.getShopItems().addAll(inventory);
+            }
+        });
     }
 
     // Hashmap operations

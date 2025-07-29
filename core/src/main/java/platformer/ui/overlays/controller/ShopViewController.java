@@ -1,8 +1,17 @@
 package platformer.ui.overlays.controller;
 
+import platformer.audio.Audio;
+import platformer.audio.types.Sound;
+import platformer.bridge.storage.StorageStrategy;
+import platformer.core.Framework;
+import platformer.model.entities.player.Player;
 import platformer.model.gameObjects.objects.Shop;
 import platformer.model.inventory.Inventory;
+import platformer.model.inventory.InventoryItem;
 import platformer.model.inventory.ItemData;
+import platformer.model.inventory.ShopItem;
+import platformer.model.quests.ObjectiveTarget;
+import platformer.model.quests.QuestObjectiveType;
 import platformer.state.GameState;
 import platformer.ui.buttons.AbstractButton;
 import platformer.ui.buttons.ButtonType;
@@ -85,16 +94,80 @@ public class ShopViewController {
     // Actions
     private void buyItem() {
         if (isSelling) return;
+        StorageStrategy strategy = Framework.getInstance().getStorageStrategy();
         int absoluteIndex = buySlotNumber + (buySelectedSlot * (SHOP_SLOT_MAX_ROW * SHOP_SLOT_MAX_COL));
-        getActiveShop().ifPresent(shop -> shop.buyItem(gameState.getPlayer(), absoluteIndex, quantityToTrade));
+
+        getActiveShop().ifPresent(shop -> {
+            if (absoluteIndex < shop.getShopItems().size()) {
+                ShopItem selectedItem = shop.getShopItems().get(absoluteIndex);
+                boolean success = strategy.buyItem(gameState.getPlayer(), selectedItem, quantityToTrade);
+
+                if (success) {
+                    Audio.getInstance().getAudioPlayer().playSound(Sound.SHOP_BUY);
+                    if (!strategy.isOnline()) {
+                        gameState.getPlayer().changeCoins(-(selectedItem.getCost() * quantityToTrade));
+                        addToInventory(gameState.getPlayer(), selectedItem.getItemId(), quantityToTrade);
+                        selectedItem.setStock(selectedItem.getStock() - quantityToTrade);
+                        if (selectedItem.getStock() <= 0) shop.getShopItems().remove(selectedItem);
+                    }
+                }
+            }
+        });
         updateSliderVisibility();
     }
 
     private void sellItem() {
         if (!isSelling) return;
+        StorageStrategy strategy = Framework.getInstance().getStorageStrategy();
         int absoluteIndex = sellSlotNumber + (sellSelectedSlot * (SHOP_SLOT_MAX_ROW * SHOP_SLOT_MAX_COL));
-        getActiveShop().ifPresent(shop -> shop.sellItem(gameState.getPlayer(), absoluteIndex, quantityToTrade));
+        Inventory inventory = gameState.getPlayer().getInventory();
+
+        if (absoluteIndex < inventory.getBackpack().size()) {
+            InventoryItem selectedItem = inventory.getBackpack().get(absoluteIndex);
+            boolean success = strategy.sellItem(gameState.getPlayer(), selectedItem, quantityToTrade);
+
+            if (success) {
+                Audio.getInstance().getAudioPlayer().playSound(Sound.SHOP_BUY);
+                if (!strategy.isOnline()) {
+                    ItemData data = selectedItem.getData();
+                    if (data == null) return;
+                    gameState.getPlayer().changeCoins(data.sellValue * quantityToTrade);
+                    selectedItem.setAmount(selectedItem.getAmount() - quantityToTrade);
+                    if (selectedItem.getAmount() <= 0) {
+                        inventory.getBackpack().remove(selectedItem);
+                    }
+                    getActiveShop().ifPresent(shop -> addToShop(shop, selectedItem, quantityToTrade));
+                }
+            }
+        }
         updateSliderVisibility();
+    }
+
+    private void addToInventory(Player player, String itemId, int quantity) {
+        Inventory inventory = player.getInventory();
+        Optional<InventoryItem> existingItem = inventory.getBackpack().stream()
+                .filter(invItem -> invItem.getItemId().equals(itemId))
+                .findFirst();
+
+        if (itemId.equals("ARMOR_WARRIOR")) {
+            gameState.getQuestManager().update(QuestObjectiveType.COLLECT, ObjectiveTarget.BUY_ARMOR);
+        }
+
+        if (existingItem.isPresent() && existingItem.get().getData().stackable) {
+            existingItem.get().addAmount(quantity);
+        }
+        else inventory.getBackpack().add(new InventoryItem(itemId, quantity));
+    }
+
+    private void addToShop(Shop shop, InventoryItem inventoryItem, int quantity) {
+        Optional<ShopItem> existingItem = shop.getShopItems().stream()
+                .filter(shopItem -> shopItem.getItemId().equals(inventoryItem.getItemId()))
+                .findFirst();
+
+        ItemData data = inventoryItem.getData();
+        if (data == null) return;
+        if (existingItem.isPresent()) existingItem.get().addStock(quantity);
+        else shop.getShopItems().add(new ShopItem(inventoryItem.getItemId(), quantity, data.sellValue * 2));
     }
 
     private void prevPage(ButtonType buttonType) {

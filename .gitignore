@@ -42,3 +42,4 @@ core/.gradle/
 core/build/
 core/target/
 core/bin/
+data/

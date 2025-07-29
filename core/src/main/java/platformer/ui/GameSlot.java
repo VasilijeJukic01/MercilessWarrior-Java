@@ -104,6 +104,10 @@ public class GameSlot {
         return selected;
     }
 
+    public boolean isDatabaseSlot() {
+        return databaseSlot;
+    }
+
     public Account getAccount() {
         return account;
     }

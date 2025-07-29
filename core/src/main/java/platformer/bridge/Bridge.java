@@ -1,8 +1,12 @@
 package platformer.bridge;
 
+import platformer.bridge.requests.ShopItemDTO;
+import platformer.bridge.requests.ShopTransactionRequest;
+import platformer.bridge.requests.ShopTransactionResponse;
 import platformer.core.Account;
 import platformer.model.BoardItem;
 
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -20,13 +24,12 @@ public interface Bridge {
     int createAccount(String username, String password);
 
     /**
-     * Loads the account data for the given username and password.
+     * Loads the account data for the given username.
      *
-     * @param name the username of the account
-     * @param password the password of the account
+     * @param username the username of the account
      * @return the account data
      */
-    Account loadAccountData(String name, String password);
+    Account fetchAccountData(String username);
 
     /**
      * Loads the account data for the given account id.
@@ -41,5 +44,30 @@ public interface Bridge {
      * @param account the account data
      */
     void updateAccountData(Account account);
+
+    /**
+     * Fetches the inventory for a specific shop from the game service.
+     *
+     * @param shopId the ID of the shop
+     * @return a list of shop items
+     * @throws IOException if a network error occurs
+     */
+    List<ShopItemDTO> getShopInventory(String shopId) throws IOException;
+
+    /**
+     * Performs a buy transaction in the shop.
+     *
+     * @param request the shop transaction request containing details of the transaction
+     * @return the transaction response with a message and the updated shop inventory
+     */
+    ShopTransactionResponse buyItem(ShopTransactionRequest request) throws IOException;
+
+    /**
+     * Performs a sell transaction in the shop.
+     *
+     * @param request the shop transaction request containing details of the transaction
+     * @return the transaction response with a message and the updated shop inventory
+     */
+    ShopTransactionResponse sellItem(ShopTransactionRequest request) throws IOException;
 
 }

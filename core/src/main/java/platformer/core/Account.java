@@ -13,7 +13,7 @@ public class Account {
 
     private final transient String name;
     private final transient String password;
-    private final transient int accountID, settingsID;
+    private final transient long accountID, settingsID;
     private int spawn;
     private int coins, tokens;
     private int level, exp;
@@ -42,7 +42,7 @@ public class Account {
     /**
      * Standard constructor
      */
-    public Account(String name, String password, int accountID, int settingsID, int spawn, int coins, int tokens, int level, int exp) {
+    public Account(String name, String password, long accountID, long settingsID, int spawn, int coins, int tokens, int level, int exp) {
         this.name = name;
         this.password = password;
         this.accountID = accountID;

@@ -1,0 +1,16 @@
+{
+  "namespace": "com.games.mw.events",
+  "type": "record",
+  "name": "ShopTransaction",
+  "fields": [
+    {"name": "eventId", "type": "string"},
+    {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"},
+    {"name": "userId", "type": "long"},
+    {"name": "username", "type": "string"},
+    {"name": "transactionType", "type": {"type": "enum", "name": "TransactionType", "symbols": ["BUY", "SELL"]}},
+    {"name": "itemId", "type": "string"},
+    {"name": "quantity", "type": "int"},
+    {"name": "unitPrice", "type": "int"},
+    {"name": "totalPrice", "type": "int"}
+  ]
+}

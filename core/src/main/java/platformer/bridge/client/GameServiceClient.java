@@ -17,6 +17,39 @@ public class GameServiceClient {
 
     private final Gson gson = new Gson();
 
+    /**
+     * Attempts to authenticate and store the JWT. Does not throw an exception on failure.
+     *
+     * @return true if login was successful, false otherwise.
+     */
+    public boolean loginAndStoreToken(String username, String password) {
+        if (username == null || username.isEmpty() || password == null || password.isEmpty()) {
+            Logger.getInstance().notify("No credentials provided, proceeding in offline mode.", Message.INFORMATION);
+            return false;
+        }
+        try {
+            AuthenticationRequest authRequest = new AuthenticationRequest(username, password);
+            String authUrl = API_GATEWAY_URL + "/auth/login";
+            HttpURLConnection authConn = HttpRequestHandler.createPostConnection(authUrl, "application/json");
+            String jsonAuthInputString = gson.toJson(authRequest);
+            HttpRequestHandler.sendJsonPayload(authConn, jsonAuthInputString);
+
+            int authResponseCode = authConn.getResponseCode();
+            if (authResponseCode == 200) {
+                AuthenticationResponse authResponse = gson.fromJson(HttpRequestHandler.getResponse(authConn), AuthenticationResponse.class);
+                TokenStorage.getInstance().setToken(authResponse.getJwt());
+                Logger.getInstance().notify("Login successful!", Message.INFORMATION);
+                return true;
+            } else {
+                Logger.getInstance().notify("Login failed with code: " + authResponseCode, Message.WARNING);
+                return false;
+            }
+        } catch (IOException e) {
+            Logger.getInstance().notify("Login network error. Assuming offline mode.", Message.WARNING);
+            return false;
+        }
+    }
+
     public int createAccount(String username, String password) throws IOException {
         String url = API_GATEWAY_URL + "/auth/register";
         HttpURLConnection conn = HttpRequestHandler.createPostConnection(url, "application/json");
@@ -39,29 +72,9 @@ public class GameServiceClient {
         }
     }
 
-    public AccountDataDTO loadAccountData(String username, String password) throws IOException {
-        AuthenticationRequest authRequest = new AuthenticationRequest(username, password);
-
-        String authUrl = API_GATEWAY_URL + "/auth/login";
-        HttpURLConnection authConn = HttpRequestHandler.createPostConnection(authUrl, "application/json");
-        String jsonAuthInputString = gson.toJson(authRequest);
-        HttpRequestHandler.sendJsonPayload(authConn, jsonAuthInputString);
-
-        String token;
-        int authResponseCode = authConn.getResponseCode();
-        if (authResponseCode == 200) {
-            AuthenticationResponse authResponse = gson.fromJson(HttpRequestHandler.getResponse(authConn), AuthenticationResponse.class);
-            token = authResponse.getJwt();
-            TokenStorage.getInstance().setToken(token);
-            Logger.getInstance().notify("Login successful!", Message.INFORMATION);
-        }
-        else {
-            Logger.getInstance().notify("Login failed!", Message.ERROR);
-            throw new IOException("Failed to authenticate: " + authResponseCode);
-        }
-
+    public AccountDataDTO fetchAccountData(String username) throws IOException {
         String gameUrl = API_GATEWAY_URL + "/game/account/" + username;
-        HttpURLConnection gameConn = HttpRequestHandler.createGetConnection(gameUrl, token);
+        HttpURLConnection gameConn = HttpRequestHandler.createGetConnection(gameUrl, TokenStorage.getInstance().getToken());
 
         int gameResponseCode = gameConn.getResponseCode();
         if (gameResponseCode == 200) {
@@ -103,6 +116,74 @@ public class GameServiceClient {
 
         if (responseCode != 200) Logger.getInstance().notify("Account data update failed!", Message.ERROR);
         else Logger.getInstance().notify("Account data updated successfully!", Message.INFORMATION);
+    }
+
+    public List<ItemMasterDTO> getMasterItems() throws IOException {
+        String url = API_GATEWAY_URL + "/items/master";
+        HttpURLConnection conn = HttpRequestHandler.createGetConnection(url, TokenStorage.getInstance().getToken());
+
+        int responseCode = conn.getResponseCode();
+        if (responseCode == 200) {
+            String response = HttpRequestHandler.getResponse(conn);
+            return gson.fromJson(response, new TypeToken<List<ItemMasterDTO>>(){}.getType());
+        } else {
+            throw new IOException("Failed to load master item list: " + responseCode);
+        }
+    }
+
+    public List<ShopItemDTO> getShopInventory(String shopId) throws IOException {
+        String url = API_GATEWAY_URL + "/shop/" + shopId;
+        HttpURLConnection conn = HttpRequestHandler.createGetConnection(url, TokenStorage.getInstance().getToken());
+
+        int responseCode = conn.getResponseCode();
+        if (responseCode == 200) {
+            String response = HttpRequestHandler.getResponse(conn);
+            return gson.fromJson(response, new TypeToken<List<ShopItemDTO>>(){}.getType());
+        } else {
+            throw new IOException("Failed to load shop inventory for '" + shopId + "': " + responseCode);
+        }
+    }
+
+    public ShopTransactionResponse buyItem(ShopTransactionRequest request) throws IOException {
+        String url = API_GATEWAY_URL + "/shop/buy";
+        HttpURLConnection conn = HttpRequestHandler.createPostConnection(url, "application/json");
+        conn.setRequestProperty("Authorization", "Bearer " + TokenStorage.getInstance().getToken());
+
+        String jsonPayload = gson.toJson(request);
+        HttpRequestHandler.sendJsonPayload(conn, jsonPayload);
+
+        int responseCode = conn.getResponseCode();
+        String responseBody = HttpRequestHandler.getResponse(conn);
+
+        if (responseCode == 200) {
+            Logger.getInstance().notify("Purchase successful!", Message.INFORMATION);
+            return gson.fromJson(responseBody, ShopTransactionResponse.class);
+        }
+        else {
+            Logger.getInstance().notify("Purchase failed: " + responseBody, Message.ERROR);
+            return null;
+        }
+    }
+
+    public ShopTransactionResponse sellItem(ShopTransactionRequest request) throws IOException {
+        String url = API_GATEWAY_URL + "/shop/sell";
+        HttpURLConnection conn = HttpRequestHandler.createPostConnection(url, "application/json");
+        conn.setRequestProperty("Authorization", "Bearer " + TokenStorage.getInstance().getToken());
+
+        String jsonPayload = gson.toJson(request);
+        HttpRequestHandler.sendJsonPayload(conn, jsonPayload);
+
+        int responseCode = conn.getResponseCode();
+        String responseBody = HttpRequestHandler.getResponse(conn);
+
+        if (responseCode == 200) {
+            Logger.getInstance().notify("Sale successful!", Message.INFORMATION);
+            return gson.fromJson(responseBody, ShopTransactionResponse.class);
+        }
+        else {
+            Logger.getInstance().notify("Sale failed: " + responseBody, Message.ERROR);
+            return null;
+        }
     }
 }
 
