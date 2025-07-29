@@ -23,23 +23,19 @@ class ShopController(
 
     @PostMapping("/buy")
     @PreAuthorize("@permissionService.isOwnerByUserId(#request.userId)")
-    fun buyItem(@RequestBody request: ShopTransactionRequest, @RequestHeader("Authorization") token: String): ResponseEntity<*> {
-        return runBlocking {
-            transactionService.processBuyTransaction(request).fold(
-                { error -> ResponseEntity.badRequest().body(error.toString()) },
-                { success -> ResponseEntity.ok(success) }
-            )
-        }
+    suspend fun buyItem(@RequestBody request: ShopTransactionRequest, @RequestHeader("Authorization") token: String): ResponseEntity<*> {
+        return transactionService.processBuyTransaction(request).fold(
+            { error -> ResponseEntity.badRequest().body(error.toString()) },
+            { success -> ResponseEntity.ok(success) }
+        )
     }
 
     @PostMapping("/sell")
     @PreAuthorize("@permissionService.isOwnerByUserId(#request.userId)")
-    fun sellItem(@RequestBody request: ShopTransactionRequest, @RequestHeader("Authorization") token: String): ResponseEntity<*> {
-        return runBlocking {
-            transactionService.processSellTransaction(request).fold(
-                { error -> ResponseEntity.badRequest().body(error.toString()) },
-                { success -> ResponseEntity.ok(success) }
-            )
-        }
+    suspend fun sellItem(@RequestBody request: ShopTransactionRequest, @RequestHeader("Authorization") token: String): ResponseEntity<*> {
+        return transactionService.processSellTransaction(request).fold(
+            { error -> ResponseEntity.badRequest().body(error.toString()) },
+            { success -> ResponseEntity.ok(success) }
+        )
     }
 }
