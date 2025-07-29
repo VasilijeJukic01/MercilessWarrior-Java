@@ -1,0 +1,50 @@
+package com.games.mw.gameservice.domain.account
+
+import com.games.mw.gameservice.domain.account.requests.AccountDataDTO
+import com.games.mw.gameservice.domain.account.AccountService.AccountError
+import kotlinx.coroutines.runBlocking
+import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
+import org.springframework.security.access.prepost.PreAuthorize
+import org.springframework.web.bind.annotation.*
+
+@RestController
+@RequestMapping("/game")
+class AccountController(
+    private val accountService: AccountService
+) {
+
+    @GetMapping("/account/{username}")
+    @PreAuthorize("#username == authentication.name or hasRole('ADMIN')")
+    fun getAccountData(@PathVariable username: String, @RequestHeader("Authorization") token: String): ResponseEntity<*> {
+        return runBlocking {
+            accountService.getAccountData(username, token).fold(
+                { error -> handleGameError(error, "Failed to get account data.") },
+                { accountData -> ResponseEntity.ok(accountData) }
+            )
+        }
+    }
+
+    @PutMapping("/account")
+    @PreAuthorize("#accountDataDTO.username == authentication.name or hasRole('ADMIN')")
+    fun updateAccountData(@RequestBody accountDataDTO: AccountDataDTO, @RequestHeader("Authorization") token: String): ResponseEntity<*> {
+        return runBlocking {
+            accountService.updateAccountData(accountDataDTO, token).fold(
+                { error -> handleGameError(error, "Failed to update account data.") },
+                { ResponseEntity.ok().build<Void>() }
+            )
+        }
+    }
+
+    private fun handleGameError(error: AccountError, defaultMessage: String): ResponseEntity<String> {
+        val (httpStatus, errorMessage) = when (error) {
+            is AccountError.AuthServiceInteractionError -> error.statusCode to (error.message ?: "Auth service interaction failed.")
+            is AccountError.SettingsOperationFailed -> HttpStatus.INTERNAL_SERVER_ERROR to "Settings operation failed: ${error.underlyingError}"
+            is AccountError.ItemOperationFailed -> HttpStatus.INTERNAL_SERVER_ERROR to "Item operation failed: ${error.underlyingError}"
+            is AccountError.PerkOperationFailed -> HttpStatus.INTERNAL_SERVER_ERROR to "Perk operation failed: ${error.underlyingError}"
+            is AccountError.UnknownSource -> HttpStatus.INTERNAL_SERVER_ERROR to (error.throwable.message ?: defaultMessage)
+        }
+        return ResponseEntity.status(httpStatus).body(errorMessage)
+    }
+
+}

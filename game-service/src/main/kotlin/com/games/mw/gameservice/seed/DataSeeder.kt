@@ -2,12 +2,12 @@ package com.games.mw.gameservice.seed
 
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.games.mw.gameservice.model.ItemMaster
-import com.games.mw.gameservice.model.ShopInventory
-import com.games.mw.gameservice.repository.ItemMasterRepository
-import com.games.mw.gameservice.repository.ShopInventoryRepository
-import com.games.mw.gameservice.requests.EquipmentDataDTO
-import com.games.mw.gameservice.requests.ShopItemDTO
+import com.games.mw.gameservice.domain.item.model.ItemMaster
+import com.games.mw.gameservice.domain.shop.model.ShopInventory
+import com.games.mw.gameservice.domain.item.repository.ItemMasterRepository
+import com.games.mw.gameservice.domain.shop.repository.ShopInventoryRepository
+import com.games.mw.gameservice.domain.item.requests.EquipmentDataDTO
+import com.games.mw.gameservice.domain.shop.requests.ShopItemDTO
 import org.springframework.boot.CommandLineRunner
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
