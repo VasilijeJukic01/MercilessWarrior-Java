@@ -22,5 +22,5 @@ dependencies {
 }
 
 application {
-    mainClass.set("analytics.Main")
+    mainClass.set("analytics.dispatcher.JobDispatcher")
 }

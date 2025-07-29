@@ -54,12 +54,21 @@ services:
       - db-game
       - redis
 
-  analytics-service:
+  analytics-stream:
     build: ./analytics-service
     depends_on:
       - kafka
     volumes:
       - ./data:/app/data
+    command: ["stream"]
+
+  analytics-batch:
+    build: ./analytics-service
+    depends_on:
+      - kafka
+    volumes:
+      - ./data:/app/data
+    command: ["batch"]
 
   kafka:
     image: bitnami/kafka:3.7

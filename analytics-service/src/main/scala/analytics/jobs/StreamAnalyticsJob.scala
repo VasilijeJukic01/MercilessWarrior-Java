@@ -20,7 +20,7 @@ import org.apache.spark.sql.avro.functions._
  *
  * @param spark The active SparkSession, which serves as the entry point to all Spark functionality.
  */
-class GameAnalyticsStreamJob(spark: SparkSession) extends Logging {
+class StreamAnalyticsJob(spark: SparkSession) extends Logging {
 
   /**
    * Starts and runs the streaming query.

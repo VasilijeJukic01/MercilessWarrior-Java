@@ -1,12 +1,12 @@
 package analytics
 
-import analytics.jobs.GameAnalyticsStreamJob
+import analytics.jobs.StreamAnalyticsJob
 
-object Main {
+object StreamAnalytics {
 
   def main(args: Array[String]): Unit = {
     val spark = SparkSessionManager.getSparkSession("MercilessWarriorAnalytics")
-    val job = new GameAnalyticsStreamJob(spark)
+    val job = new StreamAnalyticsJob(spark)
     job.run()
   }
 
