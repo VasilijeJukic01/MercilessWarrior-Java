@@ -12,11 +12,10 @@ data class ShopInventory(
     @Column(nullable = false)
     val shopId: String = "",
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "itemId", nullable = false)
     val item: ItemMaster = ItemMaster(),
 
-    val stock: Int = 0,
-
+    var stock: Int = 0,
     val cost: Int = 0
 )
