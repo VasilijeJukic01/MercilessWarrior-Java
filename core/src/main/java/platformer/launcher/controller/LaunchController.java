@@ -20,8 +20,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Map;
 
-import static platformer.launcher.Config.SCALING_FACTOR;
-
 public class LaunchController implements EventHandler<ActionEvent> {
 
     private final LauncherView launcherView;
@@ -61,18 +59,12 @@ public class LaunchController implements EventHandler<ActionEvent> {
         writeMapToFile(commandKeyMap);
 
         switch (cbResolution.getSelectionModel().getSelectedIndex()) {
-            case 0:
-                scale = "1";
-                break;
-            case 1:
-                scale = "1.5";
-                break;
-            case 2:
-                scale = "2";
-                break;
+            case 0: scale = "1"; break;
+            case 1: scale = "1.5"; break;
+            case 2: scale = "2"; break;
             default: break;
         }
-        SCALING_FACTOR = Float.parseFloat(scale);
+        System.setProperty("game.scale", scale);
 
         // Get player config
         String playerName = tfName.getText();

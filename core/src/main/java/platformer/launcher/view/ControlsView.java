@@ -9,10 +9,14 @@ import platformer.launcher.controller.controls.ApplyControlsController;
 import platformer.launcher.controller.controls.ResetControlsController;
 import platformer.launcher.controller.controls.UniqueKeyController;
 import platformer.launcher.core.KeyboardConfigurator;
+import platformer.launcher.view.component.DefaultHBox;
+import platformer.launcher.view.component.DefaultVBox;
 import platformer.launcher.view.styler.FXStyler;
 import platformer.launcher.view.styler.Styler;
 
 import java.util.*;
+
+import static platformer.launcher.constants.LauncherConstants.LAUNCHER_STYLES_PATH;
 
 @SuppressWarnings({"FieldCanBeLocal"})
 public class ControlsView extends BaseView {
@@ -99,7 +103,7 @@ public class ControlsView extends BaseView {
     }
 
     private void initStyles(Scene scene) {
-        scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/styles/style.css")).toExternalForm());
+        scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(LAUNCHER_STYLES_PATH)).toExternalForm());
 
         Styler styler = new FXStyler();
         List<Label> labels = Arrays.asList(commandLabels.values().toArray(new Label[0]));

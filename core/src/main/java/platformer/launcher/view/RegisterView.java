@@ -11,6 +11,7 @@ import javafx.scene.image.ImageView;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import platformer.launcher.controller.RegisterController;
+import platformer.launcher.view.component.DefaultVBox;
 import platformer.launcher.view.styler.FXStyler;
 import platformer.launcher.view.styler.Styler;
 
@@ -47,8 +48,8 @@ public class RegisterView extends Stage {
     }
 
     private void loadImages() {
-        this.launcherIcon = new Image(Objects.requireNonNull(getClass().getResource("/images/icon.png")).toExternalForm());
-        this.logo = new Image(Objects.requireNonNull(getClass().getResource("/images/menu/menuLogo.png")).toExternalForm());
+        this.launcherIcon = new Image(Objects.requireNonNull(getClass().getResource(MAIN_ICON_PATH)).toExternalForm());
+        this.logo = new Image(Objects.requireNonNull(getClass().getResource(LOGO_ICON_PATH)).toExternalForm());
     }
 
     private void init() {
@@ -59,7 +60,7 @@ public class RegisterView extends Stage {
     }
 
     private void initStyles(Scene scene) {
-        scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/styles/style.css")).toExternalForm());
+        scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(LAUNCHER_STYLES_PATH)).toExternalForm());
 
         Styler styler = new FXStyler();
         styler.setBoldStyle(lbName);

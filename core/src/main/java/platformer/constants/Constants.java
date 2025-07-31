@@ -2,8 +2,6 @@ package platformer.constants;
 
 import java.awt.*;
 
-import static platformer.launcher.Config.SCALING_FACTOR;
-
 // Vocabulary
 
 /*
@@ -23,6 +21,12 @@ FB - Fireball
  */
 public final class Constants {
 
+    public static final float SCALE;
+
+    static {
+        SCALE = Float.parseFloat(System.getProperty("game.scale", "1.5f"));
+    }
+
     // Server Constants
     public static final String API_GATEWAY_URL = "http://localhost:8080";
 
@@ -31,7 +35,6 @@ public final class Constants {
     public static final int TILES_WIDTH = 26;
     public static final int TILES_HEIGHT = 14;
 
-    public static float SCALE = SCALING_FACTOR;
     public static int TILES_SIZE = scale(TILES_DEFAULT_SIZE);
     public static int GAME_WIDTH = TILES_SIZE * TILES_WIDTH;
     public static int GAME_HEIGHT = TILES_SIZE * TILES_HEIGHT;
@@ -115,11 +118,6 @@ public final class Constants {
     public static final int UPPER_EXIT = 38;
     public static final int BOTTOM_EXIT = 39;
     public static final int PARTICLES_CAP = 50;
-
-    public static final int LEFT_BORDER = (int)(0.2 * GAME_WIDTH);
-    public static final int RIGHT_BORDER = (int)(0.8 * GAME_WIDTH);
-    public static final int TOP_BORDER = (int)(0.4 * GAME_HEIGHT);
-    public static final int BOTTOM_BORDER = (int)(0.6 * GAME_HEIGHT);
 
     // Enemy Constants
     public static final int SKELETON_WIDTH = scale(100);

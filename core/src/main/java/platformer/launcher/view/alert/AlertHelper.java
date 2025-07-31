@@ -6,6 +6,8 @@ import javafx.stage.Stage;
 
 import java.util.Objects;
 
+import static platformer.launcher.constants.LauncherConstants.MAIN_ICON_PATH;
+
 public class AlertHelper {
 
     public static void showError(String message) {
@@ -19,7 +21,7 @@ public class AlertHelper {
     private static void showAlert(Alert.AlertType alertType, String message) {
         Alert alert = new Alert(alertType, message);
         Stage stage = (Stage) alert.getDialogPane().getScene().getWindow();
-        stage.getIcons().add(new Image(Objects.requireNonNull(AlertHelper.class.getResource("/images/icon.png")).toExternalForm()));
+        stage.getIcons().add(new Image(Objects.requireNonNull(AlertHelper.class.getResource(MAIN_ICON_PATH)).toExternalForm()));
         alert.showAndWait();
     }
 }

@@ -54,7 +54,7 @@ public class LoadingView extends BaseView {
     private void init() {
         super.initScene(root, LOADING_WID, LOADING_HEI, "Loading");
         initComponents();
-        styler.applyStylesheet(getScene(), STYLES_PATH);
+        styler.applyStylesheet(getScene(), LOADING_STYLES_PATH);
         controller.startLoadingProcess();
         rotateTips();
     }

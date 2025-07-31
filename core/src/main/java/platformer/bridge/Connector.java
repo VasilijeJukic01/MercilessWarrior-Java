@@ -3,7 +3,6 @@ package platformer.bridge;
 import platformer.bridge.requests.ShopTransactionRequest;
 import platformer.bridge.requests.ShopTransactionResponse;
 import platformer.core.Account;
-import platformer.core.LauncherPrompt;
 import platformer.model.BoardItem;
 
 import java.io.IOException;
@@ -11,11 +10,11 @@ import java.util.List;
 
 public class Connector {
 
-    private final LauncherPrompt launcherPrompt;
+    private final String username;
     private final Bridge bridge;
 
-    public Connector(LauncherPrompt launcherPrompt) {
-        this.launcherPrompt = launcherPrompt;
+    public Connector(String username) {
+        this.username = username;
         this.bridge = new BridgeImplementation();
     }
 
@@ -25,7 +24,7 @@ public class Connector {
     }
 
     public Account getData() {
-        return bridge.fetchAccountData(launcherPrompt.getName());
+        return bridge.fetchAccountData(username);
     }
 
     public List<BoardItem> loadLeaderboardData() {

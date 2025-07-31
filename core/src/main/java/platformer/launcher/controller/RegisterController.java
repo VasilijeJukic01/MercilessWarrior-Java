@@ -4,10 +4,11 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
-import platformer.core.LauncherPrompt;
-import platformer.bridge.Connector;
+import platformer.bridge.client.GameServiceClient;
 import platformer.launcher.view.RegisterView;
 import platformer.launcher.view.alert.AlertHelper;
+
+import java.io.IOException;
 
 public class RegisterController implements EventHandler<ActionEvent> {
 
@@ -34,8 +35,13 @@ public class RegisterController implements EventHandler<ActionEvent> {
             return;
         }
 
-        Connector connector = new Connector(new LauncherPrompt(tfName.getText(), tfPassword.getText(), false, false));
-        int status = connector.createAccount(tfName.getText(), tfPassword.getText());
+        GameServiceClient client = new GameServiceClient();
+        int status;
+        try {
+            status = client.createAccount(tfName.getText(), tfPassword.getText());
+        } catch (IOException e) {
+            status = 1;
+        }
 
         switch (status) {
             case 0:

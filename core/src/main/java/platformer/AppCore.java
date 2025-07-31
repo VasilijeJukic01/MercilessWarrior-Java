@@ -1,6 +1,7 @@
 package platformer;
 
 import platformer.core.Framework;
+import platformer.core.config.GameLaunchConfig;
 import platformer.utils.loading.ClassLoadingTracker;
 import platformer.utils.loading.LoadingProgressTracker;
 
@@ -10,11 +11,14 @@ import platformer.utils.loading.LoadingProgressTracker;
 public class AppCore {
 
     public static void main(String[] args) {
-        LoadingProgressTracker.getInstance().update(0.05, "Starting game loading");
+        LoadingProgressTracker.getInstance().update(0.0, "Game started without launcher configuration.");
+    }
 
+    public static void startGame(GameLaunchConfig config) {
+        LoadingProgressTracker.getInstance().update(0.05, "Starting game loading");
         try {
             LoadingProgressTracker.getInstance().update(0.1, "Initializing game");
-            Framework.getInstance().init(args[2], args[0], args[1], args[3]);
+            Framework.getInstance().init(config);
             ClassLoadingTracker.markLoadingComplete();
 
             Framework.getInstance().start();

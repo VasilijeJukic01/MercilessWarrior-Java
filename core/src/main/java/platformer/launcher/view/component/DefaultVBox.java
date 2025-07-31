@@ -1,13 +1,13 @@
-package platformer.launcher.view;
+package platformer.launcher.view.component;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 
-public class DefaultHBox extends HBox {
+public class DefaultVBox extends VBox {
 
-    public DefaultHBox(Pos position, Node... children) {
+    public DefaultVBox(Pos position, Node... children) {
         super(children);
         super.setPadding(new Insets(8));
         super.setSpacing(8);
