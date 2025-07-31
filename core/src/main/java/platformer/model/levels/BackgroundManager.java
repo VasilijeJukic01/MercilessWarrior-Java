@@ -1,6 +1,6 @@
 package platformer.model.levels;
 
-import platformer.utils.Utils;
+import platformer.utils.ImageUtils;
 
 import java.awt.image.BufferedImage;
 import java.util.HashMap;
@@ -25,10 +25,10 @@ public class BackgroundManager {
     }
 
     private void loadBackgrounds() {
-        backgrounds.put("FOREST1", Utils.getInstance().importImage(FOREST_BG_1, GAME_WIDTH, GAME_HEIGHT));
-        backgrounds.put("FOREST2", Utils.getInstance().importImage(FOREST_BG_2, GAME_WIDTH, GAME_HEIGHT));
-        backgrounds.put("FOREST3", Utils.getInstance().importImage(FOREST_BG_3, GAME_WIDTH, GAME_HEIGHT));
-        backgrounds.put("FOREST4", Utils.getInstance().importImage(FOREST_BG_4, GAME_WIDTH, GAME_HEIGHT));
+        backgrounds.put("FOREST1", ImageUtils.importImage(FOREST_BG_1, GAME_WIDTH, GAME_HEIGHT));
+        backgrounds.put("FOREST2", ImageUtils.importImage(FOREST_BG_2, GAME_WIDTH, GAME_HEIGHT));
+        backgrounds.put("FOREST3", ImageUtils.importImage(FOREST_BG_3, GAME_WIDTH, GAME_HEIGHT));
+        backgrounds.put("FOREST4", ImageUtils.importImage(FOREST_BG_4, GAME_WIDTH, GAME_HEIGHT));
     }
 
     /**

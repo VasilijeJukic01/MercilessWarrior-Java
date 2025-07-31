@@ -10,7 +10,7 @@ import platformer.state.GameState;
 import platformer.ui.buttons.AbstractButton;
 import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.MediumButton;
-import platformer.utils.Utils;
+import platformer.utils.ImageUtils;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
@@ -51,7 +51,7 @@ public class LootingOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
     }
 
     private void loadImages() {
-        this.slotImage = Utils.getInstance().importImage(SLOT_INVENTORY, SLOT_SIZE, SLOT_SIZE);
+        this.slotImage = ImageUtils.importImage(SLOT_INVENTORY, SLOT_SIZE, SLOT_SIZE);
     }
 
     private void loadButtons() {

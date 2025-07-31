@@ -5,7 +5,7 @@ import platformer.model.inventory.*;
 import platformer.state.GameState;
 import platformer.ui.buttons.*;
 import platformer.ui.overlays.controller.ShopViewController;
-import platformer.utils.Utils;
+import platformer.utils.ImageUtils;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
@@ -56,8 +56,8 @@ public class ShopOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
         this.overlay = new Rectangle2D.Double(INV_OVERLAY_X, INV_OVERLAY_Y, INV_OVERLAY_WID, INV_OVERLAY_HEI);
         this.buyPanel = new Rectangle2D.Double(SHOP_BUY_OVERLAY_X, SHOP_BUY_OVERLAY_Y, SHOP_PANEL_WID, SHOP_PANEL_HEI);
         this.sellPanel = new Rectangle2D.Double(SHOP_SELL_OVERLAY_X, SHOP_SELL_OVERLAY_Y, SHOP_PANEL_WID, SHOP_PANEL_HEI);
-        this.shopText = Utils.getInstance().importImage(SHOP_TXT, SHOP_TEXT_WID, SHOP_TEXT_HEI);
-        this.slotImage = Utils.getInstance().importImage(SLOT_IMG, SLOT_SIZE, SLOT_SIZE);
+        this.shopText = ImageUtils.importImage(SHOP_TXT, SHOP_TEXT_WID, SHOP_TEXT_HEI);
+        this.slotImage = ImageUtils.importImage(SLOT_IMG, SLOT_SIZE, SLOT_SIZE);
         this.coinIcon = Animation.getInstance().loadFromSprite(COIN_SHEET, 1, 1, COIN_WID, COIN_HEI, 0, COIN_W, COIN_H)[0];
     }
 
@@ -184,7 +184,7 @@ public class ShopOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
 
         g.setColor(itemData.rarity.getColor());
         g.fillRect(xPos - (int) (ITEM_OFFSET_X / 1.1), yPos - (int) (ITEM_OFFSET_Y / 1.1), (int) (SLOT_SIZE / 1.06), (int) (SLOT_SIZE / 1.06));
-        g.drawImage(Utils.getInstance().importImage(itemData.imagePath, -1, -1), xPos, yPos, ITEM_SIZE, ITEM_SIZE, null);
+        g.drawImage(ImageUtils.importImage(itemData.imagePath, -1, -1), xPos, yPos, ITEM_SIZE, ITEM_SIZE, null);
         g.setColor(Color.WHITE);
         g.setFont(new Font("Arial", Font.BOLD, FONT_MEDIUM));
         g.drawString(String.valueOf(amount), xPos + ITEM_COUNT_OFFSET_X, yPos + ITEM_COUNT_OFFSET_Y);

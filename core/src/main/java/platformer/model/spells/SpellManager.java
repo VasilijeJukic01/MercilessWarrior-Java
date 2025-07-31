@@ -6,7 +6,7 @@ import platformer.model.entities.enemies.boss.Roric;
 import platformer.model.entities.player.Player;
 import platformer.model.levels.Level;
 import platformer.state.GameState;
-import platformer.utils.Utils;
+import platformer.utils.ImageUtils;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -204,7 +204,7 @@ public class SpellManager {
                 int x = (int) beam.getHitBox().x - xLevelOffset;
                 int y = (int) beam.getHitBox().y - yLevelOffset;
                 BufferedImage frame = skyBeamAnimations[beam.getAnimIndex()];
-                BufferedImage rotatedFrame = Utils.getInstance().rotateImage(frame, 90);
+                BufferedImage rotatedFrame = ImageUtils.rotateImage(frame, 90);
                 int offset = beam.isTargeted() ? (int)(150 * SCALE) : (int)(67 * SCALE);
                 int drawX = x + (beam.getWidth() - rotatedFrame.getWidth()) / 2 - offset;
                 int drawY = y + (beam.getHeight() - rotatedFrame.getHeight()) / 2 - (int)(180 * SCALE);

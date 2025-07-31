@@ -8,7 +8,7 @@ import platformer.model.entities.enemies.boss.Lancer;
 import platformer.model.entities.player.Player;
 import platformer.model.perks.PerksBonus;
 import platformer.state.GameState;
-import platformer.utils.Utils;
+import platformer.utils.ImageUtils;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
@@ -38,9 +38,9 @@ public class ProjectileManager {
     }
 
     private void loadImages() {
-        this.arrow = Utils.getInstance().importImage(ARROW_IMG, ARROW_WID, ARROW_HEI);
-        this.roricArrow = Utils.getInstance().importImage(RORIC_ARROW_IMG, ARROW_WID, ARROW_HEI);
-        this.roricAngledArrow = Utils.getInstance().importImage(RORIC_ARROW_IMG, ARROW_WID, ARROW_HEI);
+        this.arrow = ImageUtils.importImage(ARROW_IMG, ARROW_WID, ARROW_HEI);
+        this.roricArrow = ImageUtils.importImage(RORIC_ARROW_IMG, ARROW_WID, ARROW_HEI);
+        this.roricAngledArrow = ImageUtils.importImage(RORIC_ARROW_IMG, ARROW_WID, ARROW_HEI);
         this.lightningBall = Animation.getInstance().loadLightningBall(LIGHTNING_BALL_1_SHEET);
         this.energyBall = Animation.getInstance().loadLightningBall(LIGHTNING_BALL_2_SHEET);
         this.celestialOrb = Animation.getInstance().loadRoricProjectiles()[2];

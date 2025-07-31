@@ -5,7 +5,7 @@ import platformer.state.GameState;
 import platformer.ui.buttons.AbstractButton;
 import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.MediumButton;
-import platformer.utils.Utils;
+import platformer.utils.ImageUtils;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
@@ -36,7 +36,7 @@ public class SaveGameOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
     }
 
     private void loadImages() {
-        this.saveText = Utils.getInstance().importImage(SAVE_TXT, SAVE_LOAD_TEXT_WID, SAVE_LOAD_TEXT_HEI);
+        this.saveText = ImageUtils.importImage(SAVE_TXT, SAVE_LOAD_TEXT_WID, SAVE_LOAD_TEXT_HEI);
     }
 
     private void loadButtons() {

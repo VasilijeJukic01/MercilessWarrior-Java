@@ -6,7 +6,7 @@ import platformer.model.BoardItem;
 import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.SmallButton;
 import platformer.ui.overlays.OverlayLayer;
-import platformer.utils.Utils;
+import platformer.utils.ImageUtils;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
@@ -36,7 +36,7 @@ public class LeaderboardState extends AbstractState implements State {
     }
 
     private void loadImages() {
-        this.leaderboardText = Utils.getInstance().importImage(BOARD_TXT, BOARD_TXT_WID, BOARD_TXT_HEI);
+        this.leaderboardText = ImageUtils.importImage(BOARD_TXT, BOARD_TXT_WID, BOARD_TXT_HEI);
     }
 
     private void loadButtons() {

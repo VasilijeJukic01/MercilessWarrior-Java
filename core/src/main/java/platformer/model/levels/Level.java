@@ -13,7 +13,8 @@ import platformer.model.spells.Flash;
 import platformer.model.spells.Lightning;
 import platformer.model.spells.Spell;
 import platformer.model.spells.SpellType;
-import platformer.utils.Utils;
+import platformer.utils.CollectionUtils;
+import platformer.utils.ImageUtils;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -339,7 +340,7 @@ public class Level {
     }
 
     private List<Spell> getAllSpells() {
-        return Utils.getInstance().getAllItems(spellsMap);
+        return CollectionUtils.getAllItems(spellsMap);
     }
 
     public <T> List<T> getSpells(Class<T> spellType) {

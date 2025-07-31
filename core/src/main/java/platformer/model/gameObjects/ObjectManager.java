@@ -17,7 +17,7 @@ import platformer.model.quests.QuestManager;
 import platformer.observer.Publisher;
 import platformer.observer.Subscriber;
 import platformer.state.GameState;
-import platformer.utils.Utils;
+import platformer.utils.CollectionUtils;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
@@ -365,7 +365,7 @@ public class ObjectManager implements Publisher {
 
     // Hashmap operations
     private List<GameObject> getAllObjects() {
-        return Utils.getInstance().getAllItems(objectsMap);
+        return CollectionUtils.getAllItems(objectsMap);
     }
 
     public <T> List<T> getObjects(Class<T> objectType) {

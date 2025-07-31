@@ -5,7 +5,7 @@ import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.SmallButton;
 import platformer.ui.options.GameSettingsPanel;
 import platformer.ui.overlays.OverlayLayer;
-import platformer.utils.Utils;
+import platformer.utils.ImageUtils;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
@@ -43,7 +43,7 @@ public class OptionsState extends AbstractState implements State {
     }
 
     private void loadImages() {
-        this.optionsText = Utils.getInstance().importImage(OPTIONS_TXT, OPTIONS_TEXT_WID, OPTIONS_TEXT_HEI);
+        this.optionsText = ImageUtils.importImage(OPTIONS_TXT, OPTIONS_TEXT_WID, OPTIONS_TEXT_HEI);
     }
 
     private void loadButtons() {

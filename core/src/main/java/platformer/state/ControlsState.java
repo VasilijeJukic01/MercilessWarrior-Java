@@ -5,7 +5,7 @@ import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.SmallButton;
 import platformer.ui.options.ControlsPanel;
 import platformer.ui.overlays.OverlayLayer;
-import platformer.utils.Utils;
+import platformer.utils.ImageUtils;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
@@ -35,7 +35,7 @@ public class ControlsState extends AbstractState implements State {
     }
 
     private void loadImages() {
-        this.controlsText = Utils.getInstance().importImage(CONTROLS_TXT, CONTROLS_TXT_WID, CONTROLS_TXT_HEI);
+        this.controlsText = ImageUtils.importImage(CONTROLS_TXT, CONTROLS_TXT_WID, CONTROLS_TXT_HEI);
     }
 
     private void loadButtons() {

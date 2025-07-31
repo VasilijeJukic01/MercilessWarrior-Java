@@ -1,6 +1,6 @@
 package platformer.model.perks;
 
-import platformer.utils.Utils;
+import platformer.utils.ImageUtils;
 
 import java.awt.image.BufferedImage;
 
@@ -25,7 +25,7 @@ public class Perk {
         this.description = description;
         this.cost = cost;
         this.name = name;
-        this.image = Utils.getInstance().importImage("/images/objs/perks/"+imageName+".png", -1, -1);
+        this.image = ImageUtils.importImage("/images/objs/perks/"+imageName+".png", -1, -1);
     }
 
     public int getSlot() {

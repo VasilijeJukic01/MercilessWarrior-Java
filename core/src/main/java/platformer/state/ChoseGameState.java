@@ -5,7 +5,7 @@ import platformer.core.Game;
 import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.MediumButton;
 import platformer.ui.overlays.OverlayLayer;
-import platformer.utils.Utils;
+import platformer.utils.ImageUtils;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
@@ -36,7 +36,7 @@ public class ChoseGameState extends AbstractState implements State {
 
     // Init
     private void loadImages() {
-        this.loadText = Utils.getInstance().importImage(LOAD_TXT, SAVE_LOAD_TEXT_WID, SAVE_LOAD_TEXT_HEI);
+        this.loadText = ImageUtils.importImage(LOAD_TXT, SAVE_LOAD_TEXT_WID, SAVE_LOAD_TEXT_HEI);
     }
 
     private void loadButtons() {

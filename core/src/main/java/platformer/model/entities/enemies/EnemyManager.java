@@ -30,7 +30,7 @@ import platformer.observer.Subscriber;
 import platformer.observer.events.LancerEventHandler;
 import platformer.observer.events.RoricEventHandler;
 import platformer.state.GameState;
-import platformer.utils.Utils;
+import platformer.utils.CollectionUtils;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
@@ -448,7 +448,7 @@ public class EnemyManager implements Publisher {
     }
 
     public List<Enemy> getAllEnemies() {
-        return Utils.getInstance().getAllItems(enemies);
+        return CollectionUtils.getAllItems(enemies);
     }
 
     public Roric getRoricInstance() {

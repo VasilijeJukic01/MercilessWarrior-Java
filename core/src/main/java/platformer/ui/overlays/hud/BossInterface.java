@@ -3,7 +3,7 @@ package platformer.ui.overlays.hud;
 import platformer.model.entities.enemies.Enemy;
 import platformer.model.entities.enemies.boss.Lancer;
 import platformer.model.entities.enemies.boss.Roric;
-import platformer.utils.Utils;
+import platformer.utils.ImageUtils;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -26,8 +26,8 @@ public class BossInterface {
 
     public BossInterface() {
         this.bossBars = new BufferedImage[2];
-        bossBars[0] = Utils.getInstance().importImage(LANCER_BOSS_BAR, -1, -1);
-        bossBars[1] = Utils.getInstance().importImage(RORIC_BOSS_BAR, -1, -1);
+        bossBars[0] = ImageUtils.importImage(LANCER_BOSS_BAR, -1, -1);
+        bossBars[1] = ImageUtils.importImage(RORIC_BOSS_BAR, -1, -1);
     }
 
     public void render(Graphics g) {

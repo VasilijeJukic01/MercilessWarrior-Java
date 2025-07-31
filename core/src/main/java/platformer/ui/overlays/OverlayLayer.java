@@ -1,6 +1,6 @@
 package platformer.ui.overlays;
 
-import platformer.utils.Utils;
+import platformer.utils.ImageUtils;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
@@ -41,7 +41,7 @@ public class OverlayLayer {
     private BufferedImage[] loadMenuAnimation() {
         BufferedImage[] anim = new BufferedImage[MENU_FRAMES];
         for (int i = 0; i < anim.length; i++) {
-            anim[i] = Utils.getInstance().importImage(MENU_SPRITES.replace("$", i+""), GAME_WIDTH, GAME_HEIGHT);
+            anim[i] = ImageUtils.importImage(MENU_SPRITES.replace("$", i+""), GAME_WIDTH, GAME_HEIGHT);
         }
         return anim;
     }

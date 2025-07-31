@@ -3,7 +3,7 @@ package platformer.state;
 import platformer.core.Game;
 import platformer.ui.buttons.*;
 import platformer.ui.overlays.OverlayLayer;
-import platformer.utils.Utils;
+import platformer.utils.ImageUtils;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
@@ -36,7 +36,7 @@ public class MenuState extends AbstractState implements State {
 
     // Init
     private void loadImages() {
-        this.menuLogo = Utils.getInstance().importImage(MENU_LOGO, MENU_LOGO_WID, MENU_LOGO_HEI);
+        this.menuLogo = ImageUtils.importImage(MENU_LOGO, MENU_LOGO_WID, MENU_LOGO_HEI);
     }
 
     private void loadButtons() {

@@ -1,6 +1,6 @@
 package platformer.model.inventory;
 
-import platformer.utils.Utils;
+import platformer.utils.ImageUtils;
 
 import java.awt.image.BufferedImage;
 
@@ -35,7 +35,7 @@ public class InventoryItem {
         if (model == null) {
             ItemData data = getData();
             if (data != null && data.imagePath != null) {
-                this.model = Utils.getInstance().importImage(data.imagePath, -1, -1);
+                this.model = ImageUtils.importImage(data.imagePath, -1, -1);
             }
         }
         return model;

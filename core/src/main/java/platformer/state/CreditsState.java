@@ -4,7 +4,7 @@ import platformer.core.Game;
 import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.SmallButton;
 import platformer.ui.overlays.OverlayLayer;
-import platformer.utils.Utils;
+import platformer.utils.ImageUtils;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
@@ -33,7 +33,7 @@ public class CreditsState extends AbstractState implements State {
     }
 
     private void loadImages() {
-        this.creditsText = Utils.getInstance().importImage(CREDITS_TXT, CREDITS_TXT_WID, CREDITS_TXT_HEI);
+        this.creditsText = ImageUtils.importImage(CREDITS_TXT, CREDITS_TXT_WID, CREDITS_TXT_HEI);
     }
 
     private void loadButtons() {

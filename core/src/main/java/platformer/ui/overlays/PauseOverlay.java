@@ -9,7 +9,7 @@ import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.SmallButton;
 import platformer.ui.options.ControlsPanel;
 import platformer.ui.options.GameSettingsPanel;
-import platformer.utils.Utils;
+import platformer.utils.ImageUtils;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
@@ -50,7 +50,7 @@ public class PauseOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
     }
 
     private void loadImages() {
-        this.pauseText = Utils.getInstance().importImage(PAUSE_TXT, PAUSE_TEXT_WID, PAUSE_TEXT_HEI);
+        this.pauseText = ImageUtils.importImage(PAUSE_TXT, PAUSE_TEXT_WID, PAUSE_TEXT_HEI);
     }
 
     private void loadButtons() {

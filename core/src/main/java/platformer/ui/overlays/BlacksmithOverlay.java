@@ -5,7 +5,7 @@ import platformer.state.GameState;
 import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.MediumButton;
 import platformer.ui.overlays.controller.BlacksmithViewController;
-import platformer.utils.Utils;
+import platformer.utils.ImageUtils;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
@@ -56,8 +56,8 @@ public class BlacksmithOverlay implements Overlay<MouseEvent, KeyEvent, Graphics
     // Init
     private void loadImages() {
         this.overlay = new Rectangle2D.Double(PERKS_OVERLAY_X, PERKS_OVERLAY_Y, PERKS_OVERLAY_WID, PERKS_OVERLAY_HEI);
-        this.shopText = Utils.getInstance().importImage(PERKS_TXT_IMG, SHOP_TEXT_WID, SHOP_TEXT_HEI);
-        this.slotImage = Utils.getInstance().importImage(SLOT_IMG, SLOT_SIZE, SLOT_SIZE);
+        this.shopText = ImageUtils.importImage(PERKS_TXT_IMG, SHOP_TEXT_WID, SHOP_TEXT_HEI);
+        this.slotImage = ImageUtils.importImage(SLOT_IMG, SLOT_SIZE, SLOT_SIZE);
     }
 
     private void loadButtons() {

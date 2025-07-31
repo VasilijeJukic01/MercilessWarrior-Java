@@ -6,7 +6,7 @@ import platformer.debug.logger.Message;
 import platformer.model.levels.metadata.LevelMetadata;
 import platformer.model.levels.metadata.ObjectMetadata;
 import platformer.state.GameState;
-import platformer.utils.Utils;
+import platformer.utils.ImageUtils;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -55,7 +55,7 @@ public class LevelManager {
 
     // Init
     private void loadForestSprite() {
-        BufferedImage img = Utils.getInstance().importImage(FOREST_SPRITE, -1, -1);
+        BufferedImage img = ImageUtils.importImage(FOREST_SPRITE, -1, -1);
         levelSprite = new BufferedImage[MAX_TILE_VALUE];
         for (int i = 0; i < FOREST_SPRITE_ROW; i++) {
             for (int j = 0; j < FOREST_SPRITE_COL; j++) {
@@ -88,7 +88,7 @@ public class LevelManager {
      * It loads the arena level image and creates a new Level object for it.
      */
     private void buildArenaLevels() {
-        BufferedImage arenaImg = Utils.getInstance().importImage(LEVEL_SPRITES.replace("$", "arena1"), -1, -1);
+        BufferedImage arenaImg = ImageUtils.importImage(LEVEL_SPRITES.replace("$", "arena1"), -1, -1);
         if (arenaImg != null) {
             BufferedImage arenaLayer1 = arenaImg.getSubimage(0, 0, arenaImg.getWidth()/2, arenaImg.getHeight());
             BufferedImage arenaLayer2 = arenaImg.getSubimage(arenaImg.getWidth()/2, 0, arenaImg.getWidth()/2, arenaImg.getHeight());
@@ -100,7 +100,7 @@ public class LevelManager {
         BufferedImage[][] levels = new BufferedImage[MAX_LEVELS][MAX_LEVELS];
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < levels.length; j++) {
-                BufferedImage levelImg = Utils.getInstance().importImage(LEVEL_SPRITES.replace("$", i+""+j), -1, -1);
+                BufferedImage levelImg = ImageUtils.importImage(LEVEL_SPRITES.replace("$", i+""+j), -1, -1);
                 if (levelImg == null) continue;
                 if (layer.equals("1")) {
                     levels[i][j] = levelImg.getSubimage(0, 0, levelImg.getWidth()/2, levelImg.getHeight());

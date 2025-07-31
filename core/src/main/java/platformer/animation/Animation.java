@@ -2,7 +2,8 @@ package platformer.animation;
 
 import platformer.model.gameObjects.ObjType;
 import platformer.model.gameObjects.npc.NpcType;
-import platformer.utils.Utils;
+import platformer.utils.CollectionUtils;
+import platformer.utils.ImageUtils;
 
 import java.awt.image.BufferedImage;
 
@@ -44,11 +45,11 @@ public class Animation {
      * @return animation
      */
     public BufferedImage[] loadFromSprite(String basePath, int frames, int row, int width, int height, int offset, int x, int y) {
-        BufferedImage sprite = Utils.getInstance().importImage(basePath, -1, -1);
+        BufferedImage sprite = ImageUtils.importImage(basePath, -1, -1);
         BufferedImage[] animation = new BufferedImage[frames];
         int yOffset = y * row;
         for (int i = offset; i < frames+offset; i++) {
-            animation[i-offset] = Utils.getInstance().resizeImage(sprite.getSubimage(i * x, yOffset, x, y), width, height);
+            animation[i-offset] = ImageUtils.resizeImage(sprite.getSubimage(i * x, yOffset, x, y), width, height);
         }
         return animation;
     }
@@ -102,7 +103,7 @@ public class Animation {
         anim[Anim.WALK.ordinal()] = loadFromSprite(GHOUL_SHEET,     6, 1, w, h, 0, GHOUL_W, GHOUL_H);
         anim[Anim.HIDE.ordinal()] = loadFromSprite(GHOUL_SHEET,     19, 6, w, h, 0, GHOUL_W, GHOUL_H);
         anim[Anim.REVEAL.ordinal()] = loadFromSprite(GHOUL_SHEET,   19, 6, w, h, 0, GHOUL_W, GHOUL_H);
-        anim[Anim.REVEAL.ordinal()] = Utils.getInstance().reverseArray(anim[Anim.REVEAL.ordinal()]);
+        anim[Anim.REVEAL.ordinal()] = CollectionUtils.reverseArray(anim[Anim.REVEAL.ordinal()]);
 
         return anim;
     }
@@ -201,9 +202,9 @@ public class Animation {
         anim[ObjType.LAVA.ordinal()] = loadFromSprite(LAVA_SHEET, 16, 0, LAVA_WID, LAVA_HEI, 0, LAVA_W, LAVA_H);
         anim[ObjType.BRICK.ordinal()] = loadFromSprite(BRICK_SHEET, 8, 0, BRICK_WID, BRICK_HEI, 0, BRICK_W, BRICK_H);
         anim[ObjType.JUMP_PAD.ordinal()] = loadFromSprite(JUMP_PAD_SHEET, 20, 0, JUMP_PAD_WID, JUMP_PAD_HEI, 0, JUMP_PAD_W, JUMP_PAD_H);
-        anim[ObjType.SPIKE_DOWN.ordinal()] = new BufferedImage[]{Utils.getInstance().rotateImage(anim[ObjType.SPIKE_UP.ordinal()][5], 180)};
-        anim[ObjType.SPIKE_LEFT.ordinal()] = new BufferedImage[]{Utils.getInstance().rotateImage(anim[ObjType.SPIKE_UP.ordinal()][5], 270)};
-        anim[ObjType.SPIKE_RIGHT.ordinal()] = new BufferedImage[]{Utils.getInstance().rotateImage(anim[ObjType.SPIKE_UP.ordinal()][5], 90)};
+        anim[ObjType.SPIKE_DOWN.ordinal()] = new BufferedImage[]{ImageUtils.rotateImage(anim[ObjType.SPIKE_UP.ordinal()][5], 180)};
+        anim[ObjType.SPIKE_LEFT.ordinal()] = new BufferedImage[]{ImageUtils.rotateImage(anim[ObjType.SPIKE_UP.ordinal()][5], 270)};
+        anim[ObjType.SPIKE_RIGHT.ordinal()] = new BufferedImage[]{ImageUtils.rotateImage(anim[ObjType.SPIKE_UP.ordinal()][5], 90)};
         anim[ObjType.HERB.ordinal()] = loadFromSprite(HERB_IMG, 1, 0, HERB_WID, HERB_HEI, 0, HERB_W, HERB_H);
         anim[ObjType.RORIC_TRAP.ordinal()] = loadFromSprite(RORIC_SPELLS_SHEET, 8, 6, RORIC_TRAP_WID, RORIC_TRAP_HEI, 0, RORIC_PROJECTILE_W, RORIC_PROJECTILE_H);
 
@@ -259,7 +260,7 @@ public class Animation {
         BufferedImage[] originalFrames = loadRoricProjectiles()[0];
         BufferedImage[] beamFrames = new BufferedImage[4];
         System.arraycopy(originalFrames, 0, beamFrames, 0, 4);
-        BufferedImage[] reversedFrames = Utils.getInstance().reverseArray(beamFrames.clone());
+        BufferedImage[] reversedFrames = CollectionUtils.reverseArray(beamFrames.clone());
         System.arraycopy(reversedFrames, 0, skyBeamAnimations, 0, 4);
         System.arraycopy(beamFrames, 0, skyBeamAnimations, 4, 4);
 

@@ -1,25 +1,16 @@
 package platformer.core;
 
-import platformer.bridge.client.GameServiceClient;
-import platformer.bridge.requests.ItemMasterDTO;
-import platformer.bridge.requests.ShopItemDTO;
-import platformer.bridge.storage.OfflineStorageStrategy;
-import platformer.bridge.storage.OnlineStorageStrategy;
 import platformer.bridge.storage.StorageStrategy;
 import platformer.controller.GameSaveController;
 import platformer.controller.KeyboardController;
 import platformer.bridge.Connector;
 import platformer.core.config.GameLaunchConfig;
 import platformer.core.initializer.GameDataInitializer;
-import platformer.debug.logger.Logger;
-import platformer.debug.logger.Message;
 import platformer.model.BoardItem;
-import platformer.model.inventory.GameDataCache;
 import platformer.serialization.GameSerializer;
 import platformer.serialization.Serializer;
 import platformer.state.GameState;
 
-import java.io.IOException;
 import java.util.List;
 
 /**

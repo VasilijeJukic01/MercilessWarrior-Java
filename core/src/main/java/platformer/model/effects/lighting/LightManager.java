@@ -6,7 +6,7 @@ import platformer.model.gameObjects.GameObject;
 import platformer.model.gameObjects.objects.*;
 import platformer.model.gameObjects.objects.Container;
 import platformer.state.GameState;
-import platformer.utils.Utils;
+import platformer.utils.ImageUtils;
 
 import java.awt.*;
 import java.awt.geom.Point2D;
@@ -71,8 +71,8 @@ public class LightManager {
 
     // Init
     private void initLightImages() {
-        this.orangeLight = Utils.getInstance().importImage(ORANGE_GLOW, 2 * CANDLE_LIGHT_RADIUS, 2 * CANDLE_LIGHT_RADIUS);
-        BufferedImage whiteRadialGlow = Utils.getInstance().importImage(WHITE_RADIAL_GLOW, 2 * CANDLE_LIGHT_RADIUS, 2 * CANDLE_LIGHT_RADIUS);
+        this.orangeLight = ImageUtils.importImage(ORANGE_GLOW, 2 * CANDLE_LIGHT_RADIUS, 2 * CANDLE_LIGHT_RADIUS);
+        BufferedImage whiteRadialGlow = ImageUtils.importImage(WHITE_RADIAL_GLOW, 2 * CANDLE_LIGHT_RADIUS, 2 * CANDLE_LIGHT_RADIUS);
         RescaleOp rescaleOp = new RescaleOp(new float[]{1.0f, 1.0f, 1.0f, 0.5f}, new float[4], null);
         this.whiteRadialLight = rescaleOp.filter(whiteRadialGlow, null);
     }

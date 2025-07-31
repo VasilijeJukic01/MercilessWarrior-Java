@@ -5,7 +5,7 @@ import platformer.debug.logger.Message;
 import platformer.model.levels.Level;
 import platformer.model.minimap.astar.AStarPathfinding;
 import platformer.state.GameState;
-import platformer.utils.Utils;
+import platformer.utils.ImageUtils;
 
 import java.awt.*;
 import java.awt.geom.Point2D;
@@ -52,7 +52,7 @@ public class MinimapManager {
     }
 
     private void init() {
-        this.minimapImage = Utils.getInstance().importImage(MINIMAP, -1, -1);
+        this.minimapImage = ImageUtils.importImage(MINIMAP, -1, -1);
         this.minimap = new BufferedImage(minimapImage.getWidth(), minimapImage.getHeight(), minimapImage.getType());
         this.levelPositions = new LinkedHashMap<>();
         loadMinimapIcons();
@@ -62,7 +62,7 @@ public class MinimapManager {
 
     private void loadMinimapIcons() {
         this.minimapIcons = new BufferedImage[MINIMAP_ICONS_COUNT];
-        BufferedImage image = Utils.getInstance().importImage(MINIMAP_ICONS, -1, -1);
+        BufferedImage image = ImageUtils.importImage(MINIMAP_ICONS, -1, -1);
         for (int i = 0; i < MINIMAP_ICONS_COUNT; i++) {
             minimapIcons[i] = image.getSubimage(i * MINIMAP_ICON_SIZE, 0, MINIMAP_ICON_SIZE, MINIMAP_ICON_SIZE);
         }
@@ -72,7 +72,7 @@ public class MinimapManager {
         for (int i = 0; i < MAX_LEVELS; i++) {
             for (int j = 0; j < MAX_LEVELS; j++) {
                 String levelName = "level" + i + j;
-                BufferedImage levelImage = Utils.getInstance().importImage(LEVEL_SPRITES.replace("level$", levelName), -1, -1);
+                BufferedImage levelImage = ImageUtils.importImage(LEVEL_SPRITES.replace("level$", levelName), -1, -1);
                 if (levelImage == null) continue;
                 BufferedImage img = levelImage.getSubimage(0, 0, levelImage.getWidth() / 2, levelImage.getHeight());
                 Point position = findImageOnMinimap(img, minimapImage);
@@ -112,8 +112,8 @@ public class MinimapManager {
         int minimapWidth = minimapImage.getWidth(), minimapHeight = minimapImage.getHeight();
 
         // Images -> Grayscale
-        int[][] minimapGray = Utils.getInstance().toGrayscale(minimapImage);
-        int[][] levelGray = Utils.getInstance().toGrayscale(levelImage);
+        int[][] minimapGray = ImageUtils.toGrayscale(minimapImage);
+        int[][] levelGray = ImageUtils.toGrayscale(levelImage);
 
         // Thread-safe SAD Tracking
         AtomicInteger minSAD = new AtomicInteger(Integer.MAX_VALUE);

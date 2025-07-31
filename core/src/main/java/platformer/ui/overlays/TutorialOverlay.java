@@ -3,7 +3,7 @@ package platformer.ui.overlays;
 import platformer.controller.KeyboardController;
 import platformer.core.Framework;
 import platformer.state.GameState;
-import platformer.utils.Utils;
+import platformer.utils.ImageUtils;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
@@ -27,7 +27,7 @@ public class TutorialOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
     public TutorialOverlay(GameState gameState) {
         this.gameState = gameState;
         this.tutorialImages = new BufferedImage[1];
-        this.tutorialImages[0] = Utils.getInstance().importImage(TUTORIAL_BLOCK_PATH, -1, -1);
+        this.tutorialImages[0] = ImageUtils.importImage(TUTORIAL_BLOCK_PATH, -1, -1);
     }
 
     @Override

@@ -4,7 +4,7 @@ import platformer.model.entities.player.Player;
 import platformer.model.inventory.Inventory;
 import platformer.model.inventory.InventoryItem;
 import platformer.model.inventory.ItemData;
-import platformer.utils.Utils;
+import platformer.utils.ImageUtils;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -28,7 +28,7 @@ public class QuickUsePanel {
 
     public QuickUsePanel(Player player) {
         this.player = player;
-        this.slotImage = Utils.getInstance().importImage(SLOT_INVENTORY, -1, -1);
+        this.slotImage = ImageUtils.importImage(SLOT_INVENTORY, -1, -1);
     }
 
     public void render(Graphics g) {

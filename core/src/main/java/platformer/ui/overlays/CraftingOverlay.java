@@ -7,7 +7,7 @@ import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.MediumButton;
 import platformer.ui.buttons.SmallButton;
 import platformer.ui.overlays.controller.CraftingViewController;
-import platformer.utils.Utils;
+import platformer.utils.ImageUtils;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
@@ -55,9 +55,9 @@ public class CraftingOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
 
     private void loadImages() {
         this.overlay = new Rectangle2D.Double(INV_OVERLAY_X, INV_OVERLAY_Y, INV_OVERLAY_WID, INV_OVERLAY_HEI);
-        this.craftingText = Utils.getInstance().importImage(CRAFTING_TXT, INV_TEXT_WID, INV_TEXT_HEI);
+        this.craftingText = ImageUtils.importImage(CRAFTING_TXT, INV_TEXT_WID, INV_TEXT_HEI);
         this.craftingPanel = new Rectangle2D.Double(BACKPACK_X, BACKPACK_Y, BACKPACK_WID, BACKPACK_HEI);
-        this.slotImage = Utils.getInstance().importImage(SLOT_INVENTORY, SLOT_SIZE, SLOT_SIZE);
+        this.slotImage = ImageUtils.importImage(SLOT_INVENTORY, SLOT_SIZE, SLOT_SIZE);
         this.coinIcon = Animation.getInstance().loadFromSprite(COIN_SHEET, 1, 1, COIN_WID, COIN_HEI, 0, COIN_W, COIN_H)[0];
     }
 
@@ -142,7 +142,7 @@ public class CraftingOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
     private void renderItem(Graphics g, Recipe recipe) {
         ItemData itemData = ItemDatabase.getInstance().getItemData(recipe.getOutput());
         if (itemData == null) return;
-        BufferedImage itemImage = Utils.getInstance().importImage(itemData.imagePath, -1, -1);
+        BufferedImage itemImage = ImageUtils.importImage(itemData.imagePath, -1, -1);
 
         int absoluteSlotNumber = RecipeManager.getInstance().getRecipes().indexOf(recipe);
         int pageOffset = controller.getCraftingSlot() * (INVENTORY_SLOT_MAX_ROW * INVENTORY_SLOT_MAX_COL);

@@ -11,7 +11,7 @@ import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.MediumButton;
 import platformer.ui.buttons.SmallButton;
 import platformer.ui.overlays.controller.QuestViewController;
-import platformer.utils.Utils;
+import platformer.utils.ImageUtils;
 
 
 import java.awt.*;
@@ -63,7 +63,7 @@ public class QuestOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
     }
 
     private void loadImages() {
-        this.questsText = Utils.getInstance().importImage(QUESTS_TXT, QUEST_TXT_WID, QUEST_TXT_HEI);
+        this.questsText = ImageUtils.importImage(QUESTS_TXT, QUEST_TXT_WID, QUEST_TXT_HEI);
         this.overlay = new Rectangle2D.Double(INV_OVERLAY_X, INV_OVERLAY_Y, INV_OVERLAY_WID, INV_OVERLAY_HEI);
         this.questListPanel = new Rectangle2D.Double(BACKPACK_X, BACKPACK_Y, BACKPACK_WID, BACKPACK_HEI);
         this.coinIcon = Animation.getInstance().loadFromSprite(QUEST_COIN_PATH, 1, 0, QUEST_ICON_SIZE, QUEST_ICON_SIZE, 0, COIN_W, COIN_H)[0];
@@ -220,7 +220,7 @@ public class QuestOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
             for (Map.Entry<String, Integer> entry : quest.getItemRewards().entrySet()) {
                 ItemData item = ItemDatabase.getInstance().getItemData(entry.getKey());
                 if (item != null) {
-                    BufferedImage itemIcon = Utils.getInstance().importImage(item.imagePath, -1, -1);
+                    BufferedImage itemIcon = ImageUtils.importImage(item.imagePath, -1, -1);
                     yPos = renderRewardLine(g, itemIcon, item.name + " x" + entry.getValue(), item.rarity.getTextColor(), yPos);
                     yPos += rewardSpacing;
                 }
