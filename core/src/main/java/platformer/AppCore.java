@@ -2,11 +2,11 @@ package platformer;
 
 import platformer.core.Framework;
 import platformer.core.config.GameLaunchConfig;
-import platformer.utils.loading.ClassLoadingTracker;
-import platformer.utils.loading.LoadingProgressTracker;
+import platformer.core.loading.LoadingProgressTracker;
 
 /**
- * Main class of the game.
+ * Core entry point for the platformer game application.
+ * This class manages the game initialization and startup sequence, handling the loading process and framework initialization.
  */
 public class AppCore {
 
@@ -19,7 +19,7 @@ public class AppCore {
         try {
             LoadingProgressTracker.getInstance().update(0.1, "Initializing game");
             Framework.getInstance().init(config);
-            ClassLoadingTracker.markLoadingComplete();
+            LoadingProgressTracker.getInstance().markLoadingComplete();
             Framework.getInstance().start();
         } catch (Exception e) {
             LoadingProgressTracker.getInstance().update(0.0, "Error: " + e.getMessage());

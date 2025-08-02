@@ -13,7 +13,7 @@ import javafx.util.Duration;
 import platformer.launcher.controller.LoadingController;
 import platformer.launcher.view.styler.FXStyler;
 import platformer.launcher.view.styler.Styler;
-import platformer.utils.loading.LoadingProgressTracker;
+import platformer.core.loading.LoadingProgressTracker;
 
 import java.util.List;
 import java.util.Random;

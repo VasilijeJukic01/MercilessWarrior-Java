@@ -7,7 +7,7 @@ import platformer.bridge.client.GameServiceClient;
 import platformer.core.TokenStorage;
 import platformer.core.config.GameLaunchConfig;
 import platformer.launcher.view.LoadingView;
-import platformer.utils.loading.LoadingProgressTracker;
+import platformer.core.loading.LoadingProgressTracker;
 
 /**
  * Controller for handling loading processes and game initialization logic.

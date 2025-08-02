@@ -5,7 +5,7 @@ import com.google.gson.GsonBuilder;
 import platformer.core.Account;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
-import platformer.utils.loading.PathManager;
+import platformer.core.loading.PathManager;
 
 import java.io.File;
 import java.io.FileReader;

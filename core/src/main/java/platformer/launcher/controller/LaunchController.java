@@ -13,7 +13,7 @@ import platformer.debug.logger.Message;
 import platformer.launcher.core.KeyboardConfigurator;
 import platformer.launcher.view.LauncherView;
 import platformer.launcher.view.LoadingView;
-import platformer.utils.loading.PathManager;
+import platformer.core.loading.PathManager;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;

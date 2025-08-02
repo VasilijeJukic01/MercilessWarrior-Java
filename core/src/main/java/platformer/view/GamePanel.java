@@ -118,6 +118,7 @@ public class GamePanel extends JPanel {
         g.drawString("UPS: "+game.getCurrentUpdates(), UPS_X, UPS_Y);
     }
 
+    // Getters
     public Game getGame() {
         return game;
     }

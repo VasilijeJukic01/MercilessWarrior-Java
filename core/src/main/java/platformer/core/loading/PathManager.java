@@ -1,4 +1,4 @@
-package platformer.utils.loading;
+package platformer.core.loading;
 
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;

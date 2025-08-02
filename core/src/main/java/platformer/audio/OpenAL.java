@@ -10,7 +10,7 @@ import platformer.audio.types.Song;
 import platformer.audio.types.Sound;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
-import platformer.utils.loading.LoadingProgressTracker;
+import platformer.core.loading.LoadingProgressTracker;
 import platformer.utils.ValueEnum;
 
 import javax.sound.sampled.AudioFormat;

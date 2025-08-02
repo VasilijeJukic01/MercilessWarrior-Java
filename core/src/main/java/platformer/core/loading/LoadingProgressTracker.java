@@ -1,4 +1,4 @@
-package platformer.utils.loading;
+package platformer.core.loading;
 
 import javafx.application.Platform;
 import javafx.beans.property.DoubleProperty;
@@ -66,6 +66,10 @@ public class LoadingProgressTracker {
                 status.set(statusMessage);
             });
         }
+    }
+
+    public void markLoadingComplete() {
+        update(1.0, "Game loaded successfully!");
     }
 
     // Getters
