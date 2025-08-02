@@ -32,7 +32,7 @@ import platformer.observer.EventHandler;
 import platformer.observer.events.GameFlowEventHandler;
 import platformer.observer.events.LancerEventHandler;
 import platformer.observer.events.RoricEventHandler;
-import platformer.ui.dialogue.DialogueManager;
+import platformer.model.dialogue.DialogueManager;
 import platformer.ui.overlays.OverlayManager;
 import platformer.ui.overlays.hud.BossInterface;
 import platformer.view.Camera;

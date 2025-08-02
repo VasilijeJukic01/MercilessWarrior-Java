@@ -1,4 +1,4 @@
-package platformer.ui.dialogue;
+package platformer.model.dialogue;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -13,6 +13,7 @@ import platformer.observer.Publisher;
 import platformer.observer.Subscriber;
 import platformer.state.GameState;
 import platformer.state.PlayingState;
+import platformer.ui.overlays.DialogueOverlay;
 
 import java.io.BufferedReader;
 import java.io.FileReader;

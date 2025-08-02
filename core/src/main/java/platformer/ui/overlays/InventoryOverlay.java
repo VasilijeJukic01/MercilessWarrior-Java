@@ -11,7 +11,7 @@ import platformer.ui.buttons.AbstractButton;
 import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.MediumButton;
 import platformer.ui.buttons.SmallButton;
-import platformer.ui.coponents.ItemComparisonTooltip;
+import platformer.ui.components.ItemComparisonTooltip;
 import platformer.ui.overlays.controller.InventoryViewController;
 import platformer.utils.ImageUtils;
 

@@ -1,4 +1,4 @@
-package platformer.ui.dialogue.question;
+package platformer.model.dialogue.question;
 
 import lombok.Getter;
 import lombok.Setter;

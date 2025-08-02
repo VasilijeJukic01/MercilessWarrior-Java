@@ -1,9 +1,9 @@
-package platformer.ui.dialogue;
+package platformer.ui.overlays;
 
+import platformer.model.dialogue.Dialogue;
 import platformer.model.gameObjects.GameObject;
 import platformer.model.gameObjects.npc.Npc;
-import platformer.ui.dialogue.question.Question;
-import platformer.ui.overlays.Overlay;
+import platformer.model.dialogue.question.Question;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;

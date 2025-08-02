@@ -6,8 +6,8 @@ import platformer.core.Settings;
 import platformer.model.effects.particles.*;
 import platformer.model.entities.Entity;
 import platformer.model.entities.player.Player;
-import platformer.ui.text.DamageNumber;
-import platformer.ui.text.ItemPickupText;
+import platformer.model.effects.text.DamageNumber;
+import platformer.model.effects.text.ItemPickupText;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;

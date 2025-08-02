@@ -1,4 +1,4 @@
-package platformer.ui;
+package platformer.ui.components.slots;
 
 import lombok.Getter;
 import lombok.Setter;

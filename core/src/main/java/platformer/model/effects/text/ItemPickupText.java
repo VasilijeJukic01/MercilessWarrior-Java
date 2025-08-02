@@ -1,4 +1,4 @@
-package platformer.ui.text;
+package platformer.model.effects.text;
 
 import platformer.model.entities.player.Player;
 

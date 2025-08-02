@@ -2,7 +2,6 @@ package platformer.ui.overlays;
 
 import platformer.state.GameState;
 import platformer.state.PlayingState;
-import platformer.ui.dialogue.DialogueOverlay;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;

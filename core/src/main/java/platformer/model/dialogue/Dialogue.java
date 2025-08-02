@@ -1,7 +1,7 @@
-package platformer.ui.dialogue;
+package platformer.model.dialogue;
 
 import lombok.Getter;
-import platformer.ui.dialogue.question.Question;
+import platformer.model.dialogue.question.Question;
 
 import java.util.List;
 

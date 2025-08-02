@@ -6,7 +6,7 @@ import platformer.model.inventory.ItemDatabase;
 import platformer.model.quests.Quest;
 import platformer.model.quests.QuestObjective;
 import platformer.state.GameState;
-import platformer.ui.QuestSlot;
+import platformer.ui.components.slots.QuestSlot;
 import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.MediumButton;
 import platformer.ui.buttons.SmallButton;

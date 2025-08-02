@@ -1,4 +1,4 @@
-package platformer.ui.dialogue;
+package platformer.model.dialogue;
 
 import lombok.Getter;
 

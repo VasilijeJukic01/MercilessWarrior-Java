@@ -1,4 +1,4 @@
-package platformer.ui.coponents;
+package platformer.ui.components;
 
 import platformer.model.inventory.InventoryItem;
 import platformer.model.inventory.ItemData;
