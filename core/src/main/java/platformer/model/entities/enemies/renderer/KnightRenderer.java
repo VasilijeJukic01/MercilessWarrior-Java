@@ -1,5 +1,7 @@
 package platformer.model.entities.enemies.renderer;
 
+import platformer.animation.SpriteManager;
+import platformer.model.entities.enemies.EnemyType;
 import platformer.model.entities.enemies.Knight;
 
 import java.awt.*;
@@ -11,8 +13,8 @@ public class KnightRenderer implements EnemyRenderer<Knight> {
 
     private final BufferedImage[][] animations;
 
-    public KnightRenderer(BufferedImage[][] animations) {
-        this.animations = animations;
+    public KnightRenderer() {
+        this.animations = SpriteManager.getInstance().getEnemyAnimations(EnemyType.KNIGHT);
     }
 
     @Override

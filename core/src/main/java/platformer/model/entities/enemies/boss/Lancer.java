@@ -1,6 +1,7 @@
 package platformer.model.entities.enemies.boss;
 
 import platformer.animation.Anim;
+import platformer.animation.SpriteManager;
 import platformer.audio.Audio;
 import platformer.audio.types.Song;
 import platformer.audio.types.Sound;
@@ -19,7 +20,6 @@ import platformer.ui.overlays.hud.BossInterface;
 import java.awt.*;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -227,7 +227,7 @@ public class Lancer extends Enemy implements Publisher {
 
     // Update animation
     @Override
-    protected void updateAnimation(BufferedImage[][] animations) {
+    protected void updateAnimation() {
         if (cooldown != null) {             // Pre-Attack cooldown check
             coolDownTickUpdate();
             if ((entityState != Anim.IDLE && entityState != Anim.HIT) && cooldown[Cooldown.ATTACK.ordinal()] != 0) return;
@@ -236,7 +236,7 @@ public class Lancer extends Enemy implements Publisher {
         if (animTick >= animSpeed) {
             animTick = 0;
             animIndex++;
-            if (animIndex >= animations[entityState.ordinal()].length) finishAnimation();
+            if (animIndex >= SpriteManager.getInstance().getAnimFrames(getEnemyType(), entityState)) finishAnimation();
         }
     }
 
@@ -316,11 +316,11 @@ public class Lancer extends Enemy implements Publisher {
 
     // Update
     @Override
-    public void update(BufferedImage[][] animations, int[][] levelData, Player player) {}
+    public void update(int[][] levelData, Player player) {}
 
-    public void update(BufferedImage[][] animations, int[][] levelData, Player player, SpellManager spellManager, ObjectManager objectManager, ProjectileManager projectileManager, BossInterface bossInterface) {
+    public void update(int[][] levelData, Player player, SpellManager spellManager, ObjectManager objectManager, ProjectileManager projectileManager, BossInterface bossInterface) {
         updateMove(levelData, player, spellManager, objectManager, projectileManager);
-        updateAnimation(animations);
+        updateAnimation();
         updateAttackBox();
         if (!bossInterface.isActive() && start) bossInterface.injectBoss(this);
         else if (bossInterface.isActive() && !start) bossInterface.reset();

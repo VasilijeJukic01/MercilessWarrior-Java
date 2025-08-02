@@ -1,6 +1,7 @@
 package platformer.model.entities.enemies.boss;
 
 import platformer.animation.Anim;
+import platformer.animation.SpriteManager;
 import platformer.audio.Audio;
 import platformer.audio.types.Song;
 import platformer.debug.DebugSettings;
@@ -13,7 +14,6 @@ import platformer.model.entities.enemies.boss.roric.RoricAttackHandler;
 import platformer.model.entities.enemies.boss.roric.RoricPhaseManager;
 import platformer.model.entities.enemies.boss.roric.RoricState;
 import platformer.model.entities.player.Player;
-import platformer.model.gameObjects.ObjectManager;
 import platformer.model.projectiles.ProjectileManager;
 import platformer.model.spells.SpellManager;
 import platformer.observer.Publisher;
@@ -22,7 +22,6 @@ import platformer.ui.overlays.hud.BossInterface;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
-import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -89,7 +88,7 @@ public class Roric extends Enemy implements Publisher {
     }
 
     @Override
-    public void update(BufferedImage[][] animations, int[][] levelData, Player player) {
+    public void update(int[][] levelData, Player player) {
         // Not used
     }
 
@@ -98,16 +97,14 @@ public class Roric extends Enemy implements Publisher {
      * It serves as the integration point for physics (from {@code updateMove}) and AI (from {@code attackHandler.update}),
      * and also manages the boss HUD visibility.
      *
-     * @param animations The sprite sheets for Roric.
      * @param levelData The collision map of the current level.
      * @param player The player entity.
      * @param spellManager Manager for spell effects.
      * @param enemyManager Manager for enemy entities (used for spawning clones).
-     * @param objectManager Manager for game objects.
      * @param projectileManager Manager for projectiles.
      * @param bossInterface The UI component for the boss health bar.
      */
-    public void update(BufferedImage[][] animations, int[][] levelData, Player player, SpellManager spellManager, EnemyManager enemyManager, ObjectManager objectManager, ProjectileManager projectileManager, BossInterface bossInterface) {
+    public void update(int[][] levelData, Player player, SpellManager spellManager, EnemyManager enemyManager, ProjectileManager projectileManager, BossInterface bossInterface) {
         this.spellManager = spellManager;
         this.currentPlayerTarget = player;
         this.currentLevelData = levelData;
@@ -128,7 +125,7 @@ public class Roric extends Enemy implements Publisher {
             return;
         }
         updateMove(levelData, player, spellManager, projectileManager, enemyManager);
-        updateAnimation(animations);
+        updateAnimation();
         updateAttackBox();
         updateBossInterface(bossInterface);
     }
@@ -202,11 +199,9 @@ public class Roric extends Enemy implements Publisher {
      * <p>
      * This logic is coupled with the physics state for the `JUMP_FALL` animation, it selects the correct sprite based on the sign
      * of the vertical velocity (`airSpeed`). This ensures the visual representation matches the kinematic state.
-     *
-     * @param animations The 2D array of animation sprites.
      */
     @Override
-    protected void updateAnimation(BufferedImage[][] animations) {
+    protected void updateAnimation() {
         coolDownTickUpdate();
         animTick++;
         double effectiveAnimSpeed = animSpeed * phaseManager.getAnimationSpeedModifier();
@@ -221,7 +216,7 @@ public class Roric extends Enemy implements Publisher {
                     animIndex = 9;
                 }
             }
-            if (animIndex >= animations[entityState.ordinal()].length) {
+            if (animIndex >= SpriteManager.getInstance().getAnimFrames(getEnemyType(), entityState)) {
                 if (entityState != Anim.JUMP_FALL) attackHandler.finishAnimation();
             }
         }

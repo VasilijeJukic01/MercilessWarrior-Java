@@ -1,6 +1,6 @@
 package platformer.model.gameObjects;
 
-import platformer.animation.Animation;
+import platformer.animation.SpriteManager;
 import platformer.audio.Audio;
 import platformer.audio.types.Sound;
 import platformer.bridge.storage.StorageStrategy;
@@ -44,10 +44,6 @@ public class ObjectManager implements Publisher {
 
     private GameObject intersection;
 
-    private final BufferedImage[][] objects;
-    private final BufferedImage[][] npcs;
-    private final BufferedImage[][] coinAnimations;
-
     Class<? extends GameObject>[] updateClasses = new Class[]{
             Coin.class, Container.class, Potion.class, Spike.class,
             Shop.class, Blocker.class, Blacksmith.class, Dog.class,
@@ -74,9 +70,6 @@ public class ObjectManager implements Publisher {
 
     public ObjectManager(GameState gameState) {
         this.gameState = gameState;
-        this.objects = Animation.getInstance().loadObjects();
-        this.coinAnimations = Animation.getInstance().getCoinAnimations();
-        this.npcs = Animation.getInstance().loadNpcs();
     }
 
     // Init
@@ -266,7 +259,10 @@ public class ObjectManager implements Publisher {
             if (objectType.equals(Coin.class)) return;
             getObjects(objectType).stream()
                     .filter(GameObject::isAlive)
-                    .forEach(obj -> obj.render(g, xLevelOffset, yLevelOffset, objects[obj.getObjType().ordinal()]));
+                    .forEach(obj -> {
+                        BufferedImage[] animations = SpriteManager.getInstance().getObjectAnimations(obj.getObjType());
+                        if (animations != null) obj.render(g, xLevelOffset, yLevelOffset, animations);
+                    });
         }
         catch (Exception ignored) {}
     }
@@ -290,7 +286,8 @@ public class ObjectManager implements Publisher {
     }
 
     public void candleRender(Graphics g, int xLevelOffset, int yLevelOffset, Candle c) {
-        c.render(g, xLevelOffset, yLevelOffset, objects[c.getObjType().ordinal()]);
+        BufferedImage[] animations = SpriteManager.getInstance().getObjectAnimations(c.getObjType());
+        if (animations != null) c.render(g, xLevelOffset, yLevelOffset, animations);
     }
 
     public void glowingRender(Graphics g, int xLevelOffset, int yLevelOffset) {
@@ -300,6 +297,7 @@ public class ObjectManager implements Publisher {
     private void renderCoins(Graphics g, int xLevelOffset, int yLevelOffset) {
         for (Coin coin : getObjects(Coin.class)) {
             if (coin.isAlive()) {
+                BufferedImage[][] coinAnimations = SpriteManager.getInstance().getCoinAnimations();
                 BufferedImage[] anims = coinAnimations[coin.getCoinType().getAnimationRow()];
                 coin.render(g, xLevelOffset, yLevelOffset, anims);
             }
@@ -309,7 +307,7 @@ public class ObjectManager implements Publisher {
     private void renderNpcs(Graphics g, int xLevelOffset, int yLevelOffset) {
         for (Npc npc : getObjects(Npc.class)) {
             if (npc.isAlive()) {
-                BufferedImage[] anims = npcs[npc.getNpcType().ordinal()];
+                BufferedImage[] anims = SpriteManager.getInstance().getNpcAnimations(npc.getNpcType());
                 npc.render(g, xLevelOffset, yLevelOffset, anims);
             }
         }
@@ -340,7 +338,7 @@ public class ObjectManager implements Publisher {
     private void renderArrowLaunchers(Graphics g, int xLevelOffset, int yLevelOffset) {
         for (ArrowLauncher al : getObjects(ArrowLauncher.class)) {
             if (al.isAlive()) {
-                BufferedImage[] anims = al.getObjType() == ObjType.ARROW_TRAP_RIGHT ? objects[al.getObjType().ordinal()-1] : objects[al.getObjType().ordinal()];
+                BufferedImage[] anims = SpriteManager.getInstance().getObjectAnimations(al.getObjType());
                 al.render(g, xLevelOffset, yLevelOffset, anims);
             }
         }

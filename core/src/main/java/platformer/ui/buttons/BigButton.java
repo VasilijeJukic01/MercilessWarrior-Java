@@ -1,6 +1,6 @@
 package platformer.ui.buttons;
 
-import platformer.animation.Animation;
+import platformer.animation.SpriteManager;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -43,7 +43,7 @@ public class BigButton extends AbstractButton {
                 break;
             default: break;
         }
-        images = Animation.getInstance().loadFromSprite(MENU_BTN_SHEET, 3, r, BIG_BTN_WID, BIG_BTN_HEI, 0, BTN_W, BTN_H);
+        images = SpriteManager.getInstance().loadFromSprite(MENU_BTN_SHEET, 3, r, BIG_BTN_WID, BIG_BTN_HEI, 0, BTN_W, BTN_H);
     }
 
     @Override

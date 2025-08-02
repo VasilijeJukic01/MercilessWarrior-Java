@@ -1,6 +1,6 @@
 package platformer.model.spells;
 
-import platformer.animation.Animation;
+import platformer.animation.SpriteManager;
 import platformer.model.entities.Direction;
 import platformer.model.entities.enemies.boss.Roric;
 import platformer.model.entities.player.Player;
@@ -69,17 +69,17 @@ public class SpellManager {
     private void initSpellAnimations() {
         this.lightningAnimations = loadLightningAnimations();
         this.flashAnimations = loadFlashAnimations();
-        this.roricBeamAnimations = Animation.getInstance().loadRoricProjectiles()[0];
-        this.arrowRainAnimations = Animation.getInstance().loadRoricProjectiles()[1];
-        this.skyBeamAnimations = Animation.getInstance().createSkyBeamAnimation();
+        this.roricBeamAnimations = SpriteManager.getInstance().getRoricProjectileAnimations()[0];
+        this.arrowRainAnimations = SpriteManager.getInstance().getRoricProjectileAnimations()[1];
+        this.skyBeamAnimations = SpriteManager.getInstance().getSkyBeamAnimations();
     }
 
     private BufferedImage[] loadLightningAnimations() {
-        return Animation.getInstance().loadFromSprite(LIGHTNING_SHEET, 8, 0, LIGHTNING_WIDTH, LIGHTNING_HEIGHT, 0, LIGHTNING_W, LIGHTNING_H);
+        return SpriteManager.getInstance().loadFromSprite(LIGHTNING_SHEET, 8, 0, LIGHTNING_WIDTH, LIGHTNING_HEIGHT, 0, LIGHTNING_W, LIGHTNING_H);
     }
 
     private BufferedImage[] loadFlashAnimations() {
-        return Animation.getInstance().loadFromSprite(FLASH_SHEET, 16, 0, FLASH_WIDTH, FLASH_HEIGHT, 0, FLASH_W, FLASH_H);
+        return SpriteManager.getInstance().loadFromSprite(FLASH_SHEET, 16, 0, FLASH_WIDTH, FLASH_HEIGHT, 0, FLASH_W, FLASH_H);
     }
 
     public void initBossSpells() {

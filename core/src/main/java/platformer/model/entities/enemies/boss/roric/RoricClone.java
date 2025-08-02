@@ -1,11 +1,11 @@
 package platformer.model.entities.enemies.boss.roric;
 
 import platformer.animation.Anim;
+import platformer.animation.SpriteManager;
 import platformer.model.entities.Direction;
 import platformer.model.entities.enemies.EnemyManager;
 import platformer.model.entities.enemies.boss.Roric;
 import platformer.model.entities.player.Player;
-import platformer.model.gameObjects.ObjectManager;
 import platformer.model.projectiles.ProjectileManager;
 import platformer.model.spells.SpellManager;
 import platformer.observer.Publisher;
@@ -13,7 +13,6 @@ import platformer.observer.Subscriber;
 import platformer.ui.overlays.hud.BossInterface;
 
 import java.awt.*;
-import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,13 +33,13 @@ public class RoricClone extends Roric implements Publisher {
     }
 
     @Override
-    public void update(BufferedImage[][] animations, int[][] levelData, Player player, SpellManager spellManager, EnemyManager enemyManager, ObjectManager objectManager, ProjectileManager projectileManager, BossInterface bossInterface) {
+    public void update(int[][] levelData, Player player, SpellManager spellManager, EnemyManager enemyManager, ProjectileManager projectileManager, BossInterface bossInterface) {
         if (!attackStarted) {
             setEnemyAction(Anim.ATTACK_2);
             attackStarted = true;
         }
 
-        updateAnimation(animations);
+        updateAnimation();
         updateAttackBox();
 
         if (getEnemyAction() == Anim.ATTACK_2) {
@@ -81,12 +80,12 @@ public class RoricClone extends Roric implements Publisher {
     }
 
     @Override
-    protected void updateAnimation(BufferedImage[][] animations) {
+    protected void updateAnimation() {
         animTick++;
         if (animTick >= animSpeed) {
             animTick = 0;
             animIndex++;
-            if (animIndex >= animations[entityState.ordinal()].length) {
+            if (animIndex >= SpriteManager.getInstance().getAnimFrames(getEnemyType(), entityState)) {
                 this.finishAnimation();
             }
         }

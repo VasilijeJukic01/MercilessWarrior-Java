@@ -20,7 +20,6 @@ public class AppCore {
             LoadingProgressTracker.getInstance().update(0.1, "Initializing game");
             Framework.getInstance().init(config);
             ClassLoadingTracker.markLoadingComplete();
-
             Framework.getInstance().start();
         } catch (Exception e) {
             LoadingProgressTracker.getInstance().update(0.0, "Error: " + e.getMessage());

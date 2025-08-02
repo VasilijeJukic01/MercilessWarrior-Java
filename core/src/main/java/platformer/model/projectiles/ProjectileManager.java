@@ -1,6 +1,6 @@
 package platformer.model.projectiles;
 
-import platformer.animation.Animation;
+import platformer.animation.SpriteManager;
 import platformer.model.entities.Direction;
 import platformer.model.entities.enemies.Enemy;
 import platformer.model.entities.enemies.boss.Roric;
@@ -41,15 +41,15 @@ public class ProjectileManager {
         this.arrow = ImageUtils.importImage(ARROW_IMG, ARROW_WID, ARROW_HEI);
         this.roricArrow = ImageUtils.importImage(RORIC_ARROW_IMG, ARROW_WID, ARROW_HEI);
         this.roricAngledArrow = ImageUtils.importImage(RORIC_ARROW_IMG, ARROW_WID, ARROW_HEI);
-        this.lightningBall = Animation.getInstance().loadLightningBall(LIGHTNING_BALL_1_SHEET);
-        this.energyBall = Animation.getInstance().loadLightningBall(LIGHTNING_BALL_2_SHEET);
-        this.celestialOrb = Animation.getInstance().loadRoricProjectiles()[2];
-        this.fireball = Animation.getInstance().loadFireBall();
+        this.lightningBall = SpriteManager.getInstance().getLightningBallAnimations();
+        this.energyBall = SpriteManager.getInstance().getEnergyBallAnimations();
+        this.celestialOrb = SpriteManager.getInstance().getRoricProjectileAnimations()[2];
+        this.fireball = SpriteManager.getInstance().getFireballAnimations();
     }
 
     // Core
     public void update(int[][] lvlData, Player player) {
-        projectiles.removeIf(projectile -> !projectile.isAlive());;
+        projectiles.removeIf(projectile -> !projectile.isAlive());
         for (Projectile projectile : projectiles) {
             if (projectile.isAlive()) {
                 projectile.updatePosition(player);

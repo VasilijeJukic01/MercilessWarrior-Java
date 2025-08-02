@@ -1,6 +1,6 @@
 package platformer.ui.overlays;
 
-import platformer.animation.Animation;
+import platformer.animation.SpriteManager;
 import platformer.model.inventory.*;
 import platformer.state.GameState;
 import platformer.ui.buttons.*;
@@ -58,7 +58,7 @@ public class ShopOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
         this.sellPanel = new Rectangle2D.Double(SHOP_SELL_OVERLAY_X, SHOP_SELL_OVERLAY_Y, SHOP_PANEL_WID, SHOP_PANEL_HEI);
         this.shopText = ImageUtils.importImage(SHOP_TXT, SHOP_TEXT_WID, SHOP_TEXT_HEI);
         this.slotImage = ImageUtils.importImage(SLOT_IMG, SLOT_SIZE, SLOT_SIZE);
-        this.coinIcon = Animation.getInstance().loadFromSprite(COIN_SHEET, 1, 1, COIN_WID, COIN_HEI, 0, COIN_W, COIN_H)[0];
+        this.coinIcon = SpriteManager.getInstance().loadFromSprite(COIN_SHEET, 1, 1, COIN_WID, COIN_HEI, 0, COIN_W, COIN_H)[0];
     }
 
     private void loadButtons() {

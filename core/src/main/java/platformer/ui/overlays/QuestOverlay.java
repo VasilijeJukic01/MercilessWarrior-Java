@@ -1,6 +1,6 @@
 package platformer.ui.overlays;
 
-import platformer.animation.Animation;
+import platformer.animation.SpriteManager;
 import platformer.model.inventory.ItemData;
 import platformer.model.inventory.ItemDatabase;
 import platformer.model.quests.Quest;
@@ -66,8 +66,8 @@ public class QuestOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
         this.questsText = ImageUtils.importImage(QUESTS_TXT, QUEST_TXT_WID, QUEST_TXT_HEI);
         this.overlay = new Rectangle2D.Double(INV_OVERLAY_X, INV_OVERLAY_Y, INV_OVERLAY_WID, INV_OVERLAY_HEI);
         this.questListPanel = new Rectangle2D.Double(BACKPACK_X, BACKPACK_Y, BACKPACK_WID, BACKPACK_HEI);
-        this.coinIcon = Animation.getInstance().loadFromSprite(QUEST_COIN_PATH, 1, 0, QUEST_ICON_SIZE, QUEST_ICON_SIZE, 0, COIN_W, COIN_H)[0];
-        this.expIcon = Animation.getInstance().loadFromSprite(QUEST_EXP_PATH, 1, 0, QUEST_ICON_SIZE, QUEST_ICON_SIZE, 0, COIN_W, COIN_H)[0];
+        this.coinIcon = SpriteManager.getInstance().loadFromSprite(QUEST_COIN_PATH, 1, 0, QUEST_ICON_SIZE, QUEST_ICON_SIZE, 0, COIN_W, COIN_H)[0];
+        this.expIcon = SpriteManager.getInstance().loadFromSprite(QUEST_EXP_PATH, 1, 0, QUEST_ICON_SIZE, QUEST_ICON_SIZE, 0, COIN_W, COIN_H)[0];
     }
 
     private void loadButtons() {

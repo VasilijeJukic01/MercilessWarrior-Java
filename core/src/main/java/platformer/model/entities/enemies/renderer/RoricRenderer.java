@@ -1,7 +1,8 @@
 package platformer.model.entities.enemies.renderer;
 
-import platformer.animation.Animation;
+import platformer.animation.SpriteManager;
 import platformer.model.entities.Direction;
+import platformer.model.entities.enemies.EnemyType;
 import platformer.model.entities.enemies.boss.Roric;
 import platformer.model.entities.enemies.boss.roric.RoricState;
 
@@ -18,9 +19,9 @@ public class RoricRenderer implements EnemyRenderer<Roric> {
     private double auraRotationAngle = 0;
     private static final double AURA_ROTATION_SPEED = 0.001;
 
-    public RoricRenderer(BufferedImage[][] animations) {
-        this.animations = animations;
-        this.auraAnimations = Animation.getInstance().loadRoricAuraEffect();
+    public RoricRenderer() {
+        this.animations = SpriteManager.getInstance().getEnemyAnimations(EnemyType.RORIC);
+        this.auraAnimations = SpriteManager.getInstance().getRoricAuraAnimations();
     }
 
     @Override

@@ -9,7 +9,6 @@ import platformer.model.entities.player.PlayerAction;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
-import java.awt.image.BufferedImage;
 
 import static platformer.constants.Constants.*;
 import static platformer.physics.CollisionDetector.*;
@@ -119,9 +118,9 @@ public class Knight extends Enemy {
 
     // Update
     @Override
-    public void update(BufferedImage[][] animations, int[][] levelData, Player player) {
+    public void update(int[][] levelData, Player player) {
         updateMove(levelData, player);
-        updateAnimation(animations);
+        updateAnimation();
         updateAttackBox();
     }
 

@@ -1,7 +1,6 @@
 package platformer.model.entities.enemies;
 
 import platformer.animation.Anim;
-import platformer.animation.Animation;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
 import platformer.model.effects.ScreenEffectsManager;
@@ -34,7 +33,6 @@ import platformer.utils.CollectionUtils;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
-import java.awt.image.BufferedImage;
 import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -50,8 +48,6 @@ public class EnemyManager implements Publisher {
     private final GameState gameState;
     private ScreenEffectsManager screenEffectsManager;
 
-    private BufferedImage[][] skeletonAnimations, ghoulAnimations, knightAnimations, wraithAnimations, lancerAnimations, roricAnimations;
-
     private Map<EnemyType, List<Enemy>> enemies = new HashMap<>();
     private final Map<Class<? extends Enemy>, EnemyRenderer<? extends Enemy>> enemyRenderers = new HashMap<>();
     private final Map<Enemy, Integer> spellHitTimers = new HashMap<>();
@@ -61,31 +57,17 @@ public class EnemyManager implements Publisher {
 
     public EnemyManager(GameState gameState) {
         this.gameState = gameState;
-        init();
-    }
-
-    // Init
-    private void init() {
-        initAnimations();
         initRenderers();
     }
 
-    private void initAnimations() {
-        this.skeletonAnimations = Animation.getInstance().loadSkeletonAnimations(SKELETON_WIDTH, SKELETON_HEIGHT);
-        this.ghoulAnimations = Animation.getInstance().loadGhoulAnimation(GHOUL_WIDTH, GHOUL_HEIGHT);
-        this.knightAnimations = Animation.getInstance().loadKnightAnimation(KNIGHT_WIDTH, KNIGHT_HEIGHT);
-        this.lancerAnimations = Animation.getInstance().loadLancerAnimations(LANCER_WIDTH, LANCER_HEIGHT);
-        this.wraithAnimations = Animation.getInstance().loadWraithAnimation(WRAITH_WIDTH, WRAITH_HEIGHT);
-        this.roricAnimations = Animation.getInstance().loadRoricAnimations(RORIC_WIDTH, RORIC_HEIGHT);
-    }
-
+    // Init
     private void initRenderers() {
-        this.enemyRenderers.put(Skeleton.class, new SkeletonRenderer(skeletonAnimations));
-        this.enemyRenderers.put(Ghoul.class, new GhoulRenderer(ghoulAnimations));
-        this.enemyRenderers.put(Lancer.class, new LancerRenderer(lancerAnimations));
-        this.enemyRenderers.put(Knight.class, new KnightRenderer(knightAnimations));
-        this.enemyRenderers.put(Wraith.class, new WraithRenderer(wraithAnimations));
-        this.enemyRenderers.put(Roric.class, new RoricRenderer(roricAnimations));
+        this.enemyRenderers.put(Skeleton.class, new SkeletonRenderer());
+        this.enemyRenderers.put(Ghoul.class, new GhoulRenderer());
+        this.enemyRenderers.put(Knight.class, new KnightRenderer());
+        this.enemyRenderers.put(Wraith.class, new WraithRenderer());
+        this.enemyRenderers.put(Lancer.class, new LancerRenderer());
+        this.enemyRenderers.put(Roric.class, new RoricRenderer());
     }
 
     public void loadEnemies(Level level) {
@@ -351,33 +333,32 @@ public class EnemyManager implements Publisher {
      *
      * @param <T> The specific type of enemy to update. This type must extend from the Enemy class.
      * @param enemyType The Class object representing the type of enemy to update.
-     * @param animations The 2D array of BufferedImages representing the animations for the enemy type.
      * @param levelData The 2D array representing the current level's layout.
      * @param player The Player object representing the player in the game.
      */
-    private <T extends Enemy> void updateEnemies(Class<T> enemyType, BufferedImage[][] animations, int[][] levelData, Player player) {
+    private <T extends Enemy> void updateEnemies(Class<T> enemyType, int[][] levelData, Player player) {
         getEnemies(enemyType).stream()
                 .filter(Enemy::isAlive)
                 .forEach(enemy -> {
-                    enemy.update(animations, levelData, player);
+                    enemy.update(levelData, player);
                     checkEnemyAttackObject(enemy);
                 });
     }
 
     public void update(int[][] levelData, Player player) {
         updateSpellHitTimers();
-        updateEnemies(Skeleton.class, skeletonAnimations, levelData, player);
-        updateEnemies(Ghoul.class, ghoulAnimations, levelData, player);
-        updateEnemies(Knight.class, knightAnimations, levelData, player);
-        updateEnemies(Wraith.class, wraithAnimations, levelData, player);
+        updateEnemies(Skeleton.class, levelData, player);
+        updateEnemies(Ghoul.class, levelData, player);
+        updateEnemies(Knight.class, levelData, player);
+        updateEnemies(Wraith.class, levelData, player);
 
         getEnemies(Lancer.class).stream()
                 .filter(Lancer::isAlive)
-                .forEach(lancer -> lancer.update(lancerAnimations, levelData, player, gameState.getSpellManager(), gameState.getObjectManager(), gameState.getProjectileManager(), gameState.getBossInterface()));
+                .forEach(lancer -> lancer.update(levelData, player, gameState.getSpellManager(), gameState.getObjectManager(), gameState.getProjectileManager(), gameState.getBossInterface()));
 
         getEnemies(Roric.class).stream()
                 .filter(Roric::isAlive)
-                .forEach(roric -> roric.update(roricAnimations, levelData, player, gameState.getSpellManager(), this, gameState.getObjectManager(), gameState.getProjectileManager(), gameState.getBossInterface()));
+                .forEach(roric -> roric.update(levelData, player, gameState.getSpellManager(), this, gameState.getProjectileManager(), gameState.getBossInterface()));
 
         updateClones(levelData, player);
     }
@@ -388,7 +369,7 @@ public class EnemyManager implements Publisher {
     }
 
     private void updateClones(int[][] levelData, Player player) {
-        roricClones.forEach(clone -> clone.update(roricAnimations, levelData, player, gameState.getSpellManager(), this,  gameState.getObjectManager(), gameState.getProjectileManager(), gameState.getBossInterface()));
+        roricClones.forEach(clone -> clone.update(levelData, player, gameState.getSpellManager(), this, gameState.getProjectileManager(), gameState.getBossInterface()));
         roricClones.removeIf(clone -> !clone.isAlive());
     }
 

@@ -1,5 +1,7 @@
 package platformer.model.entities.enemies.renderer;
 
+import platformer.animation.SpriteManager;
+import platformer.model.entities.enemies.EnemyType;
 import platformer.model.entities.enemies.boss.Lancer;
 
 import java.awt.*;
@@ -11,8 +13,8 @@ public class LancerRenderer implements EnemyRenderer<Lancer> {
 
     private final BufferedImage[][] animations;
 
-    public LancerRenderer(BufferedImage[][] animations) {
-        this.animations = animations;
+    public LancerRenderer() {
+        this.animations = SpriteManager.getInstance().getEnemyAnimations(EnemyType.LANCER);
     }
 
     @Override

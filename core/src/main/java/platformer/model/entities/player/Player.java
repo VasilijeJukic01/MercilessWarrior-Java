@@ -1,7 +1,7 @@
 package platformer.model.entities.player;
 
 import platformer.animation.Anim;
-import platformer.animation.Animation;
+import platformer.animation.SpriteManager;
 import platformer.audio.Audio;
 import platformer.audio.types.Sound;
 import platformer.core.GameContext;
@@ -35,8 +35,6 @@ import java.util.List;
 import java.util.Random;
 
 import static platformer.constants.Constants.*;
-import static platformer.constants.FilePaths.PLAYER_SHEET;
-import static platformer.constants.FilePaths.PLAYER_TRANSFORM_SHEET;
 import static platformer.physics.CollisionDetector.*;
 
 @SuppressWarnings("FieldCanBeLocal")
@@ -105,8 +103,8 @@ public class Player extends Entity {
     }
 
     private void loadAnimations() {
-        this.animations = Animation.getInstance().loadPlayerAnimations(width, height, PLAYER_SHEET);
-        this.transformAnimations = Animation.getInstance().loadPlayerAnimations(width, height, PLAYER_TRANSFORM_SHEET);
+        this.animations = SpriteManager.getInstance().getPlayerAnimations(false);
+        this.transformAnimations = SpriteManager.getInstance().getPlayerAnimations(true);
     }
 
     private void initAttackBox() {

@@ -1,6 +1,7 @@
 package platformer.model.entities.enemies;
 
 import platformer.animation.Anim;
+import platformer.animation.SpriteManager;
 import platformer.debug.Debug;
 import platformer.model.entities.Cooldown;
 import platformer.model.entities.Direction;
@@ -11,7 +12,6 @@ import platformer.physics.DamageSource;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
-import java.awt.image.BufferedImage;
 
 import static platformer.constants.Constants.*;
 import static platformer.physics.CollisionDetector.isSightClear;
@@ -41,18 +41,17 @@ public abstract class Enemy extends Entity implements DamageSource, Debug<Graphi
     /**
      * Updates the enemy's state.
      *
-     * @param animations The animations for the enemy.
      * @param levelData The level data.
      * @param player The player.
      */
-    public abstract void update(BufferedImage[][] animations, int[][] levelData, Player player);
+    public abstract void update(int[][] levelData, Player player);
 
-    protected void updateAnimation(BufferedImage[][] animations) {
+    protected void updateAnimation() {
         animTick++;
         if (animTick >= animSpeed) {
             animTick = 0;
             animIndex++;
-            if (animIndex >= animations[entityState.ordinal()].length) {
+            if (animIndex >= SpriteManager.getInstance().getAnimFrames(enemyType, entityState)) {
                 finishAnimation();
             }
         }

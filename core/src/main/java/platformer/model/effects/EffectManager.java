@@ -1,6 +1,6 @@
 package platformer.model.effects;
 
-import platformer.animation.Animation;
+import platformer.animation.SpriteManager;
 import platformer.core.Framework;
 import platformer.core.Settings;
 import platformer.model.effects.particles.*;
@@ -56,7 +56,7 @@ public class EffectManager {
             int yPos = rand.nextInt(GAME_HEIGHT - 10) + 10;
             int size = (int)((rand.nextInt(15 - 5) + 5) * SCALE);
             String key = "DefaultParticle";
-            BufferedImage[] images = Animation.getInstance().loadFromSprite(PARTICLE_SHEET, DEFAULT_PARTICLE_FRAMES, 0, size, size, 0, PARTICLE_W, PARTICLE_H);
+            BufferedImage[] images = SpriteManager.getInstance().loadFromSprite(PARTICLE_SHEET, DEFAULT_PARTICLE_FRAMES, 0, size, size, 0, PARTICLE_W, PARTICLE_H);
             AmbientParticleType ambientParticleType = ambientParticleFactory.getParticleImage(key, images);
             fireflies[i] = new AmbientParticle(ambientParticleType, size, xPos, yPos);
         }
@@ -66,7 +66,7 @@ public class EffectManager {
     private SmokeParticle[] loadSmokeParticles() {
         int smokeCount = PARTICLES_CAP / 2;
         SmokeParticle[] smoke = new SmokeParticle[smokeCount];
-        BufferedImage[] smokeFrames = Animation.getInstance().loadFromSprite(SMOKE_SHEET, 1, 0, SMOKE_W, SMOKE_H, 0, SMOKE_W, SMOKE_H);
+        BufferedImage[] smokeFrames = SpriteManager.getInstance().loadFromSprite(SMOKE_SHEET, 1, 0, SMOKE_W, SMOKE_H, 0, SMOKE_W, SMOKE_H);
         for (int i = 0; i < smoke.length; i++) {
             smoke[i] = new SmokeParticle(smokeFrames);
         }
