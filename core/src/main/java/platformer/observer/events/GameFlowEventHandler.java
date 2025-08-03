@@ -6,17 +6,19 @@ import platformer.core.Framework;
 import platformer.core.GameContext;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
+import platformer.event.events.BossDefeatedEvent;
+import platformer.event.events.FightInitiatedEvent;
+import platformer.model.entities.enemies.EnemyType;
 import platformer.model.levels.Level;
 import platformer.model.levels.Spawn;
 import platformer.observer.EventHandler;
-import platformer.observer.Subscriber;
 import platformer.state.types.GameState;
 
 import java.awt.*;
 
 import static platformer.constants.Constants.TILES_SIZE;
 
-public class GameFlowEventHandler implements EventHandler, Subscriber {
+public class GameFlowEventHandler implements EventHandler {
 
     private final GameState gameState;
 
@@ -24,12 +26,22 @@ public class GameFlowEventHandler implements EventHandler, Subscriber {
         this.gameState = context.getGameState();
     }
 
-    @Override
-    public <T> void update(T... o) {
-        if (o.length < 2 || !(o[0] instanceof String eventType) || !(o[1] instanceof String target)) return;
+    /**
+     * Listens for the start of a major fight and triggers the appropriate level transition.
+     *
+     * @param event The event containing the ID of the boss.
+     */
+    public void onFightInitiated(FightInitiatedEvent event) {
+        if (event.bossId().equals("RORIC")) startRoricFight();
+    }
 
-        if ("START_FIGHT".equals(eventType) && "RORIC".equals(target)) startRoricFight();
-        else if ("FIGHT_WON".equals(eventType) && "RORIC".equals(target)) returnFromArena();
+    /**
+     * Handles the event when a boss is defeated.
+     *
+     * @param event The event containing the defeated boss.
+     */
+    public void onBossDefeated(BossDefeatedEvent event) {
+        if (event.boss().getEnemyType() == EnemyType.RORIC) returnFromArena();
     }
 
     private void startRoricFight() {

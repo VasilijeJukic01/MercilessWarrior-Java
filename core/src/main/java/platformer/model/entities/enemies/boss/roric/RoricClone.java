@@ -2,31 +2,27 @@ package platformer.model.entities.enemies.boss.roric;
 
 import platformer.animation.Anim;
 import platformer.animation.SpriteManager;
+import platformer.event.EventBus;
+import platformer.event.events.roric.RoricCloneEvent;
 import platformer.model.entities.Direction;
 import platformer.model.entities.enemies.EnemyManager;
 import platformer.model.entities.enemies.boss.Roric;
 import platformer.model.entities.player.Player;
 import platformer.model.projectiles.ProjectileManager;
 import platformer.model.spells.SpellManager;
-import platformer.observer.Publisher;
-import platformer.observer.Subscriber;
 import platformer.ui.overlays.hud.BossInterface;
 
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.List;
 
 
 /**
  * A temporary clone of Roric used for a special attack. It has limited AI and is designed to perform one action before disappearing.
  */
-public class RoricClone extends Roric implements Publisher {
+public class RoricClone extends Roric {
 
     private boolean attackStarted = false;
     private int shotCounter = 0;
     private static final int SHOTS_TO_FIRE = 2;
-
-    private final List<Subscriber> subscribers = new ArrayList<>();
 
     public RoricClone(int xPos, int yPos) {
         super(xPos, yPos);
@@ -73,7 +69,7 @@ public class RoricClone extends Roric implements Publisher {
             if (shotCounter < SHOTS_TO_FIRE) setAnimIndex(0);
             else {
                 this.alive = false;
-                notify("RORIC_CLONE_DESPAWN", new Point((int)getHitBox().getCenterX(), (int)getHitBox().getCenterY()));
+                EventBus.getInstance().publish(new RoricCloneEvent(new Point((int)getHitBox().getCenterX(), (int)getHitBox().getCenterY())));
             }
         }
         else this.alive = false;
@@ -88,25 +84,6 @@ public class RoricClone extends Roric implements Publisher {
             if (animIndex >= SpriteManager.getInstance().getAnimFrames(getEnemyType(), entityState)) {
                 this.finishAnimation();
             }
-        }
-    }
-
-    @Override
-    public void addSubscriber(Subscriber s) {
-        if (s != null && !subscribers.contains(s)) {
-            subscribers.add(s);
-        }
-    }
-
-    @Override
-    public void removeSubscriber(Subscriber s) {
-        subscribers.remove(s);
-    }
-
-    @Override
-    public <T> void notify(T... o) {
-        for (Subscriber s : subscribers) {
-            s.update(o);
         }
     }
 

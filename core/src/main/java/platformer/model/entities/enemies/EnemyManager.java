@@ -22,9 +22,6 @@ import platformer.model.inventory.InventoryBonus;
 import platformer.model.levels.Level;
 import platformer.model.perks.PerksBonus;
 import platformer.model.spells.Flame;
-import platformer.observer.EventHandler;
-import platformer.observer.Subscriber;
-import platformer.observer.events.RoricEventHandler;
 import platformer.state.types.GameState;
 import platformer.utils.CollectionUtils;
 
@@ -68,7 +65,6 @@ public class EnemyManager {
     public void loadEnemies(Level level) {
         this.enemies = level.getEnemiesMap();
         reset();
-        getEnemies(Roric.class).forEach(roric -> roric.addSubscriber(findHandler(RoricEventHandler.class)));
     }
 
     // Render
@@ -383,8 +379,6 @@ public class EnemyManager {
         Player player = gameState.getPlayer();
         RoricClone clone = new RoricClone(spawnX, spawnY);
         clone.aimAtPlayer(player);
-        Subscriber handler = findHandler(RoricEventHandler.class);
-        if (handler != null) clone.addSubscriber(handler);
         roricClones.add(clone);
     }
 
@@ -420,14 +414,6 @@ public class EnemyManager {
                 .filter(enemyType::isInstance)
                 .map(enemyType::cast)
                 .collect(Collectors.toList());
-    }
-
-    // Emit Events
-    private Subscriber findHandler(Class<? extends EventHandler> handlerClass) {
-        for (Object sub : gameState.getEventHandlers()) {
-            if (handlerClass.isInstance(sub)) return (Subscriber) sub;
-        }
-        return null;
     }
 
     public void injectScreenEffectsManager(ScreenEffectsManager screenEffectsManager) {

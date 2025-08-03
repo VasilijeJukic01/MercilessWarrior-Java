@@ -1,19 +1,20 @@
 package platformer.observer.events;
 
 import platformer.core.GameContext;
+import platformer.event.events.roric.RoricCloneEvent;
+import platformer.event.events.roric.RoricEffectEvent;
+import platformer.event.events.roric.RoricPhaseChangeEvent;
+import platformer.event.events.roric.RoricTeleportEvent;
 import platformer.model.effects.EffectManager;
 import platformer.model.effects.ScreenEffectsManager;
 import platformer.model.effects.particles.DustType;
 import platformer.model.entities.enemies.boss.Roric;
 import platformer.model.entities.enemies.boss.roric.RoricPhaseManager;
 import platformer.observer.EventHandler;
-import platformer.observer.Publisher;
 import platformer.observer.Subscriber;
 import platformer.state.types.GameState;
 
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 
 /**
@@ -33,7 +34,7 @@ import java.util.Random;
  * @see Subscriber
  * @see EventHandler
  */
-public class RoricEventHandler implements EventHandler, Subscriber, Publisher {
+public class RoricEventHandler implements EventHandler {
 
     private final GameState gameState;
     private final ScreenEffectsManager screenEffectsManager;
@@ -57,80 +58,41 @@ public class RoricEventHandler implements EventHandler, Subscriber, Publisher {
     private boolean isPaused = false;
     private long pauseStartTime = 0;
 
-    private final List<Subscriber> subscribers = new ArrayList<>();
-
     public RoricEventHandler(GameContext context) {
         this.gameState = context.getGameState();
         this.effectManager = context.getEffectManager();
         this.screenEffectsManager = context.getScreenEffectsManager();
     }
 
-    /**
-     * Receives event notifications from the Roric boss.
-     * This method is triggered when Roric calls its {@code notify()} method.
-     *
-     * @param o An array of objects, typically a String event type followed by data.
-     * @param <T> The type of the event parameters.
-     */
-    @Override
-    public <T> void update(T... o) {
-        if (o == null || !(o[0] instanceof String)) return;
-        String eventType = (String) o[0];
+    public void onPhaseChange(RoricPhaseChangeEvent event) {
+        Roric roric = gameState.getEnemyManager().getRoricInstance();
+        if (roric != null) roric.getAttackHandler().interruptAndIdle();
+        handlePhaseChange(event.newPhase());
+    }
 
-        switch (eventType) {
-            case "START_FIGHT":
-                if (o.length > 1 && o[1] instanceof Long) {
-                    gameState.getRainManager().startRaining();
-                    this.fightStartTime = (long) o[1];
-                }
-                break;
-            case "PHASE_CHANGE":
-                if (o[1] instanceof RoricPhaseManager.RoricPhase newPhase) {
-                    Roric roric = gameState.getEnemyManager().getRoricInstance();
-                    if (roric != null) roric.getAttackHandler().interruptAndIdle();
-                    handlePhaseChange(newPhase);
-                }
-                break;
-            case "SPAWN_RANDOM_SKYBEAM":
-                gameState.getSpellManager().spawnSkyBeam();
-                break;
-            case "FIRE_FAST_ARROW":
-                if (o[1] instanceof Roric r) {
-                    double speedMultiplier = r.getPhaseManager().getArrowSpeedMultiplier();
-                    gameState.getProjectileManager().activateRoricArrow(r, speedMultiplier);
-                }
-                break;
-            case "JUMPED":
-                if (o[1] instanceof Roric r) handleJumpEvent(r);
-                break;
-            case "LANDED":
-                if (o[1] instanceof Roric r) handleLandEvent(r);
-                break;
-            case "REPOSITIONING":
-                if (o[1] instanceof Roric r) handleRepositioningEvent(r);
-                break;
-            case "RORIC_TELEPORT_OUT":
-                if (o[1] instanceof Point loc) handleRoricTeleportOut(loc);
-                break;
-            case "RORIC_TELEPORT_IN":
-                if (o[1] instanceof Point loc) handleRoricTeleportIn(loc);
-                break;
-            case "BEAM_CHARGE_START":
-                if (o[1] instanceof Roric r) handleBeamChargeStart(r);
-                break;
-            case "BEAM_CHARGE_END":
-                if (o[1] instanceof Roric r) handleBeamChargeEnd(r);
-                break;
-            case "CELESTIAL_RAIN_START":
-                if (o[1] instanceof Roric r) handleCelestialRainStart(r);
-                break;
-            case "CELESTIAL_RAIN_END":
-                if (o[1] instanceof Roric r) handleCelestialRainEnd(r);
-                break;
-            case "RORIC_CLONE_SPAWN":
-            case "RORIC_CLONE_DESPAWN":
-                if (o[1] instanceof Point loc) handleCloneSpawn(loc);
-                break;
+    public void onRoricTeleport(RoricTeleportEvent event) {
+        if (event.isTeleportIn()) {
+            effectManager.spawnDustParticles(event.location().getX(), event.location().getY(), 40, DustType.RORIC_TELEPORT_IN, 0, null);
+        }
+        else {
+            effectManager.spawnDustParticles(event.location().getX(), event.location().getY(), 50, DustType.RORIC_TELEPORT_OUT, 0, null);
+        }
+    }
+
+    public void onRoricClone(RoricCloneEvent event) {
+        effectManager.spawnDustParticles(event.location().getX(), event.location().getY(), 50, DustType.RORIC_SUMMON, 0, null);
+    }
+
+    public void onRoricEffect(RoricEffectEvent event) {
+        Roric roric = event.roric();
+        switch (event.effectType()) {
+            case JUMP -> handleJumpEvent(roric);
+            case LAND -> handleLandEvent(roric);
+            case REPOSITIONING -> handleRepositioningEvent(roric);
+            case BEAM_CHARGE_START -> handleBeamChargeStart(roric);
+            case BEAM_CHARGE_END -> handleBeamChargeEnd(roric);
+            case CELESTIAL_RAIN_START -> handleCelestialRainStart(roric);
+            case CELESTIAL_RAIN_END -> handleCelestialRainEnd(roric);
         }
     }
 
@@ -171,7 +133,6 @@ public class RoricEventHandler implements EventHandler, Subscriber, Publisher {
         if (newPhase == RoricPhaseManager.RoricPhase.VICTORY) {
             Roric roric = gameState.getEnemyManager().getRoricInstance();
             if (roric != null) roric.setAlive(false);
-            notify("FIGHT_WON", "RORIC");
         }
         if (celestialAuraActive && newPhase != RoricPhaseManager.RoricPhase.STORM) {
             handleCelestialRainEnd(gameState.getEnemyManager().getRoricInstance());
@@ -206,14 +167,6 @@ public class RoricEventHandler implements EventHandler, Subscriber, Publisher {
         effectManager.spawnDustParticles(roric.getHitBox().getCenterX() + xOffset, roric.getHitBox().getCenterY() + yOffset, 2, DustType.ETHEREAL_DASH, 0, roric);
     }
 
-    private void handleRoricTeleportOut(Point location) {
-        effectManager.spawnDustParticles(location.getX(), location.getY(), 50, DustType.RORIC_TELEPORT_OUT, 0, null);
-    }
-
-    private void handleRoricTeleportIn(Point location) {
-        effectManager.spawnDustParticles(location.getX(), location.getY(), 40, DustType.RORIC_TELEPORT_IN, 0, null);
-    }
-
     private void handleBeamChargeStart(Roric roric) {
         effectManager.spawnDustParticles(roric.getHitBox().getCenterX(), roric.getHitBox().getCenterY(), 60, DustType.RORIC_BEAM_CHARGE, 0, roric);
     }
@@ -231,10 +184,6 @@ public class RoricEventHandler implements EventHandler, Subscriber, Publisher {
         this.celestialAuraActive = false;
         effectManager.clearParticlesByType(roric, DustType.CELESTIAL_AURA);
         this.roricInstance = null;
-    }
-
-    private void handleCloneSpawn(Point location) {
-        effectManager.spawnDustParticles(location.getX(), location.getY(), 50, DustType.RORIC_SUMMON, 0, null);
     }
 
     @Override
@@ -267,25 +216,5 @@ public class RoricEventHandler implements EventHandler, Subscriber, Publisher {
         isPaused = false;
         pauseStartTime = 0;
         gameState.getLightManager().releaseAmbientDarkness();
-    }
-
-    // Observer
-    @Override
-    public void addSubscriber(Subscriber s) {
-        if (s != null && !subscribers.contains(s)) {
-            subscribers.add(s);
-        }
-    }
-
-    @Override
-    public void removeSubscriber(Subscriber s) {
-        subscribers.remove(s);
-    }
-
-    @Override
-    public <T> void notify(T... o) {
-        for (Subscriber s : subscribers) {
-            s.update(o);
-        }
     }
 }

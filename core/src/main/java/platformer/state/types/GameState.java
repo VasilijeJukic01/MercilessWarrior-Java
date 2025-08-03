@@ -11,14 +11,15 @@ import platformer.core.GameContext;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
 import platformer.event.EventBus;
-import platformer.event.events.CrateDestroyedEvent;
-import platformer.event.events.EnemyDefeatedEvent;
-import platformer.event.events.ItemPurchasedEvent;
-import platformer.event.events.PerkUnlockedEvent;
+import platformer.event.events.*;
 import platformer.event.events.effects.ScreenShakeEvent;
 import platformer.event.events.lancer.LancerAuraEvent;
 import platformer.event.events.lancer.LancerDashSlashEvent;
 import platformer.event.events.lancer.LancerTeleportEvent;
+import platformer.event.events.roric.RoricCloneEvent;
+import platformer.event.events.roric.RoricEffectEvent;
+import platformer.event.events.roric.RoricPhaseChangeEvent;
+import platformer.event.events.roric.RoricTeleportEvent;
 import platformer.event.listeners.QuestSystemListener;
 import platformer.model.effects.EffectManager;
 import platformer.model.effects.RainManager;
@@ -134,7 +135,6 @@ public class GameState extends AbstractState implements State {
         this.getSpellManager().lateInit();
 
         initEventListeners();
-        initEventHandlers();
 
         this.getObjectManager().loadObjects(this.getLevelManager().getCurrentLevel());
         loadFromDatabase();
@@ -146,6 +146,7 @@ public class GameState extends AbstractState implements State {
      */
     private void initEventListeners() {
         EventBus eventBus = EventBus.getInstance();
+
         QuestSystemListener questListener = new QuestSystemListener(questManager);
         eventBus.register(EnemyDefeatedEvent.class, questListener::onEnemyDefeated);
         eventBus.register(CrateDestroyedEvent.class, questListener::onCrateDestroyed);
@@ -157,16 +158,19 @@ public class GameState extends AbstractState implements State {
         eventBus.register(LancerAuraEvent.class, lancerHandler::onLancerAura);
         eventBus.register(LancerDashSlashEvent.class, lancerHandler::onLancerDashSlash);
         eventBus.register(ScreenShakeEvent.class, lancerHandler::onScreenShake);
-    }
 
-    private void initEventHandlers() {
-        GameFlowEventHandler gameFlowManager = new GameFlowEventHandler(context);
         RoricEventHandler roricHandler = new RoricEventHandler(context);
+        eventBus.register(RoricPhaseChangeEvent.class, roricHandler::onPhaseChange);
+        eventBus.register(RoricTeleportEvent.class, roricHandler::onRoricTeleport);
+        eventBus.register(RoricCloneEvent.class, roricHandler::onRoricClone);
+        eventBus.register(RoricEffectEvent.class, roricHandler::onRoricEffect);
+
+        GameFlowEventHandler gameFlowManager = new GameFlowEventHandler(context);
+        eventBus.register(FightInitiatedEvent.class, gameFlowManager::onFightInitiated);
+        eventBus.register(BossDefeatedEvent.class, gameFlowManager::onBossDefeated);
+
         this.eventHandlers.add(roricHandler);
         this.eventHandlers.add(gameFlowManager);
-
-        dialogueManager.addSubscriber(gameFlowManager);
-        roricHandler.addSubscriber(gameFlowManager);
     }
 
     private void loadFromDatabase() {

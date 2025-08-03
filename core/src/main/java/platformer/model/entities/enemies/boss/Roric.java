@@ -5,6 +5,9 @@ import platformer.animation.SpriteManager;
 import platformer.audio.Audio;
 import platformer.audio.types.Song;
 import platformer.debug.DebugSettings;
+import platformer.event.EventBus;
+import platformer.event.events.roric.RoricEffectEvent;
+import platformer.event.events.roric.RoricPhaseChangeEvent;
 import platformer.model.entities.Cooldown;
 import platformer.model.entities.Direction;
 import platformer.model.entities.enemies.Enemy;
@@ -16,14 +19,10 @@ import platformer.model.entities.enemies.boss.roric.RoricState;
 import platformer.model.entities.player.Player;
 import platformer.model.projectiles.ProjectileManager;
 import platformer.model.spells.SpellManager;
-import platformer.observer.Publisher;
-import platformer.observer.Subscriber;
 import platformer.ui.overlays.hud.BossInterface;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
-import java.util.ArrayList;
-import java.util.List;
 
 import static platformer.constants.Constants.*;
 import static platformer.physics.CollisionDetector.*;
@@ -40,7 +39,7 @@ import static platformer.physics.CollisionDetector.*;
  * @see RoricAttackHandler
  * @see RoricState
  */
-public class Roric extends Enemy implements Publisher {
+public class Roric extends Enemy {
 
     private final RoricAttackHandler attackHandler;
     private final RoricPhaseManager phaseManager;
@@ -63,8 +62,6 @@ public class Roric extends Enemy implements Publisher {
     // Offsets
     private final int attackBoxOffsetX = (int) (40 * SCALE);
     private final int jumpOffsetX = (int) (1.5 * SCALE);
-
-    private static final List<Subscriber> subscribers = new ArrayList<>();
 
     public Roric(int xPos, int yPos) {
         super(xPos, yPos, RORIC_WIDTH, RORIC_HEIGHT, EnemyType.RORIC, 16);
@@ -111,7 +108,7 @@ public class Roric extends Enemy implements Publisher {
         if (!start && isPlayerCloseForAttack(player)) {
             start = true;
             phaseManager.startFight();
-            notify("START_FIGHT", phaseManager.getFightStartTime());
+            EventBus.getInstance().publish(new RoricPhaseChangeEvent(RoricPhaseManager.RoricPhase.INTRO));
             if (DebugSettings.getInstance().isRoricDebugMode()) {
                 Audio.getInstance().getAudioPlayer().playSong(Song.BOSS_2, DebugSettings.getInstance().getRoricFightStartOffsetMs());
             }
@@ -265,7 +262,7 @@ public class Roric extends Enemy implements Publisher {
         int spaceToRight = levelData.length - currentTileX;
         this.xSpeed = (spaceToRight > currentTileX) ? jumpOffsetX : -jumpOffsetX;
         setDirection(xSpeed > 0 ? Direction.RIGHT : Direction.LEFT);
-        notify("JUMPED", this);
+        EventBus.getInstance().publish(new RoricEffectEvent(this, RoricEffectEvent.RoricEffectType.JUMP));
     }
 
     /**
@@ -315,26 +312,6 @@ public class Roric extends Enemy implements Publisher {
     @Override
     public void attackBoxRenderer(Graphics g, int xLevelOffset, int yLevelOffset) {
         if (isVisible) renderAttackBox(g, xLevelOffset, yLevelOffset);
-    }
-
-    // Observer
-    @Override
-    public void addSubscriber(Subscriber s) {
-        if (s != null && !subscribers.contains(s)) {
-            subscribers.add(s);
-        }
-    }
-
-    @Override
-    public void removeSubscriber(Subscriber s) {
-        subscribers.remove(s);
-    }
-
-    @Override
-    public <T> void notify(T... o) {
-        for (Subscriber s : subscribers) {
-            s.update(o);
-        }
     }
 
     // Getters & Setters
