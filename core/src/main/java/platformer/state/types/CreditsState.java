@@ -1,6 +1,9 @@
 package platformer.state.types;
 
+import com.google.gson.reflect.TypeToken;
 import platformer.core.Game;
+import platformer.model.credits.CreditEntry;
+import platformer.model.credits.CreditSection;
 import platformer.state.AbstractState;
 import platformer.state.State;
 import platformer.ui.buttons.ButtonType;
@@ -13,9 +16,14 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
+import java.io.InputStreamReader;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
-import static platformer.constants.Constants.CRE_BTN_SIZE;
-import static platformer.constants.Constants.FONT_MEDIUM;
+import static platformer.constants.Constants.*;
+import static platformer.constants.FilePaths.CREDITS_PATH;
 import static platformer.constants.FilePaths.CREDITS_TXT;
 import static platformer.constants.UI.*;
 
@@ -28,10 +36,13 @@ public class CreditsState extends AbstractState implements State {
     private BufferedImage creditsText;
     private SmallButton exitBtn;
 
+    private List<CreditSection> sections;
+
     public CreditsState(Game game) {
         super(game);
         loadImages();
         loadButtons();
+        loadCreditsData();
     }
 
     private void loadImages() {
@@ -40,6 +51,15 @@ public class CreditsState extends AbstractState implements State {
 
     private void loadButtons() {
         this.exitBtn = new SmallButton(EXIT_BTN_X, EXIT_BTN_Y, CRE_BTN_SIZE, CRE_BTN_SIZE, ButtonType.EXIT);
+    }
+
+    private void loadCreditsData() {
+        try (InputStreamReader reader = new InputStreamReader(Objects.requireNonNull(getClass().getResourceAsStream(CREDITS_PATH)))) {
+            Type listType = new TypeToken<List<CreditSection>>() {}.getType();
+            this.sections = new com.google.gson.Gson().fromJson(reader, listType);
+        } catch (Exception e) {
+            this.sections = new ArrayList<>();
+        }
     }
 
     // Core
@@ -58,31 +78,23 @@ public class CreditsState extends AbstractState implements State {
     }
 
     private void renderInformation(Graphics g) {
-        g.setFont(new Font("Arial", Font.BOLD, FONT_MEDIUM));
+        int yPos = CREDITS_POSITION_Y;
 
-        // Game Design & Programming
-        g.setColor(Color.WHITE);
-        g.drawString("Game Design & Programming: ", CREDITS_POSITION_X, CREDITS_POSITION_Y);
-        g.setColor(CREDITS_COLOR);
-        g.drawString("Vaske", CREDITS_POSITION_X + g.getFontMetrics().stringWidth("Game Design & Programming: "), CREDITS_POSITION_Y);
+        for (CreditSection section : sections) {
+            g.setFont(new Font("Arial", Font.BOLD, FONT_MEDIUM + 2));
+            g.setColor(Color.WHITE);
+            g.drawString(section.section() + ":", CREDITS_POSITION_X, yPos);
+            yPos += CREDITS_SPACING;
 
-        // Art
-        g.setColor(Color.WHITE);
-        g.drawString("Art: ", CREDITS_POSITION_X, CREDITS_POSITION_Y + CREDITS_SPACING);
-        g.setColor(CREDITS_COLOR);
-        g.drawString("Dreamir, Maaot, brullov, CreativeKind", CREDITS_POSITION_X + g.getFontMetrics().stringWidth("Art: "), CREDITS_POSITION_Y + CREDITS_SPACING);
-
-        // Music
-        g.setColor(Color.WHITE);
-        g.drawString("Music: ", CREDITS_POSITION_X, CREDITS_POSITION_Y + CREDITS_SPACING * 2);
-        g.setColor(CREDITS_COLOR);
-        g.drawString("Mattashi", CREDITS_POSITION_X + g.getFontMetrics().stringWidth("Music: "), CREDITS_POSITION_Y + CREDITS_SPACING * 2);
-
-        // Special Thanks
-        g.setColor(Color.WHITE);
-        g.drawString("Special Thanks: ", CREDITS_POSITION_X, CREDITS_POSITION_Y + CREDITS_SPACING * 3);
-        g.setColor(CREDITS_COLOR);
-        g.drawString("Danilo, Kacusa", CREDITS_POSITION_X + g.getFontMetrics().stringWidth("Special Thanks: "), CREDITS_POSITION_Y + CREDITS_SPACING * 3);
+            g.setFont(new Font("Arial", Font.PLAIN, FONT_MEDIUM));
+            g.setColor(CREDITS_COLOR);
+            for (CreditEntry entry : section.entries()) {
+                String text = entry.role().isEmpty() ? entry.name() : entry.role() + " " + entry.name();
+                g.drawString(text, CREDITS_POSITION_X + (int)(10 * SCALE), yPos);
+                yPos += CREDITS_SPACING;
+            }
+            yPos += CREDITS_SPACING/2;
+        }
     }
 
     @Override

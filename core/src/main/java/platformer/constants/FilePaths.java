@@ -139,4 +139,7 @@ public final class FilePaths {
     // Tutorial
     public static final String TUTORIAL_BLOCK_PATH = "/images/tutorial/Tutorial1.png";
 
+    // Credits
+    public static final String CREDITS_PATH = "/credits.json";
+
 }

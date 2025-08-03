@@ -491,7 +491,7 @@ public final class UI {
     public static final int CREDITS_POSITION_Y = scale(150);
     public static final int CREDITS_SPACING = scale(20);
 
-    public static final Color CREDITS_COLOR = new Color(20, 103, 59, 255);
+    public static final Color CREDITS_COLOR = new Color(144, 9, 97);
 
     // Tutorial UI
     public static final int TUTORIAL_IMAGE_X = scale(150);
