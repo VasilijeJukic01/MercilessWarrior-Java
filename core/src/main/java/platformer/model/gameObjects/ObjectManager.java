@@ -16,7 +16,7 @@ import platformer.model.levels.Level;
 import platformer.model.quests.QuestManager;
 import platformer.observer.Publisher;
 import platformer.observer.Subscriber;
-import platformer.state.GameState;
+import platformer.state.types.GameState;
 import platformer.utils.CollectionUtils;
 
 import java.awt.*;

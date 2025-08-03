@@ -10,7 +10,7 @@ import platformer.model.levels.Level;
 import platformer.model.levels.Spawn;
 import platformer.observer.EventHandler;
 import platformer.observer.Subscriber;
-import platformer.state.GameState;
+import platformer.state.types.GameState;
 
 import java.awt.*;
 

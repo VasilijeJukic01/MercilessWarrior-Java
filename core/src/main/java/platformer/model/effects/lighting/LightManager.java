@@ -5,7 +5,7 @@ import platformer.model.entities.enemies.Enemy;
 import platformer.model.gameObjects.GameObject;
 import platformer.model.gameObjects.objects.*;
 import platformer.model.gameObjects.objects.Container;
-import platformer.state.GameState;
+import platformer.state.types.GameState;
 import platformer.utils.ImageUtils;
 
 import java.awt.*;

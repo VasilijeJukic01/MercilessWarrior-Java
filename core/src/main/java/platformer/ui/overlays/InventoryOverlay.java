@@ -6,7 +6,7 @@ import platformer.model.inventory.Inventory;
 import platformer.model.inventory.InventoryBonus;
 import platformer.model.inventory.InventoryItem;
 import platformer.model.inventory.ItemData;
-import platformer.state.GameState;
+import platformer.state.types.GameState;
 import platformer.ui.buttons.AbstractButton;
 import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.MediumButton;

@@ -1,7 +1,7 @@
 package platformer.ui.overlays;
 
 import platformer.model.minimap.MinimapIconType;
-import platformer.state.GameState;
+import platformer.state.types.GameState;
 import platformer.ui.overlays.controller.MinimapViewController;
 import platformer.ui.overlays.render.MinimapRenderer;
 

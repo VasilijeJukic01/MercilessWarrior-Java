@@ -1,9 +1,11 @@
-package platformer.state;
+package platformer.state.types;
 
 import platformer.audio.Audio;
 import platformer.core.Game;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
+import platformer.state.AbstractState;
+import platformer.state.State;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;

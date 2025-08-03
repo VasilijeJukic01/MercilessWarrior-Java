@@ -5,7 +5,7 @@ import platformer.model.entities.Direction;
 import platformer.model.entities.enemies.boss.Roric;
 import platformer.model.entities.player.Player;
 import platformer.model.levels.Level;
-import platformer.state.GameState;
+import platformer.state.types.GameState;
 import platformer.utils.ImageUtils;
 
 import java.awt.*;

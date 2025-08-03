@@ -28,7 +28,7 @@ import platformer.observer.Publisher;
 import platformer.observer.Subscriber;
 import platformer.observer.events.LancerEventHandler;
 import platformer.observer.events.RoricEventHandler;
-import platformer.state.GameState;
+import platformer.state.types.GameState;
 import platformer.utils.CollectionUtils;
 
 import java.awt.*;

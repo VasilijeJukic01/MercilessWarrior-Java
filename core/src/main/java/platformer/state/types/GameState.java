@@ -1,4 +1,4 @@
-package platformer.state;
+package platformer.state.types;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -33,6 +33,8 @@ import platformer.observer.events.GameFlowEventHandler;
 import platformer.observer.events.LancerEventHandler;
 import platformer.observer.events.RoricEventHandler;
 import platformer.model.dialogue.DialogueManager;
+import platformer.state.AbstractState;
+import platformer.state.State;
 import platformer.ui.overlays.OverlayManager;
 import platformer.ui.overlays.hud.BossInterface;
 import platformer.view.Camera;

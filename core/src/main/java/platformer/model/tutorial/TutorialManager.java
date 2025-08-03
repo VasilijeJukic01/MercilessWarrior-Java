@@ -1,7 +1,7 @@
 package platformer.model.tutorial;
 
-import platformer.state.GameState;
-import platformer.state.PlayingState;
+import platformer.state.types.GameState;
+import platformer.state.types.PlayingState;
 
 import java.util.Arrays;
 import java.util.HashMap;

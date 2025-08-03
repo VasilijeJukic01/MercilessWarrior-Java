@@ -9,7 +9,7 @@ import platformer.model.entities.enemies.boss.roric.RoricPhaseManager;
 import platformer.observer.EventHandler;
 import platformer.observer.Publisher;
 import platformer.observer.Subscriber;
-import platformer.state.GameState;
+import platformer.state.types.GameState;
 
 import java.awt.*;
 import java.util.ArrayList;

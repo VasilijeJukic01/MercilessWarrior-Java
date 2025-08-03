@@ -11,8 +11,8 @@ import platformer.model.gameObjects.npc.DialogueBehavior;
 import platformer.model.gameObjects.npc.Npc;
 import platformer.observer.Publisher;
 import platformer.observer.Subscriber;
-import platformer.state.GameState;
-import platformer.state.PlayingState;
+import platformer.state.types.GameState;
+import platformer.state.types.PlayingState;
 import platformer.ui.overlays.DialogueOverlay;
 
 import java.io.BufferedReader;

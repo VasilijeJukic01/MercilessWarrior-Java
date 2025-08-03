@@ -10,8 +10,8 @@ import platformer.model.entities.player.Player;
 import platformer.model.entities.player.PlayerAction;
 import platformer.model.gameObjects.GameObject;
 import platformer.model.gameObjects.objects.Herb;
-import platformer.state.GameState;
-import platformer.state.PlayingState;
+import platformer.state.types.GameState;
+import platformer.state.types.PlayingState;
 
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;

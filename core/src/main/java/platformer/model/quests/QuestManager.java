@@ -6,7 +6,7 @@ import lombok.Getter;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
 import platformer.observer.Subscriber;
-import platformer.state.GameState;
+import platformer.state.types.GameState;
 import platformer.ui.components.slots.QuestSlot;
 
 import java.io.IOException;

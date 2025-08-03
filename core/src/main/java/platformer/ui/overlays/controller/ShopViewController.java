@@ -12,7 +12,7 @@ import platformer.model.inventory.ItemData;
 import platformer.model.inventory.ShopItem;
 import platformer.model.quests.ObjectiveTarget;
 import platformer.model.quests.QuestObjectiveType;
-import platformer.state.GameState;
+import platformer.state.types.GameState;
 import platformer.ui.buttons.AbstractButton;
 import platformer.ui.buttons.ButtonType;
 import platformer.ui.overlays.ShopOverlay;

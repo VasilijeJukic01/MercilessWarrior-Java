@@ -1,6 +1,6 @@
 package platformer.ui.overlays.controller;
 
-import platformer.state.GameState;
+import platformer.state.types.GameState;
 import platformer.ui.components.slots.QuestSlot;
 import platformer.ui.buttons.AbstractButton;
 import platformer.ui.buttons.ButtonType;

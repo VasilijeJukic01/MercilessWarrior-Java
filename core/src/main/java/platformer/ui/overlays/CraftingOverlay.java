@@ -2,7 +2,7 @@ package platformer.ui.overlays;
 
 import platformer.animation.SpriteManager;
 import platformer.model.inventory.*;
-import platformer.state.GameState;
+import platformer.state.types.GameState;
 import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.MediumButton;
 import platformer.ui.buttons.SmallButton;

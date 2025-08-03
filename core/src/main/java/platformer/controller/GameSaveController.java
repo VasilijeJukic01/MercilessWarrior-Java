@@ -7,7 +7,7 @@ import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
 import platformer.model.levels.LevelManager;
 import platformer.model.levels.Spawn;
-import platformer.state.GameState;
+import platformer.state.types.GameState;
 import platformer.state.State;
 import platformer.ui.components.slots.GameSlot;
 

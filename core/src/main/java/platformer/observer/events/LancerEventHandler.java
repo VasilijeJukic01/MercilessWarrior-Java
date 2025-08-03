@@ -7,7 +7,7 @@ import platformer.model.effects.particles.DustType;
 import platformer.model.entities.enemies.boss.Lancer;
 import platformer.observer.EventHandler;
 import platformer.observer.Subscriber;
-import platformer.state.GameState;
+import platformer.state.types.GameState;
 
 import java.awt.*;
 import java.awt.geom.Point2D;

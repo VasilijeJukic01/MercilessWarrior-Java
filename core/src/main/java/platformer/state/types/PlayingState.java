@@ -1,4 +1,4 @@
-package platformer.state;
+package platformer.state.types;
 
 /**
  * Different states that the game can be in while it is being played.

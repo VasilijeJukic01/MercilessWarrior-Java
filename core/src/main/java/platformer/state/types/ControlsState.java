@@ -1,6 +1,8 @@
-package platformer.state;
+package platformer.state.types;
 
 import platformer.core.Game;
+import platformer.state.AbstractState;
+import platformer.state.State;
 import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.SmallButton;
 import platformer.ui.options.ControlsPanel;

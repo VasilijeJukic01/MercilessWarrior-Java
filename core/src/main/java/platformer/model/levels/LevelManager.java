@@ -5,7 +5,7 @@ import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
 import platformer.model.levels.metadata.LevelMetadata;
 import platformer.model.levels.metadata.ObjectMetadata;
-import platformer.state.GameState;
+import platformer.state.types.GameState;
 import platformer.utils.ImageUtils;
 
 import java.awt.*;

@@ -17,7 +17,7 @@ import platformer.model.projectiles.ProjectileManager;
 import platformer.model.quests.QuestManager;
 import platformer.model.spells.SpellManager;
 import platformer.model.tutorial.TutorialManager;
-import platformer.state.GameState;
+import platformer.state.types.GameState;
 
 /**
  * A service provider class that holds references to all major game systems and managers.

@@ -1,6 +1,7 @@
 package platformer.state;
 
 import platformer.core.Game;
+import platformer.state.types.*;
 
 /**
  * This class is managing the different states of the game.

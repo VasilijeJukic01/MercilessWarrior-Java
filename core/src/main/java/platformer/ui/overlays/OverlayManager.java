@@ -1,7 +1,7 @@
 package platformer.ui.overlays;
 
-import platformer.state.GameState;
-import platformer.state.PlayingState;
+import platformer.state.types.GameState;
+import platformer.state.types.PlayingState;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;

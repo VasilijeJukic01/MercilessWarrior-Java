@@ -10,7 +10,7 @@ import platformer.core.initializer.GameDataInitializer;
 import platformer.model.BoardItem;
 import platformer.serialization.GameSerializer;
 import platformer.serialization.Serializer;
-import platformer.state.GameState;
+import platformer.state.types.GameState;
 
 import java.util.List;
 

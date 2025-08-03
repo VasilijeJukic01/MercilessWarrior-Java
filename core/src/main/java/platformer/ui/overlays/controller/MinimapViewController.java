@@ -1,7 +1,7 @@
 package platformer.ui.overlays.controller;
 
 import platformer.model.minimap.MinimapIcon;
-import platformer.state.GameState;
+import platformer.state.types.GameState;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;

@@ -3,7 +3,7 @@ package platformer.ui.overlays.controller;
 import platformer.audio.Audio;
 import platformer.audio.types.Sound;
 import platformer.model.perks.Perk;
-import platformer.state.GameState;
+import platformer.state.types.GameState;
 import platformer.ui.buttons.AbstractButton;
 import platformer.ui.overlays.BlacksmithOverlay;
 

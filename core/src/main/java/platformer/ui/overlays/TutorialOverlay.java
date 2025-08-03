@@ -2,7 +2,7 @@ package platformer.ui.overlays;
 
 import platformer.controller.KeyboardController;
 import platformer.core.Framework;
-import platformer.state.GameState;
+import platformer.state.types.GameState;
 import platformer.utils.ImageUtils;
 
 import java.awt.*;

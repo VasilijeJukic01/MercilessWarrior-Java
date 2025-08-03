@@ -13,7 +13,7 @@ import platformer.model.inventory.GameDataCache;
 import platformer.model.inventory.InventoryItem;
 import platformer.model.inventory.ItemData;
 import platformer.model.inventory.ShopItem;
-import platformer.state.GameState;
+import platformer.state.types.GameState;
 
 import java.io.IOException;
 import java.util.List;

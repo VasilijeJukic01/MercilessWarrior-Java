@@ -1,7 +1,7 @@
 package platformer.ui.overlays;
 
 import platformer.model.perks.Perk;
-import platformer.state.GameState;
+import platformer.state.types.GameState;
 import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.MediumButton;
 import platformer.ui.overlays.controller.BlacksmithViewController;
