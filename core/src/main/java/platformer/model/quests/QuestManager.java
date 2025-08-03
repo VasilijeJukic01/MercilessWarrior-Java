@@ -5,7 +5,6 @@ import com.google.gson.reflect.TypeToken;
 import lombok.Getter;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
-import platformer.observer.Subscriber;
 import platformer.state.types.GameState;
 import platformer.ui.components.slots.QuestSlot;
 
@@ -25,7 +24,7 @@ import static platformer.constants.UI.*;
  * It handles quest loading, initializing quest slots, updating quest progress and managing quest events.
  */
 @Getter
-public class QuestManager implements Subscriber {
+public class QuestManager {
 
     private final GameState gameState;
     private List<Quest> allQuests;
@@ -36,12 +35,6 @@ public class QuestManager implements Subscriber {
         this.gameState = gameState;
         loadQuests(QUESTS_PATH);
         initSlots();
-    }
-
-    public void registerObservers() {
-        gameState.getEnemyManager().addSubscriber(this);
-        gameState.getObjectManager().addSubscriber(this);
-        gameState.getPerksManager().addSubscriber(this);
     }
 
     public void loadQuests(String filePath) {
@@ -93,16 +86,13 @@ public class QuestManager implements Subscriber {
     }
 
     /**
-     * Updates the quest progress based on the event.
+     * Updates the progress of active quests based on a game event.
+     * This method is called by dedicated listeners in response to events from the EventBus.
      *
-     * @param o the event parameters
-     * @param <T> the type of the event parameters
+     * @param eventType   The type of objective to update (e.g., KILL, COLLECT).
+     * @param eventTarget The specific target of the objective (e.g., SKELETON, CRATE).
      */
-    @Override
-    @SafeVarargs
-    public final <T> void update(T... o) {
-        if (o.length < 2 || !(o[0] instanceof QuestObjectiveType eventType) || !(o[1] instanceof ObjectiveTarget eventTarget)) return;
-
+    public void updateQuestProgress(QuestObjectiveType eventType, ObjectiveTarget eventTarget) {
         for (QuestSlot slot : new ArrayList<>(slots)) {
             Quest quest = slot.getQuest();
             if (quest.isCompleted() || quest.getObjectives() == null || quest.getObjectives().isEmpty()) continue;

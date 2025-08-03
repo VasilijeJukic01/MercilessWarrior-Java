@@ -10,6 +10,12 @@ import platformer.core.Game;
 import platformer.core.GameContext;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
+import platformer.event.EventBus;
+import platformer.event.events.CrateDestroyedEvent;
+import platformer.event.events.EnemyDefeatedEvent;
+import platformer.event.events.ItemPurchasedEvent;
+import platformer.event.events.PerkUnlockedEvent;
+import platformer.event.listeners.QuestSystemListener;
 import platformer.model.effects.EffectManager;
 import platformer.model.effects.RainManager;
 import platformer.model.effects.ScreenEffectsManager;
@@ -122,12 +128,25 @@ public class GameState extends AbstractState implements State {
         this.getEnemyManager().injectScreenEffectsManager(screenEffectsManager);
         this.getObjectManager().lateInit();
         this.getSpellManager().lateInit();
-        this.questManager.registerObservers();
 
+        initEventListeners();
         initEventHandlers();
 
         this.getObjectManager().loadObjects(this.getLevelManager().getCurrentLevel());
         loadFromDatabase();
+    }
+
+    /**
+     * Creates and registers all event listeners with the EventBus.
+     * This is the central location for wiring up the event-driven systems.
+     */
+    private void initEventListeners() {
+        EventBus eventBus = EventBus.getInstance();
+        QuestSystemListener questListener = new QuestSystemListener(questManager);
+        eventBus.register(EnemyDefeatedEvent.class, questListener::onEnemyDefeated);
+        eventBus.register(CrateDestroyedEvent.class, questListener::onCrateDestroyed);
+        eventBus.register(PerkUnlockedEvent.class, questListener::onPerkUnlocked);
+        eventBus.register(ItemPurchasedEvent.class, questListener::onItemPurchased);
     }
 
     private void initEventHandlers() {

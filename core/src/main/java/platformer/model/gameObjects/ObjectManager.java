@@ -13,9 +13,6 @@ import platformer.model.gameObjects.objects.Container;
 import platformer.model.gameObjects.objects.*;
 import platformer.model.inventory.ShopItem;
 import platformer.model.levels.Level;
-import platformer.model.quests.QuestManager;
-import platformer.observer.Publisher;
-import platformer.observer.Subscriber;
 import platformer.state.types.GameState;
 import platformer.utils.CollectionUtils;
 
@@ -34,7 +31,7 @@ import static platformer.physics.CollisionDetector.canLauncherSeeEntity;
  * It handles the loading, updating, rendering and interactions between game objects and the player.
  */
 @SuppressWarnings({"unchecked", "SameParameterValue"})
-public class ObjectManager implements Publisher {
+public class ObjectManager {
 
     private final GameState gameState;
     private CollisionHandler collisionHandler;
@@ -66,8 +63,6 @@ public class ObjectManager implements Publisher {
 
     private Map<ObjType, List<GameObject>> objectsMap = new HashMap<>();
 
-    private final List<Subscriber> subscribers = new ArrayList<>();
-
     public ObjectManager(GameState gameState) {
         this.gameState = gameState;
     }
@@ -84,7 +79,6 @@ public class ObjectManager implements Publisher {
         level.gatherData();
         this.objectsMap = level.getObjectsMap();
         configureObjects();
-        embedSubscribers();
     }
 
     private void configureObjects() {
@@ -400,28 +394,5 @@ public class ObjectManager implements Publisher {
 
     public ObjectBreakHandler getObjectBreakHandler() {
         return objectBreakHandler;
-    }
-
-    // Observer
-    private void embedSubscribers() {
-        getObjects(Shop.class).forEach(shop -> shop.addSubscriber(gameState.getQuestManager()));
-    }
-
-    @Override
-    public void addSubscriber(Subscriber s) {
-        this.subscribers.add(s);
-    }
-
-    @Override
-    public void removeSubscriber(Subscriber s) {
-        this.subscribers.remove(s);
-    }
-
-    @Override
-    public <T> void notify(T... o) {
-        subscribers.stream()
-                .filter(s -> s instanceof QuestManager)
-                .findFirst()
-                .ifPresent(s -> s.update(o));
     }
 }

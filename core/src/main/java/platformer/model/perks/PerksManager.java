@@ -1,11 +1,8 @@
 package platformer.model.perks;
 
 import platformer.core.Framework;
-import platformer.model.quests.ObjectiveTarget;
-import platformer.model.quests.QuestManager;
-import platformer.model.quests.QuestObjectiveType;
-import platformer.observer.Publisher;
-import platformer.observer.Subscriber;
+import platformer.event.EventBus;
+import platformer.event.events.PerkUnlockedEvent;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -19,10 +16,7 @@ import static platformer.constants.Constants.*;
  * Class that is responsible for managing all the perks in the game.
  * It holds references to all the perks and provides methods for upgrading and unlocking them.
  */
-@SuppressWarnings("unchecked")
-public class PerksManager implements Publisher {
-
-    private static final List<Subscriber> subscribers = new ArrayList<>();
+public class PerksManager {
 
     @FunctionalInterface
     private interface PerkAction {
@@ -127,7 +121,7 @@ public class PerksManager implements Publisher {
                 perk.setUpgraded(true);
                 Framework.getInstance().getAccount().setPerks(getUpgradedPerks());
                 unlockPerk(perk, unlocks, I, J, n, m);
-                notifyQuestManager(perk);
+                EventBus.getInstance().publish(new PerkUnlockedEvent(perk));
                 break;
             }
         }
@@ -186,29 +180,6 @@ public class PerksManager implements Publisher {
                 .filter(Perk::isUpgraded)
                 .map(Perk::getName)
                 .collect(Collectors.toList());
-    }
-
-    private void notifyQuestManager(Perk perk) {
-        if (perk.getName().equals("Strong Arms")) notify(QuestObjectiveType.UPGRADE, ObjectiveTarget.SWORD_UPGRADE);
-    }
-
-    // Observer
-    @Override
-    public void addSubscriber(Subscriber s) {
-        subscribers.add(s);
-    }
-
-    @Override
-    public void removeSubscriber(Subscriber s) {
-        subscribers.remove(s);
-    }
-
-    @Override
-    public <T> void notify(T... o) {
-        subscribers.stream()
-                .filter(s -> s instanceof QuestManager)
-                .findFirst()
-                .ifPresent(s -> s.update(o));
     }
 
     public void reset() {

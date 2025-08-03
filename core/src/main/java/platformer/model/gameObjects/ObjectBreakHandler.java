@@ -3,10 +3,10 @@ package platformer.model.gameObjects;
 import platformer.audio.Audio;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
+import platformer.event.EventBus;
+import platformer.event.events.CrateDestroyedEvent;
 import platformer.model.gameObjects.objects.*;
 import platformer.model.projectiles.Projectile;
-import platformer.model.quests.ObjectiveTarget;
-import platformer.model.quests.QuestObjectiveType;
 import platformer.model.spells.Flame;
 
 import java.awt.geom.Rectangle2D;
@@ -105,7 +105,7 @@ public class ObjectBreakHandler {
         container.setAnimate(true);
         Audio.getInstance().getAudioPlayer().playCrateSound();
         Logger.getInstance().notify("Player breaks container.", Message.NOTIFICATION);
-        objectManager.notify(QuestObjectiveType.COLLECT, ObjectiveTarget.CRATE);
+        EventBus.getInstance().publish(new CrateDestroyedEvent(container));
     }
 
     private void breakContainerByEnemy(Container container) {

@@ -3,6 +3,8 @@ package platformer.model.entities.enemies;
 import platformer.animation.Anim;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
+import platformer.event.EventBus;
+import platformer.event.events.EnemyDefeatedEvent;
 import platformer.model.effects.ScreenEffectsManager;
 import platformer.model.entities.Direction;
 import platformer.model.effects.particles.DustType;
@@ -19,12 +21,8 @@ import platformer.model.projectiles.Projectile;
 import platformer.model.inventory.InventoryBonus;
 import platformer.model.levels.Level;
 import platformer.model.perks.PerksBonus;
-import platformer.model.quests.ObjectiveTarget;
-import platformer.model.quests.QuestManager;
-import platformer.model.quests.QuestObjectiveType;
 import platformer.model.spells.Flame;
 import platformer.observer.EventHandler;
-import platformer.observer.Publisher;
 import platformer.observer.Subscriber;
 import platformer.observer.events.LancerEventHandler;
 import platformer.observer.events.RoricEventHandler;
@@ -43,7 +41,7 @@ import static platformer.constants.Constants.*;
  * Manages all the enemies in the game.
  */
 @SuppressWarnings("unchecked")
-public class EnemyManager implements Publisher {
+public class EnemyManager {
 
     private final GameState gameState;
     private ScreenEffectsManager screenEffectsManager;
@@ -52,8 +50,6 @@ public class EnemyManager implements Publisher {
     private final Map<Class<? extends Enemy>, EnemyRenderer<? extends Enemy>> enemyRenderers = new HashMap<>();
     private final Map<Enemy, Integer> spellHitTimers = new HashMap<>();
     private final List<RoricClone> roricClones = new ArrayList<>();
-
-    private final List<Subscriber> subscribers = new ArrayList<>();
 
     public EnemyManager(GameState gameState) {
         this.gameState = gameState;
@@ -134,22 +130,7 @@ public class EnemyManager implements Publisher {
             gameState.getTutorialManager().activateBlockTutorial();
             player.changeStamina(rand.nextInt(5));
             player.changeExp(rand.nextInt(50)+100);
-            checkForEvent(e);
-        }
-    }
-
-    private void checkForEvent(Enemy e) {
-        switch (e.getEnemyType()) {
-            case SKELETON:
-                notify(QuestObjectiveType.KILL, ObjectiveTarget.SKELETON);
-                break;
-            case GHOUL:
-                notify(QuestObjectiveType.KILL, ObjectiveTarget.GHOUL);
-                break;
-            case LANCER:
-                notify(QuestObjectiveType.KILL, ObjectiveTarget.LANCER);
-                break;
-            default: break;
+            EventBus.getInstance().publish(new EnemyDefeatedEvent(e));
         }
     }
 
@@ -449,24 +430,6 @@ public class EnemyManager implements Publisher {
             if (handlerClass.isInstance(sub)) return (Subscriber) sub;
         }
         return null;
-    }
-
-    @Override
-    public void addSubscriber(Subscriber s) {
-        this.subscribers.add(s);
-    }
-
-    @Override
-    public void removeSubscriber(Subscriber s) {
-        this.subscribers.remove(s);
-    }
-
-    @Override
-    public <T> void notify(T... o) {
-        subscribers.stream()
-                .filter(s -> s instanceof QuestManager)
-                .findFirst()
-                .ifPresent(s -> s.update(o));
     }
 
     public void injectScreenEffectsManager(ScreenEffectsManager screenEffectsManager) {
