@@ -24,7 +24,6 @@ import platformer.model.perks.PerksBonus;
 import platformer.model.spells.Flame;
 import platformer.observer.EventHandler;
 import platformer.observer.Subscriber;
-import platformer.observer.events.LancerEventHandler;
 import platformer.observer.events.RoricEventHandler;
 import platformer.state.types.GameState;
 import platformer.utils.CollectionUtils;
@@ -69,7 +68,6 @@ public class EnemyManager {
     public void loadEnemies(Level level) {
         this.enemies = level.getEnemiesMap();
         reset();
-        getEnemies(Lancer.class).forEach(lancer -> lancer.addSubscriber(findHandler(LancerEventHandler.class)));
         getEnemies(Roric.class).forEach(roric -> roric.addSubscriber(findHandler(RoricEventHandler.class)));
     }
 

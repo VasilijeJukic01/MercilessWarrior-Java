@@ -15,6 +15,10 @@ import platformer.event.events.CrateDestroyedEvent;
 import platformer.event.events.EnemyDefeatedEvent;
 import platformer.event.events.ItemPurchasedEvent;
 import platformer.event.events.PerkUnlockedEvent;
+import platformer.event.events.effects.ScreenShakeEvent;
+import platformer.event.events.lancer.LancerAuraEvent;
+import platformer.event.events.lancer.LancerDashSlashEvent;
+import platformer.event.events.lancer.LancerTeleportEvent;
 import platformer.event.listeners.QuestSystemListener;
 import platformer.model.effects.EffectManager;
 import platformer.model.effects.RainManager;
@@ -147,12 +151,17 @@ public class GameState extends AbstractState implements State {
         eventBus.register(CrateDestroyedEvent.class, questListener::onCrateDestroyed);
         eventBus.register(PerkUnlockedEvent.class, questListener::onPerkUnlocked);
         eventBus.register(ItemPurchasedEvent.class, questListener::onItemPurchased);
+
+        LancerEventHandler lancerHandler = new LancerEventHandler(context);
+        eventBus.register(LancerTeleportEvent.class, lancerHandler::onLancerTeleport);
+        eventBus.register(LancerAuraEvent.class, lancerHandler::onLancerAura);
+        eventBus.register(LancerDashSlashEvent.class, lancerHandler::onLancerDashSlash);
+        eventBus.register(ScreenShakeEvent.class, lancerHandler::onScreenShake);
     }
 
     private void initEventHandlers() {
         GameFlowEventHandler gameFlowManager = new GameFlowEventHandler(context);
         RoricEventHandler roricHandler = new RoricEventHandler(context);
-        this.eventHandlers.add(new LancerEventHandler(context));
         this.eventHandlers.add(roricHandler);
         this.eventHandlers.add(gameFlowManager);
 

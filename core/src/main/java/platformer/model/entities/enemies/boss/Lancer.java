@@ -5,6 +5,10 @@ import platformer.animation.SpriteManager;
 import platformer.audio.Audio;
 import platformer.audio.types.Song;
 import platformer.audio.types.Sound;
+import platformer.event.EventBus;
+import platformer.event.events.effects.ScreenShakeEvent;
+import platformer.event.events.lancer.LancerAuraEvent;
+import platformer.event.events.lancer.LancerDashSlashEvent;
 import platformer.model.entities.Cooldown;
 import platformer.model.entities.Direction;
 import platformer.model.entities.enemies.Enemy;
@@ -13,8 +17,6 @@ import platformer.model.entities.player.Player;
 import platformer.model.gameObjects.ObjectManager;
 import platformer.model.projectiles.ProjectileManager;
 import platformer.model.spells.SpellManager;
-import platformer.observer.Publisher;
-import platformer.observer.Subscriber;
 import platformer.ui.overlays.hud.BossInterface;
 
 import java.awt.*;
@@ -27,11 +29,9 @@ import java.util.Objects;
 import static platformer.constants.Constants.*;
 import static platformer.physics.CollisionDetector.*;
 
-public class Lancer extends Enemy implements Publisher {
+public class Lancer extends Enemy {
 
     private final LancerAttackHandler handler;
-
-    private static final List<Subscriber> subscribers = new ArrayList<>();
 
     private int attackOffset;
     private Anim prevAnim = Anim.IDLE;
@@ -107,7 +107,6 @@ public class Lancer extends Enemy implements Publisher {
             case SPELL_3:
                 thunderSlamAction(player, spellManager); break;
             case SPELL_4:
-                notify("SPAWN_AURA", this);
                 multiLightningBallAction(projectileManager, spellManager);
                 break;
             case DEATH:
@@ -187,11 +186,12 @@ public class Lancer extends Enemy implements Publisher {
         if (animIndex == 11) Audio.getInstance().getAudioPlayer().playSound(Sound.LANCER_ROAR_2);
         else if (animIndex == 13) {
             spellManager.activateLightnings();
-            notify("SHAKE_SCREEN");
+            EventBus.getInstance().publish(new ScreenShakeEvent(30, 15.0));
         }
     }
 
     private void multiLightningBallAction(ProjectileManager projectileManager, SpellManager spellManager) {
+        EventBus.getInstance().publish(new LancerAuraEvent(this, true));
         if (specialAttackIndex == 1) oscillationProjectiles(projectileManager);
         else trackingProjectiles(spellManager, projectileManager);
     }
@@ -210,7 +210,8 @@ public class Lancer extends Enemy implements Publisher {
                     hitBox.x += xSpeed * 80;
 
             Point2D.Double endPos = new Point2D.Double(hitBox.getCenterX(), hitBox.y);
-            notify("DASH_SLASH", startPos, endPos, hitBox.height);
+            EventBus.getInstance().publish(new LancerDashSlashEvent(startPos, endPos, hitBox.height));
+
         }
     }
 
@@ -288,7 +289,7 @@ public class Lancer extends Enemy implements Publisher {
             multiShootCount = 0;
             canFlash = true;
         }
-        notify("CLEAR_AURA", this);
+        EventBus.getInstance().publish(new LancerAuraEvent(this, false));
     }
 
 
@@ -381,24 +382,6 @@ public class Lancer extends Enemy implements Publisher {
     @Override
     public void attackBoxRenderer(Graphics g, int xLevelOffset, int yLevelOffset) {
         renderAttackBox(g, xLevelOffset, yLevelOffset);
-    }
-
-    // Observer
-    @Override
-    public void addSubscriber(Subscriber s) {
-        if (s != null && !subscribers.contains(s)) subscribers.add(s);
-    }
-
-    @Override
-    public void removeSubscriber(Subscriber s) {
-        subscribers.remove(s);
-    }
-
-    @Override
-    public <T> void notify(T... o) {
-        subscribers.forEach(s -> {
-            if (s != null) s.update(o);
-        });;
     }
 
     // Setters
