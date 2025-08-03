@@ -1,7 +1,7 @@
-package platformer.bridge.mapper;
+package platformer.service.rest.mapper;
 
-import platformer.bridge.requests.AccountDataDTO;
-import platformer.bridge.requests.BoardItemDTO;
+import platformer.service.rest.requests.AccountDataDTO;
+import platformer.service.rest.requests.BoardItemDTO;
 import platformer.core.Account;
 import platformer.model.BoardItem;
 

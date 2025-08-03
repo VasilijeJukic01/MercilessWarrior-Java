@@ -3,7 +3,7 @@ package platformer.launcher.controller;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import platformer.AppCore;
-import platformer.bridge.client.GameServiceClient;
+import platformer.service.rest.client.GameServiceClient;
 import platformer.core.TokenStorage;
 import platformer.core.config.GameLaunchConfig;
 import platformer.launcher.view.LoadingView;

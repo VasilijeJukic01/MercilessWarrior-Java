@@ -1,18 +1,15 @@
-package platformer.bridge.requests;
+package platformer.service.rest.requests;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.List;
-
 @Getter
 @Setter
-@NoArgsConstructor
 @AllArgsConstructor
-public class RegistrationRequest {
+@NoArgsConstructor
+public class AuthenticationRequest {
     private String username;
     private String password;
-    private List<String> roles;
 }

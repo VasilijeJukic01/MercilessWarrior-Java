@@ -1,4 +1,4 @@
-package platformer.bridge.client;
+package platformer.service.rest.client;
 
 import java.io.BufferedReader;
 import java.io.IOException;

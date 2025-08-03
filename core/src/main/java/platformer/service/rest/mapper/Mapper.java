@@ -1,4 +1,4 @@
-package platformer.bridge.mapper;
+package platformer.service.rest.mapper;
 
 import java.util.List;
 import java.util.function.Function;

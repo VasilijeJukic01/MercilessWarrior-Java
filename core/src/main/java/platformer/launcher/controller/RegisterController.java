@@ -4,7 +4,7 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
-import platformer.bridge.client.GameServiceClient;
+import platformer.service.rest.client.GameServiceClient;
 import platformer.launcher.view.RegisterView;
 import platformer.launcher.view.alert.AlertHelper;
 

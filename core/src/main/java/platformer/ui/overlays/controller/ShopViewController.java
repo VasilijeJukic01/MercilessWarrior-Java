@@ -2,7 +2,7 @@ package platformer.ui.overlays.controller;
 
 import platformer.audio.Audio;
 import platformer.audio.types.Sound;
-import platformer.bridge.storage.StorageStrategy;
+import platformer.storage.StorageStrategy;
 import platformer.core.Framework;
 import platformer.model.entities.player.Player;
 import platformer.model.gameObjects.objects.Shop;

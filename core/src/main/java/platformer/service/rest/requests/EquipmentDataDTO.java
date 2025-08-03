@@ -1,4 +1,4 @@
-package platformer.bridge.requests;
+package platformer.service.rest.requests;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

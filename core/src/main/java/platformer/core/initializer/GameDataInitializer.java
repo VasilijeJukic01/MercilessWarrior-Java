@@ -1,12 +1,15 @@
 package platformer.core.initializer;
 
-import platformer.bridge.Connector;
-import platformer.bridge.client.GameServiceClient;
-import platformer.bridge.requests.ItemMasterDTO;
-import platformer.bridge.requests.ShopItemDTO;
-import platformer.bridge.storage.OfflineStorageStrategy;
-import platformer.bridge.storage.OnlineStorageStrategy;
-import platformer.bridge.storage.StorageStrategy;
+import platformer.service.rest.client.GameServiceClient;
+import platformer.service.rest.mapper.AccountMapper;
+import platformer.service.rest.mapper.LeaderboardMapper;
+import platformer.service.rest.requests.ItemMasterDTO;
+import platformer.service.rest.requests.ShopItemDTO;
+import platformer.storage.OfflineStorageStrategy;
+import platformer.storage.OnlineStorageStrategy;
+import platformer.storage.StorageStrategy;
+import platformer.service.OnlineService;
+import platformer.service.rest.RestfulGameService;
 import platformer.core.config.GameLaunchConfig;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
@@ -21,31 +24,38 @@ import java.util.List;
  */
 public class GameDataInitializer {
 
-    public StorageStrategy initialize(GameLaunchConfig config, Connector connector) {
-        if (config.authToken() != null) return initializeOnline(connector);
+    public StorageStrategy initialize(GameLaunchConfig config) {
+        if (config.authToken() != null) return initializeOnline();
         else return initializeOffline();
     }
 
-    private StorageStrategy initializeOnline(Connector connector) {
+    private StorageStrategy initializeOnline() {
         try {
             GameServiceClient client = new GameServiceClient();
-            List<ItemMasterDTO> masterItems = client.getMasterItems();
-            List<ShopItemDTO> shopInventory = client.getShopInventory("DEFAULT_SHOP");
+            OnlineService service = new RestfulGameService(client);
 
+            List<ItemMasterDTO> masterItems = service.getMasterItems();
+            List<ShopItemDTO> shopInventory = service.getShopInventory("DEFAULT_SHOP");
             GameDataCache.getInstance().cacheItemData(masterItems);
             GameDataCache.getInstance().cacheShopInventory("DEFAULT_SHOP", shopInventory);
+            AccountMapper accountMapper = new AccountMapper();
+            LeaderboardMapper leaderboardMapper = new LeaderboardMapper();
 
             Logger.getInstance().notify("Online data loaded successfully.", Message.INFORMATION);
-            return new OnlineStorageStrategy(connector);
+
+            return new OnlineStorageStrategy(service, accountMapper, leaderboardMapper);
         } catch (IOException e) {
-            Logger.getInstance().notify("Failed to fetch online game data. Switching to offline mode.", Message.WARNING);
+            Logger.getInstance().notify("Failed to fetch online game data: " + e.getMessage() + ". Switching to offline mode.", Message.WARNING);
             return initializeOffline();
         }
     }
 
     private StorageStrategy initializeOffline() {
         Logger.getInstance().notify("Initializing in offline mode.", Message.INFORMATION);
-        return new OfflineStorageStrategy();
+        OfflineStorageStrategy offlineStrategy = new OfflineStorageStrategy();
+        GameDataCache.getInstance().cacheItemDataFromMap(offlineStrategy.getMasterItems());
+        GameDataCache.getInstance().cacheShopInventoryFromList("DEFAULT_SHOP", offlineStrategy.getShopInventory("DEFAULT_SHOP"));
+        return offlineStrategy;
     }
 
 }

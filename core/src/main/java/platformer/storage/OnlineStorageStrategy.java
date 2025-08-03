@@ -1,8 +1,10 @@
-package platformer.bridge.storage;
+package platformer.storage;
 
-import platformer.bridge.Connector;
-import platformer.bridge.requests.ShopTransactionRequest;
-import platformer.bridge.requests.ShopTransactionResponse;
+import platformer.service.rest.mapper.AccountMapper;
+import platformer.service.rest.mapper.LeaderboardMapper;
+import platformer.service.rest.requests.ShopTransactionRequest;
+import platformer.service.rest.requests.ShopTransactionResponse;
+import platformer.service.OnlineService;
 import platformer.core.Account;
 import platformer.core.Framework;
 import platformer.debug.logger.Logger;
@@ -16,16 +18,36 @@ import platformer.model.inventory.ShopItem;
 import platformer.state.types.GameState;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * An implementation of {@link StorageStrategy} for online mode.
+ * <p>
+ * This class orchestrates online data operations. It relies on an abstract {@link OnlineService} to handle the actual network communication.
+ * Its primary responsibilities are:
+ * <ul>
+ *   <li>Calling the online service to fetch or send data (as DTOs).</li>
+ *   <li>Using mappers to convert between network DTOs and the game's internal models.</li>
+ *   <li>Handling responses and updating caches or game state as needed.</li>
+ * </ul>
+ *
+ * @see StorageStrategy
+ * @see OnlineService
+ * @see AccountMapper
+ */
 public class OnlineStorageStrategy implements StorageStrategy {
 
-    private final Connector connector;
+    private final OnlineService onlineService;
+    private final AccountMapper accountMapper;
+    private final LeaderboardMapper leaderboardMapper;
 
-    public OnlineStorageStrategy(Connector connector) {
-        this.connector = connector;
+    public OnlineStorageStrategy(OnlineService onlineService, AccountMapper accountMapper, LeaderboardMapper leaderboardMapper) {
+        this.onlineService = onlineService;
+        this.accountMapper = accountMapper;
+        this.leaderboardMapper = leaderboardMapper;
     }
 
     @Override
@@ -35,17 +57,31 @@ public class OnlineStorageStrategy implements StorageStrategy {
 
     @Override
     public Account fetchAccountData(String username, int slot) {
-        return connector.getData();
+        try {
+            return accountMapper.toEntity().apply(onlineService.fetchAccountData(username));
+        } catch (IOException e) {
+            Logger.getInstance().notify("Loading data from database failed. Switching to Default profile.", Message.ERROR);
+            return new Account();
+        }
     }
 
     @Override
     public void updateAccountData(Account account, int slot) {
-        connector.updateAccountData(account);
+        try {
+            onlineService.updateAccountData(accountMapper.toDto().apply(account));
+        } catch (IOException e) {
+            Logger.getInstance().notify("Failed to update account data!", Message.ERROR);
+        }
     }
 
     @Override
     public List<BoardItem> loadLeaderboardData() {
-        return connector.loadLeaderboardData();
+        try {
+            return leaderboardMapper.toEntityList(onlineService.loadLeaderboardData());
+        } catch (IOException e) {
+            Logger.getInstance().notify("Leaderboard fetch failed!", Message.ERROR);
+            return new ArrayList<>();
+        }
     }
 
     @Override
@@ -67,7 +103,7 @@ public class OnlineStorageStrategy implements StorageStrategy {
                 quantity
         );
         try {
-            ShopTransactionResponse response = connector.buyItem(request);
+            ShopTransactionResponse response = onlineService.buyItem(request);
             if (response != null) {
                 Framework.getInstance().refreshAccountData();
                 List<ShopItem> shopItems = response.getUpdatedShopInventory().stream()
@@ -95,7 +131,7 @@ public class OnlineStorageStrategy implements StorageStrategy {
                 quantity
         );
         try {
-            ShopTransactionResponse response = connector.sellItem(request);
+            ShopTransactionResponse response = onlineService.sellItem(request);
             if (response != null) {
                 Framework.getInstance().refreshAccountData();
                 List<ShopItem> shopItems = response.getUpdatedShopInventory().stream()

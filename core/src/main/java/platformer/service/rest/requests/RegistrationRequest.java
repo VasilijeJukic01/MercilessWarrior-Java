@@ -1,16 +1,18 @@
-package platformer.bridge.requests;
+package platformer.service.rest.requests;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class BoardItemDTO {
+public class RegistrationRequest {
     private String username;
-    private int level;
-    private int exp;
+    private String password;
+    private List<String> roles;
 }

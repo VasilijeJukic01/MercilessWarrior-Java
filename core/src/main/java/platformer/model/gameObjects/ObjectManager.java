@@ -3,7 +3,7 @@ package platformer.model.gameObjects;
 import platformer.animation.SpriteManager;
 import platformer.audio.Audio;
 import platformer.audio.types.Sound;
-import platformer.bridge.storage.StorageStrategy;
+import platformer.storage.StorageStrategy;
 import platformer.core.Framework;
 import platformer.model.entities.Direction;
 import platformer.model.entities.enemies.Enemy;

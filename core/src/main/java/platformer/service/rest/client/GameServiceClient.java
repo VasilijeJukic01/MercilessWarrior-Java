@@ -1,11 +1,11 @@
-package platformer.bridge.client;
+package platformer.service.rest.client;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import platformer.bridge.requests.*;
 import platformer.core.TokenStorage;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
+import platformer.service.rest.requests.*;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;

@@ -1,6 +1,6 @@
-package platformer.bridge.mapper;
+package platformer.service.rest.mapper;
 
-import platformer.bridge.requests.BoardItemDTO;
+import platformer.service.rest.requests.BoardItemDTO;
 import platformer.model.BoardItem;
 
 import java.util.List;

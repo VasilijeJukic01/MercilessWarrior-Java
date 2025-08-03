@@ -1,7 +1,7 @@
 package platformer.model.inventory;
 
-import platformer.bridge.requests.ItemMasterDTO;
-import platformer.bridge.requests.ShopItemDTO;
+import platformer.service.rest.requests.ItemMasterDTO;
+import platformer.service.rest.requests.ShopItemDTO;
 
 import java.util.ArrayList;
 import java.util.HashMap;

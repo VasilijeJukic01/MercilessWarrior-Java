@@ -1,10 +1,9 @@
 package platformer.core;
 
 import platformer.animation.SpriteManager;
-import platformer.bridge.storage.StorageStrategy;
+import platformer.storage.StorageStrategy;
 import platformer.controller.GameSaveController;
 import platformer.controller.KeyboardController;
-import platformer.bridge.Connector;
 import platformer.core.config.GameLaunchConfig;
 import platformer.core.initializer.GameDataInitializer;
 import platformer.model.BoardItem;
@@ -25,7 +24,6 @@ public class Framework {
     private Game game;
     private GameLaunchConfig launchConfig;
     private KeyboardController keyboardController;
-    private Connector connector;
     private Serializer<Account, List<Account>> serializer;
     private Account cloud, account;
     private StorageStrategy storageStrategy;
@@ -53,12 +51,8 @@ public class Framework {
         this.launchConfig = config;
         this.keyboardController = new KeyboardController();
         this.serializer = new GameSerializer();
-        if (config.authToken() != null) {
-            TokenStorage.getInstance().setToken(config.authToken());
-            this.connector = new Connector(config.username());
-        }
         GameDataInitializer dataInitializer = new GameDataInitializer();
-        this.storageStrategy = dataInitializer.initialize(config, this.connector);
+        this.storageStrategy = dataInitializer.initialize(config);
         initAccount();
         initLeaderboard();
         initGame();
@@ -82,7 +76,7 @@ public class Framework {
 
     // Save
     public void cloudSave() {
-        connector.updateAccountData(account);
+        storageStrategy.updateAccountData(account, 0);
         initAccount();
     }
 

@@ -1,4 +1,4 @@
-package platformer.bridge.requests;
+package platformer.service.rest.requests;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,8 +9,8 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ShopItemDTO {
-    private String itemId;
-    private int stock;
-    private int cost;
+public class BoardItemDTO {
+    private String username;
+    private int level;
+    private int exp;
 }

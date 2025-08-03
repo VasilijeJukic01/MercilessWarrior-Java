@@ -1,4 +1,4 @@
-package platformer.bridge.storage;
+package platformer.storage;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -18,6 +18,20 @@ import java.util.*;
 import static platformer.constants.FilePaths.ITEMS_PATH;
 import static platformer.constants.FilePaths.SHOP_INV_PATH;
 
+/**
+ * An implementation of {@link StorageStrategy} for playing the game in offline mode.
+ * <p>
+ * This class handles all data persistence and business logic locally, without any network communication.
+ * <ul>
+ *   <li>It uses a {@link platformer.serialization.Serializer} to read and write encrypted {@link Account} data to local save files.</li>
+ *   <li>Master item definitions and shop inventories are loaded from JSON files located within the application's resources.</li>
+ *   <li>Business logic, such as shop transactions, is handled directly by manipulating the player's state.</li>
+ * </ul>
+ *
+ * @see StorageStrategy
+ * @see OnlineStorageStrategy
+ * @see GameSerializer
+ */
 public class OfflineStorageStrategy implements StorageStrategy {
 
     private final Serializer<Account, List<Account>> serializer;
