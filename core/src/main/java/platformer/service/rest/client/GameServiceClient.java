@@ -8,14 +8,32 @@ import platformer.debug.logger.Message;
 import platformer.service.rest.requests.*;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.net.HttpURLConnection;
 import java.util.List;
 
 import static platformer.constants.Constants.API_GATEWAY_URL;
 
+/**
+ * A low-level client for communicating with the game's RESTful backend API.
+ * <p>
+ * This class is responsible for constructing and sending HTTP requests, handling authentication tokens, and parsing JSON responses.
+ * It abstracts away the raw HTTP logic from the rest of the service layer.
+ */
 public class GameServiceClient {
 
     private final Gson gson = new Gson();
+
+    private static final class ApiEndpoints {
+        private static final String AUTH_LOGIN = "/auth/login";
+        private static final String AUTH_REGISTER = "/auth/register";
+        private static final String GAME_ACCOUNT = "/game/account";
+        private static final String LEADERBOARD = "/leaderboard";
+        private static final String MASTER_ITEMS = "/items/master";
+        private static final String SHOP = "/shop";
+        private static final String SHOP_BUY = "/shop/buy";
+        private static final String SHOP_SELL = "/shop/sell";
+    }
 
     /**
      * Attempts to authenticate and store the JWT. Does not throw an exception on failure.
@@ -29,33 +47,31 @@ public class GameServiceClient {
         }
         try {
             AuthenticationRequest authRequest = new AuthenticationRequest(username, password);
-            String authUrl = API_GATEWAY_URL + "/auth/login";
-            HttpURLConnection authConn = HttpRequestHandler.createPostConnection(authUrl, "application/json");
-            String jsonAuthInputString = gson.toJson(authRequest);
-            HttpRequestHandler.sendJsonPayload(authConn, jsonAuthInputString);
+            String url = API_GATEWAY_URL + ApiEndpoints.AUTH_LOGIN;
+            HttpURLConnection conn = HttpRequestHandler.createPostConnection(url, "application/json");
+            HttpRequestHandler.sendJsonPayload(conn, gson.toJson(authRequest));
 
-            int authResponseCode = authConn.getResponseCode();
-            if (authResponseCode == 200) {
-                AuthenticationResponse authResponse = gson.fromJson(HttpRequestHandler.getResponse(authConn), AuthenticationResponse.class);
+            if (conn.getResponseCode() == 200) {
+                AuthenticationResponse authResponse = gson.fromJson(HttpRequestHandler.getResponse(conn), AuthenticationResponse.class);
                 TokenStorage.getInstance().setToken(authResponse.getJwt());
                 Logger.getInstance().notify("Login successful!", Message.INFORMATION);
                 return true;
-            } else {
-                Logger.getInstance().notify("Login failed with code: " + authResponseCode, Message.WARNING);
+            }
+            else {
+                Logger.getInstance().notify("Login failed with code: " + conn.getResponseCode(), Message.WARNING);
                 return false;
             }
         } catch (IOException e) {
-            Logger.getInstance().notify("Login network error. Assuming offline mode.", Message.WARNING);
+            Logger.getInstance().notify("Login network error: " + e.getMessage(), Message.WARNING);
             return false;
         }
     }
 
     public int createAccount(String username, String password) throws IOException {
-        String url = API_GATEWAY_URL + "/auth/register";
+        String url = API_GATEWAY_URL + ApiEndpoints.AUTH_REGISTER;
         HttpURLConnection conn = HttpRequestHandler.createPostConnection(url, "application/json");
-
-        String jsonInputString = gson.toJson(new RegistrationRequest(username, password, List.of("USER")));
-        HttpRequestHandler.sendJsonPayload(conn, jsonInputString);
+        RegistrationRequest request = new RegistrationRequest(username, password, List.of("USER"));
+        HttpRequestHandler.sendJsonPayload(conn, gson.toJson(request));
 
         int responseCode = conn.getResponseCode();
         if (responseCode == 200) {
@@ -66,124 +82,92 @@ public class GameServiceClient {
             Logger.getInstance().notify("Account creation failed, name conflict!", Message.ERROR);
             return 2;
         }
-        else {
-            Logger.getInstance().notify("Account creation failed, unknown error!", Message.ERROR);
-            return 1;
-        }
+        else throw new IOException("Account creation failed with code: " + responseCode);
     }
 
     public AccountDataDTO fetchAccountData(String username) throws IOException {
-        String gameUrl = API_GATEWAY_URL + "/game/account/" + username;
-        HttpURLConnection gameConn = HttpRequestHandler.createGetConnection(gameUrl, TokenStorage.getInstance().getToken());
-
-        int gameResponseCode = gameConn.getResponseCode();
-        if (gameResponseCode == 200) {
-            Logger.getInstance().notify("Account data loaded successfully!", Message.INFORMATION);
-            return gson.fromJson(HttpRequestHandler.getResponse(gameConn), AccountDataDTO.class);
-        }
-        else {
-            Logger.getInstance().notify("Failed to load account data!", Message.ERROR);
-            throw new IOException("Failed to load account data: " + gameResponseCode);
-        }
+        String url = API_GATEWAY_URL + ApiEndpoints.GAME_ACCOUNT + "/" + username;
+        return sendGetRequest(url, AccountDataDTO.class);
     }
 
     public List<BoardItemDTO> loadLeaderboardData() throws IOException {
-        String url = API_GATEWAY_URL + "/leaderboard";
-        HttpURLConnection conn = HttpRequestHandler.createGetConnection(url, TokenStorage.getInstance().getToken());
-
-        int responseCode = conn.getResponseCode();
-        if (responseCode == 200) {
-            Logger.getInstance().notify("Leaderboard fetched successfully!", Message.INFORMATION);
-            String response = HttpRequestHandler.getResponse(conn);
-            return gson.fromJson(response, new TypeToken<List<BoardItemDTO>>(){}.getType());
-        }
-        else {
-            Logger.getInstance().notify("Leaderboard fetch failed!", Message.ERROR);
-            throw new IOException("Failed to load leaderboard data: " + responseCode);
-        }
+        String url = API_GATEWAY_URL + ApiEndpoints.LEADERBOARD;
+        return sendGetRequest(url, new TypeToken<List<BoardItemDTO>>() {}.getType());
     }
 
     public void updateAccountData(AccountDataDTO accountDataDTO) throws IOException {
-        String url = API_GATEWAY_URL + "/game/account";
-        HttpURLConnection conn = HttpRequestHandler.createPutConnection(url, "application/json");
-
-        conn.setRequestProperty("Authorization", "Bearer " + TokenStorage.getInstance().getToken());
-
-        String jsonInputString = gson.toJson(accountDataDTO);
-        HttpRequestHandler.sendJsonPayload(conn, jsonInputString);
-
-        int responseCode = conn.getResponseCode();
-
-        if (responseCode != 200) Logger.getInstance().notify("Account data update failed!", Message.ERROR);
-        else Logger.getInstance().notify("Account data updated successfully!", Message.INFORMATION);
+        String url = API_GATEWAY_URL + ApiEndpoints.GAME_ACCOUNT;
+        sendRequestWithBody("PUT", url, accountDataDTO, Void.class);
     }
 
     public List<ItemMasterDTO> getMasterItems() throws IOException {
-        String url = API_GATEWAY_URL + "/items/master";
-        HttpURLConnection conn = HttpRequestHandler.createGetConnection(url, TokenStorage.getInstance().getToken());
-
-        int responseCode = conn.getResponseCode();
-        if (responseCode == 200) {
-            String response = HttpRequestHandler.getResponse(conn);
-            return gson.fromJson(response, new TypeToken<List<ItemMasterDTO>>(){}.getType());
-        } else {
-            throw new IOException("Failed to load master item list: " + responseCode);
-        }
+        String url = API_GATEWAY_URL + ApiEndpoints.MASTER_ITEMS;
+        return sendGetRequest(url, new TypeToken<List<ItemMasterDTO>>() {}.getType());
     }
 
     public List<ShopItemDTO> getShopInventory(String shopId) throws IOException {
-        String url = API_GATEWAY_URL + "/shop/" + shopId;
-        HttpURLConnection conn = HttpRequestHandler.createGetConnection(url, TokenStorage.getInstance().getToken());
-
-        int responseCode = conn.getResponseCode();
-        if (responseCode == 200) {
-            String response = HttpRequestHandler.getResponse(conn);
-            return gson.fromJson(response, new TypeToken<List<ShopItemDTO>>(){}.getType());
-        } else {
-            throw new IOException("Failed to load shop inventory for '" + shopId + "': " + responseCode);
-        }
+        String url = API_GATEWAY_URL + ApiEndpoints.SHOP + "/" + shopId;
+        return sendGetRequest(url, new TypeToken<List<ShopItemDTO>>() {}.getType());
     }
 
     public ShopTransactionResponse buyItem(ShopTransactionRequest request) throws IOException {
-        String url = API_GATEWAY_URL + "/shop/buy";
-        HttpURLConnection conn = HttpRequestHandler.createPostConnection(url, "application/json");
-        conn.setRequestProperty("Authorization", "Bearer " + TokenStorage.getInstance().getToken());
-
-        String jsonPayload = gson.toJson(request);
-        HttpRequestHandler.sendJsonPayload(conn, jsonPayload);
-
-        int responseCode = conn.getResponseCode();
-        String responseBody = HttpRequestHandler.getResponse(conn);
-
-        if (responseCode == 200) {
-            Logger.getInstance().notify("Purchase successful!", Message.INFORMATION);
-            return gson.fromJson(responseBody, ShopTransactionResponse.class);
-        }
-        else {
-            Logger.getInstance().notify("Purchase failed: " + responseBody, Message.ERROR);
-            return null;
-        }
+        String url = API_GATEWAY_URL + ApiEndpoints.SHOP_BUY;
+        return sendRequestWithBody("POST", url, request, ShopTransactionResponse.class);
     }
 
     public ShopTransactionResponse sellItem(ShopTransactionRequest request) throws IOException {
-        String url = API_GATEWAY_URL + "/shop/sell";
-        HttpURLConnection conn = HttpRequestHandler.createPostConnection(url, "application/json");
+        String url = API_GATEWAY_URL + ApiEndpoints.SHOP_SELL;
+        return sendRequestWithBody("POST", url, request, ShopTransactionResponse.class);
+    }
+
+    /**
+     * A generic helper for sending GET requests that expect a JSON response.
+     *
+     * @param urlString The full URL for the request.
+     * @param responseType The class or type token of the expected response.
+     * @return The deserialized response object.
+     * @throws IOException if the request fails or returns a non-200 status code.
+     */
+    private <T> T sendGetRequest(String urlString, Type responseType) throws IOException {
+        HttpURLConnection conn = HttpRequestHandler.createGetConnection(urlString, TokenStorage.getInstance().getToken());
+        int responseCode = conn.getResponseCode();
+        if (responseCode == 200) {
+            String response = HttpRequestHandler.getResponse(conn);
+            return gson.fromJson(response, responseType);
+        }
+        else throw new IOException("GET request failed with code: " + responseCode);
+    }
+
+    /**
+     * A generic helper for sending POST or PUT requests with a JSON payload.
+     *
+     * @param method The HTTP method ("POST" or "PUT").
+     * @param urlString The full URL for the request.
+     * @param payload The object to be serialized into the JSON request body.
+     * @param responseType The class of the expected response. Use Void.class if no response body is expected.
+     * @return The deserialized response object.
+     * @throws IOException if the request fails or returns a non-200 status code.
+     */
+    private <T> T sendRequestWithBody(String method, String urlString, Object payload, Class<T> responseType) throws IOException {
+        HttpURLConnection conn;
+        if ("POST".equalsIgnoreCase(method)) {
+            conn = HttpRequestHandler.createPostConnection(urlString, "application/json");
+        }
+        else if ("PUT".equalsIgnoreCase(method)) {
+            conn = HttpRequestHandler.createPutConnection(urlString, "application/json");
+        }
+        else throw new IllegalArgumentException("Unsupported HTTP method: " + method);
+
         conn.setRequestProperty("Authorization", "Bearer " + TokenStorage.getInstance().getToken());
-
-        String jsonPayload = gson.toJson(request);
-        HttpRequestHandler.sendJsonPayload(conn, jsonPayload);
-
+        HttpRequestHandler.sendJsonPayload(conn, gson.toJson(payload));
         int responseCode = conn.getResponseCode();
         String responseBody = HttpRequestHandler.getResponse(conn);
 
         if (responseCode == 200) {
-            Logger.getInstance().notify("Sale successful!", Message.INFORMATION);
-            return gson.fromJson(responseBody, ShopTransactionResponse.class);
+            if (responseType == Void.class) return null;
+            return gson.fromJson(responseBody, responseType);
         }
-        else {
-            Logger.getInstance().notify("Sale failed: " + responseBody, Message.ERROR);
-            return null;
-        }
+        else throw new IOException(method + " request failed with code: " + responseCode + ", body: " + responseBody);
     }
 }
 
