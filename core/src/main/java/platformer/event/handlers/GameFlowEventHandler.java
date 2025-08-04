@@ -1,4 +1,4 @@
-package platformer.observer.events;
+package platformer.event.handlers;
 
 import platformer.audio.Audio;
 import platformer.audio.types.Song;
@@ -11,7 +11,7 @@ import platformer.event.events.FightInitiatedEvent;
 import platformer.model.entities.enemies.EnemyType;
 import platformer.model.levels.Level;
 import platformer.model.levels.Spawn;
-import platformer.observer.EventHandler;
+import platformer.event.EventHandler;
 import platformer.state.types.GameState;
 
 import java.awt.*;

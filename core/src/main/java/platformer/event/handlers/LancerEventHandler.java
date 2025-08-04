@@ -1,4 +1,4 @@
-package platformer.observer.events;
+package platformer.event.handlers;
 
 import platformer.core.GameContext;
 import platformer.event.events.effects.ScreenShakeEvent;

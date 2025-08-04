@@ -1,4 +1,4 @@
-package platformer.observer;
+package platformer.event;
 
 import platformer.state.types.GameState;
 
@@ -9,7 +9,6 @@ import platformer.state.types.GameState;
  * This allows {@link GameState} to manage various event-driven systems without needing
  * to know their internal implementation details; it simply calls {@code continuousUpdate()} on all registered handlers.
  *
- * @see Subscriber
  * @see GameState
  */
 public interface EventHandler {

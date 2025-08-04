@@ -1,4 +1,4 @@
-package platformer.observer.events;
+package platformer.event.handlers;
 
 import platformer.core.GameContext;
 import platformer.event.events.roric.RoricCloneEvent;
@@ -10,8 +10,7 @@ import platformer.model.effects.ScreenEffectsManager;
 import platformer.model.effects.particles.DustType;
 import platformer.model.entities.enemies.boss.Roric;
 import platformer.model.entities.enemies.boss.roric.RoricPhaseManager;
-import platformer.observer.EventHandler;
-import platformer.observer.Subscriber;
+import platformer.event.EventHandler;
 import platformer.state.types.GameState;
 
 import java.awt.*;
@@ -21,8 +20,6 @@ import java.util.Random;
  * Handles all event logic for the {@link Roric} boss fight, including phase transitions and time-based attacks.
  * <p>
  * This class is the central choreographer for the Roric encounter's pacing and special effects.
- * It implements {@link Subscriber} to react to discrete events from Roric, such as a phase change or
- * the start of the fight.
  * <p>
  * Crucially, it also implements {@link EventHandler} to manage its own internal timers. The {@code continuousUpdate}
  * method checks the elapsed fight time to trigger precisely timed effects, most notably the rapid-fire screen flashes during
@@ -31,7 +28,6 @@ import java.util.Random;
  * @see Roric
  * @see RoricPhaseManager
  * @see GameState
- * @see Subscriber
  * @see EventHandler
  */
 public class RoricEventHandler implements EventHandler {
