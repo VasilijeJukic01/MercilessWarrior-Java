@@ -1,7 +1,7 @@
 package platformer.event.events;
 
 import platformer.event.Event;
-import platformer.model.inventory.ShopItem;
+import platformer.model.inventory.item.ShopItem;
 
 /**
  * An event published when a player successfully buys an item from a shop.

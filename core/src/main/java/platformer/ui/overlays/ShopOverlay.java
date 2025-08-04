@@ -2,6 +2,10 @@ package platformer.ui.overlays;
 
 import platformer.animation.SpriteManager;
 import platformer.model.inventory.*;
+import platformer.model.inventory.database.ItemDatabase;
+import platformer.model.inventory.item.InventoryItem;
+import platformer.model.inventory.item.ItemData;
+import platformer.model.inventory.item.ShopItem;
 import platformer.state.types.GameState;
 import platformer.ui.buttons.*;
 import platformer.ui.overlays.controller.ShopViewController;

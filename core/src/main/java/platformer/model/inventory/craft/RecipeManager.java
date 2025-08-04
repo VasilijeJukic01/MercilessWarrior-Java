@@ -1,4 +1,4 @@
-package platformer.model.inventory;
+package platformer.model.inventory.craft;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;

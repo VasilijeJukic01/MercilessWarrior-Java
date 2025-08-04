@@ -22,7 +22,7 @@ import platformer.model.projectiles.ProjectileFactory;
 import platformer.model.projectiles.ProjectileManager;
 import platformer.model.inventory.Inventory;
 import platformer.model.inventory.InventoryBonus;
-import platformer.model.inventory.ItemRarity;
+import platformer.model.inventory.item.ItemRarity;
 import platformer.model.minimap.MinimapManager;
 import platformer.model.perks.PerksBonus;
 import platformer.physics.DamageSource;

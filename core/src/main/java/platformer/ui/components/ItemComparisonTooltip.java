@@ -1,7 +1,7 @@
 package platformer.ui.components;
 
-import platformer.model.inventory.InventoryItem;
-import platformer.model.inventory.ItemData;
+import platformer.model.inventory.item.InventoryItem;
+import platformer.model.inventory.item.ItemData;
 
 import java.awt.*;
 import java.util.HashSet;

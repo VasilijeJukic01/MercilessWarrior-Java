@@ -2,8 +2,8 @@ package platformer.model.gameObjects.objects;
 
 import platformer.model.gameObjects.GameObject;
 import platformer.model.gameObjects.ObjType;
-import platformer.model.inventory.Recipe;
-import platformer.model.inventory.RecipeManager;
+import platformer.model.inventory.craft.Recipe;
+import platformer.model.inventory.craft.RecipeManager;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;

@@ -3,9 +3,9 @@ package platformer.model.gameObjects.objects;
 import platformer.model.entities.enemies.EnemyType;
 import platformer.model.gameObjects.GameObject;
 import platformer.model.gameObjects.ObjType;
-import platformer.model.inventory.InventoryItem;
-import platformer.model.inventory.ItemData;
-import platformer.model.inventory.ItemDatabase;
+import platformer.model.inventory.item.InventoryItem;
+import platformer.model.inventory.item.ItemData;
+import platformer.model.inventory.database.ItemDatabase;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;

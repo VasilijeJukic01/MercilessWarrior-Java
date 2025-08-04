@@ -1,8 +1,8 @@
 package platformer.model.inventory.handlers;
 
 import platformer.model.inventory.InventoryBonus;
-import platformer.model.inventory.InventoryItem;
-import platformer.model.inventory.ItemData;
+import platformer.model.inventory.item.InventoryItem;
+import platformer.model.inventory.item.ItemData;
 
 import java.util.HashMap;
 import java.util.List;

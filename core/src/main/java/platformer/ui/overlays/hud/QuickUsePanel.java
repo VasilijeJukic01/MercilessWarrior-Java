@@ -2,8 +2,8 @@ package platformer.ui.overlays.hud;
 
 import platformer.model.entities.player.Player;
 import platformer.model.inventory.Inventory;
-import platformer.model.inventory.InventoryItem;
-import platformer.model.inventory.ItemData;
+import platformer.model.inventory.item.InventoryItem;
+import platformer.model.inventory.item.ItemData;
 import platformer.utils.ImageUtils;
 
 import java.awt.*;

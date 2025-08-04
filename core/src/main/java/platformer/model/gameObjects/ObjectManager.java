@@ -12,7 +12,7 @@ import platformer.model.entities.player.Player;
 import platformer.model.gameObjects.npc.Npc;
 import platformer.model.gameObjects.objects.Container;
 import platformer.model.gameObjects.objects.*;
-import platformer.model.inventory.ShopItem;
+import platformer.model.inventory.item.ShopItem;
 import platformer.model.levels.Level;
 import platformer.state.types.GameState;
 import platformer.utils.CollectionUtils;

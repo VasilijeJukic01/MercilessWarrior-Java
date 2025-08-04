@@ -1,8 +1,8 @@
 package platformer.ui.overlays;
 
 import platformer.animation.SpriteManager;
-import platformer.model.inventory.ItemData;
-import platformer.model.inventory.ItemDatabase;
+import platformer.model.inventory.item.ItemData;
+import platformer.model.inventory.database.ItemDatabase;
 import platformer.model.quests.Quest;
 import platformer.model.quests.QuestObjective;
 import platformer.state.types.GameState;

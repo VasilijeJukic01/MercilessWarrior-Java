@@ -1,4 +1,4 @@
-package platformer.model.inventory;
+package platformer.model.inventory.craft;
 
 import java.util.Map;
 

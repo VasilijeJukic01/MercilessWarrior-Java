@@ -2,7 +2,7 @@ package platformer.model.gameObjects.objects;
 
 import platformer.model.gameObjects.GameObject;
 import platformer.model.gameObjects.ObjType;
-import platformer.model.inventory.*;
+import platformer.model.inventory.item.ShopItem;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;

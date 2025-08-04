@@ -11,10 +11,10 @@ import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
 import platformer.model.BoardItem;
 import platformer.model.entities.player.Player;
-import platformer.model.inventory.GameDataCache;
-import platformer.model.inventory.InventoryItem;
-import platformer.model.inventory.ItemData;
-import platformer.model.inventory.ShopItem;
+import platformer.model.inventory.database.GameDataCache;
+import platformer.model.inventory.item.InventoryItem;
+import platformer.model.inventory.item.ItemData;
+import platformer.model.inventory.item.ShopItem;
 import platformer.state.types.GameState;
 
 import java.io.IOException;

@@ -1,7 +1,8 @@
-package platformer.model.inventory;
+package platformer.model.inventory.database;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import platformer.model.inventory.item.ItemData;
 
 import java.io.InputStreamReader;
 import java.lang.reflect.Type;

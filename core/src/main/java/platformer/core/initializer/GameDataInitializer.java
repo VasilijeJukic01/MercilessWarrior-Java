@@ -13,7 +13,7 @@ import platformer.service.rest.RestfulGameService;
 import platformer.core.config.GameLaunchConfig;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
-import platformer.model.inventory.GameDataCache;
+import platformer.model.inventory.database.GameDataCache;
 
 import java.io.IOException;
 import java.util.List;

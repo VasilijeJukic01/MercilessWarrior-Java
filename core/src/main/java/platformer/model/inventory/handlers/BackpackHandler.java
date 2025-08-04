@@ -4,8 +4,8 @@ import platformer.audio.Audio;
 import platformer.audio.types.Sound;
 import platformer.core.Framework;
 import platformer.model.entities.player.Player;
-import platformer.model.inventory.InventoryItem;
-import platformer.model.inventory.ItemData;
+import platformer.model.inventory.item.InventoryItem;
+import platformer.model.inventory.item.ItemData;
 
 import java.util.*;
 import java.util.stream.Collectors;

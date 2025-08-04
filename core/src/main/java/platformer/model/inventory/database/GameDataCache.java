@@ -1,5 +1,8 @@
-package platformer.model.inventory;
+package platformer.model.inventory.database;
 
+import platformer.model.inventory.item.ItemData;
+import platformer.model.inventory.item.ItemRarity;
+import platformer.model.inventory.item.ShopItem;
 import platformer.service.rest.requests.ItemMasterDTO;
 import platformer.service.rest.requests.ShopItemDTO;
 
