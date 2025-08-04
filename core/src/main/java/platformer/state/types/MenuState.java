@@ -1,5 +1,7 @@
 package platformer.state.types;
 
+import platformer.audio.Audio;
+import platformer.audio.types.Song;
 import platformer.core.Game;
 import platformer.state.AbstractState;
 import platformer.state.State;
@@ -63,6 +65,18 @@ public class MenuState extends AbstractState implements State {
     public void render(Graphics g) {
         renderMenuImages(g);
         renderMenuButtons(g);
+    }
+
+    @Override
+    public void enter() {
+        if (Audio.getInstance().getAudioPlayer().getCurrentSong() != Song.MENU) {
+            Audio.getInstance().getAudioPlayer().playSong(Song.MENU);
+        }
+    }
+
+    @Override
+    public void exit() {
+
     }
 
     @Override

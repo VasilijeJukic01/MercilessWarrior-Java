@@ -73,6 +73,16 @@ public class OptionsState extends AbstractState implements State {
         else if (currentPage == 1) settingsPanel.renderGameplayPage(g);
     }
 
+    @Override
+    public void enter() {
+
+    }
+
+    @Override
+    public void exit() {
+
+    }
+
     private void renderPageTabs(Graphics g) {
         g.setColor(Color.WHITE);
         g.setFont(new Font("Arial", Font.BOLD, FONT_MEDIUM));

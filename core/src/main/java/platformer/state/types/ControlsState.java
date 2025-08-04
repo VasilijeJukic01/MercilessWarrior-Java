@@ -60,6 +60,16 @@ public class ControlsState extends AbstractState implements State {
     }
 
     @Override
+    public void enter() {
+
+    }
+
+    @Override
+    public void exit() {
+
+    }
+
+    @Override
     public void mousePressed(MouseEvent e) {
         if (isMouseInButton(e, exitBtn)) exitBtn.setMousePressed(true);
         else controlsPanel.mousePressed(e);

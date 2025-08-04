@@ -3,6 +3,7 @@ package platformer.state.types;
 import lombok.Getter;
 import lombok.Setter;
 import platformer.audio.Audio;
+import platformer.audio.types.Song;
 import platformer.controller.GameStateController;
 import platformer.core.Account;
 import platformer.core.Framework;
@@ -276,6 +277,17 @@ public class GameState extends AbstractState implements State {
         getPlayer().getPlayerStatusManager().getUserInterface().render(g);
         bossInterface.render(g);
         overlayManager.render(g);
+    }
+
+    @Override
+    public void enter() {
+        Audio.getInstance().getAudioPlayer().playSong(Song.FOREST_1);
+    }
+
+    @Override
+    public void exit() {
+        Audio.getInstance().getAudioPlayer().stopSong();
+        Audio.getInstance().getAudioPlayer().stopAmbience();
     }
 
     private void handleGameState() {

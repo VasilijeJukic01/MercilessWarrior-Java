@@ -1,4 +1,3 @@
-// src/main/java/platformer/core/GameContext.java
 package platformer.core;
 
 import lombok.AllArgsConstructor;

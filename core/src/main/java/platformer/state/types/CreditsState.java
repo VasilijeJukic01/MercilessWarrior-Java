@@ -77,6 +77,16 @@ public class CreditsState extends AbstractState implements State {
         renderInformation(g);
     }
 
+    @Override
+    public void enter() {
+
+    }
+
+    @Override
+    public void exit() {
+
+    }
+
     private void renderInformation(Graphics g) {
         int yPos = CREDITS_POSITION_Y;
 

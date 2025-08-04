@@ -63,6 +63,16 @@ public class ChoseGameState extends AbstractState implements State {
     }
 
     @Override
+    public void enter() {
+
+    }
+
+    @Override
+    public void exit() {
+
+    }
+
+    @Override
     public void mouseClicked(MouseEvent e) {
 
     }
