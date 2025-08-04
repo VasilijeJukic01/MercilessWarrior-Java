@@ -16,7 +16,6 @@ public class AccountMapper implements Mapper<Account, AccountDataDTO> {
         return accountDataDTO -> {
             Account account = new Account(
                     accountDataDTO.getUsername(),
-                    "",
                     accountDataDTO.getAccountId(),
                     accountDataDTO.getSettingsId(),
                     accountDataDTO.getSpawn(),
