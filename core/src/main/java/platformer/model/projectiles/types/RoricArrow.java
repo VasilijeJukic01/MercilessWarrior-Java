@@ -1,5 +1,6 @@
 package platformer.model.projectiles.types;
 
+import platformer.animation.SpriteManager;
 import platformer.model.entities.Direction;
 import platformer.model.entities.player.Player;
 import platformer.model.projectiles.PRType;
@@ -13,10 +14,12 @@ import static platformer.constants.Constants.*;
 
 public class RoricArrow extends Projectile {
 
+    private final BufferedImage image;
     private final double speed;
 
     public RoricArrow(int xPos, int yPos, Direction direction, double speedMultiplier) {
         super(PRType.RORIC_ARROW, direction);
+        this.image = SpriteManager.getInstance().getRoricArrowImage();
         this.speed = RORIC_ARROW_SPEED * speedMultiplier;
         initHitBox(xPos, yPos);
     }
@@ -33,9 +36,7 @@ public class RoricArrow extends Projectile {
     }
 
     @Override
-    public void render(Graphics g, int xLevelOffset, int yLevelOffset, Object animations) {
-        if (!(animations instanceof BufferedImage)) return;
-
+    public void render(Graphics g, int xLevelOffset, int yLevelOffset) {
         int flipSign = 1;
         int flipWidth = 0;
         if (direction == Direction.LEFT) {
@@ -46,7 +47,7 @@ public class RoricArrow extends Projectile {
         int x = (int) hitBox.x - xLevelOffset + flipWidth;
         int y = (int) hitBox.y - yLevelOffset;
 
-        g.drawImage((BufferedImage) animations, x, y, ARROW_WID * flipSign, ARROW_HEI, null);
+        g.drawImage(image, x, y, ARROW_WID * flipSign, ARROW_HEI, null);
         renderHitBox(g, xLevelOffset, yLevelOffset, Color.MAGENTA);
     }
 

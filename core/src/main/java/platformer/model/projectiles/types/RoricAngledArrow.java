@@ -1,5 +1,6 @@
 package platformer.model.projectiles.types;
 
+import platformer.animation.SpriteManager;
 import platformer.debug.DebugSettings;
 import platformer.model.entities.Direction;
 import platformer.model.entities.player.Player;
@@ -21,6 +22,7 @@ import static platformer.physics.CollisionDetector.isEntityOnFloor;
 
 public class RoricAngledArrow extends Projectile {
 
+    private final BufferedImage image;
     private final Direction creatorDirection;
 
     private final double angle;
@@ -30,6 +32,7 @@ public class RoricAngledArrow extends Projectile {
 
     public RoricAngledArrow(int xPos, int yPos, double angle, boolean spawnsTrap, Direction creatorDirection) {
         super(PRType.RORIC_ANGLED_ARROW, null);
+        this.image = SpriteManager.getInstance().getRoricArrowImage();
         this.angle = angle;
         this.spawnsTrapOnImpact = spawnsTrap;
         this.creatorDirection = creatorDirection;
@@ -85,15 +88,14 @@ public class RoricAngledArrow extends Projectile {
     }
 
     @Override
-    public void render(Graphics g, int xLevelOffset, int yLevelOffset, Object animations) {
-        if (!(animations instanceof BufferedImage)) return;
+    public void render(Graphics g, int xLevelOffset, int yLevelOffset) {
         Graphics2D g2d = (Graphics2D) g.create();
         try {
             int drawX = polygonHitbox.xpoints[0] - xLevelOffset;
             int drawY = polygonHitbox.ypoints[0] - yLevelOffset;
             g2d.translate(drawX, drawY);
             g2d.rotate(angle);
-            g2d.drawImage((BufferedImage) animations, 0, -ARROW_HEI / (int)(1.0 * SCALE), ARROW_WID, ARROW_HEI, null);
+            g2d.drawImage(image, 0, -ARROW_HEI / (int)(1.0 * SCALE), ARROW_WID, ARROW_HEI, null);
 
         } finally {
             g2d.dispose();

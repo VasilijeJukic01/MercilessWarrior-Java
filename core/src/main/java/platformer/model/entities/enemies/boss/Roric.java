@@ -17,7 +17,6 @@ import platformer.model.entities.enemies.boss.roric.RoricAttackHandler;
 import platformer.model.entities.enemies.boss.roric.RoricPhaseManager;
 import platformer.model.entities.enemies.boss.roric.RoricState;
 import platformer.model.entities.player.Player;
-import platformer.model.projectiles.ProjectileManager;
 import platformer.model.spells.SpellManager;
 import platformer.ui.overlays.hud.BossInterface;
 
@@ -98,10 +97,9 @@ public class Roric extends Enemy {
      * @param player The player entity.
      * @param spellManager Manager for spell effects.
      * @param enemyManager Manager for enemy entities (used for spawning clones).
-     * @param projectileManager Manager for projectiles.
      * @param bossInterface The UI component for the boss health bar.
      */
-    public void update(int[][] levelData, Player player, SpellManager spellManager, EnemyManager enemyManager, ProjectileManager projectileManager, BossInterface bossInterface) {
+    public void update(int[][] levelData, Player player, SpellManager spellManager, EnemyManager enemyManager, BossInterface bossInterface) {
         this.spellManager = spellManager;
         this.currentPlayerTarget = player;
         this.currentLevelData = levelData;
@@ -118,10 +116,10 @@ public class Roric extends Enemy {
         phaseManager.update();
         // Delegate to handler (for specials)
         if (state == RoricState.SKYFALL_BARRAGE || state == RoricState.CELESTIAL_RAIN) {
-            attackHandler.update(levelData, player, spellManager, enemyManager, projectileManager);
+            attackHandler.update(levelData, player, spellManager, enemyManager);
             return;
         }
-        updateMove(levelData, player, spellManager, projectileManager, enemyManager);
+        updateMove(levelData, player, spellManager, enemyManager);
         updateAnimation();
         updateAttackBox();
         updateBossInterface(bossInterface);
@@ -134,12 +132,11 @@ public class Roric extends Enemy {
      * @param levelData Collision data for the level.
      * @param player The player entity.
      * @param spellManager The spell manager for handling spells.
-     * @param projectileManager The projectile manager for handling projectiles.
      * @param enemyManager The enemy manager for handling other enemies.
      */
-    protected void updateMove(int[][] levelData, Player player, SpellManager spellManager, ProjectileManager projectileManager, EnemyManager enemyManager) {
+    protected void updateMove(int[][] levelData, Player player, SpellManager spellManager, EnemyManager enemyManager) {
         if (!isEntityOnFloor(hitBox, levelData) && !inAir) inAir = true;
-        attackHandler.update(levelData, player, spellManager, enemyManager, projectileManager);
+        attackHandler.update(levelData, player, spellManager, enemyManager);
         if (inAir) {
             updateInAir(levelData, 0, COLLISION_FALL_SPEED);
         }

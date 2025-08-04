@@ -40,6 +40,9 @@ public class SpriteManager {
 
     private BufferedImage[] roricAuraAnimations;
 
+    private BufferedImage arrowImage;
+    private BufferedImage roricArrowImage;
+
     private SpriteManager() {}
 
     public static SpriteManager getInstance() {
@@ -324,6 +327,9 @@ public class SpriteManager {
         roricProjectileAnimations[1] = loadFromSprite(RORIC_SPELLS_SHEET, 13, 7, RORIC_RAIN_WID, RORIC_RAIN_HEI, 0, RORIC_PROJECTILE_W, RORIC_PROJECTILE_H);
         roricProjectileAnimations[2] = loadFromSprite(CELESTIAL_PROJECTILE_SHEET, 4, 0, CELESTIAL_ORB_WID, CELESTIAL_ORB_HEI, 0, CELESTIAL_PROJECTILE_W, CELESTIAL_PROJECTILE_H);
 
+        arrowImage = ImageUtils.importImage(ARROW_IMG, ARROW_WID, ARROW_HEI);
+        roricArrowImage = ImageUtils.importImage(RORIC_ARROW_IMG, ARROW_WID, ARROW_HEI);
+
         // Sky Beam
         BufferedImage[] originalFrames = roricProjectileAnimations[0];
         BufferedImage[] beamFrames = new BufferedImage[4];
@@ -397,6 +403,14 @@ public class SpriteManager {
 
     public BufferedImage[] getRoricAuraAnimations() {
         return roricAuraAnimations;
+    }
+
+    public BufferedImage getArrowImage() {
+        return arrowImage;
+    }
+
+    public BufferedImage getRoricArrowImage() {
+        return roricArrowImage;
     }
 
 }

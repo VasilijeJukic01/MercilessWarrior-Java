@@ -18,6 +18,7 @@ import platformer.model.entities.enemies.EnemyManager;
 import platformer.model.gameObjects.ObjectManager;
 import platformer.model.levels.LevelManager;
 import platformer.model.projectiles.Projectile;
+import platformer.model.projectiles.ProjectileFactory;
 import platformer.model.projectiles.ProjectileManager;
 import platformer.model.inventory.Inventory;
 import platformer.model.inventory.InventoryBonus;
@@ -150,7 +151,7 @@ public class Player extends Entity {
         if (spellState == 1 && animIndex >= animations[entityState.ordinal()].length-5)
             animIndex = 2;
         else if (fireball && animIndex == 3)
-            projectileManager.activateFireball(this);
+            ProjectileFactory.createFireball(this);
     }
 
     private void finishAnimation() {

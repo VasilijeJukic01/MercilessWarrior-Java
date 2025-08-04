@@ -8,7 +8,7 @@ import platformer.model.entities.Direction;
 import platformer.model.entities.enemies.EnemyManager;
 import platformer.model.entities.enemies.boss.Roric;
 import platformer.model.entities.player.Player;
-import platformer.model.projectiles.ProjectileManager;
+import platformer.model.projectiles.ProjectileFactory;
 import platformer.model.spells.SpellManager;
 import platformer.ui.overlays.hud.BossInterface;
 
@@ -29,7 +29,7 @@ public class RoricClone extends Roric {
     }
 
     @Override
-    public void update(int[][] levelData, Player player, SpellManager spellManager, EnemyManager enemyManager, ProjectileManager projectileManager, BossInterface bossInterface) {
+    public void update(int[][] levelData, Player player, SpellManager spellManager, EnemyManager enemyManager, BossInterface bossInterface) {
         if (!attackStarted) {
             setEnemyAction(Anim.ATTACK_2);
             attackStarted = true;
@@ -40,7 +40,7 @@ public class RoricClone extends Roric {
 
         if (getEnemyAction() == Anim.ATTACK_2) {
             if (getAnimIndex() == 9 && !isAttackCheck()) {
-                projectileManager.activateRoricArrow(this, 1.0);
+                ProjectileFactory.createRoricArrow(this, 1.0);
                 setAttackCheck(true);
             }
         }

@@ -145,7 +145,7 @@ public abstract class Projectile implements DamageSource {
         hitBox.y += Y * LB_SPEED_SLOW;
     }
 
-    public abstract void render(Graphics g, int xLevelOffset, int yLevelOffset, Object animations);
+    public abstract void render(Graphics g, int xLevelOffset, int yLevelOffset);
 
     public void renderHitBox(Graphics g, int xLevelOffset, int yLevelOffset, Color color) {
         if (!DebugSettings.getInstance().isDebugMode()) return;

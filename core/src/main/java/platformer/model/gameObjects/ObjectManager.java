@@ -3,6 +3,7 @@ package platformer.model.gameObjects;
 import platformer.animation.SpriteManager;
 import platformer.audio.Audio;
 import platformer.audio.types.Sound;
+import platformer.model.projectiles.ProjectileFactory;
 import platformer.storage.StorageStrategy;
 import platformer.core.Framework;
 import platformer.model.entities.Direction;
@@ -324,7 +325,7 @@ public class ObjectManager {
             if (arrowLauncher.getAnimIndex() == 9 && arrowLauncher.getAnimTick() == 0) {
                 Audio.getInstance().getAudioPlayer().playSound(Sound.ARROW);
                 Direction direction = (arrowLauncher.getObjType() == ObjType.ARROW_TRAP_RIGHT) ? Direction.LEFT : Direction.RIGHT;
-                gameState.getProjectileManager().activateArrow(new Point((int)arrowLauncher.getHitBox().x, (int)arrowLauncher.getHitBox().y), direction);
+                ProjectileFactory.createArrow(new Point((int)arrowLauncher.getHitBox().x, (int)arrowLauncher.getHitBox().y), direction);
             }
         }
     }

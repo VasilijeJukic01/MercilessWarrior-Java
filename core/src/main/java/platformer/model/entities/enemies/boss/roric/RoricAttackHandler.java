@@ -9,7 +9,7 @@ import platformer.model.entities.Direction;
 import platformer.model.entities.enemies.EnemyManager;
 import platformer.model.entities.enemies.boss.Roric;
 import platformer.model.entities.player.Player;
-import platformer.model.projectiles.ProjectileManager;
+import platformer.model.projectiles.ProjectileFactory;
 import platformer.model.spells.SpellManager;
 
 import java.awt.*;
@@ -81,9 +81,8 @@ public class RoricAttackHandler {
      * @param player           The player entity.
      * @param spellManager     Manager for creating spell effects.
      * @param enemyManager     Manager for creating enemy entities (clones).
-     * @param projectileManager Manager for creating projectiles.
      */
-    public void update(int[][] levelData, Player player, SpellManager spellManager, EnemyManager enemyManager, ProjectileManager projectileManager) {
+    public void update(int[][] levelData, Player player, SpellManager spellManager, EnemyManager enemyManager) {
         switch (roric.getState()) {
             case IDLE:
                 handleIdleState(levelData);
@@ -99,13 +98,13 @@ public class RoricAttackHandler {
                     finishAnimation();
                     return;
                 }
-                handleAerialAttack(levelData, player, projectileManager);
+                handleAerialAttack(levelData, player);
                 break;
             case REPOSITIONING:
                 handleRepositioning(player);
                 break;
             case ARROW_ATTACK:
-                handleArrowAttack(projectileManager);
+                handleArrowAttack();
                 break;
             case BEAM_ATTACK:
                 handleBeamAttack(spellManager);
@@ -119,7 +118,7 @@ public class RoricAttackHandler {
                 handleSkyfallBarrage(player, spellManager, levelData);
                 break;
             case CELESTIAL_RAIN:
-                handleCelestialRain(projectileManager);
+                handleCelestialRain();
                 break;
             case COOLDOWN:
                 handleCooldownState();
@@ -219,9 +218,8 @@ public class RoricAttackHandler {
      *
      * @param levelData         The level's collision map.
      * @param player            The player entity.
-     * @param projectileManager Manager to spawn projectiles.
      */
-    private void handleAerialAttack(int[][] levelData, Player player, ProjectileManager projectileManager) {
+    private void handleAerialAttack(int[][] levelData, Player player) {
         if (isRepositioning) return;
 
         if (roric.getEnemyAction() != Anim.SPELL_2) {
@@ -235,8 +233,7 @@ public class RoricAttackHandler {
         if (roric.getEnemyAction() == Anim.SPELL_2) {
             if (roric.getAnimIndex() == 6 && !roric.isAttackCheck()) {
                 boolean dropTrap = phaseManager.shouldAerialAttackDropTrap();
-                if (dropTrap) projectileManager.activateTrapArrow(roric, player);
-                else projectileManager.activateRoricAngledArrow(roric, player);
+                ProjectileFactory.createRoricAngledArrow(roric, player, dropTrap);
                 roric.setAttackCheck(true);
             }
         }
@@ -344,9 +341,9 @@ public class RoricAttackHandler {
     /**
      * Fires a straight projectile during the ATTACK_2 animation.
      */
-    private void handleArrowAttack(ProjectileManager projectileManager) {
+    private void handleArrowAttack() {
         if (roric.getAnimIndex() == 9 && !roric.isAttackCheck()) {
-            projectileManager.activateRoricArrow(roric, phaseManager.getArrowSpeedMultiplier());
+            ProjectileFactory.createRoricArrow(roric, phaseManager.getArrowSpeedMultiplier());
             roric.setAttackCheck(true);
         }
     }
@@ -448,10 +445,8 @@ public class RoricAttackHandler {
     /**
      * Handles the Celestial Rain attack. Roric becomes stationary and spawns rotating volleys of celestial orbs
      * in a "bullet hell" spiral pattern. The angle of each volley is incremented to create the rotation.
-     *
-     * @param projectileManager The projectile manager to create the orbs.
      */
-    private void handleCelestialRain(ProjectileManager projectileManager) {
+    private void handleCelestialRain() {
         celestialRainTimer++;
         if (isSpawningVolley) {
             orbSpawnTimer++;
@@ -459,7 +454,7 @@ public class RoricAttackHandler {
                 orbSpawnTimer = 0;
                 double angleIncrement = Math.toRadians(360.0 / PROJECTILES_PER_VOLLEY);
                 double angle = currentSpawnAngle + (orbInVolleyIndex * angleIncrement);
-                projectileManager.activateCelestialOrb(roric, angle);
+                ProjectileFactory.createCelestialOrb(roric, angle);
                 orbInVolleyIndex++;
                 if (orbInVolleyIndex >= PROJECTILES_PER_VOLLEY) {
                     isSpawningVolley = false;

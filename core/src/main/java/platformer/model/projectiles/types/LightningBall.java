@@ -1,5 +1,6 @@
 package platformer.model.projectiles.types;
 
+import platformer.animation.SpriteManager;
 import platformer.animation.graphics.WaveAnim;
 import platformer.model.entities.Direction;
 import platformer.model.projectiles.PRType;
@@ -14,8 +15,13 @@ import static platformer.constants.Constants.*;
 
 public class LightningBall extends Projectile {
 
+    private final BufferedImage[] lightningBallAnims;
+    private final BufferedImage[] energyBallAnims;
+
     public LightningBall(int xPos, int yPos, Direction direction) {
         super(PRType.LIGHTNING_BALL, direction);
+        this.lightningBallAnims = SpriteManager.getInstance().getLightningBallAnimations();
+        this.energyBallAnims = SpriteManager.getInstance().getEnergyBallAnimations();
         super.animate = true;
         initHitBox(xPos, yPos);
     }
@@ -36,9 +42,8 @@ public class LightningBall extends Projectile {
     }
 
     @Override
-    public void render(Graphics g, int xLevelOffset, int yLevelOffset, Object animations) {
-        if (!(animations instanceof BufferedImage[])) return;
-        BufferedImage[] animArray = (BufferedImage[]) animations;
+    public void render(Graphics g, int xLevelOffset, int yLevelOffset) {
+        BufferedImage[] animArray = (direction == Direction.LEFT || direction == Direction.RIGHT) ? this.lightningBallAnims : this.energyBallAnims;
         int fS = 1, fC = 0;
         if (direction == Direction.RIGHT) {
             fS = -1;

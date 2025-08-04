@@ -31,6 +31,7 @@ import platformer.model.entities.enemies.EnemyManager;
 import platformer.model.entities.player.Player;
 import platformer.model.entities.player.PlayerAction;
 import platformer.model.gameObjects.ObjectManager;
+import platformer.model.projectiles.ProjectileFactory;
 import platformer.model.projectiles.ProjectileManager;
 import platformer.model.levels.LevelManager;
 import platformer.model.minimap.MinimapManager;
@@ -131,6 +132,7 @@ public class GameState extends AbstractState implements State {
 
         this.world = new GameWorld(context);
 
+        ProjectileFactory.init(this.getProjectileManager());
         this.getEnemyManager().injectScreenEffectsManager(screenEffectsManager);
         this.getObjectManager().lateInit();
         this.getSpellManager().lateInit();

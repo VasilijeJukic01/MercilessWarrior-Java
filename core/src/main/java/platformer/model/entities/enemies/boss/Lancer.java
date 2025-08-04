@@ -15,7 +15,7 @@ import platformer.model.entities.enemies.Enemy;
 import platformer.model.entities.enemies.EnemyType;
 import platformer.model.entities.player.Player;
 import platformer.model.gameObjects.ObjectManager;
-import platformer.model.projectiles.ProjectileManager;
+import platformer.model.projectiles.ProjectileFactory;
 import platformer.model.spells.SpellManager;
 import platformer.ui.overlays.hud.BossInterface;
 
@@ -90,7 +90,7 @@ public class Lancer extends Enemy {
     }
 
     // Core
-    private void updateBehavior(int[][] levelData, Player player, SpellManager spellManager, ObjectManager objectManager, ProjectileManager projectileManager) {
+    private void updateBehavior(int[][] levelData, Player player, SpellManager spellManager, ObjectManager objectManager) {
         if (cooldown[Cooldown.ATTACK.ordinal()] != 0) return;
         switch (entityState) {
             case IDLE:
@@ -103,11 +103,11 @@ public class Lancer extends Enemy {
             case SPELL_1:
                 rapidSlashAction(levelData, player); break;
             case SPELL_2:
-                lightningBallAction(projectileManager); break;
+                lightningBallAction(); break;
             case SPELL_3:
                 thunderSlamAction(player, spellManager); break;
             case SPELL_4:
-                multiLightningBallAction(projectileManager, spellManager);
+                multiLightningBallAction(spellManager);
                 break;
             case DEATH:
                 objectManager.activateBlockers(false);
@@ -156,9 +156,9 @@ public class Lancer extends Enemy {
         if (!attackCheck) checkPlayerHit(attackBox, player);
     }
 
-    private void lightningBallAction(ProjectileManager projectileManager) {
+    private void lightningBallAction() {
         if (animIndex == 7 && !shooting) {
-            projectileManager.activateLightningBall(this);
+            ProjectileFactory.createLightningBall(this);
             Audio.getInstance().getAudioPlayer().playSound(Sound.LIGHTNING_2);
             shooting = true;
         }
@@ -190,10 +190,10 @@ public class Lancer extends Enemy {
         }
     }
 
-    private void multiLightningBallAction(ProjectileManager projectileManager, SpellManager spellManager) {
+    private void multiLightningBallAction(SpellManager spellManager) {
         EventBus.getInstance().publish(new LancerAuraEvent(this, true));
-        if (specialAttackIndex == 1) oscillationProjectiles(projectileManager);
-        else trackingProjectiles(spellManager, projectileManager);
+        if (specialAttackIndex == 1) oscillationProjectiles();
+        else trackingProjectiles(spellManager);
     }
 
     private void dashSlash(int[][] levelData) {
@@ -294,18 +294,18 @@ public class Lancer extends Enemy {
 
 
     // Projectiles
-    private void oscillationProjectiles(ProjectileManager projectileManager) {
+    private void oscillationProjectiles() {
         if (animIndex == 1 && !shooting) {
-            if (multiShootFlag == 1) projectileManager.activateMultiLightningBallVariation1(this);
-            if (multiShootFlag == 4) projectileManager.activateMultiLightningBallVariation2(this);
+            if (multiShootFlag == 1) ProjectileFactory.createMultiLightningBallVariation1(this);
+            if (multiShootFlag == 4) ProjectileFactory.createMultiLightningBallVariation2(this);
             multiShootFlag = (multiShootFlag + 1) % 5;
             shooting = true;
         }
     }
 
-    private void trackingProjectiles(SpellManager spellManager, ProjectileManager projectileManager) {
+    private void trackingProjectiles(SpellManager spellManager) {
         if (animIndex == 1 && !shooting) {
-            if (multiShootFlag == 1) projectileManager.activateTrackingLightningBall(this);
+            if (multiShootFlag == 1) ProjectileFactory.createTrackingLightningBall(this);
             if (multiShootFlag == 0) {
                 if (canFlash) spellManager.activateFlashes();
                 canFlash = !canFlash;
@@ -319,18 +319,18 @@ public class Lancer extends Enemy {
     @Override
     public void update(int[][] levelData, Player player) {}
 
-    public void update(int[][] levelData, Player player, SpellManager spellManager, ObjectManager objectManager, ProjectileManager projectileManager, BossInterface bossInterface) {
-        updateMove(levelData, player, spellManager, objectManager, projectileManager);
+    public void update(int[][] levelData, Player player, SpellManager spellManager, ObjectManager objectManager, BossInterface bossInterface) {
+        updateMove(levelData, player, spellManager, objectManager);
         updateAnimation();
         updateAttackBox();
         if (!bossInterface.isActive() && start) bossInterface.injectBoss(this);
         else if (bossInterface.isActive() && !start) bossInterface.reset();
     }
 
-    public void updateMove(int[][] levelData, Player player, SpellManager spellManager, ObjectManager objectManager, ProjectileManager projectileManager) {
+    public void updateMove(int[][] levelData, Player player, SpellManager spellManager, ObjectManager objectManager) {
         if (!isEntityOnFloor(hitBox, levelData) && !isAirFreeze()) inAir = true;
         if (inAir) updateInAir(levelData, gravity, collisionFallSpeed);
-        else updateBehavior(levelData, player, spellManager, objectManager, projectileManager);
+        else updateBehavior(levelData, player, spellManager, objectManager);
     }
 
     private void updateAttackBox() {

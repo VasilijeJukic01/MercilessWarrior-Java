@@ -1,5 +1,6 @@
 package platformer.model.projectiles.types;
 
+import platformer.animation.SpriteManager;
 import platformer.model.entities.Direction;
 import platformer.model.projectiles.PRType;
 import platformer.model.projectiles.Projectile;
@@ -12,8 +13,11 @@ import static platformer.constants.Constants.*;
 
 public class Fireball extends Projectile {
 
+    private final BufferedImage[] animations;
+
     public Fireball(int xPos, int yPos, Direction direction) {
         super(PRType.FIREBALL, direction);
+        this.animations = SpriteManager.getInstance().getFireballAnimations();
         super.animate = true;
         initHitBox(xPos, yPos);
     }
@@ -24,9 +28,7 @@ public class Fireball extends Projectile {
     }
 
     @Override
-    public void render(Graphics g, int xLevelOffset, int yLevelOffset, Object animations) {
-        if (!(animations instanceof BufferedImage[])) return;
-        BufferedImage[] animArray = (BufferedImage[]) animations;
+    public void render(Graphics g, int xLevelOffset, int yLevelOffset) {
         int fS = 1, fC = 0;
         if (direction == Direction.RIGHT) {
             fS = -1;
@@ -34,7 +36,7 @@ public class Fireball extends Projectile {
         }
         int x = (int)(hitBox.x - xLevelOffset + fC - 15 * SCALE);
         int y = (int)(hitBox.y - yLevelOffset - 18 * SCALE);
-        g.drawImage(animArray[animIndex], x, y, fS * FB_WID, FB_HEI, null);
+        g.drawImage(animations[animIndex], x, y, fS * FB_WID, FB_HEI, null);
         renderHitBox(g, xLevelOffset, yLevelOffset, Color.BLUE);
     }
 

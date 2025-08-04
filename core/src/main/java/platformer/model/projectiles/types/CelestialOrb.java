@@ -1,5 +1,6 @@
 package platformer.model.projectiles.types;
 
+import platformer.animation.SpriteManager;
 import platformer.model.entities.player.Player;
 import platformer.model.projectiles.PRType;
 import platformer.model.projectiles.Projectile;
@@ -11,6 +12,7 @@ import static platformer.constants.Constants.*;
 
 public class CelestialOrb extends Projectile {
 
+    private final BufferedImage[] animations;
     private final double angle;
     private static final double SPEED = 1.7 * SCALE;
     private double rotationAngle = 0;
@@ -19,6 +21,7 @@ public class CelestialOrb extends Projectile {
     public CelestialOrb(int xPos, int yPos, double angle) {
         super(PRType.CELESTIAL_ORB, null);
         super.animate = true;
+        this.animations = SpriteManager.getInstance().getRoricProjectileAnimations()[2];
         this.angle = angle;
         initHitBox(xPos, yPos);
     }
@@ -36,10 +39,7 @@ public class CelestialOrb extends Projectile {
     }
 
     @Override
-    public void render(Graphics g, int xLevelOffset, int yLevelOffset, Object animations) {
-        if (!(animations instanceof BufferedImage[])) return;
-        BufferedImage[] animArray = (BufferedImage[]) animations;
-
+    public void render(Graphics g, int xLevelOffset, int yLevelOffset) {
         int centerX = (int) (hitBox.getCenterX() - xLevelOffset);
         int centerY = (int) (hitBox.getCenterY() - yLevelOffset);
         int renderWidth = CELESTIAL_ORB_WID;
@@ -49,7 +49,7 @@ public class CelestialOrb extends Projectile {
         try {
             g2d.translate(centerX, centerY);
             g2d.rotate(rotationAngle);
-            g2d.drawImage(animArray[animIndex], -renderWidth / 2, -renderHeight / 2, renderWidth, renderHeight, null);
+            g2d.drawImage(animations[animIndex], -renderWidth / 2, -renderHeight / 2, renderWidth, renderHeight, null);
         } finally {
             g2d.dispose();
         }

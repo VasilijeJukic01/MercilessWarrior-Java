@@ -1,5 +1,6 @@
 package platformer.model.projectiles.types;
 
+import platformer.animation.SpriteManager;
 import platformer.model.entities.Direction;
 import platformer.model.projectiles.PRType;
 import platformer.model.projectiles.Projectile;
@@ -12,8 +13,11 @@ import static platformer.constants.Constants.*;
 
 public class Arrow extends Projectile {
 
+    private final BufferedImage image;
+
     public Arrow(int xPos, int yPos, Direction direction) {
         super(PRType.ARROW, direction);
+        this.image = SpriteManager.getInstance().getArrowImage();
         initHitBox(xPos, yPos);
     }
 
@@ -23,8 +27,7 @@ public class Arrow extends Projectile {
     }
 
     @Override
-    public void render(Graphics g, int xLevelOffset, int yLevelOffset, Object animations) {
-        if (!(animations instanceof BufferedImage)) return;
+    public void render(Graphics g, int xLevelOffset, int yLevelOffset) {
         int fS = 1, fC = 0;
         if (direction == Direction.LEFT) {
             fS = -1;
@@ -32,7 +35,7 @@ public class Arrow extends Projectile {
         }
         int x = (int)hitBox.x - xLevelOffset + fC;
         int y = (int)hitBox.y - yLevelOffset;
-        g.drawImage((BufferedImage)animations, x, y, fS * ARROW_WID, ARROW_HEI, null);
+        g.drawImage(image, x, y, fS * ARROW_WID, ARROW_HEI, null);
         renderHitBox(g, xLevelOffset, yLevelOffset, Color.BLUE);
     }
 
