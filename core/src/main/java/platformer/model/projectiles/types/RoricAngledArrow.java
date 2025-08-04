@@ -1,9 +1,11 @@
-package platformer.model.projectiles;
+package platformer.model.projectiles.types;
 
 import platformer.debug.DebugSettings;
 import platformer.model.entities.Direction;
 import platformer.model.entities.player.Player;
 import platformer.model.gameObjects.ObjectManager;
+import platformer.model.projectiles.PRType;
+import platformer.model.projectiles.Projectile;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;

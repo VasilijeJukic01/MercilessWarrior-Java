@@ -1,7 +1,7 @@
 package platformer.physics;
 
 import platformer.model.entities.Direction;
-import platformer.model.projectiles.LightningBall;
+import platformer.model.projectiles.types.LightningBall;
 import platformer.model.projectiles.Projectile;
 import platformer.model.levels.Level;
 

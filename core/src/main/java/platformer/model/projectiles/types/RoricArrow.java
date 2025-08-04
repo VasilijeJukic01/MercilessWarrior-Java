@@ -1,7 +1,9 @@
-package platformer.model.projectiles;
+package platformer.model.projectiles.types;
 
 import platformer.model.entities.Direction;
 import platformer.model.entities.player.Player;
+import platformer.model.projectiles.PRType;
+import platformer.model.projectiles.Projectile;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;

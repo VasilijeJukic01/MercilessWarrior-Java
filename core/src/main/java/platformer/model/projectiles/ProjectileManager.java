@@ -7,6 +7,7 @@ import platformer.model.entities.enemies.boss.Roric;
 import platformer.model.entities.enemies.boss.Lancer;
 import platformer.model.entities.player.Player;
 import platformer.model.perks.PerksBonus;
+import platformer.model.projectiles.types.*;
 import platformer.state.types.GameState;
 import platformer.utils.ImageUtils;
 

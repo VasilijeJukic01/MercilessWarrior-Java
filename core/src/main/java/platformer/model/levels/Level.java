@@ -9,12 +9,11 @@ import platformer.model.gameObjects.npc.Npc;
 import platformer.model.gameObjects.npc.NpcType;
 import platformer.model.gameObjects.objects.Container;
 import platformer.model.gameObjects.objects.*;
-import platformer.model.spells.Flash;
-import platformer.model.spells.Lightning;
+import platformer.model.spells.types.Flash;
+import platformer.model.spells.types.Lightning;
 import platformer.model.spells.Spell;
 import platformer.model.spells.SpellType;
 import platformer.utils.CollectionUtils;
-import platformer.utils.ImageUtils;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;

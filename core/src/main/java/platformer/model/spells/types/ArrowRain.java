@@ -1,9 +1,13 @@
-package platformer.model.spells;
+package platformer.model.spells.types;
 
+import platformer.animation.SpriteManager;
 import platformer.model.entities.player.Player;
+import platformer.model.spells.Spell;
+import platformer.model.spells.SpellType;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
 
 import static platformer.constants.Constants.*;
 
@@ -29,6 +33,21 @@ public class ArrowRain extends Spell {
             currentDamageCooldown = DAMAGE_COOLDOWN;
         }
         updateAnimation();
+    }
+
+    @Override
+    public void render(Graphics g, int xLevelOffset, int yLevelOffset) {
+        if (isActive()) {
+            int x = (int) hitBox.x - xLevelOffset - (int)(135 * SCALE);
+            int y = (int) hitBox.y - yLevelOffset;
+            g.drawImage(getAnimations()[getAnimIndex()], x, y, getWidth(), getHeight(), null);
+            hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.CYAN);
+        }
+    }
+
+    @Override
+    protected BufferedImage[] getAnimations() {
+        return SpriteManager.getInstance().getArrowRainAnimations();
     }
 
     @Override

@@ -1,8 +1,12 @@
-package platformer.model.spells;
+package platformer.model.spells.types;
 
+import platformer.animation.SpriteManager;
 import platformer.model.entities.player.Player;
+import platformer.model.spells.Spell;
+import platformer.model.spells.SpellType;
 
 import java.awt.*;
+import java.awt.image.BufferedImage;
 
 import static platformer.constants.Constants.*;
 
@@ -26,6 +30,21 @@ public class Flash extends Spell {
             }
         }
         updateAnimation();
+    }
+
+    @Override
+    public void render(Graphics g, int xLevelOffset, int yLevelOffset) {
+        if (active) {
+            int x = (int) getHitBox().x - xLevelOffset - FLASH_OFFSET_X;
+            int y = (int) getHitBox().y - yLevelOffset + 1;
+            g.drawImage(getAnimations()[getAnimIndex()], x, y, getWidth(), getHeight(), null);
+        }
+        hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.CYAN);
+    }
+
+    @Override
+    protected BufferedImage[] getAnimations() {
+        return SpriteManager.getInstance().getFlashAnimations();
     }
 
     @Override

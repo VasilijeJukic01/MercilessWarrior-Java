@@ -1,8 +1,10 @@
-package platformer.model.projectiles;
+package platformer.model.projectiles.types;
 
 import platformer.model.entities.player.Player;
+import platformer.model.projectiles.PRType;
+import platformer.model.projectiles.Projectile;
+
 import java.awt.*;
-import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import static platformer.constants.Constants.*;

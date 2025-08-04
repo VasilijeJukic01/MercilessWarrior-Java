@@ -7,7 +7,7 @@ import platformer.event.EventBus;
 import platformer.event.events.CrateDestroyedEvent;
 import platformer.model.gameObjects.objects.*;
 import platformer.model.projectiles.Projectile;
-import platformer.model.spells.Flame;
+import platformer.model.spells.types.Flame;
 
 import java.awt.geom.Rectangle2D;
 import java.util.List;

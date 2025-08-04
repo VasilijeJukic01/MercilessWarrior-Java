@@ -16,12 +16,12 @@ import platformer.model.entities.player.Player;
 import platformer.model.entities.player.PlayerAction;
 import platformer.model.gameObjects.GameObject;
 import platformer.model.gameObjects.objects.Spike;
-import platformer.model.projectiles.Fireball;
+import platformer.model.projectiles.types.Fireball;
 import platformer.model.projectiles.Projectile;
 import platformer.model.inventory.InventoryBonus;
 import platformer.model.levels.Level;
 import platformer.model.perks.PerksBonus;
-import platformer.model.spells.Flame;
+import platformer.model.spells.types.Flame;
 import platformer.state.types.GameState;
 import platformer.utils.CollectionUtils;
 

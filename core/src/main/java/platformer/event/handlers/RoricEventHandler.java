@@ -62,7 +62,12 @@ public class RoricEventHandler implements EventHandler {
 
     public void onPhaseChange(RoricPhaseChangeEvent event) {
         Roric roric = gameState.getEnemyManager().getRoricInstance();
-        if (roric != null) roric.getAttackHandler().interruptAndIdle();
+        if (roric != null) {
+            if (this.fightStartTime == 0 && roric.getPhaseManager().getFightStartTime() != 0) {
+                this.fightStartTime = roric.getPhaseManager().getFightStartTime();
+            }
+            roric.getAttackHandler().interruptAndIdle();
+        }
         handlePhaseChange(event.newPhase());
     }
 

@@ -1,10 +1,14 @@
-package platformer.model.spells;
+package platformer.model.spells.types;
 
+import platformer.animation.SpriteManager;
 import platformer.model.entities.Direction;
 import platformer.model.entities.player.Player;
+import platformer.model.spells.Spell;
+import platformer.model.spells.SpellType;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
 
 import static platformer.constants.Constants.*;
 
@@ -37,6 +41,25 @@ public class RoricBeam extends Spell {
             }
         }
         updateAnimation();
+    }
+
+    @Override
+    public void render(Graphics g, int xLevelOffset, int yLevelOffset) {
+        if (isActive()) {
+            int flipSign = (direction == Direction.LEFT) ? -1 : 1;
+            int x = (int) hitBox.x - xLevelOffset;
+            int y = (int) hitBox.y - yLevelOffset - (int) (64 * SCALE);
+
+            if (flipSign == -1) x += RORIC_BEAM_WID;
+
+            g.drawImage(getAnimations()[getAnimIndex()], x, y, flipSign * RORIC_BEAM_WID, RORIC_BEAM_HEI, null);
+            hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.CYAN);
+        }
+    }
+
+    @Override
+    protected BufferedImage[] getAnimations() {
+        return SpriteManager.getInstance().getRoricBeamAnimations();
     }
 
     @Override
