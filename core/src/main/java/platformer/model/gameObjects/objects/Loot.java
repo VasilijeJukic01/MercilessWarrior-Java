@@ -1,7 +1,9 @@
 package platformer.model.gameObjects.objects;
 
 import platformer.model.entities.enemies.EnemyType;
+import platformer.model.entities.player.Player;
 import platformer.model.gameObjects.GameObject;
+import platformer.model.gameObjects.Interactable;
 import platformer.model.gameObjects.ObjType;
 import platformer.model.inventory.item.InventoryItem;
 import platformer.model.inventory.item.ItemData;
@@ -16,7 +18,7 @@ import java.util.Random;
 
 import static platformer.constants.Constants.*;
 
-public class Loot extends GameObject {
+public class Loot extends GameObject implements Interactable {
 
     private boolean active;
     private final List<InventoryItem> items = new ArrayList<>();
@@ -104,6 +106,26 @@ public class Loot extends GameObject {
     @Override
     public void attackBoxRenderer(Graphics g, int xLevelOffset, int yLevelOffset) {
 
+    }
+
+    @Override
+    public void onEnter(Player player) {
+        this.active = true;
+    }
+
+    @Override
+    public void onIntersect(Player player) {
+
+    }
+
+    @Override
+    public void onExit(Player player) {
+        this.active = false;
+    }
+
+    @Override
+    public String getInteractionPrompt() {
+        return "Loot";
     }
 
     public void setActive(boolean active) {

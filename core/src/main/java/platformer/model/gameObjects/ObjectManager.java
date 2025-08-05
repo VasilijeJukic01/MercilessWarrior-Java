@@ -23,6 +23,7 @@ import java.awt.image.BufferedImage;
 import java.util.List;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static platformer.constants.Constants.*;
 import static platformer.physics.CollisionDetector.canLauncherSeeEntity;
@@ -36,11 +37,10 @@ public class ObjectManager {
 
     private final GameState gameState;
     private CollisionHandler collisionHandler;
-    private IntersectionHandler intersectionHandler;
     private ObjectBreakHandler objectBreakHandler;
     private LootHandler lootHandler;
 
-    private GameObject intersection;
+    private Interactable intersection = null;
 
     Class<? extends GameObject>[] updateClasses = new Class[]{
             Coin.class, Container.class, Potion.class, Spike.class,
@@ -72,7 +72,6 @@ public class ObjectManager {
     public void lateInit() {
         this.collisionHandler = new CollisionHandler(gameState.getLevelManager(), this);
         this.lootHandler = new LootHandler(this, gameState.getEffectManager());
-        this.intersectionHandler = new IntersectionHandler(gameState.getEnemyManager(), this, lootHandler);
         this.objectBreakHandler = new ObjectBreakHandler(this, lootHandler);
     }
 
@@ -97,26 +96,39 @@ public class ObjectManager {
 
     // Intersection Handler
     /**
-     * Checks if the player intersects with any object.
+     * Handles the interactions between the player and interactable objects in the game.
+     * It checks if the player is intersecting with any interactable object and updates the intersection accordingly.
      *
-     * @param player The player whose intersection is to be checked.
+     * @param player The player object that is interacting with the game world.
      */
-    public void checkPlayerIntersection(Player player) {
-        intersectionHandler.checkPlayerIntersection(player);
-    }
+    private void handleInteractions(Player player) {
+        Interactable newIntersection = null;
 
-    public void checkEnemyIntersection() {
-        intersectionHandler.checkEnemyIntersection();
+        for (GameObject obj : getAllObjects()) {
+            if (obj instanceof Interactable && obj.isAlive() && obj.getHitBox().intersects(player.getHitBox())) {
+                newIntersection = (Interactable) obj;
+                break;
+            }
+        }
+
+        if (newIntersection != intersection) {
+            if (intersection != null) intersection.onExit(player);
+            if (newIntersection != null) newIntersection.onEnter(player);
+            intersection = newIntersection;
+        }
+        if (intersection != null) intersection.onIntersect(player);
     }
 
     /**
-     * Handles the interaction of a player with an object.
+     * Handles the collection of collectibles (coins and potions) by the player.
+     * It checks if the player is intersecting with any collectible object and collects it.
      *
-     * @param hitBox The hitbox of the player.
-     * @param player The player whose interaction is to be handled.
+     * @param player The player object that is collecting items.
      */
-    public void handleObjectInteraction(Rectangle2D.Double hitBox, Player player) {
-        intersectionHandler.handleObjectInteraction(hitBox, player);
+    private void handleCollectibles(Player player) {
+        Stream.concat(getObjects(Coin.class).stream(), getObjects(Potion.class).stream())
+                .filter(object -> object.isAlive() && player.getHitBox().intersects(object.getHitBox()))
+                .forEach(object -> lootHandler.collectItem(object, player));
     }
 
     /**
@@ -265,7 +277,8 @@ public class ObjectManager {
     public void update(int[][] lvlData, Player player) {
         Arrays.stream(updateClasses).forEach(clazz -> updateObjects(clazz, lvlData));
         updateArrowLaunchers(lvlData, player);
-        checkEnemyIntersection();
+        handleInteractions(player);
+        handleCollectibles(player);
         collisionHandler.updateObjectInAir();
     }
 
@@ -373,24 +386,19 @@ public class ObjectManager {
         objectsMap.computeIfAbsent(type, k -> new ArrayList<>()).add(gameObject);
     }
 
-    public void removeGameObject(GameObject gameObject) {
-        ObjType type = gameObject.getObjType();
-        List<GameObject> objectsOfType = objectsMap.get(type);
-        if (objectsOfType != null) {
-            objectsOfType.remove(gameObject);
-        }
-    }
-
     public String getIntersectingObject() {
-        return intersectionHandler.getIntersectingObject();
-    }
-
-    public void setIntersection(GameObject object) {
-        this.intersection = object;
+        if (intersection != null) {
+            return intersection.getInteractionPrompt();
+        }
+        return null;
     }
 
     public GameObject getIntersection() {
-        return intersection;
+        return (GameObject) intersection;
+    }
+
+    public void setIntersection(Interactable intersection) {
+        this.intersection = intersection;
     }
 
     public ObjectBreakHandler getObjectBreakHandler() {

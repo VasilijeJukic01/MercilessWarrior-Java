@@ -1,6 +1,8 @@
 package platformer.model.gameObjects.objects;
 
+import platformer.model.entities.player.Player;
 import platformer.model.gameObjects.GameObject;
+import platformer.model.gameObjects.Interactable;
 import platformer.model.gameObjects.ObjType;
 import platformer.model.inventory.item.ShopItem;
 
@@ -10,7 +12,7 @@ import java.util.*;
 
 import static platformer.constants.Constants.*;
 
-public class Shop extends GameObject {
+public class Shop extends GameObject implements Interactable {
 
     private boolean active;
     private final ArrayList<ShopItem> shopItems;
@@ -62,6 +64,26 @@ public class Shop extends GameObject {
     @Override
     public void attackBoxRenderer(Graphics g, int xLevelOffset, int yLevelOffset) {
 
+    }
+
+    @Override
+    public void onEnter(Player player) {
+        this.active = true;
+    }
+
+    @Override
+    public void onIntersect(Player player) {
+
+    }
+
+    @Override
+    public void onExit(Player player) {
+        this.active = false;
+    }
+
+    @Override
+    public String getInteractionPrompt() {
+        return "Shop";
     }
 
     public boolean isActive() {

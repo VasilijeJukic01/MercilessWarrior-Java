@@ -598,7 +598,6 @@ public class Player extends Entity {
     }
 
     private void updateMove() {
-        actionHandler.handleObjectActions(objectManager);
         boolean moving = checkAction(PlayerAction.MOVE);
         if (moving) {
             boolean dash = checkAction(PlayerAction.DASH);

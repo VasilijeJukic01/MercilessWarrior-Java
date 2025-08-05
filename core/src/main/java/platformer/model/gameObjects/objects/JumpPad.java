@@ -2,6 +2,7 @@ package platformer.model.gameObjects.objects;
 
 import platformer.model.entities.player.Player;
 import platformer.model.gameObjects.GameObject;
+import platformer.model.gameObjects.Interactable;
 import platformer.model.gameObjects.ObjType;
 
 import java.awt.*;
@@ -9,7 +10,7 @@ import java.awt.image.BufferedImage;
 
 import static platformer.constants.Constants.*;
 
-public class JumpPad extends GameObject {
+public class JumpPad extends GameObject implements Interactable {
 
     private boolean used = false;
     private final double launchSpeed = -6.0 * SCALE;
@@ -68,6 +69,26 @@ public class JumpPad extends GameObject {
     @Override
     public void attackBoxRenderer(Graphics g, int xLevelOffset, int yLevelOffset) {
 
+    }
+
+    @Override
+    public void onEnter(Player player) {
+        launchPlayer(player);
+    }
+
+    @Override
+    public void onIntersect(Player player) {
+
+    }
+
+    @Override
+    public void onExit(Player player) {
+
+    }
+
+    @Override
+    public String getInteractionPrompt() {
+        return null;
     }
 
     public boolean isUsed() {

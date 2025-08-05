@@ -8,7 +8,6 @@ import platformer.model.entities.Cooldown;
 import platformer.model.entities.Direction;
 import platformer.model.effects.EffectManager;
 import platformer.model.effects.particles.DustType;
-import platformer.model.gameObjects.ObjectManager;
 import platformer.model.perks.PerksBonus;
 
 import java.awt.geom.Rectangle2D;
@@ -82,19 +81,6 @@ public class PlayerActionHandler {
         player.changeStamina(-15);
         Audio.getInstance().getAudioPlayer().playSound(Sound.FIREBALL);
         player.getCooldown()[Cooldown.SPELL.ordinal()] = PLAYER_SPELL_CD;
-    }
-
-    public void handleObjectActions(ObjectManager objectManager) {
-        handleObjectInteraction(objectManager);
-        checkIntersection(objectManager);
-    }
-
-    private void handleObjectInteraction(ObjectManager objectManager) {
-        objectManager.handleObjectInteraction(hitBox, player);
-    }
-
-    private void checkIntersection(ObjectManager objectManager) {
-        objectManager.checkPlayerIntersection(player);
     }
 
     public void setDashCount(int dashCount) {

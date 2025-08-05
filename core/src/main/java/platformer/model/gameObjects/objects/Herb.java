@@ -1,6 +1,8 @@
 package platformer.model.gameObjects.objects;
 
+import platformer.model.entities.player.Player;
 import platformer.model.gameObjects.GameObject;
+import platformer.model.gameObjects.Interactable;
 import platformer.model.gameObjects.ObjType;
 
 import java.awt.*;
@@ -11,7 +13,7 @@ import static platformer.constants.Constants.*;
 /**
  * Represents a harvestable herb object in the game.
  */
-public class Herb extends GameObject {
+public class Herb extends GameObject implements Interactable {
 
     private boolean active;
 
@@ -61,5 +63,25 @@ public class Herb extends GameObject {
     @Override
     public void attackBoxRenderer(Graphics g, int xLevelOffset, int yLevelOffset) {
 
+    }
+
+    @Override
+    public void onEnter(Player player) {
+        this.active = true;
+    }
+
+    @Override
+    public void onIntersect(Player player) {
+
+    }
+
+    @Override
+    public void onExit(Player player) {
+        this.active = false;
+    }
+
+    @Override
+    public String getInteractionPrompt() {
+        return "Herb";
     }
 }
