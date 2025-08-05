@@ -18,11 +18,9 @@ import java.util.List;
 public class ObjectBreakHandler {
 
     private final ObjectManager objectManager;
-    private final LootHandler lootHandler;
 
-    public ObjectBreakHandler(ObjectManager objectManager, LootHandler lootHandler) {
+    public ObjectBreakHandler(ObjectManager objectManager) {
         this.objectManager = objectManager;
-        this.lootHandler = lootHandler;
     }
 
     /**

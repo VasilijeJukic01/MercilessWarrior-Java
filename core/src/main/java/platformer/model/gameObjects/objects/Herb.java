@@ -47,10 +47,6 @@ public class Herb extends GameObject implements Interactable {
         }
     }
 
-    public void harvest() {
-        this.alive = false;
-    }
-
     public void setActive(boolean active) {
         this.active = active;
     }

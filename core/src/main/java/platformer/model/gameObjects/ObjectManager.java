@@ -72,7 +72,7 @@ public class ObjectManager {
     public void lateInit() {
         this.collisionHandler = new CollisionHandler(gameState.getLevelManager(), this);
         this.lootHandler = new LootHandler(this, gameState.getEffectManager());
-        this.objectBreakHandler = new ObjectBreakHandler(this, lootHandler);
+        this.objectBreakHandler = new ObjectBreakHandler(this);
     }
 
     public void loadObjects(Level level) {

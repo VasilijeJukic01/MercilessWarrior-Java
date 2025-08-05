@@ -24,7 +24,13 @@ import static platformer.constants.Constants.*;
 import static platformer.constants.FilePaths.LOOT_TABLE_PATH;
 
 /**
- * Handles all logic related to loot generation and collection.
+ * Handles all logic related to loot generation and collection within the game world.
+ * <p>
+ * It collaborates with the {@link ObjectManager} to spawn new game objects and the {@link EffectManager} for visual feedback.
+ *
+ * @see ObjectManager
+ * @see LootTable
+ * @see InventoryItem
  */
 public class LootHandler {
 
@@ -40,7 +46,10 @@ public class LootHandler {
     }
 
     /**
-     * Generates loot and places it inside a container.
+     * Populates a given {@link Container} with loot based on its predefined loot table.
+     * This method is called when a container is first loaded into the level.
+     *
+     * @param container The container to be filled with loot.
      */
     public void generateCrateLoot(Container container) {
         LootTable crateTable = lootTables.get("CRATE");
@@ -99,6 +108,12 @@ public class LootHandler {
         }
     }
 
+    /**
+     * Instantiates and adds a single Coin object to the game world with randomized initial velocity.
+     *
+     * @param location The spawn location.
+     * @param coinType The type of coin to spawn.
+     */
     private void spawnCoin(Rectangle2D.Double location, CoinType coinType) {
         int x = (int) location.getCenterX();
         int y = (int) location.y;
@@ -108,6 +123,12 @@ public class LootHandler {
         objectManager.addGameObject(coin);
     }
 
+    /**
+     * Instantiates and adds a single {@link Loot} bag object to the game world.
+     *
+     * @param location  The spawn location.
+     * @param enemyType The type of enemy that dropped the loot.
+     */
     private void generateLoot(Rectangle2D.Double location, EnemyType enemyType) {
         int x = (int) (location.width / 4) + (int) location.x;
         int y = (int) (location.height / 2.3) + (int) location.y;
@@ -144,7 +165,11 @@ public class LootHandler {
     }
 
     /**
-     * Handles the harvesting of a herb, giving the player loot.
+     * Handles the logic for harvesting a {@link Herb} object.
+     * This involves playing a visual effect, determining the looted item from the loot table, adding it to the player's inventory, and deactivating the herb object.
+     *
+     * @param herb   The herb object being harvested.
+     * @param player The player performing the harvest.
      */
     public void harvestHerb(GameObject herb, Player player) {
         effectManager.spawnDustParticles(herb.getHitBox().getCenterX(), herb.getHitBox().getCenterY() - (10 * SCALE), 15, DustType.HERB_CUT, 0, null);
@@ -168,6 +193,11 @@ public class LootHandler {
     }
 
     // Helper
+    /**
+     * Loads and parses all loot tables from the resource file.
+     *
+     * @return A map where the key is the loot table ID and the value is the {@link LootTable} object.
+     */
     private Map<String, LootTable> loadLootTables() {
         try (InputStreamReader reader = new InputStreamReader(Objects.requireNonNull(getClass().getResourceAsStream(LOOT_TABLE_PATH)))) {
             Type type = new TypeToken<Map<String, List<LootItem>>>() {}.getType();
