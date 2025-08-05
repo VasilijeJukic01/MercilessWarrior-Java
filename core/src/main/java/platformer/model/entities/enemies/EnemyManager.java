@@ -168,7 +168,6 @@ public class EnemyManager {
             }
         }
         if (intersectingEnemies.isEmpty()) return false;
-        // TODO: Will disable attacking roric later
         if (intersectingEnemies.stream().anyMatch(e -> e instanceof Roric)) return false;
 
         intersectingEnemies.sort(Comparator.comparingDouble(e -> e.getHitBox().getCenterX() - player.getHitBox().getCenterX()));

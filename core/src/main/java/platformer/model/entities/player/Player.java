@@ -55,6 +55,7 @@ public class Player extends Entity {
     private int animTick = 0, animIndex = 0;
     private AttackState attackState;
     private PlayerActionHandler actionHandler;
+    private PlayerFeedbackHandler feedbackHandler;
     private final EnumSet<PlayerAction> actions = EnumSet.noneOf(PlayerAction.class);
 
     // Physics
@@ -77,8 +78,6 @@ public class Player extends Entity {
     private Inventory inventory;
 
     // Effect
-    private int runDustTick = 0;
-    private int wallSlideDustTick = 0;
     private int mythicAuraTick = 0;
 
 
@@ -116,6 +115,7 @@ public class Player extends Entity {
         this.playerDataManager = new PlayerDataManager(this, minimapManager, timeCycleManager);
         this.minimapHandler = new PlayerMinimapHandler(this, minimapManager);
         this.actionHandler = new PlayerActionHandler(this, effectManager);
+        this.feedbackHandler = new PlayerFeedbackHandler(this, effectManager);
         this.inventory = new Inventory();
     }
 
@@ -213,7 +213,7 @@ public class Player extends Entity {
         }
         boolean onWall = checkAction(PlayerAction.ON_WALL);
         boolean onObject = checkAction(PlayerAction.ON_OBJECT);
-        if (onWall && !onObject) setWallSlideAnimation();
+        if (onWall && !onObject) entityState = Anim.WALL;
         boolean dash = checkAction(PlayerAction.DASH);
         if (dash) {
             setDashAnimation();
@@ -233,17 +233,6 @@ public class Player extends Entity {
         else if (canTransform) entityState = Anim.TRANSFORM;
 
         if (previousAction != entityState) animIndex = animTick = 0;
-    }
-
-    private void setWallSlideAnimation() {
-        entityState = Anim.WALL;
-        wallSlideDustTick++;
-        if (wallSlideDustTick > 3) {
-            wallSlideDustTick = 0;
-            double dustX = (flipSign == 1) ? hitBox.x + hitBox.width : hitBox.x;
-            double dustY = hitBox.y + (new Random().nextDouble() * hitBox.height);
-            effectManager.spawnDustParticles(dustX, dustY, 1, DustType.WALL_SLIDE, flipSign, this);
-        }
     }
 
     private void setDashAnimation() {
@@ -280,7 +269,6 @@ public class Player extends Entity {
         if (spellState != 0 || canBlock || canTransform) return;
         boolean jump = checkAction(PlayerAction.JUMP);
         boolean onWall = checkAction(PlayerAction.ON_WALL);
-        if (!onWall) wallSlideDustTick = 0;
         if (jump) doJump();
         if (!inAir || onWall) actionHandler.setDashCount(0);
         boolean left = checkAction(PlayerAction.LEFT);
@@ -644,17 +632,7 @@ public class Player extends Entity {
         updateAnimation();
         updateStatus();
         checkBreakablesOnPush();
-
-        // TODO: Isolate this somewhere
-        if (checkAction(PlayerAction.MOVE) && !inAir) {
-            runDustTick++;
-            if (runDustTick >= 15) {
-                double dustX = (flipSign == 1) ? hitBox.x : hitBox.x + hitBox.width;
-                effectManager.spawnDustParticles(dustX, hitBox.y + hitBox.height, RUN_DUST_BURST, DustType.RUNNING, flipSign, this);
-                runDustTick = 0;
-            }
-        }
-        else runDustTick = 0;
+        feedbackHandler.update();
     }
 
     private void updateMythicAura() {
