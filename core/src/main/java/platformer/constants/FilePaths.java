@@ -131,6 +131,8 @@ public final class FilePaths {
     public static final String SHOP_INV_PATH = "/items/shop_inventory.json";
     public static final String LOOT_TABLE_PATH = "/items/loot_tables.json";
 
+    public static final String PERKS_PATH = "/items/perks.json";
+
     // Quests
     public static final String QUESTS_PATH = "/quests/quests.json";
     public static final String QUEST_COIN_PATH = "/images/quest/CoinIcon.png";

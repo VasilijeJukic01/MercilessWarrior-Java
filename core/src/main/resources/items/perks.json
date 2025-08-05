@@ -1,0 +1,210 @@
+[
+  {
+    "id": "XP_BONUS",
+    "name": "XP Bonus",
+    "description": "Increase gained XP by 15%",
+    "cost": 1,
+    "imageName": "Perk0",
+    "slot": 0,
+    "isStartPerk": true,
+    "unlocks": [1, 7],
+    "bonuses": {
+      "exp": 15.0
+    }
+  },
+  {
+    "id": "STRONG_ARMS",
+    "name": "Strong Arms",
+    "description": "Reduce attack cooldown by 30%",
+    "cost": 1,
+    "imageName": "Perk1",
+    "slot": 2,
+    "isStartPerk": true,
+    "unlocks": [1, 3, 9],
+    "bonuses": {
+      "cooldown": -0.3
+    }
+  },
+  {
+    "id": "ANCIENT_NOTES",
+    "name": "Ancient Notes",
+    "description": "Unlock fire ball spell",
+    "cost": 1,
+    "imageName": "Perk2",
+    "slot": 4,
+    "isStartPerk": true,
+    "unlocks": [3, 5, 11],
+    "bonuses": {
+      "fireball": 1.0
+    }
+  },
+  {
+    "id": "POWER_PILLS",
+    "name": "Power Pills",
+    "description": "Increase stamina capacity by 20%",
+    "cost": 1,
+    "imageName": "Perk3",
+    "slot": 6,
+    "isStartPerk": true,
+    "unlocks": [5, 13],
+    "bonuses": {
+      "power": 20.0
+    }
+  },
+  {
+    "id": "LUCKY_DROP",
+    "name": "Lucky Drop",
+    "description": "Get more coins from loot",
+    "cost": 1,
+    "imageName": "Perk4",
+    "slot": 7,
+    "isStartPerk": false,
+    "unlocks": [8],
+    "bonuses": {
+      "coin": 5.0
+    }
+  },
+  {
+    "id": "BROKEN_BONES",
+    "name": "Broken Bones",
+    "description": "Increase sword attack power by 20%",
+    "cost": 1,
+    "imageName": "Perk5",
+    "slot": 9,
+    "isStartPerk": false,
+    "unlocks": [8, 10, 16],
+    "bonuses": {
+      "attack": 20.0
+    }
+  },
+  {
+    "id": "DARK_MAGIC",
+    "name": "Dark Magic",
+    "description": "Unlock fire transformation",
+    "cost": 2,
+    "imageName": "Perk6",
+    "slot": 11,
+    "isStartPerk": false,
+    "unlocks": [10, 12, 18],
+    "bonuses": {
+      "transform": 1.0
+    }
+  },
+  {
+    "id": "WARRIOR_HEART",
+    "name": "Warrior Heart",
+    "description": "Increase max health by 5%",
+    "cost": 1,
+    "imageName": "Perk7",
+    "slot": 13,
+    "isStartPerk": false,
+    "unlocks": [12, 20],
+    "bonuses": {
+      "health": 5.0
+    }
+  },
+  {
+    "id": "FURIOUS",
+    "name": "Furious",
+    "description": "Reduce dash cooldown",
+    "cost": 2,
+    "imageName": "Perk8",
+    "slot": 15,
+    "isStartPerk": false,
+    "unlocks": [16, 22],
+    "bonuses": {
+      "dashCooldown": -0.75
+    }
+  },
+  {
+    "id": "NECROPOLIS",
+    "name": "Necropolis",
+    "description": "Blocking an attack restores stamina",
+    "cost": 1,
+    "imageName": "Perk9",
+    "slot": 16,
+    "isStartPerk": false,
+    "unlocks": [15, 17],
+    "bonuses": {
+      "restorePower": 1.0
+    }
+  },
+  {
+    "id": "FAST_EYE",
+    "name": "Fast Eye",
+    "description": "Ability to deflect projectiles",
+    "cost": 1,
+    "imageName": "Perk10",
+    "slot": 17,
+    "isStartPerk": false,
+    "unlocks": [16, 18, 24],
+    "bonuses": {
+      "deflect": 1.0
+    }
+  },
+  {
+    "id": "AMBER",
+    "name": "Amber",
+    "description": "Ability to walk in lava",
+    "cost": 2,
+    "imageName": "Perk11",
+    "slot": 19,
+    "isStartPerk": false,
+    "unlocks": [18, 26],
+    "bonuses": {
+      "lavaWalk": 1.0
+    }
+  },
+  {
+    "id": "DRAGON_FRUIT",
+    "name": "Dragon Fruit",
+    "description": "Increase stamina by 5%",
+    "cost": 1,
+    "imageName": "Perk12",
+    "slot": 20,
+    "isStartPerk": false,
+    "unlocks": [13],
+    "bonuses": {
+      "power": 5.0
+    }
+  },
+  {
+    "id": "ELEMENTARY_MAGIC",
+    "name": "Elementary Magic",
+    "description": "Increase critical hit chance by 5%",
+    "cost": 2,
+    "imageName": "Perk13",
+    "slot": 22,
+    "isStartPerk": false,
+    "unlocks": [15, 21],
+    "bonuses": {
+      "criticalHitChance": 5.0
+    }
+  },
+  {
+    "id": "UNBREAKABLE_BONES",
+    "name": "Unbreakable Bones",
+    "description": "Dashing damages enemies",
+    "cost": 3,
+    "imageName": "Perk14",
+    "slot": 24,
+    "isStartPerk": false,
+    "unlocks": [17, 25],
+    "bonuses": {
+      "dashSlash": 1.0
+    }
+  },
+  {
+    "id": "GODS_BLOOD",
+    "name": "God's Blood",
+    "description": "Increase max health by 10%",
+    "cost": 3,
+    "imageName": "Perk15",
+    "slot": 27,
+    "isStartPerk": false,
+    "unlocks": [26],
+    "bonuses": {
+      "health": 10.0
+    }
+  }
+]

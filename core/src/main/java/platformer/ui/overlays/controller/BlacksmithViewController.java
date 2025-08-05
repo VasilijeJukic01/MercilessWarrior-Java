@@ -7,11 +7,16 @@ import platformer.state.types.GameState;
 import platformer.ui.buttons.AbstractButton;
 import platformer.ui.overlays.BlacksmithOverlay;
 
+import java.awt.*;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
 
 import static platformer.constants.Constants.PERK_SLOT_MAX_COL;
-import static platformer.constants.Constants.PERK_SLOT_MAX_ROW;
 import static platformer.constants.UI.*;
 
 /**
@@ -22,11 +27,18 @@ public class BlacksmithViewController {
 
     private final GameState gameState;
     private final BlacksmithOverlay blacksmithOverlay;
-    private int slotNumber = 0;
+    private int selectedSlotNumber = 0;
 
     public BlacksmithViewController(GameState gameState, BlacksmithOverlay blacksmithOverlay) {
         this.gameState = gameState;
         this.blacksmithOverlay = blacksmithOverlay;
+        findFirstAvailablePerk();
+    }
+
+    private void findFirstAvailablePerk() {
+        gameState.getPerksManager().getPerks().stream()
+                .min(Comparator.comparingInt(Perk::getSlot))
+                .ifPresent(p -> this.selectedSlotNumber = p.getSlot());
     }
 
     public void mousePressed(MouseEvent e) {
@@ -56,43 +68,73 @@ public class BlacksmithViewController {
         setMouseMoved(e, blacksmithOverlay.getButtons());
     }
 
+    public void keyPressed(KeyEvent e) {
+        switch (e.getKeyCode()) {
+            case KeyEvent.VK_UP -> navigate(-PERK_SLOT_MAX_COL);
+            case KeyEvent.VK_DOWN -> navigate(PERK_SLOT_MAX_COL);
+            case KeyEvent.VK_LEFT -> navigate(-1);
+            case KeyEvent.VK_RIGHT -> navigate(1);
+            case KeyEvent.VK_ENTER -> upgrade();
+        }
+    }
+
+    /**
+     * Navigates the perk selection based on a delta value. Finds the nearest valid perk in the given direction.
+     *
+     * @param delta Change in slot number (-1 for left, 1 for right, -PERK_SLOT_MAX_COL for up, PERK_SLOT_MAX_COL for down).
+     */
+    private void navigate(int delta) {
+        List<Perk> perks = new ArrayList<>(gameState.getPerksManager().getPerks());
+        perks.sort(Comparator.comparingInt(Perk::getSlot));
+        int currentIndex = -1;
+        for (int i = 0; i < perks.size(); i++) {
+            if (perks.get(i).getSlot() == selectedSlotNumber) {
+                currentIndex = i;
+                break;
+            }
+        }
+        if (currentIndex == -1) return;
+
+        if (Math.abs(delta) == 1) {
+            int newIndex = (currentIndex + delta + perks.size()) % perks.size();
+            selectedSlotNumber = perks.get(newIndex).getSlot();
+        }
+        else {
+            int currentCol = selectedSlotNumber % PERK_SLOT_MAX_COL;
+            Optional<Perk> nextPerk;
+            if (delta > 0) {
+                nextPerk = perks.stream()
+                        .filter(p -> p.getSlot() > selectedSlotNumber && p.getSlot() % PERK_SLOT_MAX_COL == currentCol)
+                        .min(Comparator.comparingInt(Perk::getSlot));
+            }
+            else {
+                nextPerk = perks.stream()
+                        .filter(p -> p.getSlot() < selectedSlotNumber && p.getSlot() % PERK_SLOT_MAX_COL == currentCol)
+                        .max(Comparator.comparingInt(Perk::getSlot));
+            }
+            nextPerk.ifPresent(perk -> selectedSlotNumber = perk.getSlot());
+        }
+        blacksmithOverlay.updateSelectedSlot();
+    }
+
+
     private void changeSlot(MouseEvent e) {
-        int x = e.getX(), y = e.getY();
-        for (int i = 0; i < PERK_SLOT_MAX_COL; i++) {
-            for (int j = 0; j < PERK_SLOT_MAX_ROW; j++) {
-                int xStart = i * PERK_SLOT_SPACING + PERK_SLOT_X;
-                int xEnd = xStart + SLOT_SIZE;
-                int yStart = j * PERK_SLOT_SPACING + PERK_SLOT_Y;
-                int yEnd = yStart + SLOT_SIZE;
-                if (x >= xStart && x <= xEnd && y >= yStart && y <= yEnd) {
-                    int newSlotNumber = i + (j * PERK_SLOT_MAX_COL);
-                    if (blacksmithOverlay.getPlaceHolders()[j][i] == 1) {
-                        this.slotNumber = newSlotNumber;
-                        blacksmithOverlay.updateSelectedSlot();
-                    }
-                    return;
-                }
+        for (Perk perk : gameState.getPerksManager().getPerks()) {
+            int slot = perk.getSlot();
+            int xPos = (slot % PERK_SLOT_MAX_COL) * PERK_SLOT_SPACING + PERK_SLOT_X;
+            int yPos = (slot / PERK_SLOT_MAX_COL) * PERK_SLOT_SPACING + PERK_SLOT_Y;
+            Rectangle slotBounds = new Rectangle(xPos, yPos, SLOT_SIZE, SLOT_SIZE);
+            if (slotBounds.contains(e.getPoint())) {
+                this.selectedSlotNumber = slot;
+                blacksmithOverlay.updateSelectedSlot();
+                return;
             }
         }
     }
 
     private void upgrade() {
-        for (Perk perk : gameState.getPerksManager().getPerks()) {
-            if (slotNumber == perk.getSlot() && perk.isUpgraded()) return;
-        }
-        if (!checkTokens()) return;
         Audio.getInstance().getAudioPlayer().playSound(Sound.SHOP_BUY);
-        gameState.getPerksManager().upgrade(PERK_SLOT_MAX_COL, PERK_SLOT_MAX_ROW, slotNumber);
-    }
-
-    private boolean checkTokens() {
-        for (Perk perk : gameState.getPerksManager().getPerks()) {
-            if (slotNumber == perk.getSlot() && gameState.getPlayer().getUpgradeTokens() >= perk.getCost()) {
-                gameState.getPlayer().changeUpgradeTokens(-perk.getCost());
-                return true;
-            }
-        }
-        return false;
+        gameState.getPerksManager().upgrade(selectedSlotNumber);
     }
 
     // Helpers
@@ -117,6 +159,6 @@ public class BlacksmithViewController {
 
     // Getters
     public int getSlotNumber() {
-        return slotNumber;
+        return selectedSlotNumber;
     }
 }

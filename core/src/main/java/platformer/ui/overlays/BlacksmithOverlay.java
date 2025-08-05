@@ -35,15 +35,20 @@ public class BlacksmithOverlay implements Overlay<MouseEvent, KeyEvent, Graphics
     private BufferedImage slotImage;
     private Rectangle2D.Double selectedSlot;
     private final int SLOT_MAX_ROW, SLOT_MAX_COL;
-    private final int[][] placeHolders;
+
+    private final int[][] placeHolders = {
+            {1, 0, 1, 0, 1, 0, 1},
+            {1, 0, 1, 0, 1, 0, 1},
+            {0, 1, 1, 1, 0, 1, 1},
+            {0, 1, 0, 1, 0, 0, 1}
+    };
 
     public BlacksmithOverlay(GameState gameState) {
         this.gameState = gameState;
         this.controller = new BlacksmithViewController(gameState, this);
         this.buttons = new MediumButton[2];
-        this.SLOT_MAX_COL = PERK_SLOT_MAX_COL;
         this.SLOT_MAX_ROW = PERK_SLOT_MAX_ROW;
-        this.placeHolders = gameState.getPerksManager().getPlaceHolders();
+        this.SLOT_MAX_COL = PERK_SLOT_MAX_COL;
         init();
     }
 
@@ -88,7 +93,7 @@ public class BlacksmithOverlay implements Overlay<MouseEvent, KeyEvent, Graphics
         g.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
         renderOverlay(g);
         renderButtons(g);
-        renderSlots(g);
+        renderSlotsAndConnections(g);
         renderPerks(g);
         renderPerkInfo(g);
         g.setColor(Color.RED);
@@ -110,30 +115,34 @@ public class BlacksmithOverlay implements Overlay<MouseEvent, KeyEvent, Graphics
         Arrays.stream(buttons).forEach(mediumButton -> mediumButton.render(g));
     }
 
-    private void renderSlots(Graphics g) {
-        g.setColor(Color.RED);
+    private void renderSlotsAndConnections(Graphics g) {
+        Graphics2D g2d = (Graphics2D) g;
+        g2d.setStroke(new BasicStroke(2));
+        g2d.setColor(Color.RED);
+
         for (int i = 0; i < SLOT_MAX_ROW; i++) {
             for (int j = 0; j < SLOT_MAX_COL; j++) {
                 if (placeHolders[i][j] == 1) {
-                    renderSlot(g, i, j);
+                    int xPos = j * PERK_SLOT_SPACING + PERK_SLOT_X;
+                    int yPos = i * PERK_SLOT_SPACING + PERK_SLOT_Y;
+                    g.drawImage(slotImage, xPos, yPos, slotImage.getWidth(), slotImage.getHeight(), null);
+
+                    // Check connection to the right
+                    if (j + 1 < SLOT_MAX_COL && placeHolders[i][j+1] == 1) {
+                        int startX = xPos + SLOT_SIZE;
+                        int startY = yPos + SLOT_SIZE / 2;
+                        int endX = startX + PERK_SLOT_SPACING - SLOT_SIZE;
+                        g2d.drawLine(startX, startY, endX, startY);
+                    }
+                    // Check connection downwards
+                    if (i + 1 < SLOT_MAX_ROW && placeHolders[i+1][j] == 1) {
+                        int startX = xPos + SLOT_SIZE / 2;
+                        int startY = yPos + SLOT_SIZE;
+                        int endY = startY + PERK_SLOT_SPACING - SLOT_SIZE;
+                        g2d.drawLine(startX, startY, startX, endY);
+                    }
                 }
             }
-        }
-    }
-
-    private void renderSlot(Graphics g, int i, int j) {
-        int xPos = j * PERK_SLOT_SPACING + PERK_SLOT_X;
-        int yPos = i * PERK_SLOT_SPACING + PERK_SLOT_Y;
-        g.drawImage(slotImage, xPos, yPos, slotImage.getWidth(), slotImage.getHeight(), null);
-        if (isSafe(i, j+1, SLOT_MAX_ROW, SLOT_MAX_COL) && placeHolders[i][j+1] == 1) {
-            int x = j * PERK_SLOT_SPACING + PERK_SLOT_X + SLOT_SIZE - (int)(2 * SCALE);
-            int y = i * PERK_SLOT_SPACING + PERK_SLOT_Y;
-            g.drawLine(x, y + SLOT_SIZE/2, x + PERK_SLOT_SPACING/2, y + SLOT_SIZE/2);
-        }
-        if (isSafe(i+1, j, SLOT_MAX_ROW, SLOT_MAX_COL) && placeHolders[i+1][j] == 1) {
-            int x = j * PERK_SLOT_SPACING + PERK_SLOT_X + SLOT_SIZE/2;
-            int y = i * PERK_SLOT_SPACING + PERK_SLOT_Y + SLOT_SIZE - (int)(2 * SCALE);
-            g.drawLine(x, y, x, y + PERK_SLOT_SPACING/2);
         }
     }
 
@@ -205,16 +214,12 @@ public class BlacksmithOverlay implements Overlay<MouseEvent, KeyEvent, Graphics
 
     @Override
     public void keyPressed(KeyEvent e) {
-
+        controller.keyPressed(e);
     }
 
     @Override
     public void reset() {
 
-    }
-
-    public int[][] getPlaceHolders() {
-        return placeHolders;
     }
 
     public MediumButton[] getButtons() {

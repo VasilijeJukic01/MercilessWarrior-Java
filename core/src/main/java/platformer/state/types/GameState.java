@@ -105,7 +105,7 @@ public class GameState extends AbstractState implements State {
     // Init
     private void init() {
         this.bossInterface = new BossInterface();
-        this.perksManager = new PerksManager();
+        this.perksManager = new PerksManager(this);
         this.minimapManager = new MinimapManager(this);
         this.questManager = new QuestManager(this);
         this.overlayManager = new OverlayManager(this);
@@ -183,7 +183,7 @@ public class GameState extends AbstractState implements State {
     public void reloadSave() {
         getPlayer().activateMinimap(false);
         PerksBonus.getInstance().reset();
-        this.perksManager = new PerksManager();
+        this.perksManager = new PerksManager(this);
         this.getPlayer().getPlayerDataManager().loadPlayerData();
         this.getPlayer().getInventory().fillItems(Framework.getInstance().getAccount().getItems());
         this.perksManager.loadUnlockedPerks(Framework.getInstance().getAccount().getPerks());
