@@ -3,6 +3,7 @@ package platformer.model.perks;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import platformer.core.Framework;
+import platformer.core.GameContext;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
 import platformer.event.EventBus;
@@ -22,12 +23,15 @@ import static platformer.constants.FilePaths.PERKS_PATH;
  */
 public class PerksManager {
 
-    private final GameState gameState;
+    private GameState gameState;
     private final ArrayList<Perk> perks = new ArrayList<>();
 
-    public PerksManager(GameState gameState) {
-        this.gameState = gameState;
+    public PerksManager() {
         loadPerksFromFile();
+    }
+
+    public void wire(GameContext context) {
+        this.gameState = context.getGameState();
     }
 
     private void loadPerksFromFile() {

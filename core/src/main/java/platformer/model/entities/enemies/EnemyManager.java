@@ -1,6 +1,7 @@
 package platformer.model.entities.enemies;
 
 import platformer.animation.Anim;
+import platformer.core.GameContext;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
 import platformer.event.EventBus;
@@ -22,7 +23,6 @@ import platformer.model.inventory.InventoryBonus;
 import platformer.model.levels.Level;
 import platformer.model.perks.PerksBonus;
 import platformer.model.spells.types.Flame;
-import platformer.state.types.GameState;
 import platformer.utils.CollectionUtils;
 
 import java.awt.*;
@@ -39,7 +39,7 @@ import static platformer.constants.Constants.*;
 @SuppressWarnings("unchecked")
 public class EnemyManager {
 
-    private final GameState gameState;
+    private GameContext context;
     private ScreenEffectsManager screenEffectsManager;
 
     private Map<EnemyType, List<Enemy>> enemies = new HashMap<>();
@@ -47,9 +47,12 @@ public class EnemyManager {
     private final Map<Enemy, Integer> spellHitTimers = new HashMap<>();
     private final List<RoricClone> roricClones = new ArrayList<>();
 
-    public EnemyManager(GameState gameState) {
-        this.gameState = gameState;
+    public EnemyManager() {
         initRenderers();
+    }
+
+    public void wire(GameContext context) {
+        this.context = context;
     }
 
     // Init
@@ -120,8 +123,8 @@ public class EnemyManager {
     private void checkEnemyDying(Enemy e, Player player) {
         Random rand = new Random();
         if (e.getEnemyAction() == Anim.DEATH) {
-            gameState.getObjectManager().generateLoot(e);
-            gameState.getTutorialManager().activateBlockTutorial();
+            context.getObjectManager().generateLoot(e);
+            context.getTutorialManager().activateBlockTutorial();
             player.changeStamina(rand.nextInt(5));
             player.changeExp(rand.nextInt(50)+100);
             EventBus.getInstance().publish(new EnemyDefeatedEvent(e));
@@ -187,7 +190,7 @@ public class EnemyManager {
                     double displayDmg = Math.round(finalDamage * 10.0) / 10.0;
                     String dmgText = String.valueOf(displayDmg);
                     Color dmgColor = isCritical ? CRITICAL_COLOR : DAMAGE_COLOR;
-                    gameState.getEffectManager().spawnDamageNumber(dmgText, enemy.getHitBox().getCenterX(), enemy.getHitBox().y, dmgColor);
+                    context.getEffectManager().spawnDamageNumber(dmgText, enemy.getHitBox().getCenterX(), enemy.getHitBox().y, dmgColor);
                     if (damageModifier > 0.1) damageModifier *= 0.75;
                     player.changeStamina(new Random().nextInt(3) + 1);
                 }
@@ -213,10 +216,10 @@ public class EnemyManager {
     private void spawnParticles(Rectangle2D.Double box, Player player, Enemy enemy, boolean isCritical) {
         if (isCritical) {
             screenEffectsManager.triggerFlash();
-            gameState.getEffectManager().spawnDustParticles(box.getCenterX(), box.getCenterY(), 25, DustType.CRITICAL_HIT, player.getFlipSign(), null);
+            context.getEffectManager().spawnDustParticles(box.getCenterX(), box.getCenterY(), 25, DustType.CRITICAL_HIT, player.getFlipSign(), null);
         }
         else if (enemy.getEnemyAction() != Anim.BLOCK) {
-            gameState.getEffectManager().spawnDustParticles(box.getCenterX(), box.getCenterY(), 10, DustType.IMPACT_SPARK, player.getFlipSign(), null);
+            context.getEffectManager().spawnDustParticles(box.getCenterX(), box.getCenterY(), 10, DustType.IMPACT_SPARK, player.getFlipSign(), null);
         }
     }
 
@@ -226,17 +229,17 @@ public class EnemyManager {
     }
 
     public <T extends Enemy> void handleEnemySpellHit(Class<T> enemyClass, double dmg) {
-        Flame flame = gameState.getSpellManager().getFlames();
+        Flame flame = context.getSpellManager().getFlames();
         for (T enemy : getEnemies(enemyClass)) {
             if (enemy.isAlive() && enemy.getEnemyAction() != Anim.DEATH) {
                 if (flame.isActive() && flame.getHitBox().intersects(enemy.getHitBox())) {
                     enemy.spellHit(dmg);
                     if (!spellHitTimers.containsKey(enemy) || spellHitTimers.get(enemy) == 0) {
                         String dmgText = String.format("%.1f", dmg * SPELL_HIT_DISPLAY_COOLDOWN);
-                        gameState.getEffectManager().spawnDamageNumber(dmgText, enemy.getHitBox().getCenterX(), enemy.getHitBox().y, DAMAGE_COLOR);
+                        context.getEffectManager().spawnDamageNumber(dmgText, enemy.getHitBox().getCenterX(), enemy.getHitBox().y, DAMAGE_COLOR);
                         spellHitTimers.put(enemy, SPELL_HIT_DISPLAY_COOLDOWN);
                     }
-                    checkEnemyDying(enemy, gameState.getPlayer());
+                    checkEnemyDying(enemy, context.getGameState().getPlayer());
                     return;
                 }
             }
@@ -274,7 +277,7 @@ public class EnemyManager {
                 Direction projectileDirection = projectile.getDirection();
                 skeleton.setPushDirection(projectileDirection == Direction.LEFT ? Direction.RIGHT : Direction.LEFT);
                 projectile.setAlive(false);
-                checkEnemyDying(skeleton, gameState.getPlayer());
+                checkEnemyDying(skeleton, context.getGameState().getPlayer());
             }
         }
         for (Lancer lancer : getEnemies(Lancer.class)) {
@@ -282,7 +285,7 @@ public class EnemyManager {
                 if (!projectile.getShapeBounds().intersects(lancer.getHitBox())) continue;
                 lancer.hit(FIREBALL_PROJECTILE_DMG, false, false);
                 projectile.setAlive(false);
-                checkEnemyDying(lancer, gameState.getPlayer());
+                checkEnemyDying(lancer, context.getGameState().getPlayer());
             }
         }
     }
@@ -297,7 +300,7 @@ public class EnemyManager {
         else if (enemy instanceof Knight && animIndex == 4) isAttackFrame = true;
         else if (enemy instanceof Wraith && animIndex == 3) isAttackFrame = true;
 
-        if (isAttackFrame) gameState.getObjectManager().checkObjectBreakByEnemy(enemy.getAttackBox());
+        if (isAttackFrame) context.getObjectManager().checkObjectBreakByEnemy(enemy.getAttackBox());
     }
 
     // Core
@@ -328,11 +331,11 @@ public class EnemyManager {
 
         getEnemies(Lancer.class).stream()
                 .filter(Lancer::isAlive)
-                .forEach(lancer -> lancer.update(levelData, player, gameState.getSpellManager(), gameState.getObjectManager(), gameState.getBossInterface()));
+                .forEach(lancer -> lancer.update(levelData, player, context.getSpellManager(), context.getObjectManager(), context.getGameState().getBossInterface()));
 
         getEnemies(Roric.class).stream()
                 .filter(Roric::isAlive)
-                .forEach(roric -> roric.update(levelData, player, gameState.getSpellManager(), this, gameState.getObjectManager(), gameState.getBossInterface()));
+                .forEach(roric -> roric.update(levelData, player, context.getSpellManager(), this, context.getObjectManager(), context.getGameState().getBossInterface()));
 
         updateClones(levelData, player);
     }
@@ -343,7 +346,7 @@ public class EnemyManager {
     }
 
     private void updateClones(int[][] levelData, Player player) {
-        roricClones.forEach(clone -> clone.update(levelData, player, gameState.getSpellManager(), this, gameState.getObjectManager(), gameState.getBossInterface()));
+        roricClones.forEach(clone -> clone.update(levelData, player, context.getSpellManager(), this, context.getObjectManager(), context.getGameState().getBossInterface()));
         roricClones.removeIf(clone -> !clone.isAlive());
     }
 
@@ -375,7 +378,7 @@ public class EnemyManager {
      * @param spawnY The y-coordinate where the clone should spawn.
      */
     public void spawnRoricClone(int spawnX, int spawnY) {
-        Player player = gameState.getPlayer();
+        Player player = context.getGameState().getPlayer();
         RoricClone clone = new RoricClone(spawnX, spawnY);
         clone.aimAtPlayer(player);
         roricClones.add(clone);

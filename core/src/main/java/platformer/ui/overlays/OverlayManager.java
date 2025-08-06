@@ -27,15 +27,15 @@ public class OverlayManager {
         this.overlays.put(PlayingState.PAUSE, new PauseOverlay(gameState.getGame(), gameState));
         this.overlays.put(PlayingState.GAME_OVER, new GameOverOverlay(gameState.getGame()));
         this.overlays.put(PlayingState.SHOP, new ShopOverlay(gameState));
-        this.overlays.put(PlayingState.BLACKSMITH, new BlacksmithOverlay(gameState));
+        this.overlays.put(PlayingState.BLACKSMITH, new BlacksmithOverlay(gameState.getContext()));
         this.overlays.put(PlayingState.DIALOGUE, new DialogueOverlay());
         this.overlays.put(PlayingState.SAVE, new SaveGameOverlay(gameState));
         this.overlays.put(PlayingState.INVENTORY, new InventoryOverlay(gameState));
         this.overlays.put(PlayingState.CRAFTING, new CraftingOverlay(gameState));
         this.overlays.put(PlayingState.LOOTING, new LootingOverlay(gameState));
-        this.overlays.put(PlayingState.QUEST, new QuestOverlay(gameState));
-        this.overlays.put(PlayingState.MINIMAP, new MinimapOverlay(gameState));
-        this.overlays.put(PlayingState.TUTORIAL, new TutorialOverlay(gameState));
+        this.overlays.put(PlayingState.QUEST, new QuestOverlay(gameState.getContext()));
+        this.overlays.put(PlayingState.MINIMAP, new MinimapOverlay(gameState.getContext()));
+        this.overlays.put(PlayingState.TUTORIAL, new TutorialOverlay(gameState.getContext()));
     }
 
     // Core

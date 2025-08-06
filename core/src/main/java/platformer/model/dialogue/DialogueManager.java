@@ -4,16 +4,18 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import platformer.controller.KeyboardController;
 import platformer.core.Framework;
+import platformer.core.GameContext;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
 import platformer.event.EventBus;
 import platformer.event.events.FightInitiatedEvent;
 import platformer.model.gameObjects.GameObject;
+import platformer.model.gameObjects.ObjectManager;
 import platformer.model.gameObjects.npc.DialogueBehavior;
 import platformer.model.gameObjects.npc.Npc;
-import platformer.state.types.GameState;
 import platformer.state.types.PlayingState;
 import platformer.ui.overlays.DialogueOverlay;
+import platformer.ui.overlays.OverlayManager;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -29,16 +31,20 @@ import static platformer.constants.FilePaths.OBJECT_DIALOGUES;
  */
 public class DialogueManager {
 
-    private final GameState gameState;
-    private final DialogueOverlay overlay;
+    private GameContext context;
+    private DialogueOverlay overlay;
 
     private final Map<String, List<Dialogue>> dialogues;
 
-    public DialogueManager(GameState gameState) {
-        this.gameState = gameState;
-        this.overlay = (DialogueOverlay) gameState.getOverlayManager().getOverlays().get(PlayingState.DIALOGUE);
+    public DialogueManager() {
         this.dialogues = new HashMap<>();
         readDialogueFile();
+    }
+
+    public void wire(GameContext context) {
+        OverlayManager overlayManager = context.getGameState().getOverlayManager();
+        this.context = context;
+        this.overlay = (DialogueOverlay) overlayManager.getOverlays().get(PlayingState.DIALOGUE);
     }
 
     private void readDialogueFile() {
@@ -81,7 +87,7 @@ public class DialogueManager {
      */
     public void activateDialogue(String id, GameObject object) {
         overlay.reset();
-        gameState.setOverlay(PlayingState.DIALOGUE);
+        context.getGameState().setOverlay(PlayingState.DIALOGUE);
         Random random = new Random();
         int index = random.nextInt(getDialogues(id).size());
         if (object instanceof Npc) {
@@ -114,14 +120,14 @@ public class DialogueManager {
         String nextAction = overlay.getQuestion().getAnswers().get(0).getNext();
 
         if (nextAction.equals("FIGHT_RORIC")) {
-            gameState.setOverlay(null);
+            context.getGameState().setOverlay(null);
             overlay.reset();
             EventBus.getInstance().publish(new FightInitiatedEvent("RORIC"));
             return;
         }
 
         String questName = nextAction.replace("Quest: ", "");
-        gameState.getQuestManager().startNPCQuest(questName);
+        context.getQuestManager().startNPCQuest(questName);
         updateDialogue("QUESTION");
     }
 
@@ -131,7 +137,7 @@ public class DialogueManager {
     public void declineQuestion() {
         if (overlay.getQuestion() == null || !overlay.isOnLastQuestion()) return;
         overlay.next();
-        gameState.setOverlay(null);
+        context.getGameState().setOverlay(null);
         overlay.reset();
     }
 
@@ -147,18 +153,19 @@ public class DialogueManager {
             return;
         }
         if(!overlay.next()) {
-            if (Objects.equals(gameState.getObjectManager().getIntersectingObject(), "Blacksmith"))
-                gameState.setOverlay(PlayingState.BLACKSMITH);
-            else if (Objects.equals(gameState.getObjectManager().getIntersectingObject(), "Shop"))
-                gameState.setOverlay(PlayingState.SHOP);
-            else if (Objects.equals(gameState.getObjectManager().getIntersectingObject(), "SaveTotem"))
-                gameState.setOverlay(PlayingState.SAVE);
-            else if (gameState.getObjectManager().getIntersectingObject().contains("Npc")) {
-                Npc npc = (Npc) gameState.getObjectManager().getIntersection();
+            ObjectManager objectManager = context.getGameState().getObjectManager();
+            if (Objects.equals(objectManager.getIntersectingObject(), "Blacksmith"))
+                context.getGameState().setOverlay(PlayingState.BLACKSMITH);
+            else if (Objects.equals(objectManager.getIntersectingObject(), "Shop"))
+                context.getGameState().setOverlay(PlayingState.SHOP);
+            else if (Objects.equals(objectManager.getIntersectingObject(), "SaveTotem"))
+                context.getGameState().setOverlay(PlayingState.SAVE);
+            else if (objectManager.getIntersectingObject().contains("Npc")) {
+                Npc npc = (Npc) objectManager.getIntersection();
                 npc.increaseDialogueIndicator();
-                gameState.setOverlay(null);
+                context.getGameState().setOverlay(null);
             }
-            else gameState.setOverlay(null);
+            else context.getGameState().setOverlay(null);
 
             overlay.reset();
         }

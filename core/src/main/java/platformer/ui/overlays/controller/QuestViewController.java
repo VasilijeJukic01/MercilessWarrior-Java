@@ -1,6 +1,6 @@
 package platformer.ui.overlays.controller;
 
-import platformer.state.types.GameState;
+import platformer.model.quests.QuestManager;
 import platformer.ui.components.slots.QuestSlot;
 import platformer.ui.buttons.AbstractButton;
 import platformer.ui.buttons.ButtonType;
@@ -20,20 +20,20 @@ import static platformer.constants.UI.QUEST_SLOT_CAP;
  */
 public class QuestViewController {
 
-    private final GameState gameState;
+    private final QuestManager questManager;
     private final QuestOverlay questOverlay;
 
     private int currentPage = 0;
     private int selectedQuest = 0;
 
-    public QuestViewController(GameState gameState, QuestOverlay questOverlay) {
-        this.gameState = gameState;
+    public QuestViewController(QuestManager questManager, QuestOverlay questOverlay) {
+        this.questManager = questManager;
         this.questOverlay = questOverlay;
     }
 
     // Core
     public void update() {
-        List<QuestSlot> slots = gameState.getQuestManager().getSlots();
+        List<QuestSlot> slots = questManager.getSlots();
         if (selectedQuest >= slots.size()) selectedQuest = Math.max(0, slots.size() - 1);
     }
 
@@ -49,8 +49,8 @@ public class QuestViewController {
         int start = currentPage * QUEST_SLOT_CAP;
         for (int i = 0; i < QUEST_SLOT_CAP; i++) {
             int slotIndex = start + i;
-            if (slotIndex < gameState.getQuestManager().getSlots().size()) {
-                QuestSlot slot = gameState.getQuestManager().getSlots().get(slotIndex);
+            if (slotIndex < questManager.getSlots().size()) {
+                QuestSlot slot = questManager.getSlots().get(slotIndex);
                 if (slot.isPointInSlot(e.getX(), e.getY())) {
                     selectedQuest = slotIndex;
                     break;
@@ -72,7 +72,7 @@ public class QuestViewController {
     }
 
     public void keyPressed(KeyEvent e) {
-        int listSize = gameState.getQuestManager().getSlots().size();
+        int listSize = questManager.getSlots().size();
         switch (e.getKeyCode()) {
             case KeyEvent.VK_LEFT:
                 prevPage();
@@ -106,7 +106,8 @@ public class QuestViewController {
         for (AbstractButton button : questOverlay.getMediumButtons()) {
             if (isMouseInButton(e, button) && button.isMousePressed()) {
                 if (Objects.requireNonNull(button.getButtonType()) == ButtonType.CLOSE) {
-                    gameState.setOverlay(null);
+                    // TODO: Implement close action
+                    // gameState.setOverlay(null);
                 }
                 break;
             }
@@ -118,7 +119,7 @@ public class QuestViewController {
     }
 
     private void nextPage() {
-        if ((currentPage + 1) * QUEST_SLOT_CAP < gameState.getQuestManager().getSlots().size()) currentPage++;
+        if ((currentPage + 1) * QUEST_SLOT_CAP < questManager.getSlots().size()) currentPage++;
     }
 
     // Helpers

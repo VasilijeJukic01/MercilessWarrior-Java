@@ -3,7 +3,9 @@ package platformer.model.gameObjects;
 import platformer.animation.SpriteManager;
 import platformer.audio.Audio;
 import platformer.audio.types.Sound;
+import platformer.core.GameContext;
 import platformer.model.projectiles.ProjectileFactory;
+import platformer.model.spells.SpellManager;
 import platformer.storage.StorageStrategy;
 import platformer.core.Framework;
 import platformer.model.entities.Direction;
@@ -14,7 +16,6 @@ import platformer.model.gameObjects.objects.Container;
 import platformer.model.gameObjects.objects.*;
 import platformer.model.inventory.item.ShopItem;
 import platformer.model.levels.Level;
-import platformer.state.types.GameState;
 import platformer.utils.CollectionUtils;
 
 import java.awt.*;
@@ -35,7 +36,7 @@ import static platformer.physics.CollisionDetector.canLauncherSeeEntity;
 @SuppressWarnings({"unchecked", "SameParameterValue"})
 public class ObjectManager {
 
-    private final GameState gameState;
+    private GameContext context;
     private CollisionHandler collisionHandler;
     private ObjectBreakHandler objectBreakHandler;
     private LootHandler lootHandler;
@@ -64,14 +65,10 @@ public class ObjectManager {
 
     private Map<ObjType, List<GameObject>> objectsMap = new HashMap<>();
 
-    public ObjectManager(GameState gameState) {
-        this.gameState = gameState;
-    }
-
-    // Init
-    public void lateInit() {
-        this.collisionHandler = new CollisionHandler(gameState.getLevelManager(), this);
-        this.lootHandler = new LootHandler(this, gameState.getEffectManager());
+    public void wire(GameContext context) {
+        this.context = context;
+        this.collisionHandler = new CollisionHandler(context.getLevelManager(), this);
+        this.lootHandler = new LootHandler(this, context.getEffectManager());
         this.objectBreakHandler = new ObjectBreakHandler(this);
     }
 
@@ -137,7 +134,7 @@ public class ObjectManager {
      * @param herb The Herb object to be harvested.
      */
     public void harvestHerb(Herb herb) {
-        lootHandler.harvestHerb(herb, gameState.getPlayer());
+        lootHandler.harvestHerb(herb, context.getGameState().getPlayer());
     }
 
     // Collision Handler
@@ -193,7 +190,8 @@ public class ObjectManager {
      * @param attackBox The attack box of the player.
      */
     public void checkObjectBreak(Rectangle2D.Double attackBox) {
-        objectBreakHandler.checkObjectBreak(attackBox, gameState.getSpellManager().getFlames());
+        SpellManager spellManager = context.getSpellManager();
+        objectBreakHandler.checkObjectBreak(attackBox, spellManager.getFlames());
     }
 
     /**
@@ -355,7 +353,7 @@ public class ObjectManager {
     // Reset
     public void reset() {
         objectsMap.clear();
-        loadObjects(gameState.getLevelManager().getCurrentLevel());
+        loadObjects(context.getLevelManager().getCurrentLevel());
     }
 
     public void refreshShopData() {

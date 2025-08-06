@@ -1,6 +1,7 @@
 package platformer.model.levels;
 
 import com.google.gson.Gson;
+import platformer.core.GameContext;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
 import platformer.model.levels.metadata.LevelMetadata;
@@ -29,7 +30,7 @@ import static platformer.constants.FilePaths.*;
  */
 public class LevelManager {
 
-    private final GameState gameState;
+    private GameContext context;
     private final LevelObjectManager levelObjectManager;
     private final BackgroundManager backgroundManager;
     private final Map<Point, ObjectMetadata> decorationMetadata;
@@ -42,14 +43,17 @@ public class LevelManager {
     private BufferedImage currentBackground;
     private LevelMetadata currentLevelMetadata, arenaLevelMetadata;
 
-    public LevelManager(GameState gameState) {
-        this.gameState = gameState;
+    public LevelManager() {
         this.decorationMetadata = new HashMap<>();
         this.backgroundManager = new BackgroundManager();
         this.currentBackground = backgroundManager.getDefaultBackground();
         this.levelObjectManager = new LevelObjectManager();
         loadForestSprite();
         buildLevels();
+    }
+
+    public void wire(GameContext context) {
+        this.context = context;
         this.currentLevel = levels[levelIndexI][levelIndexJ];
     }
 
@@ -118,17 +122,18 @@ public class LevelManager {
     private void loadLevel() {
         Level newLevel = levels[levelIndexI][levelIndexJ];
         this.currentLevel = newLevel;
-        gameState.getPlayer().loadLvlData(newLevel.getLvlData());
-        gameState.getEnemyManager().loadEnemies(newLevel);
-        gameState.getObjectManager().loadObjects(newLevel);
+        context.getGameState().getPlayer().loadLvlData(newLevel.getLvlData());
+        context.getEnemyManager().loadEnemies(newLevel);
+        context.getObjectManager().loadObjects(newLevel);
         loadMetadata();
-        gameState.getSpellManager().initBossSpells();
-        gameState.getMinimapManager().changeLevel();
-        gameState.getPlayer().activateMinimap(true);
+        context.getSpellManager().initBossSpells();
+        context.getMinimapManager().changeLevel();
+        context.getGameState().getPlayer().activateMinimap(true);
         loadBackground();
     }
 
     public void loadNextLevel(int dI, int dJ) {
+        GameState gameState = context.getGameState();
         levelIndexI += dI;
         levelIndexJ += dJ;
         if (levelIndexI < 0 || levelIndexI >= levels.length || levelIndexJ < 0 || levelIndexJ >= levels[0].length) {

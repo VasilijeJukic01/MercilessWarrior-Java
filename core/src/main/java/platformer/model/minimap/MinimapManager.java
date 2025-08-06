@@ -1,10 +1,11 @@
 package platformer.model.minimap;
 
+import platformer.core.GameContext;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
 import platformer.model.levels.Level;
+import platformer.model.levels.LevelManager;
 import platformer.model.minimap.astar.AStarPathfinding;
-import platformer.state.types.GameState;
 import platformer.utils.ImageUtils;
 
 import java.awt.*;
@@ -28,7 +29,7 @@ import static platformer.constants.FilePaths.*;
  */
 public class MinimapManager {
 
-    private final GameState gameState;
+    private GameContext context;
 
     private BufferedImage minimapImage;
     private BufferedImage[] minimapIcons;
@@ -46,9 +47,12 @@ public class MinimapManager {
     private MinimapIcon hoveredIcon = null;
     private MinimapIcon pinnedIcon = null;
 
-    public MinimapManager(GameState gameState) {
-        this.gameState = gameState;
+    public MinimapManager() {
         init();
+    }
+
+    public void wire(GameContext context) {
+        this.context = context;
     }
 
     private void init() {
@@ -183,11 +187,12 @@ public class MinimapManager {
      * @param playerWorldY The player's Y coordinate in world pixels.
      */
     public void updatePlayerPosition(double playerWorldX, double playerWorldY) {
-        Level currentLevel = gameState.getLevelManager().getCurrentLevel();
+        LevelManager levelManager = context.getLevelManager();
+        Level currentLevel = levelManager.getCurrentLevel();
         int levelWidthInPixels = currentLevel.getLevelTilesWidth() * TILES_SIZE;
         int levelHeightInPixels = currentLevel.getLevelTilesHeight() * TILES_SIZE;
 
-        String levelName = "level" + gameState.getLevelManager().getLevelIndexI() + gameState.getLevelManager().getLevelIndexJ();
+        String levelName = "level" + levelManager.getLevelIndexI() + levelManager.getLevelIndexJ();
         Point levelPosOnMinimap = levelPositions.get(levelName);
         if (levelPosOnMinimap == null) return;
 

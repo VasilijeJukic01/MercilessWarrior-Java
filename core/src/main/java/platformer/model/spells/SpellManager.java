@@ -1,11 +1,11 @@
 package platformer.model.spells;
 
+import platformer.core.GameContext;
 import platformer.model.entities.Direction;
 import platformer.model.entities.enemies.boss.Roric;
 import platformer.model.entities.player.Player;
 import platformer.model.levels.Level;
 import platformer.model.spells.types.*;
-import platformer.state.types.GameState;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -21,7 +21,7 @@ import static platformer.physics.CollisionDetector.getGroundY;
  */
 public class SpellManager {
 
-    private final GameState gameState;
+    private GameContext context;
 
     private final List<Spell> activeSpells = new ArrayList<>();
     private final Flame flame;
@@ -31,28 +31,28 @@ public class SpellManager {
 
     private final Random rand = new Random();
 
-    public SpellManager(GameState gameState) {
-        this.gameState = gameState;
+    public SpellManager() {
         this.flame = new Flame(SpellType.FLAME_1, 0, 0, FLAME_WID, FLAME_HEI);
     }
 
-    // Init
-    public void lateInit() {
+    public void wire(GameContext context) {
+        this.context = context;
         initBossSpells();
     }
 
+    // Init
     public void initBossSpells() {
         activeSpells.clear();
-        activeSpells.addAll(gameState.getLevelManager().getCurrentLevel().getSpells(Lightning.class));
-        activeSpells.addAll(gameState.getLevelManager().getCurrentLevel().getSpells(Flash.class));
+        activeSpells.addAll(context.getLevelManager().getCurrentLevel().getSpells(Lightning.class));
+        activeSpells.addAll(context.getLevelManager().getCurrentLevel().getSpells(Flash.class));
     }
 
     // Core
     public void update() {
-        flame.update(gameState.getPlayer());
+        flame.update(context.getGameState().getPlayer());
         activeSpells.removeIf(spell -> !isStaticSpell(spell) && !spell.isActive());
         for (Spell spell : activeSpells) {
-            spell.update(gameState.getPlayer());
+            spell.update(context.getGameState().getPlayer());
         }
     }
 
@@ -74,7 +74,7 @@ public class SpellManager {
         int width = (int) (RORIC_RAIN_HB_WID * 1.5);
         int height = (int) (12 * SCALE);
         int drawX = telegraphPosition.x - xLevelOffset - (width / 2);
-        double groundY = getGroundY(telegraphPosition.x, telegraphPosition.y, gameState.getLevelManager().getCurrentLevel().getLvlData());
+        double groundY = getGroundY(telegraphPosition.x, telegraphPosition.y, context.getLevelManager().getCurrentLevel().getLvlData());
         int drawY = (int)groundY - yLevelOffset - (height / 2);
         float pulse = (float) (0.75 + 0.25 * Math.sin(System.currentTimeMillis() / 150.0));
         g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, pulse));
@@ -96,7 +96,7 @@ public class SpellManager {
                     spell.setAnimIndex(0);
                     spell.setActive(true);
                 });
-        gameState.getLightManager().setCurrentAmbientAlpha(0);
+        context.getLightManager().setCurrentAmbientAlpha(0);
     }
 
     public void activateFlashes() {
@@ -122,13 +122,13 @@ public class SpellManager {
     public void activateArrowRain() {
         if (telegraphPosition == null) return;
         int xPos = telegraphPosition.x;
-        double groundY = getGroundY(telegraphPosition.x, telegraphPosition.y, gameState.getLevelManager().getCurrentLevel().getLvlData());
+        double groundY = getGroundY(telegraphPosition.x, telegraphPosition.y, context.getLevelManager().getCurrentLevel().getLvlData());
         int yPos = (int) (groundY - (405 * SCALE));
         activeSpells.add(new ArrowRain(SpellType.ARROW_RAIN, xPos, yPos));
     }
 
     public void spawnSkyBeam() {
-        Level currentLevel = gameState.getLevelManager().getCurrentLevel();
+        Level currentLevel = context.getLevelManager().getCurrentLevel();
         int levelWidthInTiles = currentLevel.getLevelTilesWidth();
         int maxPixelX = levelWidthInTiles * TILES_SIZE;
         int xPos = rand.nextInt(maxPixelX);

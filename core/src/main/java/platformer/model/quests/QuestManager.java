@@ -3,9 +3,10 @@ package platformer.model.quests;
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 import lombok.Getter;
+import platformer.core.GameContext;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
-import platformer.state.types.GameState;
+import platformer.model.entities.player.Player;
 import platformer.ui.components.slots.QuestSlot;
 
 import java.io.IOException;
@@ -26,15 +27,18 @@ import static platformer.constants.UI.*;
 @Getter
 public class QuestManager {
 
-    private final GameState gameState;
+    private GameContext context;
     private List<Quest> allQuests;
     private List<Quest> progressiveQuests, repeatableQuests;
     private List<QuestSlot> slots;
 
-    public QuestManager(GameState gameState) {
-        this.gameState = gameState;
+    public QuestManager() {
         loadQuests(QUESTS_PATH);
         initSlots();
+    }
+
+    public void wire(GameContext context) {
+        this.context = context;
     }
 
     public void loadQuests(String filePath) {
@@ -123,9 +127,10 @@ public class QuestManager {
     }
 
     public void completeQuest(Quest quest) {
-        if(quest.getItemRewards() != null) gameState.getPlayer().getInventory().completeQuestFill(quest.getItemRewards());
-        if(quest.getCoinReward() > 0) gameState.getPlayer().changeCoins(quest.getCoinReward());
-        if(quest.getExpReward() > 0) gameState.getPlayer().changeExp(quest.getExpReward());
+        Player player = context.getGameState().getPlayer();
+        if(quest.getItemRewards() != null) player.getInventory().completeQuestFill(quest.getItemRewards());
+        if(quest.getCoinReward() > 0) player.changeCoins(quest.getCoinReward());
+        if(quest.getExpReward() > 0) player.changeExp(quest.getExpReward());
 
         switchQuest(quest);
         sortAndRepositionSlots();

@@ -2,7 +2,7 @@ package platformer.ui.overlays;
 
 import platformer.controller.KeyboardController;
 import platformer.core.Framework;
-import platformer.state.types.GameState;
+import platformer.core.GameContext;
 import platformer.utils.ImageUtils;
 
 import java.awt.*;
@@ -20,12 +20,12 @@ import static platformer.constants.UI.*;
  */
 public class TutorialOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
 
-    private final GameState gameState;
+    private final GameContext context;
 
     private final BufferedImage[] tutorialImages;
 
-    public TutorialOverlay(GameState gameState) {
-        this.gameState = gameState;
+    public TutorialOverlay(GameContext context) {
+        this.context = context;
         this.tutorialImages = new BufferedImage[1];
         this.tutorialImages[0] = ImageUtils.importImage(TUTORIAL_BLOCK_PATH, -1, -1);
     }
@@ -57,7 +57,7 @@ public class TutorialOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
 
     @Override
     public void keyPressed(KeyEvent e) {
-        if (e.getKeyCode() == KeyEvent.VK_ESCAPE) gameState.setOverlay(null);
+        if (e.getKeyCode() == KeyEvent.VK_ESCAPE) context.getGameState().setOverlay(null);
     }
 
     @Override
@@ -70,13 +70,13 @@ public class TutorialOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
         KeyboardController kbc = Framework.getInstance().getKeyboardController();
         g.setColor(new Color(0, 0, 0, 200));
         g.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
-        g.drawImage(tutorialImages[gameState.getTutorialManager().getCurrentTutorial()], TUTORIAL_IMAGE_X, TUTORIAL_IMAGE_Y, null);
+        g.drawImage(tutorialImages[context.getTutorialManager().getCurrentTutorial()], TUTORIAL_IMAGE_X, TUTORIAL_IMAGE_Y, null);
 
         g.setColor(Color.WHITE);
         g.setFont(new Font("Arial", Font.BOLD, FONT_MEDIUM));
         g.drawString("(Press ESC to exit)", TUTORIAL_EXIT_X, TUTORIAL_EXIT_Y);
 
-        String helpText = switch (gameState.getTutorialManager().getCurrentTutorial()) {
+        String helpText = switch (context.getTutorialManager().getCurrentTutorial()) {
             case 0 -> "You can block the enemy attack by pressing " + kbc.getKeyName("Shield") + " at the right timing.";
             default -> "Follow the instructions.";
         };

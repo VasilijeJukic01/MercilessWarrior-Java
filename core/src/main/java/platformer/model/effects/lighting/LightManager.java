@@ -1,5 +1,6 @@
 package platformer.model.effects.lighting;
 
+import platformer.core.GameContext;
 import platformer.model.effects.TimeCycleManager;
 import platformer.model.entities.enemies.Enemy;
 import platformer.model.gameObjects.GameObject;
@@ -35,7 +36,7 @@ import static platformer.constants.FilePaths.*;
  */
 public class LightManager {
 
-    private final GameState gameState;
+    private GameContext context;
 
     /** An off-screen buffer where all light sources are erased from a darkness layer before being drawn. */
     private final BufferedImage lightmap;
@@ -61,12 +62,15 @@ public class LightManager {
     private static final float MIN_CANDLE_GLOW_ALPHA = 0.2f;
     private static final float MAX_CANDLE_GLOW_ALPHA = 1.0f;
 
-    public LightManager(GameState gameState) {
-        this.gameState = gameState;
+    public LightManager() {
         this.lightmap = new BufferedImage(GAME_WIDTH / LIGHTMAP_SCALE, GAME_HEIGHT / LIGHTMAP_SCALE, BufferedImage.TYPE_INT_ARGB);
         this.ambientDarkness = new Color(0, 0, 0, currentAmbientAlpha);
         initLightImages();
         initLightTextures();
+    }
+
+    public void wire(GameContext context) {
+        this.context = context;
     }
 
     // Init
@@ -321,7 +325,7 @@ public class LightManager {
         g2d.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
         g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.DST_OUT));
 
-        drawLightSource(g2d, playerLightTexture, gameState.getPlayer().getHitBox(), xLevelOffset, yLevelOffset);
+        drawLightSource(g2d, playerLightTexture, context.getGameState().getPlayer().getHitBox(), xLevelOffset, yLevelOffset);
         renderAllLightSources(g2d, xLevelOffset, yLevelOffset);
         g2d.dispose();
     }
@@ -335,7 +339,7 @@ public class LightManager {
     }
 
     private void renderCandleLights(Graphics2D g2d, int xLevelOffset, int yLevelOffset) {
-        for (Candle candle : gameState.getObjectManager().getObjects(Candle.class)) {
+        for (Candle candle : context.getObjectManager().getObjects(Candle.class)) {
             if (candle.isAlive()) drawLightSource(g2d, candleLightTexture, candle.getHitBox(), xLevelOffset, yLevelOffset);
         }
     }
@@ -347,14 +351,14 @@ public class LightManager {
 
     @SuppressWarnings("unchecked")
     private void renderLightsForClass(Graphics2D g2d, Class<?> lightSourceClass, int xLevelOffset, int yLevelOffset) {
-        List<GameObject> objects = (List<GameObject>) gameState.getObjectManager().getObjects(lightSourceClass);
+        List<GameObject> objects = (List<GameObject>) context.getObjectManager().getObjects(lightSourceClass);
         for (GameObject obj : objects) {
             if (obj.isAlive()) drawLightSource(g2d, objectLightTexture, obj.getHitBox(), xLevelOffset, yLevelOffset);
         }
     }
 
     private void renderEnemyLights(Graphics2D g2d, int xLevelOffset, int yLevelOffset) {
-        for (Enemy enemy : gameState.getEnemyManager().getAllEnemies()) {
+        for (Enemy enemy : context.getEnemyManager().getAllEnemies()) {
             if (enemy.isAlive() && enemy.isVisible()) drawLightSource(g2d, enemyLightTexture, enemy.getHitBox(), xLevelOffset, yLevelOffset);
         }
     }
@@ -383,14 +387,14 @@ public class LightManager {
      */
     private void glowObjects(Graphics2D g2d, int xLevelOffset, int yLevelOffset) {
         candleFilter(g2d, xLevelOffset, yLevelOffset);
-        gameState.getObjectManager().glowingRender(g2d, xLevelOffset, yLevelOffset);
+        context.getObjectManager().glowingRender(g2d, xLevelOffset, yLevelOffset);
         shopFilter(g2d, xLevelOffset, yLevelOffset);
     }
 
     // Filters
     private <T extends GameObject> void glowFilter(Graphics2D g2d, int xLevelOffset, int yLevelOffset, Class<T> clazz, boolean isCandle) {
         double pulseScale = 0.975 + 0.025 * Math.sin(pulseTimer);
-        List<T> objects = gameState.getObjectManager().getObjects(clazz);
+        List<T> objects = context.getObjectManager().getObjects(clazz);
         float glowAlpha = getSmoothGlowAlpha();
 
         for (T object : objects) {
@@ -409,7 +413,7 @@ public class LightManager {
             g2d.setComposite(originalComposite);
 
             if (isCandle && object instanceof Candle candle)
-                gameState.getObjectManager().candleRender(g2d, xLevelOffset, yLevelOffset, candle);
+                context.getObjectManager().candleRender(g2d, xLevelOffset, yLevelOffset, candle);
         }
     }
 

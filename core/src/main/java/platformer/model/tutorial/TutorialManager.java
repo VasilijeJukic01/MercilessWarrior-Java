@@ -1,5 +1,6 @@
 package platformer.model.tutorial;
 
+import platformer.core.GameContext;
 import platformer.state.types.GameState;
 import platformer.state.types.PlayingState;
 
@@ -13,7 +14,7 @@ import java.util.Map;
  */
 public class TutorialManager {
 
-    private final GameState gameState;
+    private GameContext context;
 
     private static final Map<TutorialType, Boolean> tutorials = new HashMap<>();
     private int currentTutorial;
@@ -22,8 +23,8 @@ public class TutorialManager {
         Arrays.stream(TutorialType.values()).forEach(t -> tutorials.put(t, false));
     }
 
-    public TutorialManager(GameState gameState) {
-        this.gameState = gameState;
+    public void wire(GameContext context) {
+        this.context = context;
     }
 
     public void activateBlockTutorial() {
@@ -31,6 +32,7 @@ public class TutorialManager {
     }
 
     private void triggerTutorial(TutorialType tutorialType) {
+        GameState gameState = context.getGameState();
         tutorials.put(tutorialType, true);
         currentTutorial = tutorialType.ordinal();
         gameState.setOverlay(PlayingState.TUTORIAL);

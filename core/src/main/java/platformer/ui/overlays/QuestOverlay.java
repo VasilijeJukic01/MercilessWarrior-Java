@@ -1,11 +1,12 @@
 package platformer.ui.overlays;
 
 import platformer.animation.SpriteManager;
+import platformer.core.GameContext;
 import platformer.model.inventory.item.ItemData;
 import platformer.model.inventory.database.ItemDatabase;
 import platformer.model.quests.Quest;
+import platformer.model.quests.QuestManager;
 import platformer.model.quests.QuestObjective;
-import platformer.state.types.GameState;
 import platformer.ui.components.slots.QuestSlot;
 import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.MediumButton;
@@ -35,7 +36,7 @@ import static platformer.constants.UI.*;
  */
 public class QuestOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
 
-    private final GameState gameState;
+    private final QuestManager questManager;
     private final QuestViewController controller;
     private final MediumButton[] mediumButtons;
     private final SmallButton[] smallButtons;
@@ -48,9 +49,9 @@ public class QuestOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
     private final Font bodyFont = new Font("Arial", Font.PLAIN, FONT_MEDIUM);
     private final Font rewardFont = new Font("Arial", Font.PLAIN, FONT_LIGHT);
 
-    public QuestOverlay(GameState gameState) {
-        this.gameState = gameState;
-        this.controller = new QuestViewController(gameState, this);
+    public QuestOverlay(GameContext context) {
+        this.questManager = context.getQuestManager();
+        this.controller = new QuestViewController(questManager, this);
         this.smallButtons = new SmallButton[2];
         this.mediumButtons = new MediumButton[1];
         init();
@@ -115,7 +116,7 @@ public class QuestOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
     }
 
     private void renderQuestSlots(Graphics g) {
-        List<QuestSlot> slots = gameState.getQuestManager().getSlots();
+        List<QuestSlot> slots = questManager.getSlots();
         int start = controller.getCurrentPage() * QUEST_SLOT_CAP;
         int end = Math.min(start + QUEST_SLOT_CAP, slots.size());
 
@@ -128,7 +129,7 @@ public class QuestOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
     }
 
     private void renderQuestDetails(Graphics g) {
-        List<QuestSlot> slots = gameState.getQuestManager().getSlots();
+        List<QuestSlot> slots = questManager.getSlots();
         if (slots.isEmpty() || controller.getSelectedQuest() >= slots.size()) return;
 
         Quest quest = slots.get(controller.getSelectedQuest()).getQuest();

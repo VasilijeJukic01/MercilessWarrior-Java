@@ -20,10 +20,10 @@ import static platformer.constants.Constants.TILES_SIZE;
 
 public class GameFlowEventHandler implements EventHandler {
 
-    private final GameState gameState;
+    private final GameContext context;
 
     public GameFlowEventHandler(GameContext context) {
-        this.gameState = context.getGameState();
+        this.context = context;
     }
 
     /**
@@ -45,9 +45,9 @@ public class GameFlowEventHandler implements EventHandler {
     }
 
     private void startRoricFight() {
-        gameState.getObjectManager().getIntersection().setAlive(false);
-        gameState.getLevelManager().switchToArena();
-        Level arena = gameState.getLevelManager().getCurrentLevel();
+        context.getObjectManager().getIntersection().setAlive(false);
+        context.getLevelManager().switchToArena();
+        Level arena = context.getLevelManager().getCurrentLevel();
         levelTransition(arena, arena.getPlayerSpawn("LEFT"));
     }
 
@@ -55,8 +55,8 @@ public class GameFlowEventHandler implements EventHandler {
         Logger.getInstance().notify("Roric defeated! Returning to the main world.", Message.INFORMATION);
         Audio.getInstance().getAudioPlayer().playSong(Song.FOREST_1);
 
-        gameState.getLevelManager().returnToMainMap();
-        Level originalLevel = gameState.getLevelManager().getCurrentLevel();
+        context.getLevelManager().returnToMainMap();
+        Level originalLevel = context.getLevelManager().getCurrentLevel();
 
         int spawnId = Framework.getInstance().getAccount().getSpawn();
         Point playerSpawn = null;
@@ -70,20 +70,20 @@ public class GameFlowEventHandler implements EventHandler {
         if (playerSpawn == null) playerSpawn = originalLevel.getPlayerSpawn("LEFT");
 
         levelTransition(originalLevel, playerSpawn);
-        gameState.getPlayer().activateMinimap(true);
+        context.getGameState().getPlayer().activateMinimap(true);
     }
 
     private void levelTransition(Level level, Point playerSpawn) {
-        gameState.reset();
-        gameState.getPlayer().loadLvlData(level.getLvlData());
-        gameState.getEnemyManager().loadEnemies(level);
-        gameState.getObjectManager().loadObjects(level);
-        gameState.getSpellManager().initBossSpells();
-        gameState.getMinimapManager().changeLevel();
-        gameState.getCamera().updateLevelBounds(level);
+        context.getGameState().reset();
+        context.getGameState().getPlayer().loadLvlData(level.getLvlData());
+        context.getEnemyManager().loadEnemies(level);
+        context.getObjectManager().loadObjects(level);
+        context.getSpellManager().initBossSpells();
+        context.getMinimapManager().changeLevel();
+        context.getGameState().getCamera().updateLevelBounds(level);
 
-        gameState.getPlayer().setSpawn(playerSpawn);
-        gameState.getPlayer().resetDirections();
+        context.getGameState().getPlayer().setSpawn(playerSpawn);
+        context.getGameState().getPlayer().resetDirections();
     }
 
     @Override

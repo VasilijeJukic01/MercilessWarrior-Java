@@ -70,7 +70,7 @@ import static platformer.physics.CollisionDetector.isEntityOnExit;
  */
 public class GameState extends AbstractState implements State {
 
-    private GameContext context;
+    @Getter private GameContext context;
 
     private GameWorld world;
     @Getter private final Camera camera;
@@ -81,12 +81,7 @@ public class GameState extends AbstractState implements State {
     @Getter private final List<EventHandler> eventHandlers = new ArrayList<>();
 
     // Managers
-    @Getter private PerksManager perksManager;
-    @Getter private QuestManager questManager;
     @Getter private OverlayManager overlayManager;
-    @Getter private DialogueManager dialogueManager;
-    @Getter private MinimapManager minimapManager;
-    @Getter private TutorialManager tutorialManager;
 
     // State
     private PlayingState state;
@@ -99,7 +94,7 @@ public class GameState extends AbstractState implements State {
         super(game);
         this.screenEffectsManager = new ScreenEffectsManager(game);
         init();
-        this.gameStateController = new GameStateController(this);
+        this.gameStateController = new GameStateController(context);
         this.camera = new Camera(getPlayer().getHitBox().x, getPlayer().getHitBox().y);
         this.camera.updateLevelBounds(getLevelManager().getCurrentLevel());
     }
@@ -107,41 +102,59 @@ public class GameState extends AbstractState implements State {
     // Init
     private void init() {
         this.bossInterface = new BossInterface();
-        this.perksManager = new PerksManager(this);
-        this.minimapManager = new MinimapManager(this);
-        this.questManager = new QuestManager(this);
+
+        PerksManager perksManager = new PerksManager();
+        QuestManager questManager = new QuestManager();
+        TutorialManager tutorialManager = new TutorialManager();
+        DialogueManager dialogueManager = new DialogueManager();
+        LevelManager levelManager = new LevelManager();
+        EffectManager effectManager = new EffectManager();
+        RainManager rainManager = new RainManager();
+        EnemyManager enemyManager = new EnemyManager();
+        ObjectManager objectManager = new ObjectManager();
+        ProjectileManager projectileManager = new ProjectileManager();
+        SpellManager spellManager = new SpellManager();
+        LightManager lightManager = new LightManager();
+        TimeCycleManager timeCycleManager = new TimeCycleManager();
+        MinimapManager minimapManager = new MinimapManager();
+
+        this.context = new GameContext();
+        context.setGameState(this);
+        context.setLevelManager(levelManager);
+        context.setEffectManager(effectManager);
+        context.setRainManager(rainManager);
+        context.setEnemyManager(enemyManager);
+        context.setObjectManager(objectManager);
+        context.setProjectileManager(projectileManager);
+        context.setSpellManager(spellManager);
+        context.setLightManager(lightManager);
+        context.setTimeCycleManager(timeCycleManager);
+        context.setMinimapManager(minimapManager);
+        context.setPerksManager(perksManager);
+        context.setQuestManager(questManager);
+        context.setTutorialManager(tutorialManager);
+        context.setScreenEffectsManager(screenEffectsManager);
+        context.setDialogueManager(dialogueManager);
+
         this.overlayManager = new OverlayManager(this);
-        this.dialogueManager = new DialogueManager(this);
-        this.tutorialManager = new TutorialManager(this);
 
-        this.context = new GameContext(
-                this,
-                new LevelManager(this),
-                new EffectManager(),
-                new RainManager(),
-                new EnemyManager(this),
-                new ObjectManager(this),
-                new ProjectileManager(this),
-                new SpellManager(this),
-                new LightManager(this),
-                new TimeCycleManager(),
-                minimapManager,
-                perksManager,
-                questManager,
-                tutorialManager,
-                screenEffectsManager
-        );
+        perksManager.wire(context);
+        questManager.wire(context);
+        tutorialManager.wire(context);
+        dialogueManager.wire(context);
+        levelManager.wire(context);
+        minimapManager.wire(context);
+        objectManager.wire(context);
+        enemyManager.wire(context);
+        projectileManager.wire(context);
+        spellManager.wire(context);
+        lightManager.wire(context);
 
+        ProjectileFactory.init(projectileManager);
+        enemyManager.injectScreenEffectsManager(screenEffectsManager);
         this.world = new GameWorld(context);
 
-        ProjectileFactory.init(this.getProjectileManager());
-        this.getEnemyManager().injectScreenEffectsManager(screenEffectsManager);
-        this.getObjectManager().lateInit();
-        this.getSpellManager().lateInit();
-
         initEventListeners();
-
-        this.getObjectManager().loadObjects(this.getLevelManager().getCurrentLevel());
         loadFromDatabase();
     }
 
@@ -152,7 +165,7 @@ public class GameState extends AbstractState implements State {
     private void initEventListeners() {
         EventBus eventBus = EventBus.getInstance();
 
-        QuestSystemListener questListener = new QuestSystemListener(questManager);
+        QuestSystemListener questListener = new QuestSystemListener(context.getQuestManager());
         eventBus.register(EnemyDefeatedEvent.class, questListener::onEnemyDefeated);
         eventBus.register(CrateDestroyedEvent.class, questListener::onCrateDestroyed);
         eventBus.register(PerkUnlockedEvent.class, questListener::onPerkUnlocked);
@@ -179,7 +192,7 @@ public class GameState extends AbstractState implements State {
     }
 
     private void loadFromDatabase() {
-        this.perksManager.loadUnlockedPerks(Framework.getInstance().getAccount().getPerks());
+        context.getPerksManager().loadUnlockedPerks(Framework.getInstance().getAccount().getPerks());
     }
 
     public void reloadSave() {
@@ -189,13 +202,13 @@ public class GameState extends AbstractState implements State {
         }
         getPlayer().activateMinimap(false);
         PerksBonus.getInstance().reset();
-        this.perksManager = new PerksManager(this);
+        context.setPerksManager(new PerksManager());
         this.getPlayer().getPlayerDataManager().loadPlayerData();
         this.getPlayer().getInventory().fillItems(Framework.getInstance().getAccount().getItems());
-        this.perksManager.loadUnlockedPerks(Framework.getInstance().getAccount().getPerks());
-        this.getLevelManager().loadSavePoint(Framework.getInstance().getAccount().getSpawn());
+        context.getPerksManager().loadUnlockedPerks(Framework.getInstance().getAccount().getPerks());
+        context.getLevelManager().loadSavePoint(Framework.getInstance().getAccount().getSpawn());
         this.overlayManager.reset();
-        this.questManager.reset();
+        context.getQuestManager().reset();
         reset();
         camera.updateLevelBounds(getLevelManager().getCurrentLevel());
     }
@@ -215,15 +228,15 @@ public class GameState extends AbstractState implements State {
     public void refreshAllFromAccount() {
         if (world == null || world.getPlayer() == null) return;
         getPlayer().getPlayerDataManager().loadPlayerData();
-        perksManager.reset();
-        perksManager.loadUnlockedPerks(Framework.getInstance().getAccount().getPerks());
+        context.getPerksManager().reset();
+        context.getPerksManager().loadUnlockedPerks(Framework.getInstance().getAccount().getPerks());
         getPlayer().getInventory().fillItems(Framework.getInstance().getAccount().getItems());
         Logger.getInstance().notify("Player data fully refreshed from loaded save.", Message.INFORMATION);
     }
 
     private void goToLevel(int dI, int dJ, String message) {
         getPlayer().activateMinimap(false);
-        getLevelManager().loadNextLevel(dI, dJ);
+        context.getLevelManager().loadNextLevel(dI, dJ);
         String spawn = "";
         if (dI == 0 && dJ == 1) spawn = "LEFT";
         else if (dI == 0 && dJ == -1) spawn = "RIGHT";
@@ -231,11 +244,11 @@ public class GameState extends AbstractState implements State {
         else if (dI == 1 && dJ == 0) spawn = "UPPER";
 
         world.levelLoadReset(spawn);
-        minimapManager.changeLevel();
+        context.getMinimapManager().changeLevel();
         getPlayer().activateMinimap(true);
-        camera.updateLevelBounds(getLevelManager().getCurrentLevel());
+        camera.updateLevelBounds(context.getLevelManager().getCurrentLevel());
         overlayManager.reset();
-        questManager.reset();
+        context.getQuestManager().reset();
         Logger.getInstance().notify(message, Message.NOTIFICATION);
     }
 
@@ -268,7 +281,7 @@ public class GameState extends AbstractState implements State {
         }
         else if (state == PlayingState.DYING) {
             getPlayer().update();
-            getEffectManager().update();
+            context.getEffectManager().update();
         }
         else handleGameState();
         if (state == PlayingState.DIALOGUE) overlayManager.update(PlayingState.DIALOGUE);
@@ -303,7 +316,7 @@ public class GameState extends AbstractState implements State {
             checkLevelExit();
             updateEventHandlers();
             world.update();
-            minimapManager.update();
+            context.getMinimapManager().update();
             camera.update(getPlayer().getHitBox());
             overlayManager.update(state);
         } catch (Exception ignored) { }
@@ -311,7 +324,7 @@ public class GameState extends AbstractState implements State {
 
     private void checkLevelExit() {
         if (getPlayer().checkAction(PlayerAction.DASH)) return;
-        int exitStatus = isEntityOnExit(getLevelManager().getCurrentLevel(), getPlayer().getHitBox());
+        int exitStatus = isEntityOnExit(context.getLevelManager().getCurrentLevel(), getPlayer().getHitBox());
         if (exitStatus == RIGHT_EXIT) goToRightLevel();
         else if (exitStatus == LEFT_EXIT) goToLeftLevel();
         else if (exitStatus == UPPER_EXIT) goToUpperLevel();
@@ -367,7 +380,7 @@ public class GameState extends AbstractState implements State {
         overlayManager.reset();
         bossInterface.reset();
         eventHandlers.forEach(EventHandler::reset);
-        if (!isRespawning) minimapManager.reset();
+        if (!isRespawning) context.getMinimapManager().reset();
         isRespawning = false;
         isDarkPhase = false;
     }
@@ -387,36 +400,12 @@ public class GameState extends AbstractState implements State {
         return world.getPlayer();
     }
 
-    public EnemyManager getEnemyManager() {
-        return world.getEnemyManager();
-    }
-
     public ObjectManager getObjectManager() {
         return world.getObjectManager();
     }
 
     public LevelManager getLevelManager() {
         return world.getLevelManager();
-    }
-
-    public ProjectileManager getProjectileManager() {
-        return world.getProjectileManager();
-    }
-
-    public SpellManager getSpellManager() {
-        return world.getSpellManager();
-    }
-
-    public EffectManager getEffectManager() {
-        return world.getEffectManager();
-    }
-
-    public RainManager getRainManager() {
-        return world.getRainManager();
-    }
-
-    public LightManager getLightManager() {
-        return world.getLightManager();
     }
 
     // Getters and Setters
@@ -428,14 +417,14 @@ public class GameState extends AbstractState implements State {
         if (state == PlayingState.PAUSE) {
             Audio.getInstance().getAudioPlayer().unpauseSounds();
             Audio.getInstance().getAudioPlayer().unpauseSong();
-            getEnemyManager().unpauseRoricTimer();
+            context.getEnemyManager().unpauseRoricTimer();
             eventHandlers.forEach(EventHandler::unpause);
         }
         this.state = newOverlay;
         if (state == PlayingState.PAUSE) {
             Audio.getInstance().getAudioPlayer().pauseSounds();
             Audio.getInstance().getAudioPlayer().pauseSong();
-            getEnemyManager().pauseRoricTimer();
+            context.getEnemyManager().pauseRoricTimer();
             eventHandlers.forEach(EventHandler::pause);
         }
     }

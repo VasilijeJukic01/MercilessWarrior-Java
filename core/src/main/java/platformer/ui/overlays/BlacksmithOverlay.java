@@ -1,6 +1,8 @@
 package platformer.ui.overlays;
 
+import platformer.core.GameContext;
 import platformer.model.perks.Perk;
+import platformer.model.perks.PerksManager;
 import platformer.state.types.GameState;
 import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.MediumButton;
@@ -27,6 +29,7 @@ public class BlacksmithOverlay implements Overlay<MouseEvent, KeyEvent, Graphics
 
     private final BlacksmithViewController controller;
     private final GameState gameState;
+    private final PerksManager perksManager;
 
     private Rectangle2D overlay;
     private BufferedImage shopText;
@@ -43,9 +46,10 @@ public class BlacksmithOverlay implements Overlay<MouseEvent, KeyEvent, Graphics
             {0, 1, 0, 1, 0, 0, 1}
     };
 
-    public BlacksmithOverlay(GameState gameState) {
-        this.gameState = gameState;
-        this.controller = new BlacksmithViewController(gameState, this);
+    public BlacksmithOverlay(GameContext context) {
+        this.perksManager = context.getPerksManager();
+        this.gameState = context.getGameState();
+        this.controller = new BlacksmithViewController(perksManager, this);
         this.buttons = new MediumButton[2];
         this.SLOT_MAX_ROW = PERK_SLOT_MAX_ROW;
         this.SLOT_MAX_COL = PERK_SLOT_MAX_COL;
@@ -147,7 +151,7 @@ public class BlacksmithOverlay implements Overlay<MouseEvent, KeyEvent, Graphics
     }
 
     private void renderPerks(Graphics g) {
-        for (Perk p : gameState.getPerksManager().getPerks()) {
+        for (Perk p : perksManager.getPerks()) {
             int x = (p.getSlot() % SLOT_MAX_COL) * PERK_SLOT_SPACING + PERK_SLOT_X + SLOT_SIZE/4;
             int y = (p.getSlot() / SLOT_MAX_COL) * PERK_SLOT_SPACING + PERK_SLOT_Y + SLOT_SIZE/4;
             g.drawImage(p.getImage(), x, y, SLOT_SIZE/2, SLOT_SIZE/2, null);
@@ -169,7 +173,7 @@ public class BlacksmithOverlay implements Overlay<MouseEvent, KeyEvent, Graphics
     }
 
     private void renderPerkInfo(Graphics g) {
-        for (Perk perk : gameState.getPerksManager().getPerks()) {
+        for (Perk perk : perksManager.getPerks()) {
             if (controller.getSlotNumber() == perk.getSlot()) {
                 g.setColor(Color.WHITE);
                 g.setFont(new Font("Arial", Font.BOLD, FONT_MEDIUM));
@@ -180,11 +184,6 @@ public class BlacksmithOverlay implements Overlay<MouseEvent, KeyEvent, Graphics
                 g.drawString(perk.getDescription(), PERK_DESC_X, PERK_DESC_Y);
             }
         }
-    }
-
-    // Other
-    private boolean isSafe(int i, int j, int n, int m) {
-        return i >= 0 && j >= 0 && i < n && j < m;
     }
 
     @Override

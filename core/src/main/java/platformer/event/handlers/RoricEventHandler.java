@@ -32,7 +32,7 @@ import java.util.Random;
  */
 public class RoricEventHandler implements EventHandler {
 
-    private final GameState gameState;
+    private final GameContext context;
     private final ScreenEffectsManager screenEffectsManager;
     private final EffectManager effectManager;
     private Roric roricInstance = null;
@@ -55,13 +55,13 @@ public class RoricEventHandler implements EventHandler {
     private long pauseStartTime = 0;
 
     public RoricEventHandler(GameContext context) {
-        this.gameState = context.getGameState();
+        this.context = context;
         this.effectManager = context.getEffectManager();
         this.screenEffectsManager = context.getScreenEffectsManager();
     }
 
     public void onPhaseChange(RoricPhaseChangeEvent event) {
-        Roric roric = gameState.getEnemyManager().getRoricInstance();
+        Roric roric = context.getEnemyManager().getRoricInstance();
         if (roric != null) {
             if (this.fightStartTime == 0 && roric.getPhaseManager().getFightStartTime() != 0) {
                 this.fightStartTime = roric.getPhaseManager().getFightStartTime();
@@ -106,7 +106,7 @@ public class RoricEventHandler implements EventHandler {
         if (isPhaseThreeActive) {
             long elapsedTime = System.currentTimeMillis() - fightStartTime;
             if (phaseThreeShotIndex < phaseThreeTimings.length && elapsedTime >= phaseThreeTimings[phaseThreeShotIndex]) {
-                gameState.getLightManager().setCurrentAmbientAlpha(0);
+                context.getLightManager().setCurrentAmbientAlpha(0);
                 phaseThreeShotIndex++;
             }
         }
@@ -116,7 +116,7 @@ public class RoricEventHandler implements EventHandler {
         if (isFinaleActive) {
             long elapsedTime = System.currentTimeMillis() - fightStartTime;
             if (finaleFlashIndex < finaleFlashTimings.length && elapsedTime >= finaleFlashTimings[finaleFlashIndex]) {
-                gameState.getLightManager().setAlphaWithFilter(0, new Color(100, 255, 120, 100));
+                context.getLightManager().setAlphaWithFilter(0, new Color(100, 255, 120, 100));
                 screenEffectsManager.triggerShake(30, 20.0);
                 finaleFlashIndex++;
             }
@@ -130,25 +130,25 @@ public class RoricEventHandler implements EventHandler {
      * @param newPhase The new phase of the Roric fight.
      */
     private void handlePhaseChange(RoricPhaseManager.RoricPhase newPhase) {
-        gameState.getSpellManager().stopArrowRainTelegraph();
+        context.getSpellManager().stopArrowRainTelegraph();
         if (newPhase == RoricPhaseManager.RoricPhase.VICTORY) {
-            Roric roric = gameState.getEnemyManager().getRoricInstance();
+            Roric roric = context.getEnemyManager().getRoricInstance();
             if (roric != null) roric.setAlive(false);
         }
         if (celestialAuraActive && newPhase != RoricPhaseManager.RoricPhase.STORM) {
-            handleCelestialRainEnd(gameState.getEnemyManager().getRoricInstance());
+            handleCelestialRainEnd(context.getEnemyManager().getRoricInstance());
         }
         isPhaseThreeActive = (newPhase == RoricPhaseManager.RoricPhase.BRIDGE);
         isFinaleActive = (newPhase == RoricPhaseManager.RoricPhase.FINALE);
         if (isPhaseThreeActive) {
-            gameState.setDarkPhase(true);
-            gameState.getLightManager().overrideAmbientDarkness(240);
+            context.getGameState().setDarkPhase(true);
+            context.getLightManager().overrideAmbientDarkness(240);
             phaseThreeShotIndex = 0;
         }
         else if (isFinaleActive) finaleFlashIndex = 0;
         else {
-            gameState.setDarkPhase(false);
-            gameState.getLightManager().releaseAmbientDarkness();
+            context.getGameState().setDarkPhase(false);
+            context.getLightManager().releaseAmbientDarkness();
         }
     }
 
@@ -216,6 +216,6 @@ public class RoricEventHandler implements EventHandler {
         roricInstance = null;
         isPaused = false;
         pauseStartTime = 0;
-        gameState.getLightManager().releaseAmbientDarkness();
+        context.getLightManager().releaseAmbientDarkness();
     }
 }

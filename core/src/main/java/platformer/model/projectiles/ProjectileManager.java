@@ -1,9 +1,9 @@
 package platformer.model.projectiles;
 
+import platformer.core.GameContext;
 import platformer.model.entities.player.Player;
 import platformer.model.perks.PerksBonus;
 import platformer.model.projectiles.types.*;
-import platformer.state.types.GameState;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
@@ -20,11 +20,11 @@ import static platformer.physics.CollisionDetector.isProjectileHitLevel;
  */
 public class ProjectileManager {
 
-    private final GameState gameState;
+    private GameContext context;
     private final List<Projectile> projectiles = new ArrayList<>();
 
-    public ProjectileManager(GameState gameState) {
-        this.gameState = gameState;
+    public void wire(GameContext context) {
+        this.context = context;
     }
 
     // Core
@@ -33,7 +33,7 @@ public class ProjectileManager {
         for (Projectile projectile : projectiles) {
             if (projectile.isAlive()) {
                 projectile.updatePosition(player);
-                projectile.updatePosition(player, gameState.getObjectManager(), lvlData);
+                projectile.updatePosition(player, context.getObjectManager(), lvlData);
                 if (projectile.getShapeBounds().intersects(player.getHitBox())) {
                     player.changeHealth(-PLAYER_PROJECTILE_DMG, projectile);
                     projectile.setAlive(false);
@@ -42,10 +42,10 @@ public class ProjectileManager {
                     projectile.setAlive(false);
                 }
                 else if (projectile instanceof Fireball)
-                    gameState.getObjectManager().getObjectBreakHandler().checkProjectileBreak(projectiles);
+                    context.getObjectManager().getObjectBreakHandler().checkProjectileBreak(projectiles);
             }
         }
-        gameState.getEnemyManager().checkEnemyProjectileHit(projectiles);
+        context.getEnemyManager().checkEnemyProjectileHit(projectiles);
     }
 
     public void render(Graphics g, int xLevelOffset, int yLevelOffset) {
