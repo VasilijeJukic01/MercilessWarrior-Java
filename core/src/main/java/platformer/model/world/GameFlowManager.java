@@ -54,10 +54,10 @@ public class GameFlowManager {
         if (player.checkAction(PlayerAction.DASH)) return;
 
         int exitStatus = isEntityOnExit(context.getLevelManager().getCurrentLevel(), player.getHitBox());
-        if (exitStatus == RIGHT_EXIT) goToLevel(0, 1, "RIGHT", "Right level loaded.");
-        else if (exitStatus == LEFT_EXIT) goToLevel(0, -1, "LEFT", "Left level loaded.");
-        else if (exitStatus == UPPER_EXIT) goToLevel(-1, 0, "UPPER", "Upper level loaded.");
-        else if (exitStatus == BOTTOM_EXIT) goToLevel(1, 0, "BOTTOM", "Bottom level loaded.");
+        if (exitStatus == RIGHT_EXIT) goToLevel(0, 1, "LEFT", "Right level loaded.");
+        else if (exitStatus == LEFT_EXIT) goToLevel(0, -1, "RIGHT", "Left level loaded.");
+        else if (exitStatus == UPPER_EXIT) goToLevel(-1, 0, "BOTTOM", "Upper level loaded.");
+        else if (exitStatus == BOTTOM_EXIT) goToLevel(1, 0, "UPPER", "Bottom level loaded.");
     }
 
     /**
