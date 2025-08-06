@@ -332,7 +332,7 @@ public class EnemyManager {
 
         getEnemies(Roric.class).stream()
                 .filter(Roric::isAlive)
-                .forEach(roric -> roric.update(levelData, player, gameState.getSpellManager(), this, gameState.getBossInterface()));
+                .forEach(roric -> roric.update(levelData, player, gameState.getSpellManager(), this, gameState.getObjectManager(), gameState.getBossInterface()));
 
         updateClones(levelData, player);
     }
@@ -343,7 +343,7 @@ public class EnemyManager {
     }
 
     private void updateClones(int[][] levelData, Player player) {
-        roricClones.forEach(clone -> clone.update(levelData, player, gameState.getSpellManager(), this, gameState.getBossInterface()));
+        roricClones.forEach(clone -> clone.update(levelData, player, gameState.getSpellManager(), this, gameState.getObjectManager(), gameState.getBossInterface()));
         roricClones.removeIf(clone -> !clone.isAlive());
     }
 

@@ -17,6 +17,7 @@ import platformer.model.entities.enemies.boss.roric.RoricAttackHandler;
 import platformer.model.entities.enemies.boss.roric.RoricPhaseManager;
 import platformer.model.entities.enemies.boss.roric.RoricState;
 import platformer.model.entities.player.Player;
+import platformer.model.gameObjects.ObjectManager;
 import platformer.model.spells.SpellManager;
 import platformer.ui.overlays.hud.BossInterface;
 
@@ -54,6 +55,7 @@ public class Roric extends Enemy {
     protected final double jumpSpeed = -3.0 * SCALE;
 
     // Current state
+    private ObjectManager objectManager;
     private SpellManager spellManager;
     private Player currentPlayerTarget;
     private int[][] currentLevelData;
@@ -97,9 +99,11 @@ public class Roric extends Enemy {
      * @param player The player entity.
      * @param spellManager Manager for spell effects.
      * @param enemyManager Manager for enemy entities (used for spawning clones).
+     * @param objectManager Manager for game objects (used for environmental interactions).
      * @param bossInterface The UI component for the boss health bar.
      */
-    public void update(int[][] levelData, Player player, SpellManager spellManager, EnemyManager enemyManager, BossInterface bossInterface) {
+    public void update(int[][] levelData, Player player, SpellManager spellManager, EnemyManager enemyManager, ObjectManager objectManager, BossInterface bossInterface) {
+        this.objectManager = objectManager;
         this.spellManager = spellManager;
         this.currentPlayerTarget = player;
         this.currentLevelData = levelData;
@@ -167,7 +171,11 @@ public class Roric extends Enemy {
         if (airSpeed < 0) airSpeed += UPWARD_GRAVITY;
         else airSpeed += DOWNWARD_GRAVITY;
 
-        if (canMoveHere(hitBox.x + xSpeed, hitBox.y, hitBox.width, hitBox.height, levelData)) hitBox.x += xSpeed;
+        double actualDx = this.objectManager.checkSolidObjectCollision(hitBox, xSpeed);
+        if (actualDx != xSpeed) xSpeed = 0;
+        Rectangle2D.Double nextXHitbox = new Rectangle2D.Double(hitBox.x + actualDx, hitBox.y, hitBox.width, hitBox.height);
+
+        if (canMoveHere(nextXHitbox.x, nextXHitbox.y, nextXHitbox.width, nextXHitbox.height, levelData)) hitBox.x += actualDx;
         else xSpeed = 0;
 
         if (canMoveHere(hitBox.x, hitBox.y + airSpeed, hitBox.width, hitBox.height, levelData)) hitBox.y += airSpeed;

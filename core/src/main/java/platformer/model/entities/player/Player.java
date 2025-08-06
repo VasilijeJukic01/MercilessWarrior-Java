@@ -473,6 +473,17 @@ public class Player extends Entity {
         airSpeed = jumpSpeed;
     }
 
+    private void handlePushback() {
+        double pushForce = 1.2;
+        double basePushSpeed = (pushDirection == Direction.RIGHT) ? PLAYER_SPEED : -PLAYER_SPEED;
+        double totalPushDistance = basePushSpeed * pushForce;
+
+        double allowedObjectDx = objectManager.checkSolidObjectCollision(hitBox, totalPushDistance);
+        if (canMoveHere(hitBox.x + allowedObjectDx, hitBox.y, hitBox.width, hitBox.height, levelData)) {
+            hitBox.x += allowedObjectDx;
+        }
+    }
+
     // Status Changes
     public void changeHealth(double value) {
         if (checkAction(PlayerAction.DYING)) return;
@@ -571,8 +582,7 @@ public class Player extends Entity {
         if (hit) {
             setSpellState(0);
             removeActions(PlayerAction.DASH, PlayerAction.DASH_HIT);
-            double pushForce = 1.2;
-            pushBack(pushDirection, levelData, pushForce, PLAYER_SPEED);
+            handlePushback();
             inAirUpdate();
         }
         else if (canBlock) {
