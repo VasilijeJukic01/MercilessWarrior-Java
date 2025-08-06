@@ -40,7 +40,7 @@ public class LevelManager {
     private Level currentLevel;
     private int levelIndexI = 0, levelIndexJ = 0;
     private BufferedImage currentBackground;
-    private LevelMetadata currentLevelMetadata;
+    private LevelMetadata currentLevelMetadata, arenaLevelMetadata;
 
     public LevelManager(GameState gameState) {
         this.gameState = gameState;
@@ -93,6 +93,7 @@ public class LevelManager {
             BufferedImage arenaLayer1 = arenaImg.getSubimage(0, 0, arenaImg.getWidth()/2, arenaImg.getHeight());
             BufferedImage arenaLayer2 = arenaImg.getSubimage(arenaImg.getWidth()/2, 0, arenaImg.getWidth()/2, arenaImg.getHeight());
             arenaLevel = new Level("arena1", arenaLayer1, arenaLayer2);
+            this.arenaLevelMetadata = loadMetadataForLevel("levelarena1");
         }
     }
 
@@ -143,41 +144,43 @@ public class LevelManager {
         else this.currentBackground = backgroundManager.getDefaultBackground();
     }
 
+    private LevelMetadata loadMetadataForLevel(String levelName) {
+        String jsonPath = "/meta/" + levelName + ".json";
+        try (InputStream is = getClass().getResourceAsStream(jsonPath)) {
+            if (is == null) return null;
+            try (InputStreamReader reader = new InputStreamReader(is, StandardCharsets.UTF_8)) {
+                return new Gson().fromJson(reader, LevelMetadata.class);
+            }
+        } catch (Exception e) {
+            Logger.getInstance().notify("Could not load metadata for " + levelName + ": " + e.getMessage(), Message.ERROR);
+            return null;
+        }
+    }
+
     private void loadMetadata() {
         decorationMetadata.clear();
         String levelName = "level" + levelIndexI + levelIndexJ;
-        String jsonPath = "/meta/" + levelName + ".json";
-
-        try (InputStream is = getClass().getResourceAsStream(jsonPath)) {
-            if (is == null) {
-                currentLevelMetadata = null;
-                return;
+        this.currentLevelMetadata = loadMetadataForLevel(levelName);
+        if (currentLevelMetadata != null && currentLevelMetadata.getDecorations() != null) {
+            for (ObjectMetadata meta : currentLevelMetadata.getDecorations()) {
+                decorationMetadata.put(new Point(meta.getX(), meta.getY()), meta);
             }
-            try (InputStreamReader reader = new InputStreamReader(is, StandardCharsets.UTF_8)) {
-                Gson gson = new Gson();
-                LevelMetadata metadata = gson.fromJson(reader, LevelMetadata.class);
-                this.currentLevelMetadata = metadata;
-                if (metadata != null && metadata.getDecorations() != null) {
-                    for (ObjectMetadata meta : metadata.getDecorations()) {
-                        decorationMetadata.put(new Point(meta.getX(), meta.getY()), meta);
-                    }
-                }
-            }
-        } catch (Exception e) {
-            this.currentLevelMetadata = null;
-            Logger.getInstance().notify("Could not load metadata for " + levelName + ": " + e.getMessage(), Message.ERROR);
         }
     }
 
     public void switchToArena() {
         if (arenaLevel != null) {
             this.currentLevel = arenaLevel;
+            this.currentLevelMetadata = arenaLevelMetadata;
+            loadBackground();
         }
         else Logger.getInstance().notify("Arena level is not loaded!", Message.ERROR);
     }
 
     public void returnToMainMap() {
         this.currentLevel = levels[levelIndexI][levelIndexJ];
+        loadMetadata();
+        loadBackground();
     }
 
     // Render
