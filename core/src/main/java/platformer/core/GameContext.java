@@ -9,6 +9,7 @@ import platformer.model.effects.lighting.LightManager;
 import platformer.model.effects.RainManager;
 import platformer.model.effects.TimeCycleManager;
 import platformer.model.entities.enemies.EnemyManager;
+import platformer.model.entities.player.Player;
 import platformer.model.gameObjects.ObjectManager;
 import platformer.model.levels.LevelManager;
 import platformer.model.minimap.MinimapManager;
@@ -18,6 +19,8 @@ import platformer.model.quests.QuestManager;
 import platformer.model.spells.SpellManager;
 import platformer.model.tutorial.TutorialManager;
 import platformer.state.types.GameState;
+import platformer.ui.overlays.OverlayManager;
+import platformer.view.Camera;
 
 /**
  * A service provider class that holds references to all major game systems and managers.
@@ -42,4 +45,7 @@ public final class GameContext {
     private TutorialManager tutorialManager;
     private ScreenEffectsManager screenEffectsManager;
     private DialogueManager dialogueManager;
+    private OverlayManager overlayManager;
+    private Camera camera;
+    private Player player;
 }

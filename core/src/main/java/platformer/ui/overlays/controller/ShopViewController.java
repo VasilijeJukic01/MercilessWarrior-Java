@@ -4,6 +4,7 @@ import platformer.audio.Audio;
 import platformer.audio.types.Sound;
 import platformer.event.EventBus;
 import platformer.event.events.ItemPurchasedEvent;
+import platformer.event.events.ui.OverlayChangeEvent;
 import platformer.storage.StorageStrategy;
 import platformer.core.Framework;
 import platformer.model.entities.player.Player;
@@ -206,7 +207,7 @@ public class ShopViewController {
                 switch (button.getButtonType()) {
                     case BUY -> buyItem();
                     case SELL -> sellItem();
-                    case LEAVE -> gameState.setOverlay(null);
+                    case LEAVE -> EventBus.getInstance().publish(new OverlayChangeEvent(null));
                 }
                 break;
             }

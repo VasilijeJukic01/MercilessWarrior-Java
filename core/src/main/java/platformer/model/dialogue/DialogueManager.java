@@ -9,6 +9,7 @@ import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
 import platformer.event.EventBus;
 import platformer.event.events.FightInitiatedEvent;
+import platformer.event.events.ui.OverlayChangeEvent;
 import platformer.model.gameObjects.GameObject;
 import platformer.model.gameObjects.ObjectManager;
 import platformer.model.gameObjects.npc.DialogueBehavior;
@@ -42,7 +43,7 @@ public class DialogueManager {
     }
 
     public void wire(GameContext context) {
-        OverlayManager overlayManager = context.getGameState().getOverlayManager();
+        OverlayManager overlayManager = context.getOverlayManager();
         this.context = context;
         this.overlay = (DialogueOverlay) overlayManager.getOverlays().get(PlayingState.DIALOGUE);
     }
@@ -86,8 +87,8 @@ public class DialogueManager {
      * @param object the game object
      */
     public void activateDialogue(String id, GameObject object) {
-        overlay.reset();
-        context.getGameState().setOverlay(PlayingState.DIALOGUE);
+        if (overlay != null) overlay.reset();
+        EventBus.getInstance().publish(new OverlayChangeEvent(PlayingState.DIALOGUE));
         Random random = new Random();
         int index = random.nextInt(getDialogues(id).size());
         if (object instanceof Npc) {
@@ -120,7 +121,7 @@ public class DialogueManager {
         String nextAction = overlay.getQuestion().getAnswers().get(0).getNext();
 
         if (nextAction.equals("FIGHT_RORIC")) {
-            context.getGameState().setOverlay(null);
+            EventBus.getInstance().publish(new OverlayChangeEvent(null));
             overlay.reset();
             EventBus.getInstance().publish(new FightInitiatedEvent("RORIC"));
             return;
@@ -137,7 +138,7 @@ public class DialogueManager {
     public void declineQuestion() {
         if (overlay.getQuestion() == null || !overlay.isOnLastQuestion()) return;
         overlay.next();
-        context.getGameState().setOverlay(null);
+        EventBus.getInstance().publish(new OverlayChangeEvent(null));
         overlay.reset();
     }
 
@@ -155,17 +156,17 @@ public class DialogueManager {
         if(!overlay.next()) {
             ObjectManager objectManager = context.getGameState().getObjectManager();
             if (Objects.equals(objectManager.getIntersectingObject(), "Blacksmith"))
-                context.getGameState().setOverlay(PlayingState.BLACKSMITH);
+                EventBus.getInstance().publish(new OverlayChangeEvent(PlayingState.BLACKSMITH));
             else if (Objects.equals(objectManager.getIntersectingObject(), "Shop"))
-                context.getGameState().setOverlay(PlayingState.SHOP);
+                EventBus.getInstance().publish(new OverlayChangeEvent(PlayingState.SHOP));
             else if (Objects.equals(objectManager.getIntersectingObject(), "SaveTotem"))
-                context.getGameState().setOverlay(PlayingState.SAVE);
+                EventBus.getInstance().publish(new OverlayChangeEvent(PlayingState.SAVE));
             else if (objectManager.getIntersectingObject().contains("Npc")) {
                 Npc npc = (Npc) objectManager.getIntersection();
                 npc.increaseDialogueIndicator();
-                context.getGameState().setOverlay(null);
+                EventBus.getInstance().publish(new OverlayChangeEvent(null));
             }
-            else context.getGameState().setOverlay(null);
+            else EventBus.getInstance().publish(new OverlayChangeEvent(null));
 
             overlay.reset();
         }

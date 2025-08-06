@@ -2,8 +2,10 @@ package platformer.ui.overlays.controller;
 
 import platformer.audio.Audio;
 import platformer.audio.types.Sound;
+import platformer.core.GameContext;
+import platformer.event.EventBus;
+import platformer.event.events.ui.OverlayChangeEvent;
 import platformer.model.perks.Perk;
-import platformer.model.perks.PerksManager;
 import platformer.ui.buttons.AbstractButton;
 import platformer.ui.overlays.BlacksmithOverlay;
 
@@ -25,18 +27,18 @@ import static platformer.constants.UI.*;
  */
 public class BlacksmithViewController {
 
-    private final PerksManager perksManager;
+    private final GameContext context;
     private final BlacksmithOverlay blacksmithOverlay;
     private int selectedSlotNumber = 0;
 
-    public BlacksmithViewController(PerksManager perksManager, BlacksmithOverlay blacksmithOverlay) {
-        this.perksManager = perksManager;
+    public BlacksmithViewController(GameContext context, BlacksmithOverlay blacksmithOverlay) {
+        this.context = context;
         this.blacksmithOverlay = blacksmithOverlay;
         findFirstAvailablePerk();
     }
 
     private void findFirstAvailablePerk() {
-        perksManager.getPerks().stream()
+        context.getPerksManager().getPerks().stream()
                 .min(Comparator.comparingInt(Perk::getSlot))
                 .ifPresent(p -> this.selectedSlotNumber = p.getSlot());
     }
@@ -54,8 +56,7 @@ public class BlacksmithViewController {
                         upgrade();
                         break;
                     case LEAVE:
-                        // TODO: Implement leave functionality
-                        // gameState.setOverlay(null);
+                        EventBus.getInstance().publish(new OverlayChangeEvent(null));
                         break;
                     default: break;
                 }
@@ -85,7 +86,7 @@ public class BlacksmithViewController {
      * @param delta Change in slot number (-1 for left, 1 for right, -PERK_SLOT_MAX_COL for up, PERK_SLOT_MAX_COL for down).
      */
     private void navigate(int delta) {
-        List<Perk> perks = new ArrayList<>(perksManager.getPerks());
+        List<Perk> perks = new ArrayList<>(context.getPerksManager().getPerks());
         perks.sort(Comparator.comparingInt(Perk::getSlot));
         int currentIndex = -1;
         for (int i = 0; i < perks.size(); i++) {
@@ -120,7 +121,7 @@ public class BlacksmithViewController {
 
 
     private void changeSlot(MouseEvent e) {
-        for (Perk perk : perksManager.getPerks()) {
+        for (Perk perk : context.getPerksManager().getPerks()) {
             int slot = perk.getSlot();
             int xPos = (slot % PERK_SLOT_MAX_COL) * PERK_SLOT_SPACING + PERK_SLOT_X;
             int yPos = (slot / PERK_SLOT_MAX_COL) * PERK_SLOT_SPACING + PERK_SLOT_Y;
@@ -135,7 +136,7 @@ public class BlacksmithViewController {
 
     private void upgrade() {
         Audio.getInstance().getAudioPlayer().playSound(Sound.SHOP_BUY);
-        perksManager.upgrade(selectedSlotNumber);
+        context.getPerksManager().upgrade(selectedSlotNumber);
     }
 
     // Helpers

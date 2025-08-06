@@ -49,7 +49,7 @@ public class BlacksmithOverlay implements Overlay<MouseEvent, KeyEvent, Graphics
     public BlacksmithOverlay(GameContext context) {
         this.perksManager = context.getPerksManager();
         this.gameState = context.getGameState();
-        this.controller = new BlacksmithViewController(perksManager, this);
+        this.controller = new BlacksmithViewController(context, this);
         this.buttons = new MediumButton[2];
         this.SLOT_MAX_ROW = PERK_SLOT_MAX_ROW;
         this.SLOT_MAX_COL = PERK_SLOT_MAX_COL;

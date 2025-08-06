@@ -3,6 +3,8 @@ package platformer.ui.overlays;
 import platformer.controller.KeyboardController;
 import platformer.core.Framework;
 import platformer.core.GameContext;
+import platformer.event.EventBus;
+import platformer.event.events.ui.OverlayChangeEvent;
 import platformer.utils.ImageUtils;
 
 import java.awt.*;
@@ -57,7 +59,8 @@ public class TutorialOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
 
     @Override
     public void keyPressed(KeyEvent e) {
-        if (e.getKeyCode() == KeyEvent.VK_ESCAPE) context.getGameState().setOverlay(null);
+        if (e.getKeyCode() == KeyEvent.VK_ESCAPE)
+            EventBus.getInstance().publish(new OverlayChangeEvent(null));
     }
 
     @Override

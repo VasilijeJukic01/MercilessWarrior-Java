@@ -51,7 +51,7 @@ public class QuestOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
 
     public QuestOverlay(GameContext context) {
         this.questManager = context.getQuestManager();
-        this.controller = new QuestViewController(questManager, this);
+        this.controller = new QuestViewController(context, this);
         this.smallButtons = new SmallButton[2];
         this.mediumButtons = new MediumButton[1];
         init();

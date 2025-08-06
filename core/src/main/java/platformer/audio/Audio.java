@@ -3,6 +3,9 @@ package platformer.audio;
 import platformer.audio.types.Ambience;
 import platformer.audio.types.Song;
 import platformer.audio.types.Sound;
+import platformer.event.EventBus;
+import platformer.event.events.ui.GamePausedEvent;
+import platformer.event.events.ui.GameResumedEvent;
 
 /**
  * The main public access point for the game's audio system.
@@ -35,6 +38,18 @@ public class Audio {
      */
     private void init() {
         this.audioPlayer = new OpenAL();
+        EventBus.getInstance().register(GamePausedEvent.class, e -> onGamePaused());
+        EventBus.getInstance().register(GameResumedEvent.class, e -> onGameResumed());
+    }
+
+    private void onGamePaused() {
+        audioPlayer.pauseSong();
+        audioPlayer.pauseSounds();
+    }
+
+    private void onGameResumed() {
+        audioPlayer.unpauseSong();
+        audioPlayer.unpauseSounds();
     }
 
 

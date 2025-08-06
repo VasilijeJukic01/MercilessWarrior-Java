@@ -3,6 +3,8 @@ package platformer.model.world;
 import platformer.core.GameContext;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
+import platformer.event.EventBus;
+import platformer.event.events.ui.OverlayChangeEvent;
 import platformer.model.entities.player.Player;
 import platformer.model.entities.player.PlayerAction;
 import platformer.state.types.GameState;
@@ -29,16 +31,24 @@ public class GameFlowManager {
         checkPlayerDeath();
     }
 
+    /**
+     * Monitors the player's actions for {@link PlayerAction#DYING} or {@link PlayerAction#GAME_OVER} states
+     * and sets the appropriate overlay in the {@link GameState} to display the death or game over screen.
+     */
     private void checkPlayerDeath() {
         Player player = gameState.getPlayer();
         if (player.checkAction(PlayerAction.DYING)) {
-            gameState.setOverlay(PlayingState.DYING);
+            EventBus.getInstance().publish(new OverlayChangeEvent(PlayingState.DYING));
         }
         if (player.checkAction(PlayerAction.GAME_OVER)) {
-            gameState.setOverlay(PlayingState.GAME_OVER);
+            EventBus.getInstance().publish(new OverlayChangeEvent(PlayingState.GAME_OVER));
         }
     }
 
+    /**
+     * Checks if the player's hitbox intersects with any of the level's exit tiles.
+     * If an intersection is found, it calls {@link #goToLevel} to handle the transition.
+     */
     private void checkLevelExit() {
         Player player = gameState.getPlayer();
         if (player.checkAction(PlayerAction.DASH)) return;
@@ -50,6 +60,15 @@ public class GameFlowManager {
         else if (exitStatus == BOTTOM_EXIT) goToLevel(1, 0, "BOTTOM", "Bottom level loaded.");
     }
 
+    /**
+     * Orchestrates the process of changing levels.
+     * This involves loading the next level's data and resetting the world's component.
+     *
+     * @param dI      The change in the level grid's row index.
+     * @param dJ      The change in the level grid's column index.
+     * @param spawn   The spawn location name ("LEFT", "RIGHT", "UPPER", "BOTTOM") in the new level.
+     * @param message A message to log upon successful level transition.
+     */
     private void goToLevel(int dI, int dJ, String spawn, String message) {
         gameState.getPlayer().activateMinimap(false);
         context.getLevelManager().loadNextLevel(dI, dJ);

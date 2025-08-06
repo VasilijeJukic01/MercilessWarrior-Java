@@ -1,7 +1,7 @@
 package platformer.model.tutorial;
 
-import platformer.core.GameContext;
-import platformer.state.types.GameState;
+import platformer.event.EventBus;
+import platformer.event.events.ui.OverlayChangeEvent;
 import platformer.state.types.PlayingState;
 
 import java.util.Arrays;
@@ -14,8 +14,6 @@ import java.util.Map;
  */
 public class TutorialManager {
 
-    private GameContext context;
-
     private static final Map<TutorialType, Boolean> tutorials = new HashMap<>();
     private int currentTutorial;
 
@@ -23,19 +21,14 @@ public class TutorialManager {
         Arrays.stream(TutorialType.values()).forEach(t -> tutorials.put(t, false));
     }
 
-    public void wire(GameContext context) {
-        this.context = context;
-    }
-
     public void activateBlockTutorial() {
         if (!tutorials.get(TutorialType.BLOCK_ENEMY)) triggerTutorial(TutorialType.BLOCK_ENEMY);
     }
 
     private void triggerTutorial(TutorialType tutorialType) {
-        GameState gameState = context.getGameState();
         tutorials.put(tutorialType, true);
         currentTutorial = tutorialType.ordinal();
-        gameState.setOverlay(PlayingState.TUTORIAL);
+        EventBus.getInstance().publish(new OverlayChangeEvent(PlayingState.TUTORIAL));
     }
 
     public int getCurrentTutorial() {

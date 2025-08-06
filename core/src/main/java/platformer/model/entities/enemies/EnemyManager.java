@@ -6,6 +6,8 @@ import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
 import platformer.event.EventBus;
 import platformer.event.events.EnemyDefeatedEvent;
+import platformer.event.events.ui.GamePausedEvent;
+import platformer.event.events.ui.GameResumedEvent;
 import platformer.model.effects.ScreenEffectsManager;
 import platformer.model.entities.Direction;
 import platformer.model.effects.particles.DustType;
@@ -118,11 +120,11 @@ public class EnemyManager {
      * Checks if an enemy is dying and handles the event of an enemy's death.
      *
      * @param e The enemy to check.
-     * @param player The Player object representing the player in the game.
      */
-    private void checkEnemyDying(Enemy e, Player player) {
+    private void checkEnemyDying(Enemy e) {
         Random rand = new Random();
         if (e.getEnemyAction() == Anim.DEATH) {
+            Player player = context.getPlayer();
             context.getObjectManager().generateLoot(e);
             context.getTutorialManager().activateBlockTutorial();
             player.changeStamina(rand.nextInt(5));
@@ -197,7 +199,7 @@ public class EnemyManager {
             }
 
             enemy.setCriticalHit(isCritical);
-            checkEnemyDying(enemy, player);
+            checkEnemyDying(enemy);
             writeHitLog(enemy.getEnemyAction(), finalDamage);
             player.addAction(PlayerAction.DASH_HIT);
         }
@@ -239,7 +241,7 @@ public class EnemyManager {
                         context.getEffectManager().spawnDamageNumber(dmgText, enemy.getHitBox().getCenterX(), enemy.getHitBox().y, DAMAGE_COLOR);
                         spellHitTimers.put(enemy, SPELL_HIT_DISPLAY_COOLDOWN);
                     }
-                    checkEnemyDying(enemy, context.getGameState().getPlayer());
+                    checkEnemyDying(enemy);
                     return;
                 }
             }
@@ -277,7 +279,7 @@ public class EnemyManager {
                 Direction projectileDirection = projectile.getDirection();
                 skeleton.setPushDirection(projectileDirection == Direction.LEFT ? Direction.RIGHT : Direction.LEFT);
                 projectile.setAlive(false);
-                checkEnemyDying(skeleton, context.getGameState().getPlayer());
+                checkEnemyDying(skeleton);
             }
         }
         for (Lancer lancer : getEnemies(Lancer.class)) {
@@ -285,7 +287,7 @@ public class EnemyManager {
                 if (!projectile.getShapeBounds().intersects(lancer.getHitBox())) continue;
                 lancer.hit(FIREBALL_PROJECTILE_DMG, false, false);
                 projectile.setAlive(false);
-                checkEnemyDying(lancer, context.getGameState().getPlayer());
+                checkEnemyDying(lancer);
             }
         }
     }
@@ -392,6 +394,14 @@ public class EnemyManager {
     public void unpauseRoricTimer() {
         Roric roric = getRoricInstance();
         if (roric != null) roric.getPhaseManager().unpauseFightTimer();
+    }
+
+    public void onGamePaused(GamePausedEvent event) {
+        pauseRoricTimer();
+    }
+
+    public void onGameResumed(GameResumedEvent event) {
+        unpauseRoricTimer();
     }
 
     // Reset

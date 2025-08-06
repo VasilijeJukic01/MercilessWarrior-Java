@@ -1,7 +1,8 @@
 package platformer.ui.overlays;
 
 import platformer.core.Framework;
-import platformer.state.types.GameState;
+import platformer.event.EventBus;
+import platformer.event.events.ui.OverlayChangeEvent;
 import platformer.ui.buttons.AbstractButton;
 import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.MediumButton;
@@ -23,13 +24,10 @@ import static platformer.constants.UI.*;
  */
 public class SaveGameOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
 
-    private final GameState gameState;
-
     private BufferedImage saveText;
     private final MediumButton[] buttons;
 
-    public SaveGameOverlay(GameState gameState) {
-        this.gameState = gameState;
+    public SaveGameOverlay() {
         this.buttons = new MediumButton[2];
         loadImages();
         loadButtons();
@@ -86,7 +84,7 @@ public class SaveGameOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
                         Framework.getInstance().getSaveController().saveSlot();
                         break;
                     case CLOSE:
-                        gameState.setOverlay(null);
+                        EventBus.getInstance().publish(new OverlayChangeEvent(null));
                         break;
                 }
             }

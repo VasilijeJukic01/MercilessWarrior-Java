@@ -6,6 +6,8 @@ import platformer.core.GameContext;
 import platformer.debug.DebugSettings;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
+import platformer.event.EventBus;
+import platformer.event.events.ui.OverlayChangeEvent;
 import platformer.model.entities.AttackState;
 import platformer.model.entities.player.Player;
 import platformer.model.entities.player.PlayerAction;
@@ -81,8 +83,11 @@ public class GameStateController {
             player.setBlock(true);
         });
         initAction(pressActions, "Pause", () -> {
-            if (isBreakableState(context.getGameState().getActiveState())) context.getGameState().setOverlay(null);
-            else context.getGameState().setOverlay(pause(context.getGameState().getActiveState()));
+            PlayingState overlay = context.getGameState().getActiveState();
+            PlayingState newOverlay;
+            if (overlay != null) newOverlay = null;
+            else newOverlay = PlayingState.PAUSE;
+            EventBus.getInstance().publish(new OverlayChangeEvent(newOverlay));
         });
         initAction(pressActions, "QuickUse1", () -> player.getInventory().useQuickSlotItem(0, player));
         initAction(pressActions, "QuickUse2", () -> player.getInventory().useQuickSlotItem(1, player));
@@ -119,7 +124,7 @@ public class GameStateController {
         initAction(releaseActions, "Accept", () -> context.getDialogueManager().acceptQuestion());
         initAction(releaseActions, "Decline", () -> context.getDialogueManager().declineQuestion());
         initAction(releaseActions, "Minimap", () -> {
-            context.getGameState().setOverlay(PlayingState.MINIMAP);
+            EventBus.getInstance().publish(new OverlayChangeEvent(PlayingState.MINIMAP));
             context.getGameState().getOverlayManager().refreshCurrentOverlay();
         });
     }
@@ -198,10 +203,10 @@ public class GameStateController {
 
     private void handleInteraction(String id) {
         if (Objects.equals(id, "Loot") || Objects.equals(id, "Container")) {
-            context.getGameState().setOverlay(PlayingState.LOOTING);
+            EventBus.getInstance().publish(new OverlayChangeEvent(PlayingState.LOOTING));
         }
         else if (Objects.equals(id, "Table")) {
-            context.getGameState().setOverlay(PlayingState.CRAFTING);
+            EventBus.getInstance().publish(new OverlayChangeEvent(PlayingState.CRAFTING));
         }
         else if (Objects.equals(id, "Herb")) {
             GameObject herb = context.getObjectManager().getIntersection();
@@ -216,11 +221,11 @@ public class GameStateController {
     }
 
     private void openInventory() {
-        context.getGameState().setOverlay(PlayingState.INVENTORY);
+        EventBus.getInstance().publish(new OverlayChangeEvent(PlayingState.INVENTORY));
     }
 
     private void openQuests() {
-        context.getGameState().setOverlay(PlayingState.QUEST);
+        EventBus.getInstance().publish(new OverlayChangeEvent(PlayingState.QUEST));
     }
 
     private void showHitBox() {
@@ -264,11 +269,6 @@ public class GameStateController {
         };
 
         return Arrays.stream(breakableStates).anyMatch(breakableState -> breakableState == state);
-    }
-
-    private PlayingState pause(PlayingState state) {
-        if (state == PlayingState.PAUSE) return null;
-        else return PlayingState.PAUSE;
     }
 
 }

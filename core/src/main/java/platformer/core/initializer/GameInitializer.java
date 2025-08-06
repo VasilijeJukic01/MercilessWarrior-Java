@@ -13,6 +13,9 @@ import platformer.event.events.roric.RoricCloneEvent;
 import platformer.event.events.roric.RoricEffectEvent;
 import platformer.event.events.roric.RoricPhaseChangeEvent;
 import platformer.event.events.roric.RoricTeleportEvent;
+import platformer.event.events.ui.GamePausedEvent;
+import platformer.event.events.ui.GameResumedEvent;
+import platformer.event.events.ui.OverlayChangeEvent;
 import platformer.event.handlers.GameFlowEventHandler;
 import platformer.event.handlers.LancerEventHandler;
 import platformer.event.handlers.RoricEventHandler;
@@ -36,11 +39,24 @@ import platformer.model.tutorial.TutorialManager;
 import platformer.state.types.GameState;
 
 /**
- * Initializes all core game systems and wires them together.
- * This class centralizes dependency injection and setup logic.
+ * Handles the creation and wiring of all core game systems.
+ * <p>
+ * Its primary responsibility is to instantiate all game managers, inject their dependencies, and register all necessary event listeners with {@link EventBus}.
+ * The final result is a fully configured {@link GameContext} object that contains the entire operational object graph for the game world.
+ *
+ * @see GameState
+ * @see GameContext
  */
 public class GameInitializer {
 
+    /**
+     * Creates and configures all major game managers, wires their dependencies, and registers global event listeners.
+     * This is the main entry point for building the game's runtime environment.
+     *
+     * @param gameState The main game state instance, providing a link back for context-aware systems.
+     * @param screenEffectsManager The screen effects manager, which is created early and needs to be passed in.
+     * @return A fully initialized {@link GameContext} object containing references to all created game systems.
+     */
     public static GameContext initialize(GameState gameState, ScreenEffectsManager screenEffectsManager) {
         Logger.getInstance().notify("Initializing game systems...", Message.INFORMATION);
         GameContext context = new GameContext();
@@ -61,12 +77,14 @@ public class GameInitializer {
         context.setLightManager(new LightManager());
         context.setTimeCycleManager(new TimeCycleManager());
         context.setMinimapManager(new MinimapManager());
+        context.setOverlayManager(gameState.getOverlayManager());
+        context.setCamera(gameState.getCamera());
         context.setScreenEffectsManager(screenEffectsManager);
 
         // Dependency Injection
+        gameState.getOverlayManager().wire(context);
         context.getPerksManager().wire(context);
         context.getQuestManager().wire(context);
-        context.getTutorialManager().wire(context);
         context.getDialogueManager().wire(context);
         context.getLevelManager().wire(context);
         context.getMinimapManager().wire(context);
@@ -84,8 +102,24 @@ public class GameInitializer {
         return context;
     }
 
+    /**
+     * Sets up the global event handling by registering various listeners and handlers with the central {@link EventBus}.
+     * This decouples game systems, allowing them to communicate without direct references.
+     *
+     * @param context The {@link GameContext} containing the manager instances that need to listen to events.
+     * @param gameState The {@link GameState} which holds the list of continuous update handlers.
+     */
     private static void initEventListeners(GameContext context, GameState gameState) {
         EventBus eventBus = EventBus.getInstance();
+
+        // UI & Overlay Listeners
+        eventBus.register(OverlayChangeEvent.class, context.getOverlayManager()::onOverlayChange);
+
+        // Pause & Resume Listeners
+        eventBus.register(GamePausedEvent.class, context.getEnemyManager()::onGamePaused);
+        eventBus.register(GameResumedEvent.class, context.getEnemyManager()::onGameResumed);
+        eventBus.register(GamePausedEvent.class, gameState::onGamePaused);
+        eventBus.register(GameResumedEvent.class, gameState::onGameResumed);
 
         // Quest Listeners
         QuestSystemListener questListener = new QuestSystemListener(context.getQuestManager());

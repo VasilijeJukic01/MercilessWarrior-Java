@@ -325,7 +325,7 @@ public class LightManager {
         g2d.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
         g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.DST_OUT));
 
-        drawLightSource(g2d, playerLightTexture, context.getGameState().getPlayer().getHitBox(), xLevelOffset, yLevelOffset);
+        drawLightSource(g2d, playerLightTexture, context.getPlayer().getHitBox(), xLevelOffset, yLevelOffset);
         renderAllLightSources(g2d, xLevelOffset, yLevelOffset);
         g2d.dispose();
     }

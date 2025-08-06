@@ -12,6 +12,8 @@ import platformer.core.GameContext;
 import platformer.core.initializer.GameInitializer;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
+import platformer.event.events.ui.GamePausedEvent;
+import platformer.event.events.ui.GameResumedEvent;
 import platformer.model.effects.ScreenEffectsManager;
 import platformer.model.entities.player.Player;
 import platformer.model.gameObjects.ObjectManager;
@@ -36,6 +38,19 @@ import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * The central state for active gameplay, serving as the main hub for all in-game systems and interactions.
+ * <p>
+ * This class orchestrates the entire gameplay loop.
+ * It uses the {@link GameInitializer} to construct and wire the complete object graph of the game world, all held within the {@link GameContext}.
+ *
+ * @see State
+ * @see GameWorld
+ * @see GameContext
+ * @see GameInitializer
+ * @see PlayingState
+ * @see OverlayManager
+ */
 @Getter
 public class GameState extends AbstractState implements State {
 
@@ -58,18 +73,17 @@ public class GameState extends AbstractState implements State {
     public GameState(Game game) {
         super(game);
         this.screenEffectsManager = new ScreenEffectsManager(game);
-
         this.overlayManager = new OverlayManager(this);
         this.bossInterface = new BossInterface();
 
         this.context = GameInitializer.initialize(this, screenEffectsManager);
 
-        this.overlayManager.wire(this.context);
-
         this.world = new GameWorld(context);
         this.flowManager = new GameFlowManager(context);
         this.stateController = new GameStateController(context);
         this.camera = new Camera(getPlayer().getHitBox().x, getPlayer().getHitBox().y);
+        context.setPlayer(world.getPlayer());
+        context.setCamera(camera);
 
         loadFromDatabase();
         camera.updateLevelBounds(getLevelManager().getCurrentLevel());
@@ -211,6 +225,15 @@ public class GameState extends AbstractState implements State {
         getPlayer().resetDirections();
     }
 
+    // Event
+    public void onGamePaused(GamePausedEvent event) {
+        eventHandlers.forEach(EventHandler::pause);
+    }
+
+    public void onGameResumed(GameResumedEvent event) {
+        eventHandlers.forEach(EventHandler::unpause);
+    }
+
     // Facade
     public Player getPlayer() {
         return world.getPlayer();
@@ -231,18 +254,6 @@ public class GameState extends AbstractState implements State {
     }
 
     public void setOverlay(PlayingState newOverlay) {
-        if (state == PlayingState.PAUSE) {
-            Audio.getInstance().getAudioPlayer().unpauseSounds();
-            Audio.getInstance().getAudioPlayer().unpauseSong();
-            context.getEnemyManager().unpauseRoricTimer();
-            eventHandlers.forEach(EventHandler::unpause);
-        }
         this.state = newOverlay;
-        if (state == PlayingState.PAUSE) {
-            Audio.getInstance().getAudioPlayer().pauseSounds();
-            Audio.getInstance().getAudioPlayer().pauseSong();
-            context.getEnemyManager().pauseRoricTimer();
-            eventHandlers.forEach(EventHandler::pause);
-        }
     }
 }
