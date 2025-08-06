@@ -48,6 +48,8 @@ import platformer.event.handlers.RoricEventHandler;
 import platformer.model.dialogue.DialogueManager;
 import platformer.state.AbstractState;
 import platformer.state.State;
+import platformer.storage.OfflineStorageStrategy;
+import platformer.storage.StorageStrategy;
 import platformer.ui.overlays.OverlayManager;
 import platformer.ui.overlays.hud.BossInterface;
 import platformer.view.Camera;
@@ -181,6 +183,10 @@ public class GameState extends AbstractState implements State {
     }
 
     public void reloadSave() {
+        StorageStrategy strategy = Framework.getInstance().getStorageStrategy();
+        if (strategy instanceof OfflineStorageStrategy) {
+            ((OfflineStorageStrategy) strategy).loadLocalData();
+        }
         getPlayer().activateMinimap(false);
         PerksBonus.getInstance().reset();
         this.perksManager = new PerksManager(this);

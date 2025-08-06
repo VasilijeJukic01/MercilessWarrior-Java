@@ -43,7 +43,7 @@ public class OfflineStorageStrategy implements StorageStrategy {
         loadLocalData();
     }
 
-    private void loadLocalData() {
+    public void loadLocalData() {
         try (InputStreamReader reader = new InputStreamReader(Objects.requireNonNull(getClass().getResourceAsStream(ITEMS_PATH)))) {
             Type type = new TypeToken<Map<String, ItemData>>() {}.getType();
             this.masterItems = new Gson().fromJson(reader, type);
