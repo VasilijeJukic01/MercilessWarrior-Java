@@ -65,6 +65,7 @@ public class RoricAttackHandler {
     private static final double BLADE_STRIKE_TELEPORT_COOLDOWN = 9;
 
     // Beam Attack State
+    private boolean beamChargeEventPublished = false;
     private boolean beamFiredThisAttack = false;
 
     private final Random random = new Random();
@@ -146,8 +147,8 @@ public class RoricAttackHandler {
                 break;
             case BEAM_ATTACK:
                 repositionForRangedAttack(RoricState.BEAM_ATTACK, levelData, player);
-                EventBus.getInstance().publish(new RoricEffectEvent(roric, RoricEffectEvent.RoricEffectType.BEAM_CHARGE_START));
                 beamFiredThisAttack = false;
+                beamChargeEventPublished = false;
                 break;
             case ARROW_RAIN:
                 repositionForRangedAttack(RoricState.ARROW_RAIN, levelData, player);
@@ -352,6 +353,10 @@ public class RoricAttackHandler {
      * Activates a beam attack during the SPELL_1 animation.
      */
     private void handleBeamAttack(SpellManager spellManager) {
+        if (roric.getAnimIndex() == 1 && !beamChargeEventPublished) {
+            EventBus.getInstance().publish(new RoricEffectEvent(roric, RoricEffectEvent.RoricEffectType.BEAM_CHARGE_START));
+            beamChargeEventPublished = true;
+        }
         if (roric.getAnimIndex() == 9 && !beamFiredThisAttack) {
             spellManager.activateRoricBeam(roric);
             EventBus.getInstance().publish(new RoricEffectEvent(roric, RoricEffectEvent.RoricEffectType.BEAM_CHARGE_END));
