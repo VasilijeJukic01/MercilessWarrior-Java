@@ -3,11 +3,11 @@ package platformer.model.quests;
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 import lombok.Getter;
+import platformer.core.GameContext;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
-import platformer.observer.Subscriber;
-import platformer.state.GameState;
-import platformer.ui.QuestSlot;
+import platformer.model.entities.player.Player;
+import platformer.ui.components.slots.QuestSlot;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,23 +25,20 @@ import static platformer.constants.UI.*;
  * It handles quest loading, initializing quest slots, updating quest progress and managing quest events.
  */
 @Getter
-public class QuestManager implements Subscriber {
+public class QuestManager {
 
-    private final GameState gameState;
+    private GameContext context;
     private List<Quest> allQuests;
     private List<Quest> progressiveQuests, repeatableQuests;
     private List<QuestSlot> slots;
 
-    public QuestManager(GameState gameState) {
-        this.gameState = gameState;
+    public QuestManager() {
         loadQuests(QUESTS_PATH);
         initSlots();
     }
 
-    public void registerObservers() {
-        gameState.getEnemyManager().addSubscriber(this);
-        gameState.getObjectManager().addSubscriber(this);
-        gameState.getPerksManager().addSubscriber(this);
+    public void wire(GameContext context) {
+        this.context = context;
     }
 
     public void loadQuests(String filePath) {
@@ -93,16 +90,13 @@ public class QuestManager implements Subscriber {
     }
 
     /**
-     * Updates the quest progress based on the event.
+     * Updates the progress of active quests based on a game event.
+     * This method is called by dedicated listeners in response to events from the EventBus.
      *
-     * @param o the event parameters
-     * @param <T> the type of the event parameters
+     * @param eventType   The type of objective to update (e.g., KILL, COLLECT).
+     * @param eventTarget The specific target of the objective (e.g., SKELETON, CRATE).
      */
-    @Override
-    @SafeVarargs
-    public final <T> void update(T... o) {
-        if (o.length < 2 || !(o[0] instanceof QuestObjectiveType eventType) || !(o[1] instanceof ObjectiveTarget eventTarget)) return;
-
+    public void updateQuestProgress(QuestObjectiveType eventType, ObjectiveTarget eventTarget) {
         for (QuestSlot slot : new ArrayList<>(slots)) {
             Quest quest = slot.getQuest();
             if (quest.isCompleted() || quest.getObjectives() == null || quest.getObjectives().isEmpty()) continue;
@@ -133,9 +127,10 @@ public class QuestManager implements Subscriber {
     }
 
     public void completeQuest(Quest quest) {
-        if(quest.getItemRewards() != null) gameState.getPlayer().getInventory().completeQuestFill(quest.getItemRewards());
-        if(quest.getCoinReward() > 0) gameState.getPlayer().changeCoins(quest.getCoinReward());
-        if(quest.getExpReward() > 0) gameState.getPlayer().changeExp(quest.getExpReward());
+        Player player = context.getGameState().getPlayer();
+        if(quest.getItemRewards() != null) player.getInventory().completeQuestFill(quest.getItemRewards());
+        if(quest.getCoinReward() > 0) player.changeCoins(quest.getCoinReward());
+        if(quest.getExpReward() > 0) player.changeExp(quest.getExpReward());
 
         switchQuest(quest);
         sortAndRepositionSlots();

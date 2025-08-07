@@ -1,6 +1,9 @@
 package platformer.model.entities.enemies.boss.roric;
 
 import platformer.debug.DebugSettings;
+import platformer.event.EventBus;
+import platformer.event.events.BossDefeatedEvent;
+import platformer.event.events.roric.RoricPhaseChangeEvent;
 import platformer.model.entities.enemies.boss.Roric;
 
 import java.util.List;
@@ -84,6 +87,7 @@ public class RoricPhaseManager {
 
         if (elapsedTime >= PHASE_6_START_TIME) {
             currentPhase = RoricPhase.VICTORY;
+            EventBus.getInstance().publish(new BossDefeatedEvent(roric));
         }
         else if (elapsedTime >= PHASE_5_START_TIME) {
             currentPhase = RoricPhase.FINALE;
@@ -100,12 +104,14 @@ public class RoricPhaseManager {
         else currentPhase = RoricPhase.INTRO;
 
         if (oldPhase != currentPhase) {
-            roric.notify("PHASE_CHANGE", currentPhase);
+            EventBus.getInstance().publish(new RoricPhaseChangeEvent(currentPhase));
         }
         if (currentPhase == RoricPhase.FINALE) {
             long now = System.currentTimeMillis();
             if (now - lastSkybeamSpawnTime >= 1000) {
-                roric.notify("SPAWN_RANDOM_SKYBEAM", null);
+                if (roric.getSpellManager() != null) {
+                    roric.getSpellManager().spawnSkyBeam();
+                }
                 lastSkybeamSpawnTime = now;
             }
         }

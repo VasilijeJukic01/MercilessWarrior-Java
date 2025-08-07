@@ -1,7 +1,9 @@
 package platformer.model.gameObjects.objects;
 
 import platformer.model.entities.Direction;
+import platformer.model.entities.player.Player;
 import platformer.model.gameObjects.GameObject;
+import platformer.model.gameObjects.Interactable;
 import platformer.model.gameObjects.ObjType;
 
 import java.awt.*;
@@ -9,7 +11,7 @@ import java.awt.image.BufferedImage;
 
 import static platformer.constants.Constants.*;
 
-public class Spike extends GameObject {
+public class Spike extends GameObject implements Interactable {
 
     private final Direction direction;
 
@@ -68,5 +70,25 @@ public class Spike extends GameObject {
     @Override
     public void attackBoxRenderer(Graphics g, int xLevelOffset, int yLevelOffset) {
 
+    }
+
+    @Override
+    public void onEnter(Player player) {
+        player.kill();
+    }
+
+    @Override
+    public void onIntersect(Player player) {
+        player.kill();
+    }
+
+    @Override
+    public void onExit(Player player) {
+
+    }
+
+    @Override
+    public String getInteractionPrompt() {
+        return null;
     }
 }

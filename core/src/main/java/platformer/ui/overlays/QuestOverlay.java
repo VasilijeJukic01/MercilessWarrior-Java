@@ -1,17 +1,18 @@
 package platformer.ui.overlays;
 
-import platformer.animation.Animation;
-import platformer.model.inventory.ItemData;
-import platformer.model.inventory.ItemDatabase;
+import platformer.animation.SpriteManager;
+import platformer.core.GameContext;
+import platformer.model.inventory.item.ItemData;
+import platformer.model.inventory.database.ItemDatabase;
 import platformer.model.quests.Quest;
+import platformer.model.quests.QuestManager;
 import platformer.model.quests.QuestObjective;
-import platformer.state.GameState;
-import platformer.ui.QuestSlot;
+import platformer.ui.components.slots.QuestSlot;
 import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.MediumButton;
 import platformer.ui.buttons.SmallButton;
 import platformer.ui.overlays.controller.QuestViewController;
-import platformer.utils.Utils;
+import platformer.utils.ImageUtils;
 
 
 import java.awt.*;
@@ -35,7 +36,7 @@ import static platformer.constants.UI.*;
  */
 public class QuestOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
 
-    private final GameState gameState;
+    private final QuestManager questManager;
     private final QuestViewController controller;
     private final MediumButton[] mediumButtons;
     private final SmallButton[] smallButtons;
@@ -48,9 +49,9 @@ public class QuestOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
     private final Font bodyFont = new Font("Arial", Font.PLAIN, FONT_MEDIUM);
     private final Font rewardFont = new Font("Arial", Font.PLAIN, FONT_LIGHT);
 
-    public QuestOverlay(GameState gameState) {
-        this.gameState = gameState;
-        this.controller = new QuestViewController(gameState, this);
+    public QuestOverlay(GameContext context) {
+        this.questManager = context.getQuestManager();
+        this.controller = new QuestViewController(context, this);
         this.smallButtons = new SmallButton[2];
         this.mediumButtons = new MediumButton[1];
         init();
@@ -63,11 +64,11 @@ public class QuestOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
     }
 
     private void loadImages() {
-        this.questsText = Utils.getInstance().importImage(QUESTS_TXT, QUEST_TXT_WID, QUEST_TXT_HEI);
+        this.questsText = ImageUtils.importImage(QUESTS_TXT, QUEST_TXT_WID, QUEST_TXT_HEI);
         this.overlay = new Rectangle2D.Double(INV_OVERLAY_X, INV_OVERLAY_Y, INV_OVERLAY_WID, INV_OVERLAY_HEI);
         this.questListPanel = new Rectangle2D.Double(BACKPACK_X, BACKPACK_Y, BACKPACK_WID, BACKPACK_HEI);
-        this.coinIcon = Animation.getInstance().loadFromSprite(QUEST_COIN_PATH, 1, 0, QUEST_ICON_SIZE, QUEST_ICON_SIZE, 0, COIN_W, COIN_H)[0];
-        this.expIcon = Animation.getInstance().loadFromSprite(QUEST_EXP_PATH, 1, 0, QUEST_ICON_SIZE, QUEST_ICON_SIZE, 0, COIN_W, COIN_H)[0];
+        this.coinIcon = SpriteManager.getInstance().loadFromSprite(QUEST_COIN_PATH, 1, 0, QUEST_ICON_SIZE, QUEST_ICON_SIZE, 0, COIN_W, COIN_H)[0];
+        this.expIcon = SpriteManager.getInstance().loadFromSprite(QUEST_EXP_PATH, 1, 0, QUEST_ICON_SIZE, QUEST_ICON_SIZE, 0, COIN_W, COIN_H)[0];
     }
 
     private void loadButtons() {
@@ -115,7 +116,7 @@ public class QuestOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
     }
 
     private void renderQuestSlots(Graphics g) {
-        List<QuestSlot> slots = gameState.getQuestManager().getSlots();
+        List<QuestSlot> slots = questManager.getSlots();
         int start = controller.getCurrentPage() * QUEST_SLOT_CAP;
         int end = Math.min(start + QUEST_SLOT_CAP, slots.size());
 
@@ -128,7 +129,7 @@ public class QuestOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
     }
 
     private void renderQuestDetails(Graphics g) {
-        List<QuestSlot> slots = gameState.getQuestManager().getSlots();
+        List<QuestSlot> slots = questManager.getSlots();
         if (slots.isEmpty() || controller.getSelectedQuest() >= slots.size()) return;
 
         Quest quest = slots.get(controller.getSelectedQuest()).getQuest();
@@ -220,7 +221,7 @@ public class QuestOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
             for (Map.Entry<String, Integer> entry : quest.getItemRewards().entrySet()) {
                 ItemData item = ItemDatabase.getInstance().getItemData(entry.getKey());
                 if (item != null) {
-                    BufferedImage itemIcon = Utils.getInstance().importImage(item.imagePath, -1, -1);
+                    BufferedImage itemIcon = ImageUtils.importImage(item.imagePath, -1, -1);
                     yPos = renderRewardLine(g, itemIcon, item.name + " x" + entry.getValue(), item.rarity.getTextColor(), yPos);
                     yPos += rewardSpacing;
                 }

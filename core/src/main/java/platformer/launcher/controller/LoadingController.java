@@ -3,12 +3,11 @@ package platformer.launcher.controller;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import platformer.AppCore;
-import platformer.bridge.client.GameServiceClient;
-import platformer.debug.logger.Logger;
-import platformer.debug.logger.Message;
+import platformer.service.rest.client.GameServiceClient;
+import platformer.core.TokenStorage;
+import platformer.core.config.GameLaunchConfig;
 import platformer.launcher.view.LoadingView;
-import platformer.model.inventory.GameDataCache;
-import platformer.utils.loading.LoadingProgressTracker;
+import platformer.core.loading.LoadingProgressTracker;
 
 /**
  * Controller for handling loading processes and game initialization logic.
@@ -34,37 +33,26 @@ public class LoadingController {
      * Starts the game loading process in a background thread
      */
     public void startLoadingProcess() {
-        LoadingProgressTracker.getInstance().update(0.0, "Starting launch process");
+        LoadingProgressTracker.getInstance().update(0.0, "Authenticating...");
 
         Thread gameThread = new Thread(() -> {
             try {
                 GameServiceClient client = new GameServiceClient();
                 boolean loggedIn = client.loginAndStoreToken(playerName, password);
+                String authToken = loggedIn ? TokenStorage.getInstance().getToken() : null;
 
-                if (loggedIn) {
-                    LoadingProgressTracker.getInstance().update(0.05, "Fetching game data from server...");
-                    try {
-                        GameDataCache.getInstance().cacheItemData(client.getMasterItems());
-                        GameDataCache.getInstance().cacheShopInventory("DEFAULT_SHOP", client.getShopInventory("DEFAULT_SHOP"));
-                        Logger.getInstance().notify("Successfully loaded master data from server.", Message.INFORMATION);
-                    } catch (Exception e) {
-                        Logger.getInstance().notify("Could not fetch server data.", Message.WARNING);
-                    }
-                }
-            } catch (Exception e) {
-                Logger.getInstance().notify("An unexpected error occurred during online data fetch. Forcing offline mode.", Message.ERROR);
-            }
-
-            try {
-                LoadingProgressTracker.getInstance().update(0.1, "Initializing game engine");
-                String[] gameArgs = new String[]{
+                float scale = Float.parseFloat(System.getProperty("game.scale", "1.5"));
+                GameLaunchConfig config = new GameLaunchConfig(
                         playerName,
-                        password,
-                        enableCheats ? "Yes" : "No",
-                        fullScreen ? "Yes" : "No"
-                };
+                        authToken,
+                        enableCheats,
+                        fullScreen,
+                        scale
+                );
 
-                AppCore.main(gameArgs);
+                LoadingProgressTracker.getInstance().update(0.1, "Initializing game engine");
+                AppCore.startGame(config);
+
                 monitorLaunchCompletion();
             } catch (Exception e) {
                 Platform.runLater(() -> {

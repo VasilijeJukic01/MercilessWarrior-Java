@@ -1,0 +1,181 @@
+package platformer.model.dialogue;
+
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import platformer.controller.KeyboardController;
+import platformer.core.Framework;
+import platformer.core.GameContext;
+import platformer.debug.logger.Logger;
+import platformer.debug.logger.Message;
+import platformer.event.EventBus;
+import platformer.event.events.FightInitiatedEvent;
+import platformer.event.events.ui.OverlayChangeEvent;
+import platformer.model.gameObjects.GameObject;
+import platformer.model.gameObjects.ObjectManager;
+import platformer.model.gameObjects.npc.DialogueBehavior;
+import platformer.model.gameObjects.npc.Npc;
+import platformer.state.types.PlayingState;
+import platformer.ui.overlays.DialogueOverlay;
+import platformer.ui.overlays.OverlayManager;
+
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.lang.reflect.Type;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static platformer.constants.FilePaths.OBJECT_DIALOGUES;
+
+/**
+ * This class is responsible for managing dialogues in the game.
+ * It reads dialogue data, activates dialogues for game objects, and updates the dialogue state.
+ */
+public class DialogueManager {
+
+    private GameContext context;
+    private DialogueOverlay overlay;
+
+    private final Map<String, List<Dialogue>> dialogues;
+
+    public DialogueManager() {
+        this.dialogues = new HashMap<>();
+        readDialogueFile();
+    }
+
+    public void wire(GameContext context) {
+        OverlayManager overlayManager = context.getOverlayManager();
+        this.context = context;
+        this.overlay = (DialogueOverlay) overlayManager.getOverlays().get(PlayingState.DIALOGUE);
+    }
+
+    private void readDialogueFile() {
+        try {
+            String file = Objects.requireNonNull(getClass().getResource(OBJECT_DIALOGUES)).getFile();
+            BufferedReader reader = new BufferedReader(new FileReader(file));
+            Gson gson = new Gson();
+            Type dialogueFileType = new TypeToken<DialogueFile>() {}.getType();
+            DialogueFile dialogueFile = gson.fromJson(reader, dialogueFileType);
+            reader.close();
+
+            for (Dialogue dialogue : dialogueFile.getDialogues()) {
+                replacePlaceholders(dialogue);
+                String key = dialogue.getObject();
+                dialogues.putIfAbsent(key, new ArrayList<>());
+                dialogues.get(key).add(dialogue);
+            }
+        } catch (Exception ignored) {
+            Logger.getInstance().notify("Reading dialogue file failed!", Message.ERROR);
+        }
+    }
+
+    private void replacePlaceholders(Dialogue dialogue) {
+        if ("Board".equals(dialogue.getObject())) {
+            KeyboardController kbc = Framework.getInstance().getKeyboardController();
+            for (int i = 0; i < dialogue.getLines().size(); i++) {
+                String line = dialogue.getLines().get(i);
+                line = line.replace("%%JUMP%%", kbc.getKeyName("Jump").toUpperCase());
+                line = line.replace("%%ATTACK%%", kbc.getKeyName("Attack").toUpperCase());
+                dialogue.getLines().set(i, line);
+            }
+        }
+    }
+
+    /**
+     * Activates a dialogue for the specified game object.
+     *
+     * @param id the dialogue ID
+     * @param object the game object
+     */
+    public void activateDialogue(String id, GameObject object) {
+        if (overlay != null) overlay.reset();
+        EventBus.getInstance().publish(new OverlayChangeEvent(PlayingState.DIALOGUE));
+        Random random = new Random();
+        int index = random.nextInt(getDialogues(id).size());
+        if (object instanceof Npc) {
+            Npc npc = (Npc) object;
+            if (npc.getDialogueBehavior() == DialogueBehavior.RANDOM) {
+                index = random.nextInt(getDialogues(id).size());
+            }
+            else index = npc.getDialogueIndicator();
+        }
+        Dialogue dialogue = getDialogues(id).get(index);
+        dialogue.setActivated();
+        setDialogueObject(dialogue, object);
+    }
+
+    /**
+     * Sets the dialogue object in the overlay.
+     *
+     * @param dialogue the dialogue
+     * @param object the game object
+     */
+    private void setDialogueObject(Dialogue dialogue, GameObject object) {
+        overlay.setDialogues(dialogue, object);
+    }
+
+    /**
+     * Accepts the current question in the dialogue.
+     */
+    public void acceptQuestion() {
+        if (overlay.getQuestion() == null || !overlay.isOnLastQuestion()) return;
+        String nextAction = overlay.getQuestion().getAnswers().get(0).getNext();
+
+        if (nextAction.equals("FIGHT_RORIC")) {
+            EventBus.getInstance().publish(new OverlayChangeEvent(null));
+            overlay.reset();
+            EventBus.getInstance().publish(new FightInitiatedEvent("RORIC"));
+            return;
+        }
+
+        String questName = nextAction.replace("Quest: ", "");
+        context.getQuestManager().startNPCQuest(questName);
+        updateDialogue("QUESTION");
+    }
+
+    /**
+     * Declines the current question in the dialogue.
+     */
+    public void declineQuestion() {
+        if (overlay.getQuestion() == null || !overlay.isOnLastQuestion()) return;
+        overlay.next();
+        EventBus.getInstance().publish(new OverlayChangeEvent(null));
+        overlay.reset();
+    }
+
+    /**
+     * Updates the dialogue state.
+     * If the dialogue is finished, it sets the appropriate overlay based on the intersecting object.
+     * <p>
+     * @param type the dialogue type
+     */
+    public void updateDialogue(String type) {
+        if (overlay.isOnLastQuestion() && type.equals("STANDARD")) {
+            overlay.skipLetterAnim();
+            return;
+        }
+        if(!overlay.next()) {
+            ObjectManager objectManager = context.getGameState().getObjectManager();
+            if (Objects.equals(objectManager.getIntersectingObject(), "Blacksmith"))
+                EventBus.getInstance().publish(new OverlayChangeEvent(PlayingState.BLACKSMITH));
+            else if (Objects.equals(objectManager.getIntersectingObject(), "Shop"))
+                EventBus.getInstance().publish(new OverlayChangeEvent(PlayingState.SHOP));
+            else if (Objects.equals(objectManager.getIntersectingObject(), "SaveTotem"))
+                EventBus.getInstance().publish(new OverlayChangeEvent(PlayingState.SAVE));
+            else if (objectManager.getIntersectingObject().contains("Npc")) {
+                Npc npc = (Npc) objectManager.getIntersection();
+                npc.increaseDialogueIndicator();
+                EventBus.getInstance().publish(new OverlayChangeEvent(null));
+            }
+            else EventBus.getInstance().publish(new OverlayChangeEvent(null));
+
+            overlay.reset();
+        }
+    }
+
+    private List<Dialogue> getDialogues(String id) {
+        return dialogues.get(id).stream()
+                .filter(d -> !d.isActivated())
+                .collect(Collectors.toList());
+    }
+
+}

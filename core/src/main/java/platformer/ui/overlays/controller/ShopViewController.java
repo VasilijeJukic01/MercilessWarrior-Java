@@ -2,17 +2,18 @@ package platformer.ui.overlays.controller;
 
 import platformer.audio.Audio;
 import platformer.audio.types.Sound;
-import platformer.bridge.storage.StorageStrategy;
+import platformer.event.EventBus;
+import platformer.event.events.ItemPurchasedEvent;
+import platformer.event.events.ui.OverlayChangeEvent;
+import platformer.storage.StorageStrategy;
 import platformer.core.Framework;
 import platformer.model.entities.player.Player;
 import platformer.model.gameObjects.objects.Shop;
 import platformer.model.inventory.Inventory;
-import platformer.model.inventory.InventoryItem;
-import platformer.model.inventory.ItemData;
-import platformer.model.inventory.ShopItem;
-import platformer.model.quests.ObjectiveTarget;
-import platformer.model.quests.QuestObjectiveType;
-import platformer.state.GameState;
+import platformer.model.inventory.item.InventoryItem;
+import platformer.model.inventory.item.ItemData;
+import platformer.model.inventory.item.ShopItem;
+import platformer.state.types.GameState;
 import platformer.ui.buttons.AbstractButton;
 import platformer.ui.buttons.ButtonType;
 import platformer.ui.overlays.ShopOverlay;
@@ -149,9 +150,10 @@ public class ShopViewController {
                 .filter(invItem -> invItem.getItemId().equals(itemId))
                 .findFirst();
 
-        if (itemId.equals("ARMOR_WARRIOR")) {
-            gameState.getQuestManager().update(QuestObjectiveType.COLLECT, ObjectiveTarget.BUY_ARMOR);
-        }
+        getActiveShop().flatMap(shop -> shop.getShopItems().stream()
+                        .filter(si -> si.getItemId().equals(itemId))
+                        .findFirst())
+                .ifPresent(shopItem -> EventBus.getInstance().publish(new ItemPurchasedEvent(shopItem, quantity)));
 
         if (existingItem.isPresent() && existingItem.get().getData().stackable) {
             existingItem.get().addAmount(quantity);
@@ -205,7 +207,7 @@ public class ShopViewController {
                 switch (button.getButtonType()) {
                     case BUY -> buyItem();
                     case SELL -> sellItem();
-                    case LEAVE -> gameState.setOverlay(null);
+                    case LEAVE -> EventBus.getInstance().publish(new OverlayChangeEvent(null));
                 }
                 break;
             }

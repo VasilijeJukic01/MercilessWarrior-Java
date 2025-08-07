@@ -7,6 +7,8 @@ import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 import javafx.stage.Modality;
 import platformer.launcher.controller.LaunchController;
+import platformer.launcher.view.component.DefaultHBox;
+import platformer.launcher.view.component.DefaultVBox;
 import platformer.launcher.view.styler.FXStyler;
 import platformer.launcher.view.styler.Styler;
 
@@ -62,7 +64,7 @@ public class LauncherView extends BaseView {
     }
 
     private void initStyles(Scene scene) {
-        scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/styles/style.css")).toExternalForm());
+        scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/styles/launcher.css")).toExternalForm());
 
         Styler styler = new FXStyler();
         List<Label> labels = Arrays.asList(lbLogo, lbName, lbPassword, lbYes, lbNo, lnEnableCheats, lbResolution, lbFullScreen);

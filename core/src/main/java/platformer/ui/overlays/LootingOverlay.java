@@ -1,16 +1,18 @@
 package platformer.ui.overlays;
 
+import platformer.core.GameContext;
+import platformer.event.EventBus;
+import platformer.event.events.ui.OverlayChangeEvent;
 import platformer.model.gameObjects.GameObject;
 import platformer.model.gameObjects.objects.Container;
 import platformer.model.gameObjects.objects.Loot;
 import platformer.model.inventory.Inventory;
-import platformer.model.inventory.InventoryItem;
-import platformer.model.inventory.ItemData;
-import platformer.state.GameState;
+import platformer.model.inventory.item.InventoryItem;
+import platformer.model.inventory.item.ItemData;
 import platformer.ui.buttons.AbstractButton;
 import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.MediumButton;
-import platformer.utils.Utils;
+import platformer.utils.ImageUtils;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
@@ -30,15 +32,15 @@ import static platformer.constants.UI.*;
  */
 public class LootingOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
 
-    private final GameState gameState;
+    private final GameContext context;
     private final MediumButton[] buttons;
 
     private BufferedImage slotImage;
     private Rectangle2D.Double selectedSlot;
     private int slotNumber;
 
-    public LootingOverlay(GameState gameState) {
-        this.gameState = gameState;
+    public LootingOverlay(GameContext context) {
+        this.context = context;
         this.buttons = new MediumButton[3];
         init();
     }
@@ -51,7 +53,7 @@ public class LootingOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
     }
 
     private void loadImages() {
-        this.slotImage = Utils.getInstance().importImage(SLOT_INVENTORY, SLOT_SIZE, SLOT_SIZE);
+        this.slotImage = ImageUtils.importImage(SLOT_INVENTORY, SLOT_SIZE, SLOT_SIZE);
     }
 
     private void loadButtons() {
@@ -67,7 +69,7 @@ public class LootingOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
     }
 
     private List<InventoryItem> getItemsFromSource() {
-        GameObject source = gameState.getObjectManager().getIntersection();
+        GameObject source = context.getObjectManager().getIntersection();
         if (source instanceof Loot) return ((Loot) source).getItems();
         else if (source instanceof Container) return ((Container) source).getItems();
         return null;
@@ -105,7 +107,7 @@ public class LootingOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
     private void renderItems(Graphics g) {
         List<InventoryItem> itemsToRender = getItemsFromSource();
         if (itemsToRender == null) {
-            gameState.setOverlay(null);
+            EventBus.getInstance().publish(new OverlayChangeEvent(null));
             return;
         }
         int slot = 0;
@@ -191,7 +193,7 @@ public class LootingOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
                         takeAllItems();
                         break;
                     case CLOSE:
-                        gameState.setOverlay(null);
+                        EventBus.getInstance().publish(new OverlayChangeEvent(null));
                         break;
                     default: break;
                 }
@@ -204,7 +206,7 @@ public class LootingOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
     private void takeCurrentItem() {
         List<InventoryItem> items = getItemsFromSource();
         if (items == null || slotNumber >= items.size()) return;
-        Inventory inventory = gameState.getPlayer().getInventory();
+        Inventory inventory = context.getPlayer().getInventory();
         InventoryItem item = items.get(slotNumber);
         inventory.addItemToBackpack(item);
         items.remove(item);
@@ -214,7 +216,7 @@ public class LootingOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
     private void takeAllItems() {
         List<InventoryItem> items = getItemsFromSource();
         if (items == null) return;
-        Inventory inventory = gameState.getPlayer().getInventory();
+        Inventory inventory = context.getPlayer().getInventory();
         for (InventoryItem item : new ArrayList<>(items)) {
             inventory.addItemToBackpack(item);
         }
@@ -225,8 +227,8 @@ public class LootingOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
     private void checkAndCloseOverlayIfEmpty() {
         List<InventoryItem> items = getItemsFromSource();
         if (items != null && items.isEmpty()) {
-            gameState.getObjectManager().setIntersection(null);
-            gameState.setOverlay(null);
+            context.getObjectManager().setIntersection(null);
+            EventBus.getInstance().publish(new OverlayChangeEvent(null));
         }
     }
 

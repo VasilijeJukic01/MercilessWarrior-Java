@@ -1,9 +1,13 @@
 package platformer.model.entities.enemies.boss;
 
 import platformer.animation.Anim;
+import platformer.animation.SpriteManager;
 import platformer.audio.Audio;
 import platformer.audio.types.Song;
 import platformer.debug.DebugSettings;
+import platformer.event.EventBus;
+import platformer.event.events.roric.RoricEffectEvent;
+import platformer.event.events.roric.RoricPhaseChangeEvent;
 import platformer.model.entities.Cooldown;
 import platformer.model.entities.Direction;
 import platformer.model.entities.enemies.Enemy;
@@ -14,17 +18,11 @@ import platformer.model.entities.enemies.boss.roric.RoricPhaseManager;
 import platformer.model.entities.enemies.boss.roric.RoricState;
 import platformer.model.entities.player.Player;
 import platformer.model.gameObjects.ObjectManager;
-import platformer.model.projectiles.ProjectileManager;
 import platformer.model.spells.SpellManager;
-import platformer.observer.Publisher;
-import platformer.observer.Subscriber;
 import platformer.ui.overlays.hud.BossInterface;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
-import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-import java.util.List;
 
 import static platformer.constants.Constants.*;
 import static platformer.physics.CollisionDetector.*;
@@ -41,7 +39,7 @@ import static platformer.physics.CollisionDetector.*;
  * @see RoricAttackHandler
  * @see RoricState
  */
-public class Roric extends Enemy implements Publisher {
+public class Roric extends Enemy {
 
     private final RoricAttackHandler attackHandler;
     private final RoricPhaseManager phaseManager;
@@ -57,6 +55,7 @@ public class Roric extends Enemy implements Publisher {
     protected final double jumpSpeed = -3.0 * SCALE;
 
     // Current state
+    private ObjectManager objectManager;
     private SpellManager spellManager;
     private Player currentPlayerTarget;
     private int[][] currentLevelData;
@@ -64,8 +63,6 @@ public class Roric extends Enemy implements Publisher {
     // Offsets
     private final int attackBoxOffsetX = (int) (40 * SCALE);
     private final int jumpOffsetX = (int) (1.5 * SCALE);
-
-    private static final List<Subscriber> subscribers = new ArrayList<>();
 
     public Roric(int xPos, int yPos) {
         super(xPos, yPos, RORIC_WIDTH, RORIC_HEIGHT, EnemyType.RORIC, 16);
@@ -89,7 +86,7 @@ public class Roric extends Enemy implements Publisher {
     }
 
     @Override
-    public void update(BufferedImage[][] animations, int[][] levelData, Player player) {
+    public void update(int[][] levelData, Player player) {
         // Not used
     }
 
@@ -98,23 +95,22 @@ public class Roric extends Enemy implements Publisher {
      * It serves as the integration point for physics (from {@code updateMove}) and AI (from {@code attackHandler.update}),
      * and also manages the boss HUD visibility.
      *
-     * @param animations The sprite sheets for Roric.
      * @param levelData The collision map of the current level.
      * @param player The player entity.
      * @param spellManager Manager for spell effects.
      * @param enemyManager Manager for enemy entities (used for spawning clones).
-     * @param objectManager Manager for game objects.
-     * @param projectileManager Manager for projectiles.
+     * @param objectManager Manager for game objects (used for environmental interactions).
      * @param bossInterface The UI component for the boss health bar.
      */
-    public void update(BufferedImage[][] animations, int[][] levelData, Player player, SpellManager spellManager, EnemyManager enemyManager, ObjectManager objectManager, ProjectileManager projectileManager, BossInterface bossInterface) {
+    public void update(int[][] levelData, Player player, SpellManager spellManager, EnemyManager enemyManager, ObjectManager objectManager, BossInterface bossInterface) {
+        this.objectManager = objectManager;
         this.spellManager = spellManager;
         this.currentPlayerTarget = player;
         this.currentLevelData = levelData;
         if (!start && isPlayerCloseForAttack(player)) {
             start = true;
             phaseManager.startFight();
-            notify("START_FIGHT", phaseManager.getFightStartTime());
+            EventBus.getInstance().publish(new RoricPhaseChangeEvent(RoricPhaseManager.RoricPhase.INTRO));
             if (DebugSettings.getInstance().isRoricDebugMode()) {
                 Audio.getInstance().getAudioPlayer().playSong(Song.BOSS_2, DebugSettings.getInstance().getRoricFightStartOffsetMs());
             }
@@ -124,11 +120,11 @@ public class Roric extends Enemy implements Publisher {
         phaseManager.update();
         // Delegate to handler (for specials)
         if (state == RoricState.SKYFALL_BARRAGE || state == RoricState.CELESTIAL_RAIN) {
-            attackHandler.update(levelData, player, spellManager, enemyManager, projectileManager);
+            attackHandler.update(levelData, player, spellManager, enemyManager);
             return;
         }
-        updateMove(levelData, player, spellManager, projectileManager, enemyManager);
-        updateAnimation(animations);
+        updateMove(levelData, player, spellManager, enemyManager);
+        updateAnimation();
         updateAttackBox();
         updateBossInterface(bossInterface);
     }
@@ -140,12 +136,11 @@ public class Roric extends Enemy implements Publisher {
      * @param levelData Collision data for the level.
      * @param player The player entity.
      * @param spellManager The spell manager for handling spells.
-     * @param projectileManager The projectile manager for handling projectiles.
      * @param enemyManager The enemy manager for handling other enemies.
      */
-    protected void updateMove(int[][] levelData, Player player, SpellManager spellManager, ProjectileManager projectileManager, EnemyManager enemyManager) {
+    protected void updateMove(int[][] levelData, Player player, SpellManager spellManager, EnemyManager enemyManager) {
         if (!isEntityOnFloor(hitBox, levelData) && !inAir) inAir = true;
-        attackHandler.update(levelData, player, spellManager, enemyManager, projectileManager);
+        attackHandler.update(levelData, player, spellManager, enemyManager);
         if (inAir) {
             updateInAir(levelData, 0, COLLISION_FALL_SPEED);
         }
@@ -176,7 +171,11 @@ public class Roric extends Enemy implements Publisher {
         if (airSpeed < 0) airSpeed += UPWARD_GRAVITY;
         else airSpeed += DOWNWARD_GRAVITY;
 
-        if (canMoveHere(hitBox.x + xSpeed, hitBox.y, hitBox.width, hitBox.height, levelData)) hitBox.x += xSpeed;
+        double actualDx = this.objectManager.checkSolidObjectCollision(hitBox, xSpeed);
+        if (actualDx != xSpeed) xSpeed = 0;
+        Rectangle2D.Double nextXHitbox = new Rectangle2D.Double(hitBox.x + actualDx, hitBox.y, hitBox.width, hitBox.height);
+
+        if (canMoveHere(nextXHitbox.x, nextXHitbox.y, nextXHitbox.width, nextXHitbox.height, levelData)) hitBox.x += actualDx;
         else xSpeed = 0;
 
         if (canMoveHere(hitBox.x, hitBox.y + airSpeed, hitBox.width, hitBox.height, levelData)) hitBox.y += airSpeed;
@@ -202,11 +201,9 @@ public class Roric extends Enemy implements Publisher {
      * <p>
      * This logic is coupled with the physics state for the `JUMP_FALL` animation, it selects the correct sprite based on the sign
      * of the vertical velocity (`airSpeed`). This ensures the visual representation matches the kinematic state.
-     *
-     * @param animations The 2D array of animation sprites.
      */
     @Override
-    protected void updateAnimation(BufferedImage[][] animations) {
+    protected void updateAnimation() {
         coolDownTickUpdate();
         animTick++;
         double effectiveAnimSpeed = animSpeed * phaseManager.getAnimationSpeedModifier();
@@ -221,7 +218,7 @@ public class Roric extends Enemy implements Publisher {
                     animIndex = 9;
                 }
             }
-            if (animIndex >= animations[entityState.ordinal()].length) {
+            if (animIndex >= SpriteManager.getInstance().getAnimFrames(getEnemyType(), entityState)) {
                 if (entityState != Anim.JUMP_FALL) attackHandler.finishAnimation();
             }
         }
@@ -270,7 +267,7 @@ public class Roric extends Enemy implements Publisher {
         int spaceToRight = levelData.length - currentTileX;
         this.xSpeed = (spaceToRight > currentTileX) ? jumpOffsetX : -jumpOffsetX;
         setDirection(xSpeed > 0 ? Direction.RIGHT : Direction.LEFT);
-        notify("JUMPED", this);
+        EventBus.getInstance().publish(new RoricEffectEvent(this, RoricEffectEvent.RoricEffectType.JUMP));
     }
 
     /**
@@ -320,26 +317,6 @@ public class Roric extends Enemy implements Publisher {
     @Override
     public void attackBoxRenderer(Graphics g, int xLevelOffset, int yLevelOffset) {
         if (isVisible) renderAttackBox(g, xLevelOffset, yLevelOffset);
-    }
-
-    // Observer
-    @Override
-    public void addSubscriber(Subscriber s) {
-        if (s != null && !subscribers.contains(s)) {
-            subscribers.add(s);
-        }
-    }
-
-    @Override
-    public void removeSubscriber(Subscriber s) {
-        subscribers.remove(s);
-    }
-
-    @Override
-    public <T> void notify(T... o) {
-        for (Subscriber s : subscribers) {
-            s.update(o);
-        }
     }
 
     // Getters & Setters

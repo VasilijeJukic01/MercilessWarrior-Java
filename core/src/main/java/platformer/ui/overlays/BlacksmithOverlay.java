@@ -1,11 +1,13 @@
 package platformer.ui.overlays;
 
+import platformer.core.GameContext;
 import platformer.model.perks.Perk;
-import platformer.state.GameState;
+import platformer.model.perks.PerksManager;
+import platformer.state.types.GameState;
 import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.MediumButton;
 import platformer.ui.overlays.controller.BlacksmithViewController;
-import platformer.utils.Utils;
+import platformer.utils.ImageUtils;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
@@ -27,6 +29,7 @@ public class BlacksmithOverlay implements Overlay<MouseEvent, KeyEvent, Graphics
 
     private final BlacksmithViewController controller;
     private final GameState gameState;
+    private final PerksManager perksManager;
 
     private Rectangle2D overlay;
     private BufferedImage shopText;
@@ -35,15 +38,21 @@ public class BlacksmithOverlay implements Overlay<MouseEvent, KeyEvent, Graphics
     private BufferedImage slotImage;
     private Rectangle2D.Double selectedSlot;
     private final int SLOT_MAX_ROW, SLOT_MAX_COL;
-    private final int[][] placeHolders;
 
-    public BlacksmithOverlay(GameState gameState) {
-        this.gameState = gameState;
-        this.controller = new BlacksmithViewController(gameState, this);
+    private final int[][] placeHolders = {
+            {1, 0, 1, 0, 1, 0, 1},
+            {1, 0, 1, 0, 1, 0, 1},
+            {0, 1, 1, 1, 0, 1, 1},
+            {0, 1, 0, 1, 0, 0, 1}
+    };
+
+    public BlacksmithOverlay(GameContext context) {
+        this.perksManager = context.getPerksManager();
+        this.gameState = context.getGameState();
+        this.controller = new BlacksmithViewController(context, this);
         this.buttons = new MediumButton[2];
-        this.SLOT_MAX_COL = PERK_SLOT_MAX_COL;
         this.SLOT_MAX_ROW = PERK_SLOT_MAX_ROW;
-        this.placeHolders = gameState.getPerksManager().getPlaceHolders();
+        this.SLOT_MAX_COL = PERK_SLOT_MAX_COL;
         init();
     }
 
@@ -56,8 +65,8 @@ public class BlacksmithOverlay implements Overlay<MouseEvent, KeyEvent, Graphics
     // Init
     private void loadImages() {
         this.overlay = new Rectangle2D.Double(PERKS_OVERLAY_X, PERKS_OVERLAY_Y, PERKS_OVERLAY_WID, PERKS_OVERLAY_HEI);
-        this.shopText = Utils.getInstance().importImage(PERKS_TXT_IMG, SHOP_TEXT_WID, SHOP_TEXT_HEI);
-        this.slotImage = Utils.getInstance().importImage(SLOT_IMG, SLOT_SIZE, SLOT_SIZE);
+        this.shopText = ImageUtils.importImage(PERKS_TXT_IMG, SHOP_TEXT_WID, SHOP_TEXT_HEI);
+        this.slotImage = ImageUtils.importImage(SLOT_IMG, SLOT_SIZE, SLOT_SIZE);
     }
 
     private void loadButtons() {
@@ -88,7 +97,7 @@ public class BlacksmithOverlay implements Overlay<MouseEvent, KeyEvent, Graphics
         g.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
         renderOverlay(g);
         renderButtons(g);
-        renderSlots(g);
+        renderSlotsAndConnections(g);
         renderPerks(g);
         renderPerkInfo(g);
         g.setColor(Color.RED);
@@ -110,35 +119,39 @@ public class BlacksmithOverlay implements Overlay<MouseEvent, KeyEvent, Graphics
         Arrays.stream(buttons).forEach(mediumButton -> mediumButton.render(g));
     }
 
-    private void renderSlots(Graphics g) {
-        g.setColor(Color.RED);
+    private void renderSlotsAndConnections(Graphics g) {
+        Graphics2D g2d = (Graphics2D) g;
+        g2d.setStroke(new BasicStroke(2));
+        g2d.setColor(Color.RED);
+
         for (int i = 0; i < SLOT_MAX_ROW; i++) {
             for (int j = 0; j < SLOT_MAX_COL; j++) {
                 if (placeHolders[i][j] == 1) {
-                    renderSlot(g, i, j);
+                    int xPos = j * PERK_SLOT_SPACING + PERK_SLOT_X;
+                    int yPos = i * PERK_SLOT_SPACING + PERK_SLOT_Y;
+                    g.drawImage(slotImage, xPos, yPos, slotImage.getWidth(), slotImage.getHeight(), null);
+
+                    // Check connection to the right
+                    if (j + 1 < SLOT_MAX_COL && placeHolders[i][j+1] == 1) {
+                        int startX = xPos + SLOT_SIZE;
+                        int startY = yPos + SLOT_SIZE / 2;
+                        int endX = startX + PERK_SLOT_SPACING - SLOT_SIZE;
+                        g2d.drawLine(startX, startY, endX, startY);
+                    }
+                    // Check connection downwards
+                    if (i + 1 < SLOT_MAX_ROW && placeHolders[i+1][j] == 1) {
+                        int startX = xPos + SLOT_SIZE / 2;
+                        int startY = yPos + SLOT_SIZE;
+                        int endY = startY + PERK_SLOT_SPACING - SLOT_SIZE;
+                        g2d.drawLine(startX, startY, startX, endY);
+                    }
                 }
             }
         }
     }
 
-    private void renderSlot(Graphics g, int i, int j) {
-        int xPos = j * PERK_SLOT_SPACING + PERK_SLOT_X;
-        int yPos = i * PERK_SLOT_SPACING + PERK_SLOT_Y;
-        g.drawImage(slotImage, xPos, yPos, slotImage.getWidth(), slotImage.getHeight(), null);
-        if (isSafe(i, j+1, SLOT_MAX_ROW, SLOT_MAX_COL) && placeHolders[i][j+1] == 1) {
-            int x = j * PERK_SLOT_SPACING + PERK_SLOT_X + SLOT_SIZE - (int)(2 * SCALE);
-            int y = i * PERK_SLOT_SPACING + PERK_SLOT_Y;
-            g.drawLine(x, y + SLOT_SIZE/2, x + PERK_SLOT_SPACING/2, y + SLOT_SIZE/2);
-        }
-        if (isSafe(i+1, j, SLOT_MAX_ROW, SLOT_MAX_COL) && placeHolders[i+1][j] == 1) {
-            int x = j * PERK_SLOT_SPACING + PERK_SLOT_X + SLOT_SIZE/2;
-            int y = i * PERK_SLOT_SPACING + PERK_SLOT_Y + SLOT_SIZE - (int)(2 * SCALE);
-            g.drawLine(x, y, x, y + PERK_SLOT_SPACING/2);
-        }
-    }
-
     private void renderPerks(Graphics g) {
-        for (Perk p : gameState.getPerksManager().getPerks()) {
+        for (Perk p : perksManager.getPerks()) {
             int x = (p.getSlot() % SLOT_MAX_COL) * PERK_SLOT_SPACING + PERK_SLOT_X + SLOT_SIZE/4;
             int y = (p.getSlot() / SLOT_MAX_COL) * PERK_SLOT_SPACING + PERK_SLOT_Y + SLOT_SIZE/4;
             g.drawImage(p.getImage(), x, y, SLOT_SIZE/2, SLOT_SIZE/2, null);
@@ -160,7 +173,7 @@ public class BlacksmithOverlay implements Overlay<MouseEvent, KeyEvent, Graphics
     }
 
     private void renderPerkInfo(Graphics g) {
-        for (Perk perk : gameState.getPerksManager().getPerks()) {
+        for (Perk perk : perksManager.getPerks()) {
             if (controller.getSlotNumber() == perk.getSlot()) {
                 g.setColor(Color.WHITE);
                 g.setFont(new Font("Arial", Font.BOLD, FONT_MEDIUM));
@@ -171,11 +184,6 @@ public class BlacksmithOverlay implements Overlay<MouseEvent, KeyEvent, Graphics
                 g.drawString(perk.getDescription(), PERK_DESC_X, PERK_DESC_Y);
             }
         }
-    }
-
-    // Other
-    private boolean isSafe(int i, int j, int n, int m) {
-        return i >= 0 && j >= 0 && i < n && j < m;
     }
 
     @Override
@@ -205,16 +213,12 @@ public class BlacksmithOverlay implements Overlay<MouseEvent, KeyEvent, Graphics
 
     @Override
     public void keyPressed(KeyEvent e) {
-
+        controller.keyPressed(e);
     }
 
     @Override
     public void reset() {
 
-    }
-
-    public int[][] getPlaceHolders() {
-        return placeHolders;
     }
 
     public MediumButton[] getButtons() {

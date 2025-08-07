@@ -1,6 +1,7 @@
 package platformer.debug.logger;
 
-import platformer.observer.Subscriber;
+import platformer.event.EventBus;
+import platformer.event.events.logger.LogEvent;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -10,15 +11,17 @@ import java.time.LocalTime;
 
 import static platformer.constants.Constants.*;
 
-public class FileLogger implements LoggerAbstraction, Subscriber {
+/**
+ * A log event listener that appends formatted log messages to a file.
+ * <p>
+ * This class is instantiated by the {@link Logger} and registered with the {@link EventBus} to listen for {@link LogEvent}.
+ */
+public class FileLogger {
 
-    public FileLogger(Logger logger) {
-        logger.addSubscriber(this);
-    }
-
-    @Override
-    public void log(String message, Message type) {
-        String timestamp = " ["+ LocalDate.now()+" " +(""+ LocalTime.now()).substring(0, 8)+"] ";
+    public void onLogEvent(LogEvent event) {
+        String message = event.message();
+        Message type = event.type();
+        String timestamp = " [" + LocalDate.now() + " " + ("" + LocalTime.now()).substring(0, 8) + "] ";
         String log = "";
         switch (type) {
             case ERROR:
@@ -41,13 +44,5 @@ public class FileLogger implements LoggerAbstraction, Subscriber {
         try {
             Files.write(Paths.get("src/main/resources/log.txt"), (log+"\n").getBytes(), StandardOpenOption.APPEND);
         } catch (Exception ignored) {}
-    }
-
-    @Override
-    public void update(Object... o) {
-        if (o.length < 1) return;
-        if (o[0] instanceof String && o[1] instanceof Message) {
-            log((String)o[0], (Message)o[1]);
-        }
     }
 }

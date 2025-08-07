@@ -1,5 +1,7 @@
 package platformer.model.entities.enemies.renderer;
 
+import platformer.animation.SpriteManager;
+import platformer.model.entities.enemies.EnemyType;
 import platformer.model.entities.enemies.Skeleton;
 
 import java.awt.*;
@@ -11,8 +13,8 @@ public class SkeletonRenderer implements EnemyRenderer<Skeleton> {
 
     private final BufferedImage[][] animations;
 
-    public SkeletonRenderer(BufferedImage[][] animations) {
-        this.animations = animations;
+    public SkeletonRenderer() {
+        this.animations = SpriteManager.getInstance().getEnemyAnimations(EnemyType.SKELETON);
     }
 
     @Override

@@ -1,9 +1,13 @@
 package platformer.model.entities.enemies;
 
 import platformer.animation.Anim;
-import platformer.animation.Animation;
+import platformer.core.GameContext;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
+import platformer.event.EventBus;
+import platformer.event.events.EnemyDefeatedEvent;
+import platformer.event.events.ui.GamePausedEvent;
+import platformer.event.events.ui.GameResumedEvent;
 import platformer.model.effects.ScreenEffectsManager;
 import platformer.model.entities.Direction;
 import platformer.model.effects.particles.DustType;
@@ -15,26 +19,16 @@ import platformer.model.entities.player.Player;
 import platformer.model.entities.player.PlayerAction;
 import platformer.model.gameObjects.GameObject;
 import platformer.model.gameObjects.objects.Spike;
-import platformer.model.projectiles.Fireball;
+import platformer.model.projectiles.types.Fireball;
 import platformer.model.projectiles.Projectile;
 import platformer.model.inventory.InventoryBonus;
 import platformer.model.levels.Level;
 import platformer.model.perks.PerksBonus;
-import platformer.model.quests.ObjectiveTarget;
-import platformer.model.quests.QuestManager;
-import platformer.model.quests.QuestObjectiveType;
-import platformer.model.spells.Flame;
-import platformer.observer.EventHandler;
-import platformer.observer.Publisher;
-import platformer.observer.Subscriber;
-import platformer.observer.events.LancerEventHandler;
-import platformer.observer.events.RoricEventHandler;
-import platformer.state.GameState;
-import platformer.utils.Utils;
+import platformer.model.spells.types.Flame;
+import platformer.utils.CollectionUtils;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
-import java.awt.image.BufferedImage;
 import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -45,54 +39,37 @@ import static platformer.constants.Constants.*;
  * Manages all the enemies in the game.
  */
 @SuppressWarnings("unchecked")
-public class EnemyManager implements Publisher {
+public class EnemyManager {
 
-    private final GameState gameState;
+    private GameContext context;
     private ScreenEffectsManager screenEffectsManager;
-
-    private BufferedImage[][] skeletonAnimations, ghoulAnimations, knightAnimations, wraithAnimations, lancerAnimations, roricAnimations;
 
     private Map<EnemyType, List<Enemy>> enemies = new HashMap<>();
     private final Map<Class<? extends Enemy>, EnemyRenderer<? extends Enemy>> enemyRenderers = new HashMap<>();
     private final Map<Enemy, Integer> spellHitTimers = new HashMap<>();
     private final List<RoricClone> roricClones = new ArrayList<>();
 
-    private final List<Subscriber> subscribers = new ArrayList<>();
-
-    public EnemyManager(GameState gameState) {
-        this.gameState = gameState;
-        init();
-    }
-
-    // Init
-    private void init() {
-        initAnimations();
+    public EnemyManager() {
         initRenderers();
     }
 
-    private void initAnimations() {
-        this.skeletonAnimations = Animation.getInstance().loadSkeletonAnimations(SKELETON_WIDTH, SKELETON_HEIGHT);
-        this.ghoulAnimations = Animation.getInstance().loadGhoulAnimation(GHOUL_WIDTH, GHOUL_HEIGHT);
-        this.knightAnimations = Animation.getInstance().loadKnightAnimation(KNIGHT_WIDTH, KNIGHT_HEIGHT);
-        this.lancerAnimations = Animation.getInstance().loadLancerAnimations(LANCER_WIDTH, LANCER_HEIGHT);
-        this.wraithAnimations = Animation.getInstance().loadWraithAnimation(WRAITH_WIDTH, WRAITH_HEIGHT);
-        this.roricAnimations = Animation.getInstance().loadRoricAnimations(RORIC_WIDTH, RORIC_HEIGHT);
+    public void wire(GameContext context) {
+        this.context = context;
     }
 
+    // Init
     private void initRenderers() {
-        this.enemyRenderers.put(Skeleton.class, new SkeletonRenderer(skeletonAnimations));
-        this.enemyRenderers.put(Ghoul.class, new GhoulRenderer(ghoulAnimations));
-        this.enemyRenderers.put(Lancer.class, new LancerRenderer(lancerAnimations));
-        this.enemyRenderers.put(Knight.class, new KnightRenderer(knightAnimations));
-        this.enemyRenderers.put(Wraith.class, new WraithRenderer(wraithAnimations));
-        this.enemyRenderers.put(Roric.class, new RoricRenderer(roricAnimations));
+        this.enemyRenderers.put(Skeleton.class, new SkeletonRenderer());
+        this.enemyRenderers.put(Ghoul.class, new GhoulRenderer());
+        this.enemyRenderers.put(Knight.class, new KnightRenderer());
+        this.enemyRenderers.put(Wraith.class, new WraithRenderer());
+        this.enemyRenderers.put(Lancer.class, new LancerRenderer());
+        this.enemyRenderers.put(Roric.class, new RoricRenderer());
     }
 
     public void loadEnemies(Level level) {
         this.enemies = level.getEnemiesMap();
         reset();
-        getEnemies(Lancer.class).forEach(lancer -> lancer.addSubscriber(findHandler(LancerEventHandler.class)));
-        getEnemies(Roric.class).forEach(roric -> roric.addSubscriber(findHandler(RoricEventHandler.class)));
     }
 
     // Render
@@ -143,31 +120,16 @@ public class EnemyManager implements Publisher {
      * Checks if an enemy is dying and handles the event of an enemy's death.
      *
      * @param e The enemy to check.
-     * @param player The Player object representing the player in the game.
      */
-    private void checkEnemyDying(Enemy e, Player player) {
+    private void checkEnemyDying(Enemy e) {
         Random rand = new Random();
         if (e.getEnemyAction() == Anim.DEATH) {
-            gameState.getObjectManager().generateLoot(e);
-            gameState.getTutorialManager().activateBlockTutorial();
+            Player player = context.getPlayer();
+            context.getObjectManager().generateLoot(e);
+            context.getTutorialManager().activateBlockTutorial();
             player.changeStamina(rand.nextInt(5));
             player.changeExp(rand.nextInt(50)+100);
-            checkForEvent(e);
-        }
-    }
-
-    private void checkForEvent(Enemy e) {
-        switch (e.getEnemyType()) {
-            case SKELETON:
-                notify(QuestObjectiveType.KILL, ObjectiveTarget.SKELETON);
-                break;
-            case GHOUL:
-                notify(QuestObjectiveType.KILL, ObjectiveTarget.GHOUL);
-                break;
-            case LANCER:
-                notify(QuestObjectiveType.KILL, ObjectiveTarget.LANCER);
-                break;
-            default: break;
+            EventBus.getInstance().publish(new EnemyDefeatedEvent(e));
         }
     }
 
@@ -211,7 +173,6 @@ public class EnemyManager implements Publisher {
             }
         }
         if (intersectingEnemies.isEmpty()) return false;
-        // TODO: Will disable attacking roric later
         if (intersectingEnemies.stream().anyMatch(e -> e instanceof Roric)) return false;
 
         intersectingEnemies.sort(Comparator.comparingDouble(e -> e.getHitBox().getCenterX() - player.getHitBox().getCenterX()));
@@ -231,14 +192,14 @@ public class EnemyManager implements Publisher {
                     double displayDmg = Math.round(finalDamage * 10.0) / 10.0;
                     String dmgText = String.valueOf(displayDmg);
                     Color dmgColor = isCritical ? CRITICAL_COLOR : DAMAGE_COLOR;
-                    gameState.getEffectManager().spawnDamageNumber(dmgText, enemy.getHitBox().getCenterX(), enemy.getHitBox().y, dmgColor);
+                    context.getEffectManager().spawnDamageNumber(dmgText, enemy.getHitBox().getCenterX(), enemy.getHitBox().y, dmgColor);
                     if (damageModifier > 0.1) damageModifier *= 0.75;
                     player.changeStamina(new Random().nextInt(3) + 1);
                 }
             }
 
             enemy.setCriticalHit(isCritical);
-            checkEnemyDying(enemy, player);
+            checkEnemyDying(enemy);
             writeHitLog(enemy.getEnemyAction(), finalDamage);
             player.addAction(PlayerAction.DASH_HIT);
         }
@@ -257,10 +218,10 @@ public class EnemyManager implements Publisher {
     private void spawnParticles(Rectangle2D.Double box, Player player, Enemy enemy, boolean isCritical) {
         if (isCritical) {
             screenEffectsManager.triggerFlash();
-            gameState.getEffectManager().spawnDustParticles(box.getCenterX(), box.getCenterY(), 25, DustType.CRITICAL_HIT, player.getFlipSign(), null);
+            context.getEffectManager().spawnDustParticles(box.getCenterX(), box.getCenterY(), 25, DustType.CRITICAL_HIT, player.getFlipSign(), null);
         }
         else if (enemy.getEnemyAction() != Anim.BLOCK) {
-            gameState.getEffectManager().spawnDustParticles(box.getCenterX(), box.getCenterY(), 10, DustType.IMPACT_SPARK, player.getFlipSign(), null);
+            context.getEffectManager().spawnDustParticles(box.getCenterX(), box.getCenterY(), 10, DustType.IMPACT_SPARK, player.getFlipSign(), null);
         }
     }
 
@@ -270,17 +231,17 @@ public class EnemyManager implements Publisher {
     }
 
     public <T extends Enemy> void handleEnemySpellHit(Class<T> enemyClass, double dmg) {
-        Flame flame = gameState.getSpellManager().getFlames();
+        Flame flame = context.getSpellManager().getFlames();
         for (T enemy : getEnemies(enemyClass)) {
             if (enemy.isAlive() && enemy.getEnemyAction() != Anim.DEATH) {
                 if (flame.isActive() && flame.getHitBox().intersects(enemy.getHitBox())) {
                     enemy.spellHit(dmg);
                     if (!spellHitTimers.containsKey(enemy) || spellHitTimers.get(enemy) == 0) {
                         String dmgText = String.format("%.1f", dmg * SPELL_HIT_DISPLAY_COOLDOWN);
-                        gameState.getEffectManager().spawnDamageNumber(dmgText, enemy.getHitBox().getCenterX(), enemy.getHitBox().y, DAMAGE_COLOR);
+                        context.getEffectManager().spawnDamageNumber(dmgText, enemy.getHitBox().getCenterX(), enemy.getHitBox().y, DAMAGE_COLOR);
                         spellHitTimers.put(enemy, SPELL_HIT_DISPLAY_COOLDOWN);
                     }
-                    checkEnemyDying(enemy, gameState.getPlayer());
+                    checkEnemyDying(enemy);
                     return;
                 }
             }
@@ -318,7 +279,7 @@ public class EnemyManager implements Publisher {
                 Direction projectileDirection = projectile.getDirection();
                 skeleton.setPushDirection(projectileDirection == Direction.LEFT ? Direction.RIGHT : Direction.LEFT);
                 projectile.setAlive(false);
-                checkEnemyDying(skeleton, gameState.getPlayer());
+                checkEnemyDying(skeleton);
             }
         }
         for (Lancer lancer : getEnemies(Lancer.class)) {
@@ -326,7 +287,7 @@ public class EnemyManager implements Publisher {
                 if (!projectile.getShapeBounds().intersects(lancer.getHitBox())) continue;
                 lancer.hit(FIREBALL_PROJECTILE_DMG, false, false);
                 projectile.setAlive(false);
-                checkEnemyDying(lancer, gameState.getPlayer());
+                checkEnemyDying(lancer);
             }
         }
     }
@@ -341,7 +302,7 @@ public class EnemyManager implements Publisher {
         else if (enemy instanceof Knight && animIndex == 4) isAttackFrame = true;
         else if (enemy instanceof Wraith && animIndex == 3) isAttackFrame = true;
 
-        if (isAttackFrame) gameState.getObjectManager().checkObjectBreakByEnemy(enemy.getAttackBox());
+        if (isAttackFrame) context.getObjectManager().checkObjectBreakByEnemy(enemy.getAttackBox());
     }
 
     // Core
@@ -351,33 +312,32 @@ public class EnemyManager implements Publisher {
      *
      * @param <T> The specific type of enemy to update. This type must extend from the Enemy class.
      * @param enemyType The Class object representing the type of enemy to update.
-     * @param animations The 2D array of BufferedImages representing the animations for the enemy type.
      * @param levelData The 2D array representing the current level's layout.
      * @param player The Player object representing the player in the game.
      */
-    private <T extends Enemy> void updateEnemies(Class<T> enemyType, BufferedImage[][] animations, int[][] levelData, Player player) {
+    private <T extends Enemy> void updateEnemies(Class<T> enemyType, int[][] levelData, Player player) {
         getEnemies(enemyType).stream()
                 .filter(Enemy::isAlive)
                 .forEach(enemy -> {
-                    enemy.update(animations, levelData, player);
+                    enemy.update(levelData, player);
                     checkEnemyAttackObject(enemy);
                 });
     }
 
     public void update(int[][] levelData, Player player) {
         updateSpellHitTimers();
-        updateEnemies(Skeleton.class, skeletonAnimations, levelData, player);
-        updateEnemies(Ghoul.class, ghoulAnimations, levelData, player);
-        updateEnemies(Knight.class, knightAnimations, levelData, player);
-        updateEnemies(Wraith.class, wraithAnimations, levelData, player);
+        updateEnemies(Skeleton.class, levelData, player);
+        updateEnemies(Ghoul.class, levelData, player);
+        updateEnemies(Knight.class, levelData, player);
+        updateEnemies(Wraith.class, levelData, player);
 
         getEnemies(Lancer.class).stream()
                 .filter(Lancer::isAlive)
-                .forEach(lancer -> lancer.update(lancerAnimations, levelData, player, gameState.getSpellManager(), gameState.getObjectManager(), gameState.getProjectileManager(), gameState.getBossInterface()));
+                .forEach(lancer -> lancer.update(levelData, player, context.getSpellManager(), context.getObjectManager(), context.getGameState().getBossInterface()));
 
         getEnemies(Roric.class).stream()
                 .filter(Roric::isAlive)
-                .forEach(roric -> roric.update(roricAnimations, levelData, player, gameState.getSpellManager(), this, gameState.getObjectManager(), gameState.getProjectileManager(), gameState.getBossInterface()));
+                .forEach(roric -> roric.update(levelData, player, context.getSpellManager(), this, context.getObjectManager(), context.getGameState().getBossInterface()));
 
         updateClones(levelData, player);
     }
@@ -388,7 +348,7 @@ public class EnemyManager implements Publisher {
     }
 
     private void updateClones(int[][] levelData, Player player) {
-        roricClones.forEach(clone -> clone.update(roricAnimations, levelData, player, gameState.getSpellManager(), this,  gameState.getObjectManager(), gameState.getProjectileManager(), gameState.getBossInterface()));
+        roricClones.forEach(clone -> clone.update(levelData, player, context.getSpellManager(), this, context.getObjectManager(), context.getGameState().getBossInterface()));
         roricClones.removeIf(clone -> !clone.isAlive());
     }
 
@@ -420,11 +380,9 @@ public class EnemyManager implements Publisher {
      * @param spawnY The y-coordinate where the clone should spawn.
      */
     public void spawnRoricClone(int spawnX, int spawnY) {
-        Player player = gameState.getPlayer();
+        Player player = context.getGameState().getPlayer();
         RoricClone clone = new RoricClone(spawnX, spawnY);
         clone.aimAtPlayer(player);
-        Subscriber handler = findHandler(RoricEventHandler.class);
-        if (handler != null) clone.addSubscriber(handler);
         roricClones.add(clone);
     }
 
@@ -438,6 +396,14 @@ public class EnemyManager implements Publisher {
         if (roric != null) roric.getPhaseManager().unpauseFightTimer();
     }
 
+    public void onGamePaused(GamePausedEvent event) {
+        pauseRoricTimer();
+    }
+
+    public void onGameResumed(GameResumedEvent event) {
+        unpauseRoricTimer();
+    }
+
     // Reset
     public void reset() {
         enemies.values().stream()
@@ -448,7 +414,7 @@ public class EnemyManager implements Publisher {
     }
 
     public List<Enemy> getAllEnemies() {
-        return Utils.getInstance().getAllItems(enemies);
+        return CollectionUtils.getAllItems(enemies);
     }
 
     public Roric getRoricInstance() {
@@ -460,32 +426,6 @@ public class EnemyManager implements Publisher {
                 .filter(enemyType::isInstance)
                 .map(enemyType::cast)
                 .collect(Collectors.toList());
-    }
-
-    // Emit Events
-    private Subscriber findHandler(Class<? extends EventHandler> handlerClass) {
-        for (Object sub : gameState.getEventHandlers()) {
-            if (handlerClass.isInstance(sub)) return (Subscriber) sub;
-        }
-        return null;
-    }
-
-    @Override
-    public void addSubscriber(Subscriber s) {
-        this.subscribers.add(s);
-    }
-
-    @Override
-    public void removeSubscriber(Subscriber s) {
-        this.subscribers.remove(s);
-    }
-
-    @Override
-    public <T> void notify(T... o) {
-        subscribers.stream()
-                .filter(s -> s instanceof QuestManager)
-                .findFirst()
-                .ifPresent(s -> s.update(o));
     }
 
     public void injectScreenEffectsManager(ScreenEffectsManager screenEffectsManager) {

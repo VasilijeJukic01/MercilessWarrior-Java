@@ -9,11 +9,11 @@ import platformer.model.gameObjects.npc.Npc;
 import platformer.model.gameObjects.npc.NpcType;
 import platformer.model.gameObjects.objects.Container;
 import platformer.model.gameObjects.objects.*;
-import platformer.model.spells.Flash;
-import platformer.model.spells.Lightning;
+import platformer.model.spells.types.Flash;
+import platformer.model.spells.types.Lightning;
 import platformer.model.spells.Spell;
 import platformer.model.spells.SpellType;
-import platformer.utils.Utils;
+import platformer.utils.CollectionUtils;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -339,7 +339,7 @@ public class Level {
     }
 
     private List<Spell> getAllSpells() {
-        return Utils.getInstance().getAllItems(spellsMap);
+        return CollectionUtils.getAllItems(spellsMap);
     }
 
     public <T> List<T> getSpells(Class<T> spellType) {

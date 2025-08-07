@@ -10,6 +10,7 @@ import platformer.physics.DamageSource;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
 
 /**
  * Abstract class for all spells.
@@ -59,6 +60,8 @@ public abstract class Spell implements DamageSource, Renderable<Graphics>, Debug
     }
 
     public abstract void update(Player player);
+
+    protected abstract BufferedImage[] getAnimations();
 
     @Override
     public void render(Graphics g, int xLevelOffset, int yLevelOffset) {

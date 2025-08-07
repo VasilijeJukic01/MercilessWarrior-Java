@@ -1,8 +1,8 @@
 package platformer.ui.overlays.controller;
 
 import platformer.model.inventory.Inventory;
-import platformer.model.inventory.InventoryItem;
-import platformer.state.GameState;
+import platformer.model.inventory.item.InventoryItem;
+import platformer.state.types.GameState;
 import platformer.ui.buttons.AbstractButton;
 import platformer.ui.buttons.ButtonType;
 import platformer.ui.overlays.InventoryOverlay;

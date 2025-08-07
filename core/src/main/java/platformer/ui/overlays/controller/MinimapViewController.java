@@ -1,7 +1,7 @@
 package platformer.ui.overlays.controller;
 
 import platformer.model.minimap.MinimapIcon;
-import platformer.state.GameState;
+import platformer.model.minimap.MinimapManager;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
@@ -18,7 +18,7 @@ import static platformer.constants.UI.*;
  */
 public class MinimapViewController {
 
-    private final GameState gameState;
+    private final MinimapManager minimapManager;
 
     private double zoomFactor = 1.8;
     private boolean showLegend = true;
@@ -29,12 +29,12 @@ public class MinimapViewController {
 
     private boolean centered = false;
 
-    public MinimapViewController(GameState gameState) {
-        this.gameState = gameState;
+    public MinimapViewController(MinimapManager minimapManager) {
+        this.minimapManager = minimapManager;
     }
 
     public void update() {
-        if (!centered && gameState.getMinimapManager().getPlayerLocation() != null) {
+        if (!centered && minimapManager.getPlayerLocation() != null) {
             centerOverlay();
             centered = true;
         }
@@ -45,8 +45,8 @@ public class MinimapViewController {
             if (isWithinOverlay(e.getPoint())) {
                 MinimapIcon foundIcon = findIconAtScreenPos(e.getX(), e.getY());
                 Point minimapCoords = screenToMinimap(e.getX(), e.getY());
-                if (isValid(gameState.getMinimapManager().getMinimap(), minimapCoords))
-                    gameState.getMinimapManager().handlePinRequest(minimapCoords, foundIcon);
+                if (isValid(minimapManager.getMinimap(), minimapCoords))
+                    minimapManager.handlePinRequest(minimapCoords, foundIcon);
             }
         }
     }
@@ -78,9 +78,9 @@ public class MinimapViewController {
     public void mouseMoved(MouseEvent e) {
         if (isWithinOverlay(e.getPoint())) {
             MinimapIcon foundIcon = findIconAtScreenPos(e.getX(), e.getY());
-            gameState.getMinimapManager().setHoveredIcon(foundIcon);
+            minimapManager.setHoveredIcon(foundIcon);
         }
-        else gameState.getMinimapManager().setHoveredIcon(null);
+        else minimapManager.setHoveredIcon(null);
     }
 
     public void keyPressed(KeyEvent e) {
@@ -97,8 +97,8 @@ public class MinimapViewController {
     }
 
     private void centerOverlay() {
-        BufferedImage map = gameState.getMinimapManager().getMinimap();
-        Point2D.Double playerLoc = gameState.getMinimapManager().getPlayerLocation();
+        BufferedImage map = minimapManager.getMinimap();
+        Point2D.Double playerLoc = minimapManager.getPlayerLocation();
         if (map != null && playerLoc != null) {
             int width = (int) (MAP_OVERLAY_WID * zoomFactor);
             int height = (int) (MAP_OVERLAY_HEI * zoomFactor);
@@ -132,8 +132,8 @@ public class MinimapViewController {
         int width = (int) (MAP_OVERLAY_WID * zoomFactor);
         int height = (int) (MAP_OVERLAY_HEI * zoomFactor);
 
-        double scaledPixelWidth = (double) width / gameState.getMinimapManager().getMinimap().getWidth();
-        double scaledPixelHeight = (double) height / gameState.getMinimapManager().getMinimap().getHeight();
+        double scaledPixelWidth = (double) width / minimapManager.getMinimap().getWidth();
+        double scaledPixelHeight = (double) height / minimapManager.getMinimap().getHeight();
 
         int minimapX = (int) ((screenX - mapX) / scaledPixelWidth);
         int minimapY = (int) ((screenY - mapY) / scaledPixelHeight);
@@ -142,7 +142,7 @@ public class MinimapViewController {
     }
 
     private MinimapIcon findIconAtScreenPos(int screenX, int screenY) {
-        BufferedImage map = gameState.getMinimapManager().getMinimap();
+        BufferedImage map = minimapManager.getMinimap();
         int mapX = MAP_OVERLAY_X + offsetX;
         int mapY = MAP_OVERLAY_Y + offsetY;
         int width = (int) (MAP_OVERLAY_WID * zoomFactor);
@@ -151,7 +151,7 @@ public class MinimapViewController {
         double scaledPixelWidth = (double) width / map.getWidth();
         double scaledPixelHeight = (double) height / map.getHeight();
 
-        for (MinimapIcon icon : gameState.getMinimapManager().getIcons()) {
+        for (MinimapIcon icon : minimapManager.getIcons()) {
             int iconWidth = (int) (2.5 * scaledPixelWidth);
             int iconHeight = (int) (2.5 * scaledPixelHeight);
             int iconX = mapX + (int) (icon.position().x * scaledPixelWidth) - iconWidth / 2;

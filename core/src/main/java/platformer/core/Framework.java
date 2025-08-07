@@ -1,16 +1,15 @@
 package platformer.core;
 
-import platformer.bridge.storage.OfflineStorageStrategy;
-import platformer.bridge.storage.OnlineStorageStrategy;
-import platformer.bridge.storage.StorageStrategy;
+import platformer.animation.SpriteManager;
+import platformer.storage.StorageStrategy;
 import platformer.controller.GameSaveController;
 import platformer.controller.KeyboardController;
-import platformer.bridge.Connector;
+import platformer.core.config.GameLaunchConfig;
+import platformer.core.initializer.GameDataInitializer;
 import platformer.model.BoardItem;
-import platformer.model.inventory.GameDataCache;
 import platformer.serialization.GameSerializer;
 import platformer.serialization.Serializer;
-import platformer.state.GameState;
+import platformer.state.types.GameState;
 
 import java.util.List;
 
@@ -23,9 +22,8 @@ import java.util.List;
 public class Framework {
 
     private Game game;
-    private LauncherPrompt launcherPrompt;
+    private GameLaunchConfig launchConfig;
     private KeyboardController keyboardController;
-    private Connector connector;
     private Serializer<Account, List<Account>> serializer;
     private Account cloud, account;
     private StorageStrategy storageStrategy;
@@ -48,20 +46,13 @@ public class Framework {
     }
 
     // Init
-    public void init(String cheats, String name, String password, String fullScreen) {
-        this.launcherPrompt = new LauncherPrompt(name, password, cheats.equals("Yes"), fullScreen.equals("Yes"));
+    public void init(GameLaunchConfig config) {
+        SpriteManager.getInstance().loadAllAssets();
+        this.launchConfig = config;
         this.keyboardController = new KeyboardController();
-        this.connector = new Connector(launcherPrompt);
         this.serializer = new GameSerializer();
-
-        if (TokenStorage.getInstance().getToken() != null) {
-            this.storageStrategy = new OnlineStorageStrategy(new Connector(launcherPrompt));
-        }
-        else this.storageStrategy = new OfflineStorageStrategy();
-
-        GameDataCache.getInstance().cacheItemDataFromMap(storageStrategy.getMasterItems());
-        GameDataCache.getInstance().cacheShopInventoryFromList("DEFAULT_SHOP", storageStrategy.getShopInventory("DEFAULT_SHOP"));
-
+        GameDataInitializer dataInitializer = new GameDataInitializer();
+        this.storageStrategy = dataInitializer.initialize(config);
         initAccount();
         initLeaderboard();
         initGame();
@@ -69,24 +60,23 @@ public class Framework {
     }
 
     private void initAccount() {
-        // this.cloud = connector.getData();
-        this.cloud = storageStrategy.fetchAccountData(launcherPrompt.getName(), 0);
-        this.cloud.setEnableCheats(launcherPrompt.isEnableCheats());
+        this.cloud = storageStrategy.fetchAccountData(launchConfig.username(), 0);
+        this.cloud.setEnableCheats(launchConfig.cheatsEnabled());
         this.account = new Account(cloud);
     }
 
     private void initLeaderboard() {
-        this.leaderboard = connector.loadLeaderboardData();
+        this.leaderboard = storageStrategy.loadLeaderboardData();
     }
 
     private void initGame() {
         this.game = new Game();
-        if (launcherPrompt.isFullScreen()) this.game.toggleFullScreen();
+        if (launchConfig.fullScreen()) this.game.toggleFullScreen();
     }
 
     // Save
     public void cloudSave() {
-        connector.updateAccountData(account);
+        storageStrategy.updateAccountData(account, 0);
         initAccount();
     }
 

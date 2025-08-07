@@ -23,6 +23,16 @@ public interface State {
     void render(Graphics g);
 
     /**
+     * Called once when this state becomes the active state.
+     */
+    void enter();
+
+    /**
+     * Called once just before this state is switched out.
+     */
+    void exit();
+
+    /**
      * Handles mouse clicked event.
      *
      * @param e the mouse event

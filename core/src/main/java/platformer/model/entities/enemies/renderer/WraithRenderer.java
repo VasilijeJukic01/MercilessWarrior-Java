@@ -1,5 +1,7 @@
 package platformer.model.entities.enemies.renderer;
 
+import platformer.animation.SpriteManager;
+import platformer.model.entities.enemies.EnemyType;
 import platformer.model.entities.enemies.Wraith;
 
 import java.awt.*;
@@ -11,8 +13,8 @@ public class WraithRenderer implements EnemyRenderer<Wraith> {
 
     private final BufferedImage[][] animations;
 
-    public WraithRenderer(BufferedImage[][] animations) {
-        this.animations = animations;
+    public WraithRenderer() {
+        this.animations = SpriteManager.getInstance().getEnemyAnimations(EnemyType.WRAITH);
     }
 
     @Override

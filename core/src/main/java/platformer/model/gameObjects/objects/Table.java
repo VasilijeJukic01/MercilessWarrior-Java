@@ -1,9 +1,11 @@
 package platformer.model.gameObjects.objects;
 
+import platformer.model.entities.player.Player;
 import platformer.model.gameObjects.GameObject;
+import platformer.model.gameObjects.Interactable;
 import platformer.model.gameObjects.ObjType;
-import platformer.model.inventory.Recipe;
-import platformer.model.inventory.RecipeManager;
+import platformer.model.inventory.craft.Recipe;
+import platformer.model.inventory.craft.RecipeManager;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -11,7 +13,7 @@ import java.util.List;
 
 import static platformer.constants.Constants.*;
 
-public class Table extends GameObject {
+public class Table extends GameObject implements Interactable {
 
     private boolean active;
 
@@ -61,6 +63,26 @@ public class Table extends GameObject {
     @Override
     public void attackBoxRenderer(Graphics g, int xLevelOffset, int yLevelOffset) {
 
+    }
+
+    @Override
+    public void onEnter(Player player) {
+        this.active = true;
+    }
+
+    @Override
+    public void onIntersect(Player player) {
+
+    }
+
+    @Override
+    public void onExit(Player player) {
+        this.active = false;
+    }
+
+    @Override
+    public String getInteractionPrompt() {
+        return "Table";
     }
 
     public boolean isActive() {

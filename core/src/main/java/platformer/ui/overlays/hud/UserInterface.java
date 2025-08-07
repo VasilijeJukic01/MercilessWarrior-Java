@@ -4,8 +4,7 @@ import platformer.model.effects.TimeCycleManager;
 import platformer.model.entities.Cooldown;
 import platformer.model.entities.player.Player;
 import platformer.model.minimap.MinimapManager;
-import platformer.utils.Utils;
-
+import platformer.utils.ImageUtils;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -58,12 +57,12 @@ public class UserInterface {
     }
 
     private void loadHUD() {
-        this.statusBar = Utils.getInstance().importImage(PLAYER_HUD,-1,-1);
-        this.portrait = Utils.getInstance().importImage(PLAYER_PORTRAIT,-1,-1);
+        this.statusBar = ImageUtils.importImage(PLAYER_HUD,-1,-1);
+        this.portrait = ImageUtils.importImage(PLAYER_PORTRAIT,-1,-1);
     }
 
     private void loadAbilities() {
-        BufferedImage sheet = Utils.getInstance().importImage(PLAYER_ABILITY_SHEET,180,45);
+        BufferedImage sheet = ImageUtils.importImage(PLAYER_ABILITY_SHEET,180,45);
         this.abilities.add(new AbilitySlot(sheet.getSubimage(0, 0, ABILITY_SLOT_W, ABILITY_SLOT_H), Cooldown.ATTACK, COOLDOWN_SLOT_X, COOLDOWN_SLOT_Y));
         this.abilities.add(new AbilitySlot(sheet.getSubimage(ABILITY_SLOT_W, 0, ABILITY_SLOT_W, ABILITY_SLOT_H), Cooldown.BLOCK, COOLDOWN_SLOT_X + COOLDOWN_SLOT_SPACING, COOLDOWN_SLOT_Y));
         this.abilities.add(new AbilitySlot(sheet.getSubimage(2*ABILITY_SLOT_W, 0, ABILITY_SLOT_W, ABILITY_SLOT_H), Cooldown.DASH, COOLDOWN_SLOT_X + 2 * COOLDOWN_SLOT_SPACING, COOLDOWN_SLOT_Y));
@@ -72,7 +71,7 @@ public class UserInterface {
 
     private void loadTimeCycleIcons() {
         this.timeCycleIcons = new BufferedImage[4];
-        BufferedImage sprite = Utils.getInstance().importImage(TIME_CYCLE_ICONS, -1, -1);
+        BufferedImage sprite = ImageUtils.importImage(TIME_CYCLE_ICONS, -1, -1);
         if (sprite == null) return;
         for (int i = 0; i < 4; i++) {
             timeCycleIcons[i] = sprite.getSubimage(i * TIME_CYCLE_W, 0, TIME_CYCLE_W, TIME_CYCLE_H);

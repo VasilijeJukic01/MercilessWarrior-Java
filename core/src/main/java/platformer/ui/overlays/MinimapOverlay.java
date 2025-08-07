@@ -1,7 +1,8 @@
 package platformer.ui.overlays;
 
+import platformer.core.GameContext;
 import platformer.model.minimap.MinimapIconType;
-import platformer.state.GameState;
+import platformer.model.minimap.MinimapManager;
 import platformer.ui.overlays.controller.MinimapViewController;
 import platformer.ui.overlays.render.MinimapRenderer;
 
@@ -19,15 +20,15 @@ import static platformer.constants.UI.*;
  */
 public class MinimapOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
 
-    private final GameState gameState;
+    private final MinimapManager minimapManager;
     private final MinimapRenderer minimapRenderer;
     private final MinimapViewController controller;
     private final Rectangle overlay;
 
-    public MinimapOverlay(GameState gameState) {
-        this.gameState = gameState;
+    public MinimapOverlay(GameContext context) {
+        this.minimapManager = context.getMinimapManager();
         this.minimapRenderer = new MinimapRenderer();
-        this.controller = new MinimapViewController(gameState);
+        this.controller = new MinimapViewController(minimapManager);
         this.overlay = new Rectangle(MAP_OVERLAY_X, MAP_OVERLAY_Y, MAP_OVERLAY_WID, MAP_OVERLAY_HEI);
     }
 
@@ -64,13 +65,14 @@ public class MinimapOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
     @Override
     public void update() {
         controller.update();
+        minimapManager.update();
     }
 
     @Override
     public void render(Graphics g) {
         g.setColor(new Color(0, 0, 0, 150));
         g.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
-        BufferedImage map = gameState.getMinimapManager().getMinimap();
+        BufferedImage map = minimapManager.getMinimap();
         renderOverlay(g);
         Graphics2D g2d = (Graphics2D) g;
         g2d.setClip(overlay);
@@ -81,7 +83,7 @@ public class MinimapOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
         int y = MAP_OVERLAY_Y + controller.getOffsetY();
 
         g2d.drawImage(map, x, y, width, height, null);
-        minimapRenderer.renderIcons(g2d, x, y, width, height, map, gameState.getMinimapManager());
+        minimapRenderer.renderIcons(g2d, x, y, width, height, map, minimapManager);
         g2d.setClip(null);
 
         if (controller.isShowLegend()) renderLegend(g);
@@ -103,7 +105,7 @@ public class MinimapOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
         g.setFont(new Font("Arial", Font.BOLD, FONT_LIGHT));
         g.setColor(Color.WHITE);
 
-        BufferedImage[] icons = gameState.getMinimapManager().getMinimapIcons();
+        BufferedImage[] icons = minimapManager.getMinimapIcons();
         int itemX = LEGEND_X + LEGEND_PADDING;
         int itemY = LEGEND_Y + (LEGEND_HEI / 2) - (LEGEND_ICON_SIZE / 2);
 

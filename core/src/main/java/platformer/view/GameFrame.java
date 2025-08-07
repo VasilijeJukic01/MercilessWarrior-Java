@@ -128,6 +128,7 @@ public class GameFrame extends JFrame {
         pack();
     }
 
+    // Getters
     public boolean isFullScreen() {
         return isFullScreen;
     }

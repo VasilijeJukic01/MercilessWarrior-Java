@@ -1,6 +1,6 @@
 package platformer.ui.buttons;
 
-import platformer.animation.Animation;
+import platformer.animation.SpriteManager;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -79,7 +79,7 @@ public class MediumButton extends AbstractButton {
             default: break;
         }
         if (!sheet.isEmpty())
-            images = Animation.getInstance().loadFromSprite(sheet, frames, row, MEDIUM_BTN_WID, MEDIUM_BTN_HEI, 0, BTN_W, BTN_H);
+            images = SpriteManager.getInstance().loadFromSprite(sheet, frames, row, MEDIUM_BTN_WID, MEDIUM_BTN_HEI, 0, BTN_W, BTN_H);
     }
 
     @Override

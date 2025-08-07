@@ -1,21 +1,24 @@
 package platformer.debug.logger;
 
-import platformer.observer.Subscriber;
+import platformer.event.EventBus;
+import platformer.event.events.logger.LogEvent;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 
 import static platformer.constants.Constants.*;
 
-public class ConsoleLogger implements LoggerAbstraction, Subscriber {
+/**
+ * A log event listener that writes formatted log messages to the standard console output.
+ * <p>
+ * This class is instantiated by the {@link Logger} and registered with the {@link EventBus} to listen for {@link LogEvent}.
+ */
+public class ConsoleLogger {
 
-    public ConsoleLogger(Logger logger) {
-        logger.addSubscriber(this);
-    }
-
-    @Override
-    public void log(String message, Message type) {
-        String timestamp = " ["+ LocalDate.now()+" " +(""+ LocalTime.now()).substring(0, 8)+"] ";
+    public void onLogEvent(LogEvent event) {
+        String message = event.message();
+        Message type = event.type();
+        String timestamp = " [" + LocalDate.now() + " " + ("" + LocalTime.now()).substring(0, 8) + "] ";
         switch (type) {
             case ERROR:
                 System.out.println(ERROR_PREFIX+timestamp+message);
@@ -33,14 +36,6 @@ public class ConsoleLogger implements LoggerAbstraction, Subscriber {
                 System.out.println(DEBUG_PREFIX+timestamp+message);
                 break;
             default: break;
-        }
-    }
-
-    @Override
-    public void update(Object ... o) {
-        if (o.length < 1) return;
-        if (o[0] instanceof String && o[1] instanceof Message) {
-            log((String)o[0], (Message)o[1]);
         }
     }
 

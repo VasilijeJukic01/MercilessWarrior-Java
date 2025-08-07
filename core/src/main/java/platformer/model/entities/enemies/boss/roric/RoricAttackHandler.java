@@ -1,11 +1,15 @@
 package platformer.model.entities.enemies.boss.roric;
 
 import platformer.animation.Anim;
+import platformer.event.EventBus;
+import platformer.event.events.roric.RoricCloneEvent;
+import platformer.event.events.roric.RoricEffectEvent;
+import platformer.event.events.roric.RoricTeleportEvent;
 import platformer.model.entities.Direction;
 import platformer.model.entities.enemies.EnemyManager;
 import platformer.model.entities.enemies.boss.Roric;
 import platformer.model.entities.player.Player;
-import platformer.model.projectiles.ProjectileManager;
+import platformer.model.projectiles.ProjectileFactory;
 import platformer.model.spells.SpellManager;
 
 import java.awt.*;
@@ -61,6 +65,7 @@ public class RoricAttackHandler {
     private static final double BLADE_STRIKE_TELEPORT_COOLDOWN = 9;
 
     // Beam Attack State
+    private boolean beamChargeEventPublished = false;
     private boolean beamFiredThisAttack = false;
 
     private final Random random = new Random();
@@ -77,9 +82,8 @@ public class RoricAttackHandler {
      * @param player           The player entity.
      * @param spellManager     Manager for creating spell effects.
      * @param enemyManager     Manager for creating enemy entities (clones).
-     * @param projectileManager Manager for creating projectiles.
      */
-    public void update(int[][] levelData, Player player, SpellManager spellManager, EnemyManager enemyManager, ProjectileManager projectileManager) {
+    public void update(int[][] levelData, Player player, SpellManager spellManager, EnemyManager enemyManager) {
         switch (roric.getState()) {
             case IDLE:
                 handleIdleState(levelData);
@@ -95,13 +99,13 @@ public class RoricAttackHandler {
                     finishAnimation();
                     return;
                 }
-                handleAerialAttack(levelData, player, projectileManager);
+                handleAerialAttack(levelData, player);
                 break;
             case REPOSITIONING:
                 handleRepositioning(player);
                 break;
             case ARROW_ATTACK:
-                handleArrowAttack(projectileManager);
+                handleArrowAttack();
                 break;
             case BEAM_ATTACK:
                 handleBeamAttack(spellManager);
@@ -115,7 +119,7 @@ public class RoricAttackHandler {
                 handleSkyfallBarrage(player, spellManager, levelData);
                 break;
             case CELESTIAL_RAIN:
-                handleCelestialRain(projectileManager);
+                handleCelestialRain();
                 break;
             case COOLDOWN:
                 handleCooldownState();
@@ -143,8 +147,8 @@ public class RoricAttackHandler {
                 break;
             case BEAM_ATTACK:
                 repositionForRangedAttack(RoricState.BEAM_ATTACK, levelData, player);
-                roric.notify("BEAM_CHARGE_START", roric);
                 beamFiredThisAttack = false;
+                beamChargeEventPublished = false;
                 break;
             case ARROW_RAIN:
                 repositionForRangedAttack(RoricState.ARROW_RAIN, levelData, player);
@@ -215,9 +219,8 @@ public class RoricAttackHandler {
      *
      * @param levelData         The level's collision map.
      * @param player            The player entity.
-     * @param projectileManager Manager to spawn projectiles.
      */
-    private void handleAerialAttack(int[][] levelData, Player player, ProjectileManager projectileManager) {
+    private void handleAerialAttack(int[][] levelData, Player player) {
         if (isRepositioning) return;
 
         if (roric.getEnemyAction() != Anim.SPELL_2) {
@@ -231,8 +234,7 @@ public class RoricAttackHandler {
         if (roric.getEnemyAction() == Anim.SPELL_2) {
             if (roric.getAnimIndex() == 6 && !roric.isAttackCheck()) {
                 boolean dropTrap = phaseManager.shouldAerialAttackDropTrap();
-                if (dropTrap) projectileManager.activateTrapArrow(roric, player);
-                else projectileManager.activateRoricAngledArrow(roric, player);
+                ProjectileFactory.createRoricAngledArrow(roric, player, dropTrap);
                 roric.setAttackCheck(true);
             }
         }
@@ -318,7 +320,7 @@ public class RoricAttackHandler {
     private void handleRepositioning(Player player) {
         boolean finishedReposition = false;
         if (isRepositioning) {
-            roric.notify("REPOSITIONING", roric);
+            EventBus.getInstance().publish(new RoricEffectEvent(roric, RoricEffectEvent.RoricEffectType.REPOSITIONING));
         }
         if (roric.getHitBox().x < repositionTargetX) {
             roric.getHitBox().x += REPOSITION_SPEED;
@@ -340,9 +342,9 @@ public class RoricAttackHandler {
     /**
      * Fires a straight projectile during the ATTACK_2 animation.
      */
-    private void handleArrowAttack(ProjectileManager projectileManager) {
+    private void handleArrowAttack() {
         if (roric.getAnimIndex() == 9 && !roric.isAttackCheck()) {
-            projectileManager.activateRoricArrow(roric, phaseManager.getArrowSpeedMultiplier());
+            ProjectileFactory.createRoricArrow(roric, phaseManager.getArrowSpeedMultiplier());
             roric.setAttackCheck(true);
         }
     }
@@ -351,9 +353,13 @@ public class RoricAttackHandler {
      * Activates a beam attack during the SPELL_1 animation.
      */
     private void handleBeamAttack(SpellManager spellManager) {
+        if (roric.getAnimIndex() == 1 && !beamChargeEventPublished) {
+            EventBus.getInstance().publish(new RoricEffectEvent(roric, RoricEffectEvent.RoricEffectType.BEAM_CHARGE_START));
+            beamChargeEventPublished = true;
+        }
         if (roric.getAnimIndex() == 9 && !beamFiredThisAttack) {
             spellManager.activateRoricBeam(roric);
-            roric.notify("BEAM_CHARGE_END", roric);
+            EventBus.getInstance().publish(new RoricEffectEvent(roric, RoricEffectEvent.RoricEffectType.BEAM_CHARGE_END));
             beamFiredThisAttack = true;
         }
     }
@@ -380,7 +386,7 @@ public class RoricAttackHandler {
             teleportToSide();
             targetPlayer(player);
 
-            roric.notify("RORIC_CLONE_SPAWN", new Point(spawnX, (int)roric.getHitBox().getCenterY()));
+            EventBus.getInstance().publish(new RoricCloneEvent(new Point(spawnX, (int)roric.getHitBox().getCenterY())));
 
             roric.setState(RoricState.JUMPING);
             roric.jump(levelData);
@@ -444,10 +450,8 @@ public class RoricAttackHandler {
     /**
      * Handles the Celestial Rain attack. Roric becomes stationary and spawns rotating volleys of celestial orbs
      * in a "bullet hell" spiral pattern. The angle of each volley is incremented to create the rotation.
-     *
-     * @param projectileManager The projectile manager to create the orbs.
      */
-    private void handleCelestialRain(ProjectileManager projectileManager) {
+    private void handleCelestialRain() {
         celestialRainTimer++;
         if (isSpawningVolley) {
             orbSpawnTimer++;
@@ -455,7 +459,7 @@ public class RoricAttackHandler {
                 orbSpawnTimer = 0;
                 double angleIncrement = Math.toRadians(360.0 / PROJECTILES_PER_VOLLEY);
                 double angle = currentSpawnAngle + (orbInVolleyIndex * angleIncrement);
-                projectileManager.activateCelestialOrb(roric, angle);
+                ProjectileFactory.createCelestialOrb(roric, angle);
                 orbInVolleyIndex++;
                 if (orbInVolleyIndex >= PROJECTILES_PER_VOLLEY) {
                     isSpawningVolley = false;
@@ -500,7 +504,7 @@ public class RoricAttackHandler {
         celestialRainTimer = 0;
         volleyTimer = 0;
         currentSpawnAngle = 0;
-        roric.notify("CELESTIAL_RAIN_START", roric);
+        EventBus.getInstance().publish(new RoricEffectEvent(roric, RoricEffectEvent.RoricEffectType.CELESTIAL_RAIN_START));
     }
 
     /**
@@ -511,7 +515,7 @@ public class RoricAttackHandler {
         roric.setState(RoricState.IDLE);
         roric.setEnemyAction(Anim.IDLE);
         roric.setAttackCooldown(RORIC_IDLE_COOLDOWN);
-        roric.notify("CELESTIAL_RAIN_END", roric);
+        EventBus.getInstance().publish(new RoricEffectEvent(roric, RoricEffectEvent.RoricEffectType.CELESTIAL_RAIN_END));
     }
 
     /**
@@ -644,10 +648,10 @@ public class RoricAttackHandler {
     }
 
     private void performTeleport(double newX, double newY) {
-        roric.notify("RORIC_TELEPORT_OUT", new Point((int) roric.getHitBox().getCenterX(), (int) roric.getHitBox().getCenterY()));
+        EventBus.getInstance().publish(new RoricTeleportEvent(new Point((int) roric.getHitBox().getCenterX(), (int) roric.getHitBox().getCenterY()), false));
         roric.getHitBox().x = newX;
         roric.getHitBox().y = newY;
-        roric.notify("RORIC_TELEPORT_IN", new Point((int) roric.getHitBox().getCenterX(), (int) roric.getHitBox().getCenterY()));
+        EventBus.getInstance().publish(new RoricTeleportEvent(new Point((int) roric.getHitBox().getCenterX(), (int) roric.getHitBox().getCenterY()), true));
     }
 
     /**
@@ -657,7 +661,7 @@ public class RoricAttackHandler {
         this.aerialAttackPerformedThisJump = false;
         this.isFloating = false;
 
-        roric.notify("LANDED", roric);
+        EventBus.getInstance().publish(new RoricEffectEvent(roric, RoricEffectEvent.RoricEffectType.LAND));
 
         if (queuedActionAfterJump != null) {
             Player player = roric.getCurrentPlayerTarget();
@@ -714,7 +718,6 @@ public class RoricAttackHandler {
         targetPlayer(player);
         roric.setState(RoricState.BEAM_ATTACK);
         roric.setEnemyAction(Anim.SPELL_1);
-        roric.notify("BEAM_CHARGE_START", roric);
         beamFiredThisAttack = false;
     }
 

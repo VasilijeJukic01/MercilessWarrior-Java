@@ -1,6 +1,6 @@
 package platformer.ui.buttons;
 
-import platformer.animation.Animation;
+import platformer.animation.SpriteManager;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -26,7 +26,7 @@ public class LeaderboardButton extends AbstractButton {
 
     @Override
     protected void loadButtons() {
-        images = Animation.getInstance().loadFromSprite(LEADERBOARD_BTN_SHEET, 3, 0, CRE_BTN_SIZE, CRE_BTN_SIZE, 0, SMALL_BTN_W, SMALL_BTN_H);
+        images = SpriteManager.getInstance().loadFromSprite(LEADERBOARD_BTN_SHEET, 3, 0, CRE_BTN_SIZE, CRE_BTN_SIZE, 0, SMALL_BTN_W, SMALL_BTN_H);
     }
 
     @Override

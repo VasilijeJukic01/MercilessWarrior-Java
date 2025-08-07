@@ -1,23 +1,18 @@
 package platformer.model.gameObjects.objects;
 
+import platformer.model.entities.player.Player;
 import platformer.model.gameObjects.GameObject;
+import platformer.model.gameObjects.Interactable;
 import platformer.model.gameObjects.ObjType;
-import platformer.model.inventory.*;
-import platformer.model.quests.QuestManager;
-import platformer.observer.Publisher;
-import platformer.observer.Subscriber;
+import platformer.model.inventory.item.ShopItem;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.*;
-import java.util.List;
 
 import static platformer.constants.Constants.*;
 
-@SuppressWarnings("unchecked")
-public class Shop extends GameObject implements Publisher {
-
-    private static final List<Subscriber> subscribers = new ArrayList<>();
+public class Shop extends GameObject implements Interactable {
 
     private boolean active;
     private final ArrayList<ShopItem> shopItems;
@@ -71,6 +66,26 @@ public class Shop extends GameObject implements Publisher {
 
     }
 
+    @Override
+    public void onEnter(Player player) {
+        this.active = true;
+    }
+
+    @Override
+    public void onIntersect(Player player) {
+
+    }
+
+    @Override
+    public void onExit(Player player) {
+        this.active = false;
+    }
+
+    @Override
+    public String getInteractionPrompt() {
+        return "Shop";
+    }
+
     public boolean isActive() {
         return active;
     }
@@ -81,23 +96,5 @@ public class Shop extends GameObject implements Publisher {
 
     public ArrayList<ShopItem> getShopItems() {
         return shopItems;
-    }
-
-    @Override
-    public void addSubscriber(Subscriber s) {
-        subscribers.add(s);
-    }
-
-    @Override
-    public void removeSubscriber(Subscriber s) {
-        subscribers.remove(s);
-    }
-
-    @Override
-    public <T> void notify(T... o) {
-        subscribers.stream()
-                .filter(s -> s instanceof QuestManager)
-                .findFirst()
-                .ifPresent(s -> s.update(o));
     }
 }

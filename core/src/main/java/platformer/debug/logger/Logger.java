@@ -1,17 +1,20 @@
 package platformer.debug.logger;
 
-import platformer.observer.Publisher;
-import platformer.observer.Subscriber;
+import platformer.event.EventBus;
+import platformer.event.events.logger.LogEvent;
 
-import java.util.ArrayList;
-import java.util.List;
-
-public class Logger implements Publisher {
-
-    private LoggerAbstraction consoleLogger;
-    //private Logger fileLogger;
-
-    private List<Subscriber> subscribers;
+/**
+ * The central entry point for all logging operations in the application.
+ * <p>
+ * This logger uses a global {@link EventBus} to publish {@link LogEvent}.
+ * Log consumers, such as {@link ConsoleLogger} and {@link FileLogger}, register themselves with the EventBus to receive these events.
+ *
+ * @see EventBus
+ * @see LogEvent
+ * @see ConsoleLogger
+ * @see FileLogger
+ */
+public class Logger {
 
     private static volatile Logger instance = null;
 
@@ -31,31 +34,18 @@ public class Logger implements Publisher {
     private Logger() {}
 
     private void initLogger() {
-        this.consoleLogger = new ConsoleLogger(this);
-        //this.fileLogger = new FileLogger();
+        ConsoleLogger consoleLogger = new ConsoleLogger();
+        // FileLogger fileLogger = new FileLogger();
+
+        EventBus eventBus = EventBus.getInstance();
+        eventBus.register(LogEvent.class, consoleLogger::onLogEvent);
+        // eventBus.register(LogEvent.class, fileLogger::onLogEvent);
     }
 
-    // Observer
-    @Override
-    public void addSubscriber(Subscriber s) {
-        if(s == null) return;
-        if(this.subscribers == null) this.subscribers = new ArrayList<>();
-        if(this.subscribers.contains(s)) return;
-        this.subscribers.add(s);
-    }
-
-    @Override
-    public void removeSubscriber(Subscriber s) {
-        if(s == null ||  this.subscribers == null || !this.subscribers.contains(s)) return;
-        this.subscribers.remove(s);
-    }
-
-    @Override
-    public void notify(Object ... o) {
-        if (o == null || this.subscribers == null || this.subscribers.isEmpty()) return;
-        for (Subscriber subscriber : subscribers) {
-            subscriber.update(o);
-        }
+    @SuppressWarnings("unchecked")
+    public <T> void notify(T... o) {
+        if (o == null || o.length < 2 || !(o[0] instanceof String) || !(o[1] instanceof Message)) return;
+        EventBus.getInstance().publish(new LogEvent((String) o[0], (Message) o[1]));
     }
 
 }

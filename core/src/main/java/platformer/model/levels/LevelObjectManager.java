@@ -1,6 +1,6 @@
 package platformer.model.levels;
 
-import platformer.utils.Utils;
+import platformer.utils.ImageUtils;
 
 import java.awt.image.BufferedImage;
 
@@ -26,8 +26,8 @@ public class LevelObjectManager {
             int bigFlag = id.contains("_BIG") ? 4 : 0;
             int reverseFlag = id.contains("_REVERSE") ? 8 : 0;
             String name = id.substring(0, id.length() - bigFlag - reverseFlag);
-            models[i] = Utils.getInstance().importImage(LEVEL_OBJECT_SPRITES.replace("$", name), objType.getWid(), objType.getHei());
-            if (reverseFlag != 0) models[i] = Utils.getInstance().flipImage(models[i]);
+            models[i] = ImageUtils.importImage(LEVEL_OBJECT_SPRITES.replace("$", name), objType.getWid(), objType.getHei());
+            if (reverseFlag != 0) models[i] = ImageUtils.flipImage(models[i]);
         }
     }
 

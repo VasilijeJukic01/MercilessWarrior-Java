@@ -1,7 +1,7 @@
 package platformer.ui.buttons;
 
-import platformer.animation.Animation;
-import platformer.utils.Utils;
+import platformer.animation.SpriteManager;
+import platformer.utils.ImageUtils;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -39,10 +39,10 @@ public class SmallButton extends AbstractButton {
                 break;
             default: break;
         }
-        images = Animation.getInstance().loadFromSprite(CRE_BTN_SHEET, 3, r, CRE_BTN_SIZE, CRE_BTN_SIZE, 0, SMALL_BTN_W, SMALL_BTN_H);
+        images = SpriteManager.getInstance().loadFromSprite(CRE_BTN_SHEET, 3, r, CRE_BTN_SIZE, CRE_BTN_SIZE, 0, SMALL_BTN_W, SMALL_BTN_H);
         if (buttonType == ButtonType.PREV) {
             for (int i = 0; i < images.length; i++) {
-                images[i] = Utils.getInstance().flipImage(images[i]);
+                images[i] = ImageUtils.flipImage(images[i]);
             }
         }
     }

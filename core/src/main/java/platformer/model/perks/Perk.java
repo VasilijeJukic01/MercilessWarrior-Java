@@ -1,66 +1,45 @@
 package platformer.model.perks;
 
-import platformer.utils.Utils;
+import com.google.gson.annotations.Expose;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import platformer.utils.ImageUtils;
 
 import java.awt.image.BufferedImage;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Perk model that can be unlocked and upgraded in the game.
  * Each perk has a slot, image, description, cost, and name.
  * Perks can be locked or upgraded.
  */
+@Getter
+@Setter
+@NoArgsConstructor
 public class Perk {
 
-    private final int slot;
-    private final BufferedImage image;
-    private final String description;
-    private final int cost;
-    private final String name;
+    private String id;
+    private String name;
+    private String description;
+    private int cost;
+    private String imageName;
+    private int slot;
+    private boolean isStartPerk;
+    private List<Integer> unlocks;
+    private Map<String, Double> bonuses;
 
-    // Flags
-    private boolean locked = true, upgraded;
+    @Expose(serialize = false, deserialize = false)
+    private transient BufferedImage image;
+    @Expose(serialize = false, deserialize = false)
+    private boolean locked = true;
+    @Expose(serialize = false, deserialize = false)
+    private boolean upgraded;
 
-    public Perk(int slot, String imageName, String description, int cost, String name) {
-        this.slot = slot;
-        this.description = description;
-        this.cost = cost;
-        this.name = name;
-        this.image = Utils.getInstance().importImage("/images/objs/perks/"+imageName+".png", -1, -1);
-    }
-
-    public int getSlot() {
-        return slot;
-    }
-
-    public BufferedImage getImage() {
-        return image;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public int getCost() {
-        return cost;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public boolean isLocked() {
-        return locked;
-    }
-
-    public void setLocked(boolean locked) {
-        this.locked = locked;
-    }
-
-    public boolean isUpgraded() {
-        return upgraded;
-    }
-
-    public void setUpgraded(boolean upgraded) {
-        this.upgraded = upgraded;
+    public void loadImage() {
+        if (imageName != null) {
+            this.image = ImageUtils.importImage("/images/objs/perks/"+imageName+".png", -1, -1);
+        }
     }
 }

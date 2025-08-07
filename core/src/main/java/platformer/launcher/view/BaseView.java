@@ -7,8 +7,7 @@ import javafx.stage.Stage;
 
 import java.util.Objects;
 
-import static platformer.launcher.constants.LauncherConstants.BG_HEI;
-import static platformer.launcher.constants.LauncherConstants.BG_WID;
+import static platformer.launcher.constants.LauncherConstants.*;
 
 public abstract class BaseView extends Stage {
 
@@ -20,8 +19,8 @@ public abstract class BaseView extends Stage {
     private Image logo;
 
     protected void loadImages() {
-        this.launcherIcon = new Image(Objects.requireNonNull(getClass().getResource("/images/icon.png")).toExternalForm());
-        this.backgroundImg = new Image(Objects.requireNonNull(getClass().getResource("/images/launcherBG.jpg")).toExternalForm());
+        this.launcherIcon = new Image(Objects.requireNonNull(getClass().getResource(MAIN_ICON_PATH)).toExternalForm());
+        this.backgroundImg = new Image(Objects.requireNonNull(getClass().getResource(LAUNCHER_BG_PATH)).toExternalForm());
         this.background = new BackgroundImage(
                 backgroundImg,
                 BackgroundRepeat.NO_REPEAT,
@@ -29,7 +28,7 @@ public abstract class BaseView extends Stage {
                 BackgroundPosition.CENTER,
                 new BackgroundSize(BG_WID, BG_HEI, true, true,true,true)
         );
-        this.logo = new Image(Objects.requireNonNull(getClass().getResource("/images/menu/menuLogo.png")).toExternalForm());
+        this.logo = new Image(Objects.requireNonNull(getClass().getResource(LOGO_ICON_PATH)).toExternalForm());
         this.launcherBackground = new Background(background);
     }
 

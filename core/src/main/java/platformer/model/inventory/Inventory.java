@@ -6,6 +6,7 @@ import platformer.model.entities.player.Player;
 import platformer.model.gameObjects.objects.Loot;
 import platformer.model.inventory.handlers.BackpackHandler;
 import platformer.model.inventory.handlers.EquipmentHandler;
+import platformer.model.inventory.item.InventoryItem;
 
 import java.util.Arrays;
 import java.util.List;

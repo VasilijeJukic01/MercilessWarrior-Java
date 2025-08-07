@@ -10,7 +10,7 @@ import platformer.audio.types.Song;
 import platformer.audio.types.Sound;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
-import platformer.utils.loading.LoadingProgressTracker;
+import platformer.core.loading.LoadingProgressTracker;
 import platformer.utils.ValueEnum;
 
 import javax.sound.sampled.AudioFormat;
@@ -38,7 +38,7 @@ public class OpenAL implements AudioPlayer<Song, Sound, Ambience>  {
     private final List<OpenALSource> ambienceSources = new ArrayList<>();
     private final List<Integer> ambiences = new ArrayList<>();
 
-    private int currentSong;
+    private int currentSong = -1;
     private float musicVolume = 0.2f;
     private float sfxVolume = 0.2f;
     private boolean songMute, soundMute;
@@ -210,6 +210,14 @@ public class OpenAL implements AudioPlayer<Song, Sound, Ambience>  {
     }
 
     @Override
+    public Song getCurrentSong() {
+        if (currentSong != -1 && songSources.get(currentSong).isPlaying()) {
+            return Song.values()[currentSong];
+        }
+        return null;
+    }
+
+    @Override
     public void pauseSong() {
         songSources.get(currentSong).pause();
     }
@@ -221,7 +229,10 @@ public class OpenAL implements AudioPlayer<Song, Sound, Ambience>  {
 
     @Override
     public void stopSong() {
-        songSources.get(currentSong).stop();
+        if (currentSong != -1 && currentSong < songSources.size()) {
+            songSources.get(currentSong).stop();
+        }
+        currentSong = -1;
     }
 
     @Override
@@ -329,7 +340,7 @@ public class OpenAL implements AudioPlayer<Song, Sound, Ambience>  {
 
     // Volume
     private void updateSongVolume() {
-        if (songMute) return;
+        if (songMute || currentSong == -1) return;
         songSources.get(currentSong).changeVolume(musicVolume);
     }
 

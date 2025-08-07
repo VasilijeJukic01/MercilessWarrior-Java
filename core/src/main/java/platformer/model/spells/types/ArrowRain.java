@@ -1,0 +1,68 @@
+package platformer.model.spells.types;
+
+import platformer.animation.SpriteManager;
+import platformer.model.entities.player.Player;
+import platformer.model.spells.Spell;
+import platformer.model.spells.SpellType;
+
+import java.awt.*;
+import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
+
+import static platformer.constants.Constants.*;
+
+public class ArrowRain extends Spell {
+
+    private static final int DAMAGE_COOLDOWN = 20;
+    private int currentDamageCooldown = 0;
+
+    public ArrowRain(SpellType spellType, int xPos, int yPos) {
+        super(spellType, xPos, yPos, RORIC_RAIN_WID, RORIC_RAIN_HEI);
+        initHitBox();
+    }
+
+    private void initHitBox() {
+        super.hitBox = new Rectangle2D.Double(xPos + RORIC_BEAM_OFFSET_X, yPos + RORIC_BEAM_OFFSET_Y, RORIC_RAIN_HB_WID, RORIC_RAIN_HEI);
+    }
+
+    public void update(Player player) {
+        if (!active) return;
+        if (currentDamageCooldown > 0) currentDamageCooldown--;
+        if (currentDamageCooldown == 0 && hitBox.intersects(player.getHitBox())) {
+            player.changeHealth(-10, this);
+            currentDamageCooldown = DAMAGE_COOLDOWN;
+        }
+        updateAnimation();
+    }
+
+    @Override
+    public void render(Graphics g, int xLevelOffset, int yLevelOffset) {
+        if (isActive()) {
+            int x = (int) hitBox.x - xLevelOffset - (int)(135 * SCALE);
+            int y = (int) hitBox.y - yLevelOffset;
+            g.drawImage(getAnimations()[getAnimIndex()], x, y, getWidth(), getHeight(), null);
+            hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.CYAN);
+        }
+    }
+
+    @Override
+    protected BufferedImage[] getAnimations() {
+        return SpriteManager.getInstance().getArrowRainAnimations();
+    }
+
+    @Override
+    public void reset() {
+        super.reset();
+        currentDamageCooldown = 0;
+    }
+
+    @Override
+    public void hitBoxRenderer(Graphics g, int xLevelOffset, int yLevelOffset, Color color) {
+        renderHitBox(g, xLevelOffset, yLevelOffset, color);
+    }
+
+    @Override
+    public void attackBoxRenderer(Graphics g, int xLevelOffset, int yLevelOffset) {
+
+    }
+}

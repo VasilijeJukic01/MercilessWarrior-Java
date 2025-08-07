@@ -5,7 +5,7 @@ import platformer.controller.KeyboardController;
 import platformer.core.Framework;
 import platformer.model.entities.Cooldown;
 import platformer.model.entities.player.Player;
-import platformer.utils.Utils;
+import platformer.utils.ImageUtils;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -27,7 +27,7 @@ public class AbilitySlot {
     private double maxCooldown = 0;
 
     public AbilitySlot(BufferedImage image, Cooldown cooldownType, int xPos, int yPos) {
-        this.image = Utils.getInstance().resizeImage(image, COOLDOWN_SLOT_SIZE, COOLDOWN_SLOT_SIZE);
+        this.image = ImageUtils.resizeImage(image, COOLDOWN_SLOT_SIZE, COOLDOWN_SLOT_SIZE);
         this.cooldownType = cooldownType;
         this.xPos = xPos;
         this.yPos = yPos;

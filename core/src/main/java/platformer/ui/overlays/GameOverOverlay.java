@@ -3,11 +3,11 @@ package platformer.ui.overlays;
 import platformer.audio.Audio;
 import platformer.audio.types.Song;
 import platformer.core.Game;
-import platformer.state.GameState;
+import platformer.state.types.GameState;
 import platformer.ui.buttons.AbstractButton;
 import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.SmallButton;
-import platformer.utils.Utils;
+import platformer.utils.ImageUtils;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
@@ -34,9 +34,9 @@ public class GameOverOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
     }
 
     private void loadImages() {
-        this.deadText = Utils.getInstance().importImage(DEAD_TXT, DEAD_TEXT_WID, DEAD_TEXT_HEI);
-        this.respawnText = Utils.getInstance().importImage(RESPAWN_TXT, RESPAWN_TEXT_WID, RESPAWN_TEXT_HEI);
-        this.menuText = Utils.getInstance().importImage(MENU_TXT, MENU_TEXT_WID, MENU_TEXT_HEI);
+        this.deadText = ImageUtils.importImage(DEAD_TXT, DEAD_TEXT_WID, DEAD_TEXT_HEI);
+        this.respawnText = ImageUtils.importImage(RESPAWN_TXT, RESPAWN_TEXT_WID, RESPAWN_TEXT_HEI);
+        this.menuText = ImageUtils.importImage(MENU_TXT, MENU_TEXT_WID, MENU_TEXT_HEI);
     }
 
     private void loadButtons() {

@@ -2,7 +2,7 @@ package platformer.ui.options;
 
 import platformer.controller.KeyboardController;
 import platformer.core.Framework;
-import platformer.state.ControlsState;
+import platformer.state.types.ControlsState;
 import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.SmallButton;
 

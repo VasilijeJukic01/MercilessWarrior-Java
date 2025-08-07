@@ -28,6 +28,13 @@ public interface AudioPlayer<U, V, W> {
     void playSong(U song, int offsetMs);
 
     /**
+     * Returns the song that is currently playing.
+     *
+     * @return The current song, or null if no song is playing.
+     */
+    U getCurrentSong();
+
+    /**
      * Stops the currently playing song.
      */
     void stopSong();

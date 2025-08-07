@@ -1,9 +1,12 @@
 package platformer.model.gameObjects;
 
-import platformer.animation.Animation;
+import platformer.animation.SpriteManager;
 import platformer.audio.Audio;
 import platformer.audio.types.Sound;
-import platformer.bridge.storage.StorageStrategy;
+import platformer.core.GameContext;
+import platformer.model.projectiles.ProjectileFactory;
+import platformer.model.spells.SpellManager;
+import platformer.storage.StorageStrategy;
 import platformer.core.Framework;
 import platformer.model.entities.Direction;
 import platformer.model.entities.enemies.Enemy;
@@ -11,13 +14,9 @@ import platformer.model.entities.player.Player;
 import platformer.model.gameObjects.npc.Npc;
 import platformer.model.gameObjects.objects.Container;
 import platformer.model.gameObjects.objects.*;
-import platformer.model.inventory.ShopItem;
+import platformer.model.inventory.item.ShopItem;
 import platformer.model.levels.Level;
-import platformer.model.quests.QuestManager;
-import platformer.observer.Publisher;
-import platformer.observer.Subscriber;
-import platformer.state.GameState;
-import platformer.utils.Utils;
+import platformer.utils.CollectionUtils;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
@@ -25,6 +24,7 @@ import java.awt.image.BufferedImage;
 import java.util.List;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static platformer.constants.Constants.*;
 import static platformer.physics.CollisionDetector.canLauncherSeeEntity;
@@ -34,19 +34,14 @@ import static platformer.physics.CollisionDetector.canLauncherSeeEntity;
  * It handles the loading, updating, rendering and interactions between game objects and the player.
  */
 @SuppressWarnings({"unchecked", "SameParameterValue"})
-public class ObjectManager implements Publisher {
+public class ObjectManager {
 
-    private final GameState gameState;
+    private GameContext context;
     private CollisionHandler collisionHandler;
-    private IntersectionHandler intersectionHandler;
     private ObjectBreakHandler objectBreakHandler;
     private LootHandler lootHandler;
 
-    private GameObject intersection;
-
-    private final BufferedImage[][] objects;
-    private final BufferedImage[][] npcs;
-    private final BufferedImage[][] coinAnimations;
+    private Interactable intersection = null;
 
     Class<? extends GameObject>[] updateClasses = new Class[]{
             Coin.class, Container.class, Potion.class, Spike.class,
@@ -70,28 +65,17 @@ public class ObjectManager implements Publisher {
 
     private Map<ObjType, List<GameObject>> objectsMap = new HashMap<>();
 
-    private final List<Subscriber> subscribers = new ArrayList<>();
-
-    public ObjectManager(GameState gameState) {
-        this.gameState = gameState;
-        this.objects = Animation.getInstance().loadObjects();
-        this.coinAnimations = Animation.getInstance().getCoinAnimations();
-        this.npcs = Animation.getInstance().loadNpcs();
-    }
-
-    // Init
-    public void lateInit() {
-        this.collisionHandler = new CollisionHandler(gameState.getLevelManager(), this);
-        this.lootHandler = new LootHandler(this, gameState.getEffectManager());
-        this.intersectionHandler = new IntersectionHandler(gameState.getEnemyManager(), this, lootHandler);
-        this.objectBreakHandler = new ObjectBreakHandler(this, lootHandler);
+    public void wire(GameContext context) {
+        this.context = context;
+        this.collisionHandler = new CollisionHandler(context.getLevelManager(), this);
+        this.lootHandler = new LootHandler(this, context.getEffectManager());
+        this.objectBreakHandler = new ObjectBreakHandler(this);
     }
 
     public void loadObjects(Level level) {
         level.gatherData();
         this.objectsMap = level.getObjectsMap();
         configureObjects();
-        embedSubscribers();
     }
 
     private void configureObjects() {
@@ -109,26 +93,39 @@ public class ObjectManager implements Publisher {
 
     // Intersection Handler
     /**
-     * Checks if the player intersects with any object.
+     * Handles the interactions between the player and interactable objects in the game.
+     * It checks if the player is intersecting with any interactable object and updates the intersection accordingly.
      *
-     * @param player The player whose intersection is to be checked.
+     * @param player The player object that is interacting with the game world.
      */
-    public void checkPlayerIntersection(Player player) {
-        intersectionHandler.checkPlayerIntersection(player);
-    }
+    private void handleInteractions(Player player) {
+        Interactable newIntersection = null;
 
-    public void checkEnemyIntersection() {
-        intersectionHandler.checkEnemyIntersection();
+        for (GameObject obj : getAllObjects()) {
+            if (obj instanceof Interactable && obj.isAlive() && obj.getHitBox().intersects(player.getHitBox())) {
+                newIntersection = (Interactable) obj;
+                break;
+            }
+        }
+
+        if (newIntersection != intersection) {
+            if (intersection != null) intersection.onExit(player);
+            if (newIntersection != null) newIntersection.onEnter(player);
+            intersection = newIntersection;
+        }
+        if (intersection != null) intersection.onIntersect(player);
     }
 
     /**
-     * Handles the interaction of a player with an object.
+     * Handles the collection of collectibles (coins and potions) by the player.
+     * It checks if the player is intersecting with any collectible object and collects it.
      *
-     * @param hitBox The hitbox of the player.
-     * @param player The player whose interaction is to be handled.
+     * @param player The player object that is collecting items.
      */
-    public void handleObjectInteraction(Rectangle2D.Double hitBox, Player player) {
-        intersectionHandler.handleObjectInteraction(hitBox, player);
+    private void handleCollectibles(Player player) {
+        Stream.concat(getObjects(Coin.class).stream(), getObjects(Potion.class).stream())
+                .filter(object -> object.isAlive() && player.getHitBox().intersects(object.getHitBox()))
+                .forEach(object -> lootHandler.collectItem(object, player));
     }
 
     /**
@@ -137,7 +134,7 @@ public class ObjectManager implements Publisher {
      * @param herb The Herb object to be harvested.
      */
     public void harvestHerb(Herb herb) {
-        lootHandler.harvestHerb(herb, gameState.getPlayer());
+        lootHandler.harvestHerb(herb, context.getGameState().getPlayer());
     }
 
     // Collision Handler
@@ -193,7 +190,8 @@ public class ObjectManager implements Publisher {
      * @param attackBox The attack box of the player.
      */
     public void checkObjectBreak(Rectangle2D.Double attackBox) {
-        objectBreakHandler.checkObjectBreak(attackBox, gameState.getSpellManager().getFlames());
+        SpellManager spellManager = context.getSpellManager();
+        objectBreakHandler.checkObjectBreak(attackBox, spellManager.getFlames());
     }
 
     /**
@@ -266,7 +264,10 @@ public class ObjectManager implements Publisher {
             if (objectType.equals(Coin.class)) return;
             getObjects(objectType).stream()
                     .filter(GameObject::isAlive)
-                    .forEach(obj -> obj.render(g, xLevelOffset, yLevelOffset, objects[obj.getObjType().ordinal()]));
+                    .forEach(obj -> {
+                        BufferedImage[] animations = SpriteManager.getInstance().getObjectAnimations(obj.getObjType());
+                        if (animations != null) obj.render(g, xLevelOffset, yLevelOffset, animations);
+                    });
         }
         catch (Exception ignored) {}
     }
@@ -274,7 +275,8 @@ public class ObjectManager implements Publisher {
     public void update(int[][] lvlData, Player player) {
         Arrays.stream(updateClasses).forEach(clazz -> updateObjects(clazz, lvlData));
         updateArrowLaunchers(lvlData, player);
-        checkEnemyIntersection();
+        handleInteractions(player);
+        handleCollectibles(player);
         collisionHandler.updateObjectInAir();
     }
 
@@ -290,7 +292,8 @@ public class ObjectManager implements Publisher {
     }
 
     public void candleRender(Graphics g, int xLevelOffset, int yLevelOffset, Candle c) {
-        c.render(g, xLevelOffset, yLevelOffset, objects[c.getObjType().ordinal()]);
+        BufferedImage[] animations = SpriteManager.getInstance().getObjectAnimations(c.getObjType());
+        if (animations != null) c.render(g, xLevelOffset, yLevelOffset, animations);
     }
 
     public void glowingRender(Graphics g, int xLevelOffset, int yLevelOffset) {
@@ -300,6 +303,7 @@ public class ObjectManager implements Publisher {
     private void renderCoins(Graphics g, int xLevelOffset, int yLevelOffset) {
         for (Coin coin : getObjects(Coin.class)) {
             if (coin.isAlive()) {
+                BufferedImage[][] coinAnimations = SpriteManager.getInstance().getCoinAnimations();
                 BufferedImage[] anims = coinAnimations[coin.getCoinType().getAnimationRow()];
                 coin.render(g, xLevelOffset, yLevelOffset, anims);
             }
@@ -309,7 +313,7 @@ public class ObjectManager implements Publisher {
     private void renderNpcs(Graphics g, int xLevelOffset, int yLevelOffset) {
         for (Npc npc : getObjects(Npc.class)) {
             if (npc.isAlive()) {
-                BufferedImage[] anims = npcs[npc.getNpcType().ordinal()];
+                BufferedImage[] anims = SpriteManager.getInstance().getNpcAnimations(npc.getNpcType());
                 npc.render(g, xLevelOffset, yLevelOffset, anims);
             }
         }
@@ -332,7 +336,7 @@ public class ObjectManager implements Publisher {
             if (arrowLauncher.getAnimIndex() == 9 && arrowLauncher.getAnimTick() == 0) {
                 Audio.getInstance().getAudioPlayer().playSound(Sound.ARROW);
                 Direction direction = (arrowLauncher.getObjType() == ObjType.ARROW_TRAP_RIGHT) ? Direction.LEFT : Direction.RIGHT;
-                gameState.getProjectileManager().activateArrow(new Point((int)arrowLauncher.getHitBox().x, (int)arrowLauncher.getHitBox().y), direction);
+                ProjectileFactory.createArrow(new Point((int)arrowLauncher.getHitBox().x, (int)arrowLauncher.getHitBox().y), direction);
             }
         }
     }
@@ -340,7 +344,7 @@ public class ObjectManager implements Publisher {
     private void renderArrowLaunchers(Graphics g, int xLevelOffset, int yLevelOffset) {
         for (ArrowLauncher al : getObjects(ArrowLauncher.class)) {
             if (al.isAlive()) {
-                BufferedImage[] anims = al.getObjType() == ObjType.ARROW_TRAP_RIGHT ? objects[al.getObjType().ordinal()-1] : objects[al.getObjType().ordinal()];
+                BufferedImage[] anims = SpriteManager.getInstance().getObjectAnimations(al.getObjType());
                 al.render(g, xLevelOffset, yLevelOffset, anims);
             }
         }
@@ -349,7 +353,7 @@ public class ObjectManager implements Publisher {
     // Reset
     public void reset() {
         objectsMap.clear();
-        loadObjects(gameState.getLevelManager().getCurrentLevel());
+        loadObjects(context.getLevelManager().getCurrentLevel());
     }
 
     public void refreshShopData() {
@@ -365,7 +369,7 @@ public class ObjectManager implements Publisher {
 
     // Hashmap operations
     private List<GameObject> getAllObjects() {
-        return Utils.getInstance().getAllItems(objectsMap);
+        return CollectionUtils.getAllItems(objectsMap);
     }
 
     public <T> List<T> getObjects(Class<T> objectType) {
@@ -380,50 +384,22 @@ public class ObjectManager implements Publisher {
         objectsMap.computeIfAbsent(type, k -> new ArrayList<>()).add(gameObject);
     }
 
-    public void removeGameObject(GameObject gameObject) {
-        ObjType type = gameObject.getObjType();
-        List<GameObject> objectsOfType = objectsMap.get(type);
-        if (objectsOfType != null) {
-            objectsOfType.remove(gameObject);
-        }
-    }
-
     public String getIntersectingObject() {
-        return intersectionHandler.getIntersectingObject();
-    }
-
-    public void setIntersection(GameObject object) {
-        this.intersection = object;
+        if (intersection != null) {
+            return intersection.getInteractionPrompt();
+        }
+        return null;
     }
 
     public GameObject getIntersection() {
-        return intersection;
+        return (GameObject) intersection;
+    }
+
+    public void setIntersection(Interactable intersection) {
+        this.intersection = intersection;
     }
 
     public ObjectBreakHandler getObjectBreakHandler() {
         return objectBreakHandler;
-    }
-
-    // Observer
-    private void embedSubscribers() {
-        getObjects(Shop.class).forEach(shop -> shop.addSubscriber(gameState.getQuestManager()));
-    }
-
-    @Override
-    public void addSubscriber(Subscriber s) {
-        this.subscribers.add(s);
-    }
-
-    @Override
-    public void removeSubscriber(Subscriber s) {
-        this.subscribers.remove(s);
-    }
-
-    @Override
-    public <T> void notify(T... o) {
-        subscribers.stream()
-                .filter(s -> s instanceof QuestManager)
-                .findFirst()
-                .ifPresent(s -> s.update(o));
     }
 }

@@ -2,7 +2,7 @@ package platformer.controller;
 
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
-import platformer.utils.loading.PathManager;
+import platformer.core.loading.PathManager;
 
 import java.awt.event.KeyEvent;
 import java.io.*;

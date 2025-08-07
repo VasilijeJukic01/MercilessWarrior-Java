@@ -3,6 +3,8 @@ package platformer.model.entities.enemies.boss;
 import platformer.animation.Anim;
 import platformer.audio.Audio;
 import platformer.audio.types.Sound;
+import platformer.event.EventBus;
+import platformer.event.events.lancer.LancerTeleportEvent;
 import platformer.model.entities.Direction;
 import platformer.model.entities.player.Player;
 
@@ -117,10 +119,10 @@ public class LancerAttackHandler {
     }
 
     private void performTeleport(double newX, double newY) {
-        lancer.notify("TELEPORT_OUT", new Point((int) hitBox.getCenterX(), (int) hitBox.getCenterY()));
+        EventBus.getInstance().publish(new LancerTeleportEvent(new Point((int) hitBox.getCenterX(), (int) hitBox.getCenterY()), false));
         hitBox.x = newX;
         hitBox.y = newY;
-        lancer.notify("TELEPORT_IN", new Point((int) hitBox.getCenterX(), (int) hitBox.getCenterY()));
+        EventBus.getInstance().publish(new LancerTeleportEvent(new Point((int) hitBox.getCenterX(), (int) hitBox.getCenterY()), true));
     }
 
 }

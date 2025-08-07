@@ -1,19 +1,19 @@
 package platformer.ui.overlays;
 
 import platformer.animation.Anim;
-import platformer.animation.Animation;
+import platformer.animation.SpriteManager;
 import platformer.model.inventory.Inventory;
 import platformer.model.inventory.InventoryBonus;
-import platformer.model.inventory.InventoryItem;
-import platformer.model.inventory.ItemData;
-import platformer.state.GameState;
+import platformer.model.inventory.item.InventoryItem;
+import platformer.model.inventory.item.ItemData;
+import platformer.state.types.GameState;
 import platformer.ui.buttons.AbstractButton;
 import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.MediumButton;
 import platformer.ui.buttons.SmallButton;
-import platformer.ui.coponents.ItemComparisonTooltip;
+import platformer.ui.components.ItemComparisonTooltip;
 import platformer.ui.overlays.controller.InventoryViewController;
-import platformer.utils.Utils;
+import platformer.utils.ImageUtils;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
@@ -23,8 +23,6 @@ import java.awt.image.BufferedImage;
 import java.util.*;
 import java.util.List;
 
-import static platformer.constants.AnimConstants.COIN_H;
-import static platformer.constants.AnimConstants.COIN_W;
 import static platformer.constants.Constants.*;
 import static platformer.constants.FilePaths.*;
 import static platformer.constants.UI.*;
@@ -72,10 +70,16 @@ public class InventoryOverlay implements Overlay<MouseEvent, KeyEvent, Graphics>
         this.overlay = new Rectangle2D.Double(INV_OVERLAY_X, INV_OVERLAY_Y, INV_OVERLAY_WID, INV_OVERLAY_HEI);
         this.backpackPanel = new Rectangle2D.Double(BACKPACK_X, BACKPACK_Y, BACKPACK_WID, BACKPACK_HEI);
         this.equipPanel = new Rectangle2D.Double(EQUIPMENT_X, EQUIPMENT_Y, EQUIPMENT_WID, EQUIPMENT_HEI);
-        this.inventoryText = Utils.getInstance().importImage(INVENTORY_TXT, INV_TEXT_WID, INV_TEXT_HEI);
-        this.slotImage = Utils.getInstance().importImage(SLOT_INVENTORY, SLOT_SIZE, SLOT_SIZE);
-        this.playerAnim = Animation.getInstance().loadPlayerAnimations(INV_PLAYER_WID, INV_PLAYER_HEI, PLAYER_TRANSFORM_SHEET)[Anim.IDLE.ordinal()];
-        this.coinIcon = Animation.getInstance().loadFromSprite(COIN_SHEET, 1, 1, COIN_WID, COIN_HEI, 0, COIN_W, COIN_H)[0];
+        this.inventoryText = ImageUtils.importImage(INVENTORY_TXT, INV_TEXT_WID, INV_TEXT_HEI);
+        this.slotImage = ImageUtils.importImage(SLOT_INVENTORY, SLOT_SIZE, SLOT_SIZE);
+
+        BufferedImage[] idleAnim = SpriteManager.getInstance().getPlayerAnimations(true)[Anim.IDLE.ordinal()];
+        this.playerAnim = new BufferedImage[idleAnim.length];
+        for (int i = 0; i < idleAnim.length; i++) {
+            this.playerAnim[i] = ImageUtils.resizeImage(idleAnim[i], INV_PLAYER_WID, INV_PLAYER_HEI);
+        }
+
+        this.coinIcon = SpriteManager.getInstance().getCoinAnimations()[1][0];
     }
 
     private void initEquipmentSlots() {

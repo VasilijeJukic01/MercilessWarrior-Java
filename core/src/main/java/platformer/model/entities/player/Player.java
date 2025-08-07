@@ -1,7 +1,7 @@
 package platformer.model.entities.player;
 
 import platformer.animation.Anim;
-import platformer.animation.Animation;
+import platformer.animation.SpriteManager;
 import platformer.audio.Audio;
 import platformer.audio.types.Sound;
 import platformer.core.GameContext;
@@ -18,10 +18,11 @@ import platformer.model.entities.enemies.EnemyManager;
 import platformer.model.gameObjects.ObjectManager;
 import platformer.model.levels.LevelManager;
 import platformer.model.projectiles.Projectile;
+import platformer.model.projectiles.ProjectileFactory;
 import platformer.model.projectiles.ProjectileManager;
 import platformer.model.inventory.Inventory;
 import platformer.model.inventory.InventoryBonus;
-import platformer.model.inventory.ItemRarity;
+import platformer.model.inventory.item.ItemRarity;
 import platformer.model.minimap.MinimapManager;
 import platformer.model.perks.PerksBonus;
 import platformer.physics.DamageSource;
@@ -35,8 +36,6 @@ import java.util.List;
 import java.util.Random;
 
 import static platformer.constants.Constants.*;
-import static platformer.constants.FilePaths.PLAYER_SHEET;
-import static platformer.constants.FilePaths.PLAYER_TRANSFORM_SHEET;
 import static platformer.physics.CollisionDetector.*;
 
 @SuppressWarnings("FieldCanBeLocal")
@@ -56,6 +55,7 @@ public class Player extends Entity {
     private int animTick = 0, animIndex = 0;
     private AttackState attackState;
     private PlayerActionHandler actionHandler;
+    private PlayerFeedbackHandler feedbackHandler;
     private final EnumSet<PlayerAction> actions = EnumSet.noneOf(PlayerAction.class);
 
     // Physics
@@ -78,8 +78,6 @@ public class Player extends Entity {
     private Inventory inventory;
 
     // Effect
-    private int runDustTick = 0;
-    private int wallSlideDustTick = 0;
     private int mythicAuraTick = 0;
 
 
@@ -105,8 +103,8 @@ public class Player extends Entity {
     }
 
     private void loadAnimations() {
-        this.animations = Animation.getInstance().loadPlayerAnimations(width, height, PLAYER_SHEET);
-        this.transformAnimations = Animation.getInstance().loadPlayerAnimations(width, height, PLAYER_TRANSFORM_SHEET);
+        this.animations = SpriteManager.getInstance().getPlayerAnimations(false);
+        this.transformAnimations = SpriteManager.getInstance().getPlayerAnimations(true);
     }
 
     private void initAttackBox() {
@@ -117,6 +115,7 @@ public class Player extends Entity {
         this.playerDataManager = new PlayerDataManager(this, minimapManager, timeCycleManager);
         this.minimapHandler = new PlayerMinimapHandler(this, minimapManager);
         this.actionHandler = new PlayerActionHandler(this, effectManager);
+        this.feedbackHandler = new PlayerFeedbackHandler(this, effectManager);
         this.inventory = new Inventory();
     }
 
@@ -152,7 +151,7 @@ public class Player extends Entity {
         if (spellState == 1 && animIndex >= animations[entityState.ordinal()].length-5)
             animIndex = 2;
         else if (fireball && animIndex == 3)
-            projectileManager.activateFireball(this);
+            ProjectileFactory.createFireball(this);
     }
 
     private void finishAnimation() {
@@ -214,7 +213,7 @@ public class Player extends Entity {
         }
         boolean onWall = checkAction(PlayerAction.ON_WALL);
         boolean onObject = checkAction(PlayerAction.ON_OBJECT);
-        if (onWall && !onObject) setWallSlideAnimation();
+        if (onWall && !onObject) entityState = Anim.WALL;
         boolean dash = checkAction(PlayerAction.DASH);
         if (dash) {
             setDashAnimation();
@@ -234,17 +233,6 @@ public class Player extends Entity {
         else if (canTransform) entityState = Anim.TRANSFORM;
 
         if (previousAction != entityState) animIndex = animTick = 0;
-    }
-
-    private void setWallSlideAnimation() {
-        entityState = Anim.WALL;
-        wallSlideDustTick++;
-        if (wallSlideDustTick > 3) {
-            wallSlideDustTick = 0;
-            double dustX = (flipSign == 1) ? hitBox.x + hitBox.width : hitBox.x;
-            double dustY = hitBox.y + (new Random().nextDouble() * hitBox.height);
-            effectManager.spawnDustParticles(dustX, dustY, 1, DustType.WALL_SLIDE, flipSign, this);
-        }
     }
 
     private void setDashAnimation() {
@@ -281,7 +269,6 @@ public class Player extends Entity {
         if (spellState != 0 || canBlock || canTransform) return;
         boolean jump = checkAction(PlayerAction.JUMP);
         boolean onWall = checkAction(PlayerAction.ON_WALL);
-        if (!onWall) wallSlideDustTick = 0;
         if (jump) doJump();
         if (!inAir || onWall) actionHandler.setDashCount(0);
         boolean left = checkAction(PlayerAction.LEFT);
@@ -486,6 +473,17 @@ public class Player extends Entity {
         airSpeed = jumpSpeed;
     }
 
+    private void handlePushback() {
+        double pushForce = 1.2;
+        double basePushSpeed = (pushDirection == Direction.RIGHT) ? PLAYER_SPEED : -PLAYER_SPEED;
+        double totalPushDistance = basePushSpeed * pushForce;
+
+        double allowedObjectDx = objectManager.checkSolidObjectCollision(hitBox, totalPushDistance);
+        if (canMoveHere(hitBox.x + allowedObjectDx, hitBox.y, hitBox.width, hitBox.height, levelData)) {
+            hitBox.x += allowedObjectDx;
+        }
+    }
+
     // Status Changes
     public void changeHealth(double value) {
         if (checkAction(PlayerAction.DYING)) return;
@@ -584,8 +582,7 @@ public class Player extends Entity {
         if (hit) {
             setSpellState(0);
             removeActions(PlayerAction.DASH, PlayerAction.DASH_HIT);
-            double pushForce = 1.2;
-            pushBack(pushDirection, levelData, pushForce, PLAYER_SPEED);
+            handlePushback();
             inAirUpdate();
         }
         else if (canBlock) {
@@ -599,7 +596,6 @@ public class Player extends Entity {
     }
 
     private void updateMove() {
-        actionHandler.handleObjectActions(objectManager);
         boolean moving = checkAction(PlayerAction.MOVE);
         if (moving) {
             boolean dash = checkAction(PlayerAction.DASH);
@@ -646,17 +642,7 @@ public class Player extends Entity {
         updateAnimation();
         updateStatus();
         checkBreakablesOnPush();
-
-        // TODO: Isolate this somewhere
-        if (checkAction(PlayerAction.MOVE) && !inAir) {
-            runDustTick++;
-            if (runDustTick >= 15) {
-                double dustX = (flipSign == 1) ? hitBox.x : hitBox.x + hitBox.width;
-                effectManager.spawnDustParticles(dustX, hitBox.y + hitBox.height, RUN_DUST_BURST, DustType.RUNNING, flipSign, this);
-                runDustTick = 0;
-            }
-        }
-        else runDustTick = 0;
+        feedbackHandler.update();
     }
 
     private void updateMythicAura() {

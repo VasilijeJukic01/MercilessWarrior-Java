@@ -1,6 +1,8 @@
 package platformer.model.gameObjects.objects;
 
+import platformer.model.entities.player.Player;
 import platformer.model.gameObjects.GameObject;
+import platformer.model.gameObjects.Interactable;
 import platformer.model.gameObjects.ObjType;
 
 import java.awt.*;
@@ -9,7 +11,7 @@ import java.awt.image.BufferedImage;
 import static platformer.constants.Constants.*;
 
 
-public class Board extends GameObject {
+public class Board extends GameObject implements Interactable {
 
     private boolean active;
 
@@ -58,6 +60,26 @@ public class Board extends GameObject {
     @Override
     public void attackBoxRenderer(Graphics g, int xLevelOffset, int yLevelOffset) {
 
+    }
+
+    @Override
+    public void onEnter(Player player) {
+        this.active = true;
+    }
+
+    @Override
+    public void onIntersect(Player player) {
+
+    }
+
+    @Override
+    public void onExit(Player player) {
+        this.active = false;
+    }
+
+    @Override
+    public String getInteractionPrompt() {
+        return "Board";
     }
 
     public void setActive(boolean active) {

@@ -1,7 +1,5 @@
 package platformer.core;
 
-import platformer.audio.Audio;
-import platformer.audio.types.Song;
 import platformer.state.*;
 import platformer.ui.AudioOptions;
 import platformer.ui.overlays.OverlayLayer;
@@ -43,7 +41,6 @@ public class Game implements Runnable {
         init();
         this.gameThread = new Thread(this);
         this.gameThread.start();
-        Audio.getInstance().getAudioPlayer().playSong(Song.MENU);
     }
 
     private void init() {
@@ -203,40 +200,35 @@ public class Game implements Runnable {
     }
 
     public void startMenuState() {
-        State currentState = stateManager.getCurrentState();
-        if (!(currentState instanceof OptionsState || currentState instanceof ControlsState || currentState instanceof LeaderboardState
-                || currentState instanceof CreditsState || currentState instanceof ChoseGameState))
-            Audio.getInstance().getAudioPlayer().playSong(Song.MENU);
-        stateManager.setMenuState();
+        stateManager.setState(StateType.MENU);
     }
 
     public void startPlayingState() {
-        stateManager.setPlayingState();
-        Audio.getInstance().getAudioPlayer().playSong(Song.FOREST_1);
+        stateManager.setState(StateType.PLAYING);
     }
 
     public void startOptionsState() {
-        stateManager.setOptionsState();
+        stateManager.setState(StateType.OPTIONS);
     }
 
     public void startControlsState() {
-        stateManager.setControlsState();
+        stateManager.setState(StateType.CONTROLS);
     }
 
     public void startLeaderboardState() {
-        stateManager.setLeaderboardState();
+        stateManager.setState(StateType.LEADERBOARD);
     }
 
     public void startChoseGameState() {
-        stateManager.setChoseGameState();
+        stateManager.setState(StateType.CHOOSE_GAME);
     }
 
     public void startCreditsState() {
-        stateManager.setCreditsState();
+        stateManager.setState(StateType.CREDITS);
     }
 
     public void startQuitState() {
-        stateManager.setQuitState();
+        stateManager.setState(StateType.QUIT);
     }
 
     // Getters

@@ -1,12 +1,13 @@
 package platformer.model.levels;
 
 import com.google.gson.Gson;
+import platformer.core.GameContext;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
 import platformer.model.levels.metadata.LevelMetadata;
 import platformer.model.levels.metadata.ObjectMetadata;
-import platformer.state.GameState;
-import platformer.utils.Utils;
+import platformer.state.types.GameState;
+import platformer.utils.ImageUtils;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -29,7 +30,7 @@ import static platformer.constants.FilePaths.*;
  */
 public class LevelManager {
 
-    private final GameState gameState;
+    private GameContext context;
     private final LevelObjectManager levelObjectManager;
     private final BackgroundManager backgroundManager;
     private final Map<Point, ObjectMetadata> decorationMetadata;
@@ -40,22 +41,25 @@ public class LevelManager {
     private Level currentLevel;
     private int levelIndexI = 0, levelIndexJ = 0;
     private BufferedImage currentBackground;
-    private LevelMetadata currentLevelMetadata;
+    private LevelMetadata currentLevelMetadata, arenaLevelMetadata;
 
-    public LevelManager(GameState gameState) {
-        this.gameState = gameState;
+    public LevelManager() {
         this.decorationMetadata = new HashMap<>();
         this.backgroundManager = new BackgroundManager();
         this.currentBackground = backgroundManager.getDefaultBackground();
         this.levelObjectManager = new LevelObjectManager();
         loadForestSprite();
         buildLevels();
+    }
+
+    public void wire(GameContext context) {
+        this.context = context;
         this.currentLevel = levels[levelIndexI][levelIndexJ];
     }
 
     // Init
     private void loadForestSprite() {
-        BufferedImage img = Utils.getInstance().importImage(FOREST_SPRITE, -1, -1);
+        BufferedImage img = ImageUtils.importImage(FOREST_SPRITE, -1, -1);
         levelSprite = new BufferedImage[MAX_TILE_VALUE];
         for (int i = 0; i < FOREST_SPRITE_ROW; i++) {
             for (int j = 0; j < FOREST_SPRITE_COL; j++) {
@@ -88,11 +92,12 @@ public class LevelManager {
      * It loads the arena level image and creates a new Level object for it.
      */
     private void buildArenaLevels() {
-        BufferedImage arenaImg = Utils.getInstance().importImage(LEVEL_SPRITES.replace("$", "arena1"), -1, -1);
+        BufferedImage arenaImg = ImageUtils.importImage(LEVEL_SPRITES.replace("$", "arena1"), -1, -1);
         if (arenaImg != null) {
             BufferedImage arenaLayer1 = arenaImg.getSubimage(0, 0, arenaImg.getWidth()/2, arenaImg.getHeight());
             BufferedImage arenaLayer2 = arenaImg.getSubimage(arenaImg.getWidth()/2, 0, arenaImg.getWidth()/2, arenaImg.getHeight());
             arenaLevel = new Level("arena1", arenaLayer1, arenaLayer2);
+            this.arenaLevelMetadata = loadMetadataForLevel("levelarena1");
         }
     }
 
@@ -100,7 +105,7 @@ public class LevelManager {
         BufferedImage[][] levels = new BufferedImage[MAX_LEVELS][MAX_LEVELS];
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < levels.length; j++) {
-                BufferedImage levelImg = Utils.getInstance().importImage(LEVEL_SPRITES.replace("$", i+""+j), -1, -1);
+                BufferedImage levelImg = ImageUtils.importImage(LEVEL_SPRITES.replace("$", i+""+j), -1, -1);
                 if (levelImg == null) continue;
                 if (layer.equals("1")) {
                     levels[i][j] = levelImg.getSubimage(0, 0, levelImg.getWidth()/2, levelImg.getHeight());
@@ -117,17 +122,18 @@ public class LevelManager {
     private void loadLevel() {
         Level newLevel = levels[levelIndexI][levelIndexJ];
         this.currentLevel = newLevel;
-        gameState.getPlayer().loadLvlData(newLevel.getLvlData());
-        gameState.getEnemyManager().loadEnemies(newLevel);
-        gameState.getObjectManager().loadObjects(newLevel);
+        context.getGameState().getPlayer().loadLvlData(newLevel.getLvlData());
+        context.getEnemyManager().loadEnemies(newLevel);
+        context.getObjectManager().loadObjects(newLevel);
         loadMetadata();
-        gameState.getSpellManager().initBossSpells();
-        gameState.getMinimapManager().changeLevel();
-        gameState.getPlayer().activateMinimap(true);
+        context.getSpellManager().initBossSpells();
+        context.getMinimapManager().changeLevel();
+        context.getGameState().getPlayer().activateMinimap(true);
         loadBackground();
     }
 
     public void loadNextLevel(int dI, int dJ) {
+        GameState gameState = context.getGameState();
         levelIndexI += dI;
         levelIndexJ += dJ;
         if (levelIndexI < 0 || levelIndexI >= levels.length || levelIndexJ < 0 || levelIndexJ >= levels[0].length) {
@@ -143,41 +149,43 @@ public class LevelManager {
         else this.currentBackground = backgroundManager.getDefaultBackground();
     }
 
+    private LevelMetadata loadMetadataForLevel(String levelName) {
+        String jsonPath = "/meta/" + levelName + ".json";
+        try (InputStream is = getClass().getResourceAsStream(jsonPath)) {
+            if (is == null) return null;
+            try (InputStreamReader reader = new InputStreamReader(is, StandardCharsets.UTF_8)) {
+                return new Gson().fromJson(reader, LevelMetadata.class);
+            }
+        } catch (Exception e) {
+            Logger.getInstance().notify("Could not load metadata for " + levelName + ": " + e.getMessage(), Message.ERROR);
+            return null;
+        }
+    }
+
     private void loadMetadata() {
         decorationMetadata.clear();
         String levelName = "level" + levelIndexI + levelIndexJ;
-        String jsonPath = "/meta/" + levelName + ".json";
-
-        try (InputStream is = getClass().getResourceAsStream(jsonPath)) {
-            if (is == null) {
-                currentLevelMetadata = null;
-                return;
+        this.currentLevelMetadata = loadMetadataForLevel(levelName);
+        if (currentLevelMetadata != null && currentLevelMetadata.getDecorations() != null) {
+            for (ObjectMetadata meta : currentLevelMetadata.getDecorations()) {
+                decorationMetadata.put(new Point(meta.getX(), meta.getY()), meta);
             }
-            try (InputStreamReader reader = new InputStreamReader(is, StandardCharsets.UTF_8)) {
-                Gson gson = new Gson();
-                LevelMetadata metadata = gson.fromJson(reader, LevelMetadata.class);
-                this.currentLevelMetadata = metadata;
-                if (metadata != null && metadata.getDecorations() != null) {
-                    for (ObjectMetadata meta : metadata.getDecorations()) {
-                        decorationMetadata.put(new Point(meta.getX(), meta.getY()), meta);
-                    }
-                }
-            }
-        } catch (Exception e) {
-            this.currentLevelMetadata = null;
-            Logger.getInstance().notify("Could not load metadata for " + levelName + ": " + e.getMessage(), Message.ERROR);
         }
     }
 
     public void switchToArena() {
         if (arenaLevel != null) {
             this.currentLevel = arenaLevel;
+            this.currentLevelMetadata = arenaLevelMetadata;
+            loadBackground();
         }
         else Logger.getInstance().notify("Arena level is not loaded!", Message.ERROR);
     }
 
     public void returnToMainMap() {
         this.currentLevel = levels[levelIndexI][levelIndexJ];
+        loadMetadata();
+        loadBackground();
     }
 
     // Render

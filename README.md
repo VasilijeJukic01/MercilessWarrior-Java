@@ -143,6 +143,111 @@ graph TD
     L_Kafka_AnalyticsSvc_0@{ animation: fast } 
     L_AnalyticsSvc_DataLake_0@{ animation: fast } 
 ```
+```mermaid
+flowchart TD
+ subgraph subGraph0["Launcher (JavaFX)"]
+        LauncherUI["<b>Launcher UI 🎮</b><br>Login, Register, Settings"]
+        Config["<b>Configuration ⚙️</b><br>Controls, Graphics"]
+        LaunchConfig["<b>GameLaunchConfig Object 🚀</b><br>Carries settings to the game"]
+  end
+ subgraph subGraph1["Engine Core (Swing)"]
+        GameLoop["<b>Game Loop 🔄</b><br>Drives Fixed Updates (UPS) &amp; Frames (FPS)"]
+        StateManager["<b>State Manager 🕹️</b><br>Switches between game states<br><i>(Menu, Playing, Options)</i>"]
+  end
+ subgraph subGraph5["Active Game State"]
+        GameInitializer["<b>GameInitializer 🛠️</b><br>Builds the Context"]
+        GameContext["<b>GameContext 🧩</b><br>Holds &amp; Injects<br>all Managers/Services"]
+        InputListeners["<b>Input Listeners ⌨️🖱️</b><br>Capture raw Keyboard &amp; Mouse events"]
+        GameStateController["<b>GameStateController 🎮</b><br>Translates input into game actions"]
+        GameWorld["<b>Game World 🌍</b><br>Manages:<br>• Entities<br>• GameObjects<br>• Levels <br>• Projectiles, Spells, etc..."]
+        GamePanel["<b>Game Panel (Swing) 🖥️</b><br>The main canvas"]
+        Camera["<b>Camera 📷</b><br>Controls viewport &amp; scrolling"]
+        OverlayManager["<b>UI Overlay Manager 🗂️</b><br>Renders HUD, Inventory, Menus"]
+  end
+ subgraph subGraph6["Data Persistence"]
+        DataPersistence["<b>Storage Strategy 💾</b><br>Abstracts data source"]
+        Online["<b>Online Strategy 🌐</b><br>Uses Online Service"]
+        Offline["<b>Offline Strategy 💻</b><br>Local Save Files"]
+  end
+ subgraph subGraph10["Service Layer (REST) 📡"]
+        OnlineServiceInterface["<b>Online Service Interface</b><br>Defines data contracts"]
+        RestApiClient["<b>REST API Client</b><br>Handles HTTP, Auth (JWT), JSON parsing"]
+        DtoMappers["<b>DTO Mappers</b><br>Translates between DTOs & Game Models"]
+  end
+ subgraph subGraph8["Shared Services & Systems"]
+        PhysicsEngine["<b>Physics &amp; Collision 🏋️‍♂️</b><br>CollisionDetector"]
+        AudioEngine["<b>Audio Engine (OpenAL 🎧)</b><br>Sound &amp; Music Playback"]
+        AssetManager["<b>Asset Manager 📦</b><br>SpriteManager - Caches all images"]
+        QuestSystem["<b>Quest System 🎯</b><br>Listens for events, tracks objectives"]
+        EffectSystem["<b>Effect System 💥</b><br>Particles, Lighting, Screen Shake"]
+        BossHandlers["<b>Event Handlers ✨</b><br>Manages complex event logic"]
+  end
+ subgraph subGraph9[" "]
+        subGraph0
+        subGraph1
+        subGraph5
+        subGraph8
+        subGraph6
+        subGraph10
+        EventBus["<b>Event Bus 🔔</b><br>Decoupled System Communication"]
+  end
+
+    LauncherUI -- Manages --> Config
+    LauncherUI -- Authenticates via --> RestApiClient
+    RestApiClient -- Provides Auth Token for --> LaunchConfig
+    Config -- Create --> LaunchConfig
+    LauncherUI -- Launches Game with --> GameLoop
+    GameLoop -- Uses --> LaunchConfig
+    GameLoop -- Drives --> StateManager
+    StateManager -- Activates --> subGraph5
+    GameInitializer -- Creates & Wires --> GameContext
+    GameContext -- Is injected into --> GameWorld & GameStateController & OverlayManager
+    GameContext -- Uses --> DataPersistence
+    InputListeners -- Sends raw input to --> GameStateController
+    GameStateController -- Issues commands to --> GameWorld
+    GameStateController -- Publishes events to --> EventBus
+    GameWorld -- Uses services from --> GameContext
+    GameWorld -- Publishes events to --> EventBus
+    GamePanel -- Renders --> GameWorld
+    GamePanel -- Framed by --> Camera
+    OverlayManager -- Renders UI on --> GamePanel
+    GamePanel -- Requests assets from --> AssetManager
+    Camera -- Requests assets from --> AssetManager
+    OverlayManager -- Requests assets from --> AssetManager
+    EventBus -- Notifies --> QuestSystem & EffectSystem & BossHandlers
+    DataPersistence --> Online & Offline
+    Online -- Uses --> OnlineServiceInterface
+    OnlineServiceInterface -- Implemented by --> RestApiClient
+    RestApiClient -- Uses --> DtoMappers
+    subGraph0 --> subGraph9
+
+    style LauncherUI fill:#AED6F1,stroke:#2C3E50,stroke-width:1px,color:#333
+    style Config fill:#AED6F1,stroke:#2C3E50,stroke-width:1px,color:#333
+    style LaunchConfig fill:#AED6F1,stroke:#2C3E50,stroke-width:1px,color:#333
+    style GameLoop fill:#4C74FF,stroke:#2C3E50,stroke-width:1px,color:#FFFFFF
+    style StateManager fill:#5B9BD5,stroke:#2C3E50,stroke-width:1px,color:#FFFFFF
+    style GameInitializer fill:#FAD7A0,stroke:#2C3E50,stroke-width:1px,color:#333
+    style GameContext fill:#F5B7B1,stroke:#D35400,stroke-width:2px,color:#333
+    style InputListeners fill:#5CDB95,stroke:#2C3E50,stroke-width:1px,color:#333
+    style GameStateController fill:#52BE80,stroke:#2C3E50,stroke-width:1px,color:#333
+    style GameWorld fill:#FFB84D,stroke:#2C3E50,stroke-width:1px,color:#333
+    style GamePanel fill:#9B59B6,stroke:#2C3E50,stroke-width:1px,color:#FFFFFF
+    style Camera fill:#8E44AD,stroke:#2C3E50,stroke-width:1px,color:#FFFFFF
+    style OverlayManager fill:#8E44AD,stroke:#2C3E50,stroke-width:1px,color:#FFFFFF
+    style PhysicsEngine fill:#B3B6B7,stroke:#2C3E50,stroke-width:1px,color:#333
+    style AudioEngine fill:#B3B6B7,stroke:#2C3E50,stroke-width:1px,color:#333
+    style AssetManager fill:#B3B6B7,stroke:#2C3E50,stroke-width:1px,color:#333
+    style EventBus fill:#E74C3C,stroke:#2C3E50,stroke-width:1px,color:#FFFFFF
+    style DataPersistence fill:#B3B6B7,stroke:#2C3E50,stroke-width:1px,color:#333
+    style Online fill:#D5F5E3,stroke:#2C3E50,stroke-width:1px,color:#333
+    style Offline fill:#D5F5E3,stroke:#2C3E50,stroke-width:1px,color:#333
+    style QuestSystem fill:#B3B6B7,stroke:#2C3E50,stroke-width:1px,color:#333
+    style EffectSystem fill:#B3B6B7,stroke:#2C3E50,stroke-width:1px,color:#333
+    style BossHandlers fill:#B3B6B7,stroke:#2C3E50,stroke-width:1px,color:#333
+    style OnlineServiceInterface fill:#A3E4D7,stroke:#16A085,stroke-width:1px,color:#333
+    style RestApiClient fill:#A3E4D7,stroke:#16A085,stroke-width:1px,color:#333
+    style DtoMappers fill:#A3E4D7,stroke:#16A085,stroke-width:1px,color:#333
+```
 
 ## Getting Started
 
@@ -179,11 +284,11 @@ Follow these steps to get a local copy up and running.
 ## Acknowledgements
 
 - **My Friends:** This project was a solo development effort, but it would not have been the same without the invaluable ideas, feedback, and encouragement from my friends. Your creativity helped shape the world of "Merciless Warrior." A special thank you to:
-  - **[Danilo J.]**
-  - **[Stevan B.]**
-  - **[Jovan P.]**
-  - **[Mehmedalija K.]**
-  - **[Marija P.]**
+  - **[Danilo J.](https://rs.linkedin.com/in/danilojoncic)**
+  - **Stevan B.**
+  - **Jovan P.**
+  - **[Mehmedalija K.](https://rs.linkedin.com/in/mehmedalija-karisik)**
+  - **Marija P.**
 
 - **Asset Credits:**
   - **Art:** [Dreamir](https://dreamir.itch.io/), [Maaot](https://maaot.itch.io/), [brullov](https://brullov.itch.io/), [CreativeKind](https://creativekind.itch.io/)

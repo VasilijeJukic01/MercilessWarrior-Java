@@ -3,13 +3,14 @@ package platformer.ui.overlays;
 import platformer.audio.Audio;
 import platformer.audio.types.Song;
 import platformer.core.Game;
-import platformer.state.GameState;
+import platformer.event.EventBus;
+import platformer.event.events.ui.OverlayChangeEvent;
 import platformer.ui.buttons.AbstractButton;
 import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.SmallButton;
 import platformer.ui.options.ControlsPanel;
 import platformer.ui.options.GameSettingsPanel;
-import platformer.utils.Utils;
+import platformer.utils.ImageUtils;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
@@ -30,7 +31,6 @@ import static platformer.constants.UI.*;
 public class PauseOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
 
     private final Game game;
-    private final GameState gameState;
     private final GameSettingsPanel settingsPanel;
     private final ControlsPanel controlsPanel;
     private BufferedImage pauseText;
@@ -40,9 +40,8 @@ public class PauseOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
 
     private SmallButton continueBtn, retryBtn, exitBtn;
 
-    public PauseOverlay(Game game, GameState gameState) {
+    public PauseOverlay(Game game) {
         this.game = game;
-        this.gameState = gameState;
         this.settingsPanel = new GameSettingsPanel(game);
         this.controlsPanel = new ControlsPanel(this.getClass());
         loadImages();
@@ -50,7 +49,7 @@ public class PauseOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
     }
 
     private void loadImages() {
-        this.pauseText = Utils.getInstance().importImage(PAUSE_TXT, PAUSE_TEXT_WID, PAUSE_TEXT_HEI);
+        this.pauseText = ImageUtils.importImage(PAUSE_TXT, PAUSE_TEXT_WID, PAUSE_TEXT_HEI);
     }
 
     private void loadButtons() {
@@ -148,14 +147,14 @@ public class PauseOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
 
     private void handleMenuButtonRelease(MouseEvent e) {
         if (isMouseInButton(e, continueBtn) && continueBtn.isMousePressed()) {
-            gameState.setOverlay(null);
+            EventBus.getInstance().publish(new OverlayChangeEvent(null));
         }
         else if (isMouseInButton(e, retryBtn) && retryBtn.isMousePressed()) {
             game.reset();
             Audio.getInstance().getAudioPlayer().playSong(Song.FOREST_1);
         }
         else if (isMouseInButton(e, exitBtn) && exitBtn.isMousePressed()) {
-            gameState.setOverlay(null);
+            EventBus.getInstance().publish(new OverlayChangeEvent(null));
             game.startMenuState();
         }
     }

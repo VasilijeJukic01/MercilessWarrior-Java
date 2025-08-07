@@ -1,7 +1,9 @@
 package platformer.model.gameObjects.npc;
 
 import platformer.model.entities.Direction;
+import platformer.model.entities.player.Player;
 import platformer.model.gameObjects.GameObject;
+import platformer.model.gameObjects.Interactable;
 import platformer.model.gameObjects.ObjType;
 
 import java.awt.*;
@@ -11,7 +13,7 @@ import java.awt.image.BufferedImage;
 
 import static platformer.constants.Constants.*;
 
-public class Npc extends GameObject {
+public class Npc extends GameObject implements Interactable {
 
     private final NpcType npcType;
     private int progression = 1;
@@ -90,6 +92,34 @@ public class Npc extends GameObject {
     @Override
     public void attackBoxRenderer(Graphics g, int xLevelOffset, int yLevelOffset) {
 
+    }
+
+    @Override
+    public void onEnter(Player player) {
+        // No specific action on enter
+    }
+
+    @Override
+    public void onIntersect(Player player) {
+        if (player.getHitBox().x + player.getHitBox().width < getHitBox().x + getHitBox().width / 1.2) {
+            setDirection(Direction.RIGHT);
+        } else {
+            setDirection(Direction.LEFT);
+        }
+    }
+
+    @Override
+    public void onExit(Player player) {
+
+    }
+
+    // TODO: Refactor later
+    @Override
+    public String getInteractionPrompt() {
+        String typeName = getNpcType().name();
+        String pascalCaseName = typeName.substring(0, 1).toUpperCase() + typeName.substring(1).toLowerCase();
+        if (typeName.equals("SIR_DEJANOVIC")) pascalCaseName = "SirDejanovic";
+        return "Npc" + pascalCaseName;
     }
 
     public DialogueBehavior getDialogueBehavior() {

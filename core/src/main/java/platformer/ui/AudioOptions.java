@@ -14,8 +14,20 @@ import static platformer.constants.Constants.SOUND_BTN_SIZE;
 import static platformer.constants.UI.*;
 
 /**
- * The AudioOptions class is responsible for updating and rendering the audio options in the game.
- * This includes sound effects (SFX) and music.
+ * Manages the audio control interface components and their interactions in the game.
+ * This class handles both music and sound effects (SFX) controls through buttons and sliders.
+ * <p>
+ * The interface includes:
+ * <ul>
+ *   <li>Mute/unmute buttons for both music and SFX</li>
+ *   <li>Volume slider controls for independent adjustment of music and SFX levels</li>
+ * </ul>
+ *
+ * The class processes mouse events for button interactions and slider adjustments, updating the audio settings through the {@link Audio} system.
+ *
+ * @see AudioButton
+ * @see SliderButton
+ * @see Audio
  */
 public class AudioOptions {
 

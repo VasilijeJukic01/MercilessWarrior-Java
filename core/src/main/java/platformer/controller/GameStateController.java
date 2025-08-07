@@ -2,16 +2,18 @@ package platformer.controller;
 
 import platformer.core.Framework;
 import platformer.core.Game;
+import platformer.core.GameContext;
 import platformer.debug.DebugSettings;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
+import platformer.event.EventBus;
+import platformer.event.events.ui.OverlayChangeEvent;
 import platformer.model.entities.AttackState;
 import platformer.model.entities.player.Player;
 import platformer.model.entities.player.PlayerAction;
 import platformer.model.gameObjects.GameObject;
 import platformer.model.gameObjects.objects.Herb;
-import platformer.state.GameState;
-import platformer.state.PlayingState;
+import platformer.state.types.PlayingState;
 
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
@@ -31,14 +33,14 @@ public class GameStateController {
 
     private final Set<Integer> pressedKeys = new TreeSet<>();
 
+    private final GameContext context;
     private final Game game;
-    private final GameState gameState;
     private final Player player;
 
-    public GameStateController(GameState gameState) {
-        this.gameState = gameState;
-        this.player = gameState.getPlayer();
-        this.game = gameState.getGame();
+    public GameStateController(GameContext context) {
+        this.context = context;
+        this.player = context.getGameState().getPlayer();
+        this.game = context.getGameState().getGame();
         initPressActions();
         initReleaseActions();
     }
@@ -67,7 +69,7 @@ public class GameStateController {
             if (canDash) player.getActionHandler().doDash();
         });
         initAction(pressActions, "Attack", () -> {
-            if (gameState.getActiveState() != PlayingState.DIALOGUE)
+            if (context.getGameState().getActiveState() != PlayingState.DIALOGUE)
                 player.setPlayerAttackState(AttackState.ATTACK_1);
         });
         initAction(pressActions, "Flames", () -> {
@@ -81,8 +83,11 @@ public class GameStateController {
             player.setBlock(true);
         });
         initAction(pressActions, "Pause", () -> {
-            if (isBreakableState(gameState.getActiveState())) gameState.setOverlay(null);
-            else gameState.setOverlay(pause(gameState.getActiveState()));
+            PlayingState overlay = context.getGameState().getActiveState();
+            PlayingState newOverlay;
+            if (overlay != null) newOverlay = null;
+            else newOverlay = PlayingState.PAUSE;
+            EventBus.getInstance().publish(new OverlayChangeEvent(newOverlay));
         });
         initAction(pressActions, "QuickUse1", () -> player.getInventory().useQuickSlotItem(0, player));
         initAction(pressActions, "QuickUse2", () -> player.getInventory().useQuickSlotItem(1, player));
@@ -109,40 +114,40 @@ public class GameStateController {
             if (player.getSpellState() == 1) player.setSpellState(2);
         });
         initAction(releaseActions, "Attack", () -> {
-            if (gameState.getActiveState() == PlayingState.DIALOGUE)
-                gameState.getDialogueManager().updateDialogue("STANDARD");
+            if (context.getGameState().getActiveState() == PlayingState.DIALOGUE)
+                context.getDialogueManager().updateDialogue("STANDARD");
         });
         initAction(releaseActions, "Fireball", () -> player.getActionHandler().doFireBall());
         initAction(releaseActions, "Interact", this::interact);
         initAction(releaseActions, "Inventory", this::openInventory);
         initAction(releaseActions, "Quest", this::openQuests);
-        initAction(releaseActions, "Accept", () -> gameState.getDialogueManager().acceptQuestion());
-        initAction(releaseActions, "Decline", () -> gameState.getDialogueManager().declineQuestion());
+        initAction(releaseActions, "Accept", () -> context.getDialogueManager().acceptQuestion());
+        initAction(releaseActions, "Decline", () -> context.getDialogueManager().declineQuestion());
         initAction(releaseActions, "Minimap", () -> {
-            gameState.setOverlay(PlayingState.MINIMAP);
-            gameState.getOverlayManager().refreshCurrentOverlay();
+            EventBus.getInstance().publish(new OverlayChangeEvent(PlayingState.MINIMAP));
+            context.getGameState().getOverlayManager().refreshCurrentOverlay();
         });
     }
 
     // Mouse
     public void mouseClicked(MouseEvent e) {
-        gameState.getOverlayManager().mouseClicked(e);
+        context.getGameState().getOverlayManager().mouseClicked(e);
     }
 
     public void mousePressed(MouseEvent e) {
-        gameState.getOverlayManager().mousePressed(e);
+        context.getGameState().getOverlayManager().mousePressed(e);
     }
 
     public void mouseReleased(MouseEvent e) {
-        gameState.getOverlayManager().mouseReleased(e);
+        context.getGameState().getOverlayManager().mouseReleased(e);
     }
 
     public void mouseMoved(MouseEvent e) {
-        gameState.getOverlayManager().mouseMoved(e);
+        context.getGameState().getOverlayManager().mouseMoved(e);
     }
 
     public void mouseDragged(MouseEvent e) {
-        gameState.getOverlayManager().mouseDragged(e);
+        context.getGameState().getOverlayManager().mouseDragged(e);
     }
 
     // Keyboard
@@ -151,7 +156,7 @@ public class GameStateController {
         if (state == PlayingState.GAME_OVER && e.getKeyCode() != KeyEvent.VK_ESCAPE) return;
 
         if (state == PlayingState.GAME_OVER && e.getKeyCode() == KeyEvent.VK_ESCAPE) {
-            gameState.reset();
+            context.getGameState().reset();
             game.startMenuState();
             return;
         }
@@ -186,41 +191,41 @@ public class GameStateController {
             default: break;
         }
         pressedKeys.remove(key);
-        gameState.getOverlayManager().keyPressed(e);
+        context.getGameState().getOverlayManager().keyPressed(e);
     }
 
     // Actions
     private void interact() {
-        if (gameState.getActiveState() == PlayingState.DIALOGUE) return;
-        Optional<String> object = Optional.ofNullable(gameState.getObjectManager().getIntersectingObject());
+        if (context.getGameState().getActiveState() == PlayingState.DIALOGUE) return;
+        Optional<String> object = Optional.ofNullable(context.getObjectManager().getIntersectingObject());
         object.ifPresent(this::handleInteraction);
     }
 
     private void handleInteraction(String id) {
         if (Objects.equals(id, "Loot") || Objects.equals(id, "Container")) {
-            gameState.setOverlay(PlayingState.LOOTING);
+            EventBus.getInstance().publish(new OverlayChangeEvent(PlayingState.LOOTING));
         }
         else if (Objects.equals(id, "Table")) {
-            gameState.setOverlay(PlayingState.CRAFTING);
+            EventBus.getInstance().publish(new OverlayChangeEvent(PlayingState.CRAFTING));
         }
         else if (Objects.equals(id, "Herb")) {
-            GameObject herb = gameState.getObjectManager().getIntersection();
-            if (herb instanceof Herb) gameState.getObjectManager().harvestHerb((Herb)herb);
+            GameObject herb = context.getObjectManager().getIntersection();
+            if (herb instanceof Herb) context.getObjectManager().harvestHerb((Herb)herb);
         }
         else activateDialogue(id);
     }
 
     private void activateDialogue(String id) {
-        GameObject object = gameState.getObjectManager().getIntersection();
-        gameState.getDialogueManager().activateDialogue(id, object);
+        GameObject object = context.getObjectManager().getIntersection();
+        context.getDialogueManager().activateDialogue(id, object);
     }
 
     private void openInventory() {
-        gameState.setOverlay(PlayingState.INVENTORY);
+        EventBus.getInstance().publish(new OverlayChangeEvent(PlayingState.INVENTORY));
     }
 
     private void openQuests() {
-        gameState.setOverlay(PlayingState.QUEST);
+        EventBus.getInstance().publish(new OverlayChangeEvent(PlayingState.QUEST));
     }
 
     private void showHitBox() {
@@ -264,11 +269,6 @@ public class GameStateController {
         };
 
         return Arrays.stream(breakableStates).anyMatch(breakableState -> breakableState == state);
-    }
-
-    private PlayingState pause(PlayingState state) {
-        if (state == PlayingState.PAUSE) return null;
-        else return PlayingState.PAUSE;
     }
 
 }

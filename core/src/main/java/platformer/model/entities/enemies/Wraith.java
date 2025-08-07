@@ -8,7 +8,6 @@ import platformer.model.entities.player.Player;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
-import java.awt.image.BufferedImage;
 import java.util.Random;
 
 import static platformer.constants.Constants.*;
@@ -113,9 +112,9 @@ public class Wraith extends Enemy {
 
     // Update
     @Override
-    public void update(BufferedImage[][] animations, int[][] levelData, Player player) {
+    public void update(int[][] levelData, Player player) {
         updateMove(levelData, player);
-        updateAnimation(animations);
+        updateAnimation();
         updateAttackBox();
     }
 
