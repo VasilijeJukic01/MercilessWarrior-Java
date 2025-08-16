@@ -10,15 +10,13 @@ import platformer.core.GameContext;
 import platformer.model.entities.player.Player;
 import platformer.model.entities.player.PlayerAction;
 import platformer.service.multiplayer.MultiplayerManager;
-import platformer.service.multiplayer.requests.PlayerStateDTO;
+import platformer.service.multiplayer.requests.*;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import platformer.service.multiplayer.requests.SessionCreatedDTO;
-import platformer.service.multiplayer.requests.SessionJoinedDTO;
 import platformer.state.types.GameState;
 import platformer.ui.overlays.hud.MultiplayerInfoDisplay;
 
@@ -42,6 +40,7 @@ public class MultiplayerHandler {
     private final Map<String, PlayerStateDTO> players = new ConcurrentHashMap<>();
     private final Gson gson = new Gson();
     private int networkTick = 0;
+    private int pingTick = 0;
 
     public MultiplayerHandler(GameContext context) {
         this.context = context;
@@ -51,6 +50,7 @@ public class MultiplayerHandler {
 
     public void update() {
         sendLocalPlayerState();
+        sendPing();
         processIncomingMessages();
     }
 
@@ -111,8 +111,22 @@ public class MultiplayerHandler {
                             players.put(remotePlayerState.clientId, remotePlayerState);
                         }
                         break;
+                    case "PONG":
+                        PongDTO pongMsg = gson.fromJson(message, PongDTO.class);
+                        long latency = System.currentTimeMillis() - pongMsg.clientTime;
+                        infoDisplay.setPing(latency);
+                        break;
                 }
             } catch (Exception ignored) {}
+        }
+    }
+
+    private void sendPing() {
+        pingTick++;
+        if (pingTick >= 200) {
+            pingTick = 0;
+            PingDTO pingMsg = new PingDTO(System.currentTimeMillis());
+            multiplayerManager.sendMessage(gson.toJson(pingMsg));
         }
     }
 

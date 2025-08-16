@@ -8,7 +8,9 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Sinks
 import java.util.concurrent.ConcurrentHashMap
 import com.games.mw.multiplayerservice.ws.MultiplayerMessage
+import com.games.mw.multiplayerservice.ws.PingDTO
 import com.games.mw.multiplayerservice.ws.PlayerStateDTO
+import com.games.mw.multiplayerservice.ws.PongDTO
 
 /**
  * Represents an active game session that manages communication between multiple connected players.
@@ -44,13 +46,22 @@ class GameSession(
     fun onNext(senderSessionId: String, message: String) {
         try {
             val msg = objectMapper.readValue<MultiplayerMessage>(message)
-            if (msg is PlayerStateDTO) {
-                // Broadcast PlayerState
-                players.forEach { (id, _) ->
-                    if (id != senderSessionId) {
-                        sinks[id]?.tryEmitNext(message)
+            when (msg) {
+                is PlayerStateDTO -> {
+                    // Broadcast PlayerState
+                    players.forEach { (id, _) ->
+                        if (id != senderSessionId) {
+                            sinks[id]?.tryEmitNext(message)
+                        }
                     }
                 }
+                is PingDTO -> {
+                    // Received a PING -> Send PONG
+                    val pongMessage = PongDTO(msg.clientTime)
+                    val jsonPong = objectMapper.writeValueAsString(pongMessage)
+                    sinks[senderSessionId]?.tryEmitNext(jsonPong)
+                }
+                else -> {}
             }
         } catch (e: Exception) {
             println("Could not parse message: $message. Error: ${e.message}")
