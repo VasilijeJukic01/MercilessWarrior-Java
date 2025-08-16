@@ -90,4 +90,68 @@ public class GameEncryptor implements Encryptor {
         return null;
     }
 
+    /**
+     * Encrypts the provided byte array using AES encryption.
+     * <p>
+     * @param data The raw byte array to be encrypted.
+     * @return The encrypted byte array.
+     */
+    public byte[] encrypt(byte[] data) {
+        try {
+            SecureRandom random = new SecureRandom();
+            byte[] salt = new byte[16];
+            random.nextBytes(salt);
+            byte[] iv = new byte[16];
+            random.nextBytes(iv);
+
+            SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
+            KeySpec spec = new PBEKeySpec(SECRET_KEY.toCharArray(), salt, 65536, 256);
+            SecretKey temp = factory.generateSecret(spec);
+            SecretKey secret = new SecretKeySpec(temp.getEncoded(), "AES");
+
+            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+            cipher.init(Cipher.ENCRYPT_MODE, secret, new IvParameterSpec(iv));
+            byte[] encryptedText = cipher.doFinal(data);
+
+            byte[] output = new byte[salt.length + iv.length + encryptedText.length];
+            System.arraycopy(salt, 0, output, 0, salt.length);
+            System.arraycopy(iv, 0, output, salt.length, iv.length);
+            System.arraycopy(encryptedText, 0, output, salt.length + iv.length, encryptedText.length);
+
+            return output;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
+     * Decrypts the provided byte array using AES decryption.
+     * <p>
+     * @param data The encrypted byte array.
+     * @return The decrypted raw byte array.
+     */
+    public byte[] decrypt(byte[] data) {
+        try {
+            byte[] salt = new byte[16];
+            System.arraycopy(data, 0, salt, 0, salt.length);
+            byte[] iv = new byte[16];
+            System.arraycopy(data, salt.length, iv, 0, iv.length);
+            byte[] encryptedText = new byte[data.length - salt.length - iv.length];
+            System.arraycopy(data, salt.length + iv.length, encryptedText, 0, encryptedText.length);
+
+            SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
+            KeySpec spec = new PBEKeySpec(SECRET_KEY.toCharArray(), salt, 65536, 256);
+            SecretKey tmp = factory.generateSecret(spec);
+            SecretKey secret = new SecretKeySpec(tmp.getEncoded(), "AES");
+
+            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+            cipher.init(Cipher.DECRYPT_MODE, secret, new IvParameterSpec(iv));
+            return cipher.doFinal(encryptedText);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
 }

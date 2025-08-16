@@ -1,5 +1,6 @@
 package platformer.utils;
 
+import platformer.animation.AssetManager;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
 
@@ -7,6 +8,8 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.util.Objects;
 
 /**
@@ -28,7 +31,9 @@ public final class ImageUtils {
      */
     public static BufferedImage importImage(String name, int w, int h) {
         try {
-            BufferedImage image = ImageIO.read(Objects.requireNonNull(ImageUtils.class.getResource(name)));
+            byte[] imageBytes = AssetManager.getInstance().getAsset(name);
+            if (imageBytes == null) throw new IOException("Asset not found in bundle: " + name);
+            BufferedImage image = ImageIO.read(new ByteArrayInputStream(imageBytes));
             if (w == -1 && h == -1) return image;
             return resizeImage(image, w, h);
         } catch (Exception e) {

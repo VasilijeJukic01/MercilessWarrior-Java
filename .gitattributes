@@ -1,0 +1,1 @@
+core/src/main/resources/assets.gpak filter=lfs diff=lfs merge=lfs -text

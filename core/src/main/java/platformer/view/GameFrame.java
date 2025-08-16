@@ -39,7 +39,7 @@ public class GameFrame extends JFrame {
      */
     private void initFrame() {
         this.setTitle("Merciless Warrior");
-        URL iconURL = getClass().getResource("/images/icon.png");
+        URL iconURL = getClass().getResource("/base/icon.png");
         if (iconURL != null) {
             ImageIcon icon = new ImageIcon(iconURL);
             setIconImage(icon.getImage());

@@ -2,11 +2,13 @@ package platformer.audio;
 
 import org.lwjgl.BufferUtils;
 import org.lwjgl.openal.AL10;
+import platformer.animation.AssetManager;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.UnsupportedAudioFileException;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -39,7 +41,9 @@ public class WaveData implements AutoCloseable {
      */
     public static WaveData create(String file) {
         try {
-            AudioInputStream ais = AudioSystem.getAudioInputStream(new File(file));
+            byte[] audioBytes = AssetManager.getInstance().getAsset(file);
+            if (audioBytes == null) throw new IOException("Asset not found in bundle: " + file);
+            AudioInputStream ais = AudioSystem.getAudioInputStream(new ByteArrayInputStream(audioBytes));
             AudioFormat baseFormat = ais.getFormat();
             AudioFormat decodeFormat = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED,
                     baseFormat.getSampleRate(), 16, baseFormat.getChannels(), baseFormat.getChannels() * 2,
