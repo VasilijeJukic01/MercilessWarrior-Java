@@ -37,8 +37,7 @@ class SettingsController (
     }
 
     @PostMapping("/empty/{userId}")
-    @PreAuthorize("@permissionService.isOwnerByUserId(#userId) or hasRole('ADMIN')")
-    fun insertEmptySettings(@PathVariable userId: Long, @RequestHeader("Authorization") token: String): ResponseEntity<*> {
+    fun insertEmptySettings(@PathVariable userId: Long): ResponseEntity<*> {
         return settingsService.insertSettings(Settings(userId = userId)).fold(
             { _ -> ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to insert empty settings.") },
             { newSettings -> ResponseEntity.ok(newSettings) }

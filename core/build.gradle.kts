@@ -1,6 +1,6 @@
 plugins {
 	kotlin("jvm") version "1.8.22"
-	id("io.freefair.lombok") version "5.3.3.3"
+	id("io.freefair.lombok") version "8.4"
 	id("org.openjfx.javafxplugin") version "0.0.14"
 	application
 }
@@ -10,15 +10,6 @@ version = "1.0-SNAPSHOT"
 
 val lwjglVersion = "3.3.1"
 val javafxVersion = "17"
-
-// OS-dependent LWJGL Natives
-val osName = System.getProperty("os.name").lowercase()
-val lwjglNatives = when {
-	osName.contains("windows") -> "natives-windows"
-	osName.contains("linux") -> "natives-linux"
-	osName.contains("mac") -> "natives-macos"
-	else -> throw GradleException("Unsupported OS: $osName")
-}
 
 java {
 	sourceCompatibility = JavaVersion.toVersion("17")
@@ -36,11 +27,11 @@ dependencies {
 	implementation("org.lwjgl:lwjgl-glfw:$lwjglVersion")
 	implementation("org.lwjgl:lwjgl-stb:$lwjglVersion")
 
-	// LWJGL Native Libraries
-	implementation("org.lwjgl:lwjgl:$lwjglVersion:$lwjglNatives")
-	implementation("org.lwjgl:lwjgl-openal:$lwjglVersion:$lwjglNatives")
-	implementation("org.lwjgl:lwjgl-glfw:$lwjglVersion:$lwjglNatives")
-	implementation("org.lwjgl:lwjgl-stb:$lwjglVersion:$lwjglNatives")
+	// LWJGL Native Libraries for Windows
+	implementation("org.lwjgl:lwjgl:$lwjglVersion:natives-windows")
+	implementation("org.lwjgl:lwjgl-openal:$lwjglVersion:natives-windows")
+	implementation("org.lwjgl:lwjgl-glfw:$lwjglVersion:natives-windows")
+	implementation("org.lwjgl:lwjgl-stb:$lwjglVersion:natives-windows")
 
 	// Gson
 	implementation("com.google.code.gson:gson:2.10")
@@ -51,7 +42,7 @@ dependencies {
 	implementation("org.openjfx:javafx-base:$javafxVersion")
 
 	// Lombok
-	compileOnly("org.projectlombok:lombok:1.18.20")
+	compileOnly("org.projectlombok:lombok:1.18.30")
 	annotationProcessor("org.projectlombok:lombok:1.18.20")
 }
 

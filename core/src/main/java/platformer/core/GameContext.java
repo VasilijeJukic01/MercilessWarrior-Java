@@ -18,6 +18,7 @@ import platformer.model.projectiles.ProjectileManager;
 import platformer.model.quests.QuestManager;
 import platformer.model.spells.SpellManager;
 import platformer.model.tutorial.TutorialManager;
+import platformer.service.multiplayer.MultiplayerManager;
 import platformer.state.types.GameState;
 import platformer.ui.overlays.OverlayManager;
 import platformer.view.Camera;
@@ -46,6 +47,7 @@ public final class GameContext {
     private ScreenEffectsManager screenEffectsManager;
     private DialogueManager dialogueManager;
     private OverlayManager overlayManager;
+    private MultiplayerManager multiplayerManager;
     private Camera camera;
     private Player player;
 }

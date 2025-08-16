@@ -111,6 +111,10 @@ public class Framework {
         return game;
     }
 
+    public GameLaunchConfig getLaunchConfig() {
+        return launchConfig;
+    }
+
     public KeyboardController getKeyboardController() {
         return keyboardController;
     }

@@ -3,11 +3,16 @@ package platformer.launcher.controller;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import platformer.AppCore;
+import platformer.core.mode.GameMode;
 import platformer.service.rest.client.GameServiceClient;
 import platformer.core.TokenStorage;
 import platformer.core.config.GameLaunchConfig;
 import platformer.launcher.view.LoadingView;
 import platformer.core.loading.LoadingProgressTracker;
+
+import javax.swing.*;
+import java.util.Optional;
+import java.util.concurrent.CountDownLatch;
 
 /**
  * Controller for handling loading processes and game initialization logic.
@@ -41,10 +46,43 @@ public class LoadingController {
                 boolean loggedIn = client.loginAndStoreToken(playerName, password);
                 String authToken = loggedIn ? TokenStorage.getInstance().getToken() : null;
 
+                final GameMode[] selectedMode = {GameMode.SINGLE_PLAYER};
+                final Optional<String>[] sessionId = new Optional[]{Optional.empty()};
+
+                if (loggedIn) {
+                    CountDownLatch latch = new CountDownLatch(1);
+                    Platform.runLater(() -> {
+                        try {
+                            Object[] options = {"Single Player", "Host Multiplayer", "Join Multiplayer"};
+                            int choice = JOptionPane.showOptionDialog(null, "Select Game Mode", "Merciless Warrior",
+                                    JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
+
+                            switch (choice) {
+                                case 1:
+                                    selectedMode[0] = GameMode.MULTIPLAYER_HOST;
+                                    break;
+                                case 2:
+                                    selectedMode[0] = GameMode.MULTIPLAYER_CLIENT;
+                                    String id = JOptionPane.showInputDialog("Enter Session ID to Join:");
+                                    sessionId[0] = Optional.ofNullable(id);
+                                    break;
+                                default:
+                                    selectedMode[0] = GameMode.SINGLE_PLAYER;
+                                    break;
+                            }
+                        } finally {
+                            latch.countDown();
+                        }
+                    });
+                    latch.await();
+                }
+
                 float scale = Float.parseFloat(System.getProperty("game.scale", "1.5"));
                 GameLaunchConfig config = new GameLaunchConfig(
                         playerName,
                         authToken,
+                        selectedMode[0],
+                        sessionId[0],
                         enableCheats,
                         fullScreen,
                         scale

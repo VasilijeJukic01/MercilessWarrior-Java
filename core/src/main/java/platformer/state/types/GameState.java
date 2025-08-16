@@ -9,7 +9,9 @@ import platformer.core.Account;
 import platformer.core.Framework;
 import platformer.core.Game;
 import platformer.core.GameContext;
+import platformer.core.config.GameLaunchConfig;
 import platformer.core.initializer.GameInitializer;
+import platformer.core.mode.GameMode;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
 import platformer.event.events.ui.GamePausedEvent;
@@ -23,6 +25,7 @@ import platformer.model.perks.PerksManager;
 import platformer.model.world.GameFlowManager;
 import platformer.model.world.GameWorld;
 import platformer.event.EventHandler;
+import platformer.model.world.MultiplayerHandler;
 import platformer.state.AbstractState;
 import platformer.state.State;
 import platformer.storage.OfflineStorageStrategy;
@@ -57,6 +60,7 @@ public class GameState extends AbstractState implements State {
     private final GameContext context;
     private final GameWorld world;
     private final GameFlowManager flowManager;
+    private final MultiplayerHandler multiplayerHandler;
     private final Camera camera;
     private final GameStateController stateController;
     private final ScreenEffectsManager screenEffectsManager;
@@ -67,6 +71,7 @@ public class GameState extends AbstractState implements State {
     private PlayingState state;
     private final BossInterface bossInterface;
 
+    private boolean isMultiplayer;
     @Setter private boolean isRespawning;
     @Setter private boolean isDarkPhase;
 
@@ -80,6 +85,7 @@ public class GameState extends AbstractState implements State {
 
         this.world = new GameWorld(context);
         this.flowManager = new GameFlowManager(context);
+        this.multiplayerHandler = new MultiplayerHandler(context);
         this.stateController = new GameStateController(context);
         this.camera = new Camera(getPlayer().getHitBox().x, getPlayer().getHitBox().y);
         context.setPlayer(world.getPlayer());
@@ -105,7 +111,10 @@ public class GameState extends AbstractState implements State {
             getPlayer().update();
             context.getEffectManager().update();
         }
-        else handleGameState();
+        else {
+            handleGameState();
+            if (isMultiplayer) multiplayerHandler.update();
+        }
         if (state == PlayingState.DIALOGUE) overlayManager.update(PlayingState.DIALOGUE);
     }
 
@@ -124,6 +133,7 @@ public class GameState extends AbstractState implements State {
         Graphics2D g2d = (Graphics2D) g;
         screenEffectsManager.beginFrame(g2d);
         world.render(g2d, camera.getXOffset(), camera.getYOffset(), isDarkPhase);
+        if (isMultiplayer) multiplayerHandler.render(g, camera.getXOffset(), camera.getYOffset());
         screenEffectsManager.renderFlash(g2d);
         getPlayer().getPlayerStatusManager().getUserInterface().render(g);
         bossInterface.render(g);
@@ -133,12 +143,30 @@ public class GameState extends AbstractState implements State {
     @Override
     public void enter() {
         Audio.getInstance().getAudioPlayer().playSong(Song.FOREST_1);
+        initializeMultiplayerSession();
     }
 
     @Override
     public void exit() {
         Audio.getInstance().getAudioPlayer().stopSong();
         Audio.getInstance().getAudioPlayer().stopAmbience();
+    }
+
+    private void initializeMultiplayerSession() {
+        GameLaunchConfig config = Framework.getInstance().getLaunchConfig();
+        this.isMultiplayer = config.gameMode() != GameMode.SINGLE_PLAYER;
+
+        if (!isMultiplayer) return;
+
+        String username = config.username();
+        switch (config.gameMode()) {
+            case MULTIPLAYER_HOST:
+                context.getMultiplayerManager().hostSession(username);
+                break;
+            case MULTIPLAYER_CLIENT:
+                config.sessionIdToJoin().ifPresent(id -> context.getMultiplayerManager().joinSession(id, username));
+                break;
+        }
     }
 
     public void reloadSave() {
