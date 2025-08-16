@@ -11,6 +11,15 @@ version = "1.0-SNAPSHOT"
 val lwjglVersion = "3.3.1"
 val javafxVersion = "17"
 
+// OS-dependent LWJGL Natives
+val osName = System.getProperty("os.name").lowercase()
+val lwjglNatives = when {
+	osName.contains("windows") -> "natives-windows"
+	osName.contains("linux") -> "natives-linux"
+	osName.contains("mac") -> "natives-macos"
+	else -> throw GradleException("Unsupported OS: $osName")
+}
+
 java {
 	sourceCompatibility = JavaVersion.toVersion("17")
 	targetCompatibility = JavaVersion.toVersion("17")
@@ -27,11 +36,11 @@ dependencies {
 	implementation("org.lwjgl:lwjgl-glfw:$lwjglVersion")
 	implementation("org.lwjgl:lwjgl-stb:$lwjglVersion")
 
-	// LWJGL Native Libraries for Windows
-	implementation("org.lwjgl:lwjgl:$lwjglVersion:natives-windows")
-	implementation("org.lwjgl:lwjgl-openal:$lwjglVersion:natives-windows")
-	implementation("org.lwjgl:lwjgl-glfw:$lwjglVersion:natives-windows")
-	implementation("org.lwjgl:lwjgl-stb:$lwjglVersion:natives-windows")
+	// LWJGL Native Libraries
+	implementation("org.lwjgl:lwjgl:$lwjglVersion:$lwjglNatives")
+	implementation("org.lwjgl:lwjgl-openal:$lwjglVersion:$lwjglNatives")
+	implementation("org.lwjgl:lwjgl-glfw:$lwjglVersion:$lwjglNatives")
+	implementation("org.lwjgl:lwjgl-stb:$lwjglVersion:$lwjglNatives")
 
 	// Gson
 	implementation("com.google.code.gson:gson:2.10")
