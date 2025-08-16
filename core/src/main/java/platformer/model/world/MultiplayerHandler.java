@@ -105,6 +105,10 @@ public class MultiplayerHandler {
                         SessionJoinedDTO sessionJoinedMsg = gson.fromJson(message, SessionJoinedDTO.class);
                         infoDisplay.setSessionId(sessionJoinedMsg.sessionId);
                         break;
+                    case "PLAYER_LEFT":
+                        PlayerLeftDTO playerLeftMsg = gson.fromJson(message, PlayerLeftDTO.class);
+                        players.remove(playerLeftMsg.clientId);
+                        break;
                     case "PLAYER_STATE":
                         PlayerStateDTO remotePlayerState = gson.fromJson(message, PlayerStateDTO.class);
                         if (!remotePlayerState.clientId.equals(multiplayerManager.getClientId())) {

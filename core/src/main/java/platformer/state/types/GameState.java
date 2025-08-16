@@ -104,6 +104,8 @@ public class GameState extends AbstractState implements State {
         screenEffectsManager.update();
         flowManager.update();
 
+        if (isMultiplayer) multiplayerHandler.update();
+
         if (state != null && state != PlayingState.DIALOGUE && state != PlayingState.DYING) {
             overlayManager.update(state);
         }
@@ -113,7 +115,6 @@ public class GameState extends AbstractState implements State {
         }
         else {
             handleGameState();
-            if (isMultiplayer) multiplayerHandler.update();
         }
         if (state == PlayingState.DIALOGUE) overlayManager.update(PlayingState.DIALOGUE);
     }
@@ -148,6 +149,7 @@ public class GameState extends AbstractState implements State {
 
     @Override
     public void exit() {
+        if (isMultiplayer) context.getMultiplayerManager().disconnect();
         Audio.getInstance().getAudioPlayer().stopSong();
         Audio.getInstance().getAudioPlayer().stopAmbience();
     }

@@ -69,6 +69,17 @@ public class MultiplayerManager implements WebSocket.Listener {
     }
 
     /**
+     * Closes the WebSocket connection gracefully.
+     * This method should be called when the client is leaving the game state or shutting down.
+     */
+    public void disconnect() {
+        if (webSocket != null) {
+            webSocket.sendClose(WebSocket.NORMAL_CLOSURE, "Client leaving game state").join();
+            webSocket = null;
+        }
+    }
+
+    /**
      * Sends a text message to the server over the active WebSocket connection.
      *
      * @param message The string message to send.

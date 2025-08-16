@@ -88,7 +88,10 @@ class MultiplayerWebSocketHandler(
             }
             .doOnTerminate {
                 println("Player disconnected from session: ${gameSession.id} (ID: ${session.id})")
-                gameSession.removePlayer(session)
+                val removedPlayerInfo = gameSession.removePlayer(session)
+                if (removedPlayerInfo != null && removedPlayerInfo.clientId != "unknown") {
+                    gameSession.broadcastPlayerLeft(removedPlayerInfo.clientId)
+                }
             }
             .then()
 

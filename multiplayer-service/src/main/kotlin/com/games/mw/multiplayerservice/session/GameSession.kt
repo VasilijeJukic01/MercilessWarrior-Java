@@ -2,15 +2,15 @@ package com.games.mw.multiplayerservice.session
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import com.games.mw.multiplayerservice.ws.*
 import org.springframework.web.reactive.socket.WebSocketMessage
 import org.springframework.web.reactive.socket.WebSocketSession
 import reactor.core.publisher.Flux
+import reactor.core.publisher.Mono
 import reactor.core.publisher.Sinks
 import java.util.concurrent.ConcurrentHashMap
-import com.games.mw.multiplayerservice.ws.MultiplayerMessage
-import com.games.mw.multiplayerservice.ws.PingDTO
-import com.games.mw.multiplayerservice.ws.PlayerStateDTO
-import com.games.mw.multiplayerservice.ws.PongDTO
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 
 /**
  * Represents an active game session that manages communication between multiple connected players.
@@ -27,17 +27,27 @@ class GameSession(
         * We use a multicast sink to allow multiple players to send messages that will be broadcasted to all players in the session.
      */
     private val sinks = ConcurrentHashMap<String, Sinks.Many<String>>()
-    private val players = ConcurrentHashMap<String, WebSocketSession>()
+    private val players = ConcurrentHashMap<String, PlayerInfo>()
     private val objectMapper = jacksonObjectMapper()
 
+    /*
+        * A scheduled task that performs a health check every 5 seconds to ensure that all players are still connected.
+        * If a player has not sent a PONG message within the last 10 seconds, they are considered disconnected.
+     */
+    private val scheduler = Executors.newSingleThreadScheduledExecutor()
+
+    init {
+        scheduler.scheduleAtFixedRate(::healthCheck, 10, 10, TimeUnit.SECONDS)
+    }
+
     fun addPlayer(session: WebSocketSession) {
-        players[session.id] = session
+        players[session.id] = PlayerInfo("unknown", "unknown", session)
         sinks[session.id] = Sinks.many().multicast().onBackpressureBuffer()
     }
 
-    fun removePlayer(session: WebSocketSession) {
-        players.remove(session.id)
+    fun removePlayer(session: WebSocketSession): PlayerInfo? {
         sinks.remove(session.id)
+        return players.remove(session.id)
     }
 
     /*
@@ -48,6 +58,9 @@ class GameSession(
             val msg = objectMapper.readValue<MultiplayerMessage>(message)
             when (msg) {
                 is PlayerStateDTO -> {
+                    if (players[senderSessionId]?.clientId == "unknown") {
+                        players[senderSessionId] = PlayerInfo(msg.clientId, msg.username, players[senderSessionId]!!.session)
+                    }
                     // Broadcast PlayerState
                     players.forEach { (id, _) ->
                         if (id != senderSessionId) {
@@ -56,7 +69,7 @@ class GameSession(
                     }
                 }
                 is PingDTO -> {
-                    // Received a PING -> Send PONG
+                    players[senderSessionId]?.let { it.lastPingTime = System.currentTimeMillis() }
                     val pongMessage = PongDTO(msg.clientTime)
                     val jsonPong = objectMapper.writeValueAsString(pongMessage)
                     sinks[senderSessionId]?.tryEmitNext(jsonPong)
@@ -68,16 +81,48 @@ class GameSession(
         }
     }
 
+    private fun healthCheck() {
+        val now = System.currentTimeMillis()
+        val timeout = 15000L
+        val timedOutClients = players.values.filter { now - it.lastPingTime > timeout }
+
+        if (timedOutClients.isNotEmpty()) {
+            timedOutClients.forEach { playerInfo ->
+                println("Client ${playerInfo.clientId} (${playerInfo.session.id}) timed out. No ping received in ${timeout}ms. Closing connection.")
+                playerInfo.session.close().subscribe()
+            }
+        }
+    }
+
     /*
         * This method returns a Flux of WebSocketMessage objects that can be used to send messages to the player.
         * The messages are transformed from String to WebSocketMessage format.
      */
     fun publisherFor(sessionId: String): Flux<WebSocketMessage> {
+        val playerSession = players[sessionId]?.session ?: return Flux.empty()
         return sinks[sessionId]?.asFlux()?.map { text ->
-            val bufferFactory = players[sessionId]?.bufferFactory() ?: return@map null
-            val buffer = bufferFactory.wrap(text.toByteArray())
-            WebSocketMessage(WebSocketMessage.Type.TEXT, buffer)
-        }?.filter { it != null }?.map { it!! } ?: Flux.empty()
+            playerSession.textMessage(text)
+        } ?: Flux.empty()
+    }
+
+    fun broadcastPlayerLeft(clientId: String) {
+        val message = PlayerLeftDTO(clientId)
+        val jsonMessage = objectMapper.writeValueAsString(message)
+        println("Broadcasting PLAYER_LEFT for clientId: $clientId")
+        players.forEach { (id, _) ->
+            sinks[id]?.tryEmitNext(jsonMessage)
+        }
+    }
+
+    fun shutdown() {
+        scheduler.shutdown()
     }
 
 }
+
+data class PlayerInfo(
+    val clientId: String,
+    val username: String,
+    val session: WebSocketSession,
+    @Volatile var lastPingTime: Long = System.currentTimeMillis()
+)

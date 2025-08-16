@@ -12,6 +12,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo
 @JsonSubTypes(
     JsonSubTypes.Type(value = SessionCreatedDTO::class, name = "SESSION_CREATED"),
     JsonSubTypes.Type(value = SessionJoinedDTO::class, name = "SESSION_JOINED"),
+    JsonSubTypes.Type(value = PlayerLeftDTO::class, name = "PLAYER_LEFT"),
     JsonSubTypes.Type(value = PlayerStateDTO::class, name = "PLAYER_STATE"),
     JsonSubTypes.Type(value = PingDTO::class, name = "PING"),
     JsonSubTypes.Type(value = PongDTO::class, name = "PONG")
@@ -22,6 +23,8 @@ sealed class MultiplayerMessage
 data class SessionCreatedDTO(val sessionId: String) : MultiplayerMessage()
 
 data class SessionJoinedDTO(val sessionId: String) : MultiplayerMessage()
+
+data class PlayerLeftDTO(val clientId: String) : MultiplayerMessage()
 
 data class PingDTO(val clientTime: Long) : MultiplayerMessage()
 
