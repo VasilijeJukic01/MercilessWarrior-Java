@@ -130,6 +130,9 @@ public class RoricEventHandler implements EventHandler {
      * @param newPhase The new phase of the Roric fight.
      */
     private void handlePhaseChange(RoricPhaseManager.RoricPhase newPhase) {
+        if (newPhase == RoricPhaseManager.RoricPhase.INTRO) {
+            context.getRainManager().startRaining();
+        }
         context.getSpellManager().stopArrowRainTelegraph();
         if (newPhase == RoricPhaseManager.RoricPhase.VICTORY) {
             Roric roric = context.getEnemyManager().getRoricInstance();

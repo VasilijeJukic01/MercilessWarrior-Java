@@ -253,11 +253,12 @@ public class RoricAttackHandler {
 
         switch (phase) {
             case INTRO:
-                // Phase 1: Always jump
+                // Phase 1: 50/50 jump or teleport
+                if (random.nextBoolean()) shouldTeleport = true;
                 break;
             case ASSAULT:
-                // Phase 2: 50/50 jump or teleport
-                if (random.nextBoolean()) shouldTeleport = true;
+                // Phase 2: 30/70 jump or teleport
+                shouldTeleport = random.nextDouble() <= 0.7;
                 break;
             case FINALE:
                 // Phase 5: Always teleport

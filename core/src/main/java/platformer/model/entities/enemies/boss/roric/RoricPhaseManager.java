@@ -165,8 +165,8 @@ public class RoricPhaseManager {
      * @return A multiplier (e.g., 1.0 for normal, 0.60 for 40% faster).
      */
     public double getCooldownModifier() {
-        if (currentPhase == RoricPhase.FINALE) return 0.6;
-        return 1.0;
+        if (currentPhase == RoricPhase.FINALE) return 0.5;
+        return 0.8;
     }
 
     /**

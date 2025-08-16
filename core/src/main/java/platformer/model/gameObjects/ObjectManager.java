@@ -117,6 +117,20 @@ public class ObjectManager {
     }
 
     /**
+     * Checks if the player is colliding with any traps in the game.
+     * If a trap is hit, it reduces the player's health and marks the trap as not alive.
+     *
+     * @param player The player object that is checking for collisions with traps.
+     */
+    private void checkPlayerTrapCollision(Player player) {
+        for (RoricTrap trap : getObjects(RoricTrap.class)) {
+            if (trap.isAlive() && !trap.isAnimate() && trap.getHitBox().intersects(player.getHitBox())) {
+                player.changeHealth(-RoricTrap.TRAP_DAMAGE, trap);
+            }
+        }
+    }
+
+    /**
      * Handles the collection of collectibles (coins and potions) by the player.
      * It checks if the player is intersecting with any collectible object and collects it.
      *
@@ -277,6 +291,7 @@ public class ObjectManager {
         updateArrowLaunchers(lvlData, player);
         handleInteractions(player);
         handleCollectibles(player);
+        checkPlayerTrapCollision(player);
         collisionHandler.updateObjectInAir();
     }
 
