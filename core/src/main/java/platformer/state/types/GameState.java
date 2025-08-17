@@ -178,7 +178,7 @@ public class GameState extends AbstractState implements State {
         }
         getPlayer().activateMinimap(false);
         PerksBonus.getInstance().reset();
-        context.setPerksManager(new PerksManager());
+        context.getPerksManager().reset();
         this.getPlayer().getPlayerDataManager().loadPlayerData();
         this.getPlayer().getInventory().fillItems(Framework.getInstance().getAccount().getItems());
         context.getPerksManager().loadUnlockedPerks(Framework.getInstance().getAccount().getPerks());
