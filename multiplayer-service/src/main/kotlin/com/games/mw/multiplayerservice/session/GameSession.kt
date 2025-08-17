@@ -88,8 +88,12 @@ class GameSession(
 
         if (timedOutClients.isNotEmpty()) {
             timedOutClients.forEach { playerInfo ->
-                println("Client ${playerInfo.clientId} (${playerInfo.session.id}) timed out. No ping received in ${timeout}ms. Closing connection.")
+                println("Client ${playerInfo.clientId} (${playerInfo.session.id}) timed out. No ping received in ${timeout}ms.")
                 playerInfo.session.close().subscribe()
+                val removedPlayer = removePlayer(playerInfo.session)
+                if (removedPlayer != null && removedPlayer.clientId != "unknown") {
+                    broadcastPlayerLeft(removedPlayer.clientId)
+                }
             }
         }
     }

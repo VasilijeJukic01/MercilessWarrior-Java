@@ -5,6 +5,8 @@ import platformer.core.Game;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.net.URL;
 
 /**
@@ -32,6 +34,13 @@ public class GameFrame extends JFrame {
         initFrame();
         initPanel(game);
         this.addWindowFocusListener(new GameFocusListener(game));
+        this.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                game.getCurrentState().exit();
+                System.exit(0);
+            }
+        });
     }
 
     /**
