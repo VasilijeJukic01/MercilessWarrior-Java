@@ -2,6 +2,7 @@ plugins {
 	java
 	id("org.springframework.boot") version "3.2.6"
 	id("io.spring.dependency-management") version "1.1.5"
+	id("com.github.davidmc24.gradle.plugin.avro") version "1.9.1"
 	kotlin("jvm") version "2.0.0"
 	kotlin("plugin.spring") version "2.0.0"
 }
@@ -23,6 +24,7 @@ configurations {
 
 repositories {
 	mavenCentral()
+	maven { url = uri("https://packages.confluent.io/maven/") }
 }
 
 dependencyManagement {
@@ -44,6 +46,7 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-data-redis")
 	implementation("org.springframework.boot:spring-boot-starter-security")
 	implementation("org.springframework.boot:spring-boot-starter-web")
+	implementation("org.springframework.boot:spring-boot-starter-webflux")
 
 	// Spring Cloud
 	implementation("org.springframework.cloud:spring-cloud-starter-netflix-eureka-client")
@@ -59,6 +62,13 @@ dependencies {
 	// Database
 	runtimeOnly("org.postgresql:postgresql")
 
+	// Kafka
+	implementation("org.springframework.kafka:spring-kafka")
+	implementation("io.confluent:kafka-avro-serializer:7.6.0")
+
+	// Jackson
+	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+
 	// Lombok
 	compileOnly("org.projectlombok:lombok")
 	annotationProcessor("org.projectlombok:lombok")
@@ -68,6 +78,21 @@ dependencies {
 	testImplementation("org.mockito:mockito-inline:4.2.0")
 	testImplementation("org.mockito.kotlin:mockito-kotlin:4.1.0")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+}
+
+avro {
+	isCreateSetters.set(false)
+	isCreateOptionalGetters.set(false)
+	isGettersReturnOptional.set(false)
+	stringType.set("String")
+}
+
+sourceSets {
+	main {
+		java {
+			srcDir("$buildDir/generated-main-avro-java")
+		}
+	}
 }
 
 tasks.withType<Test> {

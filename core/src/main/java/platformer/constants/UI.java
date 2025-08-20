@@ -1,6 +1,9 @@
 package platformer.constants;
 
+
+
 import java.awt.*;
+import java.util.List;
 
 import static platformer.constants.Constants.GAME_WIDTH;
 import static platformer.constants.Constants.SCALE;
@@ -502,6 +505,17 @@ public final class UI {
 
     public static final int TUTORIAL_EXIT_X = scale(185);
     public static final int TUTORIAL_EXIT_Y = scale(270);
+
+    // Multiplayer UI
+    public static final List<Color> CHAT_COLORS = List.of(
+            new Color(112, 188, 255),
+            new Color(125, 255, 125),
+            new Color(255, 130, 130),
+            new Color(255, 255, 132),
+            new Color(255, 142, 255),
+            new Color(137, 255, 241),
+            new Color(255, 181, 112)
+    );
 
     private static int scale(double value) {
         return (int)(value * SCALE);

@@ -3,6 +3,7 @@ package com.games.mw.gameservice.config
 import com.games.mw.gameservice.security.JwtAuthenticationFilter
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.http.HttpMethod
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
@@ -24,6 +25,7 @@ class SecurityConfig(
             .authorizeHttpRequests { authorizeRequests ->
                 authorizeRequests
                     .requestMatchers("/leaderboard/**").permitAll()
+                    .requestMatchers(HttpMethod.POST, "/settings/empty/**").permitAll()
                     .anyRequest().authenticated()
             }
             .headers { headers ->

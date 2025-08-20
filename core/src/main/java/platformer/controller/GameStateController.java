@@ -82,13 +82,6 @@ public class GameStateController {
             if (block) return;
             player.setBlock(true);
         });
-        initAction(pressActions, "Pause", () -> {
-            PlayingState overlay = context.getGameState().getActiveState();
-            PlayingState newOverlay;
-            if (overlay != null) newOverlay = null;
-            else newOverlay = PlayingState.PAUSE;
-            EventBus.getInstance().publish(new OverlayChangeEvent(newOverlay));
-        });
         initAction(pressActions, "QuickUse1", () -> player.getInventory().useQuickSlotItem(0, player));
         initAction(pressActions, "QuickUse2", () -> player.getInventory().useQuickSlotItem(1, player));
         initAction(pressActions, "QuickUse3", () -> player.getInventory().useQuickSlotItem(2, player));
@@ -96,6 +89,13 @@ public class GameStateController {
     }
 
     private void initReleaseActions() {
+        initAction(releaseActions, "Pause", () -> {
+            PlayingState overlay = context.getGameState().getActiveState();
+            PlayingState newOverlay;
+            if (overlay != null) newOverlay = null;
+            else newOverlay = PlayingState.PAUSE;
+            EventBus.getInstance().publish(new OverlayChangeEvent(newOverlay));
+        });
         initAction(releaseActions, "Move Left", () -> {
             player.removeAction(PlayerAction.LEFT);
             player.removeAction(PlayerAction.ON_WALL);

@@ -9,20 +9,24 @@ import platformer.core.Account;
 import platformer.core.Framework;
 import platformer.core.Game;
 import platformer.core.GameContext;
+import platformer.core.config.GameLaunchConfig;
 import platformer.core.initializer.GameInitializer;
+import platformer.core.mode.GameMode;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
+import platformer.event.EventBus;
 import platformer.event.events.ui.GamePausedEvent;
 import platformer.event.events.ui.GameResumedEvent;
+import platformer.event.events.ui.OverlayChangeEvent;
 import platformer.model.effects.ScreenEffectsManager;
 import platformer.model.entities.player.Player;
 import platformer.model.gameObjects.ObjectManager;
 import platformer.model.levels.LevelManager;
 import platformer.model.perks.PerksBonus;
-import platformer.model.perks.PerksManager;
 import platformer.model.world.GameFlowManager;
 import platformer.model.world.GameWorld;
 import platformer.event.EventHandler;
+import platformer.model.world.MultiplayerHandler;
 import platformer.state.AbstractState;
 import platformer.state.State;
 import platformer.storage.OfflineStorageStrategy;
@@ -57,6 +61,7 @@ public class GameState extends AbstractState implements State {
     private final GameContext context;
     private final GameWorld world;
     private final GameFlowManager flowManager;
+    private final MultiplayerHandler multiplayerHandler;
     private final Camera camera;
     private final GameStateController stateController;
     private final ScreenEffectsManager screenEffectsManager;
@@ -67,6 +72,7 @@ public class GameState extends AbstractState implements State {
     private PlayingState state;
     private final BossInterface bossInterface;
 
+    private boolean isMultiplayer;
     @Setter private boolean isRespawning;
     @Setter private boolean isDarkPhase;
 
@@ -80,6 +86,7 @@ public class GameState extends AbstractState implements State {
 
         this.world = new GameWorld(context);
         this.flowManager = new GameFlowManager(context);
+        this.multiplayerHandler = new MultiplayerHandler(context);
         this.stateController = new GameStateController(context);
         this.camera = new Camera(getPlayer().getHitBox().x, getPlayer().getHitBox().y);
         context.setPlayer(world.getPlayer());
@@ -98,6 +105,8 @@ public class GameState extends AbstractState implements State {
         screenEffectsManager.update();
         flowManager.update();
 
+        if (isMultiplayer) multiplayerHandler.update();
+
         if (state != null && state != PlayingState.DIALOGUE && state != PlayingState.DYING) {
             overlayManager.update(state);
         }
@@ -105,7 +114,9 @@ public class GameState extends AbstractState implements State {
             getPlayer().update();
             context.getEffectManager().update();
         }
-        else handleGameState();
+        else {
+            handleGameState();
+        }
         if (state == PlayingState.DIALOGUE) overlayManager.update(PlayingState.DIALOGUE);
     }
 
@@ -124,6 +135,7 @@ public class GameState extends AbstractState implements State {
         Graphics2D g2d = (Graphics2D) g;
         screenEffectsManager.beginFrame(g2d);
         world.render(g2d, camera.getXOffset(), camera.getYOffset(), isDarkPhase);
+        if (isMultiplayer) multiplayerHandler.render(g, camera.getXOffset(), camera.getYOffset());
         screenEffectsManager.renderFlash(g2d);
         getPlayer().getPlayerStatusManager().getUserInterface().render(g);
         bossInterface.render(g);
@@ -133,12 +145,31 @@ public class GameState extends AbstractState implements State {
     @Override
     public void enter() {
         Audio.getInstance().getAudioPlayer().playSong(Song.FOREST_1);
+        initializeMultiplayerSession();
     }
 
     @Override
     public void exit() {
+        if (isMultiplayer) context.getMultiplayerManager().disconnect();
         Audio.getInstance().getAudioPlayer().stopSong();
         Audio.getInstance().getAudioPlayer().stopAmbience();
+    }
+
+    private void initializeMultiplayerSession() {
+        GameLaunchConfig config = Framework.getInstance().getLaunchConfig();
+        this.isMultiplayer = config.gameMode() != GameMode.SINGLE_PLAYER;
+
+        if (!isMultiplayer) return;
+
+        String username = config.username();
+        switch (config.gameMode()) {
+            case MULTIPLAYER_HOST:
+                context.getMultiplayerManager().hostSession(username);
+                break;
+            case MULTIPLAYER_CLIENT:
+                config.sessionIdToJoin().ifPresent(id -> context.getMultiplayerManager().joinSession(id, username));
+                break;
+        }
     }
 
     public void reloadSave() {
@@ -148,7 +179,7 @@ public class GameState extends AbstractState implements State {
         }
         getPlayer().activateMinimap(false);
         PerksBonus.getInstance().reset();
-        context.setPerksManager(new PerksManager());
+        context.getPerksManager().reset();
         this.getPlayer().getPlayerDataManager().loadPlayerData();
         this.getPlayer().getInventory().fillItems(Framework.getInstance().getAccount().getItems());
         context.getPerksManager().loadUnlockedPerks(Framework.getInstance().getAccount().getPerks());
@@ -212,11 +243,36 @@ public class GameState extends AbstractState implements State {
 
     @Override
     public void keyPressed(KeyEvent e) {
+        if (isMultiplayer && overlayManager.getChatOverlay().isActive()) {
+            overlayManager.getChatOverlay().keyPressed(e);
+            return;
+        }
+        if (state != null) {
+            overlayManager.keyPressed(e);
+            return;
+        }
         stateController.keyPressed(e, state);
     }
 
     @Override
     public void keyReleased(KeyEvent e) {
+        if (isMultiplayer && e.getKeyCode() == KeyEvent.VK_BACK_QUOTE) {
+            overlayManager.getChatOverlay().toggle();
+            return;
+        }
+        if (isMultiplayer && overlayManager.getChatOverlay().isActive()) {
+            if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+                overlayManager.getChatOverlay().toggle();
+            }
+            else overlayManager.getChatOverlay().keyReleased(e);
+            return;
+        }
+        if (state != null) {
+            if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+                EventBus.getInstance().publish(new OverlayChangeEvent(null));
+            }
+            return;
+        }
         stateController.keyReleased(e, state);
     }
 

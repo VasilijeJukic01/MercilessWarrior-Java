@@ -41,7 +41,10 @@ public class GameFlowEventHandler implements EventHandler {
      * @param event The event containing the defeated boss.
      */
     public void onBossDefeated(BossDefeatedEvent event) {
-        if (event.boss().getEnemyType() == EnemyType.RORIC) returnFromArena();
+        if (event.boss().getEnemyType() == EnemyType.RORIC) {
+            context.getRainManager().stopRaining();
+            returnFromArena();
+        }
     }
 
     private void startRoricFight() {

@@ -769,6 +769,10 @@ public class Player extends Entity {
     }
 
     // Getters
+    public int getAnimIndex() {
+        return animIndex;
+    }
+
     public double getHorizontalSpeed() {
         double currentSpeed = checkAction(PlayerAction.LAVA) ? LAVA_PLAYER_SPEED : PLAYER_SPEED;
         if (checkAction(PlayerAction.DASH)) currentSpeed *= DASH_SPEED;

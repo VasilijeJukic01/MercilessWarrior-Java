@@ -1,5 +1,6 @@
 package platformer;
 
+import platformer.animation.AssetManager;
 import platformer.core.Framework;
 import platformer.core.config.GameLaunchConfig;
 import platformer.core.loading.LoadingProgressTracker;
@@ -17,11 +18,14 @@ public class AppCore {
     public static void startGame(GameLaunchConfig config) {
         LoadingProgressTracker.getInstance().update(0.05, "Starting game loading");
         try {
+            LoadingProgressTracker.getInstance().update(0.01, "Decrypting assets...");
+            AssetManager.getInstance();
             LoadingProgressTracker.getInstance().update(0.1, "Initializing game");
             Framework.getInstance().init(config);
             LoadingProgressTracker.getInstance().markLoadingComplete();
             Framework.getInstance().start();
         } catch (Exception e) {
+            e.printStackTrace();
             LoadingProgressTracker.getInstance().update(0.0, "Error: " + e.getMessage());
         }
     }

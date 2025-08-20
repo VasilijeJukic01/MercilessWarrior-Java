@@ -36,6 +36,7 @@ import platformer.model.projectiles.ProjectileManager;
 import platformer.model.quests.QuestManager;
 import platformer.model.spells.SpellManager;
 import platformer.model.tutorial.TutorialManager;
+import platformer.service.multiplayer.MultiplayerManager;
 import platformer.state.types.GameState;
 
 /**
@@ -78,6 +79,7 @@ public class GameInitializer {
         context.setTimeCycleManager(new TimeCycleManager());
         context.setMinimapManager(new MinimapManager());
         context.setOverlayManager(gameState.getOverlayManager());
+        context.setMultiplayerManager(new MultiplayerManager());
         context.setCamera(gameState.getCamera());
         context.setScreenEffectsManager(screenEffectsManager);
 

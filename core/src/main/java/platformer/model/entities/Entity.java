@@ -134,6 +134,10 @@ public abstract class Entity implements Debug<Graphics> {
         g.drawRect((int)hitBox.x-xLevelOffset, (int)hitBox.y-yLevelOffset, (int)hitBox.width, (int)hitBox.height);
     }
 
+    public Anim getEntityState() {
+        return entityState;
+    }
+
     public int getXPos() {
         return xPos;
     }

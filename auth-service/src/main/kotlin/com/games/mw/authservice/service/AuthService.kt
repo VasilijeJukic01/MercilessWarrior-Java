@@ -3,15 +3,19 @@ package com.games.mw.authservice.service
 import arrow.core.*
 import arrow.core.raise.either
 import arrow.core.raise.ensure
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.games.mw.authservice.model.Role
 import com.games.mw.authservice.model.User
 import com.games.mw.authservice.model.UserRole
+import com.games.mw.authservice.model.outbox.OutboxEvent
 import com.games.mw.authservice.repository.RoleRepository
 import com.games.mw.authservice.repository.UserRepository
+import com.games.mw.authservice.repository.outbox.OutboxEventRepository
 import com.games.mw.authservice.request.AuthenticationRequest
 import com.games.mw.authservice.request.AuthenticationResponse
 import com.games.mw.authservice.request.RegistrationRequest
 import com.games.mw.authservice.security.JwtService
+import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.AuthenticationException
@@ -19,6 +23,9 @@ import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import com.games.mw.events.UserCreated
+import java.time.Instant
+import java.util.*
 
 /**
  * Service for handling authentication, registration, and user/token management.
@@ -39,7 +46,9 @@ class AuthService(
     private val jwtService: JwtService,
     private val userRepository: UserRepository,
     private val roleRepository: RoleRepository,
-    private val loginAttemptService: LoginAttemptService
+    private val loginAttemptService: LoginAttemptService,
+    private val outboxEventRepository: OutboxEventRepository,
+    private val userCreatedKafkaTemplate: KafkaTemplate<String, UserCreated>
 ) {
 
     sealed interface RegistrationError {
@@ -65,8 +74,16 @@ class AuthService(
         data class Unknown(val throwable: Throwable) : TokenError
     }
 
+    private val objectMapper = jacksonObjectMapper()
+
     /**
-     * Registers a new user with the provided roles.
+     * Registers a new user and ensures an event is created for downstream services.
+     *
+     * This method implements the Transactional Outbox pattern, and It performs a single atomic database transaction that
+     *
+     * The API call returns successfully after this transaction commits.
+     * A separate, async process (`OutboxPublisher`) is responsible for publishing the event to Kafka.
+     * This decouples the registration process from the availability of other services.
      *
      * @param request Registration request containing username, password, and roles.
      * @return Either a [User] on success or a [RegistrationError] on failure.
@@ -96,7 +113,26 @@ class AuthService(
         }
 
         try {
-            userRepository.save(newUser)
+            val savedUser = userRepository.save(newUser)
+            val newUserId = savedUser.id ?: raise(RegistrationError.Unknown(IllegalStateException("Saved user has no ID.")))
+
+            val eventPayload = mapOf(
+                "eventId" to UUID.randomUUID().toString(),
+                "timestamp" to Instant.now().toEpochMilli(),
+                "userId" to newUserId,
+                "username" to savedUser.username
+            )
+
+            val outboxEvent = OutboxEvent(
+                aggregateType = "User",
+                aggregateId = newUserId.toString(),
+                eventType = "UserCreatedEvent",
+                payload = objectMapper.writeValueAsString(eventPayload)
+            )
+
+            outboxEventRepository.save(outboxEvent)
+
+            savedUser
         } catch (e: Exception) {
             raise(RegistrationError.Unknown(e))
         }

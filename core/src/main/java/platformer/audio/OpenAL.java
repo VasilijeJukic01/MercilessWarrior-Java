@@ -159,7 +159,7 @@ public class OpenAL implements AudioPlayer<Song, Sound, Ambience>  {
     private int loadBuffer(String file, Map<Integer, AudioFileProperties> propertiesMap) {
         int buffer = AL10.alGenBuffers();
         if (file.endsWith(".wav")) {
-            try (WaveData waveFile = WaveData.create(Objects.requireNonNull(getClass().getClassLoader().getResource(file)).getFile())) {
+            try (WaveData waveFile = WaveData.create("/" + file)) {
                 AL10.alBufferData(buffer, waveFile.format, waveFile.data, waveFile.samplerate);
                 if (propertiesMap != null) {
                     AudioFormat format = waveFile.getAudioFormat();

@@ -1,0 +1,11 @@
+{
+  "namespace": "com.games.mw.events",
+  "type": "record",
+  "name": "UserCreated",
+  "fields": [
+    {"name": "eventId", "type": "string"},
+    {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"},
+    {"name": "userId", "type": "long"},
+    {"name": "username", "type": "string"}
+  ]
+}
