@@ -72,11 +72,16 @@ public class BlacksmithViewController {
 
     public void keyPressed(KeyEvent e) {
         switch (e.getKeyCode()) {
+            case KeyEvent.VK_ENTER -> upgrade();
+        }
+    }
+
+    public void keyReleased(KeyEvent e) {
+        switch (e.getKeyCode()) {
             case KeyEvent.VK_UP -> navigate(-PERK_SLOT_MAX_COL);
             case KeyEvent.VK_DOWN -> navigate(PERK_SLOT_MAX_COL);
             case KeyEvent.VK_LEFT -> navigate(-1);
             case KeyEvent.VK_RIGHT -> navigate(1);
-            case KeyEvent.VK_ENTER -> upgrade();
         }
     }
 

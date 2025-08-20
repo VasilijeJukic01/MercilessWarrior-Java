@@ -84,6 +84,10 @@ public class MinimapViewController {
     }
 
     public void keyPressed(KeyEvent e) {
+
+    }
+
+    public void keyReleased(KeyEvent e) {
         if (e.getKeyCode() == KeyEvent.VK_PLUS || e.getKeyCode() == KeyEvent.VK_EQUALS) {
             zoomFactor = Math.min(zoomFactor + 0.1, MAX_ZOOM);
         }

@@ -64,15 +64,20 @@ public class InventoryViewController {
 
     public void keyPressed(KeyEvent e) {
         switch (e.getKeyCode()) {
+            case KeyEvent.VK_1 -> assignToQuickSlot(0);
+            case KeyEvent.VK_2 -> assignToQuickSlot(1);
+            case KeyEvent.VK_3 -> assignToQuickSlot(2);
+            case KeyEvent.VK_4 -> assignToQuickSlot(3);
+        }
+    }
+
+    public void keyReleased(KeyEvent e) {
+        switch (e.getKeyCode()) {
             case KeyEvent.VK_UP -> moveUp();
             case KeyEvent.VK_DOWN -> moveDown();
             case KeyEvent.VK_LEFT -> moveLeft();
             case KeyEvent.VK_RIGHT -> moveRight();
             case KeyEvent.VK_X -> useItem();
-            case KeyEvent.VK_1 -> assignToQuickSlot(0);
-            case KeyEvent.VK_2 -> assignToQuickSlot(1);
-            case KeyEvent.VK_3 -> assignToQuickSlot(2);
-            case KeyEvent.VK_4 -> assignToQuickSlot(3);
         }
     }
 

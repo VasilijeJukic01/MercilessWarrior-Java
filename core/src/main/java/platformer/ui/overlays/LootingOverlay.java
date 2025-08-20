@@ -248,28 +248,34 @@ public class LootingOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
 
     @Override
     public void keyPressed(KeyEvent e) {
-        if (e.getKeyCode() == KeyEvent.VK_UP) {
-            slotNumber -= INVENTORY_SLOT_MAX_ROW;
-            if (slotNumber < 0) slotNumber = 0;
-            setSelectedSlot();
-        }
-        else if (e.getKeyCode() == KeyEvent.VK_DOWN) {
-            slotNumber += INVENTORY_SLOT_MAX_ROW;
-            if (slotNumber >= INVENTORY_SLOT_MAX_ROW * INVENTORY_SLOT_MAX_COL) slotNumber = INVENTORY_SLOT_MAX_ROW * INVENTORY_SLOT_MAX_COL - 1;
-            setSelectedSlot();
-        }
-        else if (e.getKeyCode() == KeyEvent.VK_LEFT) {
-            slotNumber--;
-            if (slotNumber < 0) slotNumber = 0;
-            setSelectedSlot();
-        }
-        else if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
-            slotNumber++;
-            if (slotNumber >= INVENTORY_SLOT_MAX_ROW * INVENTORY_SLOT_MAX_COL) slotNumber = INVENTORY_SLOT_MAX_ROW * INVENTORY_SLOT_MAX_COL - 1;
-            setSelectedSlot();
-        }
-        else if (e.getKeyCode() == KeyEvent.VK_X) {
+        if (e.getKeyCode() == KeyEvent.VK_X) {
             takeCurrentItem();
+        }
+    }
+
+    @Override
+    public void keyReleased(KeyEvent e) {
+        switch (e.getKeyCode()) {
+            case KeyEvent.VK_UP:
+                slotNumber -= INVENTORY_SLOT_MAX_ROW;
+                if (slotNumber < 0) slotNumber = 0;
+                setSelectedSlot();
+                break;
+            case KeyEvent.VK_DOWN:
+                slotNumber += INVENTORY_SLOT_MAX_ROW;
+                if (slotNumber >= INVENTORY_SLOT_MAX_ROW * INVENTORY_SLOT_MAX_COL) slotNumber = INVENTORY_SLOT_MAX_ROW * INVENTORY_SLOT_MAX_COL - 1;
+                setSelectedSlot();
+                break;
+            case KeyEvent.VK_LEFT:
+                slotNumber--;
+                if (slotNumber < 0) slotNumber = 0;
+                setSelectedSlot();
+                break;
+            case KeyEvent.VK_RIGHT:
+                slotNumber++;
+                if (slotNumber >= INVENTORY_SLOT_MAX_ROW * INVENTORY_SLOT_MAX_COL) slotNumber = INVENTORY_SLOT_MAX_ROW * INVENTORY_SLOT_MAX_COL - 1;
+                setSelectedSlot();
+                break;
         }
     }
 

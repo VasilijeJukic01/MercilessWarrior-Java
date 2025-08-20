@@ -399,6 +399,11 @@ public class InventoryOverlay implements Overlay<MouseEvent, KeyEvent, Graphics>
     }
 
     @Override
+    public void keyReleased(KeyEvent e) {
+        controller.keyReleased(e);
+    }
+
+    @Override
     public void reset() {
         controller.reset();
     }

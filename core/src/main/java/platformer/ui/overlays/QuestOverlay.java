@@ -293,6 +293,11 @@ public class QuestOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
         controller.keyPressed(e);
     }
 
+    @Override
+    public void keyReleased(KeyEvent e) {
+        controller.keyReleased(e);
+    }
+
     private void renderButtons(Graphics g) {
         Arrays.stream(smallButtons).forEach(button -> button.render(g));
         Arrays.stream(mediumButtons).forEach(button -> button.render(g));

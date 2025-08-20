@@ -109,6 +109,11 @@ public class OverlayManager {
         if (overlay != null) overlays.get(overlay).keyPressed(e);
     }
 
+    public void keyReleased(KeyEvent e) {
+        PlayingState overlay = gameState.getActiveState();
+        if (overlay != null) overlays.get(overlay).keyReleased(e);
+    }
+
     public void reset() {
         chatOverlay.reset();
         overlays.get(PlayingState.SHOP).reset();

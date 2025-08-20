@@ -63,6 +63,11 @@ public class MinimapOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
     }
 
     @Override
+    public void keyReleased(KeyEvent e) {
+        controller.keyReleased(e);
+    }
+
+    @Override
     public void update() {
         controller.update();
         minimapManager.update();

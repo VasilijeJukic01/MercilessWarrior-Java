@@ -82,13 +82,17 @@ public class ShopViewController {
     }
 
     public void keyPressed(KeyEvent e) {
+
+    }
+
+    public void keyReleased(KeyEvent e) {
         switch (e.getKeyCode()) {
-            case KeyEvent.VK_UP: moveUp(); break;
-            case KeyEvent.VK_DOWN: moveDown(); break;
-            case KeyEvent.VK_LEFT: moveLeft(); break;
-            case KeyEvent.VK_RIGHT: moveRight(); break;
-            case KeyEvent.VK_B: buyItem(); break;
-            case KeyEvent.VK_S: sellItem(); break;
+            case KeyEvent.VK_B -> buyItem();
+            case KeyEvent.VK_S -> sellItem();
+            case KeyEvent.VK_UP -> moveUp();
+            case KeyEvent.VK_DOWN -> moveDown();
+            case KeyEvent.VK_LEFT -> moveLeft();
+            case KeyEvent.VK_RIGHT -> moveRight();
         }
     }
 

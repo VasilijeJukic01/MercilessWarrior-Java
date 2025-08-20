@@ -45,6 +45,12 @@ public interface Overlay<E, F, G> {
     void keyPressed(F e);
 
     /**
+     * Called when a key is released.
+     * @param e The event.
+     */
+    void keyReleased(F e);
+
+    /**
      * Updates the overlay.
      */
     void update();
