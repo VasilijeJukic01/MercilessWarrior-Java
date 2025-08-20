@@ -58,6 +58,7 @@ This project is a personal journey into the depths of game creation, backend arc
 - **Microservices Architecture:** The backend is composed of several containerized services:
     - **Authentication Service:** Manages user registration, login, and secure JWT-based authentication. Implements rate limiting with Redis.
     - **Game Service:** Handles all core game data, including player progression, inventory, and leaderboards.
+    - **Multiplayer Service:** Manages real-time game sessions, player state synchronization, and chat functionalities using WebSockets.
     - **API Gateway:** A single entry point for all client requests, routing them to the appropriate service.
     - **Service Registry:** Allows services to dynamically discover and communicate with each other.
 - **Asynchronous Data & Analytics Pipeline:**
@@ -89,6 +90,7 @@ graph TD
         subgraph "Business Microservices"
             AuthSvc["<b>Auth Service (Kotlin)</b><br>Handles users, JWT"]
             GameSvc["<b>Game Service (Kotlin)</b><br>Handles game data, emits events"]
+            MultiplayerSvc["<b>Multiplayer Service (Kotlin)</b><br>Manages sessions"]
         end
 
         subgraph "Data Pipeline"
@@ -105,10 +107,11 @@ graph TD
     end
 
     Player -- Plays --> Client
-    Client -- "HTTP API Calls" --> APIGW
+    Client -- "HTTP API & WebSocket" --> APIGW
 
     APIGW -- "Routes /auth/**" --> AuthSvc
     APIGW -- "Routes /game/**, etc." --> GameSvc
+    APIGW -- "Routes /multiplayer/**" --> MultiplayerSvc
 
     AuthSvc <-->|Users & Roles| AuthDB
     GameSvc <-->|Game State| GameDB
@@ -125,12 +128,14 @@ graph TD
     APIGW -.->|Registers & Discovers| Registry
     AuthSvc -.->|Registers & Discovers| Registry
     GameSvc -.->|Registers & Discovers| Registry
+    MultiplayerSvc -.->|Registers & Discovers| Registry
     
     style Player fill:#3498DB,stroke:#2C3E50,stroke-width:2px,color:#FFFFFF
     style Client fill:#2980B9,stroke:#2C3E50,stroke-width:2px,color:#FFFFFF
     style APIGW fill:#16A085,stroke:#2C3E50,stroke-width:2px,color:#FFFFFF
     style AuthSvc fill:#E67E22,stroke:#2C3E50,stroke-width:2px,color:#FFFFFF
     style GameSvc fill:#E67E22,stroke:#2C3E50,stroke-width:2px,color:#FFFFFF
+    style MultiplayerSvc fill:#E67E22,stroke:#2C3E50,stroke-width:2px,color:#FFFFFF
     style Registry fill:#7F8C8D,stroke:#2C3E50,stroke-width:2px,color:#FFFFFF
     style Kafka fill:#2C3E50,stroke:#2C3E50,stroke-width:2px,color:#FFFFFF
     style AnalyticsSvc fill:#E74C3C,stroke:#2C3E50,stroke-width:2px,color:#FFFFFF
