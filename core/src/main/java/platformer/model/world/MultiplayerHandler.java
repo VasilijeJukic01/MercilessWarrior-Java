@@ -5,6 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import platformer.animation.Anim;
 import platformer.animation.SpriteManager;
+import platformer.constants.UI;
 import platformer.core.Framework;
 import platformer.core.GameContext;
 import platformer.event.EventBus;
@@ -40,6 +41,8 @@ public class MultiplayerHandler {
     private final GameContext context;
     private final MultiplayerManager multiplayerManager;
     private final Map<String, PlayerStateDTO> players = new ConcurrentHashMap<>();
+    private final Map<String, Color> playerColors = new ConcurrentHashMap<>();
+    private int nextColorIndex = 0;
     private final Gson gson = new Gson();
     private int networkTick = 0;
     private int pingTick = 0;
@@ -48,6 +51,15 @@ public class MultiplayerHandler {
         this.context = context;
         this.multiplayerManager = context.getMultiplayerManager();
         this.infoDisplay = new MultiplayerInfoDisplay();
+        assignColor(multiplayerManager.getClientId());
+    }
+
+    private Color assignColor(String clientId) {
+        return playerColors.computeIfAbsent(clientId, id -> {
+            Color color = UI.CHAT_COLORS.get(nextColorIndex);
+            nextColorIndex = (nextColorIndex + 1) % UI.CHAT_COLORS.size();
+            return color;
+        });
     }
 
     public void update() {
@@ -115,6 +127,7 @@ public class MultiplayerHandler {
                         PlayerStateDTO remotePlayerState = gson.fromJson(message, PlayerStateDTO.class);
                         if (!remotePlayerState.clientId.equals(multiplayerManager.getClientId())) {
                             players.put(remotePlayerState.clientId, remotePlayerState);
+                            assignColor(remotePlayerState.clientId);
                         }
                         break;
                     case "PONG":
@@ -124,7 +137,8 @@ public class MultiplayerHandler {
                         break;
                     case "CHAT_MESSAGE":
                         ChatMessageDTO chatMsg = gson.fromJson(message, ChatMessageDTO.class);
-                        EventBus.getInstance().publish(new ChatMessageReceivedEvent(chatMsg.username, chatMsg.content));
+                        Color userColor = assignColor(chatMsg.clientId);
+                        EventBus.getInstance().publish(new ChatMessageReceivedEvent(chatMsg.username, chatMsg.content, userColor));
                         break;
                 }
             } catch (Exception ignored) {}

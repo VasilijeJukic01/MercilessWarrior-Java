@@ -48,5 +48,6 @@ data class PlayerStateDTO(
 data class ChatMessageDTO(
     val username: String,
     val content: String,
-    val timestamp: Long
+    val timestamp: Long,
+    val clientId: String? = null
 ) : MultiplayerMessage()

@@ -10,6 +10,7 @@ import java.awt.event.MouseEvent;
 import java.awt.geom.Rectangle2D;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -17,9 +18,27 @@ import static platformer.constants.Constants.*;
 
 public class ChatOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
 
+    private record RenderLine(String timestampPart, String usernamePart, String contentPart, Color userColor) {}
+
+    private static class FormattedChatMessage {
+        private final String timestamp;
+        private final String username;
+        private final String content;
+        private final Color userColor;
+        List<String> wrappedContent;
+
+        FormattedChatMessage(String username, String content, Color userColor) {
+            this.timestamp = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm"));
+            this.username = username;
+            this.content = content;
+            this.userColor = userColor;
+        }
+    }
+
     private final GameState gameState;
 
-    private final List<String> history = new LinkedList<>();
+    private final List<FormattedChatMessage> history = new LinkedList<>();
+    private int totalHistoryLines = 0;
     private String currentInput = "";
     private boolean active = false;
 
@@ -32,8 +51,6 @@ public class ChatOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
     private final Rectangle2D.Double scrollBarTrack, scrollBarThumb;
     private boolean isDraggingScrollBar = false;
     private int scrollDragStartY;
-
-    private final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
 
     public ChatOverlay(GameState gameState) {
         this.gameState = gameState;
@@ -52,10 +69,49 @@ public class ChatOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
         EventBus.getInstance().register(ChatMessageReceivedEvent.class, this::onChatMessageReceived);
     }
 
+    /**
+     * Wraps a given string into multiple lines if it exceeds the max width.
+     */
+    private List<String> wrapText(String text, int maxWidth, FontMetrics fm) {
+        List<String> lines = new ArrayList<>();
+        if (text == null || text.isEmpty()) return lines;
+
+        String[] words = text.split(" ");
+        StringBuilder currentLine = new StringBuilder();
+
+        for (String word : words) {
+            // Case 1 - The word is longer than the line width
+            if (fm.stringWidth(word) > maxWidth) {
+                if (!currentLine.isEmpty()) {
+                    lines.add(currentLine.toString());
+                    currentLine = new StringBuilder();
+                }
+                StringBuilder longWordPart = new StringBuilder();
+                for (char c : word.toCharArray()) {
+                    if (fm.stringWidth(longWordPart.toString() + c) > maxWidth) {
+                        lines.add(longWordPart.toString());
+                        longWordPart = new StringBuilder();
+                    }
+                    longWordPart.append(c);
+                }
+                currentLine.append(longWordPart);
+            }
+            // Case 2 - Normal word wrapping
+            else {
+                if (!currentLine.isEmpty() && fm.stringWidth(currentLine + " " + word) > maxWidth) {
+                    lines.add(currentLine.toString());
+                    currentLine = new StringBuilder();
+                }
+                if (!currentLine.isEmpty()) currentLine.append(" ");
+                currentLine.append(word);
+            }
+        }
+        if (!currentLine.isEmpty()) lines.add(currentLine.toString());
+        return lines;
+    }
+
     private void onChatMessageReceived(ChatMessageReceivedEvent event) {
-        String timestamp = LocalTime.now().format(timeFormatter);
-        String formattedMessage = String.format("[%s] %s: %s", timestamp, event.username(), event.message());
-        history.add(formattedMessage);
+        history.add(new FormattedChatMessage(event.username(), event.message(), event.userColor()));
         if (history.size() > MAX_HISTORY_LINES) history.remove(0);
         // Scroll to the bottom when a new message arrives
         if (scrollOffset == 0) scrollToBottom();
@@ -77,14 +133,30 @@ public class ChatOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
         // Input Box
         g2d.setColor(new Color(0, 0, 0, active ? 180 : 100));
         g2d.fill(inputBox);
-        g2d.setColor(new Color(255, 255, 255, active ? 150 : 100));
+        g2d.setColor(Color.WHITE);
         g2d.draw(inputBox);
 
         renderChatHistory(g2d);
         renderScrollBar(g2d);
-        g.setColor(new Color(255, 255, 255, 100));
+
+        g.setColor(Color.WHITE);
         g.setFont(new Font("Arial", Font.PLAIN, FONT_MEDIUM));
-        String textToRender = active ? currentInput + "_" : "> Press 'T' to chat";
+        FontMetrics fm = g.getFontMetrics();
+        String textToRender;
+        if (active) {
+            String fullInput = currentInput + "_";
+            int inputWidth = fm.stringWidth(fullInput);
+            int boxWidth = (int) inputBox.width - 10;
+            if (inputWidth > boxWidth) {
+                int startIndex = 0;
+                while (fm.stringWidth(fullInput.substring(startIndex)) > boxWidth) {
+                    startIndex++;
+                }
+                textToRender = fullInput.substring(startIndex);
+            }
+            else textToRender = fullInput;
+        }
+        else textToRender = "> Press ` to chat";
         g.drawString(textToRender, (int)inputBox.x + 5, (int)(inputBox.y + inputBox.height - 4*SCALE));
 
         g2d.dispose();
@@ -92,31 +164,73 @@ public class ChatOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
 
     private void renderChatHistory(Graphics2D g2d) {
         g2d.setClip(chatBox);
-        g2d.setColor(Color.WHITE);
         g2d.setFont(new Font("Arial", Font.PLAIN, FONT_LIGHT));
         FontMetrics fm = g2d.getFontMetrics();
         int lineHeight = fm.getHeight();
-        int intScrollOffset = (int)Math.round(this.scrollOffset);
-        int startIdx = Math.max(0, history.size() - VISIBLE_HISTORY_LINES - intScrollOffset);
-        int endIdx = history.size() - intScrollOffset;
+        int chatBoxInnerWidth = (int) chatBox.width - 15;
+
+        List<RenderLine> allLines = new ArrayList<>();
+        for (FormattedChatMessage message : history) {
+            String prefix = String.format("[%s] %s: ", message.timestamp, message.username);
+            int prefixWidth = fm.stringWidth(prefix);
+            int contentMaxWidth = chatBoxInnerWidth - prefixWidth;
+
+            if (message.wrappedContent == null) {
+                message.wrappedContent = wrapText(message.content, contentMaxWidth, fm);
+            }
+
+            allLines.add(new RenderLine(
+                    String.format("[%s] ", message.timestamp),
+                    message.username,
+                    ": " + (message.wrappedContent.isEmpty() ? "" : message.wrappedContent.get(0)),
+                    message.userColor
+            ));
+
+            for (int i = 1; i < message.wrappedContent.size(); i++) {
+                allLines.add(new RenderLine("", "", message.wrappedContent.get(i), message.userColor));
+            }
+        }
+
+        this.totalHistoryLines = allLines.size();
+        int intScrollOffset = (int) Math.round(this.scrollOffset);
+        int startIdx = Math.max(0, totalHistoryLines - VISIBLE_HISTORY_LINES - intScrollOffset);
+        int endIdx = totalHistoryLines - intScrollOffset;
         int y = (int) (chatBox.y + chatBox.height - fm.getDescent());
+
         for (int i = endIdx - 1; i >= startIdx; i--) {
-            g2d.drawString(history.get(i), (int) chatBox.x + 5, y);
-            y -= lineHeight;
+            if (i < allLines.size()) {
+                RenderLine line = allLines.get(i);
+                int x = (int) chatBox.x + 5;
+
+                // Timestamp
+                g2d.setColor(Color.WHITE);
+                g2d.drawString(line.timestampPart, x, y);
+                x += fm.stringWidth(line.timestampPart);
+                // Username
+                g2d.setColor(line.userColor);
+                g2d.drawString(line.usernamePart, x, y);
+                x += fm.stringWidth(line.usernamePart);
+                // Content
+                g2d.setColor(Color.WHITE);
+                g2d.drawString(line.contentPart, x, y);
+
+                y -= lineHeight;
+            }
         }
         g2d.setClip(null);
     }
-    
+
     private void renderScrollBar(Graphics2D g2d) {
-        if (history.size() <= VISIBLE_HISTORY_LINES) return;
+        if (totalHistoryLines <= VISIBLE_HISTORY_LINES) return;
         g2d.setColor(new Color(50, 50, 50, 180));
         g2d.fill(scrollBarTrack);
 
-        int totalLines = history.size();
-        double thumbHeightRatio = (double) VISIBLE_HISTORY_LINES / totalLines;
+        double scrollableRange = totalHistoryLines - VISIBLE_HISTORY_LINES;
+        double thumbHeightRatio = (double) VISIBLE_HISTORY_LINES / totalHistoryLines;
         double thumbHeight = Math.max(10 * SCALE, scrollBarTrack.height * thumbHeightRatio);
-        double scrollRatio = scrollOffset / (totalLines - VISIBLE_HISTORY_LINES);
-        double thumbY = scrollBarTrack.y + (scrollBarTrack.height - thumbHeight) * scrollRatio;
+        double scrollRatio = (scrollableRange > 0) ? (scrollOffset / scrollableRange) : 0;
+        double thumbY = scrollBarTrack.y + (scrollBarTrack.height - thumbHeight) * (1 - scrollRatio);
+
         scrollBarThumb.setRect(scrollBarTrack.x, thumbY, scrollBarTrack.width, thumbHeight);
 
         g2d.setColor(new Color(120, 120, 120, 220));
@@ -169,7 +283,9 @@ public class ChatOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
     }
 
     private void scrollUp() {
-        scrollOffset = Math.min(history.size() - VISIBLE_HISTORY_LINES, scrollOffset + 1);
+        if (totalHistoryLines > VISIBLE_HISTORY_LINES) {
+            scrollOffset = Math.min(totalHistoryLines - VISIBLE_HISTORY_LINES, scrollOffset + 1);
+        }
     }
 
     private void scrollDown() {
@@ -194,16 +310,12 @@ public class ChatOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
         if (isDraggingScrollBar) {
             int dy = e.getY() - scrollDragStartY;
             scrollDragStartY = e.getY();
-            int totalLines = history.size();
-            if (totalLines <= VISIBLE_HISTORY_LINES) return;
-
+            if (totalHistoryLines <= VISIBLE_HISTORY_LINES) return;
             double scrollableHeight = scrollBarTrack.height - scrollBarThumb.height;
             if (scrollableHeight <= 0) return;
-
-            double scrollDelta = (double)dy / scrollableHeight * (double)(totalLines - VISIBLE_HISTORY_LINES);
-
-            scrollOffset += scrollDelta;
-            scrollOffset = Math.max(0, Math.min(totalLines - VISIBLE_HISTORY_LINES, scrollOffset));
+            double scrollDelta = (double)dy / scrollableHeight * (double)(totalHistoryLines - VISIBLE_HISTORY_LINES);
+            scrollOffset -= scrollDelta;
+            scrollOffset = Math.max(0, Math.min(totalHistoryLines - VISIBLE_HISTORY_LINES, scrollOffset));
         }
     }
 

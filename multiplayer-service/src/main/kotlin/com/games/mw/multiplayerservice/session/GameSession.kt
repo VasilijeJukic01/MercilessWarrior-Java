@@ -75,8 +75,16 @@ class GameSession(
                 }
                 is ChatMessageDTO -> {
                     println("Received chat message from ${msg.username}: ${msg.content}")
+                    val senderInfo = players[senderSessionId] ?: return
+                    val broadcastMessage = ChatMessageDTO(
+                        username = msg.username,
+                        content = msg.content,
+                        timestamp = msg.timestamp,
+                        clientId = senderInfo.clientId
+                    )
+                    val messageWithClientId = objectMapper.writeValueAsString(broadcastMessage)
                     players.forEach { (id, _) ->
-                        sinks[id]?.tryEmitNext(message)
+                        sinks[id]?.tryEmitNext(messageWithClientId)
                     }
                 }
                 else -> {}

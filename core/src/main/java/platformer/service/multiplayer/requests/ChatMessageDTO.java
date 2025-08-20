@@ -2,6 +2,7 @@ package platformer.service.multiplayer.requests;
 
 public class ChatMessageDTO extends MultiplayerMessage {
 
+    public String clientId;
     public String username;
     public String content;
     public long timestamp;
