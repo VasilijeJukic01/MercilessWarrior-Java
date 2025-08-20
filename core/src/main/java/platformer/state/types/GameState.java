@@ -14,14 +14,15 @@ import platformer.core.initializer.GameInitializer;
 import platformer.core.mode.GameMode;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
+import platformer.event.EventBus;
 import platformer.event.events.ui.GamePausedEvent;
 import platformer.event.events.ui.GameResumedEvent;
+import platformer.event.events.ui.OverlayChangeEvent;
 import platformer.model.effects.ScreenEffectsManager;
 import platformer.model.entities.player.Player;
 import platformer.model.gameObjects.ObjectManager;
 import platformer.model.levels.LevelManager;
 import platformer.model.perks.PerksBonus;
-import platformer.model.perks.PerksManager;
 import platformer.model.world.GameFlowManager;
 import platformer.model.world.GameWorld;
 import platformer.event.EventHandler;
@@ -242,11 +243,36 @@ public class GameState extends AbstractState implements State {
 
     @Override
     public void keyPressed(KeyEvent e) {
+        if (isMultiplayer && overlayManager.getChatOverlay().isActive()) {
+            overlayManager.getChatOverlay().keyPressed(e);
+            return;
+        }
+        if (state != null) {
+            overlayManager.keyPressed(e);
+            return;
+        }
         stateController.keyPressed(e, state);
     }
 
     @Override
     public void keyReleased(KeyEvent e) {
+        if (isMultiplayer && e.getKeyCode() == KeyEvent.VK_BACK_QUOTE) {
+            overlayManager.getChatOverlay().toggle();
+            return;
+        }
+        if (isMultiplayer && overlayManager.getChatOverlay().isActive()) {
+            if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+                overlayManager.getChatOverlay().toggle();
+            }
+            else overlayManager.getChatOverlay().keyReleased(e);
+            return;
+        }
+        if (state != null) {
+            if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+                EventBus.getInstance().publish(new OverlayChangeEvent(null));
+            }
+            return;
+        }
         stateController.keyReleased(e, state);
     }
 

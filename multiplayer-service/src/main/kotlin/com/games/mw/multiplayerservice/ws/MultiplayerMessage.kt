@@ -15,7 +15,8 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo
     JsonSubTypes.Type(value = PlayerLeftDTO::class, name = "PLAYER_LEFT"),
     JsonSubTypes.Type(value = PlayerStateDTO::class, name = "PLAYER_STATE"),
     JsonSubTypes.Type(value = PingDTO::class, name = "PING"),
-    JsonSubTypes.Type(value = PongDTO::class, name = "PONG")
+    JsonSubTypes.Type(value = PongDTO::class, name = "PONG"),
+    JsonSubTypes.Type(value = ChatMessageDTO::class, name = "CHAT_MESSAGE")
 )
 @JsonInclude(JsonInclude.Include.NON_NULL)
 sealed class MultiplayerMessage
@@ -42,4 +43,10 @@ data class PlayerStateDTO(
     val flipSign: Int,
     val flipCoefficient: Int,
     val isTransformed: Boolean
+) : MultiplayerMessage()
+
+data class ChatMessageDTO(
+    val username: String,
+    val content: String,
+    val timestamp: Long
 ) : MultiplayerMessage()

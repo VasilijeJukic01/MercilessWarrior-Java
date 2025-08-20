@@ -7,6 +7,8 @@ import platformer.animation.Anim;
 import platformer.animation.SpriteManager;
 import platformer.core.Framework;
 import platformer.core.GameContext;
+import platformer.event.EventBus;
+import platformer.event.events.multiplayer.ChatMessageReceivedEvent;
 import platformer.model.entities.player.Player;
 import platformer.model.entities.player.PlayerAction;
 import platformer.service.multiplayer.MultiplayerManager;
@@ -120,9 +122,24 @@ public class MultiplayerHandler {
                         long latency = System.currentTimeMillis() - pongMsg.clientTime;
                         infoDisplay.setPing(latency);
                         break;
+                    case "CHAT_MESSAGE":
+                        ChatMessageDTO chatMsg = gson.fromJson(message, ChatMessageDTO.class);
+                        EventBus.getInstance().publish(new ChatMessageReceivedEvent(chatMsg.username, chatMsg.content));
+                        break;
                 }
             } catch (Exception ignored) {}
         }
+    }
+
+    /**
+     * Sends a chat message to the multiplayer session.
+     *
+     * @param content The text content of the message.
+     */
+    public void sendChatMessage(String content) {
+        String username = Framework.getInstance().getAccount().getName();
+        ChatMessageDTO chatMessage = new ChatMessageDTO(username, content, System.currentTimeMillis());
+        multiplayerManager.sendMessage(gson.toJson(chatMessage));
     }
 
     private void sendPing() {

@@ -25,6 +25,8 @@ public class OverlayManager {
     private final GameState gameState;
     private final Map<PlayingState, Overlay<MouseEvent, KeyEvent, Graphics>> overlays;
 
+    private ChatOverlay chatOverlay;
+
     public OverlayManager(GameState gameState) {
         this.gameState = gameState;
         this.overlays = new HashMap<>();
@@ -43,10 +45,12 @@ public class OverlayManager {
         this.overlays.put(PlayingState.QUEST, new QuestOverlay(context));
         this.overlays.put(PlayingState.MINIMAP, new MinimapOverlay(context));
         this.overlays.put(PlayingState.TUTORIAL, new TutorialOverlay(context));
+        this.chatOverlay = new ChatOverlay(gameState);
     }
 
     // Core
     public void update(PlayingState playingState) {
+        if (gameState.isMultiplayer()) chatOverlay.update();
         if (playingState == null) return;
         Overlay<MouseEvent, KeyEvent, Graphics> overlay = overlays.get(playingState);
         if (overlay != null) {
@@ -59,6 +63,7 @@ public class OverlayManager {
         if (overlay != null) {
             overlays.get(overlay).render(g);
         }
+        if (gameState.isMultiplayer()) chatOverlay.render(g);
     }
 
     public void mouseClicked(MouseEvent e) {
@@ -69,6 +74,7 @@ public class OverlayManager {
     }
 
     public void mousePressed(MouseEvent e) {
+        if (gameState.isMultiplayer()) chatOverlay.mousePressed(e);
         PlayingState overlay = gameState.getActiveState();
         if (overlay != null) {
             overlays.get(overlay).mousePressed(e);
@@ -76,6 +82,7 @@ public class OverlayManager {
     }
 
     public void mouseReleased(MouseEvent e) {
+        if (gameState.isMultiplayer()) chatOverlay.mouseReleased(e);
         PlayingState overlay = gameState.getActiveState();
         if (overlay != null) {
             overlays.get(overlay).mouseReleased(e);
@@ -90,6 +97,7 @@ public class OverlayManager {
     }
 
     public void mouseDragged(MouseEvent e) {
+        if (gameState.isMultiplayer()) chatOverlay.mouseDragged(e);
         PlayingState overlay = gameState.getActiveState();
         if (overlay != null) {
             overlays.get(overlay).mouseDragged(e);
@@ -102,6 +110,7 @@ public class OverlayManager {
     }
 
     public void reset() {
+        chatOverlay.reset();
         overlays.get(PlayingState.SHOP).reset();
         overlays.get(PlayingState.CRAFTING).reset();
         overlays.get(PlayingState.DIALOGUE).reset();
@@ -126,5 +135,9 @@ public class OverlayManager {
 
     public Map<PlayingState, Overlay<MouseEvent, KeyEvent, Graphics>> getOverlays() {
         return overlays;
+    }
+
+    public ChatOverlay getChatOverlay() {
+        return chatOverlay;
     }
 }

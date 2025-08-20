@@ -6,7 +6,6 @@ import com.games.mw.multiplayerservice.ws.*
 import org.springframework.web.reactive.socket.WebSocketMessage
 import org.springframework.web.reactive.socket.WebSocketSession
 import reactor.core.publisher.Flux
-import reactor.core.publisher.Mono
 import reactor.core.publisher.Sinks
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executors
@@ -73,6 +72,12 @@ class GameSession(
                     val pongMessage = PongDTO(msg.clientTime)
                     val jsonPong = objectMapper.writeValueAsString(pongMessage)
                     sinks[senderSessionId]?.tryEmitNext(jsonPong)
+                }
+                is ChatMessageDTO -> {
+                    println("Received chat message from ${msg.username}: ${msg.content}")
+                    players.forEach { (id, _) ->
+                        sinks[id]?.tryEmitNext(message)
+                    }
                 }
                 else -> {}
             }
