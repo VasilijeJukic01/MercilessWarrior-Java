@@ -345,11 +345,11 @@ public final class UI {
     public static final int SHOP_ITEM_DESC_X = scale(310);
     public static final int SHOP_ITEM_DESC_Y = scale(210);
 
-    public static final int ITEM_SIZE = scale(20);
-    public static final int ITEM_OFFSET_X = scale(10);
-    public static final int ITEM_OFFSET_Y = scale(8);
-    public static final int ITEM_COUNT_OFFSET_X = scale(15);
-    public static final int ITEM_COUNT_OFFSET_Y = scale(26);
+    public static final int ITEM_SIZE = scale(30);
+    public static final int ITEM_OFFSET_X = scale(5);
+    public static final int ITEM_OFFSET_Y = scale(5);
+    public static final int ITEM_COUNT_OFFSET_X = scale(2);
+    public static final int ITEM_COUNT_OFFSET_Y = scale(29);
 
     public static final int SHOP_SLIDER_BTN_X = scale(320);
     public static final int SHOP_SLIDER_BTN_Y = scale(280);
