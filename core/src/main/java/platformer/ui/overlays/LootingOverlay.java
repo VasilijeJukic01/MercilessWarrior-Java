@@ -248,14 +248,15 @@ public class LootingOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
 
     @Override
     public void keyPressed(KeyEvent e) {
-        if (e.getKeyCode() == KeyEvent.VK_X) {
-            takeCurrentItem();
-        }
+
     }
 
     @Override
     public void keyReleased(KeyEvent e) {
         switch (e.getKeyCode()) {
+            case KeyEvent.VK_X:
+                takeCurrentItem();
+                break;
             case KeyEvent.VK_UP:
                 slotNumber -= INVENTORY_SLOT_MAX_ROW;
                 if (slotNumber < 0) slotNumber = 0;

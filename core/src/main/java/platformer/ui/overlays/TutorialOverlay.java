@@ -59,13 +59,13 @@ public class TutorialOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
 
     @Override
     public void keyPressed(KeyEvent e) {
-        if (e.getKeyCode() == KeyEvent.VK_ESCAPE)
-            EventBus.getInstance().publish(new OverlayChangeEvent(null));
+
     }
 
     @Override
     public void keyReleased(KeyEvent e) {
-
+        if (e.getKeyCode() == KeyEvent.VK_ESCAPE)
+            EventBus.getInstance().publish(new OverlayChangeEvent(null));
     }
 
     @Override

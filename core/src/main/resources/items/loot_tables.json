@@ -1,61 +1,75 @@
 {
-  "CRATE": [
-    {
-      "itemId": "HEALTH_POTION",
-      "quantity": 1,
-      "weight": 35
+  "CRATE": {
+    "numRolls": {
+      "1": 20,
+      "2": 30,
+      "3": 40,
+      "4": 8,
+      "5": 2
     },
-    {
-      "itemId": "STAMINA_POTION",
-      "quantity": 1,
-      "weight": 35
-    },
-    {
-      "itemId": "COPPER_ORE",
-      "quantity": 2,
-      "weight": 20
-    },
-    {
-      "itemId": "ROCK_SHARD",
-      "quantity": 5,
-      "weight": 10
-    }
-  ],
+    "items": [
+      { "itemId": "ROCK_SHARD", "quantity": 3, "weight": 30 },
+      { "itemId": "TWINE", "quantity": 2, "weight": 25 },
+      { "itemId": "BONES", "quantity": 2, "weight": 25 },
+      { "itemId": "COPPER_ORE", "quantity": 1, "weight": 20 },
+      { "itemId": "WOODEN_PLANKS", "quantity": 1, "weight": 20 },
+      { "itemId": "LEATHER_STRAPS", "quantity": 1, "weight": 15 },
+      { "itemId": "IRON_ORE", "quantity": 1, "weight": 15 },
+      { "itemId": "HEALTH_POTION", "quantity": 1, "weight": 12 },
+      { "itemId": "STAMINA_POTION", "quantity": 1, "weight": 12 },
+      { "itemId": "SILVER_ORE", "quantity": 1, "weight": 8 },
+      { "itemId": "JADE_SHARD", "quantity": 1, "weight": 5 },
+      { "itemId": "NOTHING", "quantity": 0, "weight": 10 }
+    ]
+  },
   "HERB": [
-    {
-      "itemId": "WILD_GRASS",
-      "quantity": 1,
-      "weight": 30
+    { "itemId": "WILD_GRASS", "quantity": 1, "weight": 30 },
+    { "itemId": "CAVERN_BEANS", "quantity": 1, "weight": 25 },
+    { "itemId": "GOBLINS_IVY", "quantity": 1, "weight": 20 },
+    { "itemId": "FAE_LEAF", "quantity": 1, "weight": 10 },
+    { "itemId": "GHOST_LEAF", "quantity": 1, "weight": 8 },
+    { "itemId": "WITCHS_WORT", "quantity": 1, "weight": 5 },
+    { "itemId": "FROST_BLOOM_PETALS", "quantity": 1, "weight": 2 }
+  ],
+  "SKELETON": {
+    "numRolls": {
+      "1": 60,
+      "2": 30,
+      "3": 10
     },
-    {
-      "itemId": "CAVERN_BEANS",
-      "quantity": 1,
-      "weight": 25
+    "items": [
+      { "itemId": "BONES", "quantity": 2, "weight": 50 },
+      { "itemId": "TWINE", "quantity": 1, "weight": 25 },
+      { "itemId": "IRON_ORE", "quantity": 1, "weight": 10 },
+      { "itemId": "NOTHING", "quantity": 0, "weight": 15 }
+    ]
+  },
+  "GHOUL": {
+    "numRolls": {
+      "1": 60,
+      "2": 35,
+      "3": 5
     },
-    {
-      "itemId": "GOBLINS_IVY",
-      "quantity": 1,
-      "weight": 20
-    },
-    {
-      "itemId": "FAE_LEAF",
-      "quantity": 1,
-      "weight": 10
-    },
-    {
-      "itemId": "GHOST_LEAF",
-      "quantity": 1,
-      "weight": 8
-    },
-    {
-      "itemId": "WITCHS_WORT",
-      "quantity": 1,
-      "weight": 5
-    },
-    {
-      "itemId": "FROST_BLOOM_PETALS",
-      "quantity": 1,
-      "weight": 2
-    }
+    "items": [
+      { "itemId": "GHOUL_CLAW", "quantity": 1, "weight": 30 },
+      { "itemId": "BONES", "quantity": 1, "weight": 25 },
+      { "itemId": "WRAITH_ESSENCE", "quantity": 1, "weight": 20 },
+      { "itemId": "NOTHING", "quantity": 0, "weight": 25 }
+    ]
+  },
+  "KNIGHT": [
+    { "itemId": "IRON_INGOT", "quantity": 1, "weight": 20 },
+    { "itemId": "LEATHER_STRAPS", "quantity": 2, "weight": 30 },
+    { "itemId": "NAILS", "quantity": 5, "weight": 25 },
+    { "itemId": "NOTHING", "quantity": 0, "weight": 25 }
+  ],
+  "WRAITH": [
+    { "itemId": "WRAITH_ESSENCE", "quantity": 1, "weight": 45 },
+    { "itemId": "SILK_CLOTH", "quantity": 1, "weight": 20 },
+    { "itemId": "GOLD_POWDER", "quantity": 1, "weight": 10 },
+    { "itemId": "NOTHING", "quantity": 0, "weight": 25 }
+  ],
+  "LANCER": [
+    { "itemId": "CHARM_THUNDERBOLT", "quantity": 1, "weight": 100 }
   ]
 }
