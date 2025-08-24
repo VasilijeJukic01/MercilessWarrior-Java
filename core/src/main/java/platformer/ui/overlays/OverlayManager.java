@@ -33,7 +33,7 @@ public class OverlayManager {
     }
 
     public void wire(GameContext context) {
-        this.overlays.put(PlayingState.PAUSE, new PauseOverlay(gameState.getGame()));
+        this.overlays.put(PlayingState.PAUSE, new PauseOverlay(gameState));
         this.overlays.put(PlayingState.GAME_OVER, new GameOverOverlay(gameState.getGame()));
         this.overlays.put(PlayingState.SHOP, new ShopOverlay(gameState));
         this.overlays.put(PlayingState.BLACKSMITH, new BlacksmithOverlay(context));
@@ -44,7 +44,6 @@ public class OverlayManager {
         this.overlays.put(PlayingState.LOOTING, new LootingOverlay(context));
         this.overlays.put(PlayingState.QUEST, new QuestOverlay(context));
         this.overlays.put(PlayingState.MINIMAP, new MinimapOverlay(context));
-        this.overlays.put(PlayingState.TUTORIAL, new TutorialOverlay(context));
         this.chatOverlay = new ChatOverlay(gameState);
     }
 

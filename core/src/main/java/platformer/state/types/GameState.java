@@ -81,6 +81,7 @@ public class GameState extends AbstractState implements State {
         this.bossInterface = new BossInterface();
 
         this.context = GameInitializer.initialize(this, screenEffectsManager);
+        this.overlayManager.wire(context);
 
         this.world = new GameWorld(context);
         this.flowManager = new GameFlowManager(context);
