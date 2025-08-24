@@ -264,7 +264,7 @@
     "name": "Wraith Essence",
     "description": "Essence of a wraith",
     "rarity": "RARE",
-    "imagePath": "/images/inventory/WraithEssence.png",
+    "imagePath": "/images/inventory/mats/WraithEssence.png",
     "sellValue": 18,
     "stackable": true,
     "equip": {
