@@ -12,6 +12,8 @@ import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.MediumButton;
 import platformer.ui.buttons.SmallButton;
 import platformer.ui.components.ItemComparisonTooltip;
+import platformer.ui.dnd.DragAndDropManager;
+import platformer.ui.dnd.DragSourceType;
 import platformer.ui.overlays.controller.InventoryViewController;
 import platformer.utils.ImageUtils;
 
@@ -152,6 +154,7 @@ public class InventoryOverlay implements Overlay<MouseEvent, KeyEvent, Graphics>
         g.drawRect((int)selectedSlot.x, (int)selectedSlot.y,  (int)selectedSlot.width,  (int)selectedSlot.height);
         renderButtons(g);
         renderTooltip(g);
+        controller.getDndManager().render(g);
     }
 
     private void renderOverlay(Graphics2D g2d) {
@@ -187,6 +190,10 @@ public class InventoryOverlay implements Overlay<MouseEvent, KeyEvent, Graphics>
     }
 
     private void renderBackpackItem(Graphics g, Inventory inventory, int absoluteSlotNumber) {
+        DragAndDropManager dndManager = controller.getDndManager();
+        if (dndManager.isDragging() && dndManager.getSource() == DragSourceType.BACKPACK && dndManager.getSourceIndex() == absoluteSlotNumber) {
+            return;
+        }
         InventoryItem item = inventory.getBackpack().get(absoluteSlotNumber);
         ItemData itemData = item.getData();
         if (itemData == null) return;
@@ -225,6 +232,10 @@ public class InventoryOverlay implements Overlay<MouseEvent, KeyEvent, Graphics>
     private void renderEquipmentItem(Graphics g, int i, int j) {
         Inventory inventory = controller.getGameState().getPlayer().getInventory();
         int slotIndex = j * EQUIPMENT_SLOT_MAX_ROW + i;
+        DragAndDropManager dndManager = controller.getDndManager();
+        if (dndManager.isDragging() && dndManager.getSource() == DragSourceType.EQUIPMENT && dndManager.getSourceIndex() == slotIndex) {
+            return;
+        }
         if (inventory.getEquipped()[slotIndex] != null) {
             InventoryItem item = inventory.getEquipped()[slotIndex];
             ItemData itemData = item.getData();
@@ -372,6 +383,7 @@ public class InventoryOverlay implements Overlay<MouseEvent, KeyEvent, Graphics>
 
     @Override
     public void mouseDragged(MouseEvent e) {
+        controller.mouseDragged(e);
     }
 
     @Override

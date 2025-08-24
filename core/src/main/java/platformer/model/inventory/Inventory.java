@@ -89,13 +89,33 @@ public class Inventory {
         backpackHandler.dropItem(index);
     }
 
+    public void swapBackpackItems(int index1, int index2) {
+        backpackHandler.swapItems(index1, index2);
+    }
+
+    public void moveEquipToBackpack(int equipIndex, int backpackIndex) {
+        InventoryItem item = equipmentHandler.unequipItem(equipIndex);
+        if (item != null) {
+            backpackHandler.insertOrAddItem(backpackIndex, item);
+        }
+    }
+
+    public void swapEquipmentItems(int index1, int index2) {
+        if (equipmentHandler.swapItems(index1, index2)) {
+            backpackHandler.refreshAccountItems();
+        }
+    }
+
     /**
      * Unequips an item from the equipment.
      *
      * @param index the index of the item in the equipment
      */
     public void unequipItem(int index) {
-        equipmentHandler.unequipItem(index, backpackHandler);
+        InventoryItem unequippedItem = equipmentHandler.unequipItem(index);
+        if (unequippedItem != null) {
+            backpackHandler.addItemToBackpack(unequippedItem);
+        }
     }
 
     /**

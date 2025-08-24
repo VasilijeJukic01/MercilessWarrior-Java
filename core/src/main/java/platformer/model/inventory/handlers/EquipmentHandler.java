@@ -53,7 +53,10 @@ public class EquipmentHandler {
 
         // If slot is already occupied, we should unequip the existing item
         if (equipped[slotIndex] != null) {
-            unequipItem(slotIndex, backpackHandler);
+            InventoryItem previouslyEquipped = unequipItem(slotIndex);
+            if (previouslyEquipped != null) {
+                backpackHandler.addItemToBackpack(previouslyEquipped);
+            }
         }
 
         equipped[slotIndex] = itemToEquip;
@@ -67,15 +70,23 @@ public class EquipmentHandler {
      * If dropFromBackpack is true, the item is dropped from the backpack.
      *
      * @param index The index of the item in the equipment to be unequipped.
-     * @param backpackHandler The BackpackHandler instance used to manage backpack-related operations.
+     * @return The unequipped InventoryItem, or null if the index is invalid or the slot is empty.
      */
-    public void unequipItem(int index, BackpackHandler backpackHandler) {
-        if (index >= equipped.length || equipped[index] == null) return;
-
+    public InventoryItem unequipItem(int index) {
+        if (index >= equipped.length || equipped[index] == null) return null;
         InventoryItem itemToUnequip = equipped[index];
         removeBonus(itemToUnequip);
-        backpackHandler.addItemToBackpack(itemToUnequip);
         equipped[index] = null;
+        return itemToUnequip;
+    }
+
+    public boolean swapItems(int index1, int index2) {
+        if (index1 < 0 || index1 >= equipped.length || index2 < 0 || index2 >= equipped.length) return false;
+        InventoryItem item1 = equipped[index1];
+        InventoryItem item2 = equipped[index2];
+        equipped[index1] = item2;
+        equipped[index2] = item1;
+        return true;
     }
 
     private void applyBonus(InventoryItem item) {

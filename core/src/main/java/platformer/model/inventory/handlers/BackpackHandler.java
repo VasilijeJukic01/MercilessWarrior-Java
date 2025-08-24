@@ -80,6 +80,27 @@ public class BackpackHandler {
         refreshAccountItems();
     }
 
+    public void swapItems(int index1, int index2) {
+        if (index1 >= 0 && index1 < backpack.size() && index2 >= 0 && index2 < backpack.size()) {
+            Collections.swap(backpack, index1, index2);
+            refreshAccountItems();
+        }
+    }
+
+    /**
+     * Inserts an item at a specific index if valid, otherwise adds it to the end of the backpack.
+     * This prevents items from being lost when dropped onto empty slots.
+     * @param index The target index.
+     * @param item The item to add.
+     */
+    public void insertOrAddItem(int index, InventoryItem item) {
+        if (index >= 0 && index < backpack.size()) {
+            backpack.add(index, item);
+        }
+        else backpack.add(item);
+        refreshAccountItems();
+    }
+
     public void craftItem(InventoryItem item, Map<String, Integer> resources) {
         if (!hasEnoughResources(resources)) return;
         Audio.getInstance().getAudioPlayer().playSound(Sound.CRAFTING);
@@ -139,7 +160,7 @@ public class BackpackHandler {
         return values;
     }
 
-    private void refreshAccountItems() {
+    public void refreshAccountItems() {
         Framework.getInstance().getAccount().setItems(getFormattedItems());
     }
 

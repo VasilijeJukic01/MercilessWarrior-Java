@@ -5,6 +5,8 @@ import platformer.model.inventory.item.InventoryItem;
 import platformer.state.types.GameState;
 import platformer.ui.buttons.AbstractButton;
 import platformer.ui.buttons.ButtonType;
+import platformer.ui.dnd.DragAndDropManager;
+import platformer.ui.dnd.DragSourceType;
 import platformer.ui.overlays.InventoryOverlay;
 
 import java.awt.*;
@@ -23,6 +25,9 @@ public class InventoryViewController {
 
     private final GameState gameState;
     private final InventoryOverlay inventoryOverlay;
+    private final DragAndDropManager dndManager;
+
+    private static final int DRAG_THRESHOLD = 5;
 
     private int backpackSlot = 0;
     private int backpackSlotNumber = 0;
@@ -34,21 +39,32 @@ public class InventoryViewController {
 
     public InventoryViewController(GameState gameState, InventoryOverlay inventoryOverlay) {
         this.gameState = gameState;
+        this.dndManager = new DragAndDropManager();
         this.inventoryOverlay = inventoryOverlay;
     }
 
     // Event Handlers
     public void mousePressed(MouseEvent e) {
+        if (checkBackpackPress(e) || checkEquipmentPress(e)) {
+            dndManager.armDrag(e.getPoint());
+            return;
+        }
         inventoryOverlay.setMousePressed(e, inventoryOverlay.getSmallButtons());
         inventoryOverlay.setMousePressed(e, inventoryOverlay.getMediumButtons());
         inventoryOverlay.setMousePressed(e, new AbstractButton[]{inventoryOverlay.getUnequipBtn()});
-        changeSlot(e);
     }
 
     public void mouseReleased(MouseEvent e) {
-        releaseSmallButtons(e);
-        releaseMediumButtons(e);
-        releaseUnequipButton(e);
+        if (dndManager.isDragging()) handleDrop(e);
+        else if (dndManager.isArmed()) {
+            changeSlot(e);
+            dndManager.stopDrag();
+        }
+        else {
+            releaseSmallButtons(e);
+            releaseMediumButtons(e);
+            releaseUnequipButton(e);
+        }
         Arrays.stream(inventoryOverlay.getSmallButtons()).forEach(AbstractButton::resetMouseSet);
         Arrays.stream(inventoryOverlay.getMediumButtons()).forEach(AbstractButton::resetMouseSet);
         inventoryOverlay.getUnequipBtn().resetMouseSet();
@@ -60,6 +76,21 @@ public class InventoryViewController {
         inventoryOverlay.setMouseMoved(e, new AbstractButton[]{inventoryOverlay.getUnequipBtn()});
         updateHoveredItem(e);
         this.mousePosition = e.getPoint();
+    }
+
+    public void mouseDragged(MouseEvent e) {
+        if (dndManager.isArmed() && !dndManager.isDragging()) {
+            Point pressPoint = dndManager.getPressPosition();
+            if (pressPoint.distance(e.getPoint()) > DRAG_THRESHOLD) {
+                if (checkBackpackPress(e)) {
+                    dndManager.startDrag(hoveredItem, DragSourceType.BACKPACK, getAbsoluteBackpackSlotAt(e.getPoint()));
+                }
+                else if (checkEquipmentPress(e)) {
+                    dndManager.startDrag(hoveredItem, DragSourceType.EQUIPMENT, getEquipmentSlotAt(e.getPoint()));
+                }
+            }
+        }
+        if (dndManager.isDragging()) dndManager.updatePosition(e.getX(), e.getY());
     }
 
     public void keyPressed(KeyEvent e) {
@@ -84,7 +115,7 @@ public class InventoryViewController {
     // Actions
     private void updateHoveredItem(MouseEvent e) {
         hoveredItem = null;
-        if (!isInBackpack) return; // Only show tooltip for backpack items
+        if (!isInBackpack) return;
 
         Inventory inventory = gameState.getPlayer().getInventory();
         int slot = getSlotAt(e.getPoint());
@@ -140,6 +171,72 @@ public class InventoryViewController {
             Inventory inventory = gameState.getPlayer().getInventory();
             inventory.unequipItem(equipmentSlotNumber);
         }
+    }
+
+    private boolean checkBackpackPress(MouseEvent e) {
+        int slot = getSlotAt(e.getPoint());
+        if (slot != -1) {
+            int absoluteIndex = getAbsoluteBackpackSlot(slot);
+            Inventory inventory = gameState.getPlayer().getInventory();
+            if (absoluteIndex < inventory.getBackpack().size()) {
+                hoveredItem = inventory.getBackpack().get(absoluteIndex);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean checkEquipmentPress(MouseEvent e) {
+        int slot = getEquipmentSlotAt(e.getPoint());
+        if (slot != -1) {
+            Inventory inventory = gameState.getPlayer().getInventory();
+            if (inventory.getEquipped()[slot] != null) {
+                hoveredItem = inventory.getEquipped()[slot];
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void handleDrop(MouseEvent e) {
+        Inventory inventory = gameState.getPlayer().getInventory();
+        DragSourceType source = dndManager.getSource();
+        int targetBackpackSlot = getAbsoluteBackpackSlotAt(e.getPoint());
+        int targetEquipmentSlot = getEquipmentSlotAt(e.getPoint());
+        int targetQuickUseSlot = getQuickUseSlotAt(e.getPoint());
+        int sourceIndex = dndManager.getSourceIndex();
+
+        // Dragging from Backpack
+        if (source == DragSourceType.BACKPACK) {
+            if (targetBackpackSlot != -1 && targetBackpackSlot < inventory.getBackpack().size()) {
+                // Backpack -> Backpack (Swap)
+                inventory.swapBackpackItems(sourceIndex, targetBackpackSlot);
+            }
+            else if (targetEquipmentSlot != -1) {
+                // Backpack -> Equipment (Equip)
+                inventory.equipItem(sourceIndex);
+            }
+            else if (targetQuickUseSlot != -1) {
+                // Backpack -> Quick Use Slot (Assign)
+                inventory.assignToQuickSlot(sourceIndex, targetQuickUseSlot);
+            }
+        }
+        // Dragging from Equipment
+        else if (source == DragSourceType.EQUIPMENT) {
+            if (targetBackpackSlot != -1) {
+                // Equipment -> Specific Backpack Slot (Swap)
+                inventory.moveEquipToBackpack(sourceIndex, targetBackpackSlot);
+            }
+            else if (isPointInBackpackPanel(e.getPoint())) {
+                // Equipment -> Anywhere on Backpack Panel (Unequip)
+                inventory.unequipItem(sourceIndex);
+            }
+            else if (targetEquipmentSlot != -1) {
+                // Equipment -> Equipment (Swap)
+                inventory.swapEquipmentItems(sourceIndex, targetEquipmentSlot);
+            }
+        }
+        dndManager.stopDrag();
     }
 
     private void changeSlot(MouseEvent e) {
@@ -222,6 +319,46 @@ public class InventoryViewController {
         return backpackSlotNumber + (backpackSlot * (INVENTORY_SLOT_MAX_ROW * INVENTORY_SLOT_MAX_COL));
     }
 
+    private int getAbsoluteBackpackSlot(int relativeSlot) {
+        if (relativeSlot == -1) return -1;
+        return relativeSlot + (backpackSlot * (INVENTORY_SLOT_MAX_ROW * INVENTORY_SLOT_MAX_COL));
+    }
+
+    private int getAbsoluteBackpackSlotAt(Point p) {
+        int relativeSlot = getSlotAt(p);
+        if (relativeSlot == -1) return -1;
+        return relativeSlot + (backpackSlot * (INVENTORY_SLOT_MAX_ROW * INVENTORY_SLOT_MAX_COL));
+    }
+
+    private int getEquipmentSlotAt(Point p) {
+        for (int j = 0; j < EQUIPMENT_SLOT_MAX_COL; j++) {
+            for (int i = 0; i < EQUIPMENT_SLOT_MAX_ROW; i++) {
+                Rectangle slotBounds = new Rectangle(i * EQUIPMENT_SLOT_SPACING + EQUIPMENT_SLOT_X, j * SLOT_SPACING + EQUIPMENT_SLOT_Y, SLOT_SIZE, SLOT_SIZE);
+                if (slotBounds.contains(p)) {
+                    return i + (j * EQUIPMENT_SLOT_MAX_ROW);
+                }
+            }
+        }
+        return -1;
+    }
+
+    private int getQuickUseSlotAt(Point p) {
+        for (int i = 0; i < 4; i++) {
+            int x = COOLDOWN_SLOT_X + i * COOLDOWN_SLOT_SPACING;
+            int y = COOLDOWN_SLOT_Y;
+            Rectangle quickSlotBounds = new Rectangle(x, y, COOLDOWN_SLOT_SIZE, COOLDOWN_SLOT_SIZE);
+            if (quickSlotBounds.contains(p)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private boolean isPointInBackpackPanel(Point p) {
+        Rectangle backpackBounds = new Rectangle(BACKPACK_X, BACKPACK_Y, BACKPACK_WID, BACKPACK_HEI);
+        return backpackBounds.contains(p);
+    }
+
     private boolean isMouseInButton(MouseEvent e, AbstractButton button) {
         return button.getButtonHitBox().contains(e.getPoint());
     }
@@ -229,6 +366,10 @@ public class InventoryViewController {
     // Getters
     public GameState getGameState() {
         return gameState;
+    }
+
+    public DragAndDropManager getDndManager() {
+        return dndManager;
     }
 
     public int getBackpackSlot() {
