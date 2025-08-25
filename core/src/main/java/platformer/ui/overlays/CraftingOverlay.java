@@ -200,7 +200,7 @@ public class CraftingOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
         Inventory inventory = controller.getGameState().getPlayer().getInventory();
         Map<String, Integer> playerItems = new HashMap<>();
         for (InventoryItem item : inventory.getBackpack()) {
-            playerItems.put(item.getItemId(), item.getAmount());
+            if (item != null) playerItems.put(item.getItemId(), item.getAmount());
         }
 
         g.setFont(new Font("Arial", Font.PLAIN, FONT_MEDIUM));

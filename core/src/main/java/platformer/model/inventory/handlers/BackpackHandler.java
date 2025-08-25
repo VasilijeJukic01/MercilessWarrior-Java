@@ -8,6 +8,7 @@ import platformer.model.inventory.item.InventoryItem;
 import platformer.model.inventory.item.ItemData;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static platformer.constants.Constants.*;
 
@@ -208,9 +209,9 @@ public class BackpackHandler {
     }
 
     private Map<String, InventoryItem> getInventoryMap() {
-        Map<String, InventoryItem> inventoryMap = new HashMap<>();
-        backpack.forEach(inventoryItem -> inventoryMap.put(inventoryItem.getItemId(), inventoryItem));
-        return inventoryMap;
+        return backpack.stream()
+                .filter(Objects::nonNull)
+                .collect(Collectors.toMap(InventoryItem::getItemId, item -> item));
     }
 
     /**

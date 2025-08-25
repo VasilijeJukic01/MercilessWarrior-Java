@@ -332,7 +332,7 @@ public class InventoryViewController {
         }
     }
 
-    private boolean isMouseInBackpack(Point p) {
+    public boolean isMouseInBackpack(Point p) {
         return getAbsoluteBackpackSlotAt(p) != -1;
     }
 
@@ -434,11 +434,6 @@ public class InventoryViewController {
             }
         }
         return -1;
-    }
-
-    private boolean isPointInBackpackPanel(Point p) {
-        Rectangle backpackBounds = new Rectangle(BACKPACK_X, BACKPACK_Y, BACKPACK_WID, BACKPACK_HEI);
-        return backpackBounds.contains(p);
     }
 
     private boolean isMouseInButton(MouseEvent e, AbstractButton button) {

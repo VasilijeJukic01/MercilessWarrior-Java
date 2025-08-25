@@ -352,8 +352,8 @@ public class InventoryOverlay implements Overlay<MouseEvent, KeyEvent, Graphics>
             for (Map.Entry<String, Integer> entry : equipmentSlots.entrySet()) {
                 if (entry.getKey().equalsIgnoreCase(slotType)) {
                     InventoryItem equippedItem = inventory.getEquipped()[entry.getValue()];
-                    if (equippedItem != null) {
-                        Point p = controller.getMousePosition();
+                    Point p = controller.getMousePosition();
+                    if (equippedItem != null && controller.isMouseInBackpack(p) && !controller.getDndManager().isDragging()) {
                         if (p != null) comparisonTooltip.render(g, hoveredItem, equippedItem, p.x + 15, p.y + 15, overlay.getBounds());
                     }
                     break;
