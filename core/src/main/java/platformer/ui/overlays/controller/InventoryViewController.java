@@ -131,10 +131,7 @@ public class InventoryViewController {
     private int getSlotAt(Point p) {
         for (int j = 0; j < INVENTORY_SLOT_MAX_COL; j++) {
             for (int i = 0; i < INVENTORY_SLOT_MAX_ROW; i++) {
-                Rectangle slotBounds = new Rectangle(
-                        i * SLOT_SPACING + BACKPACK_SLOT_X,
-                        j * SLOT_SPACING + BACKPACK_SLOT_Y,
-                        SLOT_SIZE, SLOT_SIZE);
+                Rectangle slotBounds = new Rectangle(i * SLOT_SPACING + BACKPACK_SLOT_X, j * SLOT_SPACING + BACKPACK_SLOT_Y, SLOT_SIZE, SLOT_SIZE);
                 if (slotBounds.contains(p)) {
                     return i + (j * INVENTORY_SLOT_MAX_ROW);
                 }
@@ -178,7 +175,7 @@ public class InventoryViewController {
         if (slot != -1) {
             int absoluteIndex = getAbsoluteBackpackSlot(slot);
             Inventory inventory = gameState.getPlayer().getInventory();
-            if (absoluteIndex < inventory.getBackpack().size()) {
+            if (absoluteIndex < inventory.getBackpack().size() && inventory.getBackpack().get(absoluteIndex) != null) {
                 hoveredItem = inventory.getBackpack().get(absoluteIndex);
                 return true;
             }
@@ -208,7 +205,7 @@ public class InventoryViewController {
 
         // Dragging from Backpack
         if (source == DragSourceType.BACKPACK) {
-            if (targetBackpackSlot != -1 && targetBackpackSlot < inventory.getBackpack().size()) {
+            if (targetBackpackSlot != -1) {
                 // Backpack -> Backpack (Swap)
                 inventory.swapBackpackItems(sourceIndex, targetBackpackSlot);
             }
@@ -226,10 +223,6 @@ public class InventoryViewController {
             if (targetBackpackSlot != -1) {
                 // Equipment -> Specific Backpack Slot (Swap)
                 inventory.moveEquipToBackpack(sourceIndex, targetBackpackSlot);
-            }
-            else if (isPointInBackpackPanel(e.getPoint())) {
-                // Equipment -> Anywhere on Backpack Panel (Unequip)
-                inventory.unequipItem(sourceIndex);
             }
             else if (targetEquipmentSlot != -1) {
                 // Equipment -> Equipment (Swap)
@@ -312,7 +305,9 @@ public class InventoryViewController {
     }
 
     private void nextBackpackSlot() {
-        this.backpackSlot = Math.min(backpackSlot + 1, INVENTORY_SLOT_CAP);
+        int maxPages = (int) Math.ceil((double) BACKPACK_CAPACITY / (INVENTORY_SLOT_MAX_ROW * INVENTORY_SLOT_MAX_COL));
+        int maxPageIndex = Math.max(0, maxPages - 1);
+        this.backpackSlot = Math.min(backpackSlot + 1, maxPageIndex);
     }
 
     private int getAbsoluteBackpackSlot() {

@@ -17,9 +17,11 @@ public class EquipmentHandler {
 
     private final InventoryItem[] equipped = new InventoryItem[6];
     private final Map<String, Integer> equipmentSlots;
+    private final Map<Integer, String> slotIndexToName;
 
     public EquipmentHandler() {
         this.equipmentSlots = new HashMap<>();
+        this.slotIndexToName = new HashMap<>();
         initEquipmentSlots();
     }
 
@@ -31,6 +33,13 @@ public class EquipmentHandler {
         equipmentSlots.put("Charm", 3);
         equipmentSlots.put("Bracelets", 4);
         equipmentSlots.put("Boots", 5);
+
+        for (Map.Entry<String, Integer> entry : equipmentSlots.entrySet()) {
+            if (!slotIndexToName.containsKey(entry.getValue())) {
+                slotIndexToName.put(entry.getValue(), entry.getKey());
+            }
+        }
+        slotIndexToName.put(3, "Ring");
     }
 
     /**
@@ -82,14 +91,40 @@ public class EquipmentHandler {
 
     public boolean swapItems(int index1, int index2) {
         if (index1 < 0 || index1 >= equipped.length || index2 < 0 || index2 >= equipped.length) return false;
+
         InventoryItem item1 = equipped[index1];
         InventoryItem item2 = equipped[index2];
+        String targetSlotType1 = slotIndexToName.get(index1);
+        String targetSlotType2 = slotIndexToName.get(index2);
+        if (targetSlotType1.equals("Charm")) targetSlotType1 = "Ring";
+        if (targetSlotType2.equals("Charm")) targetSlotType2 = "Ring";
+
+        if (item1 != null) {
+            ItemData data = item1.getData();
+            if (data == null || data.equip == null) return false;
+            String itemSlotType = data.equip.slot;
+            if (itemSlotType.equals("Charm")) itemSlotType = "Ring";
+            if (!itemSlotType.equals(targetSlotType2)) {
+                return false;
+            }
+        }
+
+        if (item2 != null) {
+            ItemData data = item2.getData();
+            if (data == null || data.equip == null) return false;
+            String itemSlotType = data.equip.slot;
+            if (itemSlotType.equals("Charm")) itemSlotType = "Ring";
+            if (!itemSlotType.equals(targetSlotType1)) {
+                return false;
+            }
+        }
         equipped[index1] = item2;
         equipped[index2] = item1;
+
         return true;
     }
 
-    private void applyBonus(InventoryItem item) {
+    public void applyBonus(InventoryItem item) {
         ItemData.EquipmentData equipData = item.getData().equip;
         if (equipData != null && equipData.bonuses != null) {
             equipData.bonuses.forEach(InventoryBonus.getInstance()::addBonus);
@@ -101,6 +136,20 @@ public class EquipmentHandler {
         if (equipData != null && equipData.bonuses != null) {
             equipData.bonuses.forEach(InventoryBonus.getInstance()::removeBonus);
         }
+    }
+
+    public boolean canEquipItem(InventoryItem item, int targetSlotIndex) {
+        ItemData data = item.getData();
+        if (data == null || data.equip == null || !data.equip.canEquip) return false;
+
+        String targetSlotType = slotIndexToName.get(targetSlotIndex);
+        if (targetSlotType == null) return false;
+
+        String itemSlotType = data.equip.slot;
+        if (targetSlotType.equals("Charm")) targetSlotType = "Ring";
+        if (itemSlotType.equals("Charm")) itemSlotType = "Ring";
+
+        return targetSlotType.equals(itemSlotType);
     }
 
     /**

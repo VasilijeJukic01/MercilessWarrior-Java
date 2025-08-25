@@ -96,7 +96,14 @@ public class Inventory {
     public void moveEquipToBackpack(int equipIndex, int backpackIndex) {
         InventoryItem item = equipmentHandler.unequipItem(equipIndex);
         if (item != null) {
-            backpackHandler.insertOrAddItem(backpackIndex, item);
+            InventoryItem existingBackpackItem = backpackHandler.getBackpack().get(backpackIndex);
+            if (existingBackpackItem != null) {
+                if (equipmentHandler.canEquipItem(existingBackpackItem, equipIndex)) {
+                    equipItem(backpackIndex);
+                }
+                else backpackHandler.addItemToBackpack(item);
+            }
+            else backpackHandler.setItemAt(backpackIndex, item);
         }
     }
 
@@ -177,16 +184,18 @@ public class Inventory {
         for (String itemString : savedItems) {
             try {
                 String[] parts = itemString.split(",");
-                if (parts.length != 3) continue;
+                if (parts.length != 4) continue;
                 String itemId = parts[0];
                 int amount = Integer.parseInt(parts[1]);
                 boolean isEquipped = parts[2].equals("1");
+                int slotIndex = Integer.parseInt(parts[3]);
+
                 InventoryItem item = new InventoryItem(itemId, amount);
-                addItemToBackpack(item);
                 if (isEquipped) {
-                    int lastItemIndex = getBackpack().size() - 1;
-                    equipItem(lastItemIndex);
+                    equipmentHandler.getEquipped()[slotIndex] = item;
+                    equipmentHandler.applyBonus(item);
                 }
+                else backpackHandler.setItemAt(slotIndex, item);
             } catch (Exception e) {
                 Logger.getInstance().notify("Reading items from save file failed!", Message.ERROR);
             }

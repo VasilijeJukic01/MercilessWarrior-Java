@@ -64,6 +64,7 @@ public final class Constants {
     public static final double PLAYER_SPEED = dScale(0.65);
     public static final double LAVA_PLAYER_SPEED = dScale(0.3);
     public static final double PLAYER_BOOST = dScale(0.65);
+    public static final int BACKPACK_CAPACITY = 125;
 
     public static final double PUSH_LIMIT = -30;
     public static final double PUSH_SPEED = 0.95;

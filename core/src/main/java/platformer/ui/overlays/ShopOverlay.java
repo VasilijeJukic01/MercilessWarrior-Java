@@ -175,6 +175,7 @@ public class ShopOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
             int slotIndex = i - slot;
             if (slotIndex < (SHOP_SLOT_MAX_ROW * SHOP_SLOT_MAX_COL)) {
                 InventoryItem item = backpack.get(i);
+                if (item == null) continue;
                 renderItem(g, item.getItemId(), item.getAmount(), item.getData().sellValue, slotIndex, SHOP_SELL_SLOT_X, SHOP_SELL_SLOT_Y, true);
             }
         }

@@ -195,8 +195,8 @@ public class InventoryOverlay implements Overlay<MouseEvent, KeyEvent, Graphics>
             return;
         }
         InventoryItem item = inventory.getBackpack().get(absoluteSlotNumber);
+        if (item == null) return;
         ItemData itemData = item.getData();
-        if (itemData == null) return;
         int relativeSlotNumber = absoluteSlotNumber - (controller.getBackpackSlot() * (INVENTORY_SLOT_MAX_ROW * INVENTORY_SLOT_MAX_COL));
         int xPos = (relativeSlotNumber % INVENTORY_SLOT_MAX_ROW) * SLOT_SPACING + BACKPACK_SLOT_X + ITEM_OFFSET_X;
         int yPos = (relativeSlotNumber / INVENTORY_SLOT_MAX_ROW) * SLOT_SPACING + BACKPACK_SLOT_Y + ITEM_OFFSET_Y;

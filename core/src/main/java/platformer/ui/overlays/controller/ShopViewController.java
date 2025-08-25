@@ -151,7 +151,7 @@ public class ShopViewController {
     private void addToInventory(Player player, String itemId, int quantity) {
         Inventory inventory = player.getInventory();
         Optional<InventoryItem> existingItem = inventory.getBackpack().stream()
-                .filter(invItem -> invItem.getItemId().equals(itemId))
+                .filter(invItem -> invItem != null && invItem.getItemId().equals(itemId))
                 .findFirst();
 
         getActiveShop().flatMap(shop -> shop.getShopItems().stream()
@@ -162,7 +162,7 @@ public class ShopViewController {
         if (existingItem.isPresent() && existingItem.get().getData().stackable) {
             existingItem.get().addAmount(quantity);
         }
-        else inventory.getBackpack().add(new InventoryItem(itemId, quantity));
+        else inventory.addItemToBackpack(new InventoryItem(itemId, quantity));
     }
 
     private void addToShop(Shop shop, InventoryItem inventoryItem, int quantity) {
