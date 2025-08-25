@@ -232,15 +232,10 @@ public class QuestOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
     private int renderRewardLine(Graphics g, BufferedImage icon, String text, Color textColor, int yPos) {
         int iconTextPadding = (int)(8 * SCALE);
         int iconY = yPos - g.getFontMetrics().getAscent() + (g.getFontMetrics().getHeight() - ITEM_SIZE) / 2;
-        if (icon != null) g.drawImage(icon, QUEST_DESC_X, iconY, ITEM_SIZE, ITEM_SIZE, null);
+        if (icon != null) g.drawImage(icon, QUEST_DESC_X, iconY, (int)(ITEM_SIZE / 1.3), (int)(ITEM_SIZE / 1.3), null);
         g.setColor(textColor);
         g.drawString(text, QUEST_DESC_X + ITEM_SIZE + iconTextPadding, yPos);
         return yPos + g.getFontMetrics().getHeight();
-    }
-
-    private String capitalize(String str) {
-        if (str == null || str.isEmpty()) return str;
-        return str.substring(0, 1).toUpperCase() + str.substring(1).toLowerCase();
     }
 
     private List<String> wrapText(String text, int maxWidth, FontMetrics fm) {
