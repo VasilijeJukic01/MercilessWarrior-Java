@@ -37,10 +37,27 @@ public class InventoryViewController {
     private InventoryItem hoveredItem = null;
     private Point mousePosition;
 
+    // Drag-to-Paginate
+    private int paginationHoverTick = 0;
+    private static final int PAGINATION_HOVER_DELAY = 75;
+    private ButtonType hoveredPaginationBtn = null;
+
     public InventoryViewController(GameState gameState, InventoryOverlay inventoryOverlay) {
         this.gameState = gameState;
         this.dndManager = new DragAndDropManager();
         this.inventoryOverlay = inventoryOverlay;
+    }
+
+    public void update() {
+        if (dndManager.isDragging() && hoveredPaginationBtn != null) {
+            paginationHoverTick++;
+            if (paginationHoverTick >= PAGINATION_HOVER_DELAY) {
+                if (hoveredPaginationBtn == ButtonType.NEXT) nextBackpackSlot();
+                else if (hoveredPaginationBtn == ButtonType.PREV) prevBackpackSlot();
+                paginationHoverTick = 0;
+            }
+        }
+        else paginationHoverTick = 0;
     }
 
     // Event Handlers
@@ -65,6 +82,8 @@ public class InventoryViewController {
             releaseMediumButtons(e);
             releaseUnequipButton(e);
         }
+        hoveredPaginationBtn = null;
+        paginationHoverTick = 0;
         Arrays.stream(inventoryOverlay.getSmallButtons()).forEach(AbstractButton::resetMouseSet);
         Arrays.stream(inventoryOverlay.getMediumButtons()).forEach(AbstractButton::resetMouseSet);
         inventoryOverlay.getUnequipBtn().resetMouseSet();
@@ -79,18 +98,13 @@ public class InventoryViewController {
     }
 
     public void mouseDragged(MouseEvent e) {
-        if (dndManager.isArmed() && !dndManager.isDragging()) {
-            Point pressPoint = dndManager.getPressPosition();
-            if (pressPoint.distance(e.getPoint()) > DRAG_THRESHOLD) {
-                if (checkBackpackPress(e)) {
-                    dndManager.startDrag(hoveredItem, DragSourceType.BACKPACK, getAbsoluteBackpackSlotAt(e.getPoint()));
-                }
-                else if (checkEquipmentPress(e)) {
-                    dndManager.startDrag(hoveredItem, DragSourceType.EQUIPMENT, getEquipmentSlotAt(e.getPoint()));
-                }
-            }
+        if (dndManager.isDragging()) {
+            dndManager.updatePosition(e.getX(), e.getY());
+            handlePaginationHover(e);
         }
-        if (dndManager.isDragging()) dndManager.updatePosition(e.getX(), e.getY());
+        else if (dndManager.isArmed()) {
+            tryToStartDrag(e);
+        }
     }
 
     public void keyPressed(KeyEvent e) {
@@ -175,7 +189,7 @@ public class InventoryViewController {
         if (slot != -1) {
             int absoluteIndex = getAbsoluteBackpackSlot(slot);
             Inventory inventory = gameState.getPlayer().getInventory();
-            if (absoluteIndex < inventory.getBackpack().size() && inventory.getBackpack().get(absoluteIndex) != null) {
+            if (absoluteIndex < inventory.getBackpack().size()) {
                 hoveredItem = inventory.getBackpack().get(absoluteIndex);
                 return true;
             }
@@ -187,7 +201,7 @@ public class InventoryViewController {
         int slot = getEquipmentSlotAt(e.getPoint());
         if (slot != -1) {
             Inventory inventory = gameState.getPlayer().getInventory();
-            if (inventory.getEquipped()[slot] != null) {
+            if (slot < inventory.getEquipped().length) {
                 hoveredItem = inventory.getEquipped()[slot];
                 return true;
             }
@@ -263,6 +277,46 @@ public class InventoryViewController {
                     break;
                 }
             }
+        }
+    }
+
+    /**
+     * Checks if the conditions are met to start a drag operation and initiates it if so.
+     * A drag starts only if the mouse has moved beyond a certain threshold from its press position.
+     *
+     * @param e The MouseEvent from the mouseDragged handler.
+     */
+    private void tryToStartDrag(MouseEvent e) {
+        if (hoveredItem == null) return;
+        Point pressPoint = dndManager.getPressPosition();
+        if (pressPoint.distance(e.getPoint()) > DRAG_THRESHOLD) {
+            if (isMouseInBackpack(e.getPoint())) {
+                dndManager.startDrag(hoveredItem, DragSourceType.BACKPACK, getAbsoluteBackpackSlotAt(e.getPoint()));
+            }
+            else if (isMouseInEquipment(e.getPoint())) {
+                dndManager.startDrag(hoveredItem, DragSourceType.EQUIPMENT, getEquipmentSlotAt(e.getPoint()));
+            }
+        }
+    }
+
+    private boolean isMouseInBackpack(Point p) {
+        return getAbsoluteBackpackSlotAt(p) != -1;
+    }
+
+    private boolean isMouseInEquipment(Point p) {
+        return getEquipmentSlotAt(p) != -1;
+    }
+
+    private void handlePaginationHover(MouseEvent e) {
+        boolean hoveringPrev = isMouseInButton(e, inventoryOverlay.getSmallButtons()[0]);
+        boolean hoveringNext = isMouseInButton(e, inventoryOverlay.getSmallButtons()[1]);
+
+        ButtonType newHover = null;
+        if (hoveringPrev) newHover = ButtonType.PREV;
+        else if (hoveringNext) newHover = ButtonType.NEXT;
+        if (newHover != hoveredPaginationBtn) {
+            hoveredPaginationBtn = newHover;
+            paginationHoverTick = 0;
         }
     }
 

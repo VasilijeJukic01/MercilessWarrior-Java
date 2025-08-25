@@ -122,6 +122,7 @@ public class InventoryOverlay implements Overlay<MouseEvent, KeyEvent, Graphics>
 
     @Override
     public void update() {
+        controller.update();
         updatePlayerAnimation();
         Arrays.stream(smallButtons).forEach(SmallButton::update);
         Arrays.stream(mediumButtons).forEach(MediumButton::update);
@@ -172,6 +173,21 @@ public class InventoryOverlay implements Overlay<MouseEvent, KeyEvent, Graphics>
         g2d.setColor(Color.WHITE);
         g2d.setStroke(new BasicStroke(1));
         g2d.draw(backpackPanel);
+
+        g2d.setFont(new Font("Arial", Font.BOLD, FONT_MEDIUM));
+        g2d.setColor(INV_TEXT_LABEL);
+
+        int itemsPerPage = INVENTORY_SLOT_MAX_ROW * INVENTORY_SLOT_MAX_COL;
+        int maxPages = (int) Math.ceil((double) BACKPACK_CAPACITY / itemsPerPage);
+        if (maxPages == 0) maxPages = 1;
+
+        String pageText = "Page: " + (controller.getBackpackSlot() + 1) + " / " + maxPages;
+        FontMetrics fm = g2d.getFontMetrics();
+        int textWidth = fm.stringWidth(pageText);
+        int textX = (int) (backpackPanel.getX() + backpackPanel.getWidth() - textWidth);
+        int textY = (int) backpackPanel.getY() - (int)(5 * SCALE);
+
+        g2d.drawString(pageText, textX, textY);
     }
 
     private void renderBackpackSlots(Graphics g) {
