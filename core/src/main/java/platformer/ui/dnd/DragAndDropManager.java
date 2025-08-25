@@ -21,6 +21,7 @@ public class DragAndDropManager {
     private int sourceIndex;
     private Point dragPosition;
     private boolean dragging;
+    private boolean isSplitDrag;
 
     private Point pressPosition;
 
@@ -31,12 +32,14 @@ public class DragAndDropManager {
      * @param item        The item being dragged.
      * @param source      The source panel of the item.
      * @param sourceIndex The index of the item in its source container.
+     * @param isSplit     Whether the drag operation is a split drag (dragging part of a stack).
      */
-    public void startDrag(InventoryItem item, DragSourceType source, int sourceIndex) {
+    public void startDrag(InventoryItem item, DragSourceType source, int sourceIndex, boolean isSplit) {
         this.draggedItem = item;
         this.source = source;
         this.sourceIndex = sourceIndex;
         this.dragging = true;
+        this.isSplitDrag = isSplit;
     }
 
     /**
@@ -48,6 +51,7 @@ public class DragAndDropManager {
         this.source = null;
         this.sourceIndex = -1;
         this.pressPosition = null;
+        this.isSplitDrag = false;
     }
 
     /**
@@ -109,6 +113,10 @@ public class DragAndDropManager {
 
     public boolean isDragging() {
         return dragging;
+    }
+
+    public boolean isSplitDrag() {
+        return isSplitDrag;
     }
 
     public InventoryItem getDraggedItem() {

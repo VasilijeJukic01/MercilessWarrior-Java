@@ -80,7 +80,6 @@ public class BackpackHandler {
                 }
             }
         }
-
         for (int i = 0; i < BACKPACK_CAPACITY; i++) {
             if (backpack.get(i) == null) {
                 backpack.set(i, itemToAdd);
@@ -107,6 +106,24 @@ public class BackpackHandler {
     public void setItemAt(int index, InventoryItem item) {
         if (index >= 0 && index < BACKPACK_CAPACITY) {
             backpack.set(index, item);
+            refreshAccountItems();
+        }
+    }
+
+    /**
+     * Merges an item from a source index into a target index.
+     * The source item is removed after its amount is added to the target.
+     *
+     * @param fromIndex The index of the item being dragged.
+     * @param toIndex   The index of the item to merge into.
+     */
+    public void mergeStacks(int fromIndex, int toIndex) {
+        if (fromIndex < 0 || fromIndex >= backpack.size() || toIndex < 0 || toIndex >= backpack.size()) return;
+        InventoryItem sourceItem = backpack.get(fromIndex);
+        InventoryItem targetItem = backpack.get(toIndex);
+        if (sourceItem != null && targetItem != null && sourceItem.getItemId().equals(targetItem.getItemId())) {
+            targetItem.addAmount(sourceItem.getAmount());
+            backpack.set(fromIndex, null);
             refreshAccountItems();
         }
     }
@@ -150,6 +167,44 @@ public class BackpackHandler {
                 }
             }
         }
+    }
+
+    /**
+     * Splits a stack of items at the given index.
+     * It reduces the original stack's amount and returns a new InventoryItem with the split amount.
+     *
+     * @param index The index of the stack to split in the backpack.
+     * @return The new InventoryItem representing the split-off stack, or null if the item cannot be split.
+     */
+    public InventoryItem splitStack(int index) {
+        if (index < 0 || index >= backpack.size()) return null;
+
+        InventoryItem originalItem = backpack.get(index);
+        if (originalItem == null || !originalItem.getData().stackable || originalItem.getAmount() <= 1) return null;
+
+        int originalAmount = originalItem.getAmount();
+        int newStackAmount = originalAmount / 2;
+        int remainingAmount = originalAmount - newStackAmount;
+        originalItem.setAmount(remainingAmount);
+
+        return new InventoryItem(originalItem.getItemId(), newStackAmount);
+    }
+
+    /**
+     * Reverts a split by adding the amount of a split-off item back to its original stack.
+     *
+     * @param originalIndex The index of the stack from which the item was split.
+     * @param splitItem     The temporary item that was being dragged.
+     */
+    public void revertSplit(int originalIndex, InventoryItem splitItem) {
+        if (originalIndex < 0 || originalIndex >= backpack.size() || splitItem == null) return;
+
+        InventoryItem originalItem = backpack.get(originalIndex);
+        if (originalItem != null && originalItem.getItemId().equals(splitItem.getItemId())) {
+            originalItem.addAmount(splitItem.getAmount());
+        }
+        else addItemToBackpack(splitItem);
+        refreshAccountItems();
     }
 
     private Map<String, InventoryItem> getInventoryMap() {

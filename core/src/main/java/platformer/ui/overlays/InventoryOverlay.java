@@ -207,7 +207,7 @@ public class InventoryOverlay implements Overlay<MouseEvent, KeyEvent, Graphics>
 
     private void renderBackpackItem(Graphics g, Inventory inventory, int absoluteSlotNumber) {
         DragAndDropManager dndManager = controller.getDndManager();
-        if (dndManager.isDragging() && dndManager.getSource() == DragSourceType.BACKPACK && dndManager.getSourceIndex() == absoluteSlotNumber) {
+        if (dndManager.isDragging() && !dndManager.isSplitDrag() && dndManager.getSource() == DragSourceType.BACKPACK && dndManager.getSourceIndex() == absoluteSlotNumber) {
             return;
         }
         InventoryItem item = inventory.getBackpack().get(absoluteSlotNumber);

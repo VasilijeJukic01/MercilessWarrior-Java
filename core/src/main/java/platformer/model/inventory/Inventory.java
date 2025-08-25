@@ -3,7 +3,6 @@ package platformer.model.inventory;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
 import platformer.model.entities.player.Player;
-import platformer.model.gameObjects.objects.Loot;
 import platformer.model.inventory.handlers.BackpackHandler;
 import platformer.model.inventory.handlers.EquipmentHandler;
 import platformer.model.inventory.item.InventoryItem;
@@ -134,13 +133,38 @@ public class Inventory {
         backpackHandler.addItemToBackpack(item);
     }
 
+    public InventoryItem splitBackpackStack(int index) {
+        return backpackHandler.splitStack(index);
+    }
+
+    public void revertSplit(int originalIndex, InventoryItem splitItem) {
+        backpackHandler.revertSplit(originalIndex, splitItem);
+    }
+
     /**
-     * Adds all items from a loot to the backpack.
+     * Places an item directly into a specific backpack slot.
+     * Primarily used for placing a split stack.
      *
-     * @param loot the loot whose items are to be added
+     * @param index The target slot index.
+     * @param item The item to place.
      */
-    public void addAllItemsFromLoot(Loot loot) {
-        loot.getItems().forEach(this::addItemToBackpack);
+    public void setItemInBackpackSlot(int index, InventoryItem item) {
+        backpackHandler.setItemAt(index, item);
+    }
+
+    /**
+     * Merges a split item back into a target stack of the same type.
+     *
+     * @param targetItem The existing stack to merge into.
+     * @param splitItem The new stack being dropped.
+     */
+    public void mergeSplitStack(InventoryItem targetItem, InventoryItem splitItem) {
+        targetItem.addAmount(splitItem.getAmount());
+        backpackHandler.refreshAccountItems();
+    }
+
+    public void mergeBackpackStacks(int fromIndex, int toIndex) {
+        backpackHandler.mergeStacks(fromIndex, toIndex);
     }
 
     /**

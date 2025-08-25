@@ -62,6 +62,15 @@ public class InventoryViewController {
 
     // Event Handlers
     public void mousePressed(MouseEvent e) {
+        if (e.isShiftDown() && checkBackpackPress(e)) {
+            int sourceIndex = getAbsoluteBackpackSlotAt(e.getPoint());
+            InventoryItem splitItem = gameState.getPlayer().getInventory().splitBackpackStack(sourceIndex);
+            if (splitItem != null) {
+                dndManager.startDrag(splitItem, DragSourceType.BACKPACK, sourceIndex, true);
+                dndManager.updatePosition(e.getX(), e.getY());
+            }
+            return;
+        }
         if (checkBackpackPress(e) || checkEquipmentPress(e)) {
             dndManager.armDrag(e.getPoint());
             return;
@@ -211,6 +220,7 @@ public class InventoryViewController {
 
     private void handleDrop(MouseEvent e) {
         Inventory inventory = gameState.getPlayer().getInventory();
+        InventoryItem draggedItem = dndManager.getDraggedItem();
         DragSourceType source = dndManager.getSource();
         int targetBackpackSlot = getAbsoluteBackpackSlotAt(e.getPoint());
         int targetEquipmentSlot = getEquipmentSlotAt(e.getPoint());
@@ -218,10 +228,33 @@ public class InventoryViewController {
         int sourceIndex = dndManager.getSourceIndex();
 
         // Dragging from Backpack
-        if (source == DragSourceType.BACKPACK) {
+        if (dndManager.isSplitDrag()) {
+            if (targetBackpackSlot != -1) {
+                InventoryItem itemAtTarget = inventory.getBackpack().get(targetBackpackSlot);
+                if (itemAtTarget == null) {
+                    // Drop on an empty slot
+                    inventory.setItemInBackpackSlot(targetBackpackSlot, draggedItem);
+                }
+                else if (itemAtTarget.getItemId().equals(draggedItem.getItemId())) {
+                    // Drop on a stack of the same item
+                    inventory.mergeSplitStack(itemAtTarget, draggedItem);
+                }
+                else inventory.revertSplit(sourceIndex, draggedItem);
+            }
+            else inventory.revertSplit(sourceIndex, draggedItem);
+        }
+        else if (source == DragSourceType.BACKPACK) {
             if (targetBackpackSlot != -1) {
                 // Backpack -> Backpack (Swap)
-                inventory.swapBackpackItems(sourceIndex, targetBackpackSlot);
+                InventoryItem itemAtTarget = inventory.getBackpack().get(targetBackpackSlot);
+
+                if (itemAtTarget != null && itemAtTarget.getItemId().equals(draggedItem.getItemId()) && itemAtTarget.getData().stackable) {
+                    // Case A: Dropped on a stack of the same item. MERGE.
+                    inventory.mergeBackpackStacks(sourceIndex, targetBackpackSlot);
+                } else {
+                    // Case B: Dropped on a different item or an empty slot. SWAP/MOVE.
+                    inventory.swapBackpackItems(sourceIndex, targetBackpackSlot);
+                }
             }
             else if (targetEquipmentSlot != -1) {
                 // Backpack -> Equipment (Equip)
@@ -291,10 +324,10 @@ public class InventoryViewController {
         Point pressPoint = dndManager.getPressPosition();
         if (pressPoint.distance(e.getPoint()) > DRAG_THRESHOLD) {
             if (isMouseInBackpack(e.getPoint())) {
-                dndManager.startDrag(hoveredItem, DragSourceType.BACKPACK, getAbsoluteBackpackSlotAt(e.getPoint()));
+                dndManager.startDrag(hoveredItem, DragSourceType.BACKPACK, getAbsoluteBackpackSlotAt(e.getPoint()), false);
             }
             else if (isMouseInEquipment(e.getPoint())) {
-                dndManager.startDrag(hoveredItem, DragSourceType.EQUIPMENT, getEquipmentSlotAt(e.getPoint()));
+                dndManager.startDrag(hoveredItem, DragSourceType.EQUIPMENT, getEquipmentSlotAt(e.getPoint()), false);
             }
         }
     }
