@@ -93,17 +93,26 @@ public class Inventory {
     }
 
     public void moveEquipToBackpack(int equipIndex, int backpackIndex) {
-        InventoryItem item = equipmentHandler.unequipItem(equipIndex);
-        if (item != null) {
-            InventoryItem existingBackpackItem = backpackHandler.getBackpack().get(backpackIndex);
-            if (existingBackpackItem != null) {
-                if (equipmentHandler.canEquipItem(existingBackpackItem, equipIndex)) {
-                    equipItem(backpackIndex);
+        InventoryItem unequippedItem = equipmentHandler.unequipItem(equipIndex);
+        if (unequippedItem == null) return;
+
+        InventoryItem itemInBackpackSlot = backpackHandler.getBackpack().get(backpackIndex);
+        backpackHandler.setItemAt(backpackIndex, unequippedItem);
+
+        if (itemInBackpackSlot != null) {
+            if (equipmentHandler.canEquipItem(itemInBackpackSlot, equipIndex)) {
+                equipmentHandler.getEquipped()[equipIndex] = itemInBackpackSlot;
+                equipmentHandler.applyBonus(itemInBackpackSlot);
+                for (int i=0; i < backpackHandler.getBackpack().size(); i++) {
+                    if (backpackHandler.getBackpack().get(i) == itemInBackpackSlot) {
+                        backpackHandler.setItemAt(i, null);
+                        break;
+                    }
                 }
-                else backpackHandler.addItemToBackpack(item);
             }
-            else backpackHandler.setItemAt(backpackIndex, item);
+            else backpackHandler.addItemToBackpack(itemInBackpackSlot);
         }
+        backpackHandler.refreshAccountItems();
     }
 
     public void swapEquipmentItems(int index1, int index2) {

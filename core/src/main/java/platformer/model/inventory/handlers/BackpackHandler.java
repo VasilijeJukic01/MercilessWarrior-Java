@@ -8,7 +8,6 @@ import platformer.model.inventory.item.InventoryItem;
 import platformer.model.inventory.item.ItemData;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static platformer.constants.Constants.*;
 
@@ -137,12 +136,10 @@ public class BackpackHandler {
     }
 
     private boolean hasEnoughResources(Map<String, Integer> resources) {
-        Map<String, InventoryItem> inventoryMap = getInventoryMap();
+        Map<String, Integer> inventoryMap = getInventoryMap();
         for (Map.Entry<String, Integer> entry : resources.entrySet()) {
-            InventoryItem inventoryItem = inventoryMap.get(entry.getKey());
-            if (inventoryItem == null || inventoryItem.getAmount() < entry.getValue()) {
-                return false;
-            }
+            int playerAmount = inventoryMap.getOrDefault(entry.getKey(), 0);
+            if (playerAmount < entry.getValue()) return false;
         }
         return true;
     }
@@ -156,15 +153,22 @@ public class BackpackHandler {
      * @param resources A map where the key is the ItemType of the resource and the value is the amount required.
      */
     private void useResources(Map<String, Integer> resources) {
-        for (Map.Entry<String, Integer> entry : resources.entrySet()) {
+        for (Map.Entry<String, Integer> requiredResource : resources.entrySet()) {
+            int amountToConsume = requiredResource.getValue();
             for (int i = 0; i < backpack.size(); i++) {
-                InventoryItem inventoryItem = backpack.get(i);
-                if (inventoryItem != null && inventoryItem.getItemId().equals(entry.getKey())) {
-                    inventoryItem.setAmount(inventoryItem.getAmount() - entry.getValue());
-                    if (inventoryItem.getAmount() <= 0) {
-                        backpack.set(i, null);
+                InventoryItem currentItem = backpack.get(i);
+                if (currentItem != null && currentItem.getItemId().equals(requiredResource.getKey())) {
+                    int amountInStack = currentItem.getAmount();
+                    if (amountInStack >= amountToConsume) {
+                        currentItem.setAmount(amountInStack - amountToConsume);
+                        amountToConsume = 0;
                     }
-                    break;
+                    else {
+                        amountToConsume -= amountInStack;
+                        currentItem.setAmount(0);
+                    }
+                    if (currentItem.getAmount() <= 0) backpack.set(i, null);
+                    if (amountToConsume == 0) break;
                 }
             }
         }
@@ -208,10 +212,14 @@ public class BackpackHandler {
         refreshAccountItems();
     }
 
-    private Map<String, InventoryItem> getInventoryMap() {
-        return backpack.stream()
-                .filter(Objects::nonNull)
-                .collect(Collectors.toMap(InventoryItem::getItemId, item -> item));
+    private Map<String, Integer> getInventoryMap() {
+        Map<String, Integer> inventoryMap = new HashMap<>();
+        for (InventoryItem inventoryItem : backpack) {
+            if (inventoryItem != null) {
+                inventoryMap.merge(inventoryItem.getItemId(), inventoryItem.getAmount(), Integer::sum);
+            }
+        }
+        return inventoryMap;
     }
 
     /**

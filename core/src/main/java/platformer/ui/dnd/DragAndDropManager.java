@@ -48,6 +48,7 @@ public class DragAndDropManager {
     public void stopDrag() {
         this.dragging = false;
         this.draggedItem = null;
+        this.dragPosition = null;
         this.source = null;
         this.sourceIndex = -1;
         this.pressPosition = null;

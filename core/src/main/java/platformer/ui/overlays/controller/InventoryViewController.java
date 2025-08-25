@@ -227,56 +227,91 @@ public class InventoryViewController {
         int targetQuickUseSlot = getQuickUseSlotAt(e.getPoint());
         int sourceIndex = dndManager.getSourceIndex();
 
-        // Dragging from Backpack
-        if (dndManager.isSplitDrag()) {
-            if (targetBackpackSlot != -1) {
-                InventoryItem itemAtTarget = inventory.getBackpack().get(targetBackpackSlot);
-                if (itemAtTarget == null) {
-                    // Drop on an empty slot
-                    inventory.setItemInBackpackSlot(targetBackpackSlot, draggedItem);
-                }
-                else if (itemAtTarget.getItemId().equals(draggedItem.getItemId())) {
-                    // Drop on a stack of the same item
-                    inventory.mergeSplitStack(itemAtTarget, draggedItem);
-                }
-                else inventory.revertSplit(sourceIndex, draggedItem);
-            }
-            else inventory.revertSplit(sourceIndex, draggedItem);
-        }
-        else if (source == DragSourceType.BACKPACK) {
-            if (targetBackpackSlot != -1) {
-                // Backpack -> Backpack (Swap)
-                InventoryItem itemAtTarget = inventory.getBackpack().get(targetBackpackSlot);
+        if (handleSameSlotDrop(source, sourceIndex, targetBackpackSlot, targetEquipmentSlot)) return;
+        boolean dropHandled = handleItemDrop(inventory, draggedItem, source, sourceIndex, targetBackpackSlot, targetEquipmentSlot, targetQuickUseSlot);
+        finalizeDrop(dropHandled, sourceIndex, draggedItem);
+    }
 
-                if (itemAtTarget != null && itemAtTarget.getItemId().equals(draggedItem.getItemId()) && itemAtTarget.getData().stackable) {
-                    // Case A: Dropped on a stack of the same item. MERGE.
-                    inventory.mergeBackpackStacks(sourceIndex, targetBackpackSlot);
-                } else {
-                    // Case B: Dropped on a different item or an empty slot. SWAP/MOVE.
-                    inventory.swapBackpackItems(sourceIndex, targetBackpackSlot);
-                }
+    private boolean handleSameSlotDrop(DragSourceType source, int sourceIndex, int targetBackpackSlot, int targetEquipmentSlot) {
+        if (source == DragSourceType.BACKPACK && sourceIndex == targetBackpackSlot) {
+            dndManager.stopDrag();
+            this.hoveredItem = null;
+            return true;
+        }
+        if (source == DragSourceType.EQUIPMENT && sourceIndex == targetEquipmentSlot) {
+            dndManager.stopDrag();
+            this.hoveredItem = null;
+            return true;
+        }
+        return false;
+    }
+
+    private boolean handleItemDrop(Inventory inventory, InventoryItem draggedItem, DragSourceType source, int sourceIndex, int targetBackpackSlot, int targetEquipmentSlot, int targetQuickUseSlot) {
+        if (dndManager.isSplitDrag()) return handleSplitDrop(inventory, draggedItem, targetBackpackSlot);
+        if (source == DragSourceType.BACKPACK) {
+            return handleBackpackDrop(inventory, draggedItem, sourceIndex, targetBackpackSlot, targetEquipmentSlot, targetQuickUseSlot);
+        }
+        if (source == DragSourceType.EQUIPMENT) {
+            return handleEquipmentDrop(inventory, sourceIndex, targetBackpackSlot, targetEquipmentSlot);
+        }
+        return false;
+    }
+
+    private boolean handleSplitDrop(Inventory inventory, InventoryItem draggedItem, int targetBackpackSlot) {
+        if (targetBackpackSlot != -1) {
+            InventoryItem itemAtTarget = inventory.getBackpack().get(targetBackpackSlot);
+            if (itemAtTarget == null) {
+                inventory.setItemInBackpackSlot(targetBackpackSlot, draggedItem);
+                return true;
             }
-            else if (targetEquipmentSlot != -1) {
-                // Backpack -> Equipment (Equip)
-                inventory.equipItem(sourceIndex);
-            }
-            else if (targetQuickUseSlot != -1) {
-                // Backpack -> Quick Use Slot (Assign)
-                inventory.assignToQuickSlot(sourceIndex, targetQuickUseSlot);
+            if (itemAtTarget.getItemId().equals(draggedItem.getItemId())) {
+                inventory.mergeSplitStack(itemAtTarget, draggedItem);
+                return true;
             }
         }
-        // Dragging from Equipment
-        else if (source == DragSourceType.EQUIPMENT) {
-            if (targetBackpackSlot != -1) {
-                // Equipment -> Specific Backpack Slot (Swap)
-                inventory.moveEquipToBackpack(sourceIndex, targetBackpackSlot);
-            }
-            else if (targetEquipmentSlot != -1) {
-                // Equipment -> Equipment (Swap)
-                inventory.swapEquipmentItems(sourceIndex, targetEquipmentSlot);
-            }
+        return false;
+    }
+
+    private boolean handleBackpackDrop(Inventory inventory, InventoryItem draggedItem, int sourceIndex, int targetBackpackSlot, int targetEquipmentSlot, int targetQuickUseSlot) {
+        if (targetBackpackSlot != -1) return handleBackpackToBackpackDrop(inventory, draggedItem, sourceIndex, targetBackpackSlot);
+        if (targetEquipmentSlot != -1) {
+            inventory.equipItem(sourceIndex);
+            return true;
+        }
+        if (targetQuickUseSlot != -1) {
+            inventory.assignToQuickSlot(sourceIndex, targetQuickUseSlot);
+            return true;
+        }
+        return false;
+    }
+
+    private boolean handleBackpackToBackpackDrop(Inventory inventory, InventoryItem draggedItem, int sourceIndex, int targetBackpackSlot) {
+        InventoryItem itemAtTarget = inventory.getBackpack().get(targetBackpackSlot);
+        if (itemAtTarget != null && itemAtTarget.getItemId().equals(draggedItem.getItemId()) && itemAtTarget.getData().stackable) {
+            inventory.mergeBackpackStacks(sourceIndex, targetBackpackSlot);
+        }
+        else inventory.swapBackpackItems(sourceIndex, targetBackpackSlot);
+        return true;
+    }
+
+    private boolean handleEquipmentDrop(Inventory inventory, int sourceIndex, int targetBackpackSlot, int targetEquipmentSlot) {
+        if (targetBackpackSlot != -1) {
+            inventory.moveEquipToBackpack(sourceIndex, targetBackpackSlot);
+            return true;
+        }
+        if (targetEquipmentSlot != -1) {
+            inventory.swapEquipmentItems(sourceIndex, targetEquipmentSlot);
+            return true;
+        }
+        return false;
+    }
+
+    private void finalizeDrop(boolean dropHandled, int sourceIndex, InventoryItem draggedItem) {
+        if (!dropHandled && dndManager.isSplitDrag()) {
+            gameState.getPlayer().getInventory().revertSplit(sourceIndex, draggedItem);
         }
         dndManager.stopDrag();
+        this.hoveredItem = null;
     }
 
     private void changeSlot(MouseEvent e) {
