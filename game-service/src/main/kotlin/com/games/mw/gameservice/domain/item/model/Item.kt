@@ -14,7 +14,11 @@ data class Item (
 
     var amount: Int = 0,
 
+    @Column(nullable = false)
     var equipped: Int = 0,
+
+    @Column(nullable = false)
+    var slotIndex: Int = 0,
 
     @ManyToOne
     @JoinColumn(name = "settingsId", referencedColumnName = "id")
