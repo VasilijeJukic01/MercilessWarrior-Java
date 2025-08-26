@@ -30,6 +30,7 @@ repositories {
 dependencyManagement {
 	imports {
 		mavenBom("org.springframework.cloud:spring-cloud-dependencies:2023.0.0")
+		mavenBom("org.testcontainers:testcontainers-bom:1.19.8")
 	}
 }
 
@@ -78,6 +79,9 @@ dependencies {
 	testImplementation("org.mockito:mockito-inline:4.2.0")
 	testImplementation("org.mockito.kotlin:mockito-kotlin:4.1.0")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+	testImplementation("org.testcontainers:junit-jupiter")
+	testImplementation("org.testcontainers:postgresql")
+	testImplementation("org.testcontainers:kafka")
 }
 
 avro {
