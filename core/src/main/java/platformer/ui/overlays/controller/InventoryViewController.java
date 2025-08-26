@@ -471,6 +471,12 @@ public class InventoryViewController {
         return -1;
     }
 
+    public boolean isEquipmentSlotOccupied(int slotIndex) {
+        Inventory inventory = gameState.getPlayer().getInventory();
+        if (slotIndex < 0 || slotIndex >= inventory.getEquipped().length) return false;
+        return inventory.getEquipped()[slotIndex] != null;
+    }
+
     private boolean isMouseInButton(MouseEvent e, AbstractButton button) {
         return button.getButtonHitBox().contains(e.getPoint());
     }

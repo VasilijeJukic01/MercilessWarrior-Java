@@ -49,6 +49,9 @@ public class InventoryOverlay implements Overlay<MouseEvent, KeyEvent, Graphics>
     private BufferedImage[] playerAnim;
     private Rectangle2D.Double selectedSlot;
 
+    private BufferedImage[] equipmentPlaceholders;
+    private final int[] slotIconMap = new int[6];
+
     private int playerAnimTick, playerAnimIndex;
     private final int playerAnimSpeed = 20;
 
@@ -75,6 +78,14 @@ public class InventoryOverlay implements Overlay<MouseEvent, KeyEvent, Graphics>
         this.inventoryText = ImageUtils.importImage(INVENTORY_TXT, INV_TEXT_WID, INV_TEXT_HEI);
         this.slotImage = ImageUtils.importImage(SLOT_INVENTORY, SLOT_SIZE, SLOT_SIZE);
 
+        this.equipmentPlaceholders = new BufferedImage[6];
+        BufferedImage placeholderSheet = ImageUtils.importImage(EQUIPMENT_PLACEHOLDERS_PATH, -1, -1);
+        int iconWidth = placeholderSheet.getWidth() / 6;
+        int iconHeight = placeholderSheet.getHeight();
+        for (int i = 0; i < 6; i++) {
+            equipmentPlaceholders[i] = placeholderSheet.getSubimage(i * iconWidth, 0, iconWidth, iconHeight);
+        }
+
         BufferedImage[] idleAnim = SpriteManager.getInstance().getPlayerAnimations(true)[Anim.IDLE.ordinal()];
         this.playerAnim = new BufferedImage[idleAnim.length];
         for (int i = 0; i < idleAnim.length; i++) {
@@ -92,6 +103,13 @@ public class InventoryOverlay implements Overlay<MouseEvent, KeyEvent, Graphics>
         equipmentSlots.put("Charm", 3);
         equipmentSlots.put("Bracelets", 4);
         equipmentSlots.put("Boots", 5);
+
+        slotIconMap[0] = 0;
+        slotIconMap[1] = 4;
+        slotIconMap[2] = 1;
+        slotIconMap[3] = 3;
+        slotIconMap[4] = 2;
+        slotIconMap[5] = 5;
     }
 
     private void loadButtons() {
@@ -234,13 +252,28 @@ public class InventoryOverlay implements Overlay<MouseEvent, KeyEvent, Graphics>
     }
 
     private void renderEquipmentSlots(Graphics g) {
-        for (int i = 0; i < EQUIPMENT_SLOT_MAX_ROW; i++) {
+        Graphics2D g2d = (Graphics2D) g.create();
+        try {
             for (int j = 0; j < EQUIPMENT_SLOT_MAX_COL; j++) {
-                int xPos = i * EQUIPMENT_SLOT_SPACING + EQUIPMENT_SLOT_X;
-                int yPos = j * SLOT_SPACING + EQUIPMENT_SLOT_Y;
-                g.drawImage(slotImage, xPos, yPos, slotImage.getWidth(), slotImage.getHeight(), null);
-                renderEquipmentItem(g, i, j);
+                for (int i = 0; i < EQUIPMENT_SLOT_MAX_ROW; i++) {
+                    int xPos = i * EQUIPMENT_SLOT_SPACING + EQUIPMENT_SLOT_X;
+                    int yPos = j * SLOT_SPACING + EQUIPMENT_SLOT_Y;
+                    g.drawImage(slotImage, xPos, yPos, slotImage.getWidth(), slotImage.getHeight(), null);
+                    int slotIndex = j * EQUIPMENT_SLOT_MAX_ROW + i;
+                    int iconIndex = slotIconMap[slotIndex];
+                    BufferedImage placeholderIcon = equipmentPlaceholders[iconIndex];
+                    if (placeholderIcon != null && !controller.isEquipmentSlotOccupied(slotIndex)) {
+                        int iconX = xPos + (int)((SLOT_SIZE - ITEM_SIZE) / 1.2);
+                        int iconY = yPos + (int)((SLOT_SIZE - ITEM_SIZE) / 1.2);
+                        g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.2f));
+                        g2d.drawImage(placeholderIcon, iconX, iconY,  (int)(ITEM_SIZE / 1.3), (int)(ITEM_SIZE / 1.3), null);
+                        g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
+                    }
+                    renderEquipmentItem(g, i, j);
+                }
             }
+        } finally {
+            g2d.dispose();
         }
         renderItemInfoEquipment(g);
     }
