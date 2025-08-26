@@ -2,6 +2,8 @@ package platformer.model.inventory;
 
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
+import platformer.event.EventBus;
+import platformer.event.events.PreSaveEvent;
 import platformer.model.entities.player.Player;
 import platformer.model.inventory.handlers.BackpackHandler;
 import platformer.model.inventory.handlers.EquipmentHandler;
@@ -26,6 +28,7 @@ public class Inventory {
         this.equipmentHandler = new EquipmentHandler();
         this.backpackHandler = new BackpackHandler(equipmentHandler);
         Arrays.fill(quickUseSlots, null);
+        EventBus.getInstance().register(PreSaveEvent.class, e -> syncAccount());
     }
 
     /**
@@ -253,6 +256,10 @@ public class Inventory {
                 if (!itemExists) quickUseSlots[i] = null;
             }
         }
+    }
+
+    public void syncAccount() {
+        backpackHandler.refreshAccountItems();
     }
 
 }
