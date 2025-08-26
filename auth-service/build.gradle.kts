@@ -76,6 +76,7 @@ dependencies {
 
 	// Testing
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
+	testImplementation("org.springframework.kafka:spring-kafka-test")
 	testImplementation("org.mockito:mockito-inline:4.2.0")
 	testImplementation("org.mockito.kotlin:mockito-kotlin:4.1.0")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
