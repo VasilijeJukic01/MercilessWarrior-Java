@@ -200,7 +200,7 @@ public class CraftingOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
         Inventory inventory = controller.getGameState().getPlayer().getInventory();
         Map<String, Integer> playerItems = new HashMap<>();
         for (InventoryItem item : inventory.getBackpack()) {
-            playerItems.put(item.getItemId(), item.getAmount());
+            if (item != null) playerItems.merge(item.getItemId(), item.getAmount(), Integer::sum);
         }
 
         g.setFont(new Font("Arial", Font.PLAIN, FONT_MEDIUM));
@@ -279,6 +279,11 @@ public class CraftingOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
     @Override
     public void keyPressed(KeyEvent e) {
         controller.keyPressed(e);
+    }
+
+    @Override
+    public void keyReleased(KeyEvent e) {
+        controller.keyReleased(e);
     }
 
     @Override

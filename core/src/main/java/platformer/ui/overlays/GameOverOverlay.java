@@ -120,6 +120,11 @@ public class GameOverOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
 
     }
 
+    @Override
+    public void keyReleased(KeyEvent e) {
+
+    }
+
     private boolean isMouseInButton(MouseEvent e, AbstractButton abstractButton) {
         return abstractButton.getButtonHitBox().contains(e.getX(), e.getY());
     }

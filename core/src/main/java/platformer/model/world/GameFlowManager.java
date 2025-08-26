@@ -1,12 +1,16 @@
 package platformer.model.world;
 
+import platformer.core.Framework;
 import platformer.core.GameContext;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
 import platformer.event.EventBus;
+import platformer.event.events.PreSaveEvent;
 import platformer.event.events.ui.OverlayChangeEvent;
 import platformer.model.entities.player.Player;
 import platformer.model.entities.player.PlayerAction;
+import platformer.model.levels.LevelManager;
+import platformer.model.levels.Spawn;
 import platformer.state.types.GameState;
 import platformer.state.types.PlayingState;
 
@@ -24,6 +28,7 @@ public class GameFlowManager {
     public GameFlowManager(GameContext context) {
         this.context = context;
         this.gameState = context.getGameState();
+        EventBus.getInstance().register(PreSaveEvent.class, e -> configureSpawnPoint());
     }
 
     public void update() {
@@ -79,5 +84,17 @@ public class GameFlowManager {
         gameState.getOverlayManager().reset();
         context.getQuestManager().reset();
         Logger.getInstance().notify(message, Message.NOTIFICATION);
+    }
+
+    private void configureSpawnPoint() {
+        LevelManager levelManager = context.getLevelManager();
+        int currentSpawnId = -1;
+        for (Spawn s : Spawn.values()) {
+            if (s.getLevelI() == levelManager.getLevelIndexI() && s.getLevelJ() == levelManager.getLevelIndexJ()) {
+                currentSpawnId = s.getId();
+                break;
+            }
+        }
+        Framework.getInstance().getAccount().setSpawn(currentSpawnId);
     }
 }

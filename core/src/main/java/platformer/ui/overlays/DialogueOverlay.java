@@ -78,6 +78,11 @@ public class DialogueOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
 
     }
 
+    @Override
+    public void keyReleased(KeyEvent e) {
+
+    }
+
     // Core
     /**
      * Updates the dialogue overlay state and handles the animation of dialogue text.

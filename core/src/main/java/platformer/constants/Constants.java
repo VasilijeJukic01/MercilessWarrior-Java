@@ -64,6 +64,7 @@ public final class Constants {
     public static final double PLAYER_SPEED = dScale(0.65);
     public static final double LAVA_PLAYER_SPEED = dScale(0.3);
     public static final double PLAYER_BOOST = dScale(0.65);
+    public static final int BACKPACK_CAPACITY = 125;
 
     public static final double PUSH_LIMIT = -30;
     public static final double PUSH_SPEED = 0.95;
@@ -84,18 +85,6 @@ public final class Constants {
     public static final Color MINIMAP_UNWALKABLE =  new Color(41, 59, 41);
     public static final Color MINIMAP_HOVER =  new Color(255, 180, 40);
     public static final Color MINIMAP_PINNED =  new Color(80, 200, 255);
-
-    // Perks Constants
-    public static final int XP_BONUS_AMOUNT = 15;
-    public static final double STRONG_ARMS_BONUS_COOLDOWN = -0.225;
-    public static final int POWER_PILL_BONUS_POWER = 20;
-    public static final int LUCKY_DROP_BONUS_COINS = 5;
-    public static final int BROKEN_BONES_BONUS_ATTACK = 1;
-    public static final int WARRIOR_HEART_BONUS_HEALTH = 5;
-    public static final int DRAGON_FRUIT_BONUS_POWER = 26;
-    public static final int ELEMENTARY_MAGIC_CRITICAL_HIT_CHANCE = 5;
-    public static final int GODS_BLOOD_BONUS_HEALTH = 32;
-    public static final double FURIOUS_DASH_COOLDOWN = -0.75;
 
     // Cooldown Constants
     public static final double COOLDOWN_TICK = 0.1;

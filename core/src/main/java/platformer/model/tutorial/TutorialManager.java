@@ -1,12 +1,13 @@
 package platformer.model.tutorial;
 
-import platformer.event.EventBus;
-import platformer.event.events.ui.OverlayChangeEvent;
-import platformer.state.types.PlayingState;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import platformer.debug.logger.Logger;
+import platformer.debug.logger.Message;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.io.InputStreamReader;
+import java.lang.reflect.Type;
+import java.util.*;
 
 /**
  * This class manages tutorials in the game.
@@ -14,24 +15,22 @@ import java.util.Map;
  */
 public class TutorialManager {
 
-    private static final Map<TutorialType, Boolean> tutorials = new HashMap<>();
-    private int currentTutorial;
+    private List<TutorialTip> tips = new ArrayList<>();
 
-    static {
-        Arrays.stream(TutorialType.values()).forEach(t -> tutorials.put(t, false));
+    public TutorialManager() {
+        loadTips();
     }
 
-    public void activateBlockTutorial() {
-        if (!tutorials.get(TutorialType.BLOCK_ENEMY)) triggerTutorial(TutorialType.BLOCK_ENEMY);
+    private void loadTips() {
+        try (InputStreamReader reader = new InputStreamReader(Objects.requireNonNull(getClass().getResourceAsStream("/tutorials.json")))) {
+            Type listType = new TypeToken<List<TutorialTip>>() {}.getType();
+            this.tips = new Gson().fromJson(reader, listType);
+        } catch (Exception e) {
+            Logger.getInstance().notify("Failed to load tutorials.json! " + e.getMessage(), Message.ERROR);
+        }
     }
 
-    private void triggerTutorial(TutorialType tutorialType) {
-        tutorials.put(tutorialType, true);
-        currentTutorial = tutorialType.ordinal();
-        EventBus.getInstance().publish(new OverlayChangeEvent(PlayingState.TUTORIAL));
-    }
-
-    public int getCurrentTutorial() {
-        return currentTutorial;
+    public List<TutorialTip> getTips() {
+        return tips;
     }
 }

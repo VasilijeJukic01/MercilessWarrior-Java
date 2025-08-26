@@ -264,13 +264,166 @@
     "name": "Wraith Essence",
     "description": "Essence of a wraith",
     "rarity": "RARE",
-    "imagePath": "/images/inventory/WraithEssence.png",
+    "imagePath": "/images/inventory/mats/WraithEssence.png",
     "sellValue": 18,
     "stackable": true,
     "equip": {
       "canEquip": false,
       "slot": "NONE"
     }
+  },
+  "IRON_INGOT": {
+    "name": "Iron Ingot",
+    "description": "A refined bar of iron. The foundation of sturdy armor and weapons.",
+    "rarity": "COMMON",
+    "imagePath": "/images/inventory/mats/IronIngot.png",
+    "sellValue": 12,
+    "stackable": true,
+    "equip": {
+      "canEquip": false,
+      "slot": "NONE"
+    }
+  },
+  "GOLD_INGOT": {
+    "name": "Gold Ingot",
+    "description": "A pure bar of gold. Used for high-tier crafting and ornamentation.",
+    "rarity": "RARE",
+    "imagePath": "/images/inventory/mats/GoldIngot.png",
+    "sellValue": 60,
+    "stackable": true,
+    "equip": {
+      "canEquip": false,
+      "slot": "NONE"
+    }
+  },
+  "NAILS": {
+    "name": "Nails",
+    "description": "A handful of sharp iron nails.",
+    "rarity": "COMMON",
+    "imagePath": "/images/inventory/mats/Nails.png",
+    "sellValue": 1,
+    "stackable": true,
+    "equip": {
+      "canEquip": false,
+      "slot": "NONE"
+    }
+  },
+  "BONES": {
+    "name": "Bones",
+    "description": "Brittle bones from a fallen creature.",
+    "rarity": "COMMON",
+    "imagePath": "/images/inventory/mats/Bones.png",
+    "sellValue": 2,
+    "stackable": true,
+    "equip": { "canEquip": false, "slot": "NONE" }
+  },
+  "COTTON_TUFTS": {
+    "name": "Cotton Tufts",
+    "description": "Soft tufts of cotton.",
+    "rarity": "COMMON",
+    "imagePath": "/images/inventory/mats/Cotton.png",
+    "sellValue": 3,
+    "stackable": true,
+    "equip": { "canEquip": false, "slot": "NONE" }
+  },
+  "GOLD_POWDER": {
+    "name": "Gold Powder",
+    "description": "Fine, shimmering gold dust. A catalyst for enchanting and alchemy.",
+    "rarity": "RARE",
+    "imagePath": "/images/inventory/mats/GoldPowder.png",
+    "sellValue": 15,
+    "stackable": true,
+    "equip": { "canEquip": false, "slot": "NONE" }
+  },
+  "GHOUL_CLAW": {
+    "name": "Ghoul Claw",
+    "description": "A sharp, wicked claw from a ghoul.",
+    "rarity": "UNCOMMON",
+    "imagePath": "/images/inventory/mats/GhoulClaw.png",
+    "sellValue": 8,
+    "stackable": true,
+    "equip": { "canEquip": false, "slot": "NONE" }
+  },
+  "LEATHER_STRAPS": {
+    "name": "Leather Straps",
+    "description": "Tough, flexible strips of cured leather, used for binding and grips.",
+    "rarity": "COMMON",
+    "imagePath": "/images/inventory/mats/Leather_Strips.png",
+    "sellValue": 4,
+    "stackable": true,
+    "equip": { "canEquip": false, "slot": "NONE" }
+  },
+  "LEATHER": {
+    "name": "Leather",
+    "description": "A sturdy piece of tanned hide.",
+    "rarity": "COMMON",
+    "imagePath": "/images/inventory/mats/Leather.png",
+    "sellValue": 10,
+    "stackable": true,
+    "equip": { "canEquip": false, "slot": "NONE" }
+  },
+  "LINEN_ROLL": {
+    "name": "Linen Roll",
+    "description": "A roll of fine linen cloth, useful for light armor and padding.",
+    "rarity": "COMMON",
+    "imagePath": "/images/inventory/mats/Linen.png",
+    "sellValue": 6,
+    "stackable": true,
+    "equip": { "canEquip": false, "slot": "NONE" }
+  },
+  "WOODEN_PLANKS": {
+    "name": "Wooden Planks",
+    "description": "A set of sturdy wooden planks, processed from raw timber.",
+    "rarity": "COMMON",
+    "imagePath": "/images/inventory/mats/Planks.png",
+    "sellValue": 4,
+    "stackable": true,
+    "equip": { "canEquip": false, "slot": "NONE" }
+  },
+  "ROPE": {
+    "name": "Rope",
+    "description": "A coil of strong, fibrous rope. Has many practical uses.",
+    "rarity": "COMMON",
+    "imagePath": "/images/inventory/mats/Rope.png",
+    "sellValue": 5,
+    "stackable": true,
+    "equip": { "canEquip": false, "slot": "NONE" }
+  },
+  "SILK": {
+    "name": "Silk",
+    "description": "A piece of exceptionally soft and light silk.",
+    "rarity": "UNCOMMON",
+    "imagePath": "/images/inventory/mats/Silk.png",
+    "sellValue": 15,
+    "stackable": true,
+    "equip": { "canEquip": false, "slot": "NONE" }
+  },
+  "TIMBER": {
+    "name": "Timber",
+    "description": "A solid log of wood.",
+    "rarity": "COMMON",
+    "imagePath": "/images/inventory/mats/Timber.png",
+    "sellValue": 2,
+    "stackable": true,
+    "equip": { "canEquip": false, "slot": "NONE" }
+  },
+  "TWINE": {
+    "name": "Twine",
+    "description": "A simple but strong piece of twine, spun from plant fibers.",
+    "rarity": "COMMON",
+    "imagePath": "/images/inventory/mats/Twine.png",
+    "sellValue": 1,
+    "stackable": true,
+    "equip": { "canEquip": false, "slot": "NONE" }
+  },
+  "WIRE": {
+    "name": "Wire",
+    "description": "A spool of thin, flexible metal wire.",
+    "rarity": "UNCOMMON",
+    "imagePath": "/images/inventory/mats/Wire.png",
+    "sellValue": 9,
+    "stackable": true,
+    "equip": { "canEquip": false, "slot": "NONE" }
   },
   "HELMET_WARRIOR": {
     "name": "Warrior Helmet",

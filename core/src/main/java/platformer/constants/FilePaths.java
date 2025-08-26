@@ -132,14 +132,12 @@ public final class FilePaths {
     public static final String LOOT_TABLE_PATH = "/items/loot_tables.json";
 
     public static final String PERKS_PATH = "/items/perks.json";
+    public static final String EQUIPMENT_PLACEHOLDERS_PATH = "/images/inventory/EquipmentPlaceholders.png";
 
     // Quests
     public static final String QUESTS_PATH = "/quests/quests.json";
     public static final String QUEST_COIN_PATH = "/images/quest/CoinIcon.png";
     public static final String QUEST_EXP_PATH = "/images/quest/ExpIcon.png";
-
-    // Tutorial
-    public static final String TUTORIAL_BLOCK_PATH = "/images/tutorial/Tutorial1.png";
 
     // Credits
     public static final String CREDITS_PATH = "/credits.json";

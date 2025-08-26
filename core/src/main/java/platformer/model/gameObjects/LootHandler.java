@@ -1,6 +1,7 @@
 package platformer.model.gameObjects;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import com.google.gson.reflect.TypeToken;
 import platformer.audio.Audio;
 import platformer.audio.types.Sound;
@@ -53,17 +54,9 @@ public class LootHandler {
      */
     public void generateCrateLoot(Container container) {
         LootTable crateTable = lootTables.get("CRATE");
-        if (crateTable == null) return;
-
-        int roll = rand.nextInt(crateTable.getTotalWeight());
-        int cumulativeWeight = 0;
-        for (LootItem lootItem : crateTable.getItems()) {
-            cumulativeWeight += lootItem.getWeight();
-            if (roll < cumulativeWeight) {
-                InventoryItem item = new InventoryItem(lootItem.getItemId(), lootItem.getQuantity());
-                container.getItems().add(item);
-                return;
-            }
+        List<InventoryItem> generatedItems = generateItemsFromTable(crateTable);
+        if (!generatedItems.isEmpty()) {
+            container.getItems().addAll(generatedItems);
         }
     }
 
@@ -130,10 +123,76 @@ public class LootHandler {
      * @param enemyType The type of enemy that dropped the loot.
      */
     private void generateLoot(Rectangle2D.Double location, EnemyType enemyType) {
-        int x = (int) (location.width / 4) + (int) location.x;
-        int y = (int) (location.height / 2.3) + (int) location.y;
-        Loot loot = new Loot(ObjType.LOOT, x, y, enemyType);
-        objectManager.addGameObject(loot);
+        LootTable table = lootTables.get(enemyType.name());
+        List<InventoryItem> collectedItems = generateItemsFromTable(table);
+
+        if (!collectedItems.isEmpty()) {
+            int x = (int) (location.width / 4) + (int) location.x;
+            int y = (int) (location.height / 2.3) + (int) location.y;
+            Loot loot = new Loot(ObjType.LOOT, x, y);
+            loot.getItems().addAll(collectedItems);
+            objectManager.addGameObject(loot);
+        }
+    }
+
+    /**
+     * Core loot generation logic. Determines the number of items to drop and then rolls for each item.
+     *
+     * @param table The LootTable to generate items from.
+     * @return A list of generated InventoryItems.
+     */
+    private List<InventoryItem> generateItemsFromTable(LootTable table) {
+        if (table == null || table.getItems() == null || table.getItems().isEmpty()) return Collections.emptyList();
+
+        int numberOfRolls = 1;
+        if (table.getNumRolls() != null && !table.getNumRolls().isEmpty()) {
+            int totalRollsWeight = table.getTotalRollsWeight();
+            if (totalRollsWeight > 0) {
+                int roll = rand.nextInt(totalRollsWeight);
+                int cumulativeWeight = 0;
+                List<Map.Entry<String, Integer>> sortedRolls = new ArrayList<>(table.getNumRolls().entrySet());
+                sortedRolls.sort(Comparator.comparingInt(e -> Integer.parseInt(e.getKey())));
+
+                for (Map.Entry<String, Integer> entry : sortedRolls) {
+                    cumulativeWeight += entry.getValue();
+                    if (roll < cumulativeWeight) {
+                        numberOfRolls = Integer.parseInt(entry.getKey());
+                        break;
+                    }
+                }
+            }
+        }
+
+        List<InventoryItem> collectedItems = new ArrayList<>();
+        int totalItemWeight = table.getTotalItemWeight();
+        if (totalItemWeight <= 0) return Collections.emptyList();
+
+        for (int i = 0; i < numberOfRolls; i++) {
+            int roll = rand.nextInt(totalItemWeight);
+            int cumulativeWeight = 0;
+            for (LootItem lootItem : table.getItems()) {
+                cumulativeWeight += lootItem.getWeight();
+                if (roll < cumulativeWeight) {
+                    if (!lootItem.getItemId().equals("NOTHING")) {
+                        InventoryItem newItem = new InventoryItem(lootItem.getItemId(), lootItem.getQuantity());
+                        ItemData data = newItem.getData();
+                        boolean itemStacked = false;
+                        if (data != null && data.stackable) {
+                            for (InventoryItem existingItem : collectedItems) {
+                                if (existingItem.getItemId().equals(newItem.getItemId())) {
+                                    existingItem.addAmount(newItem.getAmount());
+                                    itemStacked = true;
+                                    break;
+                                }
+                            }
+                        }
+                        if (!itemStacked) collectedItems.add(newItem);
+                    }
+                    break;
+                }
+            }
+        }
+        return collectedItems;
     }
 
     /**
@@ -177,7 +236,7 @@ public class LootHandler {
         LootTable herbTable = lootTables.get("HERB");
         if (herbTable == null) return;
 
-        int roll = rand.nextInt(herbTable.getTotalWeight());
+        int roll = rand.nextInt(herbTable.getTotalItemWeight());
         int cumulativeWeight = 0;
         for (LootItem lootItem : herbTable.getItems()) {
             cumulativeWeight += lootItem.getWeight();
@@ -200,13 +259,28 @@ public class LootHandler {
      */
     private Map<String, LootTable> loadLootTables() {
         try (InputStreamReader reader = new InputStreamReader(Objects.requireNonNull(getClass().getResourceAsStream(LOOT_TABLE_PATH)))) {
-            Type type = new TypeToken<Map<String, List<LootItem>>>() {}.getType();
-            Map<String, List<LootItem>> rawTables = new Gson().fromJson(reader, type);
+            Gson gson = new Gson();
+            Type mapType = new TypeToken<Map<String, JsonElement>>() {}.getType();
+            Map<String, JsonElement> rawJsonMap = gson.fromJson(reader, mapType);
 
             Map<String, LootTable> processedTables = new HashMap<>();
-            for (Map.Entry<String, List<LootItem>> entry : rawTables.entrySet()) {
-                LootTable table = new LootTable();
-                table.setItems(entry.getValue());
+
+            for (Map.Entry<String, JsonElement> entry : rawJsonMap.entrySet()) {
+                JsonElement element = entry.getValue();
+                LootTable table;
+                if (element.isJsonObject()) {
+                    table = gson.fromJson(element, LootTable.class);
+                    if (table.getNumRolls() == null) {
+                        table.setNumRolls(Map.of("1", 100));
+                    }
+                }
+                else if (element.isJsonArray()) {
+                    table = new LootTable();
+                    Type listType = new TypeToken<List<LootItem>>() {}.getType();
+                    table.setItems(gson.fromJson(element, listType));
+                    table.setNumRolls(Map.of("1", 100));
+                }
+                else continue;
                 processedTables.put(entry.getKey(), table);
             }
             return processedTables;

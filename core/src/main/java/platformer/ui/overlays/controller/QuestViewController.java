@@ -74,6 +74,10 @@ public class QuestViewController {
     }
 
     public void keyPressed(KeyEvent e) {
+
+    }
+
+    public void keyReleased(KeyEvent e) {
         int listSize = context.getQuestManager().getSlots().size();
         switch (e.getKeyCode()) {
             case KeyEvent.VK_LEFT:

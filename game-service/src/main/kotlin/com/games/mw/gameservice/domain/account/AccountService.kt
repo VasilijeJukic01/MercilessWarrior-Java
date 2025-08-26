@@ -79,7 +79,7 @@ class AccountService(
             settings.tokens,
             settings.level,
             settings.exp,
-            items.map { "${it.name},${it.amount},${it.equipped}" },
+            items.map { "${it.name},${it.amount},${it.equipped},${it.slotIndex}" },
             perks.map { it.name }
         )
     }
@@ -107,11 +107,14 @@ class AccountService(
 
         accountDataDTO.items.forEach {
             val itemParts = it.split(",")
-            val name = itemParts[0]
-            val amount = itemParts[1].toInt()
-            val equipped = itemParts[2].toInt()
-            itemService.insertItem(Item(name = name, amount = amount, equipped = equipped, settings = settings))
-                .mapLeft { AccountError.ItemOperationFailed(it) }.bind()
+            if (itemParts.size == 4) {
+                val name = itemParts[0]
+                val amount = itemParts[1].toInt()
+                val equipped = itemParts[2].toInt()
+                val slotIndex = itemParts[3].toInt()
+                itemService.insertItem(Item(name = name, amount = amount, equipped = equipped, slotIndex = slotIndex, settings = settings))
+                    .mapLeft { AccountError.ItemOperationFailed(it) }.bind()
+            }
         }
 
         perkService.deleteBySettingsId(settingsId)

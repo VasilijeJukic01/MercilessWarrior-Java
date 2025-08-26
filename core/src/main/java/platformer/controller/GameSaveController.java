@@ -5,10 +5,9 @@ import platformer.core.Framework;
 import platformer.core.Game;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
-import platformer.model.levels.LevelManager;
-import platformer.model.levels.Spawn;
+import platformer.event.EventBus;
+import platformer.event.events.PreSaveEvent;
 import platformer.state.types.GameState;
-import platformer.state.State;
 import platformer.ui.components.slots.GameSlot;
 
 import java.awt.event.MouseEvent;
@@ -72,6 +71,7 @@ public class GameSaveController {
     }
 
     public void saveSlot() {
+        EventBus.getInstance().publish(new PreSaveEvent());
         int slot = -1;
         for (int i = 0; i < GAME_SLOT_CAP; i++) {
             if (gameSlots.get(i).isSelected()) {
@@ -79,7 +79,6 @@ public class GameSaveController {
                 break;
             }
         }
-        configureSpawnPoint();
         if (slot == 0) {
             if (Framework.getInstance().getAccount().isEnableCheats()) return;
             if (Framework.getInstance().getCloud().getName().equals("Default")) return;
@@ -90,20 +89,6 @@ public class GameSaveController {
             Framework.getInstance().localSave(slot);
             initSlots();
         }
-    }
-
-    private void configureSpawnPoint() {
-        State state = game.getCurrentState();
-        if (!(state instanceof GameState)) return;
-        LevelManager levelManager = ((GameState) state).getLevelManager();
-        int currentSpawnId = -1;
-        for (Spawn s : Spawn.values()) {
-            if (s.getLevelI() == levelManager.getLevelIndexI() && s.getLevelJ() == levelManager.getLevelIndexJ()) {
-                currentSpawnId = s.getId();
-                break;
-            }
-        }
-        Framework.getInstance().getAccount().setSpawn(currentSpawnId);
     }
 
     private void getSlotAccountData(GameSlot s) {

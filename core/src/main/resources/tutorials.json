@@ -1,0 +1,17 @@
+[
+  {
+    "title": "Blocking Attacks",
+    "image": "/images/tutorial/Tutorial1.png",
+    "content": "A well-timed block can negate damage and also restore your stamina. Press {Shield} just as an enemy's attack is about to land to perform a block."
+  },
+  {
+    "title": "Minimap Navigation",
+    "image": "/images/tutorial/Tutorial2.png",
+    "content": "Lost? Open your minimap with {Minimap}. You can middle-click on the map to pin a location, creating a path to guide you."
+  },
+  {
+    "title": "Crafting Basics",
+    "image": "/images/tutorial/Tutorial3.png",
+    "content": "Gather materials like ores and herbs from the world. Visit a Crafting Table to combine them into powerful new gear."
+  }
+]

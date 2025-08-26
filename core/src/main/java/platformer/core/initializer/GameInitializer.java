@@ -84,7 +84,6 @@ public class GameInitializer {
         context.setScreenEffectsManager(screenEffectsManager);
 
         // Dependency Injection
-        gameState.getOverlayManager().wire(context);
         context.getPerksManager().wire(context);
         context.getQuestManager().wire(context);
         context.getDialogueManager().wire(context);

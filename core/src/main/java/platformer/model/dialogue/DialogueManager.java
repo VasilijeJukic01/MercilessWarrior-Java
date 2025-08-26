@@ -34,6 +34,7 @@ public class DialogueManager {
 
     private GameContext context;
     private DialogueOverlay overlay;
+    private OverlayManager overlayManager;
 
     private final Map<String, List<Dialogue>> dialogues;
 
@@ -43,9 +44,15 @@ public class DialogueManager {
     }
 
     public void wire(GameContext context) {
-        OverlayManager overlayManager = context.getOverlayManager();
+        this.overlayManager = context.getOverlayManager();
         this.context = context;
-        this.overlay = (DialogueOverlay) overlayManager.getOverlays().get(PlayingState.DIALOGUE);
+    }
+
+    private DialogueOverlay getOverlay() {
+        if (this.overlay == null && this.overlayManager != null) {
+            this.overlay = (DialogueOverlay) this.overlayManager.getOverlays().get(PlayingState.DIALOGUE);
+        }
+        return this.overlay;
     }
 
     private void readDialogueFile() {
@@ -87,7 +94,7 @@ public class DialogueManager {
      * @param object the game object
      */
     public void activateDialogue(String id, GameObject object) {
-        if (overlay != null) overlay.reset();
+        if (getOverlay() != null) getOverlay().reset();
         EventBus.getInstance().publish(new OverlayChangeEvent(PlayingState.DIALOGUE));
         Random random = new Random();
         int index = random.nextInt(getDialogues(id).size());
@@ -110,19 +117,19 @@ public class DialogueManager {
      * @param object the game object
      */
     private void setDialogueObject(Dialogue dialogue, GameObject object) {
-        overlay.setDialogues(dialogue, object);
+        getOverlay().setDialogues(dialogue, object);
     }
 
     /**
      * Accepts the current question in the dialogue.
      */
     public void acceptQuestion() {
-        if (overlay.getQuestion() == null || !overlay.isOnLastQuestion()) return;
-        String nextAction = overlay.getQuestion().getAnswers().get(0).getNext();
+        if (getOverlay().getQuestion() == null || !getOverlay().isOnLastQuestion()) return;
+        String nextAction = getOverlay().getQuestion().getAnswers().get(0).getNext();
 
         if (nextAction.equals("FIGHT_RORIC")) {
             EventBus.getInstance().publish(new OverlayChangeEvent(null));
-            overlay.reset();
+            getOverlay().reset();
             EventBus.getInstance().publish(new FightInitiatedEvent("RORIC"));
             return;
         }
@@ -136,10 +143,10 @@ public class DialogueManager {
      * Declines the current question in the dialogue.
      */
     public void declineQuestion() {
-        if (overlay.getQuestion() == null || !overlay.isOnLastQuestion()) return;
-        overlay.next();
+        if (getOverlay().getQuestion() == null || !getOverlay().isOnLastQuestion()) return;
+        getOverlay().next();
         EventBus.getInstance().publish(new OverlayChangeEvent(null));
-        overlay.reset();
+        getOverlay().reset();
     }
 
     /**
@@ -149,11 +156,11 @@ public class DialogueManager {
      * @param type the dialogue type
      */
     public void updateDialogue(String type) {
-        if (overlay.isOnLastQuestion() && type.equals("STANDARD")) {
-            overlay.skipLetterAnim();
+        if (getOverlay().isOnLastQuestion() && type.equals("STANDARD")) {
+            getOverlay().skipLetterAnim();
             return;
         }
-        if(!overlay.next()) {
+        if(!getOverlay().next()) {
             ObjectManager objectManager = context.getGameState().getObjectManager();
             if (Objects.equals(objectManager.getIntersectingObject(), "Blacksmith"))
                 EventBus.getInstance().publish(new OverlayChangeEvent(PlayingState.BLACKSMITH));
@@ -168,7 +175,7 @@ public class DialogueManager {
             }
             else EventBus.getInstance().publish(new OverlayChangeEvent(null));
 
-            overlay.reset();
+            getOverlay().reset();
         }
     }
 

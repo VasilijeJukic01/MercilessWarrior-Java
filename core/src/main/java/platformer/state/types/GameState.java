@@ -14,10 +14,8 @@ import platformer.core.initializer.GameInitializer;
 import platformer.core.mode.GameMode;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
-import platformer.event.EventBus;
 import platformer.event.events.ui.GamePausedEvent;
 import platformer.event.events.ui.GameResumedEvent;
-import platformer.event.events.ui.OverlayChangeEvent;
 import platformer.model.effects.ScreenEffectsManager;
 import platformer.model.entities.player.Player;
 import platformer.model.gameObjects.ObjectManager;
@@ -83,6 +81,7 @@ public class GameState extends AbstractState implements State {
         this.bossInterface = new BossInterface();
 
         this.context = GameInitializer.initialize(this, screenEffectsManager);
+        this.overlayManager.wire(context);
 
         this.world = new GameWorld(context);
         this.flowManager = new GameFlowManager(context);
@@ -247,10 +246,7 @@ public class GameState extends AbstractState implements State {
             overlayManager.getChatOverlay().keyPressed(e);
             return;
         }
-        if (state != null) {
-            overlayManager.keyPressed(e);
-            return;
-        }
+        if (state != null) overlayManager.keyPressed(e);
         stateController.keyPressed(e, state);
     }
 
@@ -267,12 +263,7 @@ public class GameState extends AbstractState implements State {
             else overlayManager.getChatOverlay().keyReleased(e);
             return;
         }
-        if (state != null) {
-            if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
-                EventBus.getInstance().publish(new OverlayChangeEvent(null));
-            }
-            return;
-        }
+        if (state != null) overlayManager.keyReleased(e);
         stateController.keyReleased(e, state);
     }
 

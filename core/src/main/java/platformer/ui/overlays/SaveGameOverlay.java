@@ -109,6 +109,11 @@ public class SaveGameOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
 
     }
 
+    @Override
+    public void keyReleased(KeyEvent e) {
+
+    }
+
     private boolean isMouseInButton(MouseEvent e, MediumButton mediumButton) {
         return mediumButton.getButtonHitBox().contains(e.getX(), e.getY());
     }

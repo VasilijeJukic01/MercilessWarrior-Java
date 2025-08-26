@@ -126,7 +126,6 @@ public class EnemyManager {
         if (e.getEnemyAction() == Anim.DEATH) {
             Player player = context.getPlayer();
             context.getObjectManager().generateLoot(e);
-            context.getTutorialManager().activateBlockTutorial();
             player.changeStamina(rand.nextInt(5));
             player.changeExp(rand.nextInt(50)+100);
             EventBus.getInstance().publish(new EnemyDefeatedEvent(e));

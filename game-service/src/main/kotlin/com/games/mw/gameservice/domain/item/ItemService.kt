@@ -64,6 +64,7 @@ class ItemService(
             existingItem.name = itemUpdate.name
             existingItem.amount = itemUpdate.amount
             existingItem.equipped = itemUpdate.equipped
+            existingItem.slotIndex = itemUpdate.slotIndex
             existingItem.settings = itemUpdate.settings
             itemRepository.save(existingItem)
         } catch (e: Exception) {

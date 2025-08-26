@@ -1,5 +1,61 @@
 [
   {
+    "output": "IRON_INGOT",
+    "amount": 1,
+    "ingredients": {
+      "IRON_ORE": 2
+    }
+  },
+  {
+    "output": "GOLD_INGOT",
+    "amount": 1,
+    "ingredients": {
+      "GOLD_ORE": 2
+    }
+  },
+  {
+    "output": "NAILS",
+    "amount": 10,
+    "ingredients": {
+      "IRON_INGOT": 1
+    }
+  },
+  {
+    "output": "GOLD_POWDER",
+    "amount": 1,
+    "ingredients": {
+      "GOLD_INGOT": 1
+    }
+  },
+  {
+    "output": "WOODEN_PLANKS",
+    "amount": 2,
+    "ingredients": {
+      "TIMBER": 1
+    }
+  },
+  {
+    "output": "LEATHER_STRAPS",
+    "amount": 3,
+    "ingredients": {
+      "LEATHER": 1
+    }
+  },
+  {
+    "output": "LINEN_ROLL",
+    "amount": 1,
+    "ingredients": {
+      "COTTON": 3
+    }
+  },
+  {
+    "output": "ROPE",
+    "amount": 1,
+    "ingredients": {
+      "TWINE": 4
+    }
+  },
+  {
     "output": "ARMOR_GUARDIAN",
     "amount": 1,
     "ingredients": {

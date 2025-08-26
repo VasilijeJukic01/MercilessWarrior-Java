@@ -12,6 +12,8 @@ import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.MediumButton;
 import platformer.ui.buttons.SmallButton;
 import platformer.ui.components.ItemComparisonTooltip;
+import platformer.ui.dnd.DragAndDropManager;
+import platformer.ui.dnd.DragSourceType;
 import platformer.ui.overlays.controller.InventoryViewController;
 import platformer.utils.ImageUtils;
 
@@ -47,6 +49,9 @@ public class InventoryOverlay implements Overlay<MouseEvent, KeyEvent, Graphics>
     private BufferedImage[] playerAnim;
     private Rectangle2D.Double selectedSlot;
 
+    private BufferedImage[] equipmentPlaceholders;
+    private final int[] slotIconMap = new int[6];
+
     private int playerAnimTick, playerAnimIndex;
     private final int playerAnimSpeed = 20;
 
@@ -73,6 +78,14 @@ public class InventoryOverlay implements Overlay<MouseEvent, KeyEvent, Graphics>
         this.inventoryText = ImageUtils.importImage(INVENTORY_TXT, INV_TEXT_WID, INV_TEXT_HEI);
         this.slotImage = ImageUtils.importImage(SLOT_INVENTORY, SLOT_SIZE, SLOT_SIZE);
 
+        this.equipmentPlaceholders = new BufferedImage[6];
+        BufferedImage placeholderSheet = ImageUtils.importImage(EQUIPMENT_PLACEHOLDERS_PATH, -1, -1);
+        int iconWidth = placeholderSheet.getWidth() / 6;
+        int iconHeight = placeholderSheet.getHeight();
+        for (int i = 0; i < 6; i++) {
+            equipmentPlaceholders[i] = placeholderSheet.getSubimage(i * iconWidth, 0, iconWidth, iconHeight);
+        }
+
         BufferedImage[] idleAnim = SpriteManager.getInstance().getPlayerAnimations(true)[Anim.IDLE.ordinal()];
         this.playerAnim = new BufferedImage[idleAnim.length];
         for (int i = 0; i < idleAnim.length; i++) {
@@ -90,6 +103,13 @@ public class InventoryOverlay implements Overlay<MouseEvent, KeyEvent, Graphics>
         equipmentSlots.put("Charm", 3);
         equipmentSlots.put("Bracelets", 4);
         equipmentSlots.put("Boots", 5);
+
+        slotIconMap[0] = 0;
+        slotIconMap[1] = 4;
+        slotIconMap[2] = 1;
+        slotIconMap[3] = 3;
+        slotIconMap[4] = 2;
+        slotIconMap[5] = 5;
     }
 
     private void loadButtons() {
@@ -120,6 +140,7 @@ public class InventoryOverlay implements Overlay<MouseEvent, KeyEvent, Graphics>
 
     @Override
     public void update() {
+        controller.update();
         updatePlayerAnimation();
         Arrays.stream(smallButtons).forEach(SmallButton::update);
         Arrays.stream(mediumButtons).forEach(MediumButton::update);
@@ -152,6 +173,7 @@ public class InventoryOverlay implements Overlay<MouseEvent, KeyEvent, Graphics>
         g.drawRect((int)selectedSlot.x, (int)selectedSlot.y,  (int)selectedSlot.width,  (int)selectedSlot.height);
         renderButtons(g);
         renderTooltip(g);
+        controller.getDndManager().render(g);
     }
 
     private void renderOverlay(Graphics2D g2d) {
@@ -169,6 +191,21 @@ public class InventoryOverlay implements Overlay<MouseEvent, KeyEvent, Graphics>
         g2d.setColor(Color.WHITE);
         g2d.setStroke(new BasicStroke(1));
         g2d.draw(backpackPanel);
+
+        g2d.setFont(new Font("Arial", Font.BOLD, FONT_MEDIUM));
+        g2d.setColor(INV_TEXT_LABEL);
+
+        int itemsPerPage = INVENTORY_SLOT_MAX_ROW * INVENTORY_SLOT_MAX_COL;
+        int maxPages = (int) Math.ceil((double) BACKPACK_CAPACITY / itemsPerPage);
+        if (maxPages == 0) maxPages = 1;
+
+        String pageText = "Page: " + (controller.getBackpackSlot() + 1) + " / " + maxPages;
+        FontMetrics fm = g2d.getFontMetrics();
+        int textWidth = fm.stringWidth(pageText);
+        int textX = (int) (backpackPanel.getX() + backpackPanel.getWidth() - textWidth);
+        int textY = (int) backpackPanel.getY() - (int)(5 * SCALE);
+
+        g2d.drawString(pageText, textX, textY);
     }
 
     private void renderBackpackSlots(Graphics g) {
@@ -187,9 +224,13 @@ public class InventoryOverlay implements Overlay<MouseEvent, KeyEvent, Graphics>
     }
 
     private void renderBackpackItem(Graphics g, Inventory inventory, int absoluteSlotNumber) {
+        DragAndDropManager dndManager = controller.getDndManager();
+        if (dndManager.isDragging() && !dndManager.isSplitDrag() && dndManager.getSource() == DragSourceType.BACKPACK && dndManager.getSourceIndex() == absoluteSlotNumber) {
+            return;
+        }
         InventoryItem item = inventory.getBackpack().get(absoluteSlotNumber);
+        if (item == null) return;
         ItemData itemData = item.getData();
-        if (itemData == null) return;
         int relativeSlotNumber = absoluteSlotNumber - (controller.getBackpackSlot() * (INVENTORY_SLOT_MAX_ROW * INVENTORY_SLOT_MAX_COL));
         int xPos = (relativeSlotNumber % INVENTORY_SLOT_MAX_ROW) * SLOT_SPACING + BACKPACK_SLOT_X + ITEM_OFFSET_X;
         int yPos = (relativeSlotNumber / INVENTORY_SLOT_MAX_ROW) * SLOT_SPACING + BACKPACK_SLOT_Y + ITEM_OFFSET_Y;
@@ -211,13 +252,28 @@ public class InventoryOverlay implements Overlay<MouseEvent, KeyEvent, Graphics>
     }
 
     private void renderEquipmentSlots(Graphics g) {
-        for (int i = 0; i < EQUIPMENT_SLOT_MAX_ROW; i++) {
+        Graphics2D g2d = (Graphics2D) g.create();
+        try {
             for (int j = 0; j < EQUIPMENT_SLOT_MAX_COL; j++) {
-                int xPos = i * EQUIPMENT_SLOT_SPACING + EQUIPMENT_SLOT_X;
-                int yPos = j * SLOT_SPACING + EQUIPMENT_SLOT_Y;
-                g.drawImage(slotImage, xPos, yPos, slotImage.getWidth(), slotImage.getHeight(), null);
-                renderEquipmentItem(g, i, j);
+                for (int i = 0; i < EQUIPMENT_SLOT_MAX_ROW; i++) {
+                    int xPos = i * EQUIPMENT_SLOT_SPACING + EQUIPMENT_SLOT_X;
+                    int yPos = j * SLOT_SPACING + EQUIPMENT_SLOT_Y;
+                    g.drawImage(slotImage, xPos, yPos, slotImage.getWidth(), slotImage.getHeight(), null);
+                    int slotIndex = j * EQUIPMENT_SLOT_MAX_ROW + i;
+                    int iconIndex = slotIconMap[slotIndex];
+                    BufferedImage placeholderIcon = equipmentPlaceholders[iconIndex];
+                    if (placeholderIcon != null && !controller.isEquipmentSlotOccupied(slotIndex)) {
+                        int iconX = xPos + (int)((SLOT_SIZE - ITEM_SIZE) / 1.2);
+                        int iconY = yPos + (int)((SLOT_SIZE - ITEM_SIZE) / 1.2);
+                        g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.2f));
+                        g2d.drawImage(placeholderIcon, iconX, iconY,  (int)(ITEM_SIZE / 1.3), (int)(ITEM_SIZE / 1.3), null);
+                        g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
+                    }
+                    renderEquipmentItem(g, i, j);
+                }
             }
+        } finally {
+            g2d.dispose();
         }
         renderItemInfoEquipment(g);
     }
@@ -225,6 +281,10 @@ public class InventoryOverlay implements Overlay<MouseEvent, KeyEvent, Graphics>
     private void renderEquipmentItem(Graphics g, int i, int j) {
         Inventory inventory = controller.getGameState().getPlayer().getInventory();
         int slotIndex = j * EQUIPMENT_SLOT_MAX_ROW + i;
+        DragAndDropManager dndManager = controller.getDndManager();
+        if (dndManager.isDragging() && dndManager.getSource() == DragSourceType.EQUIPMENT && dndManager.getSourceIndex() == slotIndex) {
+            return;
+        }
         if (inventory.getEquipped()[slotIndex] != null) {
             InventoryItem item = inventory.getEquipped()[slotIndex];
             ItemData itemData = item.getData();
@@ -325,8 +385,8 @@ public class InventoryOverlay implements Overlay<MouseEvent, KeyEvent, Graphics>
             for (Map.Entry<String, Integer> entry : equipmentSlots.entrySet()) {
                 if (entry.getKey().equalsIgnoreCase(slotType)) {
                     InventoryItem equippedItem = inventory.getEquipped()[entry.getValue()];
-                    if (equippedItem != null) {
-                        Point p = controller.getMousePosition();
+                    Point p = controller.getMousePosition();
+                    if (equippedItem != null && controller.isMouseInBackpack(p) && !controller.getDndManager().isDragging()) {
                         if (p != null) comparisonTooltip.render(g, hoveredItem, equippedItem, p.x + 15, p.y + 15, overlay.getBounds());
                     }
                     break;
@@ -372,6 +432,7 @@ public class InventoryOverlay implements Overlay<MouseEvent, KeyEvent, Graphics>
 
     @Override
     public void mouseDragged(MouseEvent e) {
+        controller.mouseDragged(e);
     }
 
     @Override
@@ -396,6 +457,11 @@ public class InventoryOverlay implements Overlay<MouseEvent, KeyEvent, Graphics>
     @Override
     public void keyPressed(KeyEvent e) {
         controller.keyPressed(e);
+    }
+
+    @Override
+    public void keyReleased(KeyEvent e) {
+        controller.keyReleased(e);
     }
 
     @Override

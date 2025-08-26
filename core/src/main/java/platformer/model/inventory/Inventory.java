@@ -2,8 +2,9 @@ package platformer.model.inventory;
 
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
+import platformer.event.EventBus;
+import platformer.event.events.PreSaveEvent;
 import platformer.model.entities.player.Player;
-import platformer.model.gameObjects.objects.Loot;
 import platformer.model.inventory.handlers.BackpackHandler;
 import platformer.model.inventory.handlers.EquipmentHandler;
 import platformer.model.inventory.item.InventoryItem;
@@ -27,6 +28,7 @@ public class Inventory {
         this.equipmentHandler = new EquipmentHandler();
         this.backpackHandler = new BackpackHandler(equipmentHandler);
         Arrays.fill(quickUseSlots, null);
+        EventBus.getInstance().register(PreSaveEvent.class, e -> syncAccount());
     }
 
     /**
@@ -89,13 +91,49 @@ public class Inventory {
         backpackHandler.dropItem(index);
     }
 
+    public void swapBackpackItems(int index1, int index2) {
+        backpackHandler.swapItems(index1, index2);
+    }
+
+    public void moveEquipToBackpack(int equipIndex, int backpackIndex) {
+        InventoryItem unequippedItem = equipmentHandler.unequipItem(equipIndex);
+        if (unequippedItem == null) return;
+
+        InventoryItem itemInBackpackSlot = backpackHandler.getBackpack().get(backpackIndex);
+        backpackHandler.setItemAt(backpackIndex, unequippedItem);
+
+        if (itemInBackpackSlot != null) {
+            if (equipmentHandler.canEquipItem(itemInBackpackSlot, equipIndex)) {
+                equipmentHandler.getEquipped()[equipIndex] = itemInBackpackSlot;
+                equipmentHandler.applyBonus(itemInBackpackSlot);
+                for (int i=0; i < backpackHandler.getBackpack().size(); i++) {
+                    if (backpackHandler.getBackpack().get(i) == itemInBackpackSlot) {
+                        backpackHandler.setItemAt(i, null);
+                        break;
+                    }
+                }
+            }
+            else backpackHandler.addItemToBackpack(itemInBackpackSlot);
+        }
+        backpackHandler.refreshAccountItems();
+    }
+
+    public void swapEquipmentItems(int index1, int index2) {
+        if (equipmentHandler.swapItems(index1, index2)) {
+            backpackHandler.refreshAccountItems();
+        }
+    }
+
     /**
      * Unequips an item from the equipment.
      *
      * @param index the index of the item in the equipment
      */
     public void unequipItem(int index) {
-        equipmentHandler.unequipItem(index, backpackHandler);
+        InventoryItem unequippedItem = equipmentHandler.unequipItem(index);
+        if (unequippedItem != null) {
+            backpackHandler.addItemToBackpack(unequippedItem);
+        }
     }
 
     /**
@@ -107,13 +145,38 @@ public class Inventory {
         backpackHandler.addItemToBackpack(item);
     }
 
+    public InventoryItem splitBackpackStack(int index) {
+        return backpackHandler.splitStack(index);
+    }
+
+    public void revertSplit(int originalIndex, InventoryItem splitItem) {
+        backpackHandler.revertSplit(originalIndex, splitItem);
+    }
+
     /**
-     * Adds all items from a loot to the backpack.
+     * Places an item directly into a specific backpack slot.
+     * Primarily used for placing a split stack.
      *
-     * @param loot the loot whose items are to be added
+     * @param index The target slot index.
+     * @param item The item to place.
      */
-    public void addAllItemsFromLoot(Loot loot) {
-        loot.getItems().forEach(this::addItemToBackpack);
+    public void setItemInBackpackSlot(int index, InventoryItem item) {
+        backpackHandler.setItemAt(index, item);
+    }
+
+    /**
+     * Merges a split item back into a target stack of the same type.
+     *
+     * @param targetItem The existing stack to merge into.
+     * @param splitItem The new stack being dropped.
+     */
+    public void mergeSplitStack(InventoryItem targetItem, InventoryItem splitItem) {
+        targetItem.addAmount(splitItem.getAmount());
+        backpackHandler.refreshAccountItems();
+    }
+
+    public void mergeBackpackStacks(int fromIndex, int toIndex) {
+        backpackHandler.mergeStacks(fromIndex, toIndex);
     }
 
     /**
@@ -157,16 +220,18 @@ public class Inventory {
         for (String itemString : savedItems) {
             try {
                 String[] parts = itemString.split(",");
-                if (parts.length != 3) continue;
+                if (parts.length != 4) continue;
                 String itemId = parts[0];
                 int amount = Integer.parseInt(parts[1]);
                 boolean isEquipped = parts[2].equals("1");
+                int slotIndex = Integer.parseInt(parts[3]);
+
                 InventoryItem item = new InventoryItem(itemId, amount);
-                addItemToBackpack(item);
                 if (isEquipped) {
-                    int lastItemIndex = getBackpack().size() - 1;
-                    equipItem(lastItemIndex);
+                    equipmentHandler.getEquipped()[slotIndex] = item;
+                    equipmentHandler.applyBonus(item);
                 }
+                else backpackHandler.setItemAt(slotIndex, item);
             } catch (Exception e) {
                 Logger.getInstance().notify("Reading items from save file failed!", Message.ERROR);
             }
@@ -191,6 +256,10 @@ public class Inventory {
                 if (!itemExists) quickUseSlots[i] = null;
             }
         }
+    }
+
+    public void syncAccount() {
+        backpackHandler.refreshAccountItems();
     }
 
 }

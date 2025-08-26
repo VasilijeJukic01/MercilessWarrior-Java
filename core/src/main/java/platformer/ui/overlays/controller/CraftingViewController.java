@@ -56,6 +56,10 @@ public class CraftingViewController {
     }
 
     public void keyPressed(KeyEvent e) {
+
+    }
+
+    public void keyReleased(KeyEvent e) {
         switch (e.getKeyCode()) {
             case KeyEvent.VK_UP -> moveUp();
             case KeyEvent.VK_DOWN -> moveDown();
