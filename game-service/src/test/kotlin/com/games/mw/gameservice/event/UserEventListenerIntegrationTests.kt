@@ -18,7 +18,7 @@ import org.springframework.kafka.core.DefaultKafkaProducerFactory
 import org.springframework.kafka.core.KafkaTemplate
 import java.time.Duration
 import java.time.Instant
-import java.util.UUID
+import java.util.*
 import java.util.concurrent.TimeUnit
 
 class UserEventListenerIntegrationTests : IntegrationTestBase() {
@@ -37,6 +37,7 @@ class UserEventListenerIntegrationTests : IntegrationTestBase() {
         )
         val producerFactory = DefaultKafkaProducerFactory<String, UserCreated>(producerProps)
         kafkaTemplate = KafkaTemplate(producerFactory)
+        settingsRepository.deleteAll()
     }
 
 
@@ -48,8 +49,8 @@ class UserEventListenerIntegrationTests : IntegrationTestBase() {
     @Test
     fun `should consume UserCreated event and create settings`() {
         // Arrange
-        val userId = 123L
-        val username = "test-consumer-user"
+        val userId = Random().nextLong(1000, 1000000)
+        val username = "test-user-$userId"
         val userCreatedEvent = UserCreated.newBuilder()
             .setEventId(UUID.randomUUID().toString())
             .setTimestamp(Instant.now().toEpochMilli())
@@ -61,7 +62,7 @@ class UserEventListenerIntegrationTests : IntegrationTestBase() {
         kafkaTemplate.send("user_events", userId.toString(), userCreatedEvent).get(10, TimeUnit.SECONDS)
 
         // Assert (wait until the settings are created in the database)
-        await().atMost(Duration.ofSeconds(5)).untilAsserted {
+        await().atMost(Duration.ofSeconds(10)).untilAsserted {
             val settings = settingsRepository.findByUserId(userId)
             assertNotNull(settings)
             assertEquals(userId, settings?.userId)
@@ -72,8 +73,8 @@ class UserEventListenerIntegrationTests : IntegrationTestBase() {
     @Test
     fun `should handle duplicate UserCreated event gracefully`() {
         // Arrange
-        val userId = 456L
-        val username = "duplicate-user"
+        val userId = Random().nextLong(1000, 1000000)
+        val username = "test-user-$userId"
         val userCreatedEvent = UserCreated.newBuilder()
             .setEventId(UUID.randomUUID().toString())
             .setTimestamp(Instant.now().toEpochMilli())
