@@ -52,7 +52,7 @@ class LeaderboardServiceUnitTests {
         whenever(webClientBuilder.build()).thenReturn(webClient)
         whenever(webClient.get()).thenReturn(requestHeadersUriSpec)
 
-        leaderboardService = LeaderboardService(settingsService, webClientBuilder, testRetry, circuitBreakerRegistry)
+        leaderboardService = LeaderboardService(settingsService, webClientBuilder, testRetry, circuitBreakerRegistry,  "http://auth-service:8081")
     }
 
     private fun setupWebClientForUsernames(usernames: List<String>) {

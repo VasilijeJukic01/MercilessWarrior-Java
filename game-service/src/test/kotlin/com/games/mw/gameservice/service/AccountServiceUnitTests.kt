@@ -55,7 +55,7 @@ class AccountServiceUnitTests {
         val testCircuitBreaker = CircuitBreaker.of("authServiceGame", CircuitBreakerConfig.ofDefaults())
         whenever(circuitBreakerRegistry.circuitBreaker(eq("authServiceGame"))).thenReturn(testCircuitBreaker)
 
-        accountService = AccountService(settingsService, itemService, perkService, webClientBuilder, testRetry, circuitBreakerRegistry)
+        accountService = AccountService(settingsService, itemService, perkService, webClientBuilder, testRetry, circuitBreakerRegistry, "http://auth-service:8081")
     }
 
     private fun setupWebClientForFetchUserId() {

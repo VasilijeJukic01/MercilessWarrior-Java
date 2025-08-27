@@ -14,6 +14,7 @@ import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry
 import io.github.resilience4j.kotlin.circuitbreaker.executeSuspendFunction
 import io.github.resilience4j.kotlin.retry.executeSuspendFunction
 import io.github.resilience4j.retry.Retry
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
@@ -29,7 +30,8 @@ class AccountService(
     private val perkService: PerkService,
     private val webClientBuilder: WebClient.Builder,
     private val retry: Retry,
-    circuitBreakerRegistry: CircuitBreakerRegistry
+    circuitBreakerRegistry: CircuitBreakerRegistry,
+    @Value("\${services.auth.url}") private val authServiceUrl: String
 ) {
 
     sealed interface AccountError {
@@ -126,7 +128,7 @@ class AccountService(
     }
 
     private suspend fun fetchUserId(username: String, token: String): Either<AccountError, Long> = either {
-        val authServiceClient = webClientBuilder.baseUrl("http://auth-service:8081").build()
+        val authServiceClient = webClientBuilder.baseUrl(authServiceUrl).build()
         try {
             authServiceClient.get()
                 .uri("/auth/account/$username")
