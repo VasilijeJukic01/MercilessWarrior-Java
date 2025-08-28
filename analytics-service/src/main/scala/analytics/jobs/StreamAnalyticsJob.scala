@@ -5,6 +5,7 @@ import org.apache.spark.internal.Logging
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.avro.functions._
+import org.apache.spark.sql.streaming.Trigger
 
 /**
  * Manages the real-time processing of game events from Kafka using Spark Structured Streaming.
@@ -20,7 +21,12 @@ import org.apache.spark.sql.avro.functions._
  *
  * @param spark The active SparkSession, which serves as the entry point to all Spark functionality.
  */
-class StreamAnalyticsJob(spark: SparkSession) extends Logging {
+class StreamAnalyticsJob(
+                          spark: SparkSession,
+                          kafkaBootstrapServers: String = "kafka:9092",
+                          outputPath: String = "data/lake/shop_transactions",
+                          checkpointPath: String = "data/checkpoints/shop_transactions"
+                        ) extends Logging {
 
   /**
    * Starts and runs the streaming query.
@@ -36,7 +42,7 @@ class StreamAnalyticsJob(spark: SparkSession) extends Logging {
     // Extract
     val kafkaDf = spark.readStream
       .format("kafka")
-      .option("kafka.bootstrap.servers", "kafka:9092")
+      .option("kafka.bootstrap.servers", kafkaBootstrapServers)
       .option("subscribe", "shop_transactions")
       .option("startingOffsets", "earliest")
       .load()
@@ -52,9 +58,10 @@ class StreamAnalyticsJob(spark: SparkSession) extends Logging {
 
     // Load
     val query = shopDf.writeStream
+      .trigger(Trigger.ProcessingTime("1 second"))
       .format("parquet")
-      .option("path", "data/lake/shop_transactions")
-      // Partitioning by date and type
+      .option("path", outputPath)
+      .option("checkpointLocation", checkpointPath)
       .partitionBy("event_date", "transactionType")
       .start()
 
