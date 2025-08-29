@@ -1,0 +1,23 @@
+{
+  "item_001": {
+    "name": "Sword of Valor",
+    "rarity": "Epic",
+    "description": "A legendary blade.",
+    "sellValue": 500,
+    "stackable": false
+  },
+  "item_002": {
+    "name": "Health Potion",
+    "rarity": "Common",
+    "description": "Restores a small amount of health.",
+    "sellValue": 10,
+    "stackable": true
+  },
+  "item_003": {
+    "name": "Dragonscale Shield",
+    "rarity": "Legendary",
+    "description": "A shield of immense power.",
+    "sellValue": 2000,
+    "stackable": false
+  }
+}

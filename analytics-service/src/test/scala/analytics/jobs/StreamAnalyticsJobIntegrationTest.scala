@@ -61,9 +61,12 @@ class StreamAnalyticsJobIntegrationTest extends AnyWordSpec with Matchers with S
         }
 
         await().atMost(30, TimeUnit.SECONDS).until { () =>
-          val buyPath = tempOutputDir.resolve("event_date=2023-10-26/transactionType=BUY")
-          val sellPath = tempOutputDir.resolve("event_date=2023-10-26/transactionType=SELL")
-          parquetFileExists(buyPath) && parquetFileExists(sellPath)
+          try {
+            val df = spark.read.parquet(tempOutputDir.toUri.toString)
+            df.count() == 2
+          } catch {
+            case _: Exception => false
+          }
         }
 
         // Assert
@@ -107,16 +110,6 @@ class StreamAnalyticsJobIntegrationTest extends AnyWordSpec with Matchers with S
         deleteRecursively(tempCheckpointDir.toFile)
       }
     }
-  }
-
-  /**
-   * Checks if a given directory path exists and contains at least one file ending with ".parquet".
-   */
-  private def parquetFileExists(dir: Path): Boolean = {
-    if (!Files.exists(dir) || !Files.isDirectory(dir)) return false
-    Using(Files.list(dir)) { stream =>
-      stream.anyMatch(path => Files.isRegularFile(path) && path.toString.endsWith(".parquet"))
-    }.getOrElse(false)
   }
 
   private def createShopTransaction(eventId: String, timestamp: Long, userId: Long, username: String, txType: String, itemId: String, quantity: Int, unitPrice: Int, totalPrice: Int): GenericRecord = {
