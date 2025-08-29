@@ -7,4 +7,5 @@ import org.springframework.stereotype.Repository
 @Repository
 interface OutboxEventRepository : JpaRepository<OutboxEvent, Long> {
     fun findTop100ByPublishedAtIsNullOrderByCreatedAt(): List<OutboxEvent>
+    fun findByAggregateId(aggregateId: String): List<OutboxEvent>
 }

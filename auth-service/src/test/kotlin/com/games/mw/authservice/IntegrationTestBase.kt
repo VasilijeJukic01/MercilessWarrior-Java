@@ -6,7 +6,6 @@ import org.springframework.test.context.DynamicPropertySource
 import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.containers.GenericContainer
 import org.testcontainers.containers.KafkaContainer
-import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
 import org.testcontainers.utility.DockerImageName
 
@@ -21,21 +20,25 @@ import org.testcontainers.utility.DockerImageName
 abstract class IntegrationTestBase {
 
     companion object {
-        @Container
-        @JvmStatic
-        val postgresContainer: PostgreSQLContainer<*> = PostgreSQLContainer("postgres:15.3")
+        private val postgresImage = DockerImageName.parse("postgres:15.3")
+        private val redisImage = DockerImageName.parse("redis:7-alpine")
+        private val kafkaImage = DockerImageName.parse("confluentinc/cp-kafka:7.6.0")
+
+        internal  val postgresContainer: PostgreSQLContainer<*> = PostgreSQLContainer(postgresImage)
             .withDatabaseName("mw-user-service-test")
             .withUsername("test")
             .withPassword("test")
 
-        @Container
-        @JvmStatic
-        val redisContainer: GenericContainer<*> = GenericContainer("redis:7-alpine")
+        internal  val redisContainer: GenericContainer<*> = GenericContainer(redisImage)
             .withExposedPorts(6379)
 
-        @Container
-        @JvmStatic
-        val kafkaContainer = KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.6.0"))
+        internal  val kafkaContainer = KafkaContainer(kafkaImage)
+
+        init {
+            postgresContainer.start()
+            redisContainer.start()
+            kafkaContainer.start()
+        }
 
         @DynamicPropertySource
         @JvmStatic

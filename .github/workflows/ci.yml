@@ -5,8 +5,18 @@ on:
   pull_request:
 
 jobs:
-  test-analytics-service:
+  test-services:
     runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        service:
+          - 'analytics-service'
+          - 'auth-service'
+          - 'game-service'
+          - 'multiplayer-service'
+
+    name: test (${{ matrix.service }})
 
     steps:
       - name: Checkout code
@@ -18,8 +28,8 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Run tests for Analytics Service
+      - name: Run tests for ${{ matrix.service }}
         run: |
-          cd analytics-service
+          cd ${{ matrix.service }}
           chmod +x gradlew
           ./gradlew test
