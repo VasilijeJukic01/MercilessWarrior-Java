@@ -6,6 +6,8 @@ plugins {
 	kotlin("plugin.spring") version "2.0.0"
 }
 
+apply(from = "../ci-config.gradle.kts")
+
 group = "com.games.mw"
 version = "0.0.1-SNAPSHOT"
 

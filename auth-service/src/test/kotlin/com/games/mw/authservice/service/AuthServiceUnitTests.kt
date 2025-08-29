@@ -16,6 +16,7 @@ import com.games.mw.authservice.security.JwtService
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.InjectMocks
@@ -30,6 +31,7 @@ import org.springframework.security.core.Authentication
 import org.springframework.security.crypto.password.PasswordEncoder
 import java.util.*
 
+@Tag("unit")
 @ExtendWith(MockitoExtension::class)
 class AuthServiceUnitTests {
 

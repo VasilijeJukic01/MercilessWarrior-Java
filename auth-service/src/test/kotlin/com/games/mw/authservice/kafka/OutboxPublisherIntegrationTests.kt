@@ -13,6 +13,7 @@ import org.apache.kafka.common.serialization.StringDeserializer
 import org.awaitility.Awaitility.await
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory
@@ -33,6 +34,7 @@ import java.util.concurrent.TimeUnit
  * 4. The publisher sends the event to a Kafka topic.
  * 5. This test consumes the message from Kafka to confirm the entire flow was successful.
  */
+@Tag("integration")
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 class OutboxPublisherIntegrationTests : IntegrationTestBase() {
 

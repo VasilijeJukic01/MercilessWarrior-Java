@@ -18,6 +18,7 @@ import io.github.resilience4j.retry.RetryConfig
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.Mock
@@ -29,6 +30,7 @@ import org.springframework.http.HttpHeaders
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Mono
 
+@Tag("unit")
 @ExtendWith(MockitoExtension::class)
 class AccountServiceUnitTests {
 

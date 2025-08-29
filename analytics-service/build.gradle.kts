@@ -8,6 +8,8 @@ plugins {
     application
 }
 
+apply(from = "../ci-config.gradle.kts")
+
 repositories {
     mavenCentral()
 }
@@ -37,8 +39,4 @@ dependencies {
 
 application {
     mainClass.set("analytics.dispatcher.JobDispatcher")
-}
-
-tasks.withType<Test> {
-    useJUnitPlatform()
 }

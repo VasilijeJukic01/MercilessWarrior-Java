@@ -13,6 +13,7 @@ import org.springframework.boot.test.web.server.LocalServerPort
 import org.springframework.web.reactive.socket.WebSocketSession
 import org.springframework.web.reactive.socket.client.ReactorNettyWebSocketClient
 import org.awaitility.core.ConditionTimeoutException
+import org.junit.jupiter.api.Tag
 import reactor.core.publisher.Sinks
 import java.net.URI
 import java.time.Duration
@@ -23,6 +24,7 @@ import java.util.concurrent.ConcurrentLinkedQueue
  *
  * These tests start on a random port and use a reactive WebSocket client  to simulate real players hosting, joining, and interacting within game sessions.
  */
+@Tag("integration")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class MultiplayerWebSocketIntegrationTests {
 

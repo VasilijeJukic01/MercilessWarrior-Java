@@ -3,9 +3,11 @@ package analytics.jobs
 import analytics.SparkSessionTestWrapper
 import org.apache.spark.sql.{DataFrame, Row}
 import org.apache.spark.sql.types.{LongType, StringType, StructField, StructType}
+import org.junit.jupiter.api.Tag
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
+@Tag("unit")
 class BatchAnalyticsJobTest extends AnyWordSpec with Matchers with SparkSessionTestWrapper {
 
   import spark.implicits._

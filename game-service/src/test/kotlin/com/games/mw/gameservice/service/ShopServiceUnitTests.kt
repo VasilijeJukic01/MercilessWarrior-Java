@@ -14,6 +14,7 @@ import com.games.mw.gameservice.domain.shop.repository.UserShopStockRepository
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.InjectMocks
@@ -21,6 +22,7 @@ import org.mockito.Mock
 import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.kotlin.whenever
 
+@Tag("unit")
 @ExtendWith(MockitoExtension::class)
 class ShopServiceUnitTests {
 

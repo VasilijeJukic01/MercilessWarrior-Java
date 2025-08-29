@@ -5,6 +5,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.games.mw.multiplayerservice.session.GameSession
 import com.games.mw.multiplayerservice.session.SessionManager
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.InjectMocks
@@ -23,6 +24,7 @@ import java.net.URI
  * Unit tests for the [MultiplayerWebSocketHandler].
  * Mocks the [SessionManager] and [WebSocketSession] to verify routing and session logic.
  */
+@Tag("unit")
 @ExtendWith(SpringExtension::class)
 class MultiplayerWebSocketHandlerTest {
 

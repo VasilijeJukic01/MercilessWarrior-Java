@@ -2,12 +2,14 @@ package com.games.mw.multiplayerservice.session
 
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 
 /**
  * Unit tests for the [SessionManager].
  * Verify the core functionality of creating, retrieving, and handling game sessions in isolation.
  */
+@Tag("unit")
 class SessionManagerTest {
 
     private lateinit var sessionManager: SessionManager

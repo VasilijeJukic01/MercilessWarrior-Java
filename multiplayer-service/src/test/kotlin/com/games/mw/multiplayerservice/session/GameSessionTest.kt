@@ -5,6 +5,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.games.mw.multiplayerservice.ws.*
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
@@ -18,6 +19,7 @@ import java.util.concurrent.ConcurrentLinkedQueue
  * Unit tests for the [GameSession] class.
  * Mocks WebSocketSession objects to test the message handling and broadcasting logic in isolation.
  */
+@Tag("unit")
 class GameSessionTest {
 
     private lateinit var gameSession: GameSession

@@ -10,6 +10,7 @@ import org.apache.avro.specific.SpecificDatumWriter
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerRecord}
 import org.apache.kafka.common.serialization.{ByteArraySerializer, StringSerializer}
 import org.awaitility.Awaitility._
+import org.junit.jupiter.api.Tag
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.testcontainers.utility.DockerImageName
@@ -22,6 +23,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.Using
 
+@Tag("integration")
 class StreamAnalyticsJobIntegrationTest extends AnyWordSpec with Matchers with SparkSessionTestWrapper with ForAllTestContainer {
 
   override val container: KafkaContainer = KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.3.0"))
