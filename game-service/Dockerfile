@@ -14,7 +14,7 @@ WORKDIR /home/gradle/src
 
 COPY . /home/gradle/src
 
-RUN gradle clean build --no-daemon
+RUN gradle clean build -x test --no-daemon
 
 # Final image
 FROM openjdk:17-jdk-slim

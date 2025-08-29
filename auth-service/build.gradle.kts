@@ -7,6 +7,8 @@ plugins {
 	kotlin("plugin.spring") version "2.0.0"
 }
 
+apply(from = "../ci-config.gradle.kts")
+
 group = "com.games.mw"
 version = "0.0.1-SNAPSHOT"
 
@@ -30,6 +32,7 @@ repositories {
 dependencyManagement {
 	imports {
 		mavenBom("org.springframework.cloud:spring-cloud-dependencies:2023.0.0")
+		mavenBom("org.testcontainers:testcontainers-bom:1.19.8")
 	}
 }
 
@@ -75,9 +78,13 @@ dependencies {
 
 	// Testing
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
+	testImplementation("org.springframework.kafka:spring-kafka-test")
 	testImplementation("org.mockito:mockito-inline:4.2.0")
 	testImplementation("org.mockito.kotlin:mockito-kotlin:4.1.0")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+	testImplementation("org.testcontainers:junit-jupiter")
+	testImplementation("org.testcontainers:postgresql")
+	testImplementation("org.testcontainers:kafka")
 }
 
 avro {
@@ -93,8 +100,4 @@ sourceSets {
 			srcDir("$buildDir/generated-main-avro-java")
 		}
 	}
-}
-
-tasks.withType<Test> {
-	useJUnitPlatform()
 }

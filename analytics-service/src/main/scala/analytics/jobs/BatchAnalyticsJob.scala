@@ -26,18 +26,37 @@ class BatchAnalyticsJob(spark: SparkSession) extends Logging {
     )), nullable = true),
   ))
 
+  /**
+   * Main entry point for the batch job execution. Reads data and prints the report.
+   */
   def run(): Unit = {
-    import spark.implicits._
     val transactionsDf = spark.read
       .option("mergeSchema", "true")
       .parquet("data/lake/shop_transactions")
 
     logInfo(s"Loaded ${transactionsDf.count()} total transactions.")
 
+    val topItems = calculateTopPurchasedItems(transactionsDf)
+
+    logInfo("Top 10 most purchased items with enriched data:")
+    topItems.show(truncate = false)
+
+    logInfo("Batch Analytics Job finished.")
+  }
+
+  /**
+   * Calculates top 10 purchased items based on transaction data.
+   *
+   * @param transactionsDf DataFrame containing shop transaction data.
+   * @return A DataFrame with the top 10 items report.
+   */
+  def calculateTopPurchasedItems(transactionsDf: DataFrame): DataFrame = {
+    import spark.implicits._
     val itemMasterDf = loadItemMasterData(spark)
+
     logInfo("Calculating top 10 most purchased items with enriched data...")
 
-    val topItems = transactionsDf
+    transactionsDf
       .filter($"transactionType" === "BUY")
       .join(itemMasterDf, "itemId")
       .groupBy($"itemId", $"name", $"rarity")
@@ -57,10 +76,6 @@ class BatchAnalyticsJob(spark: SparkSession) extends Logging {
         $"total_revenue",
         format_number($"avg_price", 2).as("avg_price")
       )
-
-    topItems.show(truncate = false)
-
-    logInfo("Batch Analytics Job finished.")
   }
 
   private def loadItemMasterData(spark: SparkSession): DataFrame = {

@@ -10,6 +10,8 @@ plugins {
     kotlin("plugin.spring") version "2.0.0"
 }
 
+apply(from = "../ci-config.gradle.kts")
+
 group = "com.games.mw"
 version = "0.0.1-SNAPSHOT"
 
@@ -94,8 +96,13 @@ dependencies {
 
     // Testing
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.springframework.cloud:spring-cloud-starter-contract-stub-runner")
     testImplementation("org.mockito:mockito-inline:4.2.0")
     testImplementation("org.mockito.kotlin:mockito-kotlin:4.1.0")
+    testImplementation("org.testcontainers:junit-jupiter")
+    testImplementation("org.testcontainers:postgresql")
+    testImplementation("org.testcontainers:kafka")
+    testImplementation("org.springframework.kafka:spring-kafka-test")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 

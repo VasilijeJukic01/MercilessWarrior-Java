@@ -13,6 +13,9 @@ interface UserRepository : JpaRepository<User, Long> {
     @Query("SELECT u FROM User u LEFT JOIN FETCH u.userRoles ur LEFT JOIN FETCH ur.role WHERE u.username = :username")
     fun findByUsernameWithRoles(@Param("username") username: String): Optional<User>
 
+    @Query("SELECT u FROM User u LEFT JOIN FETCH u.userRoles ur LEFT JOIN FETCH ur.role WHERE u.id = :id")
+    fun findByIdWithRoles(@Param("id") id: Long): Optional<User>
+
     fun findByUsername(username: String): Optional<User>
 
 }
