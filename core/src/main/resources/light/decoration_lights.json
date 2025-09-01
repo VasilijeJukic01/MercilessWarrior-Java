@@ -1,0 +1,10 @@
+{
+  "CRYSTAL1": {
+    "lightColor": "#0300CF",
+    "lightRadius": 80
+  },
+  "CRYSTAL2": {
+    "lightColor": "#00FFE5",
+    "lightRadius": 60
+  }
+}

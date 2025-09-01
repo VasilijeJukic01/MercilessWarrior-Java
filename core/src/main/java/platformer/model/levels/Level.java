@@ -308,6 +308,10 @@ public class Level {
         return lvlData;
     }
 
+    public int[][] getDecoData() {
+        return decoData;
+    }
+
     public int getXMaxLevelOffset() {
         return xMaxLevelOffset;
     }

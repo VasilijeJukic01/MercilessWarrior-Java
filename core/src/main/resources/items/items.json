@@ -428,7 +428,7 @@
   "HELMET_WARRIOR": {
     "name": "Warrior Helmet",
     "description": "Helmet designed specifically for warriors which provides solid protection during combat. \nHealth Bonus +3% Defense Bonus +5%",
-    "rarity": "MYTHIC",
+    "rarity": "UNCOMMON",
     "imagePath": "/images/inventory/WarriorHelmet.png",
     "sellValue": 30,
     "stackable": false,

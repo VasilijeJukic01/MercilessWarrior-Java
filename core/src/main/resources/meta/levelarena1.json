@@ -1,3 +1,4 @@
 {
-  "backgroundId": "FOREST4"
+  "backgroundId": "FOREST4",
+  "ambientParticlesEnabled": false
 }
