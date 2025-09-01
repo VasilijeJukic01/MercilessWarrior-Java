@@ -33,14 +33,29 @@ public class EffectManager {
     private static final int ITEM_TEXT_COOLDOWN_MAX = 20;
 
     // Ambient Effects
-    private final AmbientParticle[] ambientParticles;
-    private final SmokeParticle[] smokeParticles;
+    private AmbientParticle[] ambientParticles;
+    private SmokeParticle[] smokeParticles;
+    private WindParticle[] windParticles;
     private final AmbientParticleFactory ambientParticleFactory;
+    private boolean ambientEffectsActive = true;
+
+    private BufferedImage[] smokeParticleFrames;
+    private final Map<Integer, BufferedImage[]> dustParticleCache = new HashMap<>();
 
     public EffectManager() {
         this.ambientParticleFactory = new AmbientParticleFactory();
-        this.ambientParticles = loadDustParticles();
-        this.smokeParticles = loadSmokeParticles();
+        this.ambientParticles = new AmbientParticle[0];
+        this.smokeParticles = new SmokeParticle[0];
+        this.windParticles = new WindParticle[0];
+        preloadAmbientParticleAssets();
+    }
+
+    /**
+     * Pre-loads and caches all image assets required for ambient particles.
+     * This should be called once after SpriteManager is ready.
+     */
+    public void preloadAmbientParticleAssets() {
+        this.smokeParticleFrames = SpriteManager.getInstance().loadFromSprite(SMOKE_SHEET, 1, 0, SMOKE_W, SMOKE_H, 0, SMOKE_W, SMOKE_H);
     }
 
     /**
@@ -55,8 +70,11 @@ public class EffectManager {
             int xPos = rand.nextInt(GAME_WIDTH - 10) + 10;
             int yPos = rand.nextInt(GAME_HEIGHT - 10) + 10;
             int size = (int)((rand.nextInt(15 - 5) + 5) * SCALE);
-            String key = "DefaultParticle";
-            BufferedImage[] images = SpriteManager.getInstance().loadFromSprite(PARTICLE_SHEET, DEFAULT_PARTICLE_FRAMES, 0, size, size, 0, PARTICLE_W, PARTICLE_H);
+            BufferedImage[] images = dustParticleCache.computeIfAbsent(size, s ->
+                    SpriteManager.getInstance().loadFromSprite(PARTICLE_SHEET, DEFAULT_PARTICLE_FRAMES, 0, s, s, 0, PARTICLE_W, PARTICLE_H)
+            );
+
+            String key = "DefaultParticle" + size;
             AmbientParticleType ambientParticleType = ambientParticleFactory.getParticleImage(key, images);
             fireflies[i] = new AmbientParticle(ambientParticleType, size, xPos, yPos);
         }
@@ -66,11 +84,25 @@ public class EffectManager {
     private SmokeParticle[] loadSmokeParticles() {
         int smokeCount = PARTICLES_CAP / 2;
         SmokeParticle[] smoke = new SmokeParticle[smokeCount];
-        BufferedImage[] smokeFrames = SpriteManager.getInstance().loadFromSprite(SMOKE_SHEET, 1, 0, SMOKE_W, SMOKE_H, 0, SMOKE_W, SMOKE_H);
         for (int i = 0; i < smoke.length; i++) {
-            smoke[i] = new SmokeParticle(smokeFrames);
+            smoke[i] = new SmokeParticle(smokeParticleFrames);
         }
         return smoke;
+    }
+
+    private WindParticle[] loadWindParticles(int levelWidth, int levelHeight) {
+        int windCount = PARTICLES_CAP * 3;
+        WindParticle[] wind = new WindParticle[windCount];
+        for (int i = 0; i < wind.length; i++) {
+            wind[i] = new WindParticle(levelWidth, levelHeight);
+        }
+        return wind;
+    }
+
+    public void reinitializeAmbientParticles(int levelWidth, int levelHeight) {
+        this.ambientParticles = loadDustParticles();
+        this.smokeParticles = loadSmokeParticles();
+        this.windParticles = loadWindParticles(levelWidth, levelHeight);
     }
 
     public void spawnDustParticles(double x, double y, int count, DustType type, int flipSign, Entity target) {
@@ -141,6 +173,7 @@ public class EffectManager {
         updateItemPickupTexts();
         Arrays.stream(ambientParticles).forEach(AmbientParticle::update);
         Arrays.stream(smokeParticles).forEach(SmokeParticle::update);
+        if (ambientEffectsActive) Arrays.stream(windParticles).forEach(WindParticle::update);
     }
 
     private void updateParticleList(List<DustParticle> particles) {
@@ -176,7 +209,12 @@ public class EffectManager {
         } catch (Exception ignored) {}
     }
 
-    public void renderAmbientEffects(Graphics g) {
+    public void renderAmbientEffectsAbove(Graphics g, int xLevelOffset, int yLevelOffset) {
+        if (!ambientEffectsActive) return;
+        Arrays.stream(windParticles).forEach(p -> p.render((Graphics2D) g, xLevelOffset, yLevelOffset));
+    }
+
+    public void renderAmbientEffects(Graphics g, int xLevelOffset, int yLevelOffset) {
         Arrays.stream(smokeParticles).forEach(p -> p.render((Graphics2D) g));
         Arrays.stream(ambientParticles).forEach(p -> p.render(g));
     }
@@ -222,6 +260,11 @@ public class EffectManager {
         itemPickupTexts.clear();
         itemTextYOffset = 0;
         itemTextCooldown = 0;
+        Arrays.stream(windParticles).forEach(p -> p.reset(true));
+    }
+
+    public void setAmbientEffectsActive(boolean ambientEffectsActive) {
+        this.ambientEffectsActive = ambientEffectsActive;
     }
 
 }

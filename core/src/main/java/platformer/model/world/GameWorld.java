@@ -10,6 +10,7 @@ import platformer.model.entities.enemies.EnemyManager;
 import platformer.model.entities.player.Player;
 import platformer.model.gameObjects.ObjectManager;
 import platformer.model.levels.LevelManager;
+import platformer.model.levels.metadata.LevelMetadata;
 import platformer.model.projectiles.ProjectileManager;
 import platformer.model.spells.SpellManager;
 
@@ -56,6 +57,19 @@ public class GameWorld {
     private void loadStartLevel() {
         this.enemyManager.loadEnemies(levelManager.getCurrentLevel());
         this.objectManager.loadObjects(levelManager.getCurrentLevel());
+        reinitializeParticles();
+    }
+
+    private void reinitializeParticles() {
+        LevelMetadata metadata = levelManager.getCurrentLevelMetadata();
+        boolean particlesEnabled = metadata == null || metadata.getAmbientParticlesEnabled() == null || metadata.getAmbientParticlesEnabled();
+        effectManager.setAmbientEffectsActive(particlesEnabled);
+
+        if (particlesEnabled) {
+            int levelWidth = levelManager.getCurrentLevel().getLevelTilesWidth() * TILES_SIZE;
+            int levelHeight = levelManager.getCurrentLevel().getLevelTilesHeight() * TILES_SIZE;
+            effectManager.reinitializeAmbientParticles(levelWidth, levelHeight);
+        }
     }
 
     // Core
@@ -73,7 +87,7 @@ public class GameWorld {
 
     public void render(Graphics g, int xLevelOffset, int yLevelOffset, boolean isDarkPhase) {
         g.drawImage(levelManager.getCurrentBackground(), 0, 0, null);
-        effectManager.renderAmbientEffects(g);
+        effectManager.renderAmbientEffects(g, xLevelOffset, yLevelOffset);
         rainManager.render(g);
         levelManager.render(g, xLevelOffset, yLevelOffset);
         objectManager.render(g, xLevelOffset, yLevelOffset);
@@ -83,6 +97,7 @@ public class GameWorld {
         }
         lightManager.render(g, xLevelOffset, yLevelOffset);
         effectManager.renderBackgroundEffects(g, xLevelOffset, yLevelOffset);
+        effectManager.renderAmbientEffectsAbove(g, xLevelOffset, yLevelOffset);
         if (!isDarkPhase) enemyManager.render(g, xLevelOffset, yLevelOffset);
         player.render(g, xLevelOffset, yLevelOffset);
         objectManager.secondRender(g, xLevelOffset, yLevelOffset);
@@ -101,6 +116,7 @@ public class GameWorld {
         effectManager.reset();
         lightManager.reset();
         rainManager.reset();
+        reinitializeParticles();
     }
 
     public void levelLoadReset(String spawn) {
@@ -110,5 +126,6 @@ public class GameWorld {
         enemyManager.loadEnemies(levelManager.getCurrentLevel());
         objectManager.loadObjects(levelManager.getCurrentLevel());
         player.setSpawn(levelManager.getCurrentLevel().getPlayerSpawn(spawn));
+        reinitializeParticles();
     }
 }

@@ -243,7 +243,7 @@ public class Level {
             for (int j = 0; j < level.getHeight(); j++) {
                 Color color = new Color(level.getRGB(i, j));
                 int value = layer ? color.getGreen() : color.getBlue();
-                if ((value >= 40 && !layer) || (value > 4 && layer)) value = -1;
+                if ((value >= 80 && !layer) || (value > 4 && layer)) value = -1;
                 data[i][j] = value;
             }
         }

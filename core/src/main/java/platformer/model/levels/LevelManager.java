@@ -309,6 +309,10 @@ public class LevelManager {
     }
 
     // Getters
+    public LevelMetadata getCurrentLevelMetadata() {
+        return currentLevelMetadata;
+    }
+
     public int getLevelIndexI() {
         return levelIndexI;
     }

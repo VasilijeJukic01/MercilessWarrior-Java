@@ -1,26 +1,17 @@
 package platformer.model.levels.metadata;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.util.ArrayList;
 import java.util.List;
 
+@Getter
+@Setter
 public class LevelMetadata {
 
     private String backgroundId;
+    private Boolean ambientParticlesEnabled;
     private List<ObjectMetadata> decorations = new ArrayList<>();
 
-    public List<ObjectMetadata> getDecorations() {
-        return decorations;
-    }
-
-    public void setDecorations(List<ObjectMetadata> decorations) {
-        this.decorations = decorations;
-    }
-
-    public String getBackgroundId() {
-        return backgroundId;
-    }
-
-    public void setBackgroundId(String backgroundId) {
-        this.backgroundId = backgroundId;
-    }
 }
