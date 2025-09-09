@@ -24,12 +24,16 @@ services:
       - "6379:6379"
 
   service-registry:
-    build: ./service-registry
+    build:
+      context: .
+      dockerfile: service-registry/Dockerfile
     ports:
       - "8761:8761"
 
   api-gateway:
-    build: ./api-gateway
+    build:
+      context: .
+      dockerfile: api-gateway/Dockerfile
     ports:
       - "8080:8080"
     depends_on:
@@ -37,7 +41,9 @@ services:
       - redis
 
   auth-service:
-    build: ./auth-service
+    build:
+      context: .
+      dockerfile: auth-service/Dockerfile
     ports:
       - "8081:8081"
     depends_on:
@@ -46,7 +52,9 @@ services:
       - redis
 
   game-service:
-    build: ./game-service
+    build:
+      context: .
+      dockerfile: game-service/Dockerfile
     ports:
       - "8082:8082"
     depends_on:
@@ -55,14 +63,18 @@ services:
       - redis
 
   multiplayer-service:
-    build: ./multiplayer-service
+    build:
+      context: .
+      dockerfile: multiplayer-service/Dockerfile
     ports:
       - "9000:9000"
     depends_on:
       - service-registry
 
   analytics-stream:
-    build: ./analytics-service
+    build:
+      context: .
+      dockerfile: analytics-service/Dockerfile
     depends_on:
       - kafka
     volumes:
@@ -70,7 +82,9 @@ services:
     command: ["stream"]
 
   analytics-batch:
-    build: ./analytics-service
+    build:
+      context: .
+      dockerfile: analytics-service/Dockerfile
     depends_on:
       - kafka
     volumes:

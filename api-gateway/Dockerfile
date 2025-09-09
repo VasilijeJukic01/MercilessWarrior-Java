@@ -12,7 +12,8 @@ FROM gradle:7.4.0-jdk17 as build
 
 WORKDIR /home/gradle/src
 
-COPY . /home/gradle/src
+COPY ci-config.gradle.kts ./..
+COPY api-gateway/. /home/gradle/src
 
 RUN gradle clean build --no-daemon
 

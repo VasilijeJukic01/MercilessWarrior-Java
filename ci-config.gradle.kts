@@ -1,4 +1,4 @@
-tasks.withType<Test> {
+tasks.named<Test>("test") {
     useJUnitPlatform {
         includeTags("unit")
         excludeTags("integration")

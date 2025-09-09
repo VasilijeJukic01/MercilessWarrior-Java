@@ -11,7 +11,8 @@ FROM gradle:8.5-jdk17-alpine AS builder
 
 WORKDIR /home/gradle/src
 
-COPY . .
+COPY ci-config.gradle.kts ./..
+COPY analytics-service/. .
 
 RUN gradle installDist --no-daemon
 
