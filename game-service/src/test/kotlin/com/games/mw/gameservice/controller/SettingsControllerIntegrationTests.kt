@@ -12,20 +12,15 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
+import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient
 import org.springframework.http.MediaType
-import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.get
-import org.springframework.test.web.servlet.post
-import org.springframework.test.web.servlet.put
-import org.springframework.transaction.annotation.Transactional
+import org.springframework.test.web.reactive.server.WebTestClient
 
 @Tag("integration")
-@AutoConfigureMockMvc
-@Transactional
+@AutoConfigureWebTestClient
 class SettingsControllerIntegrationTests : IntegrationTestBase() {
 
-    @Autowired private lateinit var mockMvc: MockMvc
+    @Autowired private lateinit var webTestClient: WebTestClient
     @Autowired private lateinit var objectMapper: ObjectMapper
     @Autowired private lateinit var settingsRepository: SettingsRepository
 
@@ -49,43 +44,41 @@ class SettingsControllerIntegrationTests : IntegrationTestBase() {
     @Test
     fun `getSettingsByUserId should return settings for owner`() {
         settingsRepository.save(Settings(userId = userId, coins = 100))
-        mockMvc.get("/settings/{userId}", userId) {
-            header("Authorization", "Bearer $userToken")
-        }.andExpect {
-            status { isOk() }
-            jsonPath("$.userId") { value(userId) }
-            jsonPath("$.coins") { value(100) }
-        }
+        webTestClient.get().uri("/settings/{userId}", userId)
+            .header("Authorization", "Bearer $userToken")
+            .exchange()
+            .expectStatus().isOk
+            .expectBody()
+            .jsonPath("$.userId").isEqualTo(userId)
+            .jsonPath("$.coins").isEqualTo(100)
     }
 
     @Test
     fun `getSettingsByUserId should return 403 Forbidden for non-owner`() {
         settingsRepository.save(Settings(userId = otherUserId, coins = 100))
-        mockMvc.get("/settings/{userId}", otherUserId) {
-            header("Authorization", "Bearer $userToken")
-        }.andExpect {
-            status { isForbidden() }
-        }
+        webTestClient.get().uri("/settings/{userId}", otherUserId)
+            .header("Authorization", "Bearer $userToken")
+            .exchange()
+            .expectStatus().isForbidden
     }
 
     @Test
     fun `getSettingsByUserId should return 404 Not Found if settings do not exist`() {
-        mockMvc.get("/settings/{userId}", userId) {
-            header("Authorization", "Bearer $userToken")
-        }.andExpect {
-            status { isNotFound() }
-        }
+        webTestClient.get().uri("/settings/{userId}", userId)
+            .header("Authorization", "Bearer $userToken")
+            .exchange()
+            .expectStatus().isNotFound
     }
 
     @Test
     fun `insertEmptySettings should create settings without authentication`() {
         val newUserId = 12345L
-        mockMvc.post("/settings/empty/{userId}", newUserId)
-            .andExpect {
-                status { isOk() }
-                jsonPath("$.userId") { value(newUserId) }
-                jsonPath("$.level") { value(1) }
-            }
+        webTestClient.post().uri("/settings/empty/{userId}", newUserId)
+            .exchange()
+            .expectStatus().isOk
+            .expectBody()
+            .jsonPath("$.userId").isEqualTo(newUserId)
+            .jsonPath("$.level").isEqualTo(1)
 
         val newSettings = settingsRepository.findByUserId(newUserId)
         assertNotNull(newSettings)
@@ -97,15 +90,15 @@ class SettingsControllerIntegrationTests : IntegrationTestBase() {
         settingsRepository.save(Settings(userId = userId, level = 5))
         val updatedSettings = Settings(userId = userId, coins = 500, level = 6)
 
-        mockMvc.put("/settings/{userId}", userId) {
-            header("Authorization", "Bearer $userToken")
-            contentType = MediaType.APPLICATION_JSON
-            content = objectMapper.writeValueAsString(updatedSettings)
-        }.andExpect {
-            status { isOk() }
-            jsonPath("$.coins") { value(500) }
-            jsonPath("$.level") { value(6) }
-        }
+        webTestClient.put().uri("/settings/{userId}", userId)
+            .header("Authorization", "Bearer $userToken")
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(updatedSettings)
+            .exchange()
+            .expectStatus().isOk
+            .expectBody()
+            .jsonPath("$.coins").isEqualTo(500)
+            .jsonPath("$.level").isEqualTo(6)
     }
 
     @Test
@@ -113,12 +106,11 @@ class SettingsControllerIntegrationTests : IntegrationTestBase() {
         settingsRepository.save(Settings(userId = otherUserId))
         val updatedSettings = Settings(userId = otherUserId, coins = 500)
 
-        mockMvc.put("/settings/{userId}", otherUserId) {
-            header("Authorization", "Bearer $userToken")
-            contentType = MediaType.APPLICATION_JSON
-            content = objectMapper.writeValueAsString(updatedSettings)
-        }.andExpect {
-            status { isForbidden() }
-        }
+        webTestClient.put().uri("/settings/{userId}", otherUserId)
+            .header("Authorization", "Bearer $userToken")
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(updatedSettings)
+            .exchange()
+            .expectStatus().isForbidden
     }
 }

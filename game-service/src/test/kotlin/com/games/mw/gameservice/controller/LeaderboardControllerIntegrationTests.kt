@@ -12,20 +12,18 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
+import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient
+import org.springframework.http.MediaType
 import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
-import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.get
-import org.springframework.transaction.annotation.Transactional
+import org.springframework.test.web.reactive.server.WebTestClient
 
 @Tag("integration")
-@AutoConfigureMockMvc
+@AutoConfigureWebTestClient
 @WireMockTest(httpPort = 8081)
-@Transactional
 class LeaderboardControllerIntegrationTests : IntegrationTestBase() {
 
-    @Autowired private lateinit var mockMvc: MockMvc
+    @Autowired private lateinit var webTestClient: WebTestClient
     @Autowired private lateinit var objectMapper: ObjectMapper
     @Autowired private lateinit var settingsRepository: SettingsRepository
 
@@ -70,18 +68,18 @@ class LeaderboardControllerIntegrationTests : IntegrationTestBase() {
         stubFor(get(urlEqualTo("/auth/account/${user3.first}"))
             .willReturn(aResponse().withStatus(200).withHeader("Content-Type", "application/json").withBody(user3.second.toString())))
 
-        mockMvc.get("/leaderboard") {
-            header("Authorization", "Bearer $token")
-        }.andExpect {
-            status { isOk() }
-            content { contentType("application/json") }
-            jsonPath("$", hasSize<Any>(3))
-            jsonPath("$[0].username") { value(user1.first) }
-            jsonPath("$[0].level") { value(20) }
-            jsonPath("$[1].username") { value(user3.first) }
-            jsonPath("$[1].level") { value(15) }
-            jsonPath("$[2].username") { value(user2.first) }
-            jsonPath("$[2].level") { value(5) }
-        }
+        webTestClient.get().uri("/leaderboard")
+            .header("Authorization", "Bearer $token")
+            .exchange()
+            .expectStatus().isOk
+            .expectHeader().contentType(MediaType.APPLICATION_JSON)
+            .expectBody()
+            .jsonPath("$").value(hasSize<Any>(3))
+            .jsonPath("$[0].username").isEqualTo(user1.first)
+            .jsonPath("$[0].level").isEqualTo(20)
+            .jsonPath("$[1].username").isEqualTo(user3.first)
+            .jsonPath("$[1].level").isEqualTo(15)
+            .jsonPath("$[2].username").isEqualTo(user2.first)
+            .jsonPath("$[2].level").isEqualTo(5)
     }
 }

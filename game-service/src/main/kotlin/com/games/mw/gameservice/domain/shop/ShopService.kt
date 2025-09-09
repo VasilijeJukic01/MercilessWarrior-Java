@@ -10,6 +10,8 @@ import com.games.mw.gameservice.domain.shop.repository.ShopInventoryRepository
 import com.games.mw.gameservice.domain.shop.repository.UserShopStockRepository
 import com.games.mw.gameservice.domain.item.requests.ItemMasterDTO
 import com.games.mw.gameservice.domain.shop.requests.ShopItemDTO
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -28,13 +30,17 @@ class ShopService(
     }
 
     @Transactional(readOnly = true)
-    fun getAllMasterItems(): List<ItemMasterDTO> {
-        return itemMasterRepository.findAll().map(this::toItemMasterDTO)
+    suspend fun getAllMasterItems(): List<ItemMasterDTO> {
+        return withContext(Dispatchers.IO) {
+            itemMasterRepository.findAll()
+        }.map(this::toItemMasterDTO)
     }
 
     @Transactional(readOnly = true)
-    fun getShopInventory(shopId: String): List<ShopItemDTO> {
-        return shopInventoryRepository.findByShopId(shopId).map {
+    suspend fun getShopInventory(shopId: String): List<ShopItemDTO> {
+        return withContext(Dispatchers.IO) {
+            shopInventoryRepository.findByShopId(shopId)
+        }.map {
             ShopItemDTO(
                 itemId = it.item.itemId,
                 stock = it.stock,
@@ -53,14 +59,14 @@ class ShopService(
         getShopInventoryForUser(shopId, settingsId)
     }
 
-    internal fun getShopInventoryForUser(shopId: String, settingsId: Long): List<ShopItemDTO> {
+    internal suspend fun getShopInventoryForUser(shopId: String, settingsId: Long): List<ShopItemDTO> = withContext(Dispatchers.IO) {
         val currentPeriod = shopConfig.getCurrentResetPeriod()
         val masterInventory = shopInventoryRepository.findByShopId(shopId)
 
         val userPurchases = userShopStockRepository.findBySettingsIdAndShopIdAndResetPeriod(settingsId, shopId, currentPeriod)
             .associateBy { it.item.itemId }
 
-        return masterInventory.map { masterItem ->
+        masterInventory.map { masterItem ->
             val purchased = userPurchases[masterItem.item.itemId]?.purchasedStock ?: 0
             ShopItemDTO(
                 itemId = masterItem.item.itemId,
@@ -82,5 +88,4 @@ class ShopService(
             equip = item.equip
         )
     }
-
 }

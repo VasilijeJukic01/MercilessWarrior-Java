@@ -1,10 +1,12 @@
 package com.games.mw.gameservice.domain.perk
 
 import arrow.core.Either
-import arrow.core.right
 import arrow.core.raise.either
+import arrow.core.raise.ensureNotNull
 import com.games.mw.gameservice.domain.perk.model.Perk
 import com.games.mw.gameservice.domain.perk.repository.PerkRepository
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -24,6 +26,14 @@ class PerkService(
         data class Unknown(val throwable: Throwable) : PerkError
     }
 
+    @Transactional(readOnly = true)
+    suspend fun getPerkById(perkId: Long): Either<PerkError, Perk> = either {
+        val perk = withContext(Dispatchers.IO) {
+            perkRepository.findById(perkId).orElse(null)
+        }
+        ensureNotNull(perk) { PerkError.PerkNotFound }
+    }
+
     /**
      * Retrieves all perks associated with the given settings ID.
      *
@@ -31,8 +41,10 @@ class PerkService(
      * @return List of [Perk]s for the specified settings.
      */
     @Transactional(readOnly = true)
-    fun getPerksBySettingsId(settingsId: Long): List<Perk> {
-        return perkRepository.findBySettingsId(settingsId)
+    suspend fun getPerksBySettingsId(settingsId: Long): List<Perk> {
+        return withContext(Dispatchers.IO) {
+            perkRepository.findBySettingsId(settingsId)
+        }
     }
 
     /**
@@ -42,9 +54,11 @@ class PerkService(
      * @return [Either] containing the inserted [Perk] or a [PerkError] on failure.
      */
     @Transactional
-    fun insertPerk(perk: Perk): Either<PerkError, Perk> = either {
+    suspend fun insertPerk(perk: Perk): Either<PerkError, Perk> = either {
         try {
-            perkRepository.save(perk)
+            withContext(Dispatchers.IO) {
+                perkRepository.save(perk)
+            }
         } catch (e: Exception) {
             raise(PerkError.Unknown(e))
         }
@@ -58,12 +72,17 @@ class PerkService(
      * @return [Either] containing the updated [Perk] or a [PerkError] on failure.
      */
     @Transactional
-    fun updatePerk(perkId: Long, perkUpdate: Perk): Either<PerkError, Perk> = either {
-        val existingPerk = perkRepository.findById(perkId).orElse(null) ?: raise(PerkError.PerkNotFound)
+    suspend fun updatePerk(perkId: Long, perkUpdate: Perk): Either<PerkError, Perk> = either {
+        val existingPerk = withContext(Dispatchers.IO) {
+            perkRepository.findById(perkId).orElse(null)
+        } ?: raise(PerkError.PerkNotFound)
+
         try {
             existingPerk.name = perkUpdate.name
             existingPerk.settings = perkUpdate.settings
-            perkRepository.save(existingPerk)
+            withContext(Dispatchers.IO) {
+                perkRepository.save(existingPerk)
+            }
         } catch (e: Exception) {
             raise(PerkError.Unknown(e))
         }
@@ -76,10 +95,12 @@ class PerkService(
      * @return [Either] containing [Unit] on success or a [PerkError] on failure.
      */
     @Transactional
-    fun deleteBySettingsId(settingsId: Long): Either<PerkError, Unit> = either {
+    suspend fun deleteBySettingsId(settingsId: Long): Either<PerkError, Unit> = either {
         try {
-            perkRepository.deleteBySettingsId(settingsId)
-            Unit.right()
+            withContext(Dispatchers.IO) {
+                val perksToDelete = perkRepository.findBySettingsId(settingsId)
+                perkRepository.deleteAll(perksToDelete)
+            }
         } catch (e: Exception) {
             raise(PerkError.Unknown(e))
         }

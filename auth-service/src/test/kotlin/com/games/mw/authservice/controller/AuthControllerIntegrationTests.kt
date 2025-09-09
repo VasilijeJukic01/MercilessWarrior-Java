@@ -13,22 +13,20 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.web.client.TestRestTemplate
-import org.springframework.boot.test.web.client.postForEntity
-import org.springframework.boot.test.web.client.postForObject
-import org.springframework.data.redis.core.RedisTemplate
-import org.springframework.http.HttpEntity
-import org.springframework.http.HttpHeaders
-import org.springframework.http.HttpMethod
+import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient
+import org.springframework.data.redis.core.ReactiveRedisTemplate
 import org.springframework.http.HttpStatus
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.test.annotation.DirtiesContext
+import org.springframework.test.web.reactive.server.WebTestClient
+import org.springframework.test.web.reactive.server.expectBody
 
 @Tag("integration")
+@AutoConfigureWebTestClient
 class AuthControllerIntegrationTests : IntegrationTestBase() {
 
-    @Autowired private lateinit var restTemplate: TestRestTemplate
-    @Autowired private lateinit var redisTemplate: RedisTemplate<String, String>
+    @Autowired private lateinit var webTestClient: WebTestClient
+    @Autowired private lateinit var redisTemplate: ReactiveRedisTemplate<String, String>
     @Autowired private lateinit var userRepository: UserRepository
     @Autowired private lateinit var roleRepository: RoleRepository
     @Autowired private lateinit var passwordEncoder: PasswordEncoder
@@ -36,17 +34,26 @@ class AuthControllerIntegrationTests : IntegrationTestBase() {
     @AfterEach
     fun cleanup() {
         userRepository.deleteAll()
-        redisTemplate.connectionFactory?.connection?.flushAll()
+        redisTemplate.delete(redisTemplate.keys("rate-limit:*")).block()
     }
 
     // Helper
     private fun registerAndLogin(username: String, password: String): String {
         val registrationRequest = RegistrationRequest(username, password, setOf("USER"))
-        restTemplate.postForObject<Long>("/auth/register", registrationRequest)
+        webTestClient.post().uri("/auth/register")
+            .bodyValue(registrationRequest)
+            .exchange()
+            .expectStatus().isOk
 
         val loginRequest = AuthenticationRequest(username, password)
-        val response = restTemplate.postForEntity<AuthenticationResponse>("/auth/login", loginRequest)
-        return response.body!!.jwt
+        val response = webTestClient.post().uri("/auth/login")
+            .bodyValue(loginRequest)
+            .exchange()
+            .expectStatus().isOk
+            .expectBody<AuthenticationResponse>()
+            .returnResult()
+
+        return response.responseBody!!.jwt
     }
 
     @Test
@@ -55,14 +62,18 @@ class AuthControllerIntegrationTests : IntegrationTestBase() {
         val request = RegistrationRequest("integration-test-user", "password123", setOf("USER"))
 
         // Act
-        val response = restTemplate.postForEntity<Long>("/auth/register", request)
+        val result = webTestClient.post().uri("/auth/register")
+            .bodyValue(request)
+            .exchange()
+            .expectStatus().isOk
+            .expectBody<Long>()
+            .returnResult()
+
+        val userId = result.responseBody
+        assertNotNull(userId)
 
         // Assert
-        assertEquals(HttpStatus.OK, response.statusCode)
-        assertNotNull(response.body)
-        val userId = response.body!!
-
-        val foundUserOpt = userRepository.findByIdWithRoles(userId)
+        val foundUserOpt = userRepository.findByIdWithRoles(userId!!)
         assertTrue(foundUserOpt.isPresent)
         val foundUser = foundUserOpt.get()
 
@@ -76,48 +87,48 @@ class AuthControllerIntegrationTests : IntegrationTestBase() {
     fun `POST register should return 400 Bad Request if username is taken`() {
         // Arrange
         val existingUserRequest = RegistrationRequest("existing-user", "password123", setOf("USER"))
-        restTemplate.postForEntity<Long>("/auth/register", existingUserRequest)
+        webTestClient.post().uri("/auth/register").bodyValue(existingUserRequest).exchange().expectStatus().isOk
 
-        // Act
-        val response = restTemplate.postForEntity<String>("/auth/register", existingUserRequest)
-
-        // Assert
-        assertEquals(HttpStatus.BAD_REQUEST, response.statusCode)
-        assertEquals("Username is already taken.", response.body)
+        // Act & Assert
+        webTestClient.post().uri("/auth/register")
+            .bodyValue(existingUserRequest)
+            .exchange()
+            .expectStatus().isBadRequest
+            .expectBody<String>()
+            .isEqualTo("Username is already taken.")
     }
 
     @Test
     fun `POST login should return JWT for valid credentials`() {
         // Arrange
         val registrationRequest = RegistrationRequest("login-user", "correct-password", setOf("USER"))
-        restTemplate.postForObject<Long>("/auth/register", registrationRequest)
+        webTestClient.post().uri("/auth/register").bodyValue(registrationRequest).exchange()
 
         val loginRequest = AuthenticationRequest("login-user", "correct-password")
 
-        // Act
-        val response = restTemplate.postForEntity<AuthenticationResponse>("/auth/login", loginRequest)
-
-        // Assert
-        assertEquals(HttpStatus.OK, response.statusCode)
-        assertNotNull(response.body)
-        assertNotNull(response.body?.jwt)
-        assertTrue(response.body!!.jwt.isNotEmpty())
+        // Act & Assert
+        webTestClient.post().uri("/auth/login")
+            .bodyValue(loginRequest)
+            .exchange()
+            .expectStatus().isOk
+            .expectBody()
+            .jsonPath("$.jwt").isNotEmpty
     }
 
     @Test
     fun `POST login should return 401 Unauthorized for invalid credentials`() {
         // Arrange
         val registrationRequest = RegistrationRequest("login-user-fail", "correct-password", setOf("USER"))
-        restTemplate.postForObject<Long>("/auth/register", registrationRequest)
+        webTestClient.post().uri("/auth/register").bodyValue(registrationRequest).exchange()
 
         val loginRequest = AuthenticationRequest("login-user-fail", "wrong-password")
 
-        // Act
-        val response = restTemplate.postForEntity<String>("/auth/login", loginRequest)
-
-        // Assert
-        assertEquals(HttpStatus.UNAUTHORIZED, response.statusCode)
-        assertEquals("Authentication failed: Invalid credentials.", response.body)
+        // Act & Assert
+        webTestClient.post().uri("/auth/login")
+            .bodyValue(loginRequest)
+            .exchange()
+            .expectStatus().isUnauthorized
+            .expectBody<String>().isEqualTo("Authentication failed: Invalid credentials.")
     }
 
     @Test
@@ -125,31 +136,26 @@ class AuthControllerIntegrationTests : IntegrationTestBase() {
         // Arrange
         val username = "authed-user"
         val token = registerAndLogin(username, "password123")
-        val headers = HttpHeaders()
-        headers.setBearerAuth(token)
-        val entity = HttpEntity<String>(headers)
 
-        // Act
-        val response = restTemplate.exchange("/auth/account/$username", HttpMethod.GET, entity, Long::class.java)
+        // Act & Assert
+        val expectedUserId = userRepository.findByUsername(username).get().id
 
-        // Assert
-        assertEquals(HttpStatus.OK, response.statusCode)
-        assertNotNull(response.body)
-
-        val user = userRepository.findByUsername(username).get()
-        assertEquals(user.id, response.body)
+        webTestClient.get().uri("/auth/account/$username")
+            .header("Authorization", "Bearer $token")
+            .exchange()
+            .expectStatus().isOk
+            .expectBody<Long>().isEqualTo(expectedUserId!!)
     }
 
     @Test
-    fun `GET account should return 403 Forbidden without a token`() {
+    fun `GET account should return 401 Unauthorized without a token`() {
         // Arrange
         val username = "any-user"
 
-        // Act
-        val response = restTemplate.getForEntity("/auth/account/$username", String::class.java)
-
-        // Assert
-        assertEquals(HttpStatus.FORBIDDEN, response.statusCode)
+        // Act & Assert
+        webTestClient.get().uri("/auth/account/$username")
+            .exchange()
+            .expectStatus().isUnauthorized
     }
 
     @Test
@@ -160,18 +166,16 @@ class AuthControllerIntegrationTests : IntegrationTestBase() {
         registerAndLogin(user1, "pass")
         val token = registerAndLogin(user2, "pass")
 
-        val headers = HttpHeaders()
-        headers.setBearerAuth(token)
-        val entity = HttpEntity<String>(headers)
-
-        // Act
-        val response = restTemplate.exchange("/auth/usernames", HttpMethod.GET, entity, List::class.java)
-
-        // Assert
-        assertEquals(HttpStatus.OK, response.statusCode)
-        assertNotNull(response.body)
-        assertTrue(response.body!!.contains(user1))
-        assertTrue(response.body!!.contains(user2))
+        // Act & Assert
+        webTestClient.get().uri("/auth/usernames")
+            .header("Authorization", "Bearer $token")
+            .exchange()
+            .expectStatus().isOk
+            .expectBody<List<String>>()
+            .value {
+                assertTrue(it.contains(user1))
+                assertTrue(it.contains(user2))
+            }
     }
 
     @Test
@@ -189,13 +193,17 @@ class AuthControllerIntegrationTests : IntegrationTestBase() {
 
         // Act & Assert
         for (i in 1..5) {
-            val response = restTemplate.postForEntity<String>("/auth/login", loginRequest)
-            assertEquals(HttpStatus.UNAUTHORIZED, response.statusCode, "Attempt $i should be UNAUTHORIZED")
+            webTestClient.post().uri("/auth/login")
+                .bodyValue(loginRequest)
+                .exchange()
+                .expectStatus().isUnauthorized
         }
 
-        val blockedResponse = restTemplate.postForEntity<String>("/auth/login", loginRequest)
-        assertEquals(HttpStatus.TOO_MANY_REQUESTS, blockedResponse.statusCode)
-        assertEquals("Too many login attempts.", blockedResponse.body)
+        webTestClient.post().uri("/auth/login")
+            .bodyValue(loginRequest)
+            .exchange()
+            .expectStatus().isEqualTo(HttpStatus.TOO_MANY_REQUESTS)
+            .expectBody<String>().isEqualTo("Too many login attempts.")
     }
 
     @Test
@@ -205,13 +213,17 @@ class AuthControllerIntegrationTests : IntegrationTestBase() {
 
         // Act & Assert
         for (i in 1..100) {
-            val response = restTemplate.postForEntity<String>("/auth/register", request.copy(username = "user-$i"))
-            assertEquals(HttpStatus.OK, response.statusCode, "Request $i should be OK")
+            webTestClient.post().uri("/auth/register")
+                .bodyValue(request.copy(username = "user-$i"))
+                .exchange()
+                .expectStatus().isOk
         }
 
-        val blockedResponse = restTemplate.postForEntity<String>("/auth/register", request.copy(username = "user-101"))
-        assertEquals(HttpStatus.TOO_MANY_REQUESTS, blockedResponse.statusCode)
-        assertEquals("Too many requests. Please try again later.", blockedResponse.body)
+        webTestClient.post().uri("/auth/register")
+            .bodyValue(request.copy(username = "user-101"))
+            .exchange()
+            .expectStatus().isEqualTo(HttpStatus.TOO_MANY_REQUESTS)
+            .expectBody<String>().isEqualTo("Too many requests. Please try again later.")
     }
 
 }

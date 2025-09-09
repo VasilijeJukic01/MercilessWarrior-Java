@@ -32,16 +32,18 @@ class SettingsService(
      */
     @Transactional(readOnly = true)
     fun getSettingsByUserId(userId: Long): Either<SettingsError, Settings> = either {
-        ensureNotNull(settingsRepository.findByUserId(userId)) { SettingsError.SettingsNotFound }
+        val settings = settingsRepository.findByUserId(userId)
+        ensureNotNull(settings) { SettingsError.SettingsNotFound }
     }
 
     /**
      * Inserts a new settings entity into the repository.
+     * This method is intentionally NOT annotated with @Transactional, as the transaction
+     * is managed programmatically by the caller (UserEventListener).
      *
      * @param settings The [Settings] to insert.
      * @return [Either] containing the inserted [Settings] or a [SettingsError] on failure.
      */
-    @Transactional
     fun insertSettings(settings: Settings): Either<SettingsError, Settings> = either {
         try {
             settingsRepository.save(settings)
@@ -73,5 +75,4 @@ class SettingsService(
             raise(SettingsError.Unknown(e))
         }
     }
-
 }

@@ -9,6 +9,4 @@ interface PerkRepository : JpaRepository<Perk, Long> {
 
     fun findBySettingsId(settingsId: Long): List<Perk>
 
-    fun deleteBySettingsId(settingsId: Long)
-
 }

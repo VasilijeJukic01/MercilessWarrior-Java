@@ -1,11 +1,12 @@
 package com.games.mw.authservice.controller
 
+import com.games.mw.authservice.request.*
+import com.games.mw.authservice.service.AuthService
+import kotlinx.coroutines.reactor.mono
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-import com.games.mw.authservice.request.*
-import com.games.mw.authservice.service.AuthService
-import kotlinx.coroutines.runBlocking
+import reactor.core.publisher.Mono
 
 @RestController
 @RequestMapping("/auth")
@@ -14,28 +15,26 @@ class AuthController(
 ) {
 
     @PostMapping("/register")
-    fun registerUser(@RequestBody request: RegistrationRequest): ResponseEntity<*> {
-        return runBlocking {
-            authService.registerUser(request).fold(
-                { error ->
-                    when (error) {
-                        is AuthService.RegistrationError.UsernameTaken ->
-                            ResponseEntity.badRequest().body("Username is already taken.")
-                        is AuthService.RegistrationError.RoleNotFound ->
-                            ResponseEntity.badRequest().body("Role not found: ${error.roleName}.")
-                        is AuthService.RegistrationError.Unknown -> {
-                            ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred during registration.")
-                        }
+    fun registerUser(@RequestBody request: RegistrationRequest): Mono<ResponseEntity<*>> = mono {
+        authService.registerUser(request).fold(
+            { error ->
+                when (error) {
+                    is AuthService.RegistrationError.UsernameTaken ->
+                        ResponseEntity.badRequest().body("Username is already taken.")
+                    is AuthService.RegistrationError.RoleNotFound ->
+                        ResponseEntity.badRequest().body("Role not found: ${error.roleName}.")
+                    is AuthService.RegistrationError.Unknown -> {
+                        ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred during registration.")
                     }
-                },
-                { user -> ResponseEntity.ok(user.id) }
-            )
-        }
+                }
+            },
+            { user -> ResponseEntity.ok(user.id) }
+        )
     }
 
     @PostMapping("/login")
-    fun createAuthenticationToken(@RequestBody authenticationRequest: AuthenticationRequest): ResponseEntity<*> {
-        return authService.loginUser(authenticationRequest).fold(
+    fun createAuthenticationToken(@RequestBody authenticationRequest: AuthenticationRequest): Mono<ResponseEntity<*>> = mono {
+        authService.loginUser(authenticationRequest).fold(
             { error ->
                 when (error) {
                     is AuthService.LoginError.TooManyAttempts ->
@@ -43,7 +42,8 @@ class AuthController(
                     is AuthService.LoginError.InvalidCredentials ->
                         ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authentication failed: Invalid credentials.")
                     is AuthService.LoginError.Unknown -> {
-                        ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred during login.")
+                        ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                            .body("An unexpected error occurred during login.")
                     }
                 }
             },
@@ -52,8 +52,8 @@ class AuthController(
     }
 
     @GetMapping("/account/{username}")
-    fun getUserIdByName(@PathVariable username: String, @RequestHeader("Authorization") token: String): ResponseEntity<*> {
-        return authService.getUserIdByName(username).fold(
+    fun getUserIdByName(@PathVariable username: String, @RequestHeader("Authorization") token: String): Mono<ResponseEntity<*>> = mono {
+        authService.getUserIdByName(username).fold(
             { error ->
                 when (error) {
                     is AuthService.UserAccessError.UserNotFound ->
@@ -72,8 +72,8 @@ class AuthController(
     }
 
     @GetMapping("/validate-token")
-    fun validateToken(@RequestHeader("Authorization") token: String): ResponseEntity<*> {
-        return authService.validateToken(token).fold(
+    fun validateToken(@RequestHeader("Authorization") token: String): Mono<ResponseEntity<*>> = mono {
+        authService.validateToken(token).fold(
             { error ->
                 when (error) {
                     is AuthService.TokenError.InvalidToken ->
@@ -89,8 +89,8 @@ class AuthController(
     }
 
     @GetMapping("/is-admin")
-    fun isAdmin(@RequestHeader("Authorization") token: String): ResponseEntity<*> {
-        return authService.isAdmin(token).fold(
+    fun isAdmin(@RequestHeader("Authorization") token: String): Mono<ResponseEntity<*>> = mono {
+        authService.isAdmin(token).fold(
             { error ->
                 when (error) {
                     is AuthService.TokenError.InvalidToken ->

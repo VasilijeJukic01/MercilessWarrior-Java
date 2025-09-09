@@ -3,12 +3,13 @@ package com.games.mw.gameservice.domain.shop
 import com.games.mw.gameservice.domain.shop.transaction.requests.ShopTransactionRequest
 import com.games.mw.gameservice.domain.shop.transaction.TransactionService
 import com.games.mw.gameservice.security.CustomAuthenticationToken
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.reactor.mono
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
+import reactor.core.publisher.Mono
 
 @RestController
 @RequestMapping("/shop")
@@ -22,13 +23,13 @@ class ShopController(
     fun getShopInventory(
         @PathVariable shopId: String,
         authentication: Authentication
-    ): ResponseEntity<*> {
+    ): Mono<ResponseEntity<*>> {
         val authToken = authentication as? CustomAuthenticationToken
-            ?: return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid authentication token.")
+            ?: return Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid authentication token."))
 
         val userId = authToken.userId
 
-        return runBlocking {
+        return mono {
             shopService.getShopInventoryByUserId(shopId, userId).fold(
                 { error ->
                     when (error) {
@@ -42,24 +43,20 @@ class ShopController(
     }
 
     @PostMapping("/buy")
-    @PreAuthorize("@permissionService.isOwnerByUserId(#request.userId)")
-    fun buyItem(@RequestBody request: ShopTransactionRequest, @RequestHeader("Authorization") token: String): ResponseEntity<*> {
-        return runBlocking {
-            transactionService.processBuyTransaction(request).fold(
-                { error -> ResponseEntity.badRequest().body(error.toString()) },
-                { successResponse -> ResponseEntity.ok(successResponse) }
-            )
-        }
+    @PreAuthorize("@permissionService.isOwnerByUserId(authentication, #request.userId)")
+    fun buyItem(@RequestBody request: ShopTransactionRequest, @RequestHeader("Authorization") token: String): Mono<ResponseEntity<*>> = mono {
+        transactionService.processBuyTransaction(request).fold(
+            { error -> ResponseEntity.badRequest().body(error.toString()) },
+            { successResponse -> ResponseEntity.ok(successResponse) }
+        )
     }
 
     @PostMapping("/sell")
-    @PreAuthorize("@permissionService.isOwnerByUserId(#request.userId)")
-    fun sellItem(@RequestBody request: ShopTransactionRequest, @RequestHeader("Authorization") token: String): ResponseEntity<*> {
-        return runBlocking {
-            transactionService.processSellTransaction(request).fold(
-                { error -> ResponseEntity.badRequest().body(error.toString()) },
-                { successResponse -> ResponseEntity.ok(successResponse) }
-            )
-        }
+    @PreAuthorize("@permissionService.isOwnerByUserId(authentication, #request.userId)")
+    fun sellItem(@RequestBody request: ShopTransactionRequest, @RequestHeader("Authorization") token: String): Mono<ResponseEntity<*>> = mono {
+        transactionService.processSellTransaction(request).fold(
+            { error -> ResponseEntity.badRequest().body(error.toString()) },
+            { successResponse -> ResponseEntity.ok(successResponse) }
+        )
     }
 }
