@@ -12,6 +12,8 @@ import java.util.EnumMap;
 import java.util.Map;
 import java.util.Objects;
 
+import static platformer.constants.FilePaths.LIGHT_METADATA;
+
 /**
  * Manages light properties for decorations, loaded from an external configuration file.
  */
@@ -36,8 +38,7 @@ public class DecorationLightManager {
     }
 
     private void loadDecorationLights() {
-        String path = "/light/decoration_lights.json";
-        try (InputStreamReader reader = new InputStreamReader(Objects.requireNonNull(getClass().getResourceAsStream(path)))) {
+        try (InputStreamReader reader = new InputStreamReader(Objects.requireNonNull(getClass().getResourceAsStream(LIGHT_METADATA)))) {
             Type type = new TypeToken<Map<String, DecorationLightData>>() {}.getType();
             Map<String, DecorationLightData> stringMap = new Gson().fromJson(reader, type);
 

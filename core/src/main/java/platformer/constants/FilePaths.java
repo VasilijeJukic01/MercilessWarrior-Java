@@ -79,6 +79,7 @@ public final class FilePaths {
     public static final String PARTICLE_SHEET = "/images/particles/ParticleSprite.png";
     public static final String SMOKE_SHEET = "/images/particles/Smoke.png";
     public static final String RORIC_AURA_SHEET = "/images/particles/RoricAuraEffect.png";
+    public static final String LIGHT_METADATA = "/light/decoration_lights.json";
 
     // Buttons
     public static final String BTN_BUY_SHEET = "/images/buttons/BuyButton.png";

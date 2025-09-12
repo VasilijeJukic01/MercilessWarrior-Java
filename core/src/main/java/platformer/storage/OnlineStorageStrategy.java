@@ -105,7 +105,6 @@ public class OnlineStorageStrategy implements StorageStrategy {
         try {
             ShopTransactionResponse response = onlineService.buyItem(request);
             if (response != null) {
-                Framework.getInstance().refreshAccountData();
                 List<ShopItem> shopItems = response.getUpdatedShopInventory().stream()
                         .map(dto -> new ShopItem(dto.getItemId(), dto.getStock(), dto.getCost()))
                         .collect(Collectors.toList());
@@ -133,7 +132,6 @@ public class OnlineStorageStrategy implements StorageStrategy {
         try {
             ShopTransactionResponse response = onlineService.sellItem(request);
             if (response != null) {
-                Framework.getInstance().refreshAccountData();
                 List<ShopItem> shopItems = response.getUpdatedShopInventory().stream()
                         .map(dto -> new ShopItem(dto.getItemId(), dto.getStock(), dto.getCost()))
                         .collect(Collectors.toList());
