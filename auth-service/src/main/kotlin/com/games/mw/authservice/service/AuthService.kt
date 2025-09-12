@@ -141,7 +141,8 @@ class AuthService(
      */
     suspend fun loginUser(authenticationRequest: AuthenticationRequest): Either<LoginError, AuthenticationResponse> {
         val key = authenticationRequest.username
-        if (loginAttemptService.isBlocked(key)) {
+
+        if (withContext(Dispatchers.IO) { loginAttemptService.isBlocked(key) }) {
             return LoginError.TooManyAttempts.left()
         }
 
@@ -150,21 +151,18 @@ class AuthService(
                 userDetailsService.loadUserByUsername(authenticationRequest.username)
             }
         } catch (e: UsernameNotFoundException) {
-            loginAttemptService.loginFailed(key)
+            withContext(Dispatchers.IO) { loginAttemptService.loginFailed(key) }
             return LoginError.InvalidCredentials.left()
-        } catch (e: Exception) {
-            loginAttemptService.loginFailed(key)
-            return LoginError.Unknown(e).left()
         }
 
         if (!passwordEncoder.matches(authenticationRequest.password, userDetails.password)) {
-            loginAttemptService.loginFailed(key)
+            withContext(Dispatchers.IO) { loginAttemptService.loginFailed(key) }
             return LoginError.InvalidCredentials.left()
         }
 
         return try {
             val jwt: String = jwtService.generateToken(userDetails)
-            loginAttemptService.loginSucceeded(key)
+            withContext(Dispatchers.IO) { loginAttemptService.loginSucceeded(key) } // Wrap this call
             AuthenticationResponse(jwt).right()
         } catch (e: Exception) {
             LoginError.Unknown(e).left()
