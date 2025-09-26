@@ -1,0 +1,18 @@
+[
+  {
+    "name": "Forest",
+    "spritePath": "/images/levels/mossyTiles.png",
+    "rows": 7,
+    "columns": 7,
+    "tileSizeInSprite": 274,
+    "tileCount": 49
+  },
+  {
+    "name": "Interior",
+    "spritePath": "/images/levels/interiorTiles.png",
+    "rows": 2,
+    "columns": 7,
+    "tileSizeInSprite": 64,
+    "tileCount": 14
+  }
+]

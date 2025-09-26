@@ -33,6 +33,7 @@ public class Level {
 
     // Data
     private String name;
+    private String tilesetName;
     private int npcIndicator = 0;
     private final BufferedImage layer1Img, layer2Img;
     private int[][] lvlData, decoData, layerData;
@@ -58,10 +59,11 @@ public class Level {
         npcMap.put("level13", List.of(NpcType.RORIC));
     }
 
-    public Level(String name, BufferedImage layer1Img, BufferedImage layer2Img) {
+    public Level(String name, BufferedImage layer1Img, BufferedImage layer2Img, String tilesetName) {
         this.name = name;
         this.layer1Img = layer1Img;
         this.layer2Img = layer2Img;
+        this.tilesetName = tilesetName;
         init();
         setOffset();
         loadPlayerSpawns(layer1Img);
@@ -310,6 +312,10 @@ public class Level {
 
     public int[][] getDecoData() {
         return decoData;
+    }
+
+    public String getTilesetName() {
+        return tilesetName;
     }
 
     public int getXMaxLevelOffset() {

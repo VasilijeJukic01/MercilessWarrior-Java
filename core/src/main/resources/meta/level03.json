@@ -1,6 +1,7 @@
 {
   "backgroundId": "FOREST3",
   "ambientParticlesEnabled": false,
+  "tileset": "Forest",
   "decorations": [
     {
       "x": 5,

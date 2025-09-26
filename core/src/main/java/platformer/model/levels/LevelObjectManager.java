@@ -3,8 +3,10 @@ package platformer.model.levels;
 import platformer.utils.ImageUtils;
 
 import java.awt.image.BufferedImage;
+import java.util.HashMap;
+import java.util.Map;
 
-import static platformer.constants.FilePaths.LEVEL_OBJECT_SPRITES;
+import static platformer.constants.FilePaths.DECORATION_SPRITES;
 
 /**
  * This class is responsible for managing the level objects in the game.
@@ -12,27 +14,36 @@ import static platformer.constants.FilePaths.LEVEL_OBJECT_SPRITES;
  */
 public class LevelObjectManager {
 
-    private BufferedImage[] models;
+    private final Map<String, BufferedImage> models = new HashMap<>();
 
     public LevelObjectManager() {
-        loadImages();
+
     }
 
-    private void loadImages() {
-        this.models = new BufferedImage[LvlObjType.values().length];
-        for (int i = 0; i < models.length; i++) {
-            LvlObjType objType = LvlObjType.values()[i];
-            String id = objType.getId();
-            int bigFlag = id.contains("_BIG") ? 4 : 0;
-            int reverseFlag = id.contains("_REVERSE") ? 8 : 0;
-            String name = id.substring(0, id.length() - bigFlag - reverseFlag);
-            models[i] = ImageUtils.importImage(LEVEL_OBJECT_SPRITES.replace("$", name), objType.getWid(), objType.getHei());
-            if (reverseFlag != 0) models[i] = ImageUtils.flipImage(models[i]);
+    /**
+     * Retrieves the image for a given decoration ID from a specific tileset folder.
+     * If the image is not already in the cache, it attempts to load it, caches it, and returns it.
+     *
+     * @param id The ID of the decoration.
+     * @param tilesetName The name of the tileset, which corresponds to the subfolder.
+     * @param filename The specific filename to use, which may differ from the ID.
+     * @param isFlipped If true, the loaded image will be flipped horizontally.
+     * @return The BufferedImage for the decoration, or null if it cannot be loaded.
+     */
+    public BufferedImage getModel(String id, String tilesetName, String filename, boolean isFlipped) {
+        String cacheKey = tilesetName + ":" + id + (isFlipped ? ":flipped" : "");
+        if (models.containsKey(cacheKey)) return models.get(cacheKey);
+
+        String fileToLoad = (filename != null && !filename.isEmpty()) ? filename : id;
+        String imagePath = DECORATION_SPRITES + tilesetName.toLowerCase() + "/" + fileToLoad + ".png";
+        BufferedImage image = ImageUtils.importImage(imagePath, -1, -1);
+
+        if (image != null) {
+            if (isFlipped) image = ImageUtils.flipImage(image);
+            models.put(cacheKey, image);
         }
-    }
 
-    public BufferedImage[] getModels() {
-        return models;
+        return image;
     }
 
 }
