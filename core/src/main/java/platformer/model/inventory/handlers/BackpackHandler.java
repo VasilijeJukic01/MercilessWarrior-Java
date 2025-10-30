@@ -58,16 +58,6 @@ public class BackpackHandler {
         refreshAccountItems();
     }
 
-    public void dropItem(int index, boolean isEquipAction) {
-        if (index >= backpack.size()) return;
-        if (isEquipAction) backpack.remove(index);
-        else {
-            backpack.get(index).setAmount(backpack.get(index).getAmount() - 1);
-            if (backpack.get(index).getAmount() <= 0) backpack.remove(index);
-        }
-        refreshAccountItems();
-    }
-
     public void addItemToBackpack(InventoryItem itemToAdd) {
         ItemData data = itemToAdd.getData();
         if (data == null) return;
@@ -244,6 +234,13 @@ public class BackpackHandler {
             }
         }
         return values;
+    }
+
+    public void removeItemFromSlot(int index) {
+        if (index >= 0 && index < backpack.size()) {
+            backpack.set(index, null);
+            refreshAccountItems();
+        }
     }
 
     public void refreshAccountItems() {

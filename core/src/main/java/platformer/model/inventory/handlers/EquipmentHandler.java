@@ -70,7 +70,7 @@ public class EquipmentHandler {
 
         equipped[slotIndex] = itemToEquip;
         applyBonus(itemToEquip);
-        backpackHandler.dropItem(index, true);
+        backpackHandler.removeItemFromSlot(index);
     }
 
     /**
