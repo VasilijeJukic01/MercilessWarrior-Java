@@ -70,7 +70,7 @@ public class GameStateController {
         });
         initAction(pressActions, "Attack", () -> {
             if (context.getGameState().getActiveState() != PlayingState.DIALOGUE)
-                player.setPlayerAttackState(AttackState.ATTACK_1);
+                player.performAttack();
         });
         initAction(pressActions, "Flames", () -> {
             if (pressedKeys.contains(kc.getKeyForCommand("Flames")) && player.getSpellState() != 0) return;

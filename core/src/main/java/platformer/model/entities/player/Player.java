@@ -30,10 +30,8 @@ import platformer.physics.DamageSource;
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
-import java.util.Arrays;
-import java.util.EnumSet;
+import java.util.*;
 import java.util.List;
-import java.util.Random;
 
 import static platformer.constants.Constants.*;
 import static platformer.physics.CollisionDetector.*;
@@ -67,15 +65,23 @@ public class Player extends Entity {
     private final double jumpSpeed = -2.25 * SCALE;
     private final double collisionFallSpeed = 0.5 * SCALE;
 
+    private final double recoilDecay = 0.85;
+
     // Status
     private int currentJumps = 0;
     private int dashTick = 0;
     private final int attackDmg = 5, transformAttackDmg = 8;
     private double currentStamina = 15;
     private int spellState = 0;
+    private double recoilSpeedX = 0.0;
     private PlayerDataManager playerDataManager;
     private PlayerMinimapHandler minimapHandler;
     private Inventory inventory;
+
+    private final List<AttackState> attackChain = new ArrayList<>();
+    private int currentAttackIndex = 0;
+    private long lastAttackTime = 0;
+    private final long comboResetTime = 1000;
 
     // Effect
     private int mythicAuraTick = 0;
@@ -100,6 +106,11 @@ public class Player extends Entity {
         initAttackBox();
         initManagers(context.getTimeCycleManager());
         loadAnimations();
+
+        attackChain.add(AttackState.ATTACK_1);
+        attackChain.add(AttackState.ATTACK_2);
+        attackChain.add(AttackState.ATTACK_3);
+        Collections.shuffle(attackChain);
     }
 
     private void loadAnimations() {
@@ -274,15 +285,25 @@ public class Player extends Entity {
         boolean left = checkAction(PlayerAction.LEFT);
         boolean right = checkAction(PlayerAction.RIGHT);
         boolean dash = checkAction(PlayerAction.DASH);
-        if (((!left && !right) || (left && right)) && !inAir && !dash) return;
+        if (((!left && !right) || (left && right)) && !inAir && !dash && !checkAction(PlayerAction.ATTACK)) return;
 
         double dx = 0;
+
+        if (recoilSpeedX > 0) {
+            dx += recoilSpeedX * -flipSign;
+            recoilSpeedX *= recoilDecay;
+            if (recoilSpeedX < 0.1) {
+                recoilSpeedX = 0;
+            }
+        }
 
         updateWallPosition();
 
         boolean wallPush = checkAction(PlayerAction.WALL_PUSH);
-        if (left) dx -= checkAction(PlayerAction.LAVA) ? LAVA_PLAYER_SPEED : PLAYER_SPEED;
-        if (right) dx += checkAction(PlayerAction.LAVA) ? LAVA_PLAYER_SPEED : PLAYER_SPEED;
+        if (recoilSpeedX == 0) {
+            if (left) dx -= checkAction(PlayerAction.LAVA) ? LAVA_PLAYER_SPEED : PLAYER_SPEED;
+            if (right) dx += checkAction(PlayerAction.LAVA) ? LAVA_PLAYER_SPEED : PLAYER_SPEED;
+        }
         if (right && inAir && wallPush && !dash) dx += PLAYER_BOOST;
         if (left && inAir && wallPush && !dash) dx -= PLAYER_BOOST;
 
@@ -447,6 +468,26 @@ public class Player extends Entity {
     }
 
     // Actions
+    public void performAttack() {
+        if (cooldown[Cooldown.ATTACK.ordinal()] > 0.4) return;
+
+        long currentTime = System.currentTimeMillis();
+        if (currentTime - lastAttackTime > comboResetTime) {
+            currentAttackIndex = 0;
+            Collections.shuffle(attackChain);
+        }
+
+        AttackState nextAttack = attackChain.get(currentAttackIndex);
+        setPlayerAttackState(nextAttack);
+
+        currentAttackIndex++;
+        if (currentAttackIndex >= attackChain.size()) {
+            currentAttackIndex = 0;
+            Collections.shuffle(attackChain);
+        }
+        lastAttackTime = currentTime;
+    }
+
     public void doJump() {
         boolean left = checkAction(PlayerAction.LEFT);
         boolean right = checkAction(PlayerAction.RIGHT);
@@ -482,6 +523,10 @@ public class Player extends Entity {
         if (canMoveHere(hitBox.x + allowedObjectDx, hitBox.y, hitBox.width, hitBox.height, levelData)) {
             hitBox.x += allowedObjectDx;
         }
+    }
+
+    public void applyRecoil(double initialSpeed) {
+        if (!inAir) recoilSpeedX = initialSpeed;
     }
 
     // Status Changes
@@ -727,9 +772,18 @@ public class Player extends Entity {
     }
 
     public void setPlayerAttackState(AttackState playerAttackState) {
-        if (cooldown[Cooldown.ATTACK.ordinal()] != 0) return;
         this.attackState = playerAttackState;
         this.setAttacking(true);
+
+        switch (playerAttackState) {
+            case ATTACK_1, ATTACK_2:
+                applyRecoil(0.6 * SCALE);
+                break;
+            case ATTACK_3:
+                applyRecoil(1.0 * SCALE);
+                break;
+        }
+
         double cd =  PLAYER_ATTACK_CD + PerksBonus.getInstance().getBonusCooldown();
         double equipmentBonus = InventoryBonus.getInstance().getCooldown() * cd;
         cd -= equipmentBonus;
