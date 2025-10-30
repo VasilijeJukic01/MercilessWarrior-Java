@@ -247,6 +247,7 @@ public class GameState extends AbstractState implements State {
 
     @Override
     public void keyPressed(KeyEvent e) {
+        if (transitionManager.isActive()) return;
         if (isMultiplayer && overlayManager.getChatOverlay().isActive()) {
             overlayManager.getChatOverlay().keyPressed(e);
             return;
@@ -257,6 +258,7 @@ public class GameState extends AbstractState implements State {
 
     @Override
     public void keyReleased(KeyEvent e) {
+        if (transitionManager.isActive()) return;
         if (isMultiplayer && e.getKeyCode() == KeyEvent.VK_BACK_QUOTE) {
             overlayManager.getChatOverlay().toggle();
             return;
@@ -284,6 +286,21 @@ public class GameState extends AbstractState implements State {
 
     public void onGameResumed(GameResumedEvent event) {
         eventHandlers.forEach(EventHandler::unpause);
+    }
+
+    /**
+     * Flushes all pending AWT input events (mouse and keyboard) from the event queue.
+     * Crucial for preventing stale input from being processed after a state change or a temporary input lock.
+     */
+    public void flushAWTEventQueue() {
+        try {
+            EventQueue q = Toolkit.getDefaultToolkit().getSystemEventQueue();
+            AWTEvent event;
+            while ((event = q.peekEvent()) != null) {
+                if (event instanceof KeyEvent || event instanceof MouseEvent) q.getNextEvent();
+                else break;
+            }
+        } catch (Exception ignored) {}
     }
 
     // Facade

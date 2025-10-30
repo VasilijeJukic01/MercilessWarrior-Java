@@ -8,7 +8,6 @@ import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
 import platformer.event.EventBus;
 import platformer.event.events.ui.OverlayChangeEvent;
-import platformer.model.entities.AttackState;
 import platformer.model.entities.player.Player;
 import platformer.model.entities.player.PlayerAction;
 import platformer.model.gameObjects.GameObject;
@@ -269,6 +268,10 @@ public class GameStateController {
         };
 
         return Arrays.stream(breakableStates).anyMatch(breakableState -> breakableState == state);
+    }
+
+    public void resetKeys() {
+        pressedKeys.clear();
     }
 
 }

@@ -28,11 +28,14 @@ public class TransitionManager {
 
     private final float curveFactor = 150.0f;
 
-    public void startTransition(TransitionDirection direction) {
+    private Runnable onFadeOutComplete;
+
+    public void startTransition(TransitionDirection direction, Runnable onFadeOutComplete) {
         if (state == State.INACTIVE) {
             this.direction = direction;
             this.progress = 0.0f;
             this.state = State.FADE_OUT;
+            this.onFadeOutComplete = onFadeOutComplete;
             Audio.getInstance().getAudioPlayer().playSound(Sound.DASH);
         }
     }
@@ -42,6 +45,10 @@ public class TransitionManager {
             progress += speed;
             if (progress >= 1.0f) {
                 if (state == State.FADE_OUT) {
+                    if (onFadeOutComplete != null) {
+                        onFadeOutComplete.run();
+                        onFadeOutComplete = null;
+                    }
                     progress = 0.0f;
                     state = State.FADE_IN;
                 }

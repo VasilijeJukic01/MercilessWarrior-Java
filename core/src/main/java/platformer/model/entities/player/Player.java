@@ -732,7 +732,7 @@ public class Player extends Entity {
 
     // Reset
     public void resetDirections() {
-        removeActions(PlayerAction.LEFT, PlayerAction.RIGHT);
+        removeActions(PlayerAction.LEFT, PlayerAction.RIGHT, PlayerAction.JUMP);
         animIndex = animTick = 0;
     }
 
