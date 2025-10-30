@@ -441,9 +441,20 @@ public class Player extends Entity {
 
         if (attackCheck || animIndex != 1 || dashHit) return;
         attackCheck = !dash;
-        boolean contactMade = enemyManager.checkEnemyHit(attackBox, this);
-        if (contactMade) Audio.getInstance().getAudioPlayer().playHitSound();
-        else if (!dash) Audio.getInstance().getAudioPlayer().playSlashSound();
+
+        HitResult hitResult = enemyManager.checkEnemyHit(attackBox, this);
+        switch (hitResult) {
+            case HIT:
+                Audio.getInstance().getAudioPlayer().playHitSound();
+                break;
+            case BLOCK:
+                // The block sound is played by the Enemy class
+                break;
+            case MISS:
+                if (!dash) Audio.getInstance().getAudioPlayer().playSlashSound();
+                break;
+        }
+
         objectManager.checkObjectBreak(attackBox);
         projectileManager.checkProjectileDeflect(attackBox);
     }
