@@ -9,7 +9,7 @@ COPY service-registry/. /home/gradle/src
 RUN gradle clean build --no-daemon
 
 # Final image
-FROM openjdk:17-jdk-slim
+FROM eclipse-temurin:17-jdk-jammy
 
 WORKDIR /app
 

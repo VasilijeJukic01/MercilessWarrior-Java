@@ -17,7 +17,7 @@ COPY analytics-service/. .
 RUN gradle installDist --no-daemon
 
 # Final image
-FROM openjdk:17-jdk-slim
+FROM eclipse-temurin:17-jdk-jammy
 
 WORKDIR /app
 
