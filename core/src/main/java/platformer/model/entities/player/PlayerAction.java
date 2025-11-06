@@ -24,5 +24,6 @@ public enum PlayerAction {
     CAN_TRANSFORM,
     DYING,
     GAME_OVER,
-    LAVA
+    LAVA,
+    LOOK_DOWN
 }

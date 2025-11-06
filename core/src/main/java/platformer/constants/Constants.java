@@ -448,6 +448,7 @@ public final class Constants {
     // Camera Constants
     public static final double CAMERA_LERP_FACTOR_X = 0.08;
     public static final double CAMERA_LERP_FACTOR_Y = 0.08;
+    public static final int CAMERA_LOOK_DOWN_OFFSET = scale(100);
 
     public static int scale(double value) {
         return (int)(value * SCALE);

@@ -85,6 +85,7 @@ public class GameStateController {
         initAction(pressActions, "QuickUse2", () -> player.getInventory().useQuickSlotItem(1, player));
         initAction(pressActions, "QuickUse3", () -> player.getInventory().useQuickSlotItem(2, player));
         initAction(pressActions, "QuickUse4", () -> player.getInventory().useQuickSlotItem(3, player));
+        initAction(pressActions, "Look Down", () -> player.addAction(PlayerAction.LOOK_DOWN));
     }
 
     private void initReleaseActions() {
@@ -126,6 +127,7 @@ public class GameStateController {
             EventBus.getInstance().publish(new OverlayChangeEvent(PlayingState.MINIMAP));
             context.getGameState().getOverlayManager().refreshCurrentOverlay();
         });
+        initAction(releaseActions, "Look Down", () -> player.removeAction(PlayerAction.LOOK_DOWN));
     }
 
     // Mouse

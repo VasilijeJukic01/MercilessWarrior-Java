@@ -128,7 +128,7 @@ public class GameState extends AbstractState implements State {
             eventHandlers.forEach(EventHandler::continuousUpdate);
             world.update();
             context.getMinimapManager().update();
-            camera.update(getPlayer().getHitBox());
+            camera.update(getPlayer());
             overlayManager.update(state);
         } catch (Exception ignored) {}
     }

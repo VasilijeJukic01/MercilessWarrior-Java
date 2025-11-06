@@ -1,5 +1,7 @@
 package platformer.view;
 
+import platformer.model.entities.player.Player;
+import platformer.model.entities.player.PlayerAction;
 import platformer.model.levels.Level;
 
 import java.awt.geom.Rectangle2D;
@@ -25,11 +27,16 @@ public class Camera {
      * Updates the camera's position to smoothly follow a target.
      * The camera's final position is clamped to ensure it doesn't show areas outside the level bounds.
      *
-     * @param target The hitbox of the entity the camera should follow.
+     * @param player The player the camera should follow.
      */
-    public void update(Rectangle2D.Double target) {
+    public void update(Player player) {
+        Rectangle2D.Double target = player.getHitBox();
         float targetX = (float)target.x - (GAME_WIDTH / 2.0f);
         float targetY = (float)target.y - (GAME_HEIGHT / 2.0f);
+
+        if (player.checkAction(PlayerAction.LOOK_DOWN)) {
+            targetY += CAMERA_LOOK_DOWN_OFFSET;
+        }
 
         cameraX += (targetX - cameraX) * CAMERA_LERP_FACTOR_X;
         cameraY += (targetY - cameraY) * CAMERA_LERP_FACTOR_Y;
