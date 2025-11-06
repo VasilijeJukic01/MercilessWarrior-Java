@@ -9,6 +9,4 @@ interface ItemRepository : JpaRepository<Item, Long> {
 
     fun findBySettingsId(settingsId: Long): List<Item>
 
-    fun deleteBySettingsId(settingsId: Long)
-
 }

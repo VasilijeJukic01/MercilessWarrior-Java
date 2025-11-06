@@ -1,11 +1,14 @@
 package platformer.model.levels;
 
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import platformer.core.GameContext;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
+import platformer.model.levels.metadata.DecorationMetadata;
 import platformer.model.levels.metadata.LevelMetadata;
 import platformer.model.levels.metadata.ObjectMetadata;
+import platformer.model.levels.metadata.TilesetMetadata;
 import platformer.state.types.GameState;
 import platformer.utils.ImageUtils;
 
@@ -13,11 +16,13 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
-import static platformer.constants.AnimConstants.*;
 import static platformer.constants.Constants.*;
 import static platformer.constants.FilePaths.*;
 
@@ -35,7 +40,8 @@ public class LevelManager {
     private final BackgroundManager backgroundManager;
     private final Map<Point, ObjectMetadata> decorationMetadata;
 
-    private BufferedImage[] levelSprite;
+    private final Map<String, BufferedImage[]> tilesetSprites = new HashMap<>();
+    private final Map<String, Map<Integer, DecorationMetadata>> decorationSets = new HashMap<>();
     private final Level[][] levels = new Level[MAX_LEVELS][MAX_LEVELS];
     private Level arenaLevel;
     private Level currentLevel;
@@ -48,7 +54,8 @@ public class LevelManager {
         this.backgroundManager = new BackgroundManager();
         this.currentBackground = backgroundManager.getDefaultBackground();
         this.levelObjectManager = new LevelObjectManager();
-        loadForestSprite();
+        loadTilesets();
+        loadDecorationSets();
         buildLevels();
     }
 
@@ -58,14 +65,44 @@ public class LevelManager {
     }
 
     // Init
-    private void loadForestSprite() {
-        BufferedImage img = ImageUtils.importImage(FOREST_SPRITE, -1, -1);
-        levelSprite = new BufferedImage[MAX_TILE_VALUE];
-        for (int i = 0; i < FOREST_SPRITE_ROW; i++) {
-            for (int j = 0; j < FOREST_SPRITE_COL; j++) {
-                int index = j*FOREST_SPRITE_COL + i;
-                levelSprite[index] = img.getSubimage(i*FOREST_SPRITE_W, j*FOREST_SPRITE_H, FOREST_SPRITE_W, FOREST_SPRITE_H);
+    private void loadTilesets() {
+        try (InputStreamReader reader = new InputStreamReader(Objects.requireNonNull(getClass().getResourceAsStream(TILESET_META)))) {
+            Type listType = new TypeToken<List<TilesetMetadata>>(){}.getType();
+            List<TilesetMetadata> tilesetMetadata = new Gson().fromJson(reader, listType);
+
+            for (TilesetMetadata meta : tilesetMetadata) {
+                BufferedImage img = ImageUtils.importImage(meta.getSpritePath(), -1, -1);
+                if (img == null) continue;
+
+                BufferedImage[] sprites = new BufferedImage[meta.getTileCount()];
+                for (int i = 0; i < meta.getRows(); i++) {
+                    for (int j = 0; j < meta.getColumns(); j++) {
+                        int index = j * meta.getRows() + i;
+                        if (index >= meta.getTileCount()) break;
+                        sprites[index] = img.getSubimage(i * meta.getTileSizeInSprite(), j * meta.getTileSizeInSprite(), meta.getTileSizeInSprite(), meta.getTileSizeInSprite());
+                    }
+                }
+                tilesetSprites.put(meta.getName(), sprites);
             }
+        } catch (Exception e) {
+            Logger.getInstance().notify("Failed to load tilesets from JSON: " + e.getMessage(), Message.ERROR);
+        }
+    }
+
+    private void loadDecorationSets() {
+        try (InputStreamReader reader = new InputStreamReader(Objects.requireNonNull(getClass().getResourceAsStream(DECORATION_META)))) {
+            Type type = new TypeToken<Map<String, List<DecorationMetadata>>>() {}.getType();
+            Map<String, List<DecorationMetadata>> loadedSets = new Gson().fromJson(reader, type);
+
+            for (Map.Entry<String, List<DecorationMetadata>> entry : loadedSets.entrySet()) {
+                Map<Integer, DecorationMetadata> decoMap = new HashMap<>();
+                for (DecorationMetadata meta : entry.getValue()) {
+                    decoMap.put(meta.getColorValue(), meta);
+                }
+                decorationSets.put(entry.getKey(), decoMap);
+            }
+        } catch (Exception e) {
+            Logger.getInstance().notify("Failed to load decoration sets from JSON: " + e.getMessage(), Message.ERROR);
         }
     }
 
@@ -79,8 +116,12 @@ public class LevelManager {
         BufferedImage[][] levelsLayer2 = getAllLevels("2");
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < levelsLayer1.length; j++) {
-                if (levelsLayer1[i][j] != null)
-                    levels[i][j] = new Level("level"+i+j, levelsLayer1[i][j], levelsLayer2[i][j]);
+                if (levelsLayer1[i][j] != null) {
+                    String levelName = "level" + i + j;
+                    LevelMetadata meta = loadMetadataForLevel(levelName);
+                    String tileset = (meta != null && meta.getTileset() != null) ? meta.getTileset() : "Forest";
+                    levels[i][j] = new Level(levelName, levelsLayer1[i][j], levelsLayer2[i][j], tileset);
+                }
             }
         }
         buildArenaLevels();
@@ -96,8 +137,9 @@ public class LevelManager {
         if (arenaImg != null) {
             BufferedImage arenaLayer1 = arenaImg.getSubimage(0, 0, arenaImg.getWidth()/2, arenaImg.getHeight());
             BufferedImage arenaLayer2 = arenaImg.getSubimage(arenaImg.getWidth()/2, 0, arenaImg.getWidth()/2, arenaImg.getHeight());
-            arenaLevel = new Level("arena1", arenaLayer1, arenaLayer2);
             this.arenaLevelMetadata = loadMetadataForLevel("levelarena1");
+            String tileset = (this.arenaLevelMetadata != null && this.arenaLevelMetadata.getTileset() != null) ? this.arenaLevelMetadata.getTileset() : "Forest";
+            arenaLevel = new Level("arena1", arenaLayer1, arenaLayer2, tileset);
         }
     }
 
@@ -191,39 +233,42 @@ public class LevelManager {
     // Render
     private void renderDeco(Graphics g, int xLevelOffset, int yLevelOffset, int layer) {
         Level level = currentLevel;
+        Map<Integer, DecorationMetadata> currentDecoSet = decorationSets.get(level.getTilesetName());
+        if (currentDecoSet == null) return;
+
         for (int i = 0; i < level.getLvlData().length; i++) {
             for (int j = 0; j < level.getLvlData()[0].length; j++) {
                 int decorationIndex = level.getDecoSpriteIndex(i, j);
                 int layerIndex = level.getLayerSpriteIndex(i, j);
-                if (decorationIndex == -1) continue;
-                LvlObjType lvlObj = LvlObjType.values()[decorationIndex];
-                if (layerIndex == layer) {
-                    BufferedImage model = levelObjectManager.getModels()[decorationIndex];
-                    ObjectMetadata meta = decorationMetadata.get(new Point(i, j));
-                    double rotation = (meta != null) ? meta.getRotation() : 0.0;
-                    double scaleX = (meta != null) ? meta.getScaleX() : 1.0;
-                    double scaleY = (meta != null) ? meta.getScaleY() : 1.0;
+                if (decorationIndex == -1 || layerIndex != layer) continue;
 
-                    if (rotation == 0.0 && scaleX == 1.0 && scaleY == 1.0) {
-                        int xPos = (TILES_SIZE * i - xLevelOffset) + (int) (lvlObj.getYOffset() * SCALE);
-                        int yPos = (TILES_SIZE * j - yLevelOffset) + (int) (lvlObj.getXOffset() * SCALE);
-                        g.drawImage(model, xPos, yPos, lvlObj.getWid(), lvlObj.getHei(), null);
-                    }
-                    else {
-                        Graphics2D g2d = (Graphics2D) g.create();
-                        int drawX = TILES_SIZE * i - xLevelOffset;
-                        int drawY = TILES_SIZE * j - yLevelOffset;
+                DecorationMetadata decoMeta = currentDecoSet.get(decorationIndex);
+                if (decoMeta == null) continue;
+                BufferedImage model = levelObjectManager.getModel(decoMeta.getId(), level.getTilesetName(), decoMeta.getFilename(), decoMeta.isFlipped());
+                if (model == null) continue;
 
-                        int centerX = drawX + lvlObj.getWid() / 2;
-                        int centerY = drawY + lvlObj.getHei() / 2;
+                ObjectMetadata meta = decorationMetadata.get(new Point(i, j));
+                double rotation = (meta != null) ? meta.getRotation() : 0.0;
+                double scaleX = (meta != null) ? meta.getScaleX() : 1.0;
+                double scaleY = (meta != null) ? meta.getScaleY() : 1.0;
+                int xPos = (TILES_SIZE * i - xLevelOffset) + (int) (decoMeta.getYOffset() * SCALE);
+                int yPos = (TILES_SIZE * j - yLevelOffset) + (int) (decoMeta.getXOffset() * SCALE);
 
-                        g2d.translate(centerX, centerY);
-                        g2d.rotate(Math.toRadians(rotation));
-                        g2d.scale(scaleX, scaleY);
+                if (rotation == 0.0 && scaleX == 1.0 && scaleY == 1.0) {
+                    g.drawImage(model, xPos, yPos, decoMeta.getWid(), decoMeta.getHei(), null);
+                }
+                else {
+                    Graphics2D g2d = (Graphics2D) g.create();
+                    int drawX = TILES_SIZE * i - xLevelOffset;
+                    int drawY = TILES_SIZE * j - yLevelOffset;
+                    int centerX = drawX + decoMeta.getWid() / 2;
+                    int centerY = drawY + decoMeta.getHei() / 2;
 
-                        g2d.drawImage(model, -lvlObj.getWid() / 2, -lvlObj.getHei() / 2, lvlObj.getWid(), lvlObj.getHei(), null);
-                        g2d.dispose();
-                    }
+                    g2d.translate(centerX, centerY);
+                    g2d.rotate(Math.toRadians(rotation));
+                    g2d.scale(scaleX, scaleY);
+                    g2d.drawImage(model, -decoMeta.getWid() / 2, -decoMeta.getHei() / 2, decoMeta.getWid(), decoMeta.getHei(), null);
+                    g2d.dispose();
                 }
             }
         }
@@ -231,6 +276,9 @@ public class LevelManager {
 
     private void renderTerrain(Graphics g, int xLevelOffset, int yLevelOffset, boolean behind) {
         Level level = currentLevel;
+        BufferedImage[] currentTileset = tilesetSprites.get(level.getTilesetName());
+        if (currentTileset == null) return;
+
         int xStart = xLevelOffset / TILES_SIZE;
         int xEnd = (xLevelOffset + GAME_WIDTH) / TILES_SIZE + 1;
         int yStart = yLevelOffset / TILES_SIZE;
@@ -249,7 +297,7 @@ public class LevelManager {
                 int x = TILES_SIZE * i - xLevelOffset;
                 int y = TILES_SIZE * j - yLevelOffset;
                 int size = TILES_SIZE+1;
-                g.drawImage(levelSprite[tileIndex], x, y, size, size, null);
+                g.drawImage(currentTileset[tileIndex], x, y, size, size, null);
             }
         }
     }
@@ -309,6 +357,10 @@ public class LevelManager {
     }
 
     // Getters
+    public LevelMetadata getCurrentLevelMetadata() {
+        return currentLevelMetadata;
+    }
+
     public int getLevelIndexI() {
         return levelIndexI;
     }

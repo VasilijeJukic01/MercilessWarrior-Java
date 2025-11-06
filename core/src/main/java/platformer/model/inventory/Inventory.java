@@ -9,10 +9,7 @@ import platformer.model.inventory.handlers.BackpackHandler;
 import platformer.model.inventory.handlers.EquipmentHandler;
 import platformer.model.inventory.item.InventoryItem;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * Class that represents the player's inventory.
@@ -252,7 +249,9 @@ public class Inventory {
         for (int i = 0; i < quickUseSlots.length; i++) {
             String itemId = quickUseSlots[i];
             if (itemId != null) {
-                boolean itemExists = backpackHandler.getBackpack().stream().anyMatch(item -> item.getItemId().equals(itemId));
+                boolean itemExists = backpackHandler.getBackpack().stream()
+                        .filter(Objects::nonNull)
+                        .anyMatch(item -> item.getItemId().equals(itemId));
                 if (!itemExists) quickUseSlots[i] = null;
             }
         }

@@ -24,11 +24,8 @@ import org.mockito.Mock
 import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.kotlin.*
 import org.springframework.kafka.core.KafkaTemplate
-import org.springframework.security.authentication.AuthenticationManager
-import org.springframework.security.authentication.BadCredentialsException
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
-import org.springframework.security.core.Authentication
 import org.springframework.security.crypto.password.PasswordEncoder
+import org.springframework.security.core.userdetails.UsernameNotFoundException
 import java.util.*
 
 @Tag("unit")
@@ -40,7 +37,6 @@ class AuthServiceUnitTests {
     @Mock private lateinit var outboxEventRepository: OutboxEventRepository
     @Mock private lateinit var passwordEncoder: PasswordEncoder
     @Mock private lateinit var jwtService: JwtService
-    @Mock private lateinit var authenticationManager: AuthenticationManager
     @Mock private lateinit var userDetailsService: UserDetailsServiceImpl
     @Mock private lateinit var loginAttemptService: LoginAttemptService
     @Mock private lateinit var kafkaTemplate: KafkaTemplate<String, Any>
@@ -108,7 +104,7 @@ class AuthServiceUnitTests {
     }}
 
     @Test
-    fun `loginUser should fail if user is blocked`() {
+    fun `loginUser should fail if user is blocked`() { runBlocking {
         // Arrange
         val request = AuthenticationRequest("blockedUser", "password")
         whenever(loginAttemptService.isBlocked("blockedUser")).thenReturn(true)
@@ -119,20 +115,19 @@ class AuthServiceUnitTests {
         // Assert
         assertTrue(result.isLeft())
         assertEquals(AuthService.LoginError.TooManyAttempts.left(), result)
-        verify(authenticationManager, never()).authenticate(any())
-    }
+        verify(userDetailsService, never()).loadUserByUsername(any())
+    }}
 
     @Test
-    fun `loginUser should succeed with valid credentials`() {
+    fun `loginUser should succeed with valid credentials`() = runBlocking {
         // Arrange
         val request = AuthenticationRequest("testuser", "password")
         val userDetails = CustomUserDetails(1L, "testuser", "encodedPass", emptyList())
         val expectedToken = "jwt-token"
-        val mockAuthentication: Authentication = UsernamePasswordAuthenticationToken(userDetails, null, userDetails.authorities)
 
         whenever(loginAttemptService.isBlocked(request.username)).thenReturn(false)
-        whenever(authenticationManager.authenticate(any())).thenReturn(mockAuthentication)
         whenever(userDetailsService.loadUserByUsername(request.username)).thenReturn(userDetails)
+        whenever(passwordEncoder.matches(request.password, userDetails.password)).thenReturn(true)
         whenever(jwtService.generateToken(userDetails)).thenReturn(expectedToken)
 
         // Act
@@ -145,11 +140,13 @@ class AuthServiceUnitTests {
     }
 
     @Test
-    fun `loginUser should fail with invalid credentials`() {
+    fun `loginUser should fail with wrong password`() { runBlocking {
         // Arrange
         val request = AuthenticationRequest("testuser", "wrongpassword")
+        val userDetails = CustomUserDetails(1L, "testuser", "encodedPass", emptyList())
         whenever(loginAttemptService.isBlocked(request.username)).thenReturn(false)
-        whenever(authenticationManager.authenticate(any())).thenThrow(BadCredentialsException("Invalid credentials"))
+        whenever(userDetailsService.loadUserByUsername(request.username)).thenReturn(userDetails)
+        whenever(passwordEncoder.matches(request.password, userDetails.password)).thenReturn(false)
 
         // Act
         val result = authService.loginUser(request)
@@ -159,6 +156,22 @@ class AuthServiceUnitTests {
         assertEquals(AuthService.LoginError.InvalidCredentials.left(), result)
         verify(loginAttemptService).loginFailed(request.username)
         verify(jwtService, never()).generateToken(any())
-    }
+    }}
 
+    @Test
+    fun `loginUser should fail when user is not found`() = runBlocking {
+        // Arrange
+        val request = AuthenticationRequest("testuser", "password")
+        whenever(loginAttemptService.isBlocked(request.username)).thenReturn(false)
+        whenever(userDetailsService.loadUserByUsername(request.username))
+            .thenThrow(UsernameNotFoundException("User not found"))
+
+        // Act
+        val result = authService.loginUser(request)
+
+        // Assert
+        assertTrue(result.isLeft())
+        assertEquals(AuthService.LoginError.InvalidCredentials.left(), result)
+        verify(loginAttemptService).loginFailed(request.username)
+    }
 }

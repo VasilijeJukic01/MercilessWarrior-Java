@@ -68,6 +68,8 @@ class TransactionServiceUnitTests {
         }
         whenever(itemService.insertItem(argThat { name == itemId && amount == 2 })).thenReturn(Item().right())
         whenever(itemRepository.findBySettingsId(settingsId)).thenReturn(emptyList())
+        whenever(shopService.getShopInventoryForUser(any(), any())).thenReturn(emptyList())
+
 
         // Act
         val result = transactionService.processBuyTransaction(request)
@@ -94,7 +96,7 @@ class TransactionServiceUnitTests {
         val itemId = "HEALTH_POTION"
         val request = ShopTransactionRequest(userId, "testuser", itemId, 2)
 
-        val settings = Settings(id = settingsId, userId = userId, coins = 10) 
+        val settings = Settings(id = settingsId, userId = userId, coins = 10)
         val itemMaster = ItemMaster(itemId = itemId)
         val masterShopItem = ShopInventory(id = 1L, shopId = "DEFAULT_SHOP", item = itemMaster, stock = 10, cost = 10)
 
@@ -126,7 +128,7 @@ class TransactionServiceUnitTests {
         val settings = Settings(id = settingsId, userId = userId, coins = 100)
         val itemMaster = ItemMaster(itemId = itemId)
         val masterShopItem = ShopInventory(id = 1L, shopId = "DEFAULT_SHOP", item = itemMaster, stock = 10, cost = 10)
-        val userShopStock = UserShopStock(settings = settings, shopId = "DEFAULT_SHOP", item = itemMaster, purchasedStock = 8, resetPeriod = 1L) 
+        val userShopStock = UserShopStock(settings = settings, shopId = "DEFAULT_SHOP", item = itemMaster, purchasedStock = 8, resetPeriod = 1L)
 
         whenever(settingsService.getSettingsByUserId(userId)).thenReturn(settings.right())
         whenever(shopConfig.getCurrentResetPeriod()).thenReturn(1L)
@@ -160,6 +162,7 @@ class TransactionServiceUnitTests {
         whenever(settingsService.updateSettings(any(), any())).thenReturn(settings.right())
         whenever(itemService.insertItem(any())).thenReturn(Item().right())
         whenever(itemRepository.findBySettingsId(settingsId)).thenReturn(emptyList())
+        whenever(shopService.getShopInventoryForUser(any(), any())).thenReturn(emptyList())
 
         // Act
         val result = transactionService.processBuyTransaction(request)
@@ -195,6 +198,7 @@ class TransactionServiceUnitTests {
         whenever(itemMasterRepository.findById(itemId)).thenReturn(Optional.of(itemMaster))
         whenever(itemRepository.findBySettingsId(settingsId)).thenReturn(listOf(itemToSell))
         whenever(settingsService.updateSettings(any(), any())).thenReturn(settings.right())
+        whenever(shopService.getShopInventoryForUser(any(), any())).thenReturn(emptyList())
 
         // Act
         val result = transactionService.processSellTransaction(request)
@@ -233,6 +237,7 @@ class TransactionServiceUnitTests {
         whenever(shopInventoryRepository.findByShopId("DEFAULT_SHOP")).thenReturn(listOf(masterShopItem))
         whenever(userShopStockRepository.findBySettingsIdAndShopIdAndItem_ItemIdAndResetPeriod(any(), any(), any(), any())).thenReturn(Optional.empty())
         whenever(userShopStockRepository.save(any())).thenAnswer { it.getArgument(0) }
+        whenever(shopService.getShopInventoryForUser(any(), any())).thenReturn(emptyList())
 
         // Act
         val result = transactionService.processSellTransaction(request)
@@ -294,6 +299,7 @@ class TransactionServiceUnitTests {
         whenever(settingsService.updateSettings(any(), any())).thenReturn(settings.right())
         whenever(shopInventoryRepository.findByShopId("DEFAULT_SHOP")).thenReturn(listOf(masterShopItem))
         whenever(userShopStockRepository.findBySettingsIdAndShopIdAndItem_ItemIdAndResetPeriod(any(), any(), any(), any())).thenReturn(Optional.of(userShopStock))
+        whenever(shopService.getShopInventoryForUser(any(), any())).thenReturn(emptyList())
 
         // Act
         val result = transactionService.processSellTransaction(request)

@@ -15,6 +15,7 @@ import platformer.model.entities.enemies.boss.Roric;
 import platformer.model.entities.enemies.boss.roric.RoricClone;
 import platformer.model.entities.enemies.boss.Lancer;
 import platformer.model.entities.enemies.renderer.*;
+import platformer.model.entities.player.HitResult;
 import platformer.model.entities.player.Player;
 import platformer.model.entities.player.PlayerAction;
 import platformer.model.gameObjects.GameObject;
@@ -161,8 +162,8 @@ public class EnemyManager {
      * @param attackBox player's attack hitbox.
      * @param player    entity who is performing the attack.
      */
-    public boolean checkEnemyHit(Rectangle2D.Double attackBox, Player player) {
-        boolean contactMade = false;
+    public HitResult checkEnemyHit(Rectangle2D.Double attackBox, Player player) {
+        HitResult result = HitResult.MISS;
 
         List<Enemy> intersectingEnemies = new ArrayList<>();
         for (Enemy enemy : getAllEnemies()) {
@@ -171,8 +172,9 @@ public class EnemyManager {
                 intersectingEnemies.add(enemy);
             }
         }
-        if (intersectingEnemies.isEmpty()) return false;
-        if (intersectingEnemies.stream().anyMatch(e -> e instanceof Roric)) return false;
+
+        if (intersectingEnemies.isEmpty()) return HitResult.MISS;
+        if (intersectingEnemies.stream().anyMatch(e -> e instanceof Roric)) return HitResult.MISS;
 
         intersectingEnemies.sort(Comparator.comparingDouble(e -> e.getHitBox().getCenterX() - player.getHitBox().getCenterX()));
 
@@ -186,8 +188,11 @@ public class EnemyManager {
             spawnParticles((Rectangle2D.Double) intersection, player, enemy, isCritical);
 
             if (enemy.hit(finalDamage, true, false)) {
-                contactMade = true;
-                if (enemy.getEnemyAction() != Anim.BLOCK) {
+                if (enemy.getEnemyAction() == Anim.BLOCK) {
+                    if (result != HitResult.HIT) result = HitResult.BLOCK;
+                }
+                else {
+                    result = HitResult.HIT;
                     double displayDmg = Math.round(finalDamage * 10.0) / 10.0;
                     String dmgText = String.valueOf(displayDmg);
                     Color dmgColor = isCritical ? CRITICAL_COLOR : DAMAGE_COLOR;
@@ -202,7 +207,7 @@ public class EnemyManager {
             writeHitLog(enemy.getEnemyAction(), finalDamage);
             player.addAction(PlayerAction.DASH_HIT);
         }
-        return contactMade;
+        return result;
     }
 
     /**

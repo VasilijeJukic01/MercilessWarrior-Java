@@ -24,7 +24,7 @@ public final class Constants {
     public static final float SCALE;
 
     static {
-        SCALE = Float.parseFloat(System.getProperty("game.scale", "1.5f"));
+        SCALE = Float.parseFloat(System.getProperty("game.scale", "2f"));
     }
 
     // Server Constants

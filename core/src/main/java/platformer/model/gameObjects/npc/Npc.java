@@ -20,6 +20,8 @@ public class Npc extends GameObject implements Interactable {
     private int dialogueIndicator = 0;
     private Direction direction = Direction.RIGHT;
 
+    private static final double TURN_DEAD_ZONE_FACTOR = 0.3;
+
     public Npc(ObjType objType, int xPos, int yPos, NpcType npcType) {
         super(objType, xPos - (int)(25*SCALE), yPos + npcType.getHei() - TILES_SIZE);
         configureAnimSpeed();
@@ -101,9 +103,17 @@ public class Npc extends GameObject implements Interactable {
 
     @Override
     public void onIntersect(Player player) {
-        if (player.getHitBox().x + player.getHitBox().width < getHitBox().x + getHitBox().width / 1.2) {
+        double playerCenterX = player.getHitBox().getCenterX();
+        double npcCenterX = getHitBox().getCenterX();
+
+        double deadZoneWidth = getHitBox().width * TURN_DEAD_ZONE_FACTOR;
+        double leftTurnThreshold = npcCenterX - (deadZoneWidth / 2);
+        double rightTurnThreshold = npcCenterX + (deadZoneWidth / 2);
+
+        if (playerCenterX < leftTurnThreshold) {
             setDirection(Direction.RIGHT);
-        } else {
+        }
+        else if (playerCenterX > rightTurnThreshold) {
             setDirection(Direction.LEFT);
         }
     }

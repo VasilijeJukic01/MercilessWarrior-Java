@@ -13,6 +13,7 @@ import platformer.model.levels.LevelManager;
 import platformer.model.levels.Spawn;
 import platformer.state.types.GameState;
 import platformer.state.types.PlayingState;
+import platformer.ui.transition.TransitionDirection;
 
 import static platformer.constants.Constants.*;
 import static platformer.physics.CollisionDetector.isEntityOnExit;
@@ -75,15 +76,28 @@ public class GameFlowManager {
      * @param message A message to log upon successful level transition.
      */
     private void goToLevel(int dI, int dJ, String spawn, String message) {
-        gameState.getPlayer().activateMinimap(false);
-        context.getLevelManager().loadNextLevel(dI, dJ);
-        gameState.getWorld().levelLoadReset(spawn);
-        context.getMinimapManager().changeLevel();
-        gameState.getPlayer().activateMinimap(true);
-        gameState.getCamera().updateLevelBounds(context.getLevelManager().getCurrentLevel());
-        gameState.getOverlayManager().reset();
-        context.getQuestManager().reset();
-        Logger.getInstance().notify(message, Message.NOTIFICATION);
+        TransitionDirection direction = TransitionDirection.FROM_LEFT;
+        if (dI == 0 && dJ == 1) direction = TransitionDirection.FROM_LEFT;
+        else if (dI == 0 && dJ == -1) direction = TransitionDirection.FROM_RIGHT;
+        else if (dI == -1 && dJ == 0) direction = TransitionDirection.FROM_BOTTOM;
+        else if (dI == 1 && dJ == 0) direction = TransitionDirection.FROM_TOP;
+
+        Runnable levelLoadCallback = () -> {
+            gameState.getPlayer().resetDirections();
+            gameState.getStateController().resetKeys();
+            gameState.flushAWTEventQueue();
+            gameState.getPlayer().activateMinimap(false);
+            context.getLevelManager().loadNextLevel(dI, dJ);
+            gameState.getWorld().levelLoadReset(spawn);
+            context.getMinimapManager().changeLevel();
+            gameState.getPlayer().activateMinimap(true);
+            gameState.getCamera().updateLevelBounds(context.getLevelManager().getCurrentLevel());
+            gameState.getOverlayManager().reset();
+            context.getQuestManager().reset();
+            Logger.getInstance().notify(message, Message.NOTIFICATION);
+        };
+
+        gameState.getTransitionManager().startTransition(direction, levelLoadCallback);
     }
 
     private void configureSpawnPoint() {

@@ -11,12 +11,13 @@ FROM gradle:8.5-jdk17-alpine AS builder
 
 WORKDIR /home/gradle/src
 
-COPY . .
+COPY ci-config.gradle.kts ./..
+COPY analytics-service/. .
 
 RUN gradle installDist --no-daemon
 
 # Final image
-FROM openjdk:17-jdk-slim
+FROM eclipse-temurin:17-jdk-jammy
 
 WORKDIR /app
 

@@ -6,6 +6,8 @@ import platformer.model.entities.enemies.Enemy;
 import platformer.model.gameObjects.GameObject;
 import platformer.model.gameObjects.objects.*;
 import platformer.model.gameObjects.objects.Container;
+import platformer.model.levels.Level;
+import platformer.model.levels.LvlObjType;
 import platformer.state.types.GameState;
 import platformer.utils.ImageUtils;
 
@@ -14,7 +16,9 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.RescaleOp;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static platformer.constants.AnimConstants.LIGHT_ANIM_SPEED;
 import static platformer.constants.Constants.*;
@@ -44,6 +48,8 @@ public class LightManager {
 
     private BufferedImage orangeLight, whiteRadialLight;
     private BufferedImage playerLightTexture, enemyLightTexture, candleLightTexture, objectLightTexture;
+    private final BufferedImage lightColorMap;
+    private final Map<String, BufferedImage> lightTextureCache = new HashMap<>();
 
     private Color ambientDarkness;
     private int animTick = 0, fadeBackAnimTick = 0;
@@ -64,6 +70,7 @@ public class LightManager {
 
     public LightManager() {
         this.lightmap = new BufferedImage(GAME_WIDTH / LIGHTMAP_SCALE, GAME_HEIGHT / LIGHTMAP_SCALE, BufferedImage.TYPE_INT_ARGB);
+        this.lightColorMap = new BufferedImage(GAME_WIDTH / LIGHTMAP_SCALE, GAME_HEIGHT / LIGHTMAP_SCALE, BufferedImage.TYPE_INT_ARGB);
         this.ambientDarkness = new Color(0, 0, 0, currentAmbientAlpha);
         initLightImages();
         initLightTextures();
@@ -116,6 +123,32 @@ public class LightManager {
         RadialGradientPaint p = new RadialGradientPaint(center, radius, fractions, colors);
         g2d.setPaint(p);
         g2d.fillRect(0, 0, diameter, diameter);
+        g2d.dispose();
+        return texture;
+    }
+
+    /**
+     * Creates a pre-rendered circular gradient texture for a colored light source.
+     *
+     * @param diameter The diameter of the light texture.
+     * @param color    The color of the light source.
+     * @return A BufferedImage containing the pre-rendered colored light gradient.
+     */
+    private BufferedImage createColoredLightTexture(int diameter, Color color) {
+        if (diameter <= 0) return new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
+        BufferedImage texture = new BufferedImage(diameter, diameter, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2d = texture.createGraphics();
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        Point2D center = new Point2D.Float(diameter / 2.0f, diameter / 2.0f);
+        float radius = diameter / 2.0f;
+
+        Color transparentColor = new Color(color.getRed(), color.getGreen(), color.getBlue(), 0);
+        Color[] colors = {color, transparentColor};
+        float[] fractions = {0.0f, 1.0f};
+
+        RadialGradientPaint p = new RadialGradientPaint(center, radius, fractions, colors);
+        g2d.setPaint(p);
+        g2d.fillOval(0, 0, diameter, diameter);
         g2d.dispose();
         return texture;
     }
@@ -266,16 +299,99 @@ public class LightManager {
      * @param yLevelOffset The vertical camera offset of the level.
      */
     public void render(Graphics g, int xLevelOffset, int yLevelOffset) {
-        renderLightmap(xLevelOffset, yLevelOffset);
+        prepareLightAndColorMaps(xLevelOffset, yLevelOffset);
 
         Graphics2D g2d = (Graphics2D) g;
         g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
         g2d.drawImage(lightmap, 0, 0, GAME_WIDTH, GAME_HEIGHT, null);
         g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
 
+        Graphics2D g2dColoredLights = (Graphics2D) g2d.create();
+        try {
+            g2dColoredLights.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.3f));
+            g2dColoredLights.drawImage(lightColorMap, 0, 0, GAME_WIDTH, GAME_HEIGHT, null);
+        } finally {
+            g2dColoredLights.dispose();
+        }
+
         renderTimeCycleTint(g);
-        glowObjects((Graphics2D)g, xLevelOffset, yLevelOffset);
+        glowObjects(g2d, xLevelOffset, yLevelOffset);
         renderFlashEffects(g);
+    }
+
+    /**
+     * Constructs the lightmap by filling it with the current ambient darkness, then using the pre-rendered light textures
+     * with a {@link AlphaComposite#DST_OUT} composite to "erase" the areas where light sources are present.
+     * This all happens on an off-screen buffer for maximum performance.
+     *
+     * @param xLevelOffset The horizontal camera offset.
+     * @param yLevelOffset The vertical camera offset.
+     */
+    private void prepareLightAndColorMaps(int xLevelOffset, int yLevelOffset) {
+        Graphics2D lightmapG2d = lightmap.createGraphics();
+        Graphics2D colorMapG2d = lightColorMap.createGraphics();
+        try {
+            lightmapG2d.scale(1.0 / LIGHTMAP_SCALE, 1.0 / LIGHTMAP_SCALE);
+            lightmapG2d.setComposite(AlphaComposite.getInstance(AlphaComposite.CLEAR));
+            lightmapG2d.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+            lightmapG2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER));
+            lightmapG2d.setColor(ambientDarkness);
+            lightmapG2d.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+            lightmapG2d.setComposite(AlphaComposite.getInstance(AlphaComposite.DST_OUT));
+
+            colorMapG2d.setComposite(AlphaComposite.getInstance(AlphaComposite.CLEAR));
+            colorMapG2d.fillRect(0, 0, lightColorMap.getWidth(), lightColorMap.getHeight());
+            colorMapG2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER));
+            colorMapG2d.scale(1.0 / LIGHTMAP_SCALE, 1.0 / LIGHTMAP_SCALE);
+
+            drawLightSource(lightmapG2d, playerLightTexture, context.getPlayer().getHitBox(), xLevelOffset, yLevelOffset);
+            renderAllLightSources(lightmapG2d, xLevelOffset, yLevelOffset);
+            renderDecorationLights(lightmapG2d, colorMapG2d, xLevelOffset, yLevelOffset);
+        }
+        finally {
+            lightmapG2d.dispose();
+            colorMapG2d.dispose();
+        }
+    }
+
+    private void renderDecorationLights(Graphics2D lightmapG2d, Graphics2D colorMapG2d, int xLevelOffset, int yLevelOffset) {
+        Level currentLevel = context.getLevelManager().getCurrentLevel();
+        if (currentLevel == null) return;
+        int[][] decoData = currentLevel.getDecoData();
+        for (int j = 0; j < decoData[0].length; j++) {
+            for (int i = 0; i < decoData.length; i++) {
+                int decoIndex = decoData[i][j];
+                if (decoIndex != -1) {
+                    LvlObjType objType = LvlObjType.values()[decoIndex];
+                    DecorationLightData lightData = DecorationLightManager.getInstance().getLightData(objType);
+                    if (lightData != null) {
+                        renderSingleDecorationLight(lightmapG2d, colorMapG2d, lightData, i, j, xLevelOffset, yLevelOffset);
+                    }
+                }
+            }
+        }
+    }
+
+    private void renderSingleDecorationLight(Graphics2D lightmapG2d, Graphics2D colorMapG2d, DecorationLightData lightData, int tileX, int tileY, int xLevelOffset, int yLevelOffset) {
+        try {
+            int baseRadius = (int)(lightData.getLightRadius() * SCALE);
+            int baseDiameter = baseRadius * 2;
+            double pulseFactor = 1.0 + 0.05 * Math.sin(pulseTimer * 0.5);
+            int pulsatingDiameter = (int)(baseDiameter * pulseFactor);
+            Color lightColor = Color.decode(lightData.getLightColor());
+            String colorCacheKey = lightColor.getRGB() + "_" + baseRadius;
+            String whiteCacheKey = "white_" + baseRadius;
+            BufferedImage coloredLightTexture = lightTextureCache.computeIfAbsent(colorCacheKey, k -> createColoredLightTexture(baseDiameter, lightColor));
+            BufferedImage whiteLightTexture = lightTextureCache.computeIfAbsent(whiteCacheKey, k -> createLightTexture(baseDiameter, new float[]{0f, 1f}, new Color[]{Color.WHITE, new Color(1.0f, 1.0f, 1.0f, 0f)}));
+
+            int worldX = tileX * TILES_SIZE;
+            int worldY = tileY * TILES_SIZE;
+            int drawX = worldX - xLevelOffset - pulsatingDiameter / 2 + TILES_SIZE / 2;
+            int drawY = worldY - yLevelOffset - pulsatingDiameter / 2 + TILES_SIZE / 2;
+
+            colorMapG2d.drawImage(coloredLightTexture, drawX, drawY, pulsatingDiameter, pulsatingDiameter, null);
+            lightmapG2d.drawImage(whiteLightTexture, drawX, drawY, pulsatingDiameter, pulsatingDiameter, null);
+        } catch (NumberFormatException ignored) {}
     }
 
     /**
@@ -305,29 +421,6 @@ public class LightManager {
             g.setColor(new Color(1.0f, 1.0f, 1.0f, flashIntensity));
             g.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
         }
-    }
-
-    /**
-     * Constructs the lightmap by filling it with the current ambient darkness, then using the pre-rendered light textures
-     * with a {@link AlphaComposite#DST_OUT} composite to "erase" the areas where light sources are present.
-     * This all happens on an off-screen buffer for maximum performance.
-     *
-     * @param xLevelOffset The horizontal camera offset.
-     * @param yLevelOffset The vertical camera offset.
-     */
-    private void renderLightmap(int xLevelOffset, int yLevelOffset) {
-        Graphics2D g2d = lightmap.createGraphics();
-        g2d.scale(1.0 / LIGHTMAP_SCALE, 1.0 / LIGHTMAP_SCALE);
-        g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.CLEAR));
-        g2d.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
-        g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER));
-        g2d.setColor(ambientDarkness);
-        g2d.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
-        g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.DST_OUT));
-
-        drawLightSource(g2d, playerLightTexture, context.getPlayer().getHitBox(), xLevelOffset, yLevelOffset);
-        renderAllLightSources(g2d, xLevelOffset, yLevelOffset);
-        g2d.dispose();
     }
 
     private void renderAllLightSources(Graphics2D g2d, int xLevelOffset, int yLevelOffset) {
@@ -433,7 +526,7 @@ public class LightManager {
      * <ol>
      *     <li><b>Cosine Wave:</b> The function uses {@code Math.cos(currentTimeOfDay * 2 * Math.PI)}.
      *     As {@code currentTimeOfDay} goes from 0.0 (midnight) to 1.0 (next midnight), the input to the cosine
-     *     function goes from 0 to 2π, completing one full wave. The cosine function naturally returns a value
+     *     function goes from 0 to 2Ï€, completing one full wave. The cosine function naturally returns a value
      *     in the range [-1.0, 1.0]. It is at its peak (+1.0) at the start/end (midnight) and at its trough (-1.0)
      *     in the middle (noon).</li>
 
@@ -561,6 +654,12 @@ public class LightManager {
         this.flashDuration = 0;
         this.isFadingBack = false;
         this.fadeBackAnimTick = 0;
-    }
 
+        if (lightColorMap != null) {
+            Graphics2D g2d = lightColorMap.createGraphics();
+            g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.CLEAR));
+            g2d.fillRect(0, 0, lightColorMap.getWidth(), lightColorMap.getHeight());
+            g2d.dispose();
+        }
+    }
 }

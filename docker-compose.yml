@@ -24,12 +24,16 @@ services:
       - "6379:6379"
 
   service-registry:
-    build: ./service-registry
+    build:
+      context: .
+      dockerfile: service-registry/Dockerfile
     ports:
       - "8761:8761"
 
   api-gateway:
-    build: ./api-gateway
+    build:
+      context: .
+      dockerfile: api-gateway/Dockerfile
     ports:
       - "8080:8080"
     depends_on:
@@ -37,68 +41,117 @@ services:
       - redis
 
   auth-service:
-    build: ./auth-service
+    build:
+      context: .
+      dockerfile: auth-service/Dockerfile
     ports:
       - "8081:8081"
     depends_on:
       - service-registry
       - db-auth
       - redis
+      - kafka-setup
 
   game-service:
-    build: ./game-service
+    build:
+      context: .
+      dockerfile: game-service/Dockerfile
     ports:
       - "8082:8082"
     depends_on:
       - service-registry
       - db-game
       - redis
+      - kafka-setup
 
   multiplayer-service:
-    build: ./multiplayer-service
+    build:
+      context: .
+      dockerfile: multiplayer-service/Dockerfile
     ports:
       - "9000:9000"
     depends_on:
       - service-registry
 
   analytics-stream:
-    build: ./analytics-service
+    build:
+      context: .
+      dockerfile: analytics-service/Dockerfile
     depends_on:
-      - kafka
+      kafka-setup:
+        condition: service_completed_successfully
     volumes:
       - ./data:/app/data
     command: ["stream"]
 
   analytics-batch:
-    build: ./analytics-service
+    build:
+      context: .
+      dockerfile: analytics-service/Dockerfile
     depends_on:
-      - kafka
+      kafka-setup:
+        condition: service_completed_successfully
     volumes:
       - ./data:/app/data
     command: ["batch"]
 
   kafka:
-    image: bitnami/kafka:3.7
+    image: confluentinc/cp-kafka:7.6.0
+    hostname: kafka
+    container_name: kafka
     ports:
       - "9092:9092"
+    volumes:
+      - kafka_data:/var/lib/kafka/data
     environment:
-      # KRaft
-      - KAFKA_CFG_NODE_ID=0
-      - KAFKA_CFG_PROCESS_ROLES=controller,broker
-      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093
-      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
-      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@kafka:9093
-      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
-      - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=true
+      CLUSTER_ID: 'ciWo72aARPKDuCNy0V_3Lw'
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka:9093'
+      KAFKA_CLUSTER_ID: 'ciWo72aARPKDuCNy0V_3Lw'
+      KAFKA_LISTENERS: 'PLAINTEXT://:9092,CONTROLLER://:9093'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka:9092'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+    healthcheck:
+      test: ["CMD-SHELL", "cub kafka-ready -b localhost:9092 1 20"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  kafka-setup:
+    image: confluentinc/cp-kafka:7.6.0
+    hostname: kafka-setup
+    container_name: kafka-setup
+    depends_on:
+      kafka:
+        condition: service_healthy
+    entrypoint: [ '/bin/sh', '-c' ]
+    command: |
+      "
+      cub kafka-ready -b kafka:9092 1 60
+      kafka-topics --bootstrap-server kafka:9092 --create --if-not-exists --topic shop_transactions --partitions 1 --replication-factor 1
+      kafka-topics --bootstrap-server kafka:9092 --create --if-not-exists --topic user_events --partitions 1 --replication-factor 1
+      kafka-topics --bootstrap-server kafka:9092 --create --if-not-exists --topic user_events.DLT --partitions 1 --replication-factor 1
+      "
 
   schema-registry:
     image: confluentinc/cp-schema-registry:7.6.0
     hostname: schema-registry
     depends_on:
-      - kafka
+      kafka:
+        condition: service_healthy
     ports:
       - "8085:8081"
     environment:
       SCHEMA_REGISTRY_HOST_NAME: schema-registry
       SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: 'kafka:9092'
       SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
+
+volumes:
+  kafka_data:

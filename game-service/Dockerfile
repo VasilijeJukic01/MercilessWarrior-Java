@@ -12,12 +12,13 @@ FROM gradle:8.7-jdk17 as build
 
 WORKDIR /home/gradle/src
 
-COPY . /home/gradle/src
+COPY ci-config.gradle.kts ./..
+COPY game-service/. /home/gradle/src
 
-RUN gradle clean build -x test --no-daemon
+RUN gradle clean build -x test -x integrationTest --no-daemon
 
 # Final image
-FROM openjdk:17-jdk-slim
+FROM eclipse-temurin:17-jdk-jammy
 
 WORKDIR /app
 

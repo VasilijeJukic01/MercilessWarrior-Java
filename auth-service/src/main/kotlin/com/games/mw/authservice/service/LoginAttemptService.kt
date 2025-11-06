@@ -1,9 +1,10 @@
 package com.games.mw.authservice.service
 
+import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.data.redis.core.RedisTemplate
+import org.springframework.data.redis.core.ReactiveRedisTemplate
 import org.springframework.stereotype.Service
-import java.util.concurrent.TimeUnit
+import java.time.Duration
 
 /**
  * Service for tracking login attempts and blocking users after too many failed attempts.
@@ -13,24 +14,22 @@ import java.util.concurrent.TimeUnit
  */
 @Service
 class LoginAttemptService(
-    private val redisTemplate: RedisTemplate<String, String>
+    private val redisTemplate: ReactiveRedisTemplate<String, String>
 ) {
     @Value("\${login.attempts.max}")
     private val maxAttempts: Int = 5
 
     private val blockDurationMinutes: Long = 15
 
-    private fun getKey(key: String): String {
-        return "login:attempts:$key"
-    }
+    private fun getKey(key: String): String = "login:attempts:$key"
 
     /**
      * Resets the failed login attempts for the given key (username).
      *
      * @param key The username or identifier.
      */
-    fun loginSucceeded(key: String) {
-        redisTemplate.delete(getKey(key))
+    suspend fun loginSucceeded(key: String) {
+        redisTemplate.delete(getKey(key)).awaitSingleOrNull()
     }
 
     /**
@@ -38,11 +37,11 @@ class LoginAttemptService(
      *
      * @param key The username or identifier.
      */
-    fun loginFailed(key: String) {
+    suspend fun loginFailed(key: String) {
         val attemptsKey = getKey(key)
-        val attempts = redisTemplate.opsForValue().increment(attemptsKey)
+        val attempts = redisTemplate.opsForValue().increment(attemptsKey).awaitSingleOrNull()
         if (attempts == 1L) {
-            redisTemplate.expire(attemptsKey, blockDurationMinutes, TimeUnit.MINUTES)
+            redisTemplate.expire(attemptsKey, Duration.ofMinutes(blockDurationMinutes)).awaitSingleOrNull()
         }
     }
 
@@ -52,8 +51,8 @@ class LoginAttemptService(
      * @param key The username or identifier.
      * @return True if blocked, false otherwise.
      */
-    fun isBlocked(key: String): Boolean {
-        val attempts = redisTemplate.opsForValue().get(getKey(key))
+    suspend fun isBlocked(key: String): Boolean {
+        val attempts = redisTemplate.opsForValue().get(getKey(key)).awaitSingleOrNull()
         return attempts != null && attempts.toInt() >= maxAttempts
     }
 }

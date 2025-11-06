@@ -1,3 +1,5 @@
 {
-  "backgroundId": "FOREST2"
+  "backgroundId": "FOREST2",
+  "ambientParticlesEnabled": true,
+  "tileset": "Forest"
 }

@@ -1,10 +1,12 @@
 package com.games.mw.gameservice.domain.item
 
 import arrow.core.Either
-import arrow.core.right
 import arrow.core.raise.either
+import arrow.core.raise.ensureNotNull
 import com.games.mw.gameservice.domain.item.model.Item
 import com.games.mw.gameservice.domain.item.repository.ItemRepository
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -24,6 +26,15 @@ class ItemService(
         data class Unknown(val throwable: Throwable) : ItemError
     }
 
+    @Transactional(readOnly = true)
+    suspend fun getItemById(itemId: Long): Either<ItemError, Item> = either {
+        val item = withContext(Dispatchers.IO) {
+            itemRepository.findById(itemId).orElse(null)
+        }
+        ensureNotNull(item) { ItemError.ItemNotFound }
+    }
+
+
     /**
      * Retrieves all items associated with the given settings ID.
      *
@@ -31,8 +42,10 @@ class ItemService(
      * @return List of [Item]s for the specified settings.
      */
     @Transactional(readOnly = true)
-    fun getItemsBySettingsId(settingsId: Long): List<Item> {
-        return itemRepository.findBySettingsId(settingsId)
+    suspend fun getItemsBySettingsId(settingsId: Long): List<Item> {
+        return withContext(Dispatchers.IO) {
+            itemRepository.findBySettingsId(settingsId)
+        }
     }
 
     /**
@@ -42,9 +55,11 @@ class ItemService(
      * @return [Either] containing the inserted [Item] or an [ItemError] on failure.
      */
     @Transactional
-    fun insertItem(item: Item): Either<ItemError, Item> = either {
+    suspend fun insertItem(item: Item): Either<ItemError, Item> = either {
         try {
-            itemRepository.save(item)
+            withContext(Dispatchers.IO) {
+                itemRepository.save(item)
+            }
         } catch (e: Exception) {
             raise(ItemError.Unknown(e))
         }
@@ -58,15 +73,20 @@ class ItemService(
      * @return [Either] containing the updated [Item] or an [ItemError] on failure.
      */
     @Transactional
-    fun updateItem(itemId: Long, itemUpdate: Item): Either<ItemError, Item> = either {
-        val existingItem = itemRepository.findById(itemId).orElse(null) ?: raise(ItemError.ItemNotFound)
+    suspend fun updateItem(itemId: Long, itemUpdate: Item): Either<ItemError, Item> = either {
+        val existingItem = withContext(Dispatchers.IO) {
+            itemRepository.findById(itemId).orElse(null)
+        } ?: raise(ItemError.ItemNotFound)
+
         try {
             existingItem.name = itemUpdate.name
             existingItem.amount = itemUpdate.amount
             existingItem.equipped = itemUpdate.equipped
             existingItem.slotIndex = itemUpdate.slotIndex
             existingItem.settings = itemUpdate.settings
-            itemRepository.save(existingItem)
+            withContext(Dispatchers.IO) {
+                itemRepository.save(existingItem)
+            }
         } catch (e: Exception) {
             raise(ItemError.Unknown(e))
         }
@@ -79,10 +99,12 @@ class ItemService(
      * @return [Either] containing [Unit] on success or an [ItemError] on failure.
      */
     @Transactional
-    fun deleteBySettingsId(settingsId: Long): Either<ItemError, Unit> = either {
+    suspend fun deleteBySettingsId(settingsId: Long): Either<ItemError, Unit> = either {
         try {
-            itemRepository.deleteBySettingsId(settingsId)
-            Unit.right()
+            withContext(Dispatchers.IO) {
+                val itemsToDelete = itemRepository.findBySettingsId(settingsId)
+                itemRepository.deleteAll(itemsToDelete)
+            }
         } catch (e: Exception) {
             raise(ItemError.Unknown(e))
         }

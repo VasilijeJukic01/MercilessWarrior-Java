@@ -31,6 +31,7 @@ import platformer.storage.OfflineStorageStrategy;
 import platformer.storage.StorageStrategy;
 import platformer.ui.overlays.OverlayManager;
 import platformer.ui.overlays.hud.BossInterface;
+import platformer.ui.transition.TransitionManager;
 import platformer.view.Camera;
 
 import java.awt.*;
@@ -63,6 +64,7 @@ public class GameState extends AbstractState implements State {
     private final Camera camera;
     private final GameStateController stateController;
     private final ScreenEffectsManager screenEffectsManager;
+    private final TransitionManager transitionManager;
 
     private final List<EventHandler> eventHandlers = new ArrayList<>();
     private final OverlayManager overlayManager;
@@ -79,6 +81,7 @@ public class GameState extends AbstractState implements State {
         this.screenEffectsManager = new ScreenEffectsManager(game);
         this.overlayManager = new OverlayManager(this);
         this.bossInterface = new BossInterface();
+        this.transitionManager = new TransitionManager();
 
         this.context = GameInitializer.initialize(this, screenEffectsManager);
         this.overlayManager.wire(context);
@@ -103,6 +106,7 @@ public class GameState extends AbstractState implements State {
     public void update() {
         screenEffectsManager.update();
         flowManager.update();
+        transitionManager.update();
 
         if (isMultiplayer) multiplayerHandler.update();
 
@@ -139,6 +143,7 @@ public class GameState extends AbstractState implements State {
         getPlayer().getPlayerStatusManager().getUserInterface().render(g);
         bossInterface.render(g);
         overlayManager.render(g);
+        transitionManager.render(g);
     }
 
     @Override
@@ -242,6 +247,7 @@ public class GameState extends AbstractState implements State {
 
     @Override
     public void keyPressed(KeyEvent e) {
+        if (transitionManager.isActive()) return;
         if (isMultiplayer && overlayManager.getChatOverlay().isActive()) {
             overlayManager.getChatOverlay().keyPressed(e);
             return;
@@ -252,6 +258,7 @@ public class GameState extends AbstractState implements State {
 
     @Override
     public void keyReleased(KeyEvent e) {
+        if (transitionManager.isActive()) return;
         if (isMultiplayer && e.getKeyCode() == KeyEvent.VK_BACK_QUOTE) {
             overlayManager.getChatOverlay().toggle();
             return;
@@ -279,6 +286,21 @@ public class GameState extends AbstractState implements State {
 
     public void onGameResumed(GameResumedEvent event) {
         eventHandlers.forEach(EventHandler::unpause);
+    }
+
+    /**
+     * Flushes all pending AWT input events (mouse and keyboard) from the event queue.
+     * Crucial for preventing stale input from being processed after a state change or a temporary input lock.
+     */
+    public void flushAWTEventQueue() {
+        try {
+            EventQueue q = Toolkit.getDefaultToolkit().getSystemEventQueue();
+            AWTEvent event;
+            while ((event = q.peekEvent()) != null) {
+                if (event instanceof KeyEvent || event instanceof MouseEvent) q.getNextEvent();
+                else break;
+            }
+        } catch (Exception ignored) {}
     }
 
     // Facade

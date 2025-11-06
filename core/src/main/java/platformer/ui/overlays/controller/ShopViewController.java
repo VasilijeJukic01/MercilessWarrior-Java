@@ -7,6 +7,7 @@ import platformer.event.events.ItemPurchasedEvent;
 import platformer.event.events.ui.OverlayChangeEvent;
 import platformer.storage.StorageStrategy;
 import platformer.core.Framework;
+import platformer.core.Account;
 import platformer.model.entities.player.Player;
 import platformer.model.gameObjects.objects.Shop;
 import platformer.model.inventory.Inventory;
@@ -15,7 +16,6 @@ import platformer.model.inventory.item.ItemData;
 import platformer.model.inventory.item.ShopItem;
 import platformer.state.types.GameState;
 import platformer.ui.buttons.AbstractButton;
-import platformer.ui.buttons.ButtonType;
 import platformer.ui.overlays.ShopOverlay;
 
 import java.awt.*;
@@ -109,12 +109,8 @@ public class ShopViewController {
 
                 if (success) {
                     Audio.getInstance().getAudioPlayer().playSound(Sound.SHOP_BUY);
-                    if (!strategy.isOnline()) {
-                        gameState.getPlayer().changeCoins(-(selectedItem.getCost() * quantityToTrade));
-                        addToInventory(gameState.getPlayer(), selectedItem.getItemId(), quantityToTrade);
-                        selectedItem.setStock(selectedItem.getStock() - quantityToTrade);
-                        if (selectedItem.getStock() <= 0) shop.getShopItems().remove(selectedItem);
-                    }
+                    addToInventory(gameState.getPlayer(), selectedItem.getItemId(), quantityToTrade);
+                    postTransactionUpdate(true, selectedItem, null, quantityToTrade);
                 }
             }
         });
@@ -129,23 +125,47 @@ public class ShopViewController {
 
         if (absoluteIndex < inventory.getBackpack().size()) {
             InventoryItem selectedItem = inventory.getBackpack().get(absoluteIndex);
+            if (selectedItem == null) return;
             boolean success = strategy.sellItem(gameState.getPlayer(), selectedItem, quantityToTrade);
 
             if (success) {
                 Audio.getInstance().getAudioPlayer().playSound(Sound.SHOP_BUY);
-                if (!strategy.isOnline()) {
-                    ItemData data = selectedItem.getData();
-                    if (data == null) return;
-                    gameState.getPlayer().changeCoins(data.sellValue * quantityToTrade);
-                    selectedItem.setAmount(selectedItem.getAmount() - quantityToTrade);
-                    if (selectedItem.getAmount() <= 0) {
-                        inventory.getBackpack().remove(selectedItem);
-                    }
-                    getActiveShop().ifPresent(shop -> addToShop(shop, selectedItem, quantityToTrade));
+                selectedItem.setAmount(selectedItem.getAmount() - quantityToTrade);
+                if (selectedItem.getAmount() <= 0) {
+                    inventory.getBackpack().set(absoluteIndex, null);
                 }
+                inventory.syncAccount();
+                postTransactionUpdate(false, null, selectedItem, quantityToTrade);
             }
         }
         updateSliderVisibility();
+    }
+
+    private void postTransactionUpdate(boolean isBuy, ShopItem shopItem, InventoryItem inventoryItem, int quantity) {
+        StorageStrategy strategy = Framework.getInstance().getStorageStrategy();
+        if (strategy.isOnline()) {
+            Account refreshedAccount = strategy.fetchAccountData(Framework.getInstance().getAccount().getName(), 0);
+            if (refreshedAccount != null) {
+                int currentCoins = gameState.getPlayer().getCoins();
+                int newCoins = refreshedAccount.getCoins();
+                gameState.getPlayer().getPlayerDataManager().changeCoins(newCoins - currentCoins);
+            }
+        }
+        else {
+            if (isBuy) {
+                gameState.getPlayer().changeCoins(-(shopItem.getCost() * quantity));
+                shopItem.setStock(shopItem.getStock() - quantity);
+                if (shopItem.getStock() <= 0) {
+                    getActiveShop().ifPresent(shop -> shop.getShopItems().remove(shopItem));
+                }
+            }
+            else {
+                ItemData data = inventoryItem.getData();
+                if (data == null) return;
+                gameState.getPlayer().changeCoins(data.sellValue * quantity);
+                getActiveShop().ifPresent(shop -> addToShop(shop, inventoryItem, quantity));
+            }
+        }
     }
 
     private void addToInventory(Player player, String itemId, int quantity) {
@@ -176,33 +196,37 @@ public class ShopViewController {
         else shop.getShopItems().add(new ShopItem(inventoryItem.getItemId(), quantity, data.sellValue * 2));
     }
 
-    private void prevPage(ButtonType buttonType) {
-        if (buttonType == ButtonType.PREV && shopOverlay.getSmallButtons()[0].getButtonType() == buttonType) {
-            this.buySelectedSlot = Math.max(buySelectedSlot - 1, 0);
-        }
-        else if (buttonType == ButtonType.PREV && shopOverlay.getSmallButtons()[2].getButtonType() == buttonType) {
-            this.sellSelectedSlot = Math.max(sellSelectedSlot - 1, 0);
-        }
-    }
-
-    private void nextPage(ButtonType buttonType) {
-        if (buttonType == ButtonType.NEXT && shopOverlay.getSmallButtons()[1].getButtonType() == buttonType) {
-            this.buySelectedSlot = Math.min(buySelectedSlot + 1, SHOP_SLOT_CAP);
-        }
-        else if (buttonType == ButtonType.NEXT && shopOverlay.getSmallButtons()[3].getButtonType() == buttonType) {
-            this.sellSelectedSlot = Math.min(sellSelectedSlot + 1, SHOP_SLOT_CAP);
-        }
-    }
-
-    // Private helpers
     private void releaseSmallButtons(MouseEvent e) {
-        for (AbstractButton button : shopOverlay.getSmallButtons()) {
-            if (isMouseInButton(e, button) && button.isMousePressed()) {
-                if (button.getButtonType() == ButtonType.PREV) prevPage(button.getButtonType());
-                else if (button.getButtonType() == ButtonType.NEXT) nextPage(button.getButtonType());
-                break;
-            }
-        }
+        AbstractButton[] buttons = shopOverlay.getSmallButtons();
+        if (isMouseInButton(e, buttons[0]) && buttons[0].isMousePressed()) prevBuyPage();
+        else if (isMouseInButton(e, buttons[1]) && buttons[1].isMousePressed()) nextBuyPage();
+        else if (isMouseInButton(e, buttons[2]) && buttons[2].isMousePressed()) prevSellPage();
+        else if (isMouseInButton(e, buttons[3]) && buttons[3].isMousePressed()) nextSellPage();
+    }
+
+    private void prevBuyPage() {
+        this.buySelectedSlot = Math.max(buySelectedSlot - 1, 0);
+    }
+
+    private void nextBuyPage() {
+        int itemsPerPage = SHOP_SLOT_MAX_ROW * SHOP_SLOT_MAX_COL;
+        getActiveShop().ifPresent(shop -> {
+            int totalItems = shop.getShopItems().size();
+            int maxPages = (int) Math.ceil((double) totalItems / itemsPerPage);
+            int maxPageIndex = Math.max(0, maxPages - 1);
+            this.buySelectedSlot = Math.min(buySelectedSlot + 1, maxPageIndex);
+        });
+    }
+
+    private void prevSellPage() {
+        this.sellSelectedSlot = Math.max(sellSelectedSlot - 1, 0);
+    }
+
+    private void nextSellPage() {
+        int itemsPerPage = SHOP_SLOT_MAX_ROW * SHOP_SLOT_MAX_COL;
+        int maxPages = (int) Math.ceil((double) BACKPACK_CAPACITY / itemsPerPage);
+        int maxPageIndex = Math.max(0, maxPages - 1);
+        this.sellSelectedSlot = Math.min(sellSelectedSlot + 1, maxPageIndex);
     }
 
     private void releaseMediumButtons(MouseEvent e) {
@@ -282,8 +306,10 @@ public class ShopViewController {
         if (isSelling) {
             Inventory inventory = gameState.getPlayer().getInventory();
             int absoluteIndex = sellSlotNumber + (sellSelectedSlot * itemsPerPage);
-            if (absoluteIndex < inventory.getBackpack().size())
-                maxQuantity = inventory.getBackpack().get(absoluteIndex).getAmount();
+            if (absoluteIndex < inventory.getBackpack().size()) {
+                InventoryItem item = inventory.getBackpack().get(absoluteIndex);
+                if (item != null) maxQuantity = item.getAmount();
+            }
         }
         else {
             Optional<Shop> activeShop = getActiveShop();
@@ -358,7 +384,7 @@ public class ShopViewController {
         if (isSelling) {
             Inventory inventory = gameState.getPlayer().getInventory();
             int absoluteIndex = sellSlotNumber + (sellSelectedSlot * itemsPerPage);
-            if (absoluteIndex < inventory.getBackpack().size())
+            if (absoluteIndex < inventory.getBackpack().size() && inventory.getBackpack().get(absoluteIndex) != null)
                 return inventory.getBackpack().get(absoluteIndex).getData();
         }
         else {

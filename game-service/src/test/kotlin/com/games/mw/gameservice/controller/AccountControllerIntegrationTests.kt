@@ -14,25 +14,22 @@ import com.github.tomakehurst.wiremock.client.WireMock.*
 import com.github.tomakehurst.wiremock.junit5.WireMockTest
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
+import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient
 import org.springframework.http.MediaType
 import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
-import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.get
-import org.springframework.test.web.servlet.put
-import org.springframework.transaction.annotation.Transactional
+import org.springframework.test.web.reactive.server.WebTestClient
 
 @Tag("integration")
-@AutoConfigureMockMvc
+@AutoConfigureWebTestClient
 @WireMockTest(httpPort = 8081)
-@Transactional
 class AccountControllerIntegrationTests : IntegrationTestBase() {
 
-    @Autowired private lateinit var mockMvc: MockMvc
+    @Autowired private lateinit var webTestClient: WebTestClient
     @Autowired private lateinit var objectMapper: ObjectMapper
     @Autowired private lateinit var settingsRepository: SettingsRepository
     @Autowired private lateinit var itemRepository: ItemRepository
@@ -44,6 +41,13 @@ class AccountControllerIntegrationTests : IntegrationTestBase() {
         fun registerAuthServiceUrl(registry: DynamicPropertyRegistry) {
             registry.add("services.auth.url") { "http://localhost:8081" }
         }
+    }
+
+    @BeforeEach
+    fun setup() {
+        itemRepository.deleteAll()
+        perkRepository.deleteAll()
+        settingsRepository.deleteAll()
     }
 
     @AfterEach
@@ -69,18 +73,18 @@ class AccountControllerIntegrationTests : IntegrationTestBase() {
                 .withHeader("Content-Type", "application/json")
                 .withBody(userId.toString())))
 
-        mockMvc.get("/game/account/{username}", username) {
-            header("Authorization", "Bearer $token")
-        }.andExpect {
-            status { isOk() }
-            jsonPath("$.username") { value(username) }
-            jsonPath("$.accountId") { value(userId) }
-            jsonPath("$.settingsId") { value(settings.id!!) }
-            jsonPath("$.coins") { value(100) }
-            jsonPath("$.level") { value(5) }
-            jsonPath("$.items[0]") { value("Sword,1,1,0") }
-            jsonPath("$.perks[0]") { value("Strength") }
-        }
+        webTestClient.get().uri("/game/account/{username}", username)
+            .header("Authorization", "Bearer $token")
+            .exchange()
+            .expectStatus().isOk
+            .expectBody()
+            .jsonPath("$.username").isEqualTo(username)
+            .jsonPath("$.accountId").isEqualTo(userId)
+            .jsonPath("$.settingsId").isEqualTo(settings.id!!)
+            .jsonPath("$.coins").isEqualTo(100)
+            .jsonPath("$.level").isEqualTo(5)
+            .jsonPath("$.items[0]").isEqualTo("Sword,1,1,0")
+            .jsonPath("$.perks[0]").isEqualTo("Strength")
     }
 
     @Test
@@ -90,11 +94,10 @@ class AccountControllerIntegrationTests : IntegrationTestBase() {
         val targetUsername = "target"
         val token = JwtTestUtil.generateToken(requesterId, requesterUsername, listOf("USER"))
 
-        mockMvc.get("/game/account/{username}", targetUsername) {
-            header("Authorization", "Bearer $token")
-        }.andExpect {
-            status { isForbidden() }
-        }
+        webTestClient.get().uri("/game/account/{username}", targetUsername)
+            .header("Authorization", "Bearer $token")
+            .exchange()
+            .expectStatus().isForbidden
     }
 
     @Test
@@ -118,13 +121,12 @@ class AccountControllerIntegrationTests : IntegrationTestBase() {
             perks = listOf("Toughness")
         )
 
-        mockMvc.put("/game/account") {
-            header("Authorization", "Bearer $token")
-            contentType = MediaType.APPLICATION_JSON
-            content = objectMapper.writeValueAsString(updateDto)
-        }.andExpect {
-            status { isOk() }
-        }
+        webTestClient.put().uri("/game/account")
+            .header("Authorization", "Bearer $token")
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(updateDto)
+            .exchange()
+            .expectStatus().isOk
 
         val updatedSettings = settingsRepository.findByUserId(userId)
         val updatedItems = itemRepository.findBySettingsId(settings.id!!)

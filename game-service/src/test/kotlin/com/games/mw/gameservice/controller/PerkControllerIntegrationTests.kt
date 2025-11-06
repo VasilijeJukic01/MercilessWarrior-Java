@@ -14,21 +14,15 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
+import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient
 import org.springframework.http.MediaType
-import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.delete
-import org.springframework.test.web.servlet.get
-import org.springframework.test.web.servlet.post
-import org.springframework.test.web.servlet.put
-import org.springframework.transaction.annotation.Transactional
+import org.springframework.test.web.reactive.server.WebTestClient
 
 @Tag("integration")
-@AutoConfigureMockMvc
-@Transactional
+@AutoConfigureWebTestClient
 class PerkControllerIntegrationTests : IntegrationTestBase() {
 
-    @Autowired private lateinit var mockMvc: MockMvc
+    @Autowired private lateinit var webTestClient: WebTestClient
     @Autowired private lateinit var objectMapper: ObjectMapper
     @Autowired private lateinit var settingsRepository: SettingsRepository
     @Autowired private lateinit var perkRepository: PerkRepository
@@ -58,36 +52,35 @@ class PerkControllerIntegrationTests : IntegrationTestBase() {
     fun `getPerksBySettingsId should return perks for the owner`() {
         perkRepository.save(Perk(name = "Strength", settings = userSettings))
 
-        mockMvc.get("/perks/settings/{settingsId}", userSettings.id) {
-            header("Authorization", "Bearer $userToken")
-        }.andExpect {
-            status { isOk() }
-            jsonPath("$", hasSize<Any>(1))
-            jsonPath("$[0].name") { value("Strength") }
-        }
+        webTestClient.get().uri("/perks/settings/{settingsId}", userSettings.id!!)
+            .header("Authorization", "Bearer $userToken")
+            .exchange()
+            .expectStatus().isOk
+            .expectBody()
+            .jsonPath("$").value(hasSize<Any>(1))
+            .jsonPath("$[0].name").isEqualTo("Strength")
     }
 
     @Test
     fun `getPerksBySettingsId should return 403 Forbidden for non-owner`() {
-        mockMvc.get("/perks/settings/{settingsId}", userSettings.id) {
-            header("Authorization", "Bearer $otherUserToken")
-        }.andExpect {
-            status { isForbidden() }
-        }
+        webTestClient.get().uri("/perks/settings/{settingsId}", userSettings.id!!)
+            .header("Authorization", "Bearer $otherUserToken")
+            .exchange()
+            .expectStatus().isForbidden
     }
 
     @Test
     fun `insertPerk should succeed for owner`() {
         val newPerk = Perk(name = "Agility", settings = userSettings)
 
-        mockMvc.post("/perks/") {
-            header("Authorization", "Bearer $userToken")
-            contentType = MediaType.APPLICATION_JSON
-            content = objectMapper.writeValueAsString(newPerk)
-        }.andExpect {
-            status { isOk() }
-            jsonPath("$.name") { value("Agility") }
-        }
+        webTestClient.post().uri("/perks/")
+            .header("Authorization", "Bearer $userToken")
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(newPerk)
+            .exchange()
+            .expectStatus().isOk
+            .expectBody()
+            .jsonPath("$.name").isEqualTo("Agility")
         assertEquals(1, perkRepository.findBySettingsId(userSettings.id!!).size)
     }
 
@@ -96,34 +89,32 @@ class PerkControllerIntegrationTests : IntegrationTestBase() {
         val existingPerk = perkRepository.save(Perk(name = "OldPerk", settings = userSettings))
         val updatedPerkData = Perk(id = existingPerk.id, name = "NewPerk", settings = userSettings)
 
-        mockMvc.put("/perks/{perkId}", existingPerk.id) {
-            header("Authorization", "Bearer $userToken")
-            contentType = MediaType.APPLICATION_JSON
-            content = objectMapper.writeValueAsString(updatedPerkData)
-        }.andExpect {
-            status { isOk() }
-            jsonPath("$.name") { value("NewPerk") }
-        }
+        webTestClient.put().uri("/perks/{perkId}", existingPerk.id!!)
+            .header("Authorization", "Bearer $userToken")
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(updatedPerkData)
+            .exchange()
+            .expectStatus().isOk
+            .expectBody()
+            .jsonPath("$.name").isEqualTo("NewPerk")
     }
 
     @Test
     fun `deleteBySettingsId should succeed for admin`() {
         perkRepository.save(Perk(name = "PerkToDelete", settings = userSettings))
 
-        mockMvc.delete("/perks/settings/{settingsId}", userSettings.id!!) {
-            header("Authorization", "Bearer $adminToken")
-        }.andExpect {
-            status { isOk() }
-        }
+        webTestClient.delete().uri("/perks/settings/{settingsId}", userSettings.id!!)
+            .header("Authorization", "Bearer $adminToken")
+            .exchange()
+            .expectStatus().isOk
         assertEquals(0, perkRepository.findBySettingsId(userSettings.id!!).size)
     }
 
     @Test
     fun `deleteBySettingsId should return 403 Forbidden for non-admin`() {
-        mockMvc.delete("/perks/settings/{settingsId}", userSettings.id!!) {
-            header("Authorization", "Bearer $userToken")
-        }.andExpect {
-            status { isForbidden() }
-        }
+        webTestClient.delete().uri("/perks/settings/{settingsId}", userSettings.id!!)
+            .header("Authorization", "Bearer $userToken")
+            .exchange()
+            .expectStatus().isForbidden
     }
 }

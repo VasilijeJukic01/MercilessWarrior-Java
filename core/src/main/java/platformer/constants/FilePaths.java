@@ -16,8 +16,9 @@ public final class FilePaths {
 
     // Levels
     public static final String LEVEL_SPRITES = "/images/levels/level$.png";
-    public static final String LEVEL_OBJECT_SPRITES = "/images/levels/levelObjects/$.png";
-    public static final String FOREST_SPRITE = "/images/levels/mossyTiles.png";
+    public static final String TILESET_META = "/meta/blocks/tilesets.json";
+    public static final String DECORATION_META ="/meta/blocks/decoration_sets.json";
+    public static final String DECORATION_SPRITES = "/images/levels/levelObjects/";
     public static final String MINIMAP = "/images/levels/minimap.png";
     public static final String MINIMAP_ICONS = "/images/levels/mapIcons.png";
 
@@ -79,6 +80,7 @@ public final class FilePaths {
     public static final String PARTICLE_SHEET = "/images/particles/ParticleSprite.png";
     public static final String SMOKE_SHEET = "/images/particles/Smoke.png";
     public static final String RORIC_AURA_SHEET = "/images/particles/RoricAuraEffect.png";
+    public static final String LIGHT_METADATA = "/light/decoration_lights.json";
 
     // Buttons
     public static final String BTN_BUY_SHEET = "/images/buttons/BuyButton.png";

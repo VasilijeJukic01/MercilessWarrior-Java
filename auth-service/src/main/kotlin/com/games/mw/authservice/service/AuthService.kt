@@ -15,22 +15,21 @@ import com.games.mw.authservice.request.AuthenticationRequest
 import com.games.mw.authservice.request.AuthenticationResponse
 import com.games.mw.authservice.request.RegistrationRequest
 import com.games.mw.authservice.security.JwtService
+import com.games.mw.events.UserCreated
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.springframework.kafka.core.KafkaTemplate
-import org.springframework.security.authentication.AuthenticationManager
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
-import org.springframework.security.core.AuthenticationException
 import org.springframework.security.core.userdetails.UserDetails
+import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import com.games.mw.events.UserCreated
 import java.time.Instant
 import java.util.*
 
 /**
  * Service for handling authentication, registration, and user/token management.
  *
- * @property authenticationManager Spring Security authentication manager.
  * @property passwordEncoder Password encoder for hashing user passwords.
  * @property userDetailsService Loads user details for authentication.
  * @property jwtService Service for generating and validating JWT tokens.
@@ -40,7 +39,6 @@ import java.util.*
  */
 @Service
 class AuthService(
-    private val authenticationManager: AuthenticationManager,
     private val passwordEncoder: PasswordEncoder,
     private val userDetailsService: UserDetailsServiceImpl,
     private val jwtService: JwtService,
@@ -94,12 +92,9 @@ class AuthService(
             RegistrationError.UsernameTaken
         }
 
-        val roles: Set<Role> = request.roles.traverse { roleName ->
-            roleRepository.findByName(roleName)
-                .map<Either<RegistrationError, Role>> { role -> role.right() }
-                .orElseGet { RegistrationError.RoleNotFound(roleName).left() }
-        }.map { it.toSet() }
-            .bind()
+        val roles: Set<Role> = request.roles.map { roleName ->
+            roleRepository.findByName(roleName).orElse(null) ?: raise(RegistrationError.RoleNotFound(roleName))
+        }.toSet()
 
         val newUser = User(
             username = request.username,
@@ -144,28 +139,30 @@ class AuthService(
      * @param authenticationRequest Contains username and password.
      * @return Either an [AuthenticationResponse] with JWT or a [LoginError].
      */
-    fun loginUser(authenticationRequest: AuthenticationRequest): Either<LoginError, AuthenticationResponse> {
+    suspend fun loginUser(authenticationRequest: AuthenticationRequest): Either<LoginError, AuthenticationResponse> {
         val key = authenticationRequest.username
-        if (loginAttemptService.isBlocked(key)) {
+
+        if (withContext(Dispatchers.IO) { loginAttemptService.isBlocked(key) }) {
             return LoginError.TooManyAttempts.left()
         }
 
-        try {
-            authenticationManager.authenticate(
-                UsernamePasswordAuthenticationToken(authenticationRequest.username, authenticationRequest.password)
-            )
-        } catch (e: AuthenticationException) {
-            loginAttemptService.loginFailed(key)
+        val userDetails: UserDetails = try {
+            withContext(Dispatchers.IO) {
+                userDetailsService.loadUserByUsername(authenticationRequest.username)
+            }
+        } catch (e: UsernameNotFoundException) {
+            withContext(Dispatchers.IO) { loginAttemptService.loginFailed(key) }
             return LoginError.InvalidCredentials.left()
-        } catch (e: Exception) {
-            loginAttemptService.loginFailed(key)
-            return LoginError.Unknown(e).left()
+        }
+
+        if (!passwordEncoder.matches(authenticationRequest.password, userDetails.password)) {
+            withContext(Dispatchers.IO) { loginAttemptService.loginFailed(key) }
+            return LoginError.InvalidCredentials.left()
         }
 
         return try {
-            val userDetails: UserDetails = userDetailsService.loadUserByUsername(authenticationRequest.username)
             val jwt: String = jwtService.generateToken(userDetails)
-            loginAttemptService.loginSucceeded(key)
+            withContext(Dispatchers.IO) { loginAttemptService.loginSucceeded(key) } // Wrap this call
             AuthenticationResponse(jwt).right()
         } catch (e: Exception) {
             LoginError.Unknown(e).left()
