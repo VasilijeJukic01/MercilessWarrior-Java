@@ -86,6 +86,10 @@ public final class Constants {
     public static final Color MINIMAP_HOVER =  new Color(255, 180, 40);
     public static final Color MINIMAP_PINNED =  new Color(80, 200, 255);
 
+    public static final int MAP_FOG_RADIUS = 10;
+    public static final int BLUR_KERNEL_SIZE = 10;
+    public static final Color MAP_FOG_COLOR =  new Color(25, 15, 35);
+
     // Cooldown Constants
     public static final double COOLDOWN_TICK = 0.1;
     public static final double PLAYER_ATTACK_CD = 0.75;

@@ -29,7 +29,10 @@ public class GameFlowManager {
     public GameFlowManager(GameContext context) {
         this.context = context;
         this.gameState = context.getGameState();
-        EventBus.getInstance().register(PreSaveEvent.class, e -> configureSpawnPoint());
+        EventBus.getInstance().register(PreSaveEvent.class, e -> {
+            configureSpawnPoint();
+            saveMinimapData();
+        });
     }
 
     public void update() {
@@ -110,5 +113,10 @@ public class GameFlowManager {
             }
         }
         Framework.getInstance().getAccount().setSpawn(currentSpawnId);
+    }
+
+    private void saveMinimapData() {
+        String data = context.getMinimapManager().getExplorationDataForSave();
+        Framework.getInstance().getAccount().setExplorationData(data);
     }
 }

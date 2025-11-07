@@ -10,11 +10,9 @@ import platformer.utils.ImageUtils;
 
 import java.awt.*;
 import java.awt.geom.Point2D;
-import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
+import java.awt.image.*;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.IntStream;
@@ -47,6 +45,10 @@ public class MinimapManager {
     private MinimapIcon hoveredIcon = null;
     private MinimapIcon pinnedIcon = null;
 
+    private float[][] explorationMap;
+    private BufferedImage fogImage;
+    private ConvolveOp convolution;
+
     public MinimapManager() {
         init();
     }
@@ -57,11 +59,21 @@ public class MinimapManager {
 
     private void init() {
         this.minimapImage = ImageUtils.importImage(MINIMAP, -1, -1);
+        this.explorationMap = new float[minimapImage.getWidth()][minimapImage.getHeight()];
+        this.fogImage = new BufferedImage(minimapImage.getWidth(), minimapImage.getHeight(), BufferedImage.TYPE_INT_ARGB);
+        initializeBlurFilter();
         this.minimap = new BufferedImage(minimapImage.getWidth(), minimapImage.getHeight(), minimapImage.getType());
         this.levelPositions = new LinkedHashMap<>();
         loadMinimapIcons();
         findLevelPositions();
         colorizeMinimap();
+    }
+
+    private void initializeBlurFilter() {
+        float[] kernel = new float[BLUR_KERNEL_SIZE * BLUR_KERNEL_SIZE];
+        Arrays.fill(kernel, 1.0f / (BLUR_KERNEL_SIZE * BLUR_KERNEL_SIZE));
+        Kernel blurKernel = new Kernel(BLUR_KERNEL_SIZE, BLUR_KERNEL_SIZE, kernel);
+        this.convolution = new ConvolveOp(blurKernel, ConvolveOp.EDGE_NO_OP, null);
     }
 
     private void loadMinimapIcons() {
@@ -177,6 +189,7 @@ public class MinimapManager {
             flashTick = 0;
             flashVisible = !flashVisible;
         }
+        updateFogImage();
     }
 
     /**
@@ -208,7 +221,22 @@ public class MinimapManager {
         if (playerLocation == null) playerLocation = new Point2D.Double(playerMapX, playerMapY);
         else playerLocation.setLocation(playerMapX, playerMapY);
 
+        revealMapArea((int) playerLocation.x, (int) playerLocation.y);
         updatePinnedLocation();
+    }
+
+    private void revealMapArea(int centerX, int centerY) {
+        int startX = Math.max(0, centerX - MAP_FOG_RADIUS);
+        int endX = Math.min(explorationMap.length - 1, centerX + MAP_FOG_RADIUS);
+        int startY = Math.max(0, centerY - MAP_FOG_RADIUS);
+        int endY = Math.min(explorationMap[0].length - 1, centerY + MAP_FOG_RADIUS);
+
+        for (int x = startX; x <= endX; x++) {
+            for (int y = startY; y <= endY; y++) {
+                if (Point2D.distance(centerX, centerY, x, y) <= MAP_FOG_RADIUS)
+                    explorationMap[x][y] = 1.0f;
+            }
+        }
     }
 
     private void updatePinnedLocation() {
@@ -225,6 +253,86 @@ public class MinimapManager {
         Graphics2D g2d = minimap.createGraphics();
         g2d.drawImage(minimapImage, 0, 0, null);
         g2d.dispose();
+    }
+
+    public void updateFogImage() {
+        int width = minimapImage.getWidth();
+        int height = minimapImage.getHeight();
+        int padding = BLUR_KERNEL_SIZE;
+
+        BufferedImage hardFog = new BufferedImage(width + 2 * padding, height + 2 * padding, BufferedImage.TYPE_BYTE_GRAY);
+        WritableRaster raster = hardFog.getRaster();
+
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                int value = explorationMap[x][y] < 1.0f ? 255 : 0;
+                raster.setSample(x + padding, y + padding, 0, value);
+            }
+        }
+
+        // Edge Replication
+        for (int x = 0; x < width; x++) {
+            int topPixel = raster.getSample(x + padding, padding, 0);
+            int bottomPixel = raster.getSample(x + padding, height + padding - 1, 0);
+            for (int p = 0; p < padding; p++) {
+                raster.setSample(x + padding, p, 0, topPixel);
+                raster.setSample(x + padding, height + padding + p, 0, bottomPixel);
+            }
+        }
+        for (int y = 0; y < height + 2 * padding; y++) {
+            int leftPixel = raster.getSample(padding, y, 0);
+            int rightPixel = raster.getSample(width + padding - 1, y, 0);
+            for (int p = 0; p < padding; p++) {
+                raster.setSample(p, y, 0, leftPixel);
+                raster.setSample(width + padding + p, y, 0, rightPixel);
+            }
+        }
+
+        BufferedImage blurredPaddedFog = convolution.filter(hardFog, null);
+        BufferedImage blurredFog = blurredPaddedFog.getSubimage(padding, padding, width, height);
+
+        int fogRgb = MAP_FOG_COLOR.getRGB() & 0x00FFFFFF;
+        Raster blurredRaster = blurredFog.getRaster();
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                int alpha = blurredRaster.getSample(x, y, 0);
+                int finalColor = (alpha << 24) | fogRgb;
+                fogImage.setRGB(x, y, finalColor);
+            }
+        }
+    }
+
+    public void loadExplorationData(String base64) {
+        if (base64 == null || base64.isEmpty()) {
+            this.explorationMap = new float[minimapImage.getWidth()][minimapImage.getHeight()];
+            return;
+        }
+        try {
+            byte[] data = Base64.getDecoder().decode(base64);
+            int width = minimapImage.getWidth();
+            int height = minimapImage.getHeight();
+            this.explorationMap = new float[width][height];
+            for (int i = 0; i < data.length; i++) {
+                int x = i % width;
+                int y = i / width;
+                this.explorationMap[x][y] = (data[i] & 0xFF) / 255.0f;
+            }
+        } catch (Exception e) {
+            this.explorationMap = new float[minimapImage.getWidth()][minimapImage.getHeight()];
+            Logger.getInstance().notify("Could not load minimap exploration data. Resetting fog.", Message.WARNING);
+        }
+    }
+
+    public String getExplorationDataForSave() {
+        int width = explorationMap.length;
+        int height = explorationMap[0].length;
+        byte[] data = new byte[width * height];
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                data[y * width + x] = (byte) (explorationMap[x][y] * 255);
+            }
+        }
+        return Base64.getEncoder().encodeToString(data);
     }
 
     public void changeLevel() {
@@ -270,6 +378,7 @@ public class MinimapManager {
 
     public void reset() {
         unpin();
+        playerLocation = null;
     }
 
     // Getters & Setters
@@ -317,5 +426,9 @@ public class MinimapManager {
 
     public MinimapIcon getPinnedIcon() {
         return pinnedIcon;
+    }
+
+    public BufferedImage getFogImage() {
+        return fogImage;
     }
 }
