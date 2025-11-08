@@ -2,7 +2,6 @@ package platformer.ui.overlays;
 
 import platformer.animation.SpriteManager;
 import platformer.model.inventory.*;
-import platformer.model.inventory.database.ItemDatabase;
 import platformer.model.inventory.item.InventoryItem;
 import platformer.model.inventory.item.ItemData;
 import platformer.model.inventory.item.ShopItem;
@@ -42,6 +41,12 @@ public class ShopOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
     private BufferedImage slotImage, coinIcon;
     private Rectangle2D.Double selectedSlot;
     private SliderButton slider;
+
+    // Cache
+    private final Font boldFont = new Font("Arial", Font.BOLD, FONT_MEDIUM);
+    private final Font plainFont = new Font("Arial", Font.PLAIN, FONT_MEDIUM);
+    private ItemData lastSelectedItem = null;
+    private List<String> linesCache = new ArrayList<>();
 
     public ShopOverlay(GameState gameState) {
         this.controller = new ShopViewController(gameState, this);
@@ -160,7 +165,7 @@ public class ShopOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
                 if (slotIndex < (SHOP_SLOT_MAX_ROW * SHOP_SLOT_MAX_COL)) {
                     ShopItem item = items.get(i);
                     if (item.getStock() > 0) {
-                        renderItem(g, item.getItemId(), item.getStock(), item.getCost(), slotIndex, SHOP_BUY_SLOT_X, SHOP_BUY_SLOT_Y, false);
+                        renderItem(g, item, slotIndex);
                     }
                 }
             }
@@ -176,71 +181,84 @@ public class ShopOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
             if (slotIndex < (SHOP_SLOT_MAX_ROW * SHOP_SLOT_MAX_COL)) {
                 InventoryItem item = backpack.get(i);
                 if (item == null) continue;
-                renderItem(g, item.getItemId(), item.getAmount(), item.getData().sellValue, slotIndex, SHOP_SELL_SLOT_X, SHOP_SELL_SLOT_Y, true);
+                renderItem(g, item, slotIndex);
             }
         }
     }
 
-    private void renderItem(Graphics g, String itemId, int amount, int value, int slot, int xSlot, int ySlot, boolean isInventoryPanel) {
-        ItemData itemData = ItemDatabase.getInstance().getItemData(itemId);
+    private void renderItem(Graphics g, ShopItem item, int slot) {
+        renderItemCore(g, item.getModel(), item.getData(), item.getStock(), item.getCost(), slot, SHOP_BUY_SLOT_X, SHOP_BUY_SLOT_Y, false);
+    }
+
+    private void renderItem(Graphics g, InventoryItem item, int slot) {
+        renderItemCore(g, item.getModel(), item.getData(), item.getAmount(), item.getData().sellValue, slot, SHOP_SELL_SLOT_X, SHOP_SELL_SLOT_Y, true);
+    }
+
+    private void renderItemCore(Graphics g, BufferedImage itemImage, ItemData itemData, int amount, int value, int slot, int xSlot, int ySlot, boolean isInventoryPanel) {
         if (itemData == null) return;
         int xPos = (slot % SHOP_SLOT_MAX_ROW) * SLOT_SPACING + xSlot + ITEM_OFFSET_X;
         int yPos = (slot / SHOP_SLOT_MAX_ROW) * SLOT_SPACING + ySlot + ITEM_OFFSET_Y;
 
         g.setColor(itemData.rarity.getColor());
-        g.fillRect(xPos - (int) (ITEM_OFFSET_X / 1.1), yPos - (int) (ITEM_OFFSET_Y / 1.1), (int) (SLOT_SIZE / 1.06), (int) (SLOT_SIZE / 1.06));
-        g.drawImage(ImageUtils.importImage(itemData.imagePath, -1, -1), xPos, yPos, ITEM_SIZE, ITEM_SIZE, null);
+        g.fillRect(xPos - (int)(ITEM_OFFSET_X / 1.1), yPos - (int)(ITEM_OFFSET_Y / 1.1), (int)(SLOT_SIZE / 1.06), (int)(SLOT_SIZE / 1.06));
+
+        if (itemImage != null) g.drawImage(itemImage, xPos, yPos, ITEM_SIZE, ITEM_SIZE, null);
+
         g.setColor(Color.WHITE);
-        g.setFont(new Font("Arial", Font.BOLD, FONT_MEDIUM));
+        g.setFont(boldFont);
         g.drawString(String.valueOf(amount), xPos + ITEM_COUNT_OFFSET_X, yPos + ITEM_COUNT_OFFSET_Y);
 
-        if (controller.isSelling() == isInventoryPanel) renderText(g, itemData, value, slot);
+        if (controller.isSelling() == isInventoryPanel) {
+            int currentSlotNumber = isInventoryPanel ? controller.getSellSlotNumber() : controller.getBuySlotNumber();
+            if (currentSlotNumber == slot) renderText(g, itemData, value);
+        }
     }
 
-    private void renderText(Graphics g, ItemData itemData, int value, int slot) {
-        int currentSlotNumber = controller.isSelling() ? controller.getSellSlotNumber() : controller.getBuySlotNumber();
-        if (currentSlotNumber == slot) {
-            int totalCoins = controller.getGameState().getPlayer().getCoins();
-            g.setFont(new Font("Arial", Font.BOLD, FONT_MEDIUM));
+    private void renderText(Graphics g, ItemData itemData, int value) {
+        int totalCoins = controller.getGameState().getPlayer().getCoins();
+        g.setFont(boldFont);
 
-            g.setColor(SHOP_TEXT_DEFAULT);
-            g.drawString("Item value: ", COST_TEXT_X, COST_TEXT_Y);
-            int valueTextX = COST_TEXT_X + g.getFontMetrics().stringWidth("Item value: ");
-            g.setColor(totalCoins >= value * controller.getQuantityToTrade() || controller.isSelling() ? SHOP_TEXT_GOLD : SHOP_TEXT_CANNOT_AFFORD);
-            g.drawString(String.valueOf(value), valueTextX, COST_TEXT_Y);
-            g.drawImage(coinIcon, valueTextX + g.getFontMetrics().stringWidth(String.valueOf(value)) + (int)(3 * SCALE), COST_TEXT_Y - (int)(12 * SCALE), COIN_WID, COIN_HEI, null);
+        g.setColor(SHOP_TEXT_DEFAULT);
+        g.drawString("Item value: ", COST_TEXT_X, COST_TEXT_Y);
+        int valueTextX = COST_TEXT_X + g.getFontMetrics().stringWidth("Item value: ");
+        g.setColor(totalCoins >= value * controller.getQuantityToTrade() || controller.isSelling() ? SHOP_TEXT_GOLD : SHOP_TEXT_CANNOT_AFFORD);
+        g.drawString(String.valueOf(value), valueTextX, COST_TEXT_Y);
+        g.drawImage(coinIcon, valueTextX + g.getFontMetrics().stringWidth(String.valueOf(value)) + (int)(3 * SCALE), COST_TEXT_Y - (int)(12 * SCALE), COIN_WID, COIN_HEI, null);
 
-            g.setColor(SHOP_TEXT_DEFAULT);
-            g.drawString("Total coins: ", POCKET_TEXT_X, POCKET_TEXT_Y);
-            int coinsTextX = POCKET_TEXT_X + g.getFontMetrics().stringWidth("Total coins: ");
-            g.setColor(SHOP_TEXT_GOLD);
-            g.drawString(String.valueOf(totalCoins), coinsTextX, POCKET_TEXT_Y);
-            g.drawImage(coinIcon, coinsTextX + g.getFontMetrics().stringWidth(String.valueOf(totalCoins)) + (int)(3 * SCALE), POCKET_TEXT_Y - (int)(12 * SCALE), COIN_WID, COIN_HEI, null);
+        g.setColor(SHOP_TEXT_DEFAULT);
+        g.drawString("Total coins: ", POCKET_TEXT_X, POCKET_TEXT_Y);
+        int coinsTextX = POCKET_TEXT_X + g.getFontMetrics().stringWidth("Total coins: ");
+        g.setColor(SHOP_TEXT_GOLD);
+        g.drawString(String.valueOf(totalCoins), coinsTextX, POCKET_TEXT_Y);
+        g.drawImage(coinIcon, coinsTextX + g.getFontMetrics().stringWidth(String.valueOf(totalCoins)) + (int)(3 * SCALE), POCKET_TEXT_Y - (int)(12 * SCALE), COIN_WID, COIN_HEI, null);
 
-            renderItemDescription(g, itemData);
-        }
+        renderItemDescription(g, itemData);
     }
 
     private void renderItemDescription(Graphics g, ItemData itemData) {
         Color rarityColor = itemData.rarity.getColor();
         g.setColor(new Color(rarityColor.getRed(), rarityColor.getGreen(), rarityColor.getBlue()));
-        g.setFont(new Font("Arial", Font.BOLD, FONT_MEDIUM));
+        g.setFont(boldFont);
         g.drawString(itemData.name, SHOP_ITEM_NAME_X, SHOP_ITEM_NAME_Y);
         g.setColor(SHOP_TEXT_DESC);
-        g.setFont(new Font("Arial", Font.PLAIN, FONT_MEDIUM));
+        g.setFont(plainFont);
 
-        int descriptionMaxWidth = (int) (sellPanel.getX() - SHOP_ITEM_DESC_X - (10 * SCALE));
-        List<String> wrappedLines = wrapText(itemData.description, descriptionMaxWidth, g.getFontMetrics());
+        if (itemData != lastSelectedItem) {
+            lastSelectedItem = itemData;
+            int descriptionMaxWidth = (int) (sellPanel.getX() - SHOP_ITEM_DESC_X - (10 * SCALE));
+            linesCache = wrapText(itemData.description, descriptionMaxWidth, g.getFontMetrics());
+        }
+
         int lineHeight = g.getFontMetrics().getHeight();
         int y = SHOP_ITEM_DESC_Y;
-        for (String line : wrappedLines) {
+        for (String line : linesCache) {
             g.drawString(line, SHOP_ITEM_DESC_X, y);
             y += lineHeight;
         }
 
         if (controller.isSliderActive()) {
             g.setColor(SHOP_TEXT_DEFAULT);
-            g.setFont(new Font("Arial", Font.BOLD, FONT_MEDIUM));
+            g.setFont(boldFont);
             g.drawString("Quantity: " + controller.getQuantityToTrade(), SHOP_QUANTITY_TEXT_X, SHOP_QUANTITY_TEXT_Y);
         }
     }
@@ -321,6 +339,8 @@ public class ShopOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
     @Override
     public void reset() {
         controller.reset();
+        lastSelectedItem = null;
+        linesCache.clear();
     }
 
     public ShopViewController getController() {

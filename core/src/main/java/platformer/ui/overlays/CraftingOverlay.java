@@ -44,6 +44,12 @@ public class CraftingOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
     private BufferedImage slotImage, coinIcon;
     private Rectangle2D.Double selectedSlot;
 
+    private final Map<String, InventoryItem> renderCache = new HashMap<>();
+    private final Font boldFont = new Font("Arial", Font.BOLD, FONT_MEDIUM);
+    private final Font plainFont = new Font("Arial", Font.PLAIN, FONT_MEDIUM);
+    private Recipe lastSelectedRecipe = null;
+    private List<String> linesCache = new ArrayList<>();
+
     public CraftingOverlay(GameState gameState) {
         this.controller = new CraftingViewController(gameState, this);
         this.mediumButtons = new MediumButton[1];
@@ -145,9 +151,11 @@ public class CraftingOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
     }
 
     private void renderItem(Graphics g, Recipe recipe) {
-        ItemData itemData = ItemDatabase.getInstance().getItemData(recipe.getOutput());
+        InventoryItem item = renderCache.computeIfAbsent(recipe.getOutput(), id -> new InventoryItem(id, recipe.getAmount()));
+        ItemData itemData = item.getData();
         if (itemData == null) return;
-        BufferedImage itemImage = ImageUtils.importImage(itemData.imagePath, -1, -1);
+        BufferedImage itemImage = item.getModel();
+        if (itemImage == null) return;
 
         int absoluteSlotNumber = RecipeManager.getInstance().getRecipes().indexOf(recipe);
         int pageOffset = controller.getCraftingSlot() * (INVENTORY_SLOT_MAX_ROW * INVENTORY_SLOT_MAX_COL);
@@ -172,7 +180,7 @@ public class CraftingOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
         ItemData itemData = ItemDatabase.getInstance().getItemData(recipe.getOutput());
         if (itemData == null) return;
         g.setColor(itemData.rarity.getTextColor());
-        g.setFont(new Font("Arial", Font.BOLD, FONT_MEDIUM));
+        g.setFont(boldFont);
         g.drawString(itemData.name, CRAFT_VAL_ITEM_NAME_X, CRAFT_VAL_ITEM_NAME_Y);
         g.setColor(INV_TEXT_LABEL);
         g.drawString("Value: ", CRAFT_VAL_TEXT_X, CRAFT_VAL_TEXT_Y);
@@ -182,14 +190,17 @@ public class CraftingOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
         g.drawImage(coinIcon, CRAFT_VAL_TEXT_X + g.getFontMetrics().stringWidth("Value: " + valueText) + 2, CRAFT_VAL_TEXT_Y - g.getFontMetrics().getAscent() + 1, (int)(COIN_WID/1.5), (int)(COIN_HEI/1.5), null);
 
         g.setColor(INV_TEXT_DESC);
-        g.setFont(new Font("Arial", Font.PLAIN, FONT_MEDIUM));
+        g.setFont(plainFont);
 
-        int descriptionMaxWidth = (int) (overlay.getX() + overlay.getWidth() - CRAFT_VAL_ITEM_DESC_X - (10 * SCALE));
-        List<String> wrappedLines = wrapText(itemData.description, descriptionMaxWidth, g.getFontMetrics());
+        if (recipe != lastSelectedRecipe) {
+            lastSelectedRecipe = recipe;
+            int descriptionMaxWidth = (int) (overlay.getX() + overlay.getWidth() - CRAFT_VAL_ITEM_DESC_X - (10 * SCALE));
+            linesCache = wrapText(itemData.description, descriptionMaxWidth, g.getFontMetrics());
+        }
 
         int lineHeight = g.getFontMetrics().getHeight();
         int y = CRAFT_VAL_ITEM_DESC_Y;
-        for (String line : wrappedLines) {
+        for (String line : linesCache) {
             g.drawString(line, CRAFT_VAL_ITEM_DESC_X, y);
             y += lineHeight;
         }
@@ -287,7 +298,11 @@ public class CraftingOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
     }
 
     @Override
-    public void reset() { }
+    public void reset() {
+        renderCache.clear();
+        lastSelectedRecipe = null;
+        linesCache.clear();
+    }
 
     // Getters for the controller
     public SmallButton[] getSmallButtons() {
