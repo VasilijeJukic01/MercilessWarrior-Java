@@ -255,6 +255,16 @@ public class MinimapManager {
         g2d.dispose();
     }
 
+    /**
+     * Updates the fog overlay on the minimap. It creates a smooth fog effect in  following steps:
+     * <p>
+     * 1. Creates a grayscale image with padding for blur processing <br>
+     * 2. Converts exploration data to binary values (255 for fog, 0 for explored areas) <br>
+     * 3. Replicates edge pixels to prevent blur artifacts at boundaries <br>
+     * 4. Applies Gaussian blur using a predefined convolution operation <br>
+     * 5. Removes padding from the blurred result <br>
+     * 6. Converts grayscale values to ARGB format with the configured fog color <br>
+     */
     public void updateFogImage() {
         int width = minimapImage.getWidth();
         int height = minimapImage.getHeight();
