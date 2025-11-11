@@ -386,6 +386,11 @@ public class MinimapManager {
         pathPoints = pathfinding.findPath(minimapImage, playerIntLocation, pinnedLocation);
     }
 
+    public boolean isExplored(Point point) {
+        if (point.x < 0 || point.x >= explorationMap.length || point.y < 0 || point.y >= explorationMap[0].length) return false;
+        return explorationMap[point.x][point.y] == 1.0f;
+    }
+
     public void reset() {
         unpin();
         playerLocation = null;
