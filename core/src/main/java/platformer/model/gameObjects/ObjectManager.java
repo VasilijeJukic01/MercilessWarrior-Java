@@ -4,6 +4,8 @@ import platformer.animation.SpriteManager;
 import platformer.audio.Audio;
 import platformer.audio.types.Sound;
 import platformer.core.GameContext;
+import platformer.model.entities.follower.Follower;
+import platformer.model.gameObjects.npc.NpcType;
 import platformer.model.projectiles.ProjectileFactory;
 import platformer.model.spells.SpellManager;
 import platformer.storage.StorageStrategy;
@@ -42,6 +44,7 @@ public class ObjectManager {
     private LootHandler lootHandler;
 
     private Interactable intersection = null;
+    private Follower activeFollower;
 
     Class<? extends GameObject>[] updateClasses = new Class[]{
             Coin.class, Container.class, Potion.class, Spike.class,
@@ -241,6 +244,31 @@ public class ObjectManager {
         lootHandler.generateEnemyLoot(location, e.getEnemyType());
     }
 
+    /**
+     * Checks if the provided area intersects with any environmental hazards.
+     * @param area The hitbox to check.
+     * @return true if danger is detected.
+     */
+    public boolean isDangerous(Rectangle2D.Double area) {
+        // Check Spikes
+        for (Spike s : getObjects(Spike.class)) {
+            if (s.getHitBox().intersects(area)) return true;
+        }
+
+        // Check Lava
+        for (Lava l : getObjects(Lava.class)) {
+            if (l.getHitBox().intersects(area)) return true;
+        }
+
+        // Check Traps
+        for (SmashTrap st : getObjects(SmashTrap.class)) {
+            if (st.getHitBox().intersects(area)) return true;
+        }
+
+        return false;
+    }
+
+
     // Launchers
     private boolean isPlayerInRangeForTrap(ArrowLauncher arrowLauncher, Player player) {
         int distance = (int)Math.abs(player.getHitBox().x - arrowLauncher.getHitBox().x);
@@ -293,6 +321,9 @@ public class ObjectManager {
         handleCollectibles(player);
         checkPlayerTrapCollision(player);
         collisionHandler.updateObjectInAir();
+        if (activeFollower != null) {
+            activeFollower.update(lvlData, player);
+        }
     }
 
     public void render(Graphics g, int xLevelOffset, int yLevelOffset) {
@@ -332,6 +363,9 @@ public class ObjectManager {
                 npc.render(g, xLevelOffset, yLevelOffset, anims);
             }
         }
+        if (activeFollower != null) {
+            activeFollower.render(g, xLevelOffset, yLevelOffset);
+        }
     }
 
     private void updateArrowLaunchers(int[][] lvlData, Player player) {
@@ -363,6 +397,18 @@ public class ObjectManager {
                 al.render(g, xLevelOffset, yLevelOffset, anims);
             }
         }
+    }
+
+    public void spawnFollower(NpcType type, int x, int y) {
+        this.activeFollower = new Follower(x, y, type, context.getEffectManager(), this);
+    }
+
+    public Npc getNpcByType(NpcType type) {
+        List<Npc> npcs = getObjects(Npc.class);
+        for (Npc npc : npcs) {
+            if (npc.getNpcType() == type) return npc;
+        }
+        return null;
     }
 
     // Reset

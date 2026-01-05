@@ -9,9 +9,11 @@ import platformer.model.effects.TimeCycleManager;
 import platformer.model.entities.enemies.EnemyManager;
 import platformer.model.entities.player.Player;
 import platformer.model.gameObjects.ObjectManager;
+import platformer.model.gameObjects.npc.NpcType;
 import platformer.model.levels.LevelManager;
 import platformer.model.levels.metadata.LevelMetadata;
 import platformer.model.projectiles.ProjectileManager;
+import platformer.model.quests.QuestManager;
 import platformer.model.spells.SpellManager;
 
 import java.awt.*;
@@ -35,6 +37,7 @@ public class GameWorld {
     private final RainManager rainManager;
     private final TimeCycleManager timeCycleManager;
     private final LightManager lightManager;
+    private final QuestManager questManager;
 
     public GameWorld(GameContext context) {
         this.levelManager = context.getLevelManager();
@@ -46,6 +49,7 @@ public class GameWorld {
         this.spellManager = context.getSpellManager();
         this.lightManager = context.getLightManager();
         this.timeCycleManager = context.getTimeCycleManager();
+        this.questManager = context.getQuestManager();
 
         this.player = new Player(PLAYER_X, PLAYER_Y, PLAYER_WIDTH, PLAYER_HEIGHT, context);
         this.player.loadLvlData(levelManager.getCurrentLevel().getLvlData());
@@ -69,6 +73,12 @@ public class GameWorld {
             int levelWidth = levelManager.getCurrentLevel().getLevelTilesWidth() * TILES_SIZE;
             int levelHeight = levelManager.getCurrentLevel().getLevelTilesHeight() * TILES_SIZE;
             effectManager.reinitializeAmbientParticles(levelWidth, levelHeight);
+        }
+    }
+
+    private void checkFollowerSpawn() {
+        if (questManager.isQuestActive("Helping Anita")) {
+            objectManager.spawnFollower(NpcType.ANITA, (int)player.getHitBox().x, (int)player.getHitBox().y);
         }
     }
 
@@ -126,6 +136,7 @@ public class GameWorld {
         enemyManager.loadEnemies(levelManager.getCurrentLevel());
         objectManager.loadObjects(levelManager.getCurrentLevel());
         player.setSpawn(levelManager.getCurrentLevel().getPlayerSpawn(spawn));
+        checkFollowerSpawn();
         reinitializeParticles();
     }
 }

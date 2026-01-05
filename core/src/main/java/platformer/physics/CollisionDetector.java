@@ -39,7 +39,7 @@ public final class CollisionDetector {
     }
 
     /**
-     * Internal helper to determine if a specific point in the world is inside a solid tile.
+     * Determines if a specific point in the world is inside a solid tile.
      * Also performs bounds checking to treat areas outside the level as solid.
      *
      * @param x         The world x-coordinate.
@@ -47,7 +47,7 @@ public final class CollisionDetector {
      * @param levelData The level's tilemap.
      * @return {@code true} if the point is solid or out of bounds, {@code false} otherwise.
      */
-    private static boolean isSolid(double x, double y, int[][] levelData) {
+    public static boolean isSolid(double x, double y, int[][] levelData) {
         int levelWidth = levelData.length * TILES_SIZE;
         int levelHeight = levelData[0].length * TILES_SIZE;
 

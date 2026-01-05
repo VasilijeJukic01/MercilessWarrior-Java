@@ -186,6 +186,16 @@ public final class Constants {
     public static final double RORIC_ATT_RANGE = RANGE * 1.8;
     public static final double ENEMY_SPEED_SLOW = dScale(0.2);
 
+    // Follower Constants
+    public static final int FLW_WIDTH = scale(270);
+    public static final int FLW_HEIGHT = scale(140);
+
+    public static final int FOLLOWER_HB_WID = scale(18);
+    public static final int FOLLOWER_HB_HEI = scale(45);
+
+    public static final int FOLLOWER_X_OFFSET = (FLW_WIDTH - FOLLOWER_HB_WID) / 2;
+    public static final int FOLLOWER_Y_OFFSET = (int)(88 * SCALE);
+
     // Object Constants
     public static final int HEAL_POTION_VAL = 15;
     public static final int STAMINA_POTION_VAL = 10;

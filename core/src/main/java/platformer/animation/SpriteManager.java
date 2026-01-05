@@ -27,6 +27,7 @@ public class SpriteManager {
     private final Map<EnemyType, BufferedImage[][]> enemyAnimations = new HashMap<>();
     private final Map<ObjType, BufferedImage[]> objectAnimations = new HashMap<>();
     private final Map<NpcType, BufferedImage[]> npcAnimations = new HashMap<>();
+    private final Map<NpcType, BufferedImage[][]> followerAnimations = new HashMap<>();
     private BufferedImage[][] coinAnimations;
 
     private BufferedImage[] lightningBallAnimations;
@@ -65,6 +66,7 @@ public class SpriteManager {
         loadEnemyAnimations();
         loadObjectAnimations();
         loadNpcAnimations();
+        loadFollowerAnimations();
         loadProjectileAndSpellAnimations();
         loadEffectAnimations();
     }
@@ -314,6 +316,21 @@ public class SpriteManager {
         return loadFromSprite(sheet, frames, row, type.getWid(), type.getHei(), 0, type.getSpriteW(), type.getSpriteH());
     }
 
+    // Follower
+    private void loadFollowerAnimations() {
+        loadAnitaFollower();
+    }
+
+    private void loadAnitaFollower() {
+        BufferedImage[][] anim = new BufferedImage[5][];
+        anim[Anim.IDLE.ordinal()] = loadFromSprite(ANITA_FOLLOWER_SHEET, 8, 0, FLW_WIDTH, FLW_HEIGHT, 0, ANITA_FOLLOWER_W, ANITA_FOLLOWER_H);
+        anim[Anim.RUN.ordinal()] = loadFromSprite(ANITA_FOLLOWER_SHEET, 8, 1, FLW_WIDTH, FLW_HEIGHT, 0, ANITA_FOLLOWER_W, ANITA_FOLLOWER_H);
+        anim[Anim.JUMP.ordinal()] = loadFromSprite(ANITA_FOLLOWER_SHEET, 3, 2, FLW_WIDTH, FLW_HEIGHT, 0, ANITA_FOLLOWER_W, ANITA_FOLLOWER_H);
+        anim[Anim.FALL.ordinal()] = loadFromSprite(ANITA_FOLLOWER_SHEET, 3, 3, FLW_WIDTH, FLW_HEIGHT, 0, ANITA_FOLLOWER_W, ANITA_FOLLOWER_H);
+
+        followerAnimations.put(NpcType.ANITA, anim);
+    }
+
     // Projectiles & Spells
     private void loadProjectileAndSpellAnimations() {
         lightningAnimations = loadFromSprite(LIGHTNING_SHEET, 8, 0, LIGHTNING_WIDTH, LIGHTNING_HEIGHT, 0, LIGHTNING_W, LIGHTNING_H);
@@ -359,6 +376,10 @@ public class SpriteManager {
 
     public BufferedImage[] getNpcAnimations(NpcType type) {
         return npcAnimations.get(type);
+    }
+
+    public BufferedImage[][] getFollowerAnimations(NpcType type) {
+        return followerAnimations.get(type);
     }
 
     public BufferedImage[][] getCoinAnimations() {
