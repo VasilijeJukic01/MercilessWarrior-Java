@@ -208,7 +208,7 @@ public class RoricAttackHandler {
             roric.setAttackCheck(false);
         }
         if (roric.getAnimIndex() >= 5 && roric.getAnimIndex() <= 8 && !roric.isAttackCheck()) {
-            roric.checkPlayerHit(roric.getAttackBox(), player);
+            roric.checkEntityHit(roric.getAttackBox(), player);
             roric.setAttackCheck(true);
         }
     }

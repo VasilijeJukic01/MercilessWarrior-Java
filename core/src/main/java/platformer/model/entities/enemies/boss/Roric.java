@@ -10,6 +10,7 @@ import platformer.event.events.roric.RoricEffectEvent;
 import platformer.event.events.roric.RoricPhaseChangeEvent;
 import platformer.model.entities.Cooldown;
 import platformer.model.entities.Direction;
+import platformer.model.entities.Entity;
 import platformer.model.entities.enemies.Enemy;
 import platformer.model.entities.enemies.EnemyManager;
 import platformer.model.entities.enemies.EnemyType;
@@ -86,7 +87,7 @@ public class Roric extends Enemy {
     }
 
     @Override
-    public void update(int[][] levelData, Player player) {
+    public void update(int[][] levelData, Player player, Entity follower) {
         // Not used
     }
 
@@ -107,7 +108,7 @@ public class Roric extends Enemy {
         this.spellManager = spellManager;
         this.currentPlayerTarget = player;
         this.currentLevelData = levelData;
-        if (!start && isPlayerCloseForAttack(player)) {
+        if (!start && isEntityCloseForAttack(player)) {
             start = true;
             phaseManager.startFight();
             EventBus.getInstance().publish(new RoricPhaseChangeEvent(RoricPhaseManager.RoricPhase.INTRO));

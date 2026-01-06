@@ -5,6 +5,7 @@ import platformer.audio.Audio;
 import platformer.audio.types.Sound;
 import platformer.model.entities.Cooldown;
 import platformer.model.entities.Direction;
+import platformer.model.entities.Entity;
 import platformer.model.entities.player.Player;
 
 import java.awt.*;
@@ -38,6 +39,7 @@ public class Ghoul extends Enemy {
     // Attack
     @Override
     public boolean hit(double damage, boolean enableRevive, boolean hitSound) {
+        if (entityState == Anim.DEATH || !alive) return false;
         if (enableRevive) {
             hide();
             if (entityState == Anim.HIDE) return false;
@@ -78,20 +80,20 @@ public class Ghoul extends Enemy {
     }
 
     // Ghoul Core
-    private void updateBehavior(int[][] levelData, Player player) {
+    private void updateBehavior(int[][] levelData, Entity target) {
         switch (entityState) {
             case IDLE:
                 idleAction();
                 break;
             case RUN:
             case WALK:
-                moveAction(levelData, player);
+                moveAction(levelData, target);
                 break;
             case ATTACK_1:
-                attackAction(levelData, player);
+                attackAction(levelData, target);
                 break;
             case REVEAL:
-                revealAction(player);
+                revealAction(target);
                 break;
             default: break;
         }
@@ -107,10 +109,10 @@ public class Ghoul extends Enemy {
         animSpeed = 25;
     }
 
-    private void moveAction(int[][] levelData, Player player) {
+    private void moveAction(int[][] levelData, Entity entity) {
         if (blocker || entityState == Anim.ATTACK_1) return;
-        if (canSeePlayer(levelData, player)) directToPlayer(player);
-        if (canSeePlayer(levelData, player) && isPlayerCloseForAttack(player) && cooldown[Cooldown.ATTACK.ordinal()] == 0) {
+        if (canSeeEntity(levelData, entity)) directToEntity(entity);
+        if (canSeeEntity(levelData, entity) && isEntityCloseForAttack(entity) && cooldown[Cooldown.ATTACK.ordinal()] == 0) {
             if (!blocker) {
                 cooldown[Cooldown.DASH.ordinal()] = GHOUL_DASH_CD;
                 setEnemyAction(Anim.IDLE);
@@ -128,10 +130,10 @@ public class Ghoul extends Enemy {
         changeDirection();
     }
 
-    private void attackAction(int[][] levelData, Player player) {
+    private void attackAction(int[][] levelData, Entity target) {
         if (animIndex == 0) attackCheck = false;
         if (animIndex == 3 && !attackCheck) {
-            checkPlayerHit(attackBox, player);
+            checkEntityHit(attackBox, target);
             fastAttack(levelData);
         }
     }
@@ -151,10 +153,10 @@ public class Ghoul extends Enemy {
         entityState = Anim.IDLE;
     }
 
-    private void revealAction(Player player) {
+    private void revealAction(Entity target) {
         if (animIndex == 0) {
-            hitBox.x = player.getHitBox().x;
-            hitBox.y = player.getHitBox().y;
+            hitBox.x = target.getHitBox().x;
+            hitBox.y = target.getHitBox().y;
             inAir = true;
         }
         else if (animIndex == 5) Audio.getInstance().getAudioPlayer().playSound(Sound.GHOUL_REVEAL);
@@ -162,16 +164,21 @@ public class Ghoul extends Enemy {
 
     // Update
     @Override
-    public void update(int[][] levelData, Player player) {
-        updateMove(levelData, player);
+    public void update(int[][] levelData, Player player, Entity follower) {
+        if (freezeTick > 0) {
+            freezeTick--;
+            return;
+        }
+        Entity target = getCloseTarget(player, follower);
+        updateMove(levelData, target);
         updateAnimation();
         updateAttackBox();
     }
 
-    public void updateMove(int[][] levelData, Player player) {
+    public void updateMove(int[][] levelData, Entity target) {
         if (!isEntityOnFloor(hitBox, levelData)) inAir = true;
         if (inAir) updateInAir(levelData, gravity, collisionFallSpeed);
-        else updateBehavior(levelData, player);
+        else updateBehavior(levelData, target);
     }
 
     private void updateAttackBox() {

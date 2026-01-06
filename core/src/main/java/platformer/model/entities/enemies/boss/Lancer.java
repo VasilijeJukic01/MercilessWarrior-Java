@@ -11,6 +11,7 @@ import platformer.event.events.lancer.LancerAuraEvent;
 import platformer.event.events.lancer.LancerDashSlashEvent;
 import platformer.model.entities.Cooldown;
 import platformer.model.entities.Direction;
+import platformer.model.entities.Entity;
 import platformer.model.entities.enemies.Enemy;
 import platformer.model.entities.enemies.EnemyType;
 import platformer.model.entities.player.Player;
@@ -129,7 +130,7 @@ public class Lancer extends Enemy {
 
     // Behavior
     private void idleAction(int[][] levelData, Player player, ObjectManager objectManager) {
-        if (!start && isPlayerCloseForAttack(player)) {
+        if (!start && isEntityCloseForAttack(player)) {
             startFight(objectManager);
             return;
         }
@@ -143,7 +144,7 @@ public class Lancer extends Enemy {
             attackCheck = false;
         }
         if (animIndex == 2) movingAttack(levelData, 30);
-        if ((animIndex == 3 || animIndex == 2) && !attackCheck) checkPlayerHit(attackBox, player);
+        if ((animIndex == 3 || animIndex == 2) && !attackCheck) checkEntityHit(attackBox, player);
     }
 
     private void dashSlashAction(int[][] levelData, Player player) {
@@ -153,7 +154,7 @@ public class Lancer extends Enemy {
             movingAttack(levelData, 30);
             Audio.getInstance().getAudioPlayer().playSound(Sound.LANCER_ROAR_1);
         }
-        if (!attackCheck) checkPlayerHit(attackBox, player);
+        if (!attackCheck) checkEntityHit(attackBox, player);
     }
 
     private void lightningBallAction() {
@@ -178,11 +179,11 @@ public class Lancer extends Enemy {
         movingAttack(levelData, 10);
         if (animIndex % 2 == 0) setDirection(Direction.LEFT);
         else setDirection(Direction.RIGHT);
-        if (animIndex >= 2 && animIndex <= 11) checkPlayerHit(attackBox, player);
+        if (animIndex >= 2 && animIndex <= 11) checkEntityHit(attackBox, player);
     }
 
     private void thunderSlamAction(Player player, SpellManager spellManager) {
-        if (animIndex > 5 && animIndex < 16) checkPlayerHit(attackBox, player);
+        if (animIndex > 5 && animIndex < 16) checkEntityHit(attackBox, player);
         if (animIndex == 11) Audio.getInstance().getAudioPlayer().playSound(Sound.LANCER_ROAR_2);
         else if (animIndex == 13) {
             spellManager.activateLightnings();
@@ -317,7 +318,7 @@ public class Lancer extends Enemy {
 
     // Update
     @Override
-    public void update(int[][] levelData, Player player) {}
+    public void update(int[][] levelData, Player player, Entity follower) {}
 
     public void update(int[][] levelData, Player player, SpellManager spellManager, ObjectManager objectManager, BossInterface bossInterface) {
         updateMove(levelData, player, spellManager, objectManager);

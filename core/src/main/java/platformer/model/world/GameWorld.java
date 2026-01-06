@@ -85,7 +85,7 @@ public class GameWorld {
     // Core
     public void update() {
         player.update();
-        enemyManager.update(levelManager.getCurrentLevel().getLvlData(), player);
+        enemyManager.update(levelManager.getCurrentLevel().getLvlData(), player, objectManager.getActiveFollower());
         objectManager.update(levelManager.getCurrentLevel().getLvlData(), player);
         projectileManager.update(levelManager.getCurrentLevel().getLvlData(), player);
         timeCycleManager.update();

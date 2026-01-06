@@ -4,6 +4,7 @@ import platformer.animation.Anim;
 import platformer.audio.Audio;
 import platformer.audio.types.Sound;
 import platformer.model.entities.Direction;
+import platformer.model.entities.Entity;
 import platformer.model.entities.player.Player;
 import platformer.model.entities.player.PlayerAction;
 
@@ -35,6 +36,7 @@ public class Knight extends Enemy {
     // Attack
     @Override
     public boolean hit(double damage, boolean enableBlock, boolean hitSound) {
+        if (entityState == Anim.DEATH || !alive) return false;
         currentHealth -= damage;
         if (hitSound) Audio.getInstance().getAudioPlayer().playHitSound();
         if (currentHealth <= 0) {
@@ -64,17 +66,17 @@ public class Knight extends Enemy {
     }
 
     // Skeleton Core
-    private void updateBehavior(int[][] levelData, Player player) {
+    private void updateBehavior(int[][] levelData, Entity target) {
         switch (entityState) {
             case IDLE:
                 idleAction();
                 break;
             case RUN:
             case WALK:
-                moveAction(levelData, player);
+                moveAction(levelData, target);
                 break;
             case ATTACK_1:
-                attackAction(player);
+                attackAction(target);
                 break;
             default: break;
         }
@@ -86,9 +88,9 @@ public class Knight extends Enemy {
         animSpeed = 25;
     }
 
-    private void moveAction(int[][] levelData, Player player) {
-        if (canSeePlayer(levelData, player)) directToPlayer(player);
-        if (canSeePlayer(levelData, player) && isPlayerCloseForAttack(player)) {
+    private void moveAction(int[][] levelData, Entity entity) {
+        if (canSeeEntity(levelData, entity)) directToEntity(entity);
+        if (canSeeEntity(levelData, entity) && isEntityCloseForAttack(entity)) {
             setEnemyAction(Anim.ATTACK_1);
             animSpeed = 20;
         }
@@ -102,32 +104,45 @@ public class Knight extends Enemy {
         changeDirection();
     }
 
-    private void attackAction(Player player) {
-        boolean block = player.checkAction(PlayerAction.BLOCK);
+    private void attackAction(Entity target) {
+        boolean block = false;
+        boolean canBlock = false;
+        Player player = null;
+
+        if (target instanceof Player) {
+            player = (Player) target;
+            block = player.checkAction(PlayerAction.BLOCK);
+            canBlock = player.checkAction(PlayerAction.CAN_BLOCK);
+        }
         if (animIndex == 0) {
             attackCheck = false;
         }
-        else if (entityState == Anim.ATTACK_1 && (animIndex == 1 || animIndex == 2) && block) {
-            if ((player.getHitBox().x < hitBox.x && player.getFlipSign() == 1) || (player.getHitBox().x > hitBox.x && player.getFlipSign() == -1)) {
+        else if (entityState == Anim.ATTACK_1 && (animIndex == 1 || animIndex == 2) && block && !canBlock) {
+            if (player != null && ((player.getHitBox().x < hitBox.x && player.getFlipSign() == 1) || (player.getHitBox().x > hitBox.x && player.getFlipSign() == -1))) {
                 player.addAction(PlayerAction.CAN_BLOCK);
                 Audio.getInstance().getAudioPlayer().playBlockSound("Player");
             }
         }
-        else if (animIndex == 4 && !attackCheck) checkPlayerHit(attackBox, player);
+        else if (animIndex == 4 && !attackCheck) checkEntityHit(attackBox, target);
     }
 
     // Update
     @Override
-    public void update(int[][] levelData, Player player) {
-        updateMove(levelData, player);
+    public void update(int[][] levelData, Player player, Entity follower) {
+        if (freezeTick > 0) {
+            freezeTick--;
+            return;
+        }
+        Entity target = getCloseTarget(player, follower);
+        updateMove(levelData, target);
         updateAnimation();
         updateAttackBox();
     }
 
-    public void updateMove(int[][] levelData, Player player) {
+    public void updateMove(int[][] levelData, Entity entity) {
         if (!isEntityOnFloor(hitBox, levelData)) inAir = true;
         if (inAir) updateInAir(levelData, gravity, collisionFallSpeed);
-        else updateBehavior(levelData, player);
+        else updateBehavior(levelData, entity);
     }
 
     private void updateAttackBox() {

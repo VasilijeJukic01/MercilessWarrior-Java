@@ -29,6 +29,7 @@ public abstract class Enemy extends Entity implements DamageSource, Debug<Graphi
     protected Direction direction = Direction.RIGHT;
     protected boolean alive = true;
     private boolean criticalHit;
+    protected int freezeTick = 0;
 
     public Enemy(int xPos, int yPos, int width, int height, EnemyType enemyType, int animSpeed) {
         super(xPos, yPos, width, height);
@@ -43,8 +44,9 @@ public abstract class Enemy extends Entity implements DamageSource, Debug<Graphi
      *
      * @param levelData The level data.
      * @param player The player.
+     * @param follower The follower.
      */
-    public abstract void update(int[][] levelData, Player player);
+    public abstract void update(int[][] levelData, Player player, Entity follower);
 
     protected void updateAnimation() {
         animTick++;
@@ -72,18 +74,26 @@ public abstract class Enemy extends Entity implements DamageSource, Debug<Graphi
     }
 
     // Targeting Player
-    protected boolean canSeePlayer(int[][] levelData, Player player) {
-        int yTilePlayer = (int)(player.getHitBox().y / TILES_SIZE) + 1;
-        int yTileEnemy = (int)(hitBox.y / TILES_SIZE) + 1;
-        if (yTilePlayer != yTileEnemy) return false;
-        if (!isPlayerInSight(player)) return false;
-        return (isSightClear(levelData, hitBox, player.getHitBox(), yTileEnemy));
+    protected Entity getCloseTarget(Player player, Entity follower) {
+        if (follower == null) return player;
+
+        double distToPlayer = Math.abs(player.getHitBox().x - hitBox.x);
+        double distToFollower = Math.abs(follower.getHitBox().x - hitBox.x);
+        return (distToFollower < distToPlayer) ? follower : player;
     }
 
-    protected void directToPlayer(Player player) {
+    protected boolean canSeeEntity(int[][] levelData, Entity entity) {
+        int yTilePlayer = (int)(entity.getHitBox().y / TILES_SIZE) + 1;
+        int yTileEnemy = (int)(hitBox.y / TILES_SIZE) + 1;
+        if (yTilePlayer != yTileEnemy) return false;
+        if (!isEntityInSight(entity)) return false;
+        return (isSightClear(levelData, hitBox, entity.getHitBox(), yTileEnemy));
+    }
+
+    protected void directToEntity(Entity entity) {
         entityState = Anim.RUN;
         configureEnemySpeed();
-        if (player.getHitBox().x > hitBox.x) setDirection(Direction.RIGHT);
+        if (entity.getHitBox().x > hitBox.x) setDirection(Direction.RIGHT);
         else setDirection(Direction.LEFT);
     }
 
@@ -94,8 +104,8 @@ public abstract class Enemy extends Entity implements DamageSource, Debug<Graphi
         else if (enemyType == EnemyType.WRAITH) enemySpeed = WRAITH_SPEED_FAST;
     }
 
-    protected boolean isPlayerCloseForAttack(Player player) {
-        int distance = (int)Math.abs(player.getHitBox().x-hitBox.x);
+    protected boolean isEntityCloseForAttack(Entity entity) {
+        int distance = (int)Math.abs(entity.getHitBox().x-hitBox.x);
         if (enemyType == EnemyType.SKELETON) return distance <= SKELETON_ATT_RANGE;
         else if (enemyType == EnemyType.GHOUL) return distance <= GHOUL_ATT_RANGE;
         else if (enemyType == EnemyType.KNIGHT) return distance <= KNIGHT_ATT_RANGE;
@@ -105,8 +115,8 @@ public abstract class Enemy extends Entity implements DamageSource, Debug<Graphi
         return false;
     }
 
-    protected boolean isPlayerInSight(Player player) {
-        int distance = (int)Math.abs(player.getHitBox().x - hitBox.x);
+    protected boolean isEntityInSight(Entity entity) {
+        int distance = (int)Math.abs(entity.getHitBox().x - hitBox.x);
         return distance <= SIGHT_RANGE;
     }
 
@@ -118,10 +128,13 @@ public abstract class Enemy extends Entity implements DamageSource, Debug<Graphi
     }
 
     // Attack
-    public void checkPlayerHit(Rectangle2D.Double attackBox, Player player) {
-        if (attackBox.intersects(player.getHitBox())) {
-            boolean canBlock = player.checkAction(PlayerAction.CAN_BLOCK);
-            if (!canBlock) player.changeHealth(-enemyType.getDamage(), this);
+    public void checkEntityHit(Rectangle2D.Double attackBox, Entity target) {
+        if (attackBox.intersects(target.getHitBox())) {
+            if (target instanceof Player) {
+                Player player = (Player) target;
+                boolean canBlock = player.checkAction(PlayerAction.CAN_BLOCK);
+                if (!canBlock) player.changeHealth(-enemyType.getDamage(), this);
+            }
         }
         else if (enemyType == EnemyType.GHOUL || enemyType == EnemyType.LANCER) return;
         attackCheck = true;
@@ -129,6 +142,10 @@ public abstract class Enemy extends Entity implements DamageSource, Debug<Graphi
 
     public boolean isAttacking() {
         return entityState == Anim.ATTACK_1 || entityState == Anim.ATTACK_2 || entityState == Anim.ATTACK_3 || entityState == Anim.SPELL_3;
+    }
+
+    public void freeze(int ticks) {
+        this.freezeTick = ticks;
     }
 
     public abstract boolean hit(double damage, boolean special, boolean hitSound);

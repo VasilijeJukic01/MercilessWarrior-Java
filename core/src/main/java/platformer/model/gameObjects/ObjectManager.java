@@ -322,7 +322,8 @@ public class ObjectManager {
         checkPlayerTrapCollision(player);
         collisionHandler.updateObjectInAir();
         if (activeFollower != null) {
-            activeFollower.update(lvlData, player);
+            List<Enemy> enemies = context.getEnemyManager().getAllEnemies();
+            activeFollower.update(lvlData, player, enemies);
         }
     }
 
@@ -450,6 +451,10 @@ public class ObjectManager {
             return intersection.getInteractionPrompt();
         }
         return null;
+    }
+
+    public Follower getActiveFollower() {
+        return this.activeFollower;
     }
 
     public GameObject getIntersection() {
