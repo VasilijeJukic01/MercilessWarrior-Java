@@ -4,7 +4,11 @@ import platformer.animation.Anim;
 import platformer.animation.SpriteManager;
 import platformer.model.effects.EffectManager;
 import platformer.model.effects.particles.DustType;
+import platformer.model.entities.Direction;
 import platformer.model.entities.Entity;
+import platformer.model.entities.enemies.Enemy;
+import platformer.model.entities.follower.behavior.AnitaBehavior;
+import platformer.model.entities.follower.behavior.FollowerBehavior;
 import platformer.model.entities.player.Player;
 import platformer.model.entities.player.PlayerAction;
 import platformer.model.gameObjects.ObjectManager;
@@ -31,6 +35,7 @@ import static platformer.physics.CollisionDetector.isEntityOnFloor;
  *     <li><b>Mimicry (Breadcrumbing):</b> If physics calculations fail (e.g., impossible jumps), it falls back to recording the player's successful
  *     actions and replaying them with enhanced physics capabilities.</li>
  * </ol>
+ * This entity acts as the Body, handling physics and execution. The decision-making (Targeting, Combat) is delegated to a {@link FollowerBehavior} instance.
  */
 public class Follower extends Entity {
 
@@ -40,7 +45,7 @@ public class Follower extends Entity {
 
     // Settings
     private final int animSpeed = 25;
-    private final double walkSpeed = 0.7 * SCALE;
+    private final double walkSpeed = 0.6 * SCALE;
     private final int teleportDist = TILES_SIZE * 20;
     private int animTick, animIndex;
 
@@ -74,6 +79,13 @@ public class Follower extends Entity {
     private int stuckTick = 0;
     private final int STUCK_THRESHOLD = 200;
 
+    // AI & Combat State
+    private final FollowerBehavior behavior;
+    private boolean isAttacking = false;
+    private double targetX;
+    private boolean attackRequested;
+    private List<Enemy> enemyContext;
+
     public Follower(int x, int y, NpcType type, EffectManager effectManager, ObjectManager objectManager) {
         super(x, y, FLW_WIDTH, FLW_HEIGHT, 100);
         this.type = type;
@@ -81,14 +93,25 @@ public class Follower extends Entity {
         this.objectManager = objectManager;
 
         initHitBox(FOLLOWER_HB_WID, FOLLOWER_HB_HEI);
+        initAttackBox();
         this.inAir = true;
         this.flipSign = 1;
         this.flipCoefficient = 0;
+
+        if (type == NpcType.ANITA) this.behavior = new AnitaBehavior();
+        else this.behavior = new PassiveBehavior();
     }
 
-    public void update(int[][] levelData, Player player) {
+    private void initAttackBox() {
+        this.attackBox = new Rectangle2D.Double(xPos, yPos, FOLLOWER_HB_WID + (20 * SCALE), FOLLOWER_HB_HEI);
+    }
+
+    public void update(int[][] levelData, Player player, List<Enemy> enemies) {
+        this.enemyContext = enemies;
+
+        behavior.update(this, player, levelData, enemies);
         trackPlayerJumps(player);
-        updateMovement(levelData, player);
+        updateMovement(levelData, player, targetX);
         updateAnimation();
 
         if (!isEntityOnFloor(hitBox, levelData)) inAir = true;
@@ -99,9 +122,22 @@ public class Follower extends Entity {
      * Orchestrates movement, hazard detection, and jump decision-making.
      *
      * @param levelData The collision map.
-     * @param player    The target player.
+     * @param player    The target player (used for distance/teleport checks).
+     * @param targetX   The specific X coordinate we want to move towards (Enemy or Player).
      */
-    private void updateMovement(int[][] levelData, Player player) {
+    private void updateMovement(int[][] levelData, Player player, double targetX) {
+        // Handle Attack
+        if (attackRequested) {
+            isAttacking = true;
+            attackRequested = false;
+            animIndex = 0;
+            animTick = 0;
+        }
+        if (isAttacking) {
+            isMoving = false;
+            return;
+        }
+
         // Reset Jump Override if we landed
         if (!inAir) isJumpOverride = false;
 
@@ -115,13 +151,12 @@ public class Follower extends Entity {
             return;
         }
 
-        double dx = player.getHitBox().x - hitBox.x;
-        double dy = player.getHitBox().y - hitBox.y;
-        double distance = Math.sqrt(dx*dx + dy*dy);
+        double dx = targetX - hitBox.x;
+        double distToPlayer = Math.sqrt(Math.pow(player.getHitBox().x - hitBox.x, 2) + Math.pow(player.getHitBox().y - hitBox.y, 2));
 
         // Determine Intent (Hysteresis Thresholding)
-        int stopThreshold = (int)(40 * SCALE);
-        int startThreshold = (int)(60 * SCALE);
+        int stopThreshold = (int)(20 * SCALE);
+        int startThreshold = (int)(40 * SCALE);
         int activeThreshold = isMoving ? stopThreshold : startThreshold;
         boolean wantsToMove = Math.abs(dx) > activeThreshold;
 
@@ -133,7 +168,7 @@ public class Follower extends Entity {
             lastX = hitBox.x;
         }
 
-        if ((distance > teleportDist && !player.isInAir()) || distance > teleportDist * 3 || stuckTick >= STUCK_THRESHOLD) {
+        if ((distToPlayer > teleportDist && !player.isInAir()) || distToPlayer > teleportDist * 3 || stuckTick >= STUCK_THRESHOLD) {
             teleportToPlayer(player);
             return;
         }
@@ -181,12 +216,10 @@ public class Follower extends Entity {
             }
 
             if (hazardDetected) {
-                // STOP! Dont run into the hazard.
+                // STOP! Dont run into the hazard
                 xSpeed = 0;
 
-                // Throttled Brain: Only calculate heavy physics every ~0.075s
                 if (jumpDecisionTick <= 0) {
-
                     // Strategy 1 - Math
                     // If a standard jump can clear the gap safely based on gravity/speed
                     double calculatedJumpSpeed = calculateAdaptiveJump(levelData);
@@ -220,6 +253,7 @@ public class Follower extends Entity {
                             if (crumb.isHighJump()) {
                                 this.airSpeed = jumpSpeed * 1.35;
                             }
+
                         }
                         else {
                             // All strategies failed. Stand still and wait for teleport/player
@@ -256,6 +290,34 @@ public class Follower extends Entity {
             animIndex = 0;
             animTick = 0;
         }
+    }
+
+    private void updateAnimation() {
+        animTick++;
+        if (animTick >= animSpeed) {
+            animTick = 0;
+            animIndex++;
+            if (isAttacking && animIndex == 2 && behavior != null) {
+                updateAttackBox();
+                behavior.onAttackFrame(this, enemyContext);
+            }
+
+            BufferedImage[][] anims = SpriteManager.getInstance().getFollowerAnimations(type);
+            int maxFrames = (anims != null && entityState.ordinal() < anims.length) ? anims[entityState.ordinal()].length : 1;
+            if (animIndex >= maxFrames) {
+                animIndex = 0;
+                if (isAttacking) {
+                    isAttacking = false;
+                    entityState = Anim.IDLE;
+                }
+            }
+        }
+    }
+
+    private void updateAttackBox() {
+        if (flipSign == 1) attackBox.x = hitBox.x + hitBox.width;
+        else attackBox.x = hitBox.x - attackBox.width;
+        attackBox.y = hitBox.y;
     }
 
     private void teleportToPlayer(Player player) {
@@ -423,9 +485,7 @@ public class Follower extends Entity {
 
             // Wall Check
             double leadingEdgeX = (vx > 0) ? simX + hitBox.width : simX;
-            if (CollisionDetector.isSolid(leadingEdgeX, simY + hitBox.height / 2, levelData)) {
-                return false;
-            }
+            if (CollisionDetector.isSolid(leadingEdgeX, simY + hitBox.height / 2, levelData)) return false;
 
             // Hazard Check (Paranoid)
             Rectangle2D.Double bodyBox = new Rectangle2D.Double(simX, simY, hitBox.width, hitBox.height);
@@ -455,19 +515,39 @@ public class Follower extends Entity {
         return false;
     }
 
-    private void updateAnimation() {
-        animTick++;
-        if (animTick >= animSpeed) {
-            animTick = 0;
-            animIndex++;
-            BufferedImage[][] anims = SpriteManager.getInstance().getFollowerAnimations(type);
-            int maxFrames = (anims != null && entityState.ordinal() < anims.length) ? anims[entityState.ordinal()].length : 1;
-            if (animIndex >= maxFrames) {
-                animIndex = 0;
-            }
+    // Strategy Accessors
+    public void setMoveTarget(double x) {
+        this.targetX = x;
+    }
+
+    public void requestAttack() {
+        this.attackRequested = true;
+    }
+
+    public boolean isBusy() {
+        return isJumpOverride || isAttacking;
+    }
+
+    public void setPushDirection(Direction direction) {
+        super.setPushDirection(direction);
+    }
+
+    public void setEnemyActionNoReset(Anim anim) {
+        this.entityState = anim;
+    }
+
+    public void setDirection(Direction direction) {
+        if (direction == Direction.RIGHT) {
+            this.flipCoefficient = 0;
+            this.flipSign = 1;
+        }
+        else if (direction == Direction.LEFT) {
+            this.flipCoefficient = width;
+            this.flipSign = -1;
         }
     }
 
+    // Render
     public void render(Graphics g, int xLvlOffset, int yLvlOffset) {
         BufferedImage[][] anims = SpriteManager.getInstance().getFollowerAnimations(type);
         if (anims == null) return;
@@ -481,7 +561,8 @@ public class Follower extends Entity {
             g.drawImage(anims[stateIdx][idx], x, y, width * flipSign, height, null);
         }
 
-        renderHitBox(g, xLvlOffset, yLvlOffset, Color.CYAN);
+        hitBoxRenderer(g, xLvlOffset, yLvlOffset, Color.CYAN);
+        attackBoxRenderer(g, xLvlOffset, yLvlOffset);
     }
 
     @Override
@@ -490,5 +571,17 @@ public class Follower extends Entity {
     }
 
     @Override
-    public void attackBoxRenderer(Graphics g, int xLevelOffset, int yLevelOffset) {}
+    public void attackBoxRenderer(Graphics g, int xLevelOffset, int yLevelOffset) {
+        if (isAttacking) renderAttackBox(g, xLevelOffset, yLevelOffset);
+    }
+
+    // Fallback behavior
+    private static class PassiveBehavior implements FollowerBehavior {
+        @Override
+        public void update(Follower host, Player player, int[][] levelData, List<Enemy> enemies) {
+            host.setMoveTarget(player.getHitBox().x);
+        }
+        @Override
+        public void onAttackFrame(Follower host, List<Enemy> enemies) {}
+    }
 }

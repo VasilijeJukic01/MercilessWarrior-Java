@@ -322,11 +322,15 @@ public class SpriteManager {
     }
 
     private void loadAnitaFollower() {
-        BufferedImage[][] anim = new BufferedImage[5][];
+        BufferedImage[][] anim = new BufferedImage[25][];
         anim[Anim.IDLE.ordinal()] = loadFromSprite(ANITA_FOLLOWER_SHEET, 8, 0, FLW_WIDTH, FLW_HEIGHT, 0, ANITA_FOLLOWER_W, ANITA_FOLLOWER_H);
         anim[Anim.RUN.ordinal()] = loadFromSprite(ANITA_FOLLOWER_SHEET, 8, 1, FLW_WIDTH, FLW_HEIGHT, 0, ANITA_FOLLOWER_W, ANITA_FOLLOWER_H);
         anim[Anim.JUMP.ordinal()] = loadFromSprite(ANITA_FOLLOWER_SHEET, 3, 2, FLW_WIDTH, FLW_HEIGHT, 0, ANITA_FOLLOWER_W, ANITA_FOLLOWER_H);
         anim[Anim.FALL.ordinal()] = loadFromSprite(ANITA_FOLLOWER_SHEET, 3, 3, FLW_WIDTH, FLW_HEIGHT, 0, ANITA_FOLLOWER_W, ANITA_FOLLOWER_H);
+
+        anim[Anim.ATTACK_1.ordinal()] = loadFromSprite(ANITA_FOLLOWER_SHEET, 5, 9, FLW_WIDTH, FLW_HEIGHT, 0, ANITA_FOLLOWER_W, ANITA_FOLLOWER_H);
+        anim[Anim.ATTACK_2.ordinal()] = loadFromSprite(ANITA_FOLLOWER_SHEET, 7, 10, FLW_WIDTH, FLW_HEIGHT, 0, ANITA_FOLLOWER_W, ANITA_FOLLOWER_H);
+        anim[Anim.SPELL_1.ordinal()]  = loadFromSprite(ANITA_FOLLOWER_SHEET, 17, 11, FLW_WIDTH, FLW_HEIGHT, 0, ANITA_FOLLOWER_W, ANITA_FOLLOWER_H);
 
         followerAnimations.put(NpcType.ANITA, anim);
     }
