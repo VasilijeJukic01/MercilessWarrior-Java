@@ -111,6 +111,12 @@ public class ObjectManager {
             }
         }
 
+        if (newIntersection == null && activeFollower != null) {
+            if (activeFollower.getHitBox().intersects(player.getHitBox()) && activeFollower.isKnockedDown()) {
+                newIntersection = activeFollower;
+            }
+        }
+
         if (newIntersection != intersection) {
             if (intersection != null) intersection.onExit(player);
             if (newIntersection != null) newIntersection.onEnter(player);

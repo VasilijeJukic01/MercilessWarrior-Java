@@ -2,6 +2,7 @@ package platformer.model.entities.follower;
 
 import platformer.animation.Anim;
 import platformer.animation.SpriteManager;
+import platformer.audio.Audio;
 import platformer.model.effects.EffectManager;
 import platformer.model.effects.particles.DustType;
 import platformer.model.entities.Direction;
@@ -11,6 +12,7 @@ import platformer.model.entities.follower.behavior.AnitaBehavior;
 import platformer.model.entities.follower.behavior.FollowerBehavior;
 import platformer.model.entities.player.Player;
 import platformer.model.entities.player.PlayerAction;
+import platformer.model.gameObjects.Interactable;
 import platformer.model.gameObjects.ObjectManager;
 import platformer.model.gameObjects.npc.NpcType;
 import platformer.physics.CollisionDetector;
@@ -23,7 +25,6 @@ import java.util.List;
 
 import static platformer.constants.Constants.*;
 import static platformer.physics.CollisionDetector.canMoveHere;
-import static platformer.physics.CollisionDetector.isEntityOnFloor;
 
 /**
  * Represents an intelligent NPC follower that tracks the player.
@@ -37,11 +38,12 @@ import static platformer.physics.CollisionDetector.isEntityOnFloor;
  * </ol>
  * This entity acts as the Body, handling physics and execution. The decision-making (Targeting, Combat) is delegated to a {@link FollowerBehavior} instance.
  */
-public class Follower extends Entity {
+public class Follower extends Entity implements Interactable {
 
     private final NpcType type;
     private final EffectManager effectManager;
     private final ObjectManager objectManager;
+    private int[][] currentLevelData;
 
     // Settings
     private final int animSpeed = 25;
@@ -85,6 +87,18 @@ public class Follower extends Entity {
     private double targetX;
     private boolean attackRequested;
     private List<Enemy> enemyContext;
+    private boolean isKnockedDown = false;
+
+    // Poise = how much damage can take while attacking before flinching
+    private int currentPoise = 0;
+    private final int MAX_POISE = 50;
+
+    // Stunlock prevention
+    private int consecutiveStuns = 0;
+    private int panicTimer = 0;
+    private int iFrameTick = 0;
+    private final int IFRAME_THRESHOLD = 80;
+    private final double DEATH_HITBOX_EXPANSION = 35 * SCALE;
 
     public Follower(int x, int y, NpcType type, EffectManager effectManager, ObjectManager objectManager) {
         super(x, y, FLW_WIDTH, FLW_HEIGHT, 100);
@@ -100,6 +114,7 @@ public class Follower extends Entity {
 
         if (type == NpcType.ANITA) this.behavior = new AnitaBehavior();
         else this.behavior = new PassiveBehavior();
+        this.currentPoise = MAX_POISE;
     }
 
     private void initAttackBox() {
@@ -107,14 +122,52 @@ public class Follower extends Entity {
     }
 
     public void update(int[][] levelData, Player player, List<Enemy> enemies) {
+        this.currentLevelData = levelData;
         this.enemyContext = enemies;
+        if (iFrameTick > 0) iFrameTick--;
+
+        if (currentPoise < MAX_POISE && iFrameTick == 0) {
+            currentPoise++;
+        }
+
+        if (panicTimer > 0) {
+            panicTimer--;
+            performPanicRetreat(levelData, player);
+            updatePushOffset();
+            updateAnimation();
+            if (!CollisionDetector.isEntityOnFloor(hitBox, levelData)) inAir = true;
+            if (inAir) updateInAir(levelData, gravity, collisionFallSpeed);
+            return;
+        }
+
+        // TODO: This should be here for now
+        // updatePushOffset();
+
+        if (entityState == Anim.HIT) {
+            pushBack(pushDirection, levelData, 0.15, 1.5);
+            updateAnimation();
+            if (animIndex >= SpriteManager.getInstance().getFollowerAnimations(type)[Anim.HIT.ordinal()].length - 1) {
+                entityState = Anim.IDLE;
+            }
+
+            if (!CollisionDetector.isEntityOnFloor(hitBox, levelData)) inAir = true;
+            if (inAir) updateInAir(levelData, gravity, collisionFallSpeed);
+            return;
+        }
+
+        if (isKnockedDown) {
+            if (!CollisionDetector.isEntityOnFloor(hitBox, levelData)) inAir = true;
+            if (inAir) updateInAir(levelData, gravity, collisionFallSpeed);
+            updateAnimation();
+            return;
+        }
 
         behavior.update(this, player, levelData, enemies);
         trackPlayerJumps(player);
         updateMovement(levelData, player, targetX);
         updateAnimation();
 
-        if (!isEntityOnFloor(hitBox, levelData)) inAir = true;
+        if (!CollisionDetector.isEntityOnFloor(hitBox, levelData)) inAir = true;
         if (inAir) updateInAir(levelData, gravity, collisionFallSpeed);
     }
 
@@ -150,6 +203,8 @@ public class Follower extends Entity {
             entityState = (airSpeed < 0) ? Anim.JUMP : Anim.FALL;
             return;
         }
+
+        if (entityState == Anim.HIT) return;
 
         double dx = targetX - hitBox.x;
         double distToPlayer = Math.sqrt(Math.pow(player.getHitBox().x - hitBox.x, 2) + Math.pow(player.getHitBox().y - hitBox.y, 2));
@@ -228,7 +283,7 @@ public class Follower extends Entity {
                         overrideSpeedX = calculatedJumpSpeed;
                         jump();
                     }
-                    // Strategy 2: Breadcrumb
+                    // Strategy 2 - Breadcrumb
                     // If math failed, check if the player performed a jump nearby recently
                     else {
                         JumpSnapshot crumb = getNearestJumpSnapshot(player);
@@ -285,7 +340,7 @@ public class Follower extends Entity {
         }
         else nextAnim = isMoving ? Anim.RUN : Anim.IDLE;
 
-        if (nextAnim != entityState) {
+        if (entityState != Anim.HIT && entityState != Anim.DEATH && nextAnim != entityState) {
             entityState = nextAnim;
             animIndex = 0;
             animTick = 0;
@@ -297,6 +352,8 @@ public class Follower extends Entity {
         if (animTick >= animSpeed) {
             animTick = 0;
             animIndex++;
+
+            // Handle Attack Frame Events
             if (isAttacking && animIndex == 2 && behavior != null) {
                 updateAttackBox();
                 behavior.onAttackFrame(this, enemyContext);
@@ -304,11 +361,23 @@ public class Follower extends Entity {
 
             BufferedImage[][] anims = SpriteManager.getInstance().getFollowerAnimations(type);
             int maxFrames = (anims != null && entityState.ordinal() < anims.length) ? anims[entityState.ordinal()].length : 1;
+
             if (animIndex >= maxFrames) {
-                animIndex = 0;
-                if (isAttacking) {
-                    isAttacking = false;
-                    entityState = Anim.IDLE;
+                if (isKnockedDown) {
+                    // Stay on last frame of death
+                    animIndex = maxFrames - 1;
+                }
+                else {
+                    animIndex = 0;
+                    // If Hit animation finishes -> go back to Idle
+                    if (entityState == Anim.HIT) {
+                        entityState = Anim.IDLE;
+                    }
+                    // If Attack finishes -> go back to Idle
+                    else if (isAttacking) {
+                        isAttacking = false;
+                        entityState = Anim.IDLE;
+                    }
                 }
             }
         }
@@ -515,6 +584,95 @@ public class Follower extends Entity {
         return false;
     }
 
+    private void performPanicRetreat(int[][] levelData, Player player) {
+        isAttacking = false;
+        attackRequested = false;
+
+        // Run towards player to reset position
+        double dx = player.getHitBox().x - hitBox.x;
+        int direction = (dx > 0) ? 1 : -1;
+        setDirection(direction == 1 ? Direction.RIGHT : Direction.LEFT);
+
+        // Move fast
+        double panicSpeed = walkSpeed * 1.5;
+        if (CollisionDetector.canMoveHere(hitBox.x + (panicSpeed * direction), hitBox.y, hitBox.width, hitBox.height, levelData)) {
+            hitBox.x += panicSpeed * direction;
+            entityState = Anim.RUN;
+        }
+    }
+
+    public void hit(double damage, Entity attacker) {
+        if (isKnockedDown) return;
+        if (iFrameTick > 0) return;
+
+        currentHealth -= damage;
+        Audio.getInstance().getAudioPlayer().playHitSound();
+        iFrameTick = IFRAME_THRESHOLD;
+
+        // If attacking, damage reduces poise instead of stun
+        if (isAttacking && currentPoise > 0) {
+            currentPoise -= damage;
+
+            if (attacker != null) {
+                if (attacker.getHitBox().x < this.hitBox.x) this.pushDirection = Direction.RIGHT;
+                else this.pushDirection = Direction.LEFT;
+                pushBack(pushDirection, currentLevelData, 0.5, 0.5);
+            }
+            return;
+        }
+
+        consecutiveStuns++;
+
+        // If stunned 3 times in a row, trigger panic
+        if (consecutiveStuns >= 3) {
+            panicTimer = 150;
+            consecutiveStuns = 0;
+            currentPoise = MAX_POISE;
+        }
+
+        if (currentHealth <= 0) knockDown();
+        else {
+            entityState = Anim.HIT;
+            animIndex = 0;
+            animTick = 0;
+            currentPoise = 0;
+
+            isAttacking = false;
+            attackRequested = false;
+            isMoving = false;
+            isJumpOverride = false;
+
+            if (attacker != null) {
+                if (attacker.getHitBox().x < this.hitBox.x) {
+                    this.pushDirection = Direction.RIGHT;
+                }
+                else this.pushDirection = Direction.LEFT;
+            }
+            pushOffsetDirection = Direction.DOWN;
+            pushOffset = 0;
+        }
+    }
+
+    private void knockDown() {
+        currentHealth = 0;
+        isKnockedDown = true;
+        entityState = Anim.DEATH;
+        animIndex = 0;
+        animTick = 0;
+        isMoving = false;
+        isJumpOverride = false;
+        isAttacking = false;
+
+        hitBox.y += (FOLLOWER_HB_HEI / 2.0);
+        hitBox.height = FOLLOWER_HB_HEI / 2.0;
+
+        if (flipSign == 1) {
+            hitBox.x -= DEATH_HITBOX_EXPANSION;
+            hitBox.width = FOLLOWER_HB_WID + DEATH_HITBOX_EXPANSION;
+        }
+        else hitBox.width = FOLLOWER_HB_WID + DEATH_HITBOX_EXPANSION;
+    }
+
     // Strategy Accessors
     public void setMoveTarget(double x) {
         this.targetX = x;
@@ -547,13 +705,44 @@ public class Follower extends Entity {
         }
     }
 
+    public boolean isKnockedDown() {
+        return isKnockedDown;
+    }
+
+    public void revive() {
+        if (!isKnockedDown) return;
+        isKnockedDown = false;
+        currentHealth = maxHealth;
+        entityState = Anim.IDLE;
+        animIndex = 0;
+        inAir = true;
+        airSpeed = -1.0 * SCALE;
+
+        if (flipSign == 1) {
+            hitBox.x += DEATH_HITBOX_EXPANSION;
+        }
+        hitBox.width = FOLLOWER_HB_WID;
+        hitBox.y -= (FOLLOWER_HB_HEI / 2.0);
+        hitBox.height = FOLLOWER_HB_HEI;
+    }
+
     // Render
     public void render(Graphics g, int xLvlOffset, int yLvlOffset) {
         BufferedImage[][] anims = SpriteManager.getInstance().getFollowerAnimations(type);
         if (anims == null) return;
 
-        int x = (int)hitBox.x - FOLLOWER_X_OFFSET - xLvlOffset + flipCoefficient;
-        int y = (int)hitBox.y - FOLLOWER_Y_OFFSET - yLvlOffset;
+        double drawX = hitBox.x;
+        double drawY = hitBox.y;
+
+        if (entityState == Anim.DEATH) {
+            // Undoing the physical hitbox shift for the visual
+            if (flipSign == 1) drawX += DEATH_HITBOX_EXPANSION;
+            drawY -= (FOLLOWER_HB_HEI / 2.0);
+            drawX += (-6 * SCALE) * flipSign;
+        }
+
+        int x = (int)drawX - FOLLOWER_X_OFFSET - xLvlOffset + flipCoefficient;
+        int y = (int)drawY - FOLLOWER_Y_OFFSET - yLvlOffset;
 
         int stateIdx = entityState.ordinal();
         if (stateIdx < anims.length && anims[stateIdx] != null) {
@@ -572,7 +761,29 @@ public class Follower extends Entity {
 
     @Override
     public void attackBoxRenderer(Graphics g, int xLevelOffset, int yLevelOffset) {
-        if (isAttacking) renderAttackBox(g, xLevelOffset, yLevelOffset);
+        renderAttackBox(g, xLevelOffset, yLevelOffset);
+    }
+
+    // Interactable
+    @Override
+    public void onEnter(Player player) {
+
+    }
+
+    @Override
+    public void onIntersect(Player player) {
+
+    }
+
+    @Override
+    public void onExit(Player player) {
+
+    }
+
+    @Override
+    public String getInteractionPrompt() {
+        if (isKnockedDown) return "Revive";
+        return null;
     }
 
     // Fallback behavior

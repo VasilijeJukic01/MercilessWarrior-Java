@@ -8,6 +8,7 @@ import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
 import platformer.event.EventBus;
 import platformer.event.events.ui.OverlayChangeEvent;
+import platformer.model.entities.follower.Follower;
 import platformer.model.entities.player.Player;
 import platformer.model.entities.player.PlayerAction;
 import platformer.model.gameObjects.GameObject;
@@ -212,6 +213,13 @@ public class GameStateController {
         else if (Objects.equals(id, "Herb")) {
             GameObject herb = context.getObjectManager().getIntersection();
             if (herb instanceof Herb) context.getObjectManager().harvestHerb((Herb)herb);
+        }
+        else if (Objects.equals(id, "Revive")) {
+            Follower follower = context.getObjectManager().getActiveFollower();
+            if (follower != null) {
+                follower.revive();
+                context.getObjectManager().setIntersection(null);
+            }
         }
         else activateDialogue(id);
     }

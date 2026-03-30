@@ -16,7 +16,7 @@ public class AnitaBehavior implements FollowerBehavior {
 
     private final int AGGRO_RANGE = TILES_SIZE * 5;
     private final int ATTACK_RANGE = (int)(TILES_SIZE * 1.5);
-    private final int COOLDOWN_TIME = 200;
+    private final int COOLDOWN_TIME = 260;
 
     // State
     private Enemy currentTarget;
@@ -28,25 +28,31 @@ public class AnitaBehavior implements FollowerBehavior {
         if (cooldownTick > 0) {
             cooldownTick--;
             // Retreat to player
-            host.setMoveTarget(player.getHitBox().x);
+            host.setMoveTarget(host.getHitBox().x);
+
+            if (currentTarget != null && currentTarget.isAlive()) {
+                if (currentTarget.getHitBox().x > host.getHitBox().x) host.setDirection(Direction.RIGHT);
+                else host.setDirection(Direction.LEFT);
+            }
             return;
         }
 
         if (host.isBusy()) return;
-        if (currentTarget == null || !currentTarget.isAlive()) {
+        if (currentTarget == null || !currentTarget.isAlive() || Math.abs(currentTarget.getHitBox().x - host.getHitBox().x) > AGGRO_RANGE * 1.5) {
             currentTarget = findBestTarget(host, player, enemies, levelData);
         }
 
         // Fight
         if (currentTarget != null) {
             double dist = Math.abs(currentTarget.getHitBox().x - host.getHitBox().x);
+            // Face target
             if (currentTarget.getHitBox().x > host.getHitBox().x) host.setDirection(Direction.RIGHT);
             else host.setDirection(Direction.LEFT);
             if (dist <= ATTACK_RANGE) {
                 host.setMoveTarget(host.getHitBox().x);
                 host.requestAttack();
                 setRandomAttackAnim(host);
-                cooldownTick = COOLDOWN_TIME;
+                cooldownTick = COOLDOWN_TIME + rand.nextInt(65);
             }
             // Chase Enemy
             else host.setMoveTarget(currentTarget.getHitBox().x);
@@ -63,11 +69,14 @@ public class AnitaBehavior implements FollowerBehavior {
 
         for (Enemy e : enemies) {
             if (e.isAlive() && e.getEnemyAction() != Anim.DEATH && host.getAttackBox().intersects(e.getHitBox())) {
+                if (e.getEnemyAction() == Anim.BLOCK) continue;
                 e.hit(1, false, true);
+
+                // Pushback
                 if (e.getHitBox().x > host.getHitBox().x) e.setPushDirection(Direction.RIGHT);
                 else e.setPushDirection(Direction.LEFT);
 
-                if (isWindAttack) e.freeze(100);
+                if (isWindAttack) e.freeze(40);
             }
         }
     }

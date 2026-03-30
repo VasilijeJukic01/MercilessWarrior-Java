@@ -6,12 +6,14 @@ import platformer.debug.Debug;
 import platformer.model.entities.Cooldown;
 import platformer.model.entities.Direction;
 import platformer.model.entities.Entity;
+import platformer.model.entities.follower.Follower;
 import platformer.model.entities.player.Player;
 import platformer.model.entities.player.PlayerAction;
 import platformer.physics.DamageSource;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
+import java.util.Random;
 
 import static platformer.constants.Constants.*;
 import static platformer.physics.CollisionDetector.isSightClear;
@@ -30,6 +32,7 @@ public abstract class Enemy extends Entity implements DamageSource, Debug<Graphi
     protected boolean alive = true;
     private boolean criticalHit;
     protected int freezeTick = 0;
+    protected Random rand = new Random();
 
     public Enemy(int xPos, int yPos, int width, int height, EnemyType enemyType, int animSpeed) {
         super(xPos, yPos, width, height);
@@ -37,6 +40,7 @@ public abstract class Enemy extends Entity implements DamageSource, Debug<Graphi
         this.animSpeed = this.originalAnimSpeed = animSpeed;
         this.maxHealth = enemyType.getHealth();
         this.currentHealth = maxHealth;
+        this.cooldown = new double[Cooldown.values().length];
     }
 
     /**
@@ -63,19 +67,28 @@ public abstract class Enemy extends Entity implements DamageSource, Debug<Graphi
     private void finishAnimation() {
         animIndex = 0;
         if (enemyType == EnemyType.GHOUL && entityState == Anim.ATTACK_1){
-            cooldown[Cooldown.ATTACK.ordinal()] = GHOUL_ATT_CD;
+            cooldown[Cooldown.ATTACK.ordinal()] = 8 + rand.nextDouble() * 4;
             entityState = Anim.IDLE;
         }
         else if (entityState == Anim.ATTACK_1 || entityState == Anim.ATTACK_2 || entityState == Anim.HIT || entityState == Anim.BLOCK || entityState == Anim.REVEAL) {
+            if (isAttacking()) {
+                cooldown[Cooldown.ATTACK.ordinal()] = 2.8 + rand.nextDouble() * 1.5;
+            }
             entityState = Anim.IDLE;
         }
         else if (entityState == Anim.HIDE) entityState = Anim.REVEAL;
         else if (entityState == Anim.DEATH) alive = false;
     }
 
-    // Targeting Player
+    // Targeting
     protected Entity getCloseTarget(Player player, Entity follower) {
         if (follower == null) return player;
+        if (follower instanceof Follower) {
+            Follower f = (Follower) follower;
+            if (f.isKnockedDown()) {
+                return player;
+            }
+        }
 
         double distToPlayer = Math.abs(player.getHitBox().x - hitBox.x);
         double distToFollower = Math.abs(follower.getHitBox().x - hitBox.x);
@@ -134,6 +147,11 @@ public abstract class Enemy extends Entity implements DamageSource, Debug<Graphi
                 Player player = (Player) target;
                 boolean canBlock = player.checkAction(PlayerAction.CAN_BLOCK);
                 if (!canBlock) player.changeHealth(-enemyType.getDamage(), this);
+            }
+            else if (target instanceof Follower) {
+                Follower follower = (Follower) target;
+                if (follower.isKnockedDown()) return;
+                follower.hit(enemyType.getDamage(), this);
             }
         }
         else if (enemyType == EnemyType.GHOUL || enemyType == EnemyType.LANCER) return;

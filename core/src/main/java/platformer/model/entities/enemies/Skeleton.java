@@ -3,6 +3,7 @@ package platformer.model.entities.enemies;
 import platformer.animation.Anim;
 import platformer.audio.Audio;
 import platformer.audio.types.Sound;
+import platformer.model.entities.Cooldown;
 import platformer.model.entities.Direction;
 import platformer.model.entities.Entity;
 import platformer.model.entities.player.Player;
@@ -110,9 +111,9 @@ public class Skeleton extends Enemy {
 
     private void moveAction(int[][] levelData, Entity entity) {
         if (canSeeEntity(levelData, entity)) directToEntity(entity);
-        if (canSeeEntity(levelData, entity) && isEntityCloseForAttack(entity)) {
+        if (canSeeEntity(levelData, entity) && isEntityCloseForAttack(entity) && cooldown[Cooldown.ATTACK.ordinal()] == 0) {
             setEnemyAction(Anim.ATTACK_1);
-            animSpeed = 23;
+            animSpeed = 20 + new Random().nextInt(15);
         }
         double enemyXSpeed = (direction == Direction.LEFT) ? -enemySpeed : enemySpeed;
         if (canMoveHere(hitBox.x + enemyXSpeed, hitBox.y, hitBox.width, hitBox.height, levelData)) {
