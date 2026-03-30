@@ -2,7 +2,6 @@ package platformer.model.entities.follower;
 
 import platformer.animation.Anim;
 import platformer.animation.SpriteManager;
-import platformer.audio.Audio;
 import platformer.model.effects.EffectManager;
 import platformer.model.effects.particles.DustType;
 import platformer.model.entities.Direction;
@@ -11,7 +10,6 @@ import platformer.model.entities.enemies.Enemy;
 import platformer.model.entities.follower.behavior.AnitaBehavior;
 import platformer.model.entities.follower.behavior.FollowerBehavior;
 import platformer.model.entities.player.Player;
-import platformer.model.entities.player.PlayerAction;
 import platformer.model.gameObjects.Interactable;
 import platformer.model.gameObjects.ObjectManager;
 import platformer.model.gameObjects.npc.NpcType;
@@ -20,7 +18,6 @@ import platformer.physics.CollisionDetector;
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
 import java.util.List;
 
 import static platformer.constants.Constants.*;
@@ -43,7 +40,15 @@ public class Follower extends Entity implements Interactable {
     private final NpcType type;
     private final EffectManager effectManager;
     private final ObjectManager objectManager;
+
+    // Components
+    private final FollowerBehavior behavior;
+    private final JumpHistoryTracker jumpTracker;
+    private final TrajectoryCalculator trajectoryCalculator;
+    private final FollowerCombatManager combatManager;
+
     private int[][] currentLevelData;
+    private List<Enemy> enemyContext;
 
     // Settings
     private final int animSpeed = 25;
@@ -65,14 +70,7 @@ public class Follower extends Entity implements Interactable {
      * The calculated horizontal velocity required to complete the current smart jump.
      */
     private double overrideSpeedX = 0;
-
-    private final int MAX_JUMP_DIST_TILES = 7;
-    private final int MIN_JUMP_DIST_TILES = 2;
     private int jumpDecisionTick = 0;
-
-    // Breadcrumb System
-    private final List<JumpSnapshot> jumpHistory = new ArrayList<>();
-    private JumpSnapshot tempJump = null;
 
     private boolean isMoving = false;
 
@@ -81,24 +79,10 @@ public class Follower extends Entity implements Interactable {
     private int stuckTick = 0;
     private final int STUCK_THRESHOLD = 200;
 
-    // AI & Combat State
-    private final FollowerBehavior behavior;
+    // AI State
     private boolean isAttacking = false;
     private double targetX;
     private boolean attackRequested;
-    private List<Enemy> enemyContext;
-    private boolean isKnockedDown = false;
-
-    // Poise = how much damage can take while attacking before flinching
-    private int currentPoise = 0;
-    private final int MAX_POISE = 50;
-
-    // Stunlock prevention
-    private int consecutiveStuns = 0;
-    private int panicTimer = 0;
-    private int iFrameTick = 0;
-    private final int IFRAME_THRESHOLD = 80;
-    private final double DEATH_HITBOX_EXPANSION = 35 * SCALE;
 
     public Follower(int x, int y, NpcType type, EffectManager effectManager, ObjectManager objectManager) {
         super(x, y, FLW_WIDTH, FLW_HEIGHT, 100);
@@ -112,9 +96,10 @@ public class Follower extends Entity implements Interactable {
         this.flipSign = 1;
         this.flipCoefficient = 0;
 
-        if (type == NpcType.ANITA) this.behavior = new AnitaBehavior();
-        else this.behavior = new PassiveBehavior();
-        this.currentPoise = MAX_POISE;
+        this.behavior = (type == NpcType.ANITA) ? new AnitaBehavior() : new PassiveBehavior();
+        this.jumpTracker = new JumpHistoryTracker();
+        this.trajectoryCalculator = new TrajectoryCalculator(objectManager, gravity, jumpSpeed, walkSpeed);
+        this.combatManager = new FollowerCombatManager(this);
     }
 
     private void initAttackBox() {
@@ -124,51 +109,28 @@ public class Follower extends Entity implements Interactable {
     public void update(int[][] levelData, Player player, List<Enemy> enemies) {
         this.currentLevelData = levelData;
         this.enemyContext = enemies;
-        if (iFrameTick > 0) iFrameTick--;
 
-        if (currentPoise < MAX_POISE && iFrameTick == 0) {
-            currentPoise++;
-        }
-
-        if (panicTimer > 0) {
-            panicTimer--;
-            performPanicRetreat(levelData, player);
-            updatePushOffset();
-            updateAnimation();
-            if (!CollisionDetector.isEntityOnFloor(hitBox, levelData)) inAir = true;
-            if (inAir) updateInAir(levelData, gravity, collisionFallSpeed);
+        combatManager.update(levelData, player);
+        if (combatManager.isPanicking()) {
+            updatePhysics(levelData);
             return;
         }
-
-        // TODO: This should be here for now
-        // updatePushOffset();
 
         if (entityState == Anim.HIT) {
             pushBack(pushDirection, levelData, 0.15, 1.5);
-            updateAnimation();
-            if (animIndex >= SpriteManager.getInstance().getFollowerAnimations(type)[Anim.HIT.ordinal()].length - 1) {
-                entityState = Anim.IDLE;
-            }
-
-            if (!CollisionDetector.isEntityOnFloor(hitBox, levelData)) inAir = true;
-            if (inAir) updateInAir(levelData, gravity, collisionFallSpeed);
+            updatePhysics(levelData);
             return;
         }
 
-        if (isKnockedDown) {
-            if (!CollisionDetector.isEntityOnFloor(hitBox, levelData)) inAir = true;
-            if (inAir) updateInAir(levelData, gravity, collisionFallSpeed);
-            updateAnimation();
+        if (combatManager.isKnockedDown()) {
+            updatePhysics(levelData);
             return;
         }
 
         behavior.update(this, player, levelData, enemies);
-        trackPlayerJumps(player);
+        jumpTracker.updateTracking(player);
         updateMovement(levelData, player, targetX);
-        updateAnimation();
-
-        if (!CollisionDetector.isEntityOnFloor(hitBox, levelData)) inAir = true;
-        if (inAir) updateInAir(levelData, gravity, collisionFallSpeed);
+        updatePhysics(levelData);
     }
 
     /**
@@ -179,17 +141,7 @@ public class Follower extends Entity implements Interactable {
      * @param targetX   The specific X coordinate we want to move towards (Enemy or Player).
      */
     private void updateMovement(int[][] levelData, Player player, double targetX) {
-        // Handle Attack
-        if (attackRequested) {
-            isAttacking = true;
-            attackRequested = false;
-            animIndex = 0;
-            animTick = 0;
-        }
-        if (isAttacking) {
-            isMoving = false;
-            return;
-        }
+        if (handleAttackIntent()) return;
 
         // Reset Jump Override if we landed
         if (!inAir) isJumpOverride = false;
@@ -204,134 +156,162 @@ public class Follower extends Entity implements Interactable {
             return;
         }
 
-        if (entityState == Anim.HIT) return;
-
         double dx = targetX - hitBox.x;
-        double distToPlayer = Math.sqrt(Math.pow(player.getHitBox().x - hitBox.x, 2) + Math.pow(player.getHitBox().y - hitBox.y, 2));
 
         // Determine Intent (Hysteresis Thresholding)
-        int stopThreshold = (int)(20 * SCALE);
-        int startThreshold = (int)(40 * SCALE);
-        int activeThreshold = isMoving ? stopThreshold : startThreshold;
+        int activeThreshold = isMoving ? (int)(20 * SCALE) : (int)(40 * SCALE);
         boolean wantsToMove = Math.abs(dx) > activeThreshold;
 
         // Stuck & Teleport Check
+        updateStuckState(wantsToMove);
+        if (shouldTeleport(player, distTo(player))) {
+            teleportToPlayer(player);
+            return;
+        }
+
+        // Initial Movement Setup
+        double xSpeed = determineHorizontalSpeed(wantsToMove, dx);
+
+        // Hazard Awareness & Adaptive Jump
+        if (jumpDecisionTick > 0) jumpDecisionTick--;
+
+        if (isMoving && !inAir) {
+            if (isHazardAhead(xSpeed, levelData, player)) {
+                // STOP! Dont run into the hazard
+                xSpeed = 0;
+                if (jumpDecisionTick <= 0) {
+                    attemptSmartJump(levelData, player);
+                    jumpDecisionTick = 15;
+                }
+                else {
+                    // Waiting for cooldown -> stay put
+                    isMoving = false;
+                }
+            }
+        }
+        // Standard Physics Execution
+        executeStandardMovement(xSpeed, levelData);
+        determineNextAnimation();
+    }
+
+    private boolean handleAttackIntent() {
+        // Handle Attack
+        if (attackRequested) {
+            isAttacking = true;
+            attackRequested = false;
+            resetAnimState();
+        }
+        if (isAttacking) {
+            isMoving = false;
+            return true;
+        }
+        return false;
+    }
+
+    private void updateStuckState(boolean wantsToMove) {
         // If we want to move but position hasn't changed, increase stuck timer
         if (wantsToMove && Math.abs(hitBox.x - lastX) < 0.5) stuckTick++;
         else {
             stuckTick = 0;
             lastX = hitBox.x;
         }
+    }
 
-        if ((distToPlayer > teleportDist && !player.isInAir()) || distToPlayer > teleportDist * 3 || stuckTick >= STUCK_THRESHOLD) {
-            teleportToPlayer(player);
+    private boolean shouldTeleport(Player player, double distToPlayer) {
+        return (distToPlayer > teleportDist && !player.isInAir()) || distToPlayer > teleportDist * 3 || stuckTick >= STUCK_THRESHOLD;
+    }
+
+    private double determineHorizontalSpeed(boolean wantsToMove, double dx) {
+        if (!wantsToMove) {
+            isMoving = false;
+            return 0;
+        }
+        isMoving = true;
+        if (dx > 0) {
+            setDirection(Direction.RIGHT);
+            return walkSpeed;
+        }
+        else {
+            setDirection(Direction.LEFT);
+            return -walkSpeed;
+        }
+    }
+
+    private boolean isHazardAhead(double xSpeed, int[][] levelData, Player player) {
+        double lookAheadX = hitBox.x + (xSpeed * 20);
+        Rectangle2D.Double futureBody = new Rectangle2D.Double(lookAheadX, hitBox.y, hitBox.width, hitBox.height);
+
+        // A. Check for Traps in front
+        if (objectManager.isDangerous(futureBody)) return true;
+
+        // B. Check for Cliffs (Altitude Aware)
+        double feetX = (xSpeed > 0) ? lookAheadX + hitBox.width : lookAheadX;
+        double feetY = hitBox.y + hitBox.height + 5;
+
+        if (!CollisionDetector.isSolid(feetX, feetY, levelData)) {
+            // If Player is higher or level, treat any drop as a hazard to force a jump check
+            boolean playerIsHigher = player.getHitBox().y < (hitBox.y - TILES_SIZE);
+            if (playerIsHigher) return true;
+            return !trajectoryCalculator.isLandingSafe(feetX, feetY, levelData);
+        }
+        return false;
+    }
+
+    private void attemptSmartJump(int[][] levelData, Player player) {
+        // Strategy 1 - Math
+        // If a standard jump can clear the gap safely based on gravity/speed
+        double calculatedJumpSpeed = trajectoryCalculator.calculateAdaptiveJump(hitBox, flipSign, levelData);
+        if (calculatedJumpSpeed != 0) {
+            executeJump(calculatedJumpSpeed, jumpSpeed);
             return;
         }
 
-        // Initial Movement Setup
-        double xSpeed = 0;
-        if (wantsToMove) {
-            isMoving = true;
-            if (dx > 0) {
-                xSpeed = walkSpeed;
-                this.flipSign = 1;
-                this.flipCoefficient = 0;
-            }
-            else {
-                xSpeed = -walkSpeed;
-                this.flipSign = -1;
-                this.flipCoefficient = width;
-            }
+        // Strategy 2 - Breadcrumb
+        // If math failed, check if the player performed a jump nearby recently
+        JumpSnapshot crumb = jumpTracker.getNearestJumpSnapshot(player, hitBox);
+        if (crumb != null) {
+            // Snap to player's launch point for perfect arc alignment
+            hitBox.x = crumb.x();
+            hitBox.y = crumb.y();
+            this.flipSign = crumb.direction();
+
+            double mimicSpeed = crumb.speedX() * crumb.direction();
+
+            // Apply Ability Boosts
+            // If player used Dash, give NPC super-speed to clear the gap
+            if (crumb.usedDash()) mimicSpeed *= 1.7;
+            else mimicSpeed *= 1.1;
+
+            // Apply Vertical Boost if player did a High Jump
+            double vertSpeed = crumb.isHighJump() ? jumpSpeed * 1.35 : jumpSpeed;
+
+            executeJump(mimicSpeed, vertSpeed);
+        } else {
+            // All strategies failed. Stand still and wait for teleport/player
+            isMoving = false;
         }
-        else isMoving = false;
+    }
 
-        // Hazard Awareness & Adaptive Jump
-        if (jumpDecisionTick > 0) jumpDecisionTick--;
+    private void executeJump(double hSpeed, double vSpeed) {
+        isJumpOverride = true;
+        overrideSpeedX = hSpeed;
+        inAir = true;
+        airSpeed = vSpeed;
+    }
 
-        if (isMoving && !inAir) {
-            double lookAheadX = hitBox.x + (xSpeed * 20);
-            Rectangle2D.Double futureBody = new Rectangle2D.Double(lookAheadX, hitBox.y, hitBox.width, hitBox.height);
-
-            boolean hazardDetected = false;
-
-            // A. Check for Traps in front
-            if (objectManager.isDangerous(futureBody)) hazardDetected = true;
-            // B. Check for Cliffs (Altitude Aware)
-            else {
-                double feetX = (xSpeed > 0) ? lookAheadX + hitBox.width : lookAheadX;
-                double feetY = hitBox.y + hitBox.height + 5;
-
-                if (!CollisionDetector.isSolid(feetX, feetY, levelData)) {
-                    // If Player is higher or level, treat any drop as a hazard to force a jump check
-                    boolean playerIsHigher = player.getHitBox().y < (hitBox.y - TILES_SIZE);
-
-                    if (playerIsHigher) hazardDetected = true;
-                    else if (!isLandingSafe(feetX, feetY, levelData)) hazardDetected = true;
-                }
-            }
-
-            if (hazardDetected) {
-                // STOP! Dont run into the hazard
-                xSpeed = 0;
-
-                if (jumpDecisionTick <= 0) {
-                    // Strategy 1 - Math
-                    // If a standard jump can clear the gap safely based on gravity/speed
-                    double calculatedJumpSpeed = calculateAdaptiveJump(levelData);
-                    if (calculatedJumpSpeed != 0) {
-                        isJumpOverride = true;
-                        overrideSpeedX = calculatedJumpSpeed;
-                        jump();
-                    }
-                    // Strategy 2 - Breadcrumb
-                    // If math failed, check if the player performed a jump nearby recently
-                    else {
-                        JumpSnapshot crumb = getNearestJumpSnapshot(player);
-                        if (crumb != null) {
-                            // Snap to player's launch point for perfect arc alignment
-                            hitBox.x = crumb.x();
-                            hitBox.y = crumb.y();
-                            this.flipSign = crumb.direction();
-
-                            double mimicSpeed = crumb.speedX() * crumb.direction();
-
-                            // Apply Ability Boosts
-                            // If player used Dash, give NPC super-speed to clear the gap
-                            if (crumb.usedDash()) mimicSpeed *= 1.7;
-                            else mimicSpeed *= 1.1;
-
-                            this.overrideSpeedX = mimicSpeed;
-                            isJumpOverride = true;
-                            jump();
-
-                            // Apply Vertical Boost if player did a High Jump
-                            if (crumb.isHighJump()) {
-                                this.airSpeed = jumpSpeed * 1.35;
-                            }
-
-                        }
-                        else {
-                            // All strategies failed. Stand still and wait for teleport/player
-                            isMoving = false;
-                        }
-                    }
-                    jumpDecisionTick = 15;
-                }
-                else {
-                    // Waiting for cooldown, stay put
-                    isMoving = false;
-                }
-            }
-        }
-
-        // Standard Physics Execution
+    private void executeStandardMovement(double xSpeed, int[][] levelData) {
         if (isMoving && !isJumpOverride && xSpeed != 0) {
             if (canMoveHere(hitBox.x + xSpeed, hitBox.y, hitBox.width, hitBox.height, levelData)) {
                 hitBox.x += xSpeed;
             }
-            else if (!inAir && isJumpSafe()) jump();
+            else if (!inAir && isStandardJumpSafe()) {
+                inAir = true;
+                airSpeed = jumpSpeed;
+            }
         }
+    }
 
+    private void determineNextAnimation() {
         Anim nextAnim;
         if (inAir) {
             if (airSpeed < 0) nextAnim = Anim.JUMP;
@@ -342,9 +322,14 @@ public class Follower extends Entity implements Interactable {
 
         if (entityState != Anim.HIT && entityState != Anim.DEATH && nextAnim != entityState) {
             entityState = nextAnim;
-            animIndex = 0;
-            animTick = 0;
+            resetAnimState();
         }
+    }
+
+    private void updatePhysics(int[][] levelData) {
+        updateAnimation();
+        if (!CollisionDetector.isEntityOnFloor(hitBox, levelData)) inAir = true;
+        if (inAir) updateInAir(levelData, gravity, collisionFallSpeed);
     }
 
     private void updateAnimation() {
@@ -363,18 +348,13 @@ public class Follower extends Entity implements Interactable {
             int maxFrames = (anims != null && entityState.ordinal() < anims.length) ? anims[entityState.ordinal()].length : 1;
 
             if (animIndex >= maxFrames) {
-                if (isKnockedDown) {
+                if (combatManager.isKnockedDown()) {
                     // Stay on last frame of death
                     animIndex = maxFrames - 1;
-                }
-                else {
+                } else {
                     animIndex = 0;
                     // If Hit animation finishes -> go back to Idle
-                    if (entityState == Anim.HIT) {
-                        entityState = Anim.IDLE;
-                    }
-                    // If Attack finishes -> go back to Idle
-                    else if (isAttacking) {
+                    if (entityState == Anim.HIT || isAttacking) {
                         isAttacking = false;
                         entityState = Anim.IDLE;
                     }
@@ -383,10 +363,17 @@ public class Follower extends Entity implements Interactable {
         }
     }
 
-    private void updateAttackBox() {
-        if (flipSign == 1) attackBox.x = hitBox.x + hitBox.width;
-        else attackBox.x = hitBox.x - attackBox.width;
-        attackBox.y = hitBox.y;
+    /**
+     * Checks the area directly above the NPC to ensure a standard jump won't hit a ceiling hazard.
+     */
+    private boolean isStandardJumpSafe() {
+        double jumpHeight = 3 * TILES_SIZE;
+        Rectangle2D.Double ceilingCheck = new Rectangle2D.Double(hitBox.x, hitBox.y - jumpHeight, hitBox.width, jumpHeight);
+        return !objectManager.isDangerous(ceilingCheck);
+    }
+
+    public void hit(double damage, Entity attacker) {
+        combatManager.handleHit(damage, attacker, currentLevelData);
     }
 
     private void teleportToPlayer(Player player) {
@@ -403,279 +390,85 @@ public class Follower extends Entity implements Interactable {
             effectManager.spawnDustParticles(hitBox.x + hitBox.width/2, hitBox.y + hitBox.height/2, 20, DustType.SW_TELEPORT, 0, null);
     }
 
-    /**
-     * Records the player's jumping actions to build a history of successful movements.
-     * Records take-off location, speed, dash usage, and high-jump status.
-     */
-    private void trackPlayerJumps(Player player) {
-        boolean playerInAir = player.isInAir();
-
-        // A. Just Jumped
-        if (playerInAir && tempJump == null && player.getAirSpeed() < 0) {
-            double pSpeed = player.getHorizontalSpeed();
-            if (Math.abs(pSpeed) > 0.1) {
-                tempJump = new JumpSnapshot((int)player.getHitBox().x, (int)player.getHitBox().y, Math.abs(pSpeed), player.getFlipSign(), false, false);
-            }
-        }
-
-        // B. In Air (update the current recording based on player input)
-        if (playerInAir && tempJump != null) {
-            if (player.checkAction(PlayerAction.DASH)) {
-                tempJump = new JumpSnapshot(tempJump.x(), tempJump.y(), tempJump.speedX(), tempJump.direction(), true, tempJump.isHighJump());
-            }
-
-            // Detect High Jump (upward velocity persists longer than a tap jump)
-            if (player.getAirSpeed() < -2.0) {
-                tempJump = new JumpSnapshot(tempJump.x(), tempJump.y(), tempJump.speedX(), tempJump.direction(), tempJump.usedDash(), true);
-            }
-        }
-
-        // C. Land (commit to history)
-        if (!playerInAir && tempJump != null) {
-            jumpHistory.add(tempJump);
-            if (jumpHistory.size() > 5) jumpHistory.remove(0);
-            tempJump = null;
-        }
+    private void updateAttackBox() {
+        if (flipSign == 1) attackBox.x = hitBox.x + hitBox.width;
+        else attackBox.x = hitBox.x - attackBox.width;
+        attackBox.y = hitBox.y;
     }
 
-    /**
-     * Finds a recorded player jump that occurred near the NPC's current location and moving in the desired direction.
-     */
-    private JumpSnapshot getNearestJumpSnapshot(Player player) {
-        for (int i = jumpHistory.size() - 1; i >= 0; i--) {
-            JumpSnapshot s = jumpHistory.get(i);
-            if (s.isRelevant(this.hitBox)) {
-                // Ensure the jump goes in the direction we want to go
-                int directionToPlayer = (player.getHitBox().x > hitBox.x) ? 1 : -1;
-                if (s.direction() == directionToPlayer) return s;
-            }
-        }
-        return null;
+    private double distTo(Player player) {
+        return Math.sqrt(Math.pow(player.getHitBox().x - hitBox.x, 2) + Math.pow(player.getHitBox().y - hitBox.y, 2));
     }
 
-    /**
-     * Checks the area directly above the NPC to ensure a standard jump won't hit a ceiling hazard.
-     */
-    private boolean isJumpSafe() {
-        double jumpHeight = 3 * TILES_SIZE;
-        Rectangle2D.Double ceilingCheck = new Rectangle2D.Double(hitBox.x, hitBox.y - jumpHeight, hitBox.width, jumpHeight);
-        return !objectManager.isDangerous(ceilingCheck);
+    // Wrapper
+    public void executePushBack(Direction direction, int[][] levelData, double speed, double knockbackSpeed) {
+        super.pushBack(direction, levelData, speed, knockbackSpeed);
     }
 
-    private void jump() {
-        if (inAir) return;
-        inAir = true;
-        airSpeed = jumpSpeed;
+    // Getters & Setters
+    public void changeHealth(double value) {
+        currentHealth += value;
     }
 
-    /**
-     * Scans ahead for safe landing spots and calculates the exact X-velocity needed to reach them using kinematic equations.
-     *
-     * @param levelData Level collision data.
-     * @return The required X speed, or 0 if no valid path is found.
-     */
-    private double calculateAdaptiveJump(int[][] levelData) {
-        int direction = (flipSign == 1) ? 1 : -1;
-        double startX = hitBox.x;
-        double startY = hitBox.y;
-
-        double bestSpeedX = 0;
-        double bestScore = Double.MAX_VALUE;
-
-        // Check varying distances ahead
-        for (double i = MIN_JUMP_DIST_TILES; i <= MAX_JUMP_DIST_TILES; i += 1.0) {
-            double dist = i * TILES_SIZE;
-            // Aim for the center of the tile, not the edge
-            double targetX = startX + (direction * (dist + (TILES_SIZE / 2.0)));
-
-            // Manual Raycast
-            double targetY = -1;
-            int checkTileX = (int)(targetX / TILES_SIZE);
-            int startTileY = (int)((startY - (3 * TILES_SIZE)) / TILES_SIZE);
-            int maxDepthY = startTileY + 8;
-            if (checkTileX < 0 || checkTileX >= levelData.length) continue;
-
-            for (int y = startTileY; y < maxDepthY && y < levelData[0].length; y++) {
-                if (y >= 0 && CollisionDetector.isTileSolid(checkTileX, y, levelData)) {
-                    targetY = y * TILES_SIZE;
-                    break;
-                }
-            }
-
-            if (targetY == -1 || targetY > startY + 5 * TILES_SIZE) continue;
-
-            Rectangle2D.Double landingBox = new Rectangle2D.Double(targetX - hitBox.width/2, targetY - hitBox.height, hitBox.width, hitBox.height);
-            if (objectManager.isDangerous(landingBox)) continue;
-
-            // Physics: dy = vy*t + 0.5*g*t^2
-            double dy = targetY - startY;
-            double a = 0.5 * gravity;
-            double b = jumpSpeed;
-            double c = -dy;
-
-            double D = b*b - 4*a*c;
-
-            if (D >= 0) {
-                // Larger root = time when falling back down
-                double t = (-b + Math.sqrt(D)) / (2 * a);
-                if (t > 0) {
-                    double requiredSpeed = (targetX - startX) / t;
-                    // Physical limits check
-                    if (Math.abs(requiredSpeed) <= walkSpeed * 4.2) {
-                        if (isTrajectoryClear(startX, startY, requiredSpeed, t, levelData)) {
-                            // Prefer Higher Ground (smaller Y value)
-                            if (targetY < bestScore) {
-                                bestScore = targetY;
-                                bestSpeedX = requiredSpeed;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return bestSpeedX;
+    public void healFully() {
+        currentHealth = maxHealth;
     }
 
-    /**
-     * Simulates a parabolic trajectory frame-by-frame to ensure the NPC won't clip a wall or a hazard (spike) mid-jump.
-     */
-    private boolean isTrajectoryClear(double x, double y, double vx, double time, int[][] levelData) {
-        double simX = x, simY = y;
-        double simVy = jumpSpeed;
-
-        for (int i = 0; i < time; i++) {
-            // Euler Integration
-            simX += vx;
-            simY += simVy;
-            simVy += gravity;
-
-            // Skip first few frames to allow leaving the ground without triggering wall collision
-            if (i < 5) continue;
-
-            // Wall Check
-            double leadingEdgeX = (vx > 0) ? simX + hitBox.width : simX;
-            if (CollisionDetector.isSolid(leadingEdgeX, simY + hitBox.height / 2, levelData)) return false;
-
-            // Hazard Check (Paranoid)
-            Rectangle2D.Double bodyBox = new Rectangle2D.Double(simX, simY, hitBox.width, hitBox.height);
-            if (objectManager.isDangerous(bodyBox)) return false;
-
-            // Check the feet explicitly with padding (catches cases where the visual sprite barely scrapes a spike)
-            Rectangle2D.Double footBox = new Rectangle2D.Double(simX + 5, simY + hitBox.height - 5, hitBox.width - 10, 10);
-            if (objectManager.isDangerous(footBox)) return false;
-        }
-        return true;
+    public void setEntityState(Anim anim) {
+        this.entityState = anim;
     }
 
-    /**
-     * Checks if the ground below a point is solid and safe. Used to prevent walking off cliffs into spikes or void.
-     */
-    private boolean isLandingSafe(double x, double startY, int[][] levelData) {
-        int xTile = (int) (x / TILES_SIZE);
-        int yTile = (int) (startY / TILES_SIZE);
-
-        // Scan downwards for solid ground
-        for (int y = yTile; y < levelData[0].length; y++) {
-            if (CollisionDetector.isTileSolid(xTile, y, levelData)) {
-                Rectangle2D.Double tileHitbox = new Rectangle2D.Double(xTile * TILES_SIZE, y * TILES_SIZE, TILES_SIZE, TILES_SIZE);
-                return !objectManager.isDangerous(tileHitbox);
-            }
-        }
-        return false;
-    }
-
-    private void performPanicRetreat(int[][] levelData, Player player) {
-        isAttacking = false;
-        attackRequested = false;
-
-        // Run towards player to reset position
-        double dx = player.getHitBox().x - hitBox.x;
-        int direction = (dx > 0) ? 1 : -1;
-        setDirection(direction == 1 ? Direction.RIGHT : Direction.LEFT);
-
-        // Move fast
-        double panicSpeed = walkSpeed * 1.5;
-        if (CollisionDetector.canMoveHere(hitBox.x + (panicSpeed * direction), hitBox.y, hitBox.width, hitBox.height, levelData)) {
-            hitBox.x += panicSpeed * direction;
-            entityState = Anim.RUN;
-        }
-    }
-
-    public void hit(double damage, Entity attacker) {
-        if (isKnockedDown) return;
-        if (iFrameTick > 0) return;
-
-        currentHealth -= damage;
-        Audio.getInstance().getAudioPlayer().playHitSound();
-        iFrameTick = IFRAME_THRESHOLD;
-
-        // If attacking, damage reduces poise instead of stun
-        if (isAttacking && currentPoise > 0) {
-            currentPoise -= damage;
-
-            if (attacker != null) {
-                if (attacker.getHitBox().x < this.hitBox.x) this.pushDirection = Direction.RIGHT;
-                else this.pushDirection = Direction.LEFT;
-                pushBack(pushDirection, currentLevelData, 0.5, 0.5);
-            }
-            return;
-        }
-
-        consecutiveStuns++;
-
-        // If stunned 3 times in a row, trigger panic
-        if (consecutiveStuns >= 3) {
-            panicTimer = 150;
-            consecutiveStuns = 0;
-            currentPoise = MAX_POISE;
-        }
-
-        if (currentHealth <= 0) knockDown();
-        else {
-            entityState = Anim.HIT;
-            animIndex = 0;
-            animTick = 0;
-            currentPoise = 0;
-
-            isAttacking = false;
-            attackRequested = false;
-            isMoving = false;
-            isJumpOverride = false;
-
-            if (attacker != null) {
-                if (attacker.getHitBox().x < this.hitBox.x) {
-                    this.pushDirection = Direction.RIGHT;
-                }
-                else this.pushDirection = Direction.LEFT;
-            }
-            pushOffsetDirection = Direction.DOWN;
-            pushOffset = 0;
-        }
-    }
-
-    private void knockDown() {
-        currentHealth = 0;
-        isKnockedDown = true;
-        entityState = Anim.DEATH;
+    public void resetAnimState() {
         animIndex = 0;
         animTick = 0;
-        isMoving = false;
-        isJumpOverride = false;
-        isAttacking = false;
-
-        hitBox.y += (FOLLOWER_HB_HEI / 2.0);
-        hitBox.height = FOLLOWER_HB_HEI / 2.0;
-
-        if (flipSign == 1) {
-            hitBox.x -= DEATH_HITBOX_EXPANSION;
-            hitBox.width = FOLLOWER_HB_WID + DEATH_HITBOX_EXPANSION;
-        }
-        else hitBox.width = FOLLOWER_HB_WID + DEATH_HITBOX_EXPANSION;
     }
 
-    // Strategy Accessors
+    public void cancelActions() {
+        isAttacking = false;
+        attackRequested = false;
+        isMoving = false;
+        isJumpOverride = false;
+    }
+
+    public void cancelAttack() {
+        isAttacking = false;
+        attackRequested = false;
+    }
+
+    public void setPushOffsetDirection(Direction d) {
+        pushOffsetDirection = d;
+    }
+
+    public void setPushOffset(double offset) {
+        pushOffset = offset;
+    }
+
+    public void setInAir(boolean inAir) {
+        this.inAir = inAir;
+    }
+
+    public void setAirSpeed(double speed) {
+        this.airSpeed = speed;
+    }
+
+    public double getWalkSpeed() {
+        return walkSpeed;
+    }
+
     public void setMoveTarget(double x) {
         this.targetX = x;
+    }
+
+    public void setEnemyActionNoReset(Anim anim) {
+        this.entityState = anim;
+    }
+
+    public boolean isAttacking() {
+        return isAttacking;
+    }
+
+    public Direction getPushDirection() {
+        return super.pushDirection;
     }
 
     public void requestAttack() {
@@ -684,14 +477,6 @@ public class Follower extends Entity implements Interactable {
 
     public boolean isBusy() {
         return isJumpOverride || isAttacking;
-    }
-
-    public void setPushDirection(Direction direction) {
-        super.setPushDirection(direction);
-    }
-
-    public void setEnemyActionNoReset(Anim anim) {
-        this.entityState = anim;
     }
 
     public void setDirection(Direction direction) {
@@ -706,27 +491,13 @@ public class Follower extends Entity implements Interactable {
     }
 
     public boolean isKnockedDown() {
-        return isKnockedDown;
+        return combatManager.isKnockedDown();
     }
 
     public void revive() {
-        if (!isKnockedDown) return;
-        isKnockedDown = false;
-        currentHealth = maxHealth;
-        entityState = Anim.IDLE;
-        animIndex = 0;
-        inAir = true;
-        airSpeed = -1.0 * SCALE;
-
-        if (flipSign == 1) {
-            hitBox.x += DEATH_HITBOX_EXPANSION;
-        }
-        hitBox.width = FOLLOWER_HB_WID;
-        hitBox.y -= (FOLLOWER_HB_HEI / 2.0);
-        hitBox.height = FOLLOWER_HB_HEI;
+        combatManager.revive();
     }
 
-    // Render
     public void render(Graphics g, int xLvlOffset, int yLvlOffset) {
         BufferedImage[][] anims = SpriteManager.getInstance().getFollowerAnimations(type);
         if (anims == null) return;
@@ -736,7 +507,7 @@ public class Follower extends Entity implements Interactable {
 
         if (entityState == Anim.DEATH) {
             // Undoing the physical hitbox shift for the visual
-            if (flipSign == 1) drawX += DEATH_HITBOX_EXPANSION;
+            if (flipSign == 1) drawX += FollowerCombatManager.DEATH_HITBOX_EXPANSION;
             drawY -= (FOLLOWER_HB_HEI / 2.0);
             drawX += (-6 * SCALE) * flipSign;
         }
@@ -764,7 +535,6 @@ public class Follower extends Entity implements Interactable {
         renderAttackBox(g, xLevelOffset, yLevelOffset);
     }
 
-    // Interactable
     @Override
     public void onEnter(Player player) {
 
@@ -782,7 +552,7 @@ public class Follower extends Entity implements Interactable {
 
     @Override
     public String getInteractionPrompt() {
-        if (isKnockedDown) return "Revive";
+        if (combatManager.isKnockedDown()) return "Revive";
         return null;
     }
 
