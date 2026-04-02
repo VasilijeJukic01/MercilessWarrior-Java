@@ -110,6 +110,11 @@ public class Follower extends Entity implements Interactable {
         this.currentLevelData = levelData;
         this.enemyContext = enemies;
 
+        if (entityState == Anim.DEATH) {
+            updatePhysics(levelData);
+            return;
+        }
+
         combatManager.update(levelData, player);
         if (combatManager.isPanicking()) {
             updatePhysics(levelData);
@@ -348,12 +353,11 @@ public class Follower extends Entity implements Interactable {
             int maxFrames = (anims != null && entityState.ordinal() < anims.length) ? anims[entityState.ordinal()].length : 1;
 
             if (animIndex >= maxFrames) {
-                if (combatManager.isKnockedDown()) {
-                    // Stay on last frame of death
+                if (entityState == Anim.DEATH) {
                     animIndex = maxFrames - 1;
                 } else {
                     animIndex = 0;
-                    // If Hit animation finishes -> go back to Idle
+                    // If Hit or Attack animation finishes -> go back to Idle
                     if (entityState == Anim.HIT || isAttacking) {
                         isAttacking = false;
                         entityState = Anim.IDLE;

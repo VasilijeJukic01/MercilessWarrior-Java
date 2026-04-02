@@ -79,6 +79,7 @@ public class ObjectManager {
         level.gatherData();
         this.objectsMap = level.getObjectsMap();
         configureObjects();
+        configureNpcs();
     }
 
     private void configureObjects() {
@@ -92,6 +93,14 @@ public class ObjectManager {
                 shop.getShopItems().addAll(inventory);
             }
         });
+    }
+
+    private void configureNpcs() {
+        for (Npc npc : getObjects(Npc.class)) {
+            if (npc.getNpcType() == NpcType.ANITA && context.getQuestManager().isQuestActive("Helping Anita")) {
+                npc.setAlive(false);
+            }
+        }
     }
 
     // Intersection Handler
