@@ -110,8 +110,8 @@ public class LootHandler {
     private void spawnCoin(Rectangle2D.Double location, CoinType coinType) {
         int x = (int) location.getCenterX();
         int y = (int) location.y;
-        double initialYSpeed = -2.2 * SCALE - (rand.nextDouble() * 1.5 * SCALE);
-        double initialXSpeed = (rand.nextDouble() - 0.5) * (2.5 * SCALE);
+        double initialYSpeed = -2.0 * SCALE - (rand.nextDouble() * 1.5 * SCALE);
+        double initialXSpeed = (rand.nextDouble() - 0.5) * (2.0 * SCALE);
         Coin coin = new Coin(coinType, x, y, initialXSpeed, initialYSpeed);
         objectManager.addGameObject(coin);
     }
