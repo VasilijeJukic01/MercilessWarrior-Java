@@ -8,7 +8,7 @@ plugins {
 group = "com.games.mw"
 version = "1.0-SNAPSHOT"
 
-val lwjglVersion = "3.3.1"
+val lwjglVersion = "3.3.3"
 val javafxVersion = "17"
 
 java {
