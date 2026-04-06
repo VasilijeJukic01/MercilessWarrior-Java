@@ -107,29 +107,36 @@ public class ObjectManager {
     /**
      * Handles the interactions between the player and interactable objects in the game.
      * It checks if the player is intersecting with any interactable object and updates the intersection accordingly.
+     * <p>
+     *  It resolves overlapping hitboxes by prioritizing the object nearest to the player's center.
+     *  It manages the interaction lifecycle by triggering onEnter, onExit, and onIntersect events for the chosen target.
      *
      * @param player The player object that is interacting with the game world.
      */
     private void handleInteractions(Player player) {
-        Interactable newIntersection = null;
+        Interactable interactable = null;
+        double minDistance = Double.MAX_VALUE;
 
         for (GameObject obj : getAllObjects()) {
             if (obj instanceof Interactable && obj.isAlive() && obj.getHitBox().intersects(player.getHitBox())) {
-                newIntersection = (Interactable) obj;
-                break;
+                double dist = player.getHitBox().getCenterX() - obj.getHitBox().getCenterX();
+                double currentDistance = Math.abs(dist);
+                if (currentDistance < minDistance) {
+                    minDistance = currentDistance;
+                    interactable = (Interactable) obj;
+                }
             }
         }
 
-        if (newIntersection == null && activeFollower != null) {
-            if (activeFollower.getHitBox().intersects(player.getHitBox()) && activeFollower.isKnockedDown()) {
-                newIntersection = activeFollower;
-            }
+        if (activeFollower != null && activeFollower.isKnockedDown() && activeFollower.getHitBox().intersects(player.getHitBox())) {
+            double followerDist = Math.abs(player.getHitBox().getCenterX() - activeFollower.getHitBox().getCenterX());
+            if (followerDist < minDistance) interactable = activeFollower;
         }
 
-        if (newIntersection != intersection) {
+        if (interactable != intersection) {
             if (intersection != null) intersection.onExit(player);
-            if (newIntersection != null) newIntersection.onEnter(player);
-            intersection = newIntersection;
+            if (interactable != null) interactable.onEnter(player);
+            intersection = interactable;
         }
         if (intersection != null) intersection.onIntersect(player);
     }

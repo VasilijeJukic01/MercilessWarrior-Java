@@ -303,6 +303,10 @@ public final class CollisionDetector {
         int yTile = (int) (hitBox.y / TILES_SIZE);
         int xTileRight = (int) ((hitBox.x + hitBox.width) / TILES_SIZE);
 
+        if (xTile < 0 || xTile >= level.getLevelTilesWidth() ||  yTile < 0 || yTile >= level.getLevelTilesHeight() ||  xTileRight >= level.getLevelTilesWidth()) {
+            return 0;
+        }
+
         if (level.getDecoSpriteIndex(xTile, yTile) == RIGHT_EXIT || level.getDecoSpriteIndex(xTileRight, yTile) == RIGHT_EXIT) return RIGHT_EXIT;
         if (level.getDecoSpriteIndex(xTile, yTile) == LEFT_EXIT) return LEFT_EXIT;
         if (level.getDecoSpriteIndex(xTile, yTile) == UPPER_EXIT) return UPPER_EXIT;
