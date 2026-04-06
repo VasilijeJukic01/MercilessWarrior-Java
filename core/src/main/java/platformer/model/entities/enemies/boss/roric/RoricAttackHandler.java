@@ -46,7 +46,7 @@ public class RoricAttackHandler {
     // Skyfall Barrage State
     private int skyfallBeamCount = 0;
     private int skyfallBeamTimer = 0;
-    private static final int SKYFALL_BEAM_COOLDOWN = 200;
+    private static final int SKYFALL_BEAM_COOLDOWN = 140;
     private static final double PREDICTION_FACTOR = 75.0;
 
     // Celestial Rain State
@@ -649,6 +649,11 @@ public class RoricAttackHandler {
     }
 
     private void performTeleport(double newX, double newY) {
+        int[][] levelData = roric.getLevelDataForAI();
+        double minX = 3 * TILES_SIZE;
+        double maxX = (levelData.length - 4) * TILES_SIZE;
+        newX = Math.max(minX, Math.min(newX, maxX));
+
         EventBus.getInstance().publish(new RoricTeleportEvent(new Point((int) roric.getHitBox().getCenterX(), (int) roric.getHitBox().getCenterY()), false));
         roric.getHitBox().x = newX;
         roric.getHitBox().y = newY;
