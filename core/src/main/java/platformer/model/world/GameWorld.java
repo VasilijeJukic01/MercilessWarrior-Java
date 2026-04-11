@@ -11,6 +11,7 @@ import platformer.model.entities.player.Player;
 import platformer.model.gameObjects.ObjectManager;
 import platformer.model.gameObjects.npc.NpcType;
 import platformer.model.levels.LevelManager;
+import platformer.model.levels.LvlTriggerType;
 import platformer.model.levels.metadata.LevelMetadata;
 import platformer.model.projectiles.ProjectileManager;
 import platformer.model.quests.QuestManager;
@@ -53,7 +54,7 @@ public class GameWorld {
 
         this.player = new Player(PLAYER_X, PLAYER_Y, PLAYER_WIDTH, PLAYER_HEIGHT, context);
         this.player.loadLvlData(levelManager.getCurrentLevel().getLvlData());
-        this.player.setSpawn(levelManager.getCurrentLevel().getPlayerSpawn("LEFT"));
+        this.player.setSpawn(levelManager.getCurrentLevel().getPlayerSpawn(LvlTriggerType.SPAWN_A));
 
         loadStartLevel();
     }
@@ -129,7 +130,7 @@ public class GameWorld {
         reinitializeParticles();
     }
 
-    public void levelLoadReset(String spawn) {
+    public void levelLoadReset(LvlTriggerType spawn) {
         enemyManager.reset();
         objectManager.reset();
         spellManager.initBossSpells();

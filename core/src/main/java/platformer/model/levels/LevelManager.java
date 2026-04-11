@@ -112,15 +112,14 @@ public class LevelManager {
      * The Level objects are stored in a 2D array.
      */
     private void buildLevels() {
-        BufferedImage[][] levelsLayer1 = getAllLevels("1");
-        BufferedImage[][] levelsLayer2 = getAllLevels("2");
+        BufferedImage[][] levelsImg = getAllLevels();
         for (int i = 0; i < 3; i++) {
-            for (int j = 0; j < levelsLayer1.length; j++) {
-                if (levelsLayer1[i][j] != null) {
+            for (int j = 0; j < levelsImg.length; j++) {
+                if (levelsImg[i][j] != null) {
                     String levelName = "level" + i + j;
                     LevelMetadata meta = loadMetadataForLevel(levelName);
                     String tileset = (meta != null && meta.getTileset() != null) ? meta.getTileset() : "Forest";
-                    levels[i][j] = new Level(levelName, levelsLayer1[i][j], levelsLayer2[i][j], tileset);
+                    levels[i][j] = new Level(levelName, levelsImg[i][j], tileset);
                 }
             }
         }
@@ -135,26 +134,19 @@ public class LevelManager {
     private void buildArenaLevels() {
         BufferedImage arenaImg = ImageUtils.importImage(LEVEL_SPRITES.replace("$", "arena1"), -1, -1);
         if (arenaImg != null) {
-            BufferedImage arenaLayer1 = arenaImg.getSubimage(0, 0, arenaImg.getWidth()/2, arenaImg.getHeight());
-            BufferedImage arenaLayer2 = arenaImg.getSubimage(arenaImg.getWidth()/2, 0, arenaImg.getWidth()/2, arenaImg.getHeight());
-            this.arenaLevelMetadata = loadMetadataForLevel("levelarena1");
-            String tileset = (this.arenaLevelMetadata != null && this.arenaLevelMetadata.getTileset() != null) ? this.arenaLevelMetadata.getTileset() : "Forest";
-            arenaLevel = new Level("arena1", arenaLayer1, arenaLayer2, tileset);
+            arenaLevelMetadata = loadMetadataForLevel("levelarena1");
+            String tileset = (arenaLevelMetadata != null && arenaLevelMetadata.getTileset() != null) ? arenaLevelMetadata.getTileset() : "Forest";
+            arenaLevel = new Level("arena1", arenaImg, tileset);
         }
     }
 
-    private BufferedImage[][] getAllLevels(String layer) {
+    private BufferedImage[][] getAllLevels() {
         BufferedImage[][] levels = new BufferedImage[MAX_LEVELS][MAX_LEVELS];
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < levels.length; j++) {
                 BufferedImage levelImg = ImageUtils.importImage(LEVEL_SPRITES.replace("$", i+""+j), -1, -1);
                 if (levelImg == null) continue;
-                if (layer.equals("1")) {
-                    levels[i][j] = levelImg.getSubimage(0, 0, levelImg.getWidth()/2, levelImg.getHeight());
-                }
-                else {
-                    levels[i][j] = levelImg.getSubimage(levelImg.getWidth()/2, 0, levelImg.getWidth()/2, levelImg.getHeight());
-                }
+                levels[i][j] = levelImg;
             }
         }
         return levels;

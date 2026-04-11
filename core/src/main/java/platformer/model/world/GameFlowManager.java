@@ -9,14 +9,12 @@ import platformer.event.events.PreSaveEvent;
 import platformer.event.events.ui.OverlayChangeEvent;
 import platformer.model.entities.player.Player;
 import platformer.model.entities.player.PlayerAction;
-import platformer.model.levels.LevelManager;
-import platformer.model.levels.Spawn;
+import platformer.model.levels.*;
 import platformer.state.types.GameState;
 import platformer.state.types.PlayingState;
 import platformer.ui.transition.TransitionDirection;
 
-import static platformer.constants.Constants.*;
-import static platformer.physics.CollisionDetector.isEntityOnExit;
+import java.util.List;
 
 /**
  * Manages high-level game flow, such as level transitions and player death.
@@ -55,18 +53,32 @@ public class GameFlowManager {
     }
 
     /**
-     * Checks if the player's hitbox intersects with any of the level's exit tiles.
-     * If an intersection is found, it calls {@link #goToLevel} to handle the transition.
+     * Scans the current level's spatial triggers to see if the player has entered a level transition zone.
+     * If an intersection with a LOAD trigger is detected, it orchestrates the screen-wipe transition and loads the adjacent map.
      */
     private void checkLevelExit() {
         Player player = gameState.getPlayer();
         if (player.checkAction(PlayerAction.DASH)) return;
 
-        int exitStatus = isEntityOnExit(context.getLevelManager().getCurrentLevel(), player.getHitBox());
-        if (exitStatus == RIGHT_EXIT) goToLevel(0, 1, "LEFT", "Right level loaded.");
-        else if (exitStatus == LEFT_EXIT) goToLevel(0, -1, "RIGHT", "Left level loaded.");
-        else if (exitStatus == UPPER_EXIT) goToLevel(-1, 0, "BOTTOM", "Upper level loaded.");
-        else if (exitStatus == BOTTOM_EXIT) goToLevel(1, 0, "UPPER", "Bottom level loaded.");
+        List<Trigger> triggers = context.getLevelManager().getCurrentLevel().getTriggers();
+        for (Trigger trigger : triggers) {
+            if (player.getHitBox().intersects(trigger.bounds())) {
+                switch (trigger.type()) {
+                    case LOAD_LEFT_LEVEL:
+                        goToLevel(0, -1, LvlTriggerType.SPAWN_A, "Left level loaded.");
+                        return;
+                    case LOAD_RIGHT_LEVEL:
+                        goToLevel(0, 1, LvlTriggerType.SPAWN_B, "Right level loaded.");
+                        return;
+                    case LOAD_UP_LEVEL:
+                        goToLevel(-1, 0, LvlTriggerType.SPAWN_C, "Upper level loaded.");
+                        return;
+                    case LOAD_DOWN_LEVEL:
+                        goToLevel(1, 0, LvlTriggerType.SPAWN_D, "Bottom level loaded.");
+                        return;
+                }
+            }
+        }
     }
 
     /**
@@ -75,10 +87,10 @@ public class GameFlowManager {
      *
      * @param dI      The change in the level grid's row index.
      * @param dJ      The change in the level grid's column index.
-     * @param spawn   The spawn location name ("LEFT", "RIGHT", "UPPER", "BOTTOM") in the new level.
+     * @param spawn   The spawn trigger in the new level.
      * @param message A message to log upon successful level transition.
      */
-    private void goToLevel(int dI, int dJ, String spawn, String message) {
+    private void goToLevel(int dI, int dJ, LvlTriggerType spawn, String message) {
         TransitionDirection direction = TransitionDirection.FROM_LEFT;
         if (dI == 0 && dJ == 1) direction = TransitionDirection.FROM_LEFT;
         else if (dI == 0 && dJ == -1) direction = TransitionDirection.FROM_RIGHT;

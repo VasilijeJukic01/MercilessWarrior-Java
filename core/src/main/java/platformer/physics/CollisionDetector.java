@@ -3,7 +3,6 @@ package platformer.physics;
 import platformer.model.entities.Direction;
 import platformer.model.projectiles.types.LightningBall;
 import platformer.model.projectiles.Projectile;
-import platformer.model.levels.Level;
 
 import java.awt.geom.Rectangle2D;
 
@@ -287,31 +286,6 @@ public final class CollisionDetector {
             return isTileSolid(xTile+1, yTile, levelData) && isTileSolid(xTile+1, yTile+1, levelData) && isTouchingWall(hitBox, Direction.RIGHT);
         }
         return false;
-    }
-
-    /**
-     * Checks if an entity's hitbox overlaps with a level exit tile.
-     * It checks the type of the tile that the entity's hitbox is touching.
-     * If the tile is an exit tile, the method returns the type of the exit.
-     *
-     * @param level  The current Level object.
-     * @param hitBox The hitbox of the entity.
-     * @return The constant representing the exit type (e.g., RIGHT_EXIT), or 0 if not on an exit.
-     */
-    public static int isEntityOnExit(Level level, Rectangle2D.Double hitBox) {
-        int xTile = (int) (hitBox.x / TILES_SIZE);
-        int yTile = (int) (hitBox.y / TILES_SIZE);
-        int xTileRight = (int) ((hitBox.x + hitBox.width) / TILES_SIZE);
-
-        if (xTile < 0 || xTile >= level.getLevelTilesWidth() ||  yTile < 0 || yTile >= level.getLevelTilesHeight() ||  xTileRight >= level.getLevelTilesWidth()) {
-            return 0;
-        }
-
-        if (level.getDecoSpriteIndex(xTile, yTile) == RIGHT_EXIT || level.getDecoSpriteIndex(xTileRight, yTile) == RIGHT_EXIT) return RIGHT_EXIT;
-        if (level.getDecoSpriteIndex(xTile, yTile) == LEFT_EXIT) return LEFT_EXIT;
-        if (level.getDecoSpriteIndex(xTile, yTile) == UPPER_EXIT) return UPPER_EXIT;
-        if (level.getDecoSpriteIndex(xTile, yTile + 1) == BOTTOM_EXIT) return BOTTOM_EXIT;
-        return 0;
     }
 
     /**

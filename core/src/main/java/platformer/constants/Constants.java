@@ -106,10 +106,6 @@ public final class Constants {
     public static final int MAX_LEVELS = 4;
     public static final int EMPTY_TILE = -1;
     public static final int MAX_TILE_VALUE = 49;
-    public static final int LEFT_EXIT = 35;
-    public static final int RIGHT_EXIT = 36;
-    public static final int UPPER_EXIT = 38;
-    public static final int BOTTOM_EXIT = 39;
     public static final int PARTICLES_CAP = 50;
 
     // Enemy Constants
