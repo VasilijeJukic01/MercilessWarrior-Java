@@ -25,6 +25,7 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.List;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -68,6 +69,9 @@ public class ObjectManager {
 
     private Map<ObjType, List<GameObject>> objectsMap = new HashMap<>();
 
+    // Cache
+    private final Map<Class<?>, List<? extends GameObject>> classCache = new ConcurrentHashMap<>();
+
     public void wire(GameContext context) {
         this.context = context;
         this.collisionHandler = new CollisionHandler(context.getLevelManager(), this);
@@ -78,6 +82,7 @@ public class ObjectManager {
     public void loadObjects(Level level) {
         level.gatherData();
         this.objectsMap = level.getObjectsMap();
+        this.classCache.clear();
         configureObjects();
         configureNpcs();
     }
@@ -437,6 +442,7 @@ public class ObjectManager {
     // Reset
     public void reset() {
         objectsMap.clear();
+        classCache.clear();
         loadObjects(context.getLevelManager().getCurrentLevel());
     }
 
@@ -456,16 +462,19 @@ public class ObjectManager {
         return CollectionUtils.getAllItems(objectsMap);
     }
 
-    public <T> List<T> getObjects(Class<T> objectType) {
-        return getAllObjects().stream()
-                .filter(objectType::isInstance)
-                .map(objectType::cast)
-                .collect(Collectors.toList());
+    public <T extends GameObject> List<T> getObjects(Class<T> objectType) {
+        return (List<T>) classCache.computeIfAbsent(objectType, k ->
+                getAllObjects().stream()
+                        .filter(objectType::isInstance)
+                        .map(objectType::cast)
+                        .collect(Collectors.toList())
+        );
     }
 
     public void addGameObject(GameObject gameObject) {
         ObjType type = gameObject.getObjType();
         objectsMap.computeIfAbsent(type, k -> new ArrayList<>()).add(gameObject);
+        classCache.clear();
     }
 
     public String getIntersectingObject() {

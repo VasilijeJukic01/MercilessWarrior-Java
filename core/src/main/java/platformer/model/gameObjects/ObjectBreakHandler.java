@@ -118,7 +118,7 @@ public class ObjectBreakHandler {
         Logger.getInstance().notify("Player breaks brick.", Message.NOTIFICATION);
     }
 
-    private <T> List<T> getObjects(Class<T> objectType) {
+    private <T extends GameObject> List<T> getObjects(Class<T> objectType) {
         return objectManager.getObjects(objectType);
     }
 

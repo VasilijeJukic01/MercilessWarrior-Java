@@ -278,11 +278,11 @@ public final class CollisionDetector {
         int xTile = (int)(hitBox.x / TILES_SIZE);
         int yTile = (int)(hitBox.y / TILES_SIZE);
         if (direction == Direction.LEFT) {
-            if (xTile-1 < 0) return true;
+            if (xTile - 1 < 0) return false;
             return isTileSolid(xTile-1, yTile, levelData) && isTileSolid(xTile-1, yTile+1, levelData) && isTouchingWall(hitBox, Direction.LEFT);
         }
         else if (direction == Direction.RIGHT) {
-            if (xTile+1 >= levelData.length) return true;
+            if (xTile + 1 >= levelData.length) return false;
             return isTileSolid(xTile+1, yTile, levelData) && isTileSolid(xTile+1, yTile+1, levelData) && isTouchingWall(hitBox, Direction.RIGHT);
         }
         return false;

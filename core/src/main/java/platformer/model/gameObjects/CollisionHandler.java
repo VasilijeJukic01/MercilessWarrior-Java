@@ -49,11 +49,10 @@ public class CollisionHandler {
      */
     public double checkSolidObjectCollision(Rectangle2D.Double hitbox, double dx) {
         Rectangle2D.Double sweptHitbox = getSweptHitbox(hitbox, dx);
-        List<Brick> solidObjects = objectManager.getObjects(Brick.class).stream()
-                .filter(GameObject::isAlive).toList();
+        List<Brick> solidObjects = objectManager.getObjects(Brick.class);
 
-        for (GameObject obj : solidObjects) {
-            if (obj.getHitBox().intersects(sweptHitbox)) {
+        for (Brick obj : solidObjects) {
+            if (obj.isAlive() && obj.getHitBox().intersects(sweptHitbox)) {
                 if (dx > 0) return obj.getHitBox().x - hitbox.x - hitbox.width - 1;
                 else return obj.getHitBox().x + obj.getHitBox().width - hitbox.x + 1;
             }
@@ -269,7 +268,7 @@ public class CollisionHandler {
         return canMoveHere(x, y, w, h, levelManager.getCurrentLevel().getLvlData());
     }
 
-    private <T> List<T> getObjects(Class<T> objectType) {
+    private <T extends GameObject> List<T> getObjects(Class<T> objectType) {
         return objectManager.getObjects(objectType);
     }
 
