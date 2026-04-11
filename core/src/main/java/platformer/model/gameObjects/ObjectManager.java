@@ -153,10 +153,36 @@ public class ObjectManager {
      * @param player The player object that is checking for collisions with traps.
      */
     private void checkPlayerTrapCollision(Player player) {
+        for (Blocker b : getObjects(Blocker.class)) {
+            if (b.isAlive() && b.isAnimate()) {
+                if (b.getHitBox().intersects(player.getHitBox())) {
+                    player.kill();
+                }
+            }
+        }
+        for (SmashTrap st : getObjects(SmashTrap.class)) {
+            if (st.isAlive() && st.getAnimIndex() >= 1 && st.getAnimIndex() <= 6) {
+                if (st.getHitBox().intersects(player.getHitBox())) {
+                    player.kill();
+                }
+            }
+        }
         for (RoricTrap trap : getObjects(RoricTrap.class)) {
             if (trap.isAlive() && !trap.isAnimate() && trap.getHitBox().intersects(player.getHitBox())) {
                 player.changeHealth(-RoricTrap.TRAP_DAMAGE, trap);
             }
+        }
+    }
+
+    private void checkEnemyTrapCollisions() {
+        for (Spike spike : getObjects(Spike.class)) {
+            context.getEnemyManager().checkEnemyTrapHit(spike);
+        }
+        for (SmashTrap smashTrap : getObjects(SmashTrap.class)) {
+            context.getEnemyManager().checkEnemyTrapHit(smashTrap);
+        }
+        for (Lava lava : getObjects(Lava.class)) {
+            context.getEnemyManager().checkEnemyTrapHit(lava);
         }
     }
 
@@ -347,6 +373,7 @@ public class ObjectManager {
         handleInteractions(player);
         handleCollectibles(player);
         checkPlayerTrapCollision(player);
+        checkEnemyTrapCollisions();
         collisionHandler.updateObjectInAir();
         if (activeFollower != null) {
             List<Enemy> enemies = context.getEnemyManager().getAllEnemies();

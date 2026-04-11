@@ -20,6 +20,8 @@ import platformer.model.entities.player.HitResult;
 import platformer.model.entities.player.Player;
 import platformer.model.entities.player.PlayerAction;
 import platformer.model.gameObjects.GameObject;
+import platformer.model.gameObjects.objects.Lava;
+import platformer.model.gameObjects.objects.SmashTrap;
 import platformer.model.gameObjects.objects.Spike;
 import platformer.model.projectiles.types.Fireball;
 import platformer.model.projectiles.Projectile;
@@ -261,9 +263,14 @@ public class EnemyManager {
     }
 
     public void checkEnemyTrapHit(GameObject object) {
-        if (!(object instanceof Spike)) return;
-        for (List<Enemy> enemies : enemies.values()) {
-            for (Enemy enemy : enemies) {
+        if (!(object instanceof Spike) && !(object instanceof SmashTrap) && !(object instanceof Lava)) return;
+        if (object instanceof SmashTrap) {
+            if (object.getAnimIndex() < 1 || object.getAnimIndex() > 7) {
+                return;
+            }
+        }
+        for (List<Enemy> enemyList : enemies.values()) {
+            for (Enemy enemy : enemyList) {
                 if (enemy.isAlive() && enemy.getEnemyAction() != Anim.DEATH && object.getHitBox().intersects(enemy.getHitBox())) {
                     enemy.hit(500, false, false);
                 }

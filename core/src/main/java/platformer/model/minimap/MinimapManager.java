@@ -90,7 +90,8 @@ public class MinimapManager {
                 String levelName = "level" + i + j;
                 BufferedImage levelImage = ImageUtils.importImage(LEVEL_SPRITES.replace("level$", levelName), -1, -1);
                 if (levelImage == null) continue;
-                BufferedImage img = levelImage.getSubimage(0, 0, levelImage.getWidth() / 2, levelImage.getHeight());
+                int width = levelImage.getWidth() / 3;
+                BufferedImage img = levelImage.getSubimage(0, 0, width, levelImage.getHeight());
                 Point position = findImageOnMinimap(img, minimapImage);
                 if (position != null) levelPositions.put(levelName, position);
             }
