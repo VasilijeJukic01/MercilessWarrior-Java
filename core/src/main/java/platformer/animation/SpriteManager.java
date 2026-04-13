@@ -1,5 +1,6 @@
 package platformer.animation;
 
+import platformer.core.loading.LoadingProgressTracker;
 import platformer.model.entities.enemies.EnemyType;
 import platformer.model.gameObjects.ObjType;
 import platformer.model.gameObjects.npc.NpcType;
@@ -7,8 +8,11 @@ import platformer.utils.CollectionUtils;
 import platformer.utils.ImageUtils;
 
 import java.awt.image.BufferedImage;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static platformer.constants.AnimConstants.*;
 import static platformer.constants.Constants.*;
@@ -61,14 +65,31 @@ public class SpriteManager {
      * Loads all necessary game assets into memory. This should be called once during the game's initialization phase.
      */
     public void loadAllAssets() {
-        playerAnimations = loadPlayerSpriteSheet(PLAYER_SHEET);
-        playerTransformAnimations = loadPlayerSpriteSheet(PLAYER_TRANSFORM_SHEET);
-        loadEnemyAnimations();
-        loadObjectAnimations();
-        loadNpcAnimations();
-        loadFollowerAnimations();
-        loadProjectileAndSpellAnimations();
-        loadEffectAnimations();
+        Runnable[] loadTasks = {
+                () -> playerAnimations = loadPlayerSpriteSheet(PLAYER_SHEET),
+                () -> playerTransformAnimations = loadPlayerSpriteSheet(PLAYER_TRANSFORM_SHEET),
+                this::loadEnemyAnimations,
+                this::loadObjectAnimations,
+                this::loadNpcAnimations,
+                this::loadFollowerAnimations,
+                this::loadProjectileAndSpellAnimations,
+                this::loadEffectAnimations
+        };
+
+        AtomicInteger completedTasks = new AtomicInteger(0);
+        double startProgress = 0.05;
+        double totalProgressAllocated = 0.50;
+
+        CompletableFuture<?>[] futures = Arrays.stream(loadTasks).map(task ->
+                CompletableFuture.runAsync(() -> {
+                    task.run();
+                    int done = completedTasks.incrementAndGet();
+                    double progress = startProgress + ((double) done / loadTasks.length) * totalProgressAllocated;
+                    LoadingProgressTracker.getInstance().updateProgress(progress);
+                })
+        ).toArray(CompletableFuture[]::new);
+
+        CompletableFuture.allOf(futures).join();
     }
 
     // Animation loader
