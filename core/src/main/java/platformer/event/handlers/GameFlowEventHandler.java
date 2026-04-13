@@ -42,7 +42,6 @@ public class GameFlowEventHandler implements EventHandler {
      */
     public void onBossDefeated(BossDefeatedEvent event) {
         if (event.boss().getEnemyType() == EnemyType.RORIC) {
-            context.getRainManager().stopRaining();
             returnFromArena();
         }
     }

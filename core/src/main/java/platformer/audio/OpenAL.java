@@ -364,6 +364,11 @@ public class OpenAL implements AudioPlayer<Song, Sound, Ambience>  {
         updateSoundVolume();
     }
 
+    @Override
+    public float getMusicVolume() {
+        return musicVolume;
+    }
+
     /**
      * {@inheritDoc}
      * <p>

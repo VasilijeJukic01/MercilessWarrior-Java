@@ -137,6 +137,13 @@ public interface AudioPlayer<U, V, W> {
     void setSfxVolume(float sfxVolume);
 
     /**
+     * Gets the current volume level for music.
+     *
+     * @return The current music volume level.
+     */
+    float getMusicVolume();
+
+    /**
      * Cleans up and releases all audio resources used by the player.
      * This should be called when the game is shutting down.
      */

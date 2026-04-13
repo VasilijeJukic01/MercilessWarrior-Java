@@ -162,13 +162,15 @@ public class DialogueManager {
         }
         if(!getOverlay().next()) {
             ObjectManager objectManager = context.getGameState().getObjectManager();
-            if (Objects.equals(objectManager.getIntersectingObject(), "Blacksmith"))
+            String intersect = objectManager.getIntersectingObject();
+
+            if ("Blacksmith".equals(intersect))
                 EventBus.getInstance().publish(new OverlayChangeEvent(PlayingState.BLACKSMITH));
-            else if (Objects.equals(objectManager.getIntersectingObject(), "Shop"))
+            else if ("Shop".equals(intersect))
                 EventBus.getInstance().publish(new OverlayChangeEvent(PlayingState.SHOP));
-            else if (Objects.equals(objectManager.getIntersectingObject(), "SaveTotem"))
+            else if ("SaveTotem".equals(intersect))
                 EventBus.getInstance().publish(new OverlayChangeEvent(PlayingState.SAVE));
-            else if (objectManager.getIntersectingObject().contains("Npc")) {
+            else if (intersect != null && intersect.contains("Npc")) {
                 Npc npc = (Npc) objectManager.getIntersection();
                 npc.increaseDialogueIndicator();
                 EventBus.getInstance().publish(new OverlayChangeEvent(null));
