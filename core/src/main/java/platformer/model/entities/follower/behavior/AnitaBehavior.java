@@ -17,6 +17,7 @@ public class AnitaBehavior implements FollowerBehavior {
     private final int AGGRO_RANGE = TILES_SIZE * 5;
     private final int ATTACK_RANGE = (int)(TILES_SIZE * 1.5);
     private final int COOLDOWN_TIME = 260;
+    private final int LEASH_RANGE = TILES_SIZE * 10;
 
     // State
     private Enemy currentTarget;
@@ -25,6 +26,14 @@ public class AnitaBehavior implements FollowerBehavior {
 
     @Override
     public void update(Follower host, Player player, int[][] levelData, List<Enemy> enemies) {
+        double distToPlayerX = Math.abs(player.getHitBox().x - host.getHitBox().x);
+        double distToPlayerY = Math.abs(player.getHitBox().y - host.getHitBox().y);
+        if (distToPlayerX > LEASH_RANGE || distToPlayerY > TILES_SIZE * 5) {
+            currentTarget = null;
+            cooldownTick = 0;
+            host.setMoveTarget(player.getHitBox().x);
+            return;
+        }
         if (cooldownTick > 0) {
             cooldownTick--;
             // Retreat to player

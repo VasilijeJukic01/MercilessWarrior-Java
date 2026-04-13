@@ -135,6 +135,7 @@ public class Follower extends Entity implements Interactable {
         behavior.update(this, player, levelData, enemies);
         jumpTracker.updateTracking(player);
         updateMovement(levelData, player, targetX);
+        updateAttackBox();
         updatePhysics(levelData);
     }
 
@@ -162,10 +163,21 @@ public class Follower extends Entity implements Interactable {
         }
 
         double dx = targetX - hitBox.x;
+        double dy = player.getHitBox().y - hitBox.y;
 
         // Determine Intent (Hysteresis Thresholding)
         int activeThreshold = isMoving ? (int)(20 * SCALE) : (int)(40 * SCALE);
         boolean wantsToMove = Math.abs(dx) > activeThreshold;
+
+        if (!wantsToMove && dy > TILES_SIZE * 1.5 && !inAir) {
+            wantsToMove = true;
+            boolean canDropLeft = !CollisionDetector.isSolid(hitBox.x - TILES_SIZE, hitBox.y + hitBox.height + 5, levelData);
+            boolean canDropRight = !CollisionDetector.isSolid(hitBox.x + hitBox.width + TILES_SIZE, hitBox.y + hitBox.height + 5, levelData);
+
+            if (canDropRight && !canDropLeft) dx = 100;
+            else if (canDropLeft && !canDropRight) dx = -100;
+            else dx = (this.flipSign == 1) ? 100 : -100;
+        }
 
         // Stuck & Teleport Check
         updateStuckState(wantsToMove);
@@ -232,6 +244,9 @@ public class Follower extends Entity implements Interactable {
             return 0;
         }
         isMoving = true;
+        if (Math.abs(dx) < walkSpeed * 3) {
+            return (this.flipSign == 1) ? walkSpeed : -walkSpeed;
+        }
         if (dx > 0) {
             setDirection(Direction.RIGHT);
             return walkSpeed;
@@ -345,7 +360,6 @@ public class Follower extends Entity implements Interactable {
 
             // Handle Attack Frame Events
             if (isAttacking && animIndex == 2 && behavior != null) {
-                updateAttackBox();
                 behavior.onAttackFrame(this, enemyContext);
             }
 
