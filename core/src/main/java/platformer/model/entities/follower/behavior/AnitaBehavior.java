@@ -90,6 +90,21 @@ public class AnitaBehavior implements FollowerBehavior {
         }
     }
 
+    /**
+     * Scans the environment to find the most optimal enemy to attack.
+     * <p>
+     * An enemy is only considered a valid target if:
+     * 1. They are alive.
+     * 2. They are within the {@code AGGRO_RANGE}.
+     * 3. They are roughly on the same vertical elevation.
+     * 4. There is a safe, walkable path between Anita and the enemy (checked via {@link #isPathSafe}).
+     *
+     * @param host      Anita's physical body.
+     * @param player    The player entity.
+     * @param enemies   The list of all enemies.
+     * @param levelData The level collision map.
+     * @return          The closest valid {@link Enemy}, or {@code null} if no safe targets exist.
+     */
     private Enemy findBestTarget(Follower host, Player player, List<Enemy> enemies, int[][] levelData) {
         Enemy best = null;
         double minDist = Double.MAX_VALUE;

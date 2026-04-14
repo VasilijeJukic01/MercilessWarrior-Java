@@ -140,11 +140,16 @@ public class Follower extends Entity implements Interactable {
     }
 
     /**
-     * Orchestrates movement, hazard detection, and jump decision-making.
+     * Orchestrates the follower's physical movement, hazard detection, and ledge navigation.
+     * <p>
+     * Handles the complex transition between standard walking, intelligent vertical dropping, and taking action when hazards are detected.
+     * It uses hysteresis thresholding to prevent micro-stutters and includes specific logic to smoothly push the follower off ledges
+     * when the target is directly below them.
+     * </p>
      *
-     * @param levelData The collision map.
-     * @param player    The target player (used for distance/teleport checks).
-     * @param targetX   The specific X coordinate we want to move towards (Enemy or Player).
+     * @param levelData The collision map of the current level.
+     * @param player    The target player (used for distance/teleport checks and relative positioning).
+     * @param targetX   The specific X coordinate the AI "Brain" wants to move towards (could be an Enemy or the Player).
      */
     private void updateMovement(int[][] levelData, Player player, double targetX) {
         if (handleAttackIntent()) return;
@@ -238,6 +243,16 @@ public class Follower extends Entity implements Interactable {
         return (distToPlayer > teleportDist && !player.isInAir()) || distToPlayer > teleportDist * 3 || stuckTick >= STUCK_THRESHOLD;
     }
 
+    /**
+     * Determines the horizontal speed and direction of the follower.
+     * <p>
+     * If the follower is extremely close to their target X-coordinate, this method locks their
+     * current direction to prevent ledge dancing.
+     *
+     * @param wantsToMove Boolean indicating if the follower is outside the minimum resting distance.
+     * @param dx          The delta X between the follower and their target.
+     * @return            The horizontal velocity to apply this frame.
+     */
     private double determineHorizontalSpeed(boolean wantsToMove, double dx) {
         if (!wantsToMove) {
             isMoving = false;
@@ -257,14 +272,26 @@ public class Follower extends Entity implements Interactable {
         }
     }
 
+    /**
+     * Evaluates the terrain immediately in front of the follower to prevent walking into traps or bottomless pits.
+     * <p>
+     * This checks two conditions:
+     * 1. Traps: Uses a look-ahead bounding box to check for spikes or lava.
+     * 2. Cliffs: Checks if the floor drops away. If it does, it consults the {@link TrajectoryCalculator} to ensure there is safe ground before the fall.
+     *
+     * @param xSpeed    The current horizontal speed (determines look-ahead distance).
+     * @param levelData The level collision map.
+     * @param player    The player entity (used to determine if falling is required to reach the player).
+     * @return          {@code true} if a hazard or unsafe drop is ahead, triggering a jump calculation; {@code false} otherwise.
+     */
     private boolean isHazardAhead(double xSpeed, int[][] levelData, Player player) {
         double lookAheadX = hitBox.x + (xSpeed * 20);
         Rectangle2D.Double futureBody = new Rectangle2D.Double(lookAheadX, hitBox.y, hitBox.width, hitBox.height);
 
-        // A. Check for Traps in front
+        // Check for Traps in front
         if (objectManager.isDangerous(futureBody)) return true;
 
-        // B. Check for Cliffs (Altitude Aware)
+        // Check for Cliffs (Altitude Aware)
         double feetX = (xSpeed > 0) ? lookAheadX + hitBox.width : lookAheadX;
         double feetY = hitBox.y + hitBox.height + 5;
 
@@ -277,9 +304,18 @@ public class Follower extends Entity implements Interactable {
         return false;
     }
 
+    /**
+     * Triggered when the follower is blocked by a hazard or a gap. Attempts to bypass the obstacle.
+     * <p>
+     * Strategy 1 (Kinematics): Asks the {@link TrajectoryCalculator} to find a safe landing spot and calculate the exact X-velocity needed to land there.
+     * <br>
+     * Strategy 2 (Breadcrumbs): If math fails, it queries the {@link JumpHistoryTracker} to find a recent jump of the player, and it will mimic it.
+     *
+     * @param levelData The level collision map.
+     * @param player    The player entity (used to track breadcrumbs).
+     */
     private void attemptSmartJump(int[][] levelData, Player player) {
         // Strategy 1 - Math
-        // If a standard jump can clear the gap safely based on gravity/speed
         double calculatedJumpSpeed = trajectoryCalculator.calculateAdaptiveJump(hitBox, flipSign, levelData);
         if (calculatedJumpSpeed != 0) {
             executeJump(calculatedJumpSpeed, jumpSpeed);
@@ -287,7 +323,6 @@ public class Follower extends Entity implements Interactable {
         }
 
         // Strategy 2 - Breadcrumb
-        // If math failed, check if the player performed a jump nearby recently
         JumpSnapshot crumb = jumpTracker.getNearestJumpSnapshot(player, hitBox);
         if (crumb != null) {
             // Snap to player's launch point for perfect arc alignment
@@ -297,7 +332,6 @@ public class Follower extends Entity implements Interactable {
 
             double mimicSpeed = crumb.speedX() * crumb.direction();
 
-            // Apply Ability Boosts
             // If player used Dash, give NPC super-speed to clear the gap
             if (crumb.usedDash()) mimicSpeed *= 1.7;
             else mimicSpeed *= 1.1;
