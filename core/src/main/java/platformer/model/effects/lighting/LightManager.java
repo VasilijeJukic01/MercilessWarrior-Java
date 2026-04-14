@@ -444,7 +444,7 @@ public class LightManager {
 
     @SuppressWarnings("unchecked")
     private void renderLightsForClass(Graphics2D g2d, Class<?> lightSourceClass, int xLevelOffset, int yLevelOffset) {
-        List<GameObject> objects = (List<GameObject>) context.getObjectManager().getObjects(lightSourceClass);
+        List<GameObject> objects = (List<GameObject>) context.getObjectManager().getObjects((Class<? extends GameObject>) lightSourceClass);
         for (GameObject obj : objects) {
             if (obj.isAlive()) drawLightSource(g2d, objectLightTexture, obj.getHitBox(), xLevelOffset, yLevelOffset);
         }

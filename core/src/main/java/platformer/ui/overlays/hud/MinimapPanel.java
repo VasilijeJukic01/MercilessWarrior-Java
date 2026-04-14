@@ -38,6 +38,7 @@ public class MinimapPanel {
 
     private void renderMinimap(Graphics2D g2d) {
         BufferedImage minimap = minimapManager.getMinimap();
+        BufferedImage fogImage = minimapManager.getFogImage();
         g2d.setClip(x, y, width, height);
 
         int mapWidth = (int) (minimap.getWidth() * MINIMAP_ZOOM);
@@ -46,6 +47,9 @@ public class MinimapPanel {
         int mapY = y + offsetY;
 
         g2d.drawImage(minimap, mapX, mapY, mapWidth, mapHeight, null);
+        if (fogImage != null) {
+            g2d.drawImage(fogImage, mapX, mapY, mapWidth, mapHeight, null);
+        }
         minimapRenderer.renderIcons(g2d, mapX, mapY, mapWidth, mapHeight, minimap, minimapManager);
     }
 

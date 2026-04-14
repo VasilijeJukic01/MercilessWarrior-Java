@@ -2,7 +2,6 @@ package platformer.model.entities.enemies.boss.roric;
 
 import platformer.debug.DebugSettings;
 import platformer.event.EventBus;
-import platformer.event.events.BossDefeatedEvent;
 import platformer.event.events.roric.RoricPhaseChangeEvent;
 import platformer.model.entities.enemies.boss.Roric;
 
@@ -87,7 +86,6 @@ public class RoricPhaseManager {
 
         if (elapsedTime >= PHASE_6_START_TIME) {
             currentPhase = RoricPhase.VICTORY;
-            EventBus.getInstance().publish(new BossDefeatedEvent(roric));
         }
         else if (elapsedTime >= PHASE_5_START_TIME) {
             currentPhase = RoricPhase.FINALE;
@@ -165,6 +163,7 @@ public class RoricPhaseManager {
      * @return A multiplier (e.g., 1.0 for normal, 0.60 for 40% faster).
      */
     public double getCooldownModifier() {
+        if (currentPhase == RoricPhase.ASSAULT) return 0.5;
         if (currentPhase == RoricPhase.FINALE) return 0.5;
         return 0.8;
     }
@@ -176,6 +175,7 @@ public class RoricPhaseManager {
      * @return A multiplier for animation speed (e.g., 0.6 for 40% faster).
      */
     public double getAnimationSpeedModifier() {
+        if (currentPhase == RoricPhase.ASSAULT) return 0.8;
         if (currentPhase == RoricPhase.BRIDGE) return 0.8;
         return 1.0;
     }

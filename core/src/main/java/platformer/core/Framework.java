@@ -1,6 +1,5 @@
 package platformer.core;
 
-import platformer.animation.SpriteManager;
 import platformer.storage.StorageStrategy;
 import platformer.controller.GameSaveController;
 import platformer.controller.KeyboardController;
@@ -47,7 +46,6 @@ public class Framework {
 
     // Init
     public void init(GameLaunchConfig config) {
-        SpriteManager.getInstance().loadAllAssets();
         this.launchConfig = config;
         this.keyboardController = new KeyboardController();
         this.serializer = new GameSerializer();

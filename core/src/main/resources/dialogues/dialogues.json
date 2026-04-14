@@ -81,7 +81,7 @@
     {
       "object": "NpcRoric",
       "id": "0",
-      "once": true,
+      "once": false,
       "lines": [
         "So, the mortal arrives. Your steps have echoed in the halls of fate for some time.",
         "You seek to challenge me? To unravel what has been woven?",
@@ -99,6 +99,16 @@
           }
         ]
       }
+    },
+    {
+      "object": "NpcRoric",
+      "id": "1",
+      "once": false,
+      "lines": [
+        "Impossible...",
+        "You have bested me, mortal.",
+        "Go. Return to your world. My watch is ended."
+      ]
     },
     {
       "object": "NpcAnita",

@@ -33,6 +33,9 @@ public final class AnimConstants {
     public static final int SW_W = 128, SW_H = 115;
     public static final int RORIC_W = 288, RORIC_H = 128;
 
+    public static final int ANITA_FOLLOWER_W = 288;
+    public static final int ANITA_FOLLOWER_H = 128;
+
     public static final int POTION_W = 12, POTION_H = 16;
     public static final int CONTAINER_W = 40, CONTAINER_H = 30;
     public static final int SPIKES_W = 32, SPIKES_H = 32;
@@ -70,9 +73,6 @@ public final class AnimConstants {
     public static final int BTN_W = 700, BTN_H = 230;
     public static final int SMALL_BTN_W = 150, SMALL_BTN_H = 158;
     public static final int SL_BTN_W = 143, SL_BTN_H = 149;
-
-    public static final int FOREST_SPRITE_W = 274, FOREST_SPRITE_H = 274;
-    public static final int FOREST_SPRITE_ROW = 7, FOREST_SPRITE_COL = 7;
 
     public static final int ABILITY_SLOT_W = 45, ABILITY_SLOT_H = 45;
 

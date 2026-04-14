@@ -4,6 +4,8 @@ import platformer.animation.SpriteManager;
 import platformer.audio.Audio;
 import platformer.audio.types.Sound;
 import platformer.core.GameContext;
+import platformer.model.entities.follower.Follower;
+import platformer.model.gameObjects.npc.NpcType;
 import platformer.model.projectiles.ProjectileFactory;
 import platformer.model.spells.SpellManager;
 import platformer.storage.StorageStrategy;
@@ -23,6 +25,7 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.List;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -42,6 +45,7 @@ public class ObjectManager {
     private LootHandler lootHandler;
 
     private Interactable intersection = null;
+    private Follower activeFollower;
 
     Class<? extends GameObject>[] updateClasses = new Class[]{
             Coin.class, Container.class, Potion.class, Spike.class,
@@ -65,6 +69,9 @@ public class ObjectManager {
 
     private Map<ObjType, List<GameObject>> objectsMap = new HashMap<>();
 
+    // Cache
+    private final Map<Class<?>, List<? extends GameObject>> classCache = new ConcurrentHashMap<>();
+
     public void wire(GameContext context) {
         this.context = context;
         this.collisionHandler = new CollisionHandler(context.getLevelManager(), this);
@@ -75,7 +82,9 @@ public class ObjectManager {
     public void loadObjects(Level level) {
         level.gatherData();
         this.objectsMap = level.getObjectsMap();
+        this.classCache.clear();
         configureObjects();
+        configureNpcs();
     }
 
     private void configureObjects() {
@@ -91,27 +100,48 @@ public class ObjectManager {
         });
     }
 
+    private void configureNpcs() {
+        for (Npc npc : getObjects(Npc.class)) {
+            if (npc.getNpcType() == NpcType.ANITA && context.getQuestManager().isQuestActive("Helping Anita")) {
+                npc.setAlive(false);
+            }
+        }
+    }
+
     // Intersection Handler
     /**
      * Handles the interactions between the player and interactable objects in the game.
      * It checks if the player is intersecting with any interactable object and updates the intersection accordingly.
+     * <p>
+     *  It resolves overlapping hitboxes by prioritizing the object nearest to the player's center.
+     *  It manages the interaction lifecycle by triggering onEnter, onExit, and onIntersect events for the chosen target.
      *
      * @param player The player object that is interacting with the game world.
      */
     private void handleInteractions(Player player) {
-        Interactable newIntersection = null;
+        Interactable interactable = null;
+        double minDistance = Double.MAX_VALUE;
 
         for (GameObject obj : getAllObjects()) {
             if (obj instanceof Interactable && obj.isAlive() && obj.getHitBox().intersects(player.getHitBox())) {
-                newIntersection = (Interactable) obj;
-                break;
+                double dist = player.getHitBox().getCenterX() - obj.getHitBox().getCenterX();
+                double currentDistance = Math.abs(dist);
+                if (currentDistance < minDistance) {
+                    minDistance = currentDistance;
+                    interactable = (Interactable) obj;
+                }
             }
         }
 
-        if (newIntersection != intersection) {
+        if (activeFollower != null && activeFollower.isKnockedDown() && activeFollower.getHitBox().intersects(player.getHitBox())) {
+            double followerDist = Math.abs(player.getHitBox().getCenterX() - activeFollower.getHitBox().getCenterX());
+            if (followerDist < minDistance) interactable = activeFollower;
+        }
+
+        if (interactable != intersection) {
             if (intersection != null) intersection.onExit(player);
-            if (newIntersection != null) newIntersection.onEnter(player);
-            intersection = newIntersection;
+            if (interactable != null) interactable.onEnter(player);
+            intersection = interactable;
         }
         if (intersection != null) intersection.onIntersect(player);
     }
@@ -123,10 +153,36 @@ public class ObjectManager {
      * @param player The player object that is checking for collisions with traps.
      */
     private void checkPlayerTrapCollision(Player player) {
+        for (Blocker b : getObjects(Blocker.class)) {
+            if (b.isAlive() && b.isAnimate()) {
+                if (b.getHitBox().intersects(player.getHitBox())) {
+                    player.kill();
+                }
+            }
+        }
+        for (SmashTrap st : getObjects(SmashTrap.class)) {
+            if (st.isAlive() && st.getAnimIndex() >= 1 && st.getAnimIndex() <= 6) {
+                if (st.getHitBox().intersects(player.getHitBox())) {
+                    player.kill();
+                }
+            }
+        }
         for (RoricTrap trap : getObjects(RoricTrap.class)) {
             if (trap.isAlive() && !trap.isAnimate() && trap.getHitBox().intersects(player.getHitBox())) {
                 player.changeHealth(-RoricTrap.TRAP_DAMAGE, trap);
             }
+        }
+    }
+
+    private void checkEnemyTrapCollisions() {
+        for (Spike spike : getObjects(Spike.class)) {
+            context.getEnemyManager().checkEnemyTrapHit(spike);
+        }
+        for (SmashTrap smashTrap : getObjects(SmashTrap.class)) {
+            context.getEnemyManager().checkEnemyTrapHit(smashTrap);
+        }
+        for (Lava lava : getObjects(Lava.class)) {
+            context.getEnemyManager().checkEnemyTrapHit(lava);
         }
     }
 
@@ -241,6 +297,31 @@ public class ObjectManager {
         lootHandler.generateEnemyLoot(location, e.getEnemyType());
     }
 
+    /**
+     * Checks if the provided area intersects with any environmental hazards.
+     * @param area The hitbox to check.
+     * @return true if danger is detected.
+     */
+    public boolean isDangerous(Rectangle2D.Double area) {
+        // Check Spikes
+        for (Spike s : getObjects(Spike.class)) {
+            if (s.getHitBox().intersects(area)) return true;
+        }
+
+        // Check Lava
+        for (Lava l : getObjects(Lava.class)) {
+            if (l.getHitBox().intersects(area)) return true;
+        }
+
+        // Check Traps
+        for (SmashTrap st : getObjects(SmashTrap.class)) {
+            if (st.getHitBox().intersects(area)) return true;
+        }
+
+        return false;
+    }
+
+
     // Launchers
     private boolean isPlayerInRangeForTrap(ArrowLauncher arrowLauncher, Player player) {
         int distance = (int)Math.abs(player.getHitBox().x - arrowLauncher.getHitBox().x);
@@ -292,7 +373,12 @@ public class ObjectManager {
         handleInteractions(player);
         handleCollectibles(player);
         checkPlayerTrapCollision(player);
+        checkEnemyTrapCollisions();
         collisionHandler.updateObjectInAir();
+        if (activeFollower != null) {
+            List<Enemy> enemies = context.getEnemyManager().getAllEnemies();
+            activeFollower.update(lvlData, player, enemies);
+        }
     }
 
     public void render(Graphics g, int xLevelOffset, int yLevelOffset) {
@@ -332,6 +418,9 @@ public class ObjectManager {
                 npc.render(g, xLevelOffset, yLevelOffset, anims);
             }
         }
+        if (activeFollower != null) {
+            activeFollower.render(g, xLevelOffset, yLevelOffset);
+        }
     }
 
     private void updateArrowLaunchers(int[][] lvlData, Player player) {
@@ -365,9 +454,22 @@ public class ObjectManager {
         }
     }
 
+    public void spawnFollower(NpcType type, int x, int y) {
+        this.activeFollower = new Follower(x, y, type, context.getEffectManager(), this);
+    }
+
+    public Npc getNpcByType(NpcType type) {
+        List<Npc> npcs = getObjects(Npc.class);
+        for (Npc npc : npcs) {
+            if (npc.getNpcType() == type) return npc;
+        }
+        return null;
+    }
+
     // Reset
     public void reset() {
         objectsMap.clear();
+        classCache.clear();
         loadObjects(context.getLevelManager().getCurrentLevel());
     }
 
@@ -387,16 +489,19 @@ public class ObjectManager {
         return CollectionUtils.getAllItems(objectsMap);
     }
 
-    public <T> List<T> getObjects(Class<T> objectType) {
-        return getAllObjects().stream()
-                .filter(objectType::isInstance)
-                .map(objectType::cast)
-                .collect(Collectors.toList());
+    public <T extends GameObject> List<T> getObjects(Class<T> objectType) {
+        return (List<T>) classCache.computeIfAbsent(objectType, k ->
+                getAllObjects().stream()
+                        .filter(objectType::isInstance)
+                        .map(objectType::cast)
+                        .collect(Collectors.toList())
+        );
     }
 
     public void addGameObject(GameObject gameObject) {
         ObjType type = gameObject.getObjType();
         objectsMap.computeIfAbsent(type, k -> new ArrayList<>()).add(gameObject);
+        classCache.clear();
     }
 
     public String getIntersectingObject() {
@@ -404,6 +509,10 @@ public class ObjectManager {
             return intersection.getInteractionPrompt();
         }
         return null;
+    }
+
+    public Follower getActiveFollower() {
+        return this.activeFollower;
     }
 
     public GameObject getIntersection() {

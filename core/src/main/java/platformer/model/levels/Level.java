@@ -16,6 +16,7 @@ import platformer.model.spells.SpellType;
 import platformer.utils.CollectionUtils;
 
 import java.awt.*;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,10 +33,10 @@ import static platformer.constants.Constants.*;
 public class Level {
 
     // Data
-    private String name;
-    private String tilesetName;
+    private final String name;
+    private final String tilesetName;
     private int npcIndicator = 0;
-    private final BufferedImage layer1Img, layer2Img;
+    private final BufferedImage levelImg;
     private int[][] lvlData, decoData, layerData;
 
     // Items
@@ -44,13 +45,13 @@ public class Level {
     private final Map<SpellType, List<Spell>> spellsMap = new HashMap<>();
     private static final Map<String, List<NpcType>> npcMap = new HashMap<>();
 
+    private final List<Trigger> triggers = new ArrayList<>();
+    private final Map<LvlTriggerType, Point> spawnPoints = new HashMap<>();
+
     // Configuration
     private int levelTilesWidth, levelTilesHeight;
     private int xMaxTilesOffset, xMaxLevelOffset;
     private int yMaxTilesOffset, yMaxLevelOffset;
-
-    // Spawns
-    private Point leftSpawn, rightSpawn, upperSpawn, bottomSpawn;
 
     static {
         npcMap.put("level02", List.of(NpcType.ANITA));
@@ -59,38 +60,36 @@ public class Level {
         npcMap.put("level13", List.of(NpcType.RORIC));
     }
 
-    public Level(String name, BufferedImage layer1Img, BufferedImage layer2Img, String tilesetName) {
+    public Level(String name, BufferedImage levelImg, String tilesetName) {
         this.name = name;
-        this.layer1Img = layer1Img;
-        this.layer2Img = layer2Img;
+        this.levelImg = levelImg;
         this.tilesetName = tilesetName;
         init();
         setOffset();
-        loadPlayerSpawns(layer1Img);
     }
 
     // Init
     private void init() {
-        this.lvlData = getLevelData(layer1Img);
-        this.decoData = getDecoData(layer2Img, false);
-        this.layerData = getDecoData(layer2Img, true);
+        int panelWidth = levelImg.getWidth() / 3;
+        this.lvlData = getLevelData(panelWidth);
+        this.decoData = getDecoData(false, panelWidth);
+        this.layerData = getDecoData(true, panelWidth);
         gatherData();
     }
 
     // Level items Data
     public void gatherData() {
+        int panelWidth = levelImg.getWidth() / 3;
         reset();
-        for (int i = 0; i < layer1Img.getWidth(); i++) {
-            for (int j = 0; j < layer1Img.getHeight(); j++) {
-                Color color = new Color(layer1Img.getRGB(i, j));
-                int valueG = color.getGreen();
-                int valueB = color.getBlue();
-
-                getEnemyData(i, j, valueG);
-                getObjectData(i, j, valueB);
-                getSpellData(i, j, valueG, valueB);
+        for (int i = 0; i < panelWidth; i++) {
+            for (int j = 0; j < levelImg.getHeight(); j++) {
+                Color color = new Color(levelImg.getRGB(i, j));
+                getEnemyData(i, j, color.getGreen());
+                getObjectData(i, j, color.getBlue());
+                getSpellData(i, j, color.getGreen(), color.getBlue());
             }
         }
+        getTriggerData(panelWidth);
     }
 
     private void getEnemyData(int i, int j, int valueG) {
@@ -213,39 +212,17 @@ public class Level {
      * Gathers data about the level from the level image.
      * It scans the image and assigns a value to each pixel based on its red color value.
      *
-     * @param level The BufferedImage of the level from which the data is to be gathered.
+     * @param panelWidth The width of the level panel.
      * @return A 2D array representing the level data.
      */
-    private int[][] getLevelData(BufferedImage level) {
-        int[][] lvlData = new int[level.getWidth()][level.getHeight()];
-        for (int i = 0; i < level.getWidth(); i++) {
-            for (int j = 0; j < level.getHeight(); j++) {
-                Color color = new Color(level.getRGB(i, j));
+    private int[][] getLevelData(int panelWidth) {
+        int[][] data = new int[panelWidth][levelImg.getHeight()];
+        for (int i = 0; i < panelWidth; i++) {
+            for (int j = 0; j < levelImg.getHeight(); j++) {
+                Color color = new Color(levelImg.getRGB(i, j));
                 int value = color.getRed();
                 if (value >= 49) value = -1;
-                if (color.getBlue() == 255 && color.getGreen() == 255) value += 255;   // Value > 255  ->  Different layer
-                lvlData[i][j] = value;
-            }
-        }
-        return lvlData;
-    }
-
-    /**
-     * Gathers decoration data from the level image.
-     * It scans the image and assigns a value to each pixel based on its green or blue color value.
-     *
-     * @param level The BufferedImage of the level from which the data is to be gathered.
-     * @param layer A boolean value indicating whether to gather layer data (true) or object data (false).
-     * @return A 2D array representing the decoration data.
-     */
-    // layer = true -> Layer data;  layer = false -> Object data
-    private int[][] getDecoData(BufferedImage level, boolean layer) {
-        int[][] data = new int[level.getWidth()][level.getHeight()];
-        for (int i = 0; i < level.getWidth(); i++) {
-            for (int j = 0; j < level.getHeight(); j++) {
-                Color color = new Color(level.getRGB(i, j));
-                int value = layer ? color.getGreen() : color.getBlue();
-                if ((value >= 80 && !layer) || (value > 4 && layer)) value = -1;
+                if (color.getBlue() == 255 && color.getGreen() == 255) value += 255;
                 data[i][j] = value;
             }
         }
@@ -253,22 +230,51 @@ public class Level {
     }
 
     /**
-     * Loads the spawn points for the player from the level image.
-     * It scans the image for specific color codes that represent different spawn points.
+     * Gathers decoration data from the level image.
+     * It scans the image and assigns a value to each pixel based on its green or blue color value.
      *
-     * @param level The BufferedImage of the level from which the spawn points are to be loaded.
+     * @param panelWidth The width of the level panel.
+     * @param layer A boolean value indicating whether to gather layer data (true) or object data (false).
+     * @return A 2D array representing the decoration data.
      */
-    private void loadPlayerSpawns(BufferedImage level) {
-        for (int i = 0; i < level.getWidth(); i++) {
-            for (int j = 0; j < level.getHeight(); j++) {
-                Color color = new Color(level.getRGB(i, j));
-                int R = color.getRed();
-                int G = color.getGreen();
-                int B = color.getBlue();
-                if (R == 100 && G == 100 && B == 100) this.leftSpawn = new Point(i*TILES_SIZE, j*TILES_SIZE);
-                else if (R == 110 && G == 110 && B == 110) this.rightSpawn = new Point(i*TILES_SIZE, j*TILES_SIZE);
-                else if (R == 120 && G == 120 && B == 120) this.upperSpawn = new Point(i*TILES_SIZE, j*TILES_SIZE);
-                else if (R == 130 && G == 130 && B == 130) this.bottomSpawn = new Point(i*TILES_SIZE, j*TILES_SIZE);
+    // layer = true -> Layer data;  layer = false -> Object data
+    private int[][] getDecoData(boolean layer, int panelWidth) {
+        int[][] data = new int[panelWidth][levelImg.getHeight()];
+        for (int i = panelWidth; i < panelWidth * 2; i++) {
+            for (int j = 0; j < levelImg.getHeight(); j++) {
+                Color color = new Color(levelImg.getRGB(i, j));
+                int value = layer ? color.getGreen() : color.getBlue();
+                if ((value >= 80 && !layer) || (value > 4 && layer)) value = -1;
+                data[i - panelWidth][j] = value;
+            }
+        }
+        return data;
+    }
+
+    /**
+     * Gathers trigger data from the level image.
+     * It scans the image for specific color codes that represent different triggers and creates Trigger objects accordingly.
+     *
+     * @param panelWidth The width of the panel, used to calculate the world coordinates of the triggers.
+     */
+    private void getTriggerData(int panelWidth) {
+        for (int i = panelWidth * 2; i < levelImg.getWidth(); i++) {
+            for (int j = 0; j < levelImg.getHeight(); j++) {
+                Color color = new Color(levelImg.getRGB(i, j));
+                int triggerValue = color.getBlue();
+
+                if (triggerValue < LvlTriggerType.MAX.ordinal() && color.getRed() == 254 && color.getGreen() == 254) {
+                    LvlTriggerType type = LvlTriggerType.values()[triggerValue];
+                    int worldX = (i - (panelWidth * 2)) * TILES_SIZE;
+                    int worldY = j * TILES_SIZE;
+                    if (type.name().startsWith("SPAWN")) {
+                        spawnPoints.put(type, new Point(worldX, worldY));
+                    }
+                    else {
+                        Rectangle2D.Double bounds = new Rectangle2D.Double(worldX, worldY, TILES_SIZE, TILES_SIZE);
+                        triggers.add(new Trigger(bounds, type));
+                    }
+                }
             }
         }
     }
@@ -278,10 +284,10 @@ public class Level {
      * Sets the offset values for the level based on the width and height of the level image.
      */
     public void setOffset() {
-        this.levelTilesWidth = layer1Img.getWidth();
+        this.levelTilesWidth = levelImg.getWidth() / 3;
         this.xMaxTilesOffset = levelTilesWidth - TILES_WIDTH;
         this.xMaxLevelOffset = xMaxTilesOffset * TILES_SIZE;
-        this.levelTilesHeight = layer1Img.getHeight();
+        this.levelTilesHeight = levelImg.getHeight();
         this.yMaxTilesOffset = levelTilesHeight - TILES_HEIGHT;
         this.yMaxLevelOffset = yMaxTilesOffset * TILES_SIZE;
     }
@@ -291,6 +297,7 @@ public class Level {
         enemiesMap.clear();
         objectsMap.clear();
         spellsMap.clear();
+        triggers.clear();
     }
 
     // Getters
@@ -337,15 +344,16 @@ public class Level {
     /**
      * Returns the spawn point for the player based on the given location.
      *
-     * @param location The location ("LEFT", "RIGHT", "UPPER", "BOTTOM").
+     * @param targetSpawn The trigger type representing the desired spawn location.
      * @return The spawn point for the player.
      */
-    public Point getPlayerSpawn(String location) {
-        if (location.equals("LEFT")) return leftSpawn;
-        if (location.equals("RIGHT")) return rightSpawn;
-        if (location.equals("UPPER")) return upperSpawn;
-        if (location.equals("BOTTOM")) return bottomSpawn;
-        return null;
+    public Point getPlayerSpawn(LvlTriggerType targetSpawn) {
+        if (spawnPoints.containsKey(targetSpawn)) {
+            return spawnPoints.get(targetSpawn);
+        }
+        // Fallback
+        if (!spawnPoints.isEmpty()) return spawnPoints.values().iterator().next();
+        return new Point(5 * TILES_SIZE, 8 * TILES_SIZE);
     }
 
     private List<Spell> getAllSpells() {
@@ -365,5 +373,9 @@ public class Level {
 
     public Map<ObjType, List<GameObject>> getObjectsMap() {
         return objectsMap;
+    }
+
+    public List<Trigger> getTriggers() {
+        return triggers;
     }
 }

@@ -10,9 +10,9 @@ import platformer.event.events.BossDefeatedEvent;
 import platformer.event.events.FightInitiatedEvent;
 import platformer.model.entities.enemies.EnemyType;
 import platformer.model.levels.Level;
+import platformer.model.levels.LvlTriggerType;
 import platformer.model.levels.Spawn;
 import platformer.event.EventHandler;
-import platformer.state.types.GameState;
 
 import java.awt.*;
 
@@ -42,7 +42,6 @@ public class GameFlowEventHandler implements EventHandler {
      */
     public void onBossDefeated(BossDefeatedEvent event) {
         if (event.boss().getEnemyType() == EnemyType.RORIC) {
-            context.getRainManager().stopRaining();
             returnFromArena();
         }
     }
@@ -51,7 +50,7 @@ public class GameFlowEventHandler implements EventHandler {
         context.getObjectManager().getIntersection().setAlive(false);
         context.getLevelManager().switchToArena();
         Level arena = context.getLevelManager().getCurrentLevel();
-        levelTransition(arena, arena.getPlayerSpawn("LEFT"));
+        levelTransition(arena, arena.getPlayerSpawn(LvlTriggerType.SPAWN_A));
     }
 
     private void returnFromArena() {
@@ -70,7 +69,7 @@ public class GameFlowEventHandler implements EventHandler {
             }
         }
         // Fallback
-        if (playerSpawn == null) playerSpawn = originalLevel.getPlayerSpawn("LEFT");
+        if (playerSpawn == null) playerSpawn = originalLevel.getPlayerSpawn(LvlTriggerType.SPAWN_A);
 
         levelTransition(originalLevel, playerSpawn);
         context.getGameState().getPlayer().activateMinimap(true);

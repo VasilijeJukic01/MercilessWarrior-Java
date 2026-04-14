@@ -114,20 +114,8 @@ public class OpenAL implements AudioPlayer<Song, Sound, Ambience>  {
                 sources.add(new OpenALSource());
             }
 
-            try {
-                Thread.sleep(50);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-
             currentProgress += progressPerFile;
             progressTracker.updateProgress(currentProgress);
-
-            try {
-                Thread.sleep(25);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
         }
     }
 
@@ -362,6 +350,11 @@ public class OpenAL implements AudioPlayer<Song, Sound, Ambience>  {
     public void setSfxVolume(float sfxVolume) {
         this.sfxVolume = sfxVolume;
         updateSoundVolume();
+    }
+
+    @Override
+    public float getMusicVolume() {
+        return musicVolume;
     }
 
     /**

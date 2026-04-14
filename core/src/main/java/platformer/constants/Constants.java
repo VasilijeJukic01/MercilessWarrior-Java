@@ -86,6 +86,10 @@ public final class Constants {
     public static final Color MINIMAP_HOVER =  new Color(255, 180, 40);
     public static final Color MINIMAP_PINNED =  new Color(80, 200, 255);
 
+    public static final int MAP_FOG_RADIUS = 10;
+    public static final int BLUR_KERNEL_SIZE = 10;
+    public static final Color MAP_FOG_COLOR =  new Color(25, 15, 35);
+
     // Cooldown Constants
     public static final double COOLDOWN_TICK = 0.1;
     public static final double PLAYER_ATTACK_CD = 0.75;
@@ -102,10 +106,6 @@ public final class Constants {
     public static final int MAX_LEVELS = 4;
     public static final int EMPTY_TILE = -1;
     public static final int MAX_TILE_VALUE = 49;
-    public static final int LEFT_EXIT = 35;
-    public static final int RIGHT_EXIT = 36;
-    public static final int UPPER_EXIT = 38;
-    public static final int BOTTOM_EXIT = 39;
     public static final int PARTICLES_CAP = 50;
 
     // Enemy Constants
@@ -182,6 +182,16 @@ public final class Constants {
     public static final double RORIC_ATT_RANGE = RANGE * 1.8;
     public static final double ENEMY_SPEED_SLOW = dScale(0.2);
 
+    // Follower Constants
+    public static final int FLW_WIDTH = scale(270);
+    public static final int FLW_HEIGHT = scale(140);
+
+    public static final int FOLLOWER_HB_WID = scale(18);
+    public static final int FOLLOWER_HB_HEI = scale(45);
+
+    public static final int FOLLOWER_X_OFFSET = (FLW_WIDTH - FOLLOWER_HB_WID) / 2;
+    public static final int FOLLOWER_Y_OFFSET = (int)(88 * SCALE);
+
     // Object Constants
     public static final int HEAL_POTION_VAL = 15;
     public static final int STAMINA_POTION_VAL = 10;
@@ -220,7 +230,7 @@ public final class Constants {
     public static final int COIN_HEI = scale(15);
     public static final int COIN_HB_SIZE = scale(10);
     public static final int COIN_OFFSET = scale(3);
-    public static final double COIN_GRAVITY = dScale(0.035);
+    public static final double COIN_GRAVITY = dScale(0.045);
 
     public static final int SHOP_WID = scale(154);
     public static final int SHOP_HEI = scale(132);
@@ -448,6 +458,7 @@ public final class Constants {
     // Camera Constants
     public static final double CAMERA_LERP_FACTOR_X = 0.08;
     public static final double CAMERA_LERP_FACTOR_Y = 0.08;
+    public static final int CAMERA_LOOK_DOWN_OFFSET = scale(100);
 
     public static int scale(double value) {
         return (int)(value * SCALE);

@@ -80,9 +80,9 @@ public final class UI {
     public static final int QUEST_SLOT_SPACING = scale(50);
     public static final int QUEST_SLOT_CAP = 4;
 
-    public static final int QUEST_TXT_WID = scale(220);
+    public static final int QUEST_TXT_WID = scale(205);
     public static final int QUEST_TXT_HEI = scale(40);
-    public static final int QUEST_TEXT_X = scale(310);
+    public static final int QUEST_TEXT_X = scale(315);
     public static final int QUEST_TEXT_Y = scale(45);
 
     public static final int QUEST_BTN_X = scale(213);
@@ -123,9 +123,9 @@ public final class UI {
     public static final int CONTROLS_BTN_Y = scale(350);
 
     // Leaderboards UI
-    public static final int BOARD_TXT_WID = scale(180);
+    public static final int BOARD_TXT_WID = scale(195);
     public static final int BOARD_TXT_HEI = scale(40);
-    public static final int BOARD_TXT_X = scale(330);
+    public static final int BOARD_TXT_X = scale(325);
     public static final int BOARD_TXT_Y = scale(85);
 
     public static final int BOARD_X1 = scale(335);

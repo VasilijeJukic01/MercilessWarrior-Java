@@ -7,6 +7,8 @@ import platformer.core.GameContext;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
 import platformer.model.entities.player.Player;
+import platformer.model.gameObjects.npc.Npc;
+import platformer.model.gameObjects.npc.NpcType;
 import platformer.ui.components.slots.QuestSlot;
 
 import java.io.IOException;
@@ -199,15 +201,33 @@ public class QuestManager {
                 slots.add(newSlot);
                 sortAndRepositionSlots();
                 Logger.getInstance().notify("Quest Started: " + questName, Message.INFORMATION);
+                launchStartSideEffect(questName);
             }
             else Logger.getInstance().notify("Quest already started: " + questName, Message.WARNING);
         });
+    }
+
+    private void launchStartSideEffect(String questName) {
+        if (questName.equals("Helping Anita")) {
+            Npc anita = context.getObjectManager().getNpcByType(NpcType.ANITA);
+            anita.setAlive(false);
+            context.getObjectManager().spawnFollower(NpcType.ANITA, (int)anita.getHitBox().x, (int)anita.getHitBox().y);
+        }
     }
 
     private Optional<Quest> findQuestByName(String questName) {
         return allQuests.stream()
                 .filter(q -> q.getName().equals(questName))
                 .findFirst();
+    }
+
+    public boolean isQuestActive(String questName) {
+        for (QuestSlot slot : slots) {
+            if (slot.getQuest().getName().equals(questName)) {
+                return !slot.getQuest().isCompleted();
+            }
+        }
+        return false;
     }
 
     public void reset() {

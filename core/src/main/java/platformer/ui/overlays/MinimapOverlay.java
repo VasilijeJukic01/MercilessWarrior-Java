@@ -77,6 +77,8 @@ public class MinimapOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
     public void render(Graphics g) {
         g.setColor(new Color(0, 0, 0, 150));
         g.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+
+        BufferedImage fogImage = minimapManager.getFogImage();
         BufferedImage map = minimapManager.getMinimap();
         renderOverlay(g);
         Graphics2D g2d = (Graphics2D) g;
@@ -88,6 +90,9 @@ public class MinimapOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
         int y = MAP_OVERLAY_Y + controller.getOffsetY();
 
         g2d.drawImage(map, x, y, width, height, null);
+        if (fogImage != null) {
+            g2d.drawImage(fogImage, x, y, width, height, null);
+        }
         minimapRenderer.renderIcons(g2d, x, y, width, height, map, minimapManager);
         g2d.setClip(null);
 

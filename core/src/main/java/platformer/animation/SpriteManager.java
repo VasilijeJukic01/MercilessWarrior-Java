@@ -1,5 +1,6 @@
 package platformer.animation;
 
+import platformer.core.loading.LoadingProgressTracker;
 import platformer.model.entities.enemies.EnemyType;
 import platformer.model.gameObjects.ObjType;
 import platformer.model.gameObjects.npc.NpcType;
@@ -7,8 +8,11 @@ import platformer.utils.CollectionUtils;
 import platformer.utils.ImageUtils;
 
 import java.awt.image.BufferedImage;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static platformer.constants.AnimConstants.*;
 import static platformer.constants.Constants.*;
@@ -27,6 +31,7 @@ public class SpriteManager {
     private final Map<EnemyType, BufferedImage[][]> enemyAnimations = new HashMap<>();
     private final Map<ObjType, BufferedImage[]> objectAnimations = new HashMap<>();
     private final Map<NpcType, BufferedImage[]> npcAnimations = new HashMap<>();
+    private final Map<NpcType, BufferedImage[][]> followerAnimations = new HashMap<>();
     private BufferedImage[][] coinAnimations;
 
     private BufferedImage[] lightningBallAnimations;
@@ -60,13 +65,31 @@ public class SpriteManager {
      * Loads all necessary game assets into memory. This should be called once during the game's initialization phase.
      */
     public void loadAllAssets() {
-        playerAnimations = loadPlayerSpriteSheet(PLAYER_SHEET);
-        playerTransformAnimations = loadPlayerSpriteSheet(PLAYER_TRANSFORM_SHEET);
-        loadEnemyAnimations();
-        loadObjectAnimations();
-        loadNpcAnimations();
-        loadProjectileAndSpellAnimations();
-        loadEffectAnimations();
+        Runnable[] loadTasks = {
+                () -> playerAnimations = loadPlayerSpriteSheet(PLAYER_SHEET),
+                () -> playerTransformAnimations = loadPlayerSpriteSheet(PLAYER_TRANSFORM_SHEET),
+                this::loadEnemyAnimations,
+                this::loadObjectAnimations,
+                this::loadNpcAnimations,
+                this::loadFollowerAnimations,
+                this::loadProjectileAndSpellAnimations,
+                this::loadEffectAnimations
+        };
+
+        AtomicInteger completedTasks = new AtomicInteger(0);
+        double startProgress = 0.05;
+        double totalProgressAllocated = 0.50;
+
+        CompletableFuture<?>[] futures = Arrays.stream(loadTasks).map(task ->
+                CompletableFuture.runAsync(() -> {
+                    task.run();
+                    int done = completedTasks.incrementAndGet();
+                    double progress = startProgress + ((double) done / loadTasks.length) * totalProgressAllocated;
+                    LoadingProgressTracker.getInstance().updateProgress(progress);
+                })
+        ).toArray(CompletableFuture[]::new);
+
+        CompletableFuture.allOf(futures).join();
     }
 
     // Animation loader
@@ -314,6 +337,27 @@ public class SpriteManager {
         return loadFromSprite(sheet, frames, row, type.getWid(), type.getHei(), 0, type.getSpriteW(), type.getSpriteH());
     }
 
+    // Follower
+    private void loadFollowerAnimations() {
+        loadAnitaFollower();
+    }
+
+    private void loadAnitaFollower() {
+        BufferedImage[][] anim = new BufferedImage[25][];
+        anim[Anim.IDLE.ordinal()] = loadFromSprite(ANITA_FOLLOWER_SHEET, 8, 0, FLW_WIDTH, FLW_HEIGHT, 0, ANITA_FOLLOWER_W, ANITA_FOLLOWER_H);
+        anim[Anim.RUN.ordinal()] = loadFromSprite(ANITA_FOLLOWER_SHEET, 8, 1, FLW_WIDTH, FLW_HEIGHT, 0, ANITA_FOLLOWER_W, ANITA_FOLLOWER_H);
+        anim[Anim.JUMP.ordinal()] = loadFromSprite(ANITA_FOLLOWER_SHEET, 3, 2, FLW_WIDTH, FLW_HEIGHT, 0, ANITA_FOLLOWER_W, ANITA_FOLLOWER_H);
+        anim[Anim.FALL.ordinal()] = loadFromSprite(ANITA_FOLLOWER_SHEET, 3, 3, FLW_WIDTH, FLW_HEIGHT, 0, ANITA_FOLLOWER_W, ANITA_FOLLOWER_H);
+        anim[Anim.ATTACK_1.ordinal()] = loadFromSprite(ANITA_FOLLOWER_SHEET, 5, 9, FLW_WIDTH, FLW_HEIGHT, 0, ANITA_FOLLOWER_W, ANITA_FOLLOWER_H);
+        anim[Anim.ATTACK_2.ordinal()] = loadFromSprite(ANITA_FOLLOWER_SHEET, 7, 10, FLW_WIDTH, FLW_HEIGHT, 0, ANITA_FOLLOWER_W, ANITA_FOLLOWER_H);
+        anim[Anim.SPELL_1.ordinal()]  = loadFromSprite(ANITA_FOLLOWER_SHEET, 17, 11, FLW_WIDTH, FLW_HEIGHT, 0, ANITA_FOLLOWER_W, ANITA_FOLLOWER_H);
+        anim[Anim.HIT.ordinal()]  = loadFromSprite(ANITA_FOLLOWER_SHEET, 5, 14, FLW_WIDTH, FLW_HEIGHT, 0, ANITA_FOLLOWER_W, ANITA_FOLLOWER_H);
+        anim[Anim.BLOCK.ordinal()]  = loadFromSprite(ANITA_FOLLOWER_SHEET, 10, 13, FLW_WIDTH, FLW_HEIGHT, 1, ANITA_FOLLOWER_W, ANITA_FOLLOWER_H);
+        anim[Anim.DEATH.ordinal()]  = loadFromSprite(ANITA_FOLLOWER_SHEET, 10, 15, FLW_WIDTH, FLW_HEIGHT, 0, ANITA_FOLLOWER_W, ANITA_FOLLOWER_H);
+
+        followerAnimations.put(NpcType.ANITA, anim);
+    }
+
     // Projectiles & Spells
     private void loadProjectileAndSpellAnimations() {
         lightningAnimations = loadFromSprite(LIGHTNING_SHEET, 8, 0, LIGHTNING_WIDTH, LIGHTNING_HEIGHT, 0, LIGHTNING_W, LIGHTNING_H);
@@ -359,6 +403,10 @@ public class SpriteManager {
 
     public BufferedImage[] getNpcAnimations(NpcType type) {
         return npcAnimations.get(type);
+    }
+
+    public BufferedImage[][] getFollowerAnimations(NpcType type) {
+        return followerAnimations.get(type);
     }
 
     public BufferedImage[][] getCoinAnimations() {

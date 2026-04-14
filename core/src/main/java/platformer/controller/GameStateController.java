@@ -8,6 +8,7 @@ import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
 import platformer.event.EventBus;
 import platformer.event.events.ui.OverlayChangeEvent;
+import platformer.model.entities.follower.Follower;
 import platformer.model.entities.player.Player;
 import platformer.model.entities.player.PlayerAction;
 import platformer.model.gameObjects.GameObject;
@@ -85,6 +86,7 @@ public class GameStateController {
         initAction(pressActions, "QuickUse2", () -> player.getInventory().useQuickSlotItem(1, player));
         initAction(pressActions, "QuickUse3", () -> player.getInventory().useQuickSlotItem(2, player));
         initAction(pressActions, "QuickUse4", () -> player.getInventory().useQuickSlotItem(3, player));
+        initAction(pressActions, "Look Down", () -> player.addAction(PlayerAction.LOOK_DOWN));
     }
 
     private void initReleaseActions() {
@@ -126,6 +128,7 @@ public class GameStateController {
             EventBus.getInstance().publish(new OverlayChangeEvent(PlayingState.MINIMAP));
             context.getGameState().getOverlayManager().refreshCurrentOverlay();
         });
+        initAction(releaseActions, "Look Down", () -> player.removeAction(PlayerAction.LOOK_DOWN));
     }
 
     // Mouse
@@ -210,6 +213,13 @@ public class GameStateController {
         else if (Objects.equals(id, "Herb")) {
             GameObject herb = context.getObjectManager().getIntersection();
             if (herb instanceof Herb) context.getObjectManager().harvestHerb((Herb)herb);
+        }
+        else if (Objects.equals(id, "Revive")) {
+            Follower follower = context.getObjectManager().getActiveFollower();
+            if (follower != null) {
+                follower.revive();
+                context.getObjectManager().setIntersection(null);
+            }
         }
         else activateDialogue(id);
     }

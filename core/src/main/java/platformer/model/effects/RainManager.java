@@ -2,7 +2,6 @@ package platformer.model.effects;
 
 import platformer.model.effects.particles.RainParticle;
 import java.awt.*;
-import java.util.stream.Stream;
 
 /**
  * Manages the atmospheric rain effect for the game.
@@ -24,7 +23,10 @@ public class RainManager {
      * Updates all rain particles if the rain effect is active.
      */
     public void update() {
-        if (isRaining) Stream.of(rainParticles).parallel().forEach(RainParticle::update);
+        if (!isRaining) return;
+        for (RainParticle rainParticle : rainParticles) {
+            rainParticle.update();
+        }
     }
 
     /**

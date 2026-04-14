@@ -4,6 +4,7 @@ import platformer.animation.Anim;
 import platformer.audio.Audio;
 import platformer.audio.types.Sound;
 import platformer.model.entities.Direction;
+import platformer.model.entities.Entity;
 import platformer.model.entities.player.Player;
 
 import java.awt.*;
@@ -35,6 +36,7 @@ public class Wraith extends Enemy {
     // Attack
     @Override
     public boolean hit(double damage, boolean enableBlock, boolean hitSound) {
+        if (entityState == Anim.DEATH || !alive) return false;
         currentHealth -= damage;
         if (hitSound) Audio.getInstance().getAudioPlayer().playHitSound();
         if (currentHealth <= 0) {
@@ -63,19 +65,19 @@ public class Wraith extends Enemy {
         setEnemyAction(Anim.DEATH);
     }
 
-    // Skeleton Core
-    private void updateBehavior(int[][] levelData, Player player) {
+    // Wraith Core
+    private void updateBehavior(int[][] levelData, Entity target) {
         switch (entityState) {
             case IDLE:
                 idleAction();
                 break;
             case RUN:
             case WALK:
-                moveAction(levelData, player);
+                moveAction(levelData, target);
                 break;
             case ATTACK_1:
             case ATTACK_2:
-                attackAction(player);
+                attackAction(target);
                 break;
             default: break;
         }
@@ -87,9 +89,9 @@ public class Wraith extends Enemy {
         animSpeed = 25;
     }
 
-    private void moveAction(int[][] levelData, Player player) {
-        if (canSeePlayer(levelData, player)) directToPlayer(player);
-        if (canSeePlayer(levelData, player) && isPlayerCloseForAttack(player)) {
+    private void moveAction(int[][] levelData, Entity target) {
+        if (canSeeEntity(levelData, target)) directToEntity(target);
+        if (canSeeEntity(levelData, target) && isEntityCloseForAttack(target)) {
             Random rand = new Random();
             boolean x = rand.nextBoolean();
             setEnemyAction(x ? Anim.ATTACK_1 : Anim.ATTACK_2);
@@ -105,23 +107,28 @@ public class Wraith extends Enemy {
         changeDirection();
     }
 
-    private void attackAction(Player player) {
+    private void attackAction(Entity target) {
         if (animIndex == 0) attackCheck = false;
-        else if (animIndex == 3 && !attackCheck) checkPlayerHit(attackBox, player);
+        else if (animIndex == 3 && !attackCheck) checkEntityHit(attackBox, target);
     }
 
     // Update
     @Override
-    public void update(int[][] levelData, Player player) {
-        updateMove(levelData, player);
+    public void update(int[][] levelData, Player player, Entity follower) {
+        if (freezeTick > 0) {
+            freezeTick--;
+            return;
+        }
+        Entity target = getCloseTarget(player, follower);
+        updateMove(levelData, target);
         updateAnimation();
         updateAttackBox();
     }
 
-    public void updateMove(int[][] levelData, Player player) {
+    public void updateMove(int[][] levelData, Entity target) {
         if (!isEntityOnFloor(hitBox, levelData)) inAir = true;
         if (inAir) updateInAir(levelData, gravity, collisionFallSpeed);
-        else updateBehavior(levelData, player);
+        else updateBehavior(levelData, target);
     }
 
     private void updateAttackBox() {

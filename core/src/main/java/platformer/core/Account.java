@@ -18,6 +18,7 @@ public class Account {
     private int level, exp;
     private List<String> perks = new ArrayList<>();
     private List<String> items = new ArrayList<>();
+    private String explorationData;
 
     private String lastTimeSaved;
     private long playtime;
@@ -81,6 +82,7 @@ public class Account {
         setSpawn(slotData.getSpawn());
         setTokens(slotData.getTokens());
         setPlaytime(slotData.getPlaytime());
+        setExplorationData(slotData.getExplorationData());
     }
 
     // Timer

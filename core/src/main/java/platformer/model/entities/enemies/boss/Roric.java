@@ -10,6 +10,7 @@ import platformer.event.events.roric.RoricEffectEvent;
 import platformer.event.events.roric.RoricPhaseChangeEvent;
 import platformer.model.entities.Cooldown;
 import platformer.model.entities.Direction;
+import platformer.model.entities.Entity;
 import platformer.model.entities.enemies.Enemy;
 import platformer.model.entities.enemies.EnemyManager;
 import platformer.model.entities.enemies.EnemyType;
@@ -48,11 +49,8 @@ public class Roric extends Enemy {
     private boolean isVisible = true;
 
     // Physics
-    private static final double UPWARD_GRAVITY = 0.016 * SCALE;
-    private static final double DOWNWARD_GRAVITY = 0.025 * SCALE;
     private static final double COLLISION_FALL_SPEED = 0.6 * SCALE;
     protected double xSpeed = 0;
-    protected final double jumpSpeed = -3.0 * SCALE;
 
     // Current state
     private ObjectManager objectManager;
@@ -60,9 +58,8 @@ public class Roric extends Enemy {
     private Player currentPlayerTarget;
     private int[][] currentLevelData;
 
-    // Offsets
+    // Offset
     private final int attackBoxOffsetX = (int) (40 * SCALE);
-    private final int jumpOffsetX = (int) (1.5 * SCALE);
 
     public Roric(int xPos, int yPos) {
         super(xPos, yPos, RORIC_WIDTH, RORIC_HEIGHT, EnemyType.RORIC, 16);
@@ -86,7 +83,7 @@ public class Roric extends Enemy {
     }
 
     @Override
-    public void update(int[][] levelData, Player player) {
+    public void update(int[][] levelData, Player player, Entity follower) {
         // Not used
     }
 
@@ -107,7 +104,7 @@ public class Roric extends Enemy {
         this.spellManager = spellManager;
         this.currentPlayerTarget = player;
         this.currentLevelData = levelData;
-        if (!start && isPlayerCloseForAttack(player)) {
+        if (!start && isEntityCloseForAttack(player)) {
             start = true;
             phaseManager.startFight();
             EventBus.getInstance().publish(new RoricPhaseChangeEvent(RoricPhaseManager.RoricPhase.INTRO));
@@ -168,8 +165,9 @@ public class Roric extends Enemy {
     protected void updateInAir(int[][] levelData, double gravity, double collisionFallSpeed) {
         if (attackHandler.isFloating() || state == RoricState.CELESTIAL_RAIN) return;
 
-        if (airSpeed < 0) airSpeed += UPWARD_GRAVITY;
-        else airSpeed += DOWNWARD_GRAVITY;
+        PhysicsProfile physics = getCurrentPhysics();
+        if (airSpeed < 0) airSpeed += physics.upGravity();
+        else airSpeed += physics.downGravity();
 
         double actualDx = this.objectManager.checkSolidObjectCollision(hitBox, xSpeed);
         if (actualDx != xSpeed) xSpeed = 0;
@@ -260,12 +258,15 @@ public class Roric extends Enemy {
      */
     public void jump(int[][] levelData) {
         if (inAir) return;
+
+        PhysicsProfile physics = getCurrentPhysics();
+
         inAir = true;
-        airSpeed = jumpSpeed;
+        airSpeed = physics.jumpSpeed();
         setEnemyAction(Anim.JUMP_FALL);
         int currentTileX = (int) (hitBox.x / TILES_SIZE);
         int spaceToRight = levelData.length - currentTileX;
-        this.xSpeed = (spaceToRight > currentTileX) ? jumpOffsetX : -jumpOffsetX;
+        this.xSpeed = (spaceToRight > currentTileX) ? physics.jumpOffsetX() : -physics.jumpOffsetX();
         setDirection(xSpeed > 0 ? Direction.RIGHT : Direction.LEFT);
         EventBus.getInstance().publish(new RoricEffectEvent(this, RoricEffectEvent.RoricEffectType.JUMP));
     }
@@ -397,4 +398,43 @@ public class Roric extends Enemy {
     public void setAttackCooldown(double value) {
         cooldown[Cooldown.ATTACK.ordinal()] = value;
     }
+
+    /**
+     * A configuration object that encapsulates a complete set of physical constants for Roric's behavior.
+     * <p>
+     * It allows the boss to switch between different movement feels depending on the current active
+     * fight phase, without cluttering the core physics logic with conditional branches.
+     *
+     * @param upGravity    The gravitational acceleration applied while the entity is ascending (y-velocity is negative).
+     * @param downGravity  The gravitational acceleration applied while the entity is descending (y-velocity is positive).
+     * @param jumpSpeed    The initial vertical velocity applied at the start of a jump arc.
+     * @param jumpOffsetX  The horizontal velocity applied during a jump to help repositioning across the arena.
+     */
+    private record PhysicsProfile(
+            double upGravity,
+            double downGravity,
+            double jumpSpeed,
+            double jumpOffsetX
+    ) {}
+
+    private static final PhysicsProfile NORMAL_PHYSICS = new PhysicsProfile(
+            0.04 * SCALE,
+            0.06 * SCALE,
+            -4.75 * SCALE,
+            2.4 * SCALE
+    );
+    private static final PhysicsProfile FINALE_PHYSICS = new PhysicsProfile(
+            0.016 * SCALE,
+            0.025 * SCALE,
+            -3.0 * SCALE,
+            1.5 * SCALE
+    );
+
+    private PhysicsProfile getCurrentPhysics() {
+        if (phaseManager.getCurrentPhase() == RoricPhaseManager.RoricPhase.FINALE) {
+            return FINALE_PHYSICS;
+        }
+        else return NORMAL_PHYSICS;
+    }
+
 }

@@ -92,4 +92,8 @@ public class RoricClone extends Roric {
     public boolean isVisible() {
         return true;
     }
+
+    public void kill() {
+        this.alive = false;
+    }
 }

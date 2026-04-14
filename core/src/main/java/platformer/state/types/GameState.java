@@ -128,7 +128,7 @@ public class GameState extends AbstractState implements State {
             eventHandlers.forEach(EventHandler::continuousUpdate);
             world.update();
             context.getMinimapManager().update();
-            camera.update(getPlayer().getHitBox());
+            camera.update(getPlayer());
             overlayManager.update(state);
         } catch (Exception ignored) {}
     }
@@ -188,6 +188,7 @@ public class GameState extends AbstractState implements State {
         this.getPlayer().getInventory().fillItems(Framework.getInstance().getAccount().getItems());
         context.getPerksManager().loadUnlockedPerks(Framework.getInstance().getAccount().getPerks());
         context.getLevelManager().loadSavePoint(Framework.getInstance().getAccount().getSpawn());
+        context.getMinimapManager().loadExplorationData(Framework.getInstance().getAccount().getExplorationData());
         this.overlayManager.reset();
         context.getQuestManager().reset();
         reset();
@@ -204,6 +205,7 @@ public class GameState extends AbstractState implements State {
         getPlayer().getPlayerDataManager().loadPlayerData();
         context.getPerksManager().reset();
         context.getPerksManager().loadUnlockedPerks(Framework.getInstance().getAccount().getPerks());
+        context.getMinimapManager().loadExplorationData(Framework.getInstance().getAccount().getExplorationData());
         getPlayer().getInventory().fillItems(Framework.getInstance().getAccount().getItems());
         Logger.getInstance().notify("Player data fully refreshed from loaded save.", Message.INFORMATION);
     }

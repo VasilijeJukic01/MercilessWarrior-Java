@@ -846,6 +846,10 @@ public class Player extends Entity {
         return 0;
     }
 
+    public double getAirSpeed() {
+        return super.airSpeed;
+    }
+
     public int getAttackDmg() {
         return checkAction(PlayerAction.TRANSFORM) ? transformAttackDmg : attackDmg;
     }
