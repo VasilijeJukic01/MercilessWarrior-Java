@@ -33,9 +33,7 @@ import static platformer.constants.Constants.*;
 public class Level {
 
     // Data
-    private final String name;
     private final String tilesetName;
-    private int npcIndicator = 0;
     private final BufferedImage levelImg;
     private int[][] lvlData, decoData, layerData;
 
@@ -43,7 +41,6 @@ public class Level {
     private final Map<EnemyType, List<Enemy>> enemiesMap = new HashMap<>();
     private final Map<ObjType, List<GameObject>> objectsMap = new HashMap<>();
     private final Map<SpellType, List<Spell>> spellsMap = new HashMap<>();
-    private static final Map<String, List<NpcType>> npcMap = new HashMap<>();
 
     private final List<Trigger> triggers = new ArrayList<>();
     private final Map<LvlTriggerType, Point> spawnPoints = new HashMap<>();
@@ -53,15 +50,7 @@ public class Level {
     private int xMaxTilesOffset, xMaxLevelOffset;
     private int yMaxTilesOffset, yMaxLevelOffset;
 
-    static {
-        npcMap.put("level02", List.of(NpcType.ANITA));
-        npcMap.put("level11", List.of(NpcType.NIKOLAS));
-        npcMap.put("level10", List.of(NpcType.SIR_DEJANOVIC));
-        npcMap.put("level13", List.of(NpcType.RORIC));
-    }
-
-    public Level(String name, BufferedImage levelImg, String tilesetName) {
-        this.name = name;
+    public Level(BufferedImage levelImg, String tilesetName) {
         this.levelImg = levelImg;
         this.tilesetName = tilesetName;
         init();
@@ -153,12 +142,6 @@ public class Level {
                 break;
             case BOARD:
                 addGameObject(new Board(ObjType.values()[valueB], i*TILES_SIZE, j*TILES_SIZE));
-                break;
-            case NPC:
-                if (npcMap.containsKey(name)) {
-                    List<NpcType> npcTypes = npcMap.get(name);
-                    addGameObject(new Npc(ObjType.values()[valueB], i*TILES_SIZE, j*TILES_SIZE, npcTypes.get(npcIndicator++)));
-                }
                 break;
             case LAVA:
                 addGameObject(new Lava(ObjType.values()[valueB], i*TILES_SIZE, j*TILES_SIZE));
@@ -261,12 +244,16 @@ public class Level {
         for (int i = panelWidth * 2; i < levelImg.getWidth(); i++) {
             for (int j = 0; j < levelImg.getHeight(); j++) {
                 Color color = new Color(levelImg.getRGB(i, j));
-                int triggerValue = color.getBlue();
+                int r = color.getRed();
+                int g = color.getGreen();
+                int b = color.getBlue();
 
-                if (triggerValue < LvlTriggerType.MAX.ordinal() && color.getRed() == 254 && color.getGreen() == 254) {
-                    LvlTriggerType type = LvlTriggerType.values()[triggerValue];
+                // Standard Triggers (R=254, G=254)
+                if (b < LvlTriggerType.MAX.ordinal() && r == 254 && g == 254) {
+                    LvlTriggerType type = LvlTriggerType.values()[b];
                     int worldX = (i - (panelWidth * 2)) * TILES_SIZE;
                     int worldY = j * TILES_SIZE;
+
                     if (type.name().startsWith("SPAWN")) {
                         spawnPoints.put(type, new Point(worldX, worldY));
                     }
@@ -274,6 +261,13 @@ public class Level {
                         Rectangle2D.Double bounds = new Rectangle2D.Double(worldX, worldY, TILES_SIZE, TILES_SIZE);
                         triggers.add(new Trigger(bounds, type));
                     }
+                }
+                // NPC Triggers (R=0, G=0)
+                else if (r == 0 && g == 0 && b < NpcType.values().length) {
+                    int worldX = (i - (panelWidth * 2)) * TILES_SIZE;
+                    int worldY = j * TILES_SIZE;
+                    NpcType type = NpcType.values()[b];
+                    addGameObject(new Npc(ObjType.NPC, worldX, worldY, type));
                 }
             }
         }
@@ -293,7 +287,6 @@ public class Level {
     }
 
     private void reset() {
-        this.npcIndicator = 0;
         enemiesMap.clear();
         objectsMap.clear();
         spellsMap.clear();

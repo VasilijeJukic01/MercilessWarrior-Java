@@ -119,7 +119,7 @@ public class LevelManager {
                     String levelName = "level" + i + j;
                     LevelMetadata meta = loadMetadataForLevel(levelName);
                     String tileset = (meta != null && meta.getTileset() != null) ? meta.getTileset() : "Forest";
-                    levels[i][j] = new Level(levelName, levelsImg[i][j], tileset);
+                    levels[i][j] = new Level(levelsImg[i][j], tileset);
                 }
             }
         }
@@ -136,7 +136,7 @@ public class LevelManager {
         if (arenaImg != null) {
             arenaLevelMetadata = loadMetadataForLevel("levelarena1");
             String tileset = (arenaLevelMetadata != null && arenaLevelMetadata.getTileset() != null) ? arenaLevelMetadata.getTileset() : "Forest";
-            arenaLevel = new Level("arena1", arenaImg, tileset);
+            arenaLevel = new Level(arenaImg, tileset);
         }
     }
 
