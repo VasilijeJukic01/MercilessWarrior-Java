@@ -1,5 +1,6 @@
 package platformer.ui.overlays;
 
+import platformer.animation.SpriteManager;
 import platformer.model.dialogue.Dialogue;
 import platformer.model.gameObjects.GameObject;
 import platformer.model.gameObjects.npc.Npc;
@@ -8,14 +9,15 @@ import platformer.model.dialogue.question.Question;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+import java.awt.geom.Area;
 import java.awt.geom.RoundRectangle2D;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 
 import static platformer.constants.AnimConstants.DIALOGUE_ANIM_SPEED;
 import static platformer.constants.AnimConstants.DIALOGUE_ARR_ANIM_SPEED;
-import static platformer.constants.Constants.FONT_DIALOGUE;
-import static platformer.constants.Constants.SCALE;
+import static platformer.constants.Constants.*;
 import static platformer.constants.UI.*;
 
 /**
@@ -36,6 +38,10 @@ public class DialogueOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
     private String visibleText = "";
     private boolean changeText = true;
     private boolean onLastQuestion;
+
+    private RoundRectangle2D portraitBox;
+    private Area combinedShape;
+    private BufferedImage currPortrait;
 
     private GameObject intersectionObject;
 
@@ -104,11 +110,13 @@ public class DialogueOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
     public void render(Graphics g) {
         if (dialogues == null || dialogues.isEmpty()) return;
         Graphics2D g2d = (Graphics2D) g;
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2d.setColor(new Color(0, 0, 0, 210));
-        g2d.fill(dialogueBox);
+        g2d.fill(combinedShape);
         g2d.setColor(Color.WHITE);
         g2d.setStroke(new BasicStroke(3));
-        g2d.draw(dialogueBox);
+        g2d.draw(combinedShape);
+        renderPortrait(g2d);
         renderDialogue(g);
     }
 
@@ -165,6 +173,21 @@ public class DialogueOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
         int xPos = DIALOGUE_BOX_X + (int)(20 * SCALE);
         int yPos = DIALOGUE_Y + DIALOGUE_BOX_HEI - (int)(30 * SCALE);
         g.drawString("[Press Y/N to answer]", xPos, yPos);
+    }
+
+    private void renderPortrait(Graphics2D g2d) {
+        if (currPortrait == null || portraitBox == null) return;
+        int padding = (int) (1 * SCALE);
+        int pSize = (int) (portraitBox.getWidth() - (padding * 2));
+        int imgX = (int) portraitBox.getX() + padding;
+        int imgY = (int) portraitBox.getY() + padding;
+
+        Shape oldClip = g2d.getClip();
+        RoundRectangle2D imgClip = new RoundRectangle2D.Double(imgX, imgY, pSize, pSize, 10, 10);
+
+        g2d.setClip(imgClip);
+        g2d.drawImage(currPortrait, imgX, imgY, pSize, pSize, null);
+        g2d.setClip(oldClip);
     }
 
     // Reset
@@ -238,6 +261,25 @@ public class DialogueOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
         return true;
     }
 
+    private void configurePortrait() {
+        combinedShape = new Area(dialogueBox);
+        portraitBox = null;
+        currPortrait = null;
+
+        if (intersectionObject instanceof Npc) {
+            Npc npc = (Npc) intersectionObject;
+            currPortrait = SpriteManager.getInstance().getNpcPortrait(npc.getNpcType());
+            int portraitSize = (int) (40 * SCALE);
+            int padding = (int) (1 * SCALE);
+            int frameSize = portraitSize + padding;
+            int xPos = DIALOGUE_BOX_X + DIALOGUE_BOX_WID - frameSize;
+            int yPos = (int) (DIALOGUE_BOX_Y - frameSize + (7 * SCALE));
+
+            portraitBox = new RoundRectangle2D.Double(xPos, yPos, frameSize, frameSize, 10, 10);
+            combinedShape.add(new Area(portraitBox));
+        }
+    }
+
     /**
      * Sets the dialogues and intersection object.
      *
@@ -248,6 +290,7 @@ public class DialogueOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
         this.dialogues = dialogue.getLines();
         this.question = dialogue.getQuestion();
         this.intersectionObject = intersectionObject;
+        configurePortrait();
         reset();
     }
 

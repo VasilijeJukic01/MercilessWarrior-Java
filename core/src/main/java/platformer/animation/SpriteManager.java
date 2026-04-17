@@ -48,6 +48,8 @@ public class SpriteManager {
     private BufferedImage arrowImage;
     private BufferedImage roricArrowImage;
 
+    private final Map<NpcType, BufferedImage> npcIcons = new HashMap<>();
+
     private SpriteManager() {}
 
     public static SpriteManager getInstance() {
@@ -322,6 +324,12 @@ public class SpriteManager {
         npcAnimations.put(NpcType.SIR_DEJANOVIC, loadSingleNpcAnimation(SIR_DEJANOVIC_SHEET, 4, 0, NpcType.SIR_DEJANOVIC));
         npcAnimations.put(NpcType.KRYSANTHE,     loadSingleNpcAnimation(KRYSANTHE_SHEET, 8, 0, NpcType.KRYSANTHE));
         npcAnimations.put(NpcType.RORIC,         loadFromSprite(RORIC_SHEET, 12, 0, NpcType.RORIC.getWid(), NpcType.RORIC.getHei(), 0, RORIC_W, RORIC_H));
+
+        for (NpcType type : NpcType.values()) {
+            String path = AVATAR_PATH.replace("$", type.name());
+            BufferedImage portrait = ImageUtils.importImage(path, -1, -1);
+            npcIcons.put(type, portrait);
+        }
     }
 
     /**
@@ -459,6 +467,10 @@ public class SpriteManager {
 
     public BufferedImage getRoricArrowImage() {
         return roricArrowImage;
+    }
+
+    public BufferedImage getNpcPortrait(NpcType type) {
+        return npcIcons.get(type);
     }
 
 }
