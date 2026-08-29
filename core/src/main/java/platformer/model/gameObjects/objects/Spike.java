@@ -30,13 +30,13 @@ public class Spike extends GameObject implements Interactable {
     private void calculateHitboxAndOffsets() {
         if (direction == Direction.LEFT || direction == Direction.RIGHT) {
             initHitBox(SPIKE_HB_HEI, SPIKE_HB_WID);
-            xOffset = (direction == Direction.LEFT) ? (SPIKE_WID - SPIKE_HB_HEI + (int)(16 * SCALE)) : - (int)(16 * SCALE);
-            yOffset = (SPIKE_HEI - SPIKE_HB_WID) / 2;
+            xOffset = (direction == Direction.LEFT) ? (SPIKE_HEI - SPIKE_HB_HEI + SPIKE_OFFSET_X) : -SPIKE_OFFSET_X;
+            yOffset = (SPIKE_WID - SPIKE_HB_WID) / 2;
         }
         else {
             initHitBox(SPIKE_HB_WID, SPIKE_HB_HEI);
             xOffset = (SPIKE_WID - SPIKE_HB_WID) / 2;
-            yOffset = (direction == Direction.UP) ? (SPIKE_HEI - SPIKE_HB_HEI + (int)(10 * SCALE)) : - (int)(10 * SCALE);
+            yOffset = (direction == Direction.UP) ? (SPIKE_HEI - SPIKE_HB_HEI + SPIKE_OFFSET_Y) : -SPIKE_OFFSET_Y;
         }
         hitBox.x = this.xPos + xOffset;
         hitBox.y = this.yPos + yOffset;
@@ -49,16 +49,21 @@ public class Spike extends GameObject implements Interactable {
 
     @Override
     public void render(Graphics g, int xLevelOffset, int yLevelOffset, BufferedImage[] animations) {
-        int index = (direction == Direction.UP) ? 5 : 0;
-
         int x = xPos, y = yPos;
+        int drawWid = SPIKE_WID;
+        int drawHei = SPIKE_HEI;
+
+        if (direction == Direction.LEFT || direction == Direction.RIGHT) {
+            drawWid = SPIKE_HEI;
+            drawHei = SPIKE_WID;
+        }
 
         if (direction == Direction.LEFT) x += SPIKE_OFFSET_X;
         else if (direction == Direction.RIGHT) x -= SPIKE_OFFSET_X;
         else if (direction == Direction.DOWN) y -= SPIKE_OFFSET_Y;
         else if (direction == Direction.UP) y += SPIKE_OFFSET_Y;
 
-        g.drawImage(animations[index], x - xLevelOffset, y - yLevelOffset, SPIKE_WID, SPIKE_HEI, null);
+        g.drawImage(animations[0], x - xLevelOffset, y - yLevelOffset, drawWid, drawHei, null);
         hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.MAGENTA);
     }
 

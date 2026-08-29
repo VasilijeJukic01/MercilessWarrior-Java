@@ -41,7 +41,7 @@ public final class FilePaths {
     // Objects
     public static final String POTIONS_SHEET = "/images/objs/potions_sprites.png";
     public static final String CONTAINERS_SHEET = "/images/objs/objects_sprites.png";
-    public static final String SPIKES_SHEET = "/images/objs/spikes.png";
+    public static final String SPIKES_SHEET = "/images/objs/Spike.png";
     public static final String ARROW_TRAP_SHEET = "/images/objs/arrowTrap.png";
     public static final String SHOP_SHEET = "/images/objs/shop.png";
     public static final String COIN_SHEET = "/images/objs/CoinSprite.png";

@@ -75,6 +75,7 @@
     { "colorValue": 4, "id": "DOOR", "wid": 64, "hei": 128, "xOffset": -64, "yOffset": 0 },
     { "colorValue": 5, "id": "SHELF", "wid": 128, "hei": 192, "xOffset": -128, "yOffset": 0 },
     { "colorValue": 6, "id": "TABLE1", "wid": 128, "hei": 64, "xOffset": 0, "yOffset": 0 },
-    { "colorValue": 7, "id": "CHAIR_RIGHT", "filename": "CHAIR_LEFT", "flipped": true, "wid": 64, "hei": 96, "xOffset": -32, "yOffset": 0 }
+    { "colorValue": 7, "id": "CHAIR_RIGHT", "filename": "CHAIR_LEFT", "flipped": true, "wid": 64, "hei": 96, "xOffset": -32, "yOffset": 0 },
+    {"colorValue":99,"id":"AMBIENT_LIGHT","wid":32,"hei":32,"xOffset":0,"yOffset":0}
   ]
 }

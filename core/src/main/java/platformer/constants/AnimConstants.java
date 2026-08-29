@@ -38,7 +38,7 @@ public final class AnimConstants {
 
     public static final int POTION_W = 12, POTION_H = 16;
     public static final int CONTAINER_W = 40, CONTAINER_H = 30;
-    public static final int SPIKES_W = 32, SPIKES_H = 32;
+    public static final int SPIKES_W = 110, SPIKES_H = 62;
     public static final int AT_W = 96, AT_H = 32;
     public static final int SHOP_W = 118, SHOP_H = 128;
     public static final int COIN_W = 16, COIN_H = 16;
@@ -48,7 +48,7 @@ public final class AnimConstants {
     public static final int TOTEM_W = 50, TOTEM_H = 42;
     public static final int ST_W = 64, ST_H = 64;
     public static final int CANDLE_W = 23, CANDLE_H = 57;
-    public static final int LOOT_W = 74, LOOT_H = 24;
+    public static final int LOOT_W = 99, LOOT_H = 79;
     public static final int TABLE_W = 46, TABLE_H = 25;
     public static final int BOARD_W = 68, BOARD_H = 61;
     public static final int LAVA_W = 32, LAVA_H = 32;

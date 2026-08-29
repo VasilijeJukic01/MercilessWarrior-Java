@@ -72,7 +72,8 @@ public enum LvlObjType {
     PLANT12("PLANT12",                TILES_SIZE, TILES_SIZE, 8, 2),
     PLANT13("PLANT13",                TILES_SIZE, TILES_SIZE, 8, 2),
     CRYSTAL1("CRYSTAL1",                TILES_SIZE, TILES_SIZE, 8, 2),
-    CRYSTAL2("CRYSTAL2",                TILES_SIZE, TILES_SIZE, 8, 2);
+    CRYSTAL2("CRYSTAL2",                TILES_SIZE, TILES_SIZE, 8, 2),
+    AMBIENT_LIGHT("AMBIENT_LIGHT", 0, 0, 0, 0);
 
     private final String id;
     private final int wid, hei;

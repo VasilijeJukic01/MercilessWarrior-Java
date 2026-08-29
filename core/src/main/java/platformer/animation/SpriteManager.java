@@ -279,13 +279,11 @@ public class SpriteManager {
         objectAnimations.put(ObjType.SMASH_TRAP, loadFromSprite(SMASH_TRAP_SHEET, 14, 0, SMASH_TRAP_WID, SMASH_TRAP_HEI, 0, ST_W, ST_H));
         objectAnimations.put(ObjType.RORIC_TRAP, loadFromSprite(RORIC_SPELLS_SHEET, 8, 6, RORIC_TRAP_WID, RORIC_TRAP_HEI, 0, RORIC_PROJECTILE_W, RORIC_PROJECTILE_H));
         // Spikes
-        BufferedImage[] spikeUpFrames = loadFromSprite(SPIKES_SHEET, 10, 0, SPIKE_WID, SPIKE_HEI, 0, SPIKES_W, SPIKES_H);
-        objectAnimations.put(ObjType.SPIKE_UP, spikeUpFrames);
-        if (spikeUpFrames.length > 5) {
-            objectAnimations.put(ObjType.SPIKE_DOWN, new BufferedImage[]{ImageUtils.rotateImage(spikeUpFrames[5], 180)});
-            objectAnimations.put(ObjType.SPIKE_LEFT, new BufferedImage[]{ImageUtils.rotateImage(spikeUpFrames[5], 270)});
-            objectAnimations.put(ObjType.SPIKE_RIGHT, new BufferedImage[]{ImageUtils.rotateImage(spikeUpFrames[5], 90)});
-        }
+        BufferedImage[] spikes = loadFromSprite(SPIKES_SHEET, 1, 0, SPIKE_WID, SPIKE_HEI, 0, SPIKES_W, SPIKES_H);
+        objectAnimations.put(ObjType.SPIKE_UP, spikes);
+        objectAnimations.put(ObjType.SPIKE_DOWN, new BufferedImage[]{ImageUtils.rotateImage(spikes[0], 180)});
+        objectAnimations.put(ObjType.SPIKE_LEFT, new BufferedImage[]{ImageUtils.rotateImage(spikes[0], 270)});
+        objectAnimations.put(ObjType.SPIKE_RIGHT, new BufferedImage[]{ImageUtils.rotateImage(spikes[0], 90)});
         // Interactive Objects
         objectAnimations.put(ObjType.SHOP, loadFromSprite(SHOP_SHEET, 6, 0, SHOP_WID, SHOP_HEI, 0, SHOP_W, SHOP_H));
         objectAnimations.put(ObjType.BLOCKER, loadFromSprite(BLOCKER_SHEET, 12, 0, BLOCKER_WID, BLOCKER_HEI, 0, BLOCKER_W, BLOCKER_H));

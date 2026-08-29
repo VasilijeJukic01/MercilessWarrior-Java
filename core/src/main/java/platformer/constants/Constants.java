@@ -214,12 +214,12 @@ public final class Constants {
     public static final int POTION_OFFSET_X = scale(3);
     public static final int POTION_OFFSET_Y = scale(2);
 
-    public static final int SPIKE_WID = scale(32);
-    public static final int SPIKE_HEI = scale(36);
+    public static final int SPIKE_WID = scale(40);
+    public static final int SPIKE_HEI = scale(30);
     public static final int SPIKE_HB_WID = scale(32);
     public static final int SPIKE_HB_HEI = scale(18);
-    public static final int SPIKE_OFFSET_X = scale(20);
-    public static final int SPIKE_OFFSET_Y = scale(16);
+    public static final int SPIKE_OFFSET_X = scale(12);
+    public static final int SPIKE_OFFSET_Y = scale(10);
 
     public static final int ARROW_TRAP_WID = scale(96);
     public static final int ARROW_TRAP_HEI = scale(32);
@@ -282,11 +282,11 @@ public final class Constants {
     public static final int CANDLE_OFFSET_Y = scale(12);
 
     public static final int LOOT_WID = scale(40);
-    public static final int LOOT_HEI = scale(13);
+    public static final int LOOT_HEI = scale(32);
     public static final int LOOT_HB_WID = scale(36);
     public static final int LOOT_HB_HEI = scale(27);
     public static final int LOOT_OFFSET_X = scale(1);
-    public static final int LOOT_OFFSET_Y = scale(-15);
+    public static final int LOOT_OFFSET_Y = scale(-2);
 
     public static final int TABLE_WID = scale(48);
     public static final int TABLE_HEI = scale(32);

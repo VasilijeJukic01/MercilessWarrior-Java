@@ -6,5 +6,9 @@
   "CRYSTAL2": {
     "lightColor": "#00FFE5",
     "lightRadius": 60
+  },
+  "AMBIENT_LIGHT": {
+    "lightColor": "#FFCC00",
+    "lightRadius": 120
   }
 }
