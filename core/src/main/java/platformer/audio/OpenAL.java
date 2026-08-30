@@ -8,6 +8,7 @@ import org.lwjgl.system.MemoryStack;
 import platformer.audio.types.Ambience;
 import platformer.audio.types.Song;
 import platformer.audio.types.Sound;
+import platformer.core.Settings;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
 import platformer.core.loading.LoadingProgressTracker;
@@ -39,9 +40,10 @@ public class OpenAL implements AudioPlayer<Song, Sound, Ambience>  {
     private final List<Integer> ambiences = new ArrayList<>();
 
     private int currentSong = -1;
-    private float musicVolume = 0.2f;
-    private float sfxVolume = 0.2f;
-    private boolean songMute, soundMute;
+    private float musicVolume = Settings.getInstance().getMusicVolume();
+    private float sfxVolume = Settings.getInstance().getSfxVolume();
+    private boolean songMute = Settings.getInstance().isMusicMute();
+    private boolean soundMute = Settings.getInstance().isSfxMute();
     private final Random rand = new Random();
     private final LoadingProgressTracker progressTracker = LoadingProgressTracker.getInstance();
 
@@ -180,7 +182,7 @@ public class OpenAL implements AudioPlayer<Song, Sound, Ambience>  {
     public void playSong(Song song, int offsetMs) {
         stopSong();
         currentSong = song.ordinal();
-        if (!songMute) setMusicVolume(musicVolume);
+        updateSongVolume();
 
         int bufferId = songs.get(currentSong);
         AudioFileProperties props = songProperties.get(bufferId);
@@ -225,6 +227,8 @@ public class OpenAL implements AudioPlayer<Song, Sound, Ambience>  {
 
     @Override
     public void playSound(Sound sound) {
+        float vol = soundMute ? 0f : sfxVolume;
+        soundSources.get(sound.ordinal()).changeVolume(vol);
         soundSources.get(sound.ordinal()).play(sounds.get(sound.ordinal()), true);
     }
 
@@ -255,7 +259,8 @@ public class OpenAL implements AudioPlayer<Song, Sound, Ambience>  {
     @Override
     public void playAmbience(Ambience ambience) {
         int index = ambience.ordinal();
-        if (!soundMute) soundSources.get(index).changeVolume(sfxVolume);
+        float vol = soundMute ? 0f : sfxVolume;
+        ambienceSources.get(index).changeVolume(vol);
         ambienceSources.get(index).play(ambiences.get(index), false);
         ambienceSources.get(index).loop(true);
     }
@@ -305,51 +310,47 @@ public class OpenAL implements AudioPlayer<Song, Sound, Ambience>  {
         playSound(Sound.values()[start]);
     }
 
-    // Mute
-    private void muteSource(List<Integer> buffers, List<OpenALSource> sources, boolean isMute) {
-        for (Integer b : buffers) {
-            if (isMute) sources.get(buffers.indexOf(b)).changeVolume(0);
-            else sources.get(buffers.indexOf(b)).changeVolume(musicVolume);
-        }
+    // Volume
+    private void updateSongVolume() {
+        if (currentSong == -1) return;
+        float actualVolume = songMute ? 0f : musicVolume;
+        songSources.get(currentSong).changeVolume(actualVolume);
+    }
+
+    private void updateSoundVolume() {
+        float actualVolume = soundMute ? 0f : sfxVolume;
+        for (OpenALSource source : soundSources) source.changeVolume(actualVolume);
+        for (OpenALSource source : ambienceSources) source.changeVolume(actualVolume);
     }
 
     @Override
     public void songMute() {
         songMute = !songMute;
-        muteSource(songs, songSources, songMute);
+        updateSongVolume();
+        Settings.getInstance().setMusicMute(songMute);
+        Settings.getInstance().save();
     }
 
     @Override
     public void soundMute() {
         soundMute = !soundMute;
-        muteSource(sounds, soundSources, soundMute);
-        muteSource(ambiences, ambienceSources, soundMute);
-    }
-
-    // Volume
-    private void updateSongVolume() {
-        if (songMute || currentSong == -1) return;
-        songSources.get(currentSong).changeVolume(musicVolume);
-    }
-
-    private void updateSoundVolume() {
-        if (soundMute) return;
-        sounds.forEach(sound -> soundSources.get(sounds.indexOf(sound))
-                .changeVolume(sfxVolume));
-        ambiences.forEach(ambience -> ambienceSources.get(ambiences.indexOf(ambience))
-                .changeVolume(sfxVolume));
+        updateSoundVolume();
+        Settings.getInstance().setSfxMute(soundMute);
+        Settings.getInstance().save();
     }
 
     @Override
     public void setMusicVolume(float musicVolume) {
         this.musicVolume = musicVolume;
         updateSongVolume();
+        Settings.getInstance().setMusicVolume(musicVolume);
     }
 
     @Override
     public void setSfxVolume(float sfxVolume) {
         this.sfxVolume = sfxVolume;
         updateSoundVolume();
+        Settings.getInstance().setSfxVolume(sfxVolume);
     }
 
     @Override

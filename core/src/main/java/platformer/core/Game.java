@@ -26,7 +26,6 @@ public class Game implements Runnable {
 
     private StateManager stateManager;
     private AudioOptions audioOptions;
-    private Settings settings;
 
     private final int FPS_LOCK = 144;
     private final int UPS_LOCK = 200;
@@ -48,7 +47,6 @@ public class Game implements Runnable {
         this.originalGameHeight = GAME_HEIGHT;
         this.gameFrame = new GameFrame(this);
         this.audioOptions = new AudioOptions();
-        this.settings = new Settings();
         this.stateManager = new StateManager(this);
         OverlayLayer.getInstance().update(); // Prepare instance
     }
@@ -245,7 +243,7 @@ public class Game implements Runnable {
     }
 
     public Settings getSettings() {
-        return settings;
+        return Settings.getInstance();
     }
 
     public State getCurrentState() {

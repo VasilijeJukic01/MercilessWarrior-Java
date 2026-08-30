@@ -69,6 +69,12 @@ public class SliderButton extends AbstractButton {
         buttonHitBox.x = buttonX - SLIDER_BTN_SIZE / 2;
     }
 
+    public void setSliderValue(float value) {
+        this.value = value;
+        this.buttonX = minValue + (int)(value * (maxValue - minValue));
+        buttonHitBox.x = buttonX - SLIDER_BTN_SIZE / 2;
+    }
+
     /**
      * Recalculates the slider's normalized value (0.0 to 1.0) based on the button's position.
      */

@@ -516,6 +516,8 @@ public class Player extends Entity {
             double dustX = (flipSign == 1) ? hitBox.x + hitBox.width : hitBox.x;
             double dustY = hitBox.y + hitBox.height / 2.0;
             effectManager.spawnDustParticles(dustX, dustY, 6, DustType.WALL_JUMP, flipSign, this);
+            applyRecoil(3 * SCALE);
+            removeActions(PlayerAction.ON_WALL, PlayerAction.WALL_PUSH);
         }
 
         if (currentJumps == 1) {

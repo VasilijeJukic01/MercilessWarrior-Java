@@ -51,4 +51,9 @@ public class PathManager {
     public static String getConfigPath() {
         return Paths.get(getGameDataPath(), "keyboard.config").toString();
     }
+
+    public static String getSettingsPath() {
+        initialize();
+        return new File(getGameDataPath(), "settings.json").getAbsolutePath();
+    }
 }
