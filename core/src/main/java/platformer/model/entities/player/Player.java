@@ -17,6 +17,7 @@ import platformer.model.effects.particles.DustType;
 import platformer.model.entities.enemies.EnemyManager;
 import platformer.model.gameObjects.ObjectManager;
 import platformer.model.levels.LevelManager;
+import platformer.model.levels.interior.InteriorManager;
 import platformer.model.projectiles.Projectile;
 import platformer.model.projectiles.ProjectileFactory;
 import platformer.model.projectiles.ProjectileManager;
@@ -41,6 +42,7 @@ public class Player extends Entity {
 
     private final EnemyManager enemyManager;
     private final LevelManager levelManager;
+    private final InteriorManager interiorManager;
     private final ObjectManager objectManager;
     private final ProjectileManager projectileManager;
     private final MinimapManager minimapManager;
@@ -91,6 +93,7 @@ public class Player extends Entity {
         super(xPos, yPos, width, height, PLAYER_MAX_HP);
         this.enemyManager = context.getEnemyManager();
         this.levelManager = context.getLevelManager();
+        this.interiorManager = context.getInteriorManager();
         this.objectManager = context.getObjectManager();
         this.projectileManager = context.getProjectileManager();
         this.minimapManager = context.getMinimapManager();
@@ -355,6 +358,8 @@ public class Player extends Entity {
     }
 
     private void updateWallPosition() {
+        if (interiorManager != null && interiorManager.isInterior()) return;
+
         boolean left = checkAction(PlayerAction.LEFT);
         boolean right = checkAction(PlayerAction.RIGHT);
         boolean onWall = checkAction(PlayerAction.ON_WALL);

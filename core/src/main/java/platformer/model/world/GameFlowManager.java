@@ -14,6 +14,7 @@ import platformer.state.types.GameState;
 import platformer.state.types.PlayingState;
 import platformer.ui.transition.TransitionDirection;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -60,7 +61,7 @@ public class GameFlowManager {
         Player player = gameState.getPlayer();
         if (player.checkAction(PlayerAction.DASH)) return;
 
-        List<Trigger> triggers = context.getLevelManager().getCurrentLevel().getTriggers();
+        List<Trigger> triggers = new ArrayList<>(context.getLevelManager().getCurrentLevel().getTriggers());
         for (Trigger trigger : triggers) {
             if (player.getHitBox().intersects(trigger.bounds())) {
                 switch (trigger.type()) {
