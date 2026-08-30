@@ -14,5 +14,13 @@
     "columns": 7,
     "tileSizeInSprite": 64,
     "tileCount": 14
+  },
+  {
+    "name": "Invisible",
+    "spritePath": "/images/levels/invisible.png",
+    "rows": 1,
+    "columns": 1,
+    "tileSizeInSprite": 32,
+    "tileCount": 1
   }
 ]

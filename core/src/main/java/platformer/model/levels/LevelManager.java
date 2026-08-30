@@ -197,9 +197,13 @@ public class LevelManager {
     }
 
     private void loadMetadata() {
-        decorationMetadata.clear();
         String levelName = "level" + levelIndexI + levelIndexJ;
         this.currentLevelMetadata = loadMetadataForLevel(levelName);
+        loadMetadataDecorations();
+    }
+
+    private void loadMetadataDecorations() {
+        decorationMetadata.clear();
         if (currentLevelMetadata != null && currentLevelMetadata.getDecorations() != null) {
             for (ObjectMetadata meta : currentLevelMetadata.getDecorations()) {
                 decorationMetadata.put(new Point(meta.getX(), meta.getY()), meta);
@@ -216,10 +220,21 @@ public class LevelManager {
         else Logger.getInstance().notify("Arena level is not loaded!", Message.ERROR);
     }
 
-    public void returnToMainMap() {
+    public void setInteriorLevel(Level interiorLevel, LevelMetadata meta) {
+        this.currentLevel = interiorLevel;
+        this.currentLevelMetadata = meta;
+        loadMetadataDecorations();
+        loadBackground();
+    }
+
+    public void restoreMainMap() {
         this.currentLevel = levels[levelIndexI][levelIndexJ];
         loadMetadata();
         loadBackground();
+
+        context.getLightManager().releaseAmbientDarkness();
+        boolean particles = currentLevelMetadata == null || currentLevelMetadata.getAmbientParticlesEnabled() == null || currentLevelMetadata.getAmbientParticlesEnabled();
+        context.getEffectManager().setAmbientEffectsActive(particles);
     }
 
     // Render
@@ -316,8 +331,10 @@ public class LevelManager {
     public void render(Graphics g, int xLevelOffset, int yLevelOffset) {
         renderDeco(g, xLevelOffset, yLevelOffset, 0);               // First deco layer
         renderDeco(g, xLevelOffset, yLevelOffset, 1);               // Second deco layer
-        g.setColor(new Color(1, 130, 120, 60));
-        g.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);                 // Green ambient layer
+        if (context.getInteriorManager() == null || !context.getInteriorManager().isInterior()) {
+            g.setColor(new Color(1, 130, 120, 60));
+            g.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);  // Green ambient layer
+        }
         renderDeco(g, xLevelOffset, yLevelOffset, 2);              // Third deco layer
         renderTerrain(g, xLevelOffset, yLevelOffset, true);       // Terrain behind layer
         renderDeco(g, xLevelOffset, yLevelOffset, 4);              // Fourth deco layer

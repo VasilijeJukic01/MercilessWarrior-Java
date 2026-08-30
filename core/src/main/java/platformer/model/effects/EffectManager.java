@@ -171,9 +171,11 @@ public class EffectManager {
         updateParticleList(backgroundParticles);
         updateDamageNumbers();
         updateItemPickupTexts();
-        Arrays.stream(ambientParticles).forEach(AmbientParticle::update);
-        Arrays.stream(smokeParticles).forEach(SmokeParticle::update);
-        if (ambientEffectsActive) Arrays.stream(windParticles).forEach(WindParticle::update);
+        if (ambientEffectsActive) {
+            Arrays.stream(ambientParticles).forEach(AmbientParticle::update);
+            Arrays.stream(smokeParticles).forEach(SmokeParticle::update);
+            Arrays.stream(windParticles).forEach(WindParticle::update);
+        }
     }
 
     private void updateParticleList(List<DustParticle> particles) {
@@ -215,6 +217,7 @@ public class EffectManager {
     }
 
     public void renderAmbientEffects(Graphics g, int xLevelOffset, int yLevelOffset) {
+        if (!ambientEffectsActive) return;
         Arrays.stream(smokeParticles).forEach(p -> p.render((Graphics2D) g));
         Arrays.stream(ambientParticles).forEach(p -> p.render(g));
     }

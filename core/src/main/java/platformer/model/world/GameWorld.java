@@ -97,7 +97,14 @@ public class GameWorld {
     }
 
     public void render(Graphics g, int xLevelOffset, int yLevelOffset, boolean isDarkPhase) {
-        g.drawImage(levelManager.getCurrentBackground(), 0, 0, null);
+        g.setColor(Color.BLACK);
+        g.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+
+        if (levelManager.getCurrentLevelMetadata().getTileset().equals("Invisible")) {
+            g.drawImage(levelManager.getCurrentBackground(), -xLevelOffset, -yLevelOffset, null);
+        }
+        else g.drawImage(levelManager.getCurrentBackground(), 0, 0, null);
+
         effectManager.renderAmbientEffects(g, xLevelOffset, yLevelOffset);
         rainManager.render(g);
         levelManager.render(g, xLevelOffset, yLevelOffset);

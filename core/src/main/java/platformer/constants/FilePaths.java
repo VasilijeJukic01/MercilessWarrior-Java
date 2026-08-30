@@ -27,6 +27,8 @@ public final class FilePaths {
     public static final String FOREST_BG_3 = "/images/levels/backgrounds/forest3.png";
     public static final String FOREST_BG_4 = "/images/levels/backgrounds/forest4.png";
 
+    public static final String TAVERN_BG = "/images/levels/backgrounds/tavern.png";
+
     // Enemy
     public static final String SKELETON_SHEET = "/images/enemies/SkeletonSprite.png";
     public static final String GHOUL_SHEET = "/images/enemies/GhoulSprite.png";

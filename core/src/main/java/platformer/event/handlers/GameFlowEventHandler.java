@@ -57,7 +57,7 @@ public class GameFlowEventHandler implements EventHandler {
         Logger.getInstance().notify("Roric defeated! Returning to the main world.", Message.INFORMATION);
         Audio.getInstance().getAudioPlayer().playSong(Song.FOREST_1);
 
-        context.getLevelManager().returnToMainMap();
+        context.getLevelManager().restoreMainMap();
         Level originalLevel = context.getLevelManager().getCurrentLevel();
 
         int spawnId = Framework.getInstance().getAccount().getSpawn();

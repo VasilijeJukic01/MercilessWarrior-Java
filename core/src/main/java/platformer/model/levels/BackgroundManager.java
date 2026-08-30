@@ -29,6 +29,7 @@ public class BackgroundManager {
         backgrounds.put("FOREST2", ImageUtils.importImage(FOREST_BG_2, GAME_WIDTH, GAME_HEIGHT));
         backgrounds.put("FOREST3", ImageUtils.importImage(FOREST_BG_3, GAME_WIDTH, GAME_HEIGHT));
         backgrounds.put("FOREST4", ImageUtils.importImage(FOREST_BG_4, GAME_WIDTH, GAME_HEIGHT));
+        backgrounds.put("TAVERN", ImageUtils.importImage(TAVERN_BG, -1, -1));
     }
 
     /**

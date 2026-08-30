@@ -29,6 +29,7 @@ import platformer.model.effects.lighting.LightManager;
 import platformer.model.entities.enemies.EnemyManager;
 import platformer.model.gameObjects.ObjectManager;
 import platformer.model.levels.LevelManager;
+import platformer.model.levels.interior.InteriorManager;
 import platformer.model.minimap.MinimapManager;
 import platformer.model.perks.PerksManager;
 import platformer.model.projectiles.ProjectileFactory;
@@ -69,6 +70,7 @@ public class GameInitializer {
         context.setTutorialManager(new TutorialManager());
         context.setDialogueManager(new DialogueManager());
         context.setLevelManager(new LevelManager());
+        context.setInteriorManager(new InteriorManager());
         context.setEffectManager(new EffectManager());
         context.setRainManager(new RainManager());
         context.setEnemyManager(new EnemyManager());
@@ -88,6 +90,7 @@ public class GameInitializer {
         context.getQuestManager().wire(context);
         context.getDialogueManager().wire(context);
         context.getLevelManager().wire(context);
+        context.getInteriorManager().wire(context);
         context.getMinimapManager().wire(context);
         context.getObjectManager().wire(context);
         context.getEnemyManager().wire(context);

@@ -12,6 +12,7 @@ import platformer.model.entities.enemies.EnemyManager;
 import platformer.model.entities.player.Player;
 import platformer.model.gameObjects.ObjectManager;
 import platformer.model.levels.LevelManager;
+import platformer.model.levels.interior.InteriorManager;
 import platformer.model.minimap.MinimapManager;
 import platformer.model.perks.PerksManager;
 import platformer.model.projectiles.ProjectileManager;
@@ -32,6 +33,7 @@ import platformer.view.Camera;
 public final class GameContext {
     private GameState gameState;
     private LevelManager levelManager;
+    private InteriorManager interiorManager;
     private EffectManager effectManager;
     private RainManager rainManager;
     private EnemyManager enemyManager;
