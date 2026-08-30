@@ -7,6 +7,7 @@ import platformer.debug.logger.Message;
 import platformer.model.levels.Level;
 import platformer.model.levels.LvlTriggerType;
 import platformer.model.levels.metadata.LevelMetadata;
+import platformer.ui.transition.TransitionDirection;
 import platformer.utils.ImageUtils;
 
 import java.awt.*;
@@ -79,27 +80,35 @@ public class InteriorManager {
      */
     public void loadInterior(String id) {
         if (interiors.containsKey(id)) {
-            Rectangle2D.Double playerBox = context.getGameState().getPlayer().getHitBox();
-            this.previousLocation = new Point((int)playerBox.x, (int)playerBox.y);
+            Runnable loadCallback = () -> {
+                Rectangle2D.Double playerBox = context.getGameState().getPlayer().getHitBox();
+                this.previousLocation = new Point((int)playerBox.x, (int)playerBox.y);
 
-            this.isInterior = true;
-            this.currentInteriorId = id;
-            Level interiorLevel = interiors.get(id);
-            LevelMetadata meta = interiorsMetadata.get(id);
+                this.isInterior = true;
+                this.currentInteriorId = id;
+                Level interiorLevel = interiors.get(id);
+                LevelMetadata meta = interiorsMetadata.get(id);
 
-            // Delegate the responsibility to the LevelManager
-            context.getLevelManager().setInteriorLevel(interiorLevel, meta);
+                context.getLevelManager().setInteriorLevel(interiorLevel, meta);
+                context.getGameState().getPlayer().loadLvlData(interiorLevel.getLvlData());
+                context.getEnemyManager().loadEnemies(interiorLevel);
+                context.getObjectManager().loadObjects(interiorLevel);
 
-            context.getGameState().getPlayer().loadLvlData(interiorLevel.getLvlData());
-            context.getEnemyManager().loadEnemies(interiorLevel);
-            context.getObjectManager().loadObjects(interiorLevel);
+                context.getGameState().getPlayer().setSpawn(interiorLevel.getPlayerSpawn(LvlTriggerType.SPAWN_A));
+                context.getGameState().getCamera().updateLevelBounds(interiorLevel);
 
-            context.getGameState().getPlayer().setSpawn(interiorLevel.getPlayerSpawn(LvlTriggerType.SPAWN_A));
-            context.getGameState().getCamera().updateLevelBounds(interiorLevel);
+                context.getEffectManager().setAmbientEffectsActive(false);
+                context.getLightManager().overrideAmbientDarkness(150);
+                context.getGameState().getPlayer().getPlayerDataManager().getUserInterface().setInterior(true);
 
-            context.getEffectManager().setAmbientEffectsActive(false);
-            context.getLightManager().overrideAmbientDarkness(150);
-            context.getGameState().getPlayer().getPlayerDataManager().getUserInterface().setInterior(true);
+                context.getGameState().getPlayer().resetDirections();
+                context.getGameState().flushAWTEventQueue();
+            };
+
+            context.getGameState().getTransitionManager().startTransition(
+                    TransitionDirection.FROM_BOTTOM,
+                    loadCallback
+            );
         } else {
             Logger.getInstance().notify("Interior not found: " + id, Message.ERROR);
         }
@@ -111,22 +120,32 @@ public class InteriorManager {
      * player back to the exact location they were standing before they entered the building.
      */
     public void returnToMainMap() {
-        this.isInterior = false;
-        this.currentInteriorId = "";
-        context.getLevelManager().restoreMainMap();
-        Level mainLevel = context.getLevelManager().getCurrentLevel();
+        Runnable returnCallback = () -> {
+            this.isInterior = false;
+            this.currentInteriorId = "";
+            context.getLevelManager().restoreMainMap();
 
-        context.getGameState().getPlayer().loadLvlData(mainLevel.getLvlData());
-        context.getEnemyManager().loadEnemies(mainLevel);
-        context.getObjectManager().loadObjects(mainLevel);
+            Level mainLevel = context.getLevelManager().getCurrentLevel();
 
-        if (previousLocation != null) {
-            context.getGameState().getPlayer().setSpawn(previousLocation);
-            context.getGameState().getPlayer().resetDirections();
-        }
+            context.getGameState().getPlayer().loadLvlData(mainLevel.getLvlData());
+            context.getEnemyManager().loadEnemies(mainLevel);
+            context.getObjectManager().loadObjects(mainLevel);
 
-        context.getGameState().getCamera().updateLevelBounds(mainLevel);
-        context.getGameState().getPlayer().getPlayerDataManager().getUserInterface().setInterior(false);
+            if (previousLocation != null) {
+                context.getGameState().getPlayer().setSpawn(previousLocation);
+                context.getGameState().getPlayer().resetDirections();
+            }
+
+            context.getGameState().getCamera().updateLevelBounds(mainLevel);
+            context.getGameState().getPlayer().getPlayerDataManager().getUserInterface().setInterior(false);
+
+            context.getGameState().flushAWTEventQueue();
+        };
+
+        context.getGameState().getTransitionManager().startTransition(
+                TransitionDirection.FROM_TOP,
+                returnCallback
+        );
     }
 
     public boolean isInterior() {
