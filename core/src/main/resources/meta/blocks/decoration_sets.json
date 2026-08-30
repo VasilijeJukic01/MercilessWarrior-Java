@@ -66,16 +66,5 @@
     { "colorValue": 63, "id": "PLANT13", "wid": 64, "hei": 64, "xOffset": 8, "yOffset": 2 },
     { "colorValue": 64, "id": "CRYSTAL1", "wid": 64, "hei": 64, "xOffset": 8, "yOffset": 2 },
     { "colorValue": 65, "id": "CRYSTAL2", "wid": 64, "hei": 64, "xOffset": 8, "yOffset": 2 }
-  ],
-  "Interior": [
-    { "colorValue": 0, "id": "BANNER", "wid": 64, "hei": 192, "xOffset": -128, "yOffset": 0 },
-    { "colorValue": 1, "id": "BAR", "wid": 192, "hei": 80, "xOffset": -16, "yOffset": 0 },
-    { "colorValue": 2, "id": "BED", "wid": 128, "hei": 96, "xOffset": -32, "yOffset": 0 },
-    { "colorValue": 3, "id": "CHAIR_LEFT", "wid": 64, "hei": 96, "xOffset": -32, "yOffset": 0 },
-    { "colorValue": 4, "id": "DOOR", "wid": 64, "hei": 128, "xOffset": -64, "yOffset": 0 },
-    { "colorValue": 5, "id": "SHELF", "wid": 128, "hei": 192, "xOffset": -128, "yOffset": 0 },
-    { "colorValue": 6, "id": "TABLE1", "wid": 128, "hei": 64, "xOffset": 0, "yOffset": 0 },
-    { "colorValue": 7, "id": "CHAIR_RIGHT", "filename": "CHAIR_LEFT", "flipped": true, "wid": 64, "hei": 96, "xOffset": -32, "yOffset": 0 },
-    {"colorValue":99,"id":"AMBIENT_LIGHT","wid":32,"hei":32,"xOffset":0,"yOffset":0}
   ]
 }

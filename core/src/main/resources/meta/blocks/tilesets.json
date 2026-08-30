@@ -8,14 +8,6 @@
     "tileCount": 49
   },
   {
-    "name": "Interior",
-    "spritePath": "/images/levels/interiorTiles.png",
-    "rows": 2,
-    "columns": 7,
-    "tileSizeInSprite": 64,
-    "tileCount": 14
-  },
-  {
     "name": "Invisible",
     "spritePath": "/images/levels/invisible.png",
     "rows": 1,
