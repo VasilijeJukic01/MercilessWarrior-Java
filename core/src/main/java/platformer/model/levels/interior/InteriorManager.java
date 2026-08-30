@@ -99,6 +99,7 @@ public class InteriorManager {
 
             context.getEffectManager().setAmbientEffectsActive(false);
             context.getLightManager().overrideAmbientDarkness(150);
+            context.getGameState().getPlayer().getPlayerDataManager().getUserInterface().setInterior(true);
         } else {
             Logger.getInstance().notify("Interior not found: " + id, Message.ERROR);
         }
@@ -125,6 +126,7 @@ public class InteriorManager {
         }
 
         context.getGameState().getCamera().updateLevelBounds(mainLevel);
+        context.getGameState().getPlayer().getPlayerDataManager().getUserInterface().setInterior(false);
     }
 
     public boolean isInterior() {
