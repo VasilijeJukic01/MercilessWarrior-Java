@@ -28,7 +28,8 @@ public enum ObjType {
     SPIKE_LEFT(1),                  // 24
     HERB(1),						// 25
     RORIC_TRAP(8),					// 26
-    MAX(0);                         // 27
+    DOOR(1),                 // 27
+    MAX(0);                         // 28
 
     private final int sprites;
 

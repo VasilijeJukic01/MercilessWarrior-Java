@@ -65,6 +65,7 @@
     { "colorValue": 62, "id": "PLANT12", "wid": 64, "hei": 64, "xOffset": 8, "yOffset": 2 },
     { "colorValue": 63, "id": "PLANT13", "wid": 64, "hei": 64, "xOffset": 8, "yOffset": 2 },
     { "colorValue": 64, "id": "CRYSTAL1", "wid": 64, "hei": 64, "xOffset": 8, "yOffset": 2 },
-    { "colorValue": 65, "id": "CRYSTAL2", "wid": 64, "hei": 64, "xOffset": 8, "yOffset": 2 }
+    { "colorValue": 65, "id": "CRYSTAL2", "wid": 64, "hei": 64, "xOffset": 8, "yOffset": 2 },
+    { "colorValue": 66, "id": "TAVERN_BUILDING", "wid": 384, "hei": 256, "xOffset": 8, "yOffset": 0 }
   ]
 }

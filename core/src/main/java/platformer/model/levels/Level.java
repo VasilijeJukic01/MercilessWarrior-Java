@@ -72,10 +72,12 @@ public class Level {
         reset();
         for (int i = 0; i < panelWidth; i++) {
             for (int j = 0; j < levelImg.getHeight(); j++) {
-                Color color = new Color(levelImg.getRGB(i, j));
-                getEnemyData(i, j, color.getGreen());
-                getObjectData(i, j, color.getBlue());
-                getSpellData(i, j, color.getGreen(), color.getBlue());
+                Color colorP1 = new Color(levelImg.getRGB(i, j));
+                Color colorP3 = new Color(levelImg.getRGB(i + panelWidth * 2, j));
+
+                getEnemyData(i, j, colorP1.getGreen());
+                getObjectData(i, j, colorP1.getBlue(), colorP3);
+                getSpellData(i, j, colorP1.getGreen(), colorP1.getBlue());
             }
         }
         getTriggerData(panelWidth);
@@ -106,7 +108,7 @@ public class Level {
         }
     }
 
-    private void getObjectData(int i, int j, int valueB) {
+    private void getObjectData(int i, int j, int valueB, Color colorP3) {
         if (valueB >= ObjType.MAX.ordinal()) return;
         switch (ObjType.values()[valueB]) {
             case HEAL_POTION:
@@ -160,6 +162,13 @@ public class Level {
                 break;
             case HERB:
                 addGameObject(new Herb(ObjType.HERB, i * TILES_SIZE, j * TILES_SIZE));
+                break;
+            case DOOR:
+                String dest = "exit";
+                if (colorP3.getRed() == 0 && colorP3.getGreen() == 255) {
+                    dest = getInteriorName(colorP3.getBlue());
+                }
+                addGameObject(new Door(ObjType.DOOR, i*TILES_SIZE, j*TILES_SIZE, dest));
                 break;
             default: break;
         }
@@ -271,6 +280,13 @@ public class Level {
                 }
             }
         }
+    }
+
+    private String getInteriorName(int blueValue) {
+        return switch (blueValue) {
+            case 1 -> "tavern";
+            default -> "exit";
+        };
     }
 
     // Other

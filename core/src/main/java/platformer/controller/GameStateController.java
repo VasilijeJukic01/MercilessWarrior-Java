@@ -204,7 +204,14 @@ public class GameStateController {
     }
 
     private void handleInteraction(String id) {
-        if (Objects.equals(id, "Loot") || Objects.equals(id, "Container")) {
+        if (id.startsWith("Door:")) {
+            String destination = id.split(":")[1];
+            if (destination.equals("exit")) {
+                context.getInteriorManager().returnToMainMap();
+            }
+            else context.getInteriorManager().loadInterior(destination);
+        }
+        else if (Objects.equals(id, "Loot") || Objects.equals(id, "Container")) {
             EventBus.getInstance().publish(new OverlayChangeEvent(PlayingState.LOOTING));
         }
         else if (Objects.equals(id, "Table")) {

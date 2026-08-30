@@ -52,13 +52,14 @@ public class ObjectManager {
             Shop.class, Blocker.class, Blacksmith.class, Dog.class,
             SaveTotem.class, SmashTrap.class, Candle.class, Loot.class,
             Table.class, Board.class, Npc.class, Lava.class, Brick.class,
-            JumpPad.class, Herb.class, RoricTrap.class
+            JumpPad.class, Herb.class, RoricTrap.class, Door.class
     };
     Class<? extends GameObject>[] renderBelow = new Class[] {
             Container.class, Potion.class, Spike.class,
             Blocker.class, Dog.class, SmashTrap.class, Loot.class, Brick.class,
             SaveTotem.class, Shop.class, Blacksmith.class, Coin.class,
-            Table.class, Board.class, JumpPad.class, Herb.class, RoricTrap.class
+            Table.class, Board.class, JumpPad.class, Herb.class, RoricTrap.class,
+            Door.class
     };
     Class<? extends GameObject>[] renderAbove = new Class[] {
             Shop.class
@@ -361,7 +362,9 @@ public class ObjectManager {
                     .filter(GameObject::isAlive)
                     .forEach(obj -> {
                         BufferedImage[] animations = SpriteManager.getInstance().getObjectAnimations(obj.getObjType());
-                        if (animations != null) obj.render(g, xLevelOffset, yLevelOffset, animations);
+                        if (animations != null || obj.getObjType() == ObjType.DOOR) {
+                            obj.render(g, xLevelOffset, yLevelOffset, animations);
+                        }
                     });
         }
         catch (Exception ignored) {}
