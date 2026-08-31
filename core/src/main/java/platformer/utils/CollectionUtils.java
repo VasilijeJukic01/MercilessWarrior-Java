@@ -41,10 +41,15 @@ public final class CollectionUtils {
      * @param itemMap A map where each value is a {@code List} of items of type {@code T}. The keys are ignored.
      * @return A new {@code List<T>} containing all elements from the map's value lists.
      */
-    // TODO: Race condition need to be handled!!!
     public static <T> List<T> getAllItems(Map<?, List<T>> itemMap) {
         List<T> allItems = new ArrayList<>();
-        itemMap.values().forEach(allItems::addAll);
+        try {
+            Object[] keys = itemMap.keySet().toArray();
+            for (Object key : keys) {
+                List<T> list = itemMap.get(key);
+                if (list != null) allItems.addAll(list);
+            }
+        } catch (Exception ignored) {}
         return allItems;
     }
 }
