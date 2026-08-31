@@ -173,6 +173,20 @@ public final class CollisionDetector {
     }
 
     /**
+     * Detects if the player's center of gravity is off the edge of a cliff.
+     * If they are teetering, it returns a velocity to gently slide them off.
+     */
+    public static double getLedgeSlip(Rectangle2D.Double hitBox, int[][] levelData) {
+        boolean centerSolid = isSolid(hitBox.getCenterX(), hitBox.y + hitBox.height + 2, levelData);
+        if (centerSolid) return 0;
+        boolean leftSolid = isSolid(hitBox.x, hitBox.y + hitBox.height + 2, levelData);
+        boolean rightSolid = isSolid(hitBox.x + hitBox.width, hitBox.y + hitBox.height + 2, levelData);
+        if (leftSolid && !rightSolid) return 1.0 * SCALE;
+        if (rightSolid && !leftSolid) return -1.0 * SCALE;
+        return 0;
+    }
+
+    /**
      * Checks if there is a solid floor ahead of an entity, used for basic AI pathing.
      * It checks the solidity of the tiles at the corners of the entity's hitbox at the new location.
      * If any of the tiles are solid, the floor is considered to be present.

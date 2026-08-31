@@ -26,6 +26,7 @@ import platformer.model.inventory.InventoryBonus;
 import platformer.model.inventory.item.ItemRarity;
 import platformer.model.minimap.MinimapManager;
 import platformer.model.perks.PerksBonus;
+import platformer.physics.CollisionDetector;
 import platformer.physics.DamageSource;
 
 import java.awt.*;
@@ -288,7 +289,11 @@ public class Player extends Entity {
         boolean left = checkAction(PlayerAction.LEFT);
         boolean right = checkAction(PlayerAction.RIGHT);
         boolean dash = checkAction(PlayerAction.DASH);
-        if (((!left && !right) || (left && right)) && !inAir && !dash && !checkAction(PlayerAction.ATTACK)) return;
+
+        if (((!left && !right) || (left && right)) && !inAir && !dash && !checkAction(PlayerAction.ATTACK)) {
+            double slip = CollisionDetector.getLedgeSlip(hitBox, levelData);
+            if (slip == 0) return;
+        }
 
         double dx = 0;
 
@@ -306,6 +311,9 @@ public class Player extends Entity {
         if (recoilSpeedX == 0) {
             if (left) dx -= checkAction(PlayerAction.LAVA) ? LAVA_PLAYER_SPEED : PLAYER_SPEED;
             if (right) dx += checkAction(PlayerAction.LAVA) ? LAVA_PLAYER_SPEED : PLAYER_SPEED;
+            if (!left && !right && !inAir) {
+                dx += CollisionDetector.getLedgeSlip(hitBox, levelData);
+            }
         }
         if (right && inAir && wallPush && !dash) dx += PLAYER_BOOST;
         if (left && inAir && wallPush && !dash) dx -= PLAYER_BOOST;
