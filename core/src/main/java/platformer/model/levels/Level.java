@@ -165,7 +165,7 @@ public class Level {
                 break;
             case DOOR:
                 String dest = "exit";
-                if (colorP3.getRed() == 0 && colorP3.getGreen() == 255) {
+                if (colorP3.getRed() == 254 && colorP3.getGreen() == 254) {
                     dest = getInteriorName(colorP3.getBlue());
                 }
                 addGameObject(new Door(ObjType.DOOR, i*TILES_SIZE, j*TILES_SIZE, dest));
@@ -284,7 +284,7 @@ public class Level {
 
     private String getInteriorName(int blueValue) {
         return switch (blueValue) {
-            case 1 -> "tavern";
+            case 10 -> "tavern";
             default -> "exit";
         };
     }
