@@ -49,8 +49,7 @@ public class Skeleton extends Enemy {
             checkDeath();
         }
         else setEnemyAction(Anim.HIT);
-        pushOffsetDirection = Direction.UP;
-        pushOffset = 0;
+        if (pushOffset == 0) pushOffsetDirection = Direction.UP;
         enemySpeed = ENEMY_SPEED_SLOW;
         return true;
     }
@@ -65,8 +64,7 @@ public class Skeleton extends Enemy {
             if (entityState == Anim.HIT) setEnemyActionNoReset(Anim.HIT);
             else setEnemyAction(Anim.HIT);
         }
-        pushOffsetDirection = Direction.DOWN;
-        pushOffset = 0;
+        if (pushOffset == 0) pushOffsetDirection = Direction.UP;
         enemySpeed = 0;
     }
 
@@ -106,14 +104,12 @@ public class Skeleton extends Enemy {
     // Behavior
     private void idleAction() {
         setEnemyAction(Anim.WALK);
-        animSpeed = 25;
     }
 
     private void moveAction(int[][] levelData, Entity entity) {
         if (canSeeEntity(levelData, entity)) directToEntity(entity);
         if (canSeeEntity(levelData, entity) && isEntityCloseForAttack(entity) && cooldown[Cooldown.ATTACK.ordinal()] == 0) {
             setEnemyAction(Anim.ATTACK_1);
-            animSpeed = 20 + new Random().nextInt(15);
         }
         double enemyXSpeed = (direction == Direction.LEFT) ? -enemySpeed : enemySpeed;
         if (canMoveHere(hitBox.x + enemyXSpeed, hitBox.y, hitBox.width, hitBox.height, levelData)) {
@@ -152,7 +148,6 @@ public class Skeleton extends Enemy {
 
     private void hitAction(int[][] levelData) {
         pushBack(pushDirection, levelData, 1.5, enemySpeed);
-        updatePushOffset();
     }
 
     // Update
@@ -166,6 +161,9 @@ public class Skeleton extends Enemy {
         updateMove(levelData, target);
         updateAnimation();
         updateAttackBox();
+        if (pushOffset < 0 || pushOffsetDirection == Direction.UP) {
+            updatePushOffset();
+        }
     }
 
     private void updateMove(int[][] levelData, Entity target) {

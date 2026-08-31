@@ -52,7 +52,7 @@ public class Player extends Entity {
 
     // Core Variables
     private BufferedImage[][] animations, transformAnimations;
-    private final int animSpeed = 20;
+    private int animSpeed = 20;
     private int animTick = 0, animIndex = 0;
     private AttackState attackState;
     private PlayerActionHandler actionHandler;
@@ -180,10 +180,7 @@ public class Player extends Entity {
             addAction(PlayerAction.TRANSFORM);
         }
         boolean hit = checkAction(PlayerAction.HIT);
-        if (hit) {
-            removeAction(PlayerAction.HIT);
-            airSpeed = 0;
-        }
+        if (hit) removeAction(PlayerAction.HIT);
         setSpellState(0);
     }
 
@@ -247,7 +244,10 @@ public class Player extends Entity {
         else if (attacking && !onWall) setAttackAnimation();
         else if (canTransform) entityState = Anim.TRANSFORM;
 
-        if (previousAction != entityState) animIndex = animTick = 0;
+        if (previousAction != entityState) {
+            animIndex = animTick = 0;
+            setAnimSpeedByState();
+        }
     }
 
     private void setDashAnimation() {
@@ -791,6 +791,33 @@ public class Player extends Entity {
     }
 
     // Setters
+    /**
+     * Adjusts the animation speed dynamically based on what the player is currently doing.
+     * Lower = Faster !
+     */
+    private void setAnimSpeedByState() {
+        switch (entityState) {
+            case RUN:
+                animSpeed = 12;
+                break;
+            case ATTACK_1:
+            case ATTACK_2:
+            case ATTACK_3:
+                animSpeed = 16;
+                break;
+            case JUMP:
+            case FALL:
+                animSpeed = 25;
+                break;
+            case TRANSFORM:
+                animSpeed = 15;
+                break;
+            default:
+                animSpeed = 20;
+                break;
+        }
+    }
+
     public void setAttacking(boolean attacking) {
         if (attacking) addAction(PlayerAction.ATTACK);
         else removeAction(PlayerAction.ATTACK);

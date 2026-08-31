@@ -106,7 +106,6 @@ public class Ghoul extends Enemy {
             return;
         }
         if (!blocker && cooldown[Cooldown.ATTACK.ordinal()] == 0) setEnemyAction(Anim.WALK);
-        animSpeed = 25;
     }
 
     private void moveAction(int[][] levelData, Entity entity) {
@@ -118,7 +117,6 @@ public class Ghoul extends Enemy {
                 setEnemyAction(Anim.IDLE);
                 blocker = true;
             }
-            animSpeed = 15;
         }
         double enemyXSpeed = (direction == Direction.LEFT) ? -enemySpeed : enemySpeed;
         if (canMoveHere(hitBox.x + enemyXSpeed, hitBox.y, hitBox.width, hitBox.height, levelData)) {

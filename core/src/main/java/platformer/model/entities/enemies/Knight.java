@@ -85,14 +85,12 @@ public class Knight extends Enemy {
     // Behavior
     private void idleAction() {
         setEnemyAction(Anim.WALK);
-        animSpeed = 25;
     }
 
     private void moveAction(int[][] levelData, Entity entity) {
         if (canSeeEntity(levelData, entity)) directToEntity(entity);
         if (canSeeEntity(levelData, entity) && isEntityCloseForAttack(entity)) {
             setEnemyAction(Anim.ATTACK_1);
-            animSpeed = 20;
         }
         double enemyXSpeed = (direction == Direction.LEFT) ? -enemySpeed : enemySpeed;
         if (canMoveHere(hitBox.x + enemyXSpeed, hitBox.y, hitBox.width, hitBox.height, levelData)) {
