@@ -8,6 +8,8 @@ import platformer.model.gameObjects.objects.*;
 import platformer.model.gameObjects.objects.Container;
 import platformer.model.levels.Level;
 import platformer.model.levels.LvlObjType;
+import platformer.model.levels.metadata.LevelMetadata;
+import platformer.model.levels.metadata.LightMetadata;
 import platformer.state.types.GameState;
 import platformer.utils.ImageUtils;
 
@@ -347,6 +349,7 @@ public class LightManager {
             drawLightSource(lightmapG2d, playerLightTexture, context.getPlayer().getHitBox(), xLevelOffset, yLevelOffset);
             renderAllLightSources(lightmapG2d, xLevelOffset, yLevelOffset);
             renderDecorationLights(lightmapG2d, colorMapG2d, xLevelOffset, yLevelOffset);
+            renderMetadataLights(lightmapG2d, colorMapG2d, xLevelOffset, yLevelOffset);
         }
         finally {
             lightmapG2d.dispose();
@@ -392,6 +395,35 @@ public class LightManager {
             colorMapG2d.drawImage(coloredLightTexture, drawX, drawY, pulsatingDiameter, pulsatingDiameter, null);
             lightmapG2d.drawImage(whiteLightTexture, drawX, drawY, pulsatingDiameter, pulsatingDiameter, null);
         } catch (NumberFormatException ignored) {}
+    }
+
+    private void renderMetadataLights(Graphics2D lightmapG2d, Graphics2D colorMapG2d, int xLevelOffset, int yLevelOffset) {
+        LevelMetadata meta = context.getLevelManager().getCurrentLevelMetadata();
+        if (meta == null || meta.getLights() == null) return;
+
+        for (LightMetadata light : meta.getLights()) {
+            try {
+                int baseRadius = (int)(light.getRadius() * SCALE);
+                int baseDiameter = baseRadius * 2;
+                double pulseFactor = 1.0 + 0.05 * Math.sin(pulseTimer * 0.5);
+                int pulsatingDiameter = (int)(baseDiameter * pulseFactor);
+
+                Color lightColor = Color.decode(light.getColor());
+                String colorCacheKey = lightColor.getRGB() + "_" + baseRadius;
+                String whiteCacheKey = "white_" + baseRadius;
+
+                BufferedImage coloredLightTexture = lightTextureCache.computeIfAbsent(colorCacheKey, k -> createColoredLightTexture(baseDiameter, lightColor));
+                BufferedImage whiteLightTexture = lightTextureCache.computeIfAbsent(whiteCacheKey, k -> createLightTexture(baseDiameter, new float[]{0f, 1f}, new Color[]{Color.WHITE, new Color(1.0f, 1.0f, 1.0f, 0f)}));
+
+                int worldX = light.getX() * TILES_SIZE;
+                int worldY = light.getY() * TILES_SIZE;
+                int drawX = worldX - xLevelOffset - pulsatingDiameter / 2 + TILES_SIZE / 2;
+                int drawY = worldY - yLevelOffset - pulsatingDiameter / 2 + TILES_SIZE / 2;
+
+                colorMapG2d.drawImage(coloredLightTexture, drawX, drawY, pulsatingDiameter, pulsatingDiameter, null);
+                lightmapG2d.drawImage(whiteLightTexture, drawX, drawY, pulsatingDiameter, pulsatingDiameter, null);
+            } catch (Exception ignored) {}
+        }
     }
 
     /**

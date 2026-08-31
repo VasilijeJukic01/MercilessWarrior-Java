@@ -67,5 +67,8 @@
     { "colorValue": 64, "id": "CRYSTAL1", "wid": 64, "hei": 64, "xOffset": 8, "yOffset": 2 },
     { "colorValue": 65, "id": "CRYSTAL2", "wid": 64, "hei": 64, "xOffset": 8, "yOffset": 2 },
     { "colorValue": 66, "id": "TAVERN_BUILDING", "wid": 384, "hei": 256, "xOffset": 8, "yOffset": 0 }
+  ],
+  "Invisible": [
+    { "colorValue": 66, "id": "AMBIENT_LIGHT", "wid": 32, "hei": 32, "xOffset": 0, "yOffset": 0 }
   ]
 }

@@ -1,5 +1,12 @@
 {
   "backgroundId": "TAVERN",
   "ambientParticlesEnabled": false,
-  "tileset": "Invisible"
+  "tileset": "Invisible",
+  "lights": [
+    { "x": 3, "y": 10, "radius": 70, "color": "#FFCC00" },
+    { "x": 10, "y": 11, "radius": 90, "color": "#FFCC00" },
+    { "x": 17, "y": 7, "radius": 60, "color": "#FFCC00" },
+    { "x": 22, "y": 7, "radius": 50, "color": "#FFCC00" },
+    { "x": 22, "y": 11, "radius": 50, "color": "#FFCC00" }
+  ]
 }

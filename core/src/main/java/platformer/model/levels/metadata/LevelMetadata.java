@@ -14,5 +14,6 @@ public class LevelMetadata {
     private Boolean ambientParticlesEnabled;
     private String tileset;
     private List<ObjectMetadata> decorations = new ArrayList<>();
+    private List<LightMetadata> lights = new ArrayList<>();
 
 }
