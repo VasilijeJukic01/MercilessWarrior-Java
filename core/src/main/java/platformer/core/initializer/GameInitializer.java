@@ -5,6 +5,7 @@ import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
 import platformer.event.EventBus;
 import platformer.event.events.*;
+import platformer.event.events.effects.HitStopEvent;
 import platformer.event.events.effects.ScreenShakeEvent;
 import platformer.event.events.lancer.LancerAuraEvent;
 import platformer.event.events.lancer.LancerDashSlashEvent;
@@ -100,7 +101,7 @@ public class GameInitializer {
 
         ProjectileFactory.init(context.getProjectileManager());
         context.getEnemyManager().injectScreenEffectsManager(screenEffectsManager);
-        initEventListeners(context, gameState);
+        initEventListeners(context, gameState, screenEffectsManager);
 
         Logger.getInstance().notify("Game systems initialized successfully.", Message.INFORMATION);
         return context;
@@ -112,8 +113,9 @@ public class GameInitializer {
      *
      * @param context The {@link GameContext} containing the manager instances that need to listen to events.
      * @param gameState The {@link GameState} which holds the list of continuous update handlers.
+     * @param screenEffectsManager The {@link ScreenEffectsManager} responsible for visual effects, which needs to respond to certain events.
      */
-    private static void initEventListeners(GameContext context, GameState gameState) {
+    private static void initEventListeners(GameContext context, GameState gameState, ScreenEffectsManager screenEffectsManager) {
         EventBus eventBus = EventBus.getInstance();
 
         // UI & Overlay Listeners
@@ -150,6 +152,9 @@ public class GameInitializer {
         GameFlowEventHandler gameFlowManager = new GameFlowEventHandler(context);
         eventBus.register(FightInitiatedEvent.class, gameFlowManager::onFightInitiated);
         eventBus.register(BossDefeatedEvent.class, gameFlowManager::onBossDefeated);
+
+        // Effects
+        eventBus.register(HitStopEvent.class, e -> screenEffectsManager.triggerHitStop(e.frames()));
 
         // Register handlers for continuous updates
         gameState.getEventHandlers().add(roricHandler);

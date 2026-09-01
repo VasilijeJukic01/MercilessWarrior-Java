@@ -23,6 +23,9 @@ public class ScreenEffectsManager {
     private int screenShakeDuration = 0;
     private double screenShakeIntensity = 0;
 
+    // Hit Stop
+    private int hitStopDuration = 0;
+
     private final Random random = new Random();
 
     public ScreenEffectsManager(Game game) {
@@ -30,6 +33,7 @@ public class ScreenEffectsManager {
     }
 
     public void update() {
+        if (updateHitStop()) return;
         updateFlash();
         updateScreenShake();
     }
@@ -86,6 +90,14 @@ public class ScreenEffectsManager {
         }
     }
 
+    private boolean updateHitStop() {
+        if (hitStopDuration > 0) {
+            hitStopDuration--;
+            return true;
+        }
+        return false;
+    }
+
     public void triggerFlash() {
         this.screenFlashAlpha = 200;
     }
@@ -94,6 +106,14 @@ public class ScreenEffectsManager {
         if (!game.getSettings().isScreenShake()) return;
         this.screenShakeDuration = Math.max(this.screenShakeDuration, duration);
         this.screenShakeIntensity = Math.max(this.screenShakeIntensity, intensity);
+    }
+
+    public void triggerHitStop(int durationFrames) {
+        this.hitStopDuration = durationFrames;
+    }
+
+    public boolean isHitStopActive() {
+        return hitStopDuration > 0;
     }
 
     // Reset

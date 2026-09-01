@@ -590,27 +590,32 @@ public class Player extends Entity {
     }
 
     public void changeHealth(double value, DamageSource source) {
-        boolean hit = checkAction(PlayerAction.HIT);
-        if (hit) return;
+        if (checkAction(PlayerAction.HIT)) return;
         if (value < 0) {
-            effectManager.spawnDustParticles(hitBox.getCenterX(), hitBox.getCenterY(), 15 + new Random().nextInt(6), DustType.PLAYER_HIT, flipSign, this);
-            double defenseBonus = InventoryBonus.getInstance().getDefense() * value * (-1);
-            value += defenseBonus;
-            String dmgText = String.format("%.1f", -value);
-            effectManager.spawnDamageNumber(dmgText, getHitBox().getCenterX(), getHitBox().y, DAMAGE_COLOR);
+            double actualDamage = calculateDamageAfterDefense(Math.abs(value));
+            feedbackHandler.onPlayerDamaged(actualDamage);
+            changeHealth(-actualDamage);
+            Logger.getInstance().notify("Damage received: " + actualDamage, Message.INFORMATION);
         }
-        changeHealth(value);
-        Rectangle2D sourceBounds = source.getHitBox();
-        if (source instanceof Projectile) sourceBounds = source.getHitBox().getBounds2D();
+        else changeHealth(value);
+        applyKnockback(source);
+    }
+
+    private double calculateDamageAfterDefense(double rawDamage) {
+        double defenseBonus = InventoryBonus.getInstance().getDefense();
+        double damageReduction = rawDamage * defenseBonus;
+        return rawDamage - damageReduction;
+    }
+
+    private void applyKnockback(DamageSource source) {
         Direction explicitKnockback = source.getKnockbackDirection();
         if (explicitKnockback != null) this.pushDirection = explicitKnockback;
         else {
-            if (sourceBounds.getCenterX() < hitBox.getCenterX()) this.pushDirection = Direction.RIGHT;
-            else this.pushDirection = Direction.LEFT;
+            Rectangle2D sourceBounds = source instanceof Projectile ? source.getHitBox().getBounds2D() : source.getHitBox();
+            this.pushDirection = (sourceBounds.getCenterX() < hitBox.getCenterX()) ? Direction.RIGHT : Direction.LEFT;
         }
         this.inAir = true;
         this.airSpeed = -1.2 * SCALE;
-        Logger.getInstance().notify("Damage received: " + value, Message.INFORMATION);
     }
 
     private void changeHealthNoKnockback(double value) {

@@ -6,6 +6,7 @@ import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
 import platformer.event.EventBus;
 import platformer.event.events.EnemyDefeatedEvent;
+import platformer.event.events.effects.HitStopEvent;
 import platformer.event.events.ui.GamePausedEvent;
 import platformer.event.events.ui.GameResumedEvent;
 import platformer.model.effects.ScreenEffectsManager;
@@ -196,6 +197,9 @@ public class EnemyManager {
                 }
                 else {
                     result = HitResult.HIT;
+                    int stopFrames = isCritical ? 10 : 6;
+                    EventBus.getInstance().publish(new HitStopEvent(stopFrames));
+
                     double displayDmg = Math.round(finalDamage * 10.0) / 10.0;
                     String dmgText = String.valueOf(displayDmg);
                     Color dmgColor = isCritical ? CRITICAL_COLOR : DAMAGE_COLOR;

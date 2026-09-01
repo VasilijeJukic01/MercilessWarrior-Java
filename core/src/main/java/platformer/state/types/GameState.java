@@ -118,7 +118,9 @@ public class GameState extends AbstractState implements State {
             context.getEffectManager().update();
         }
         else {
-            handleGameState();
+            if (!screenEffectsManager.isHitStopActive()) {
+                handleGameState();
+            }
         }
         if (state == PlayingState.DIALOGUE) overlayManager.update(PlayingState.DIALOGUE);
     }

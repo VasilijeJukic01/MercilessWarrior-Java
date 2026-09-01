@@ -1,5 +1,8 @@
 package platformer.model.entities.player;
 
+import platformer.constants.Constants;
+import platformer.event.EventBus;
+import platformer.event.events.effects.HitStopEvent;
 import platformer.model.effects.EffectManager;
 import platformer.model.effects.particles.DustType;
 
@@ -65,5 +68,15 @@ public class PlayerFeedbackHandler {
             }
         }
         else wallSlideDustTick = 0;
+    }
+
+    /**
+     * Handles all visual and audio feedback when the player takes damage.
+     */
+    public void onPlayerDamaged(double damageValue) {
+        EventBus.getInstance().publish(new HitStopEvent(8));
+        effectManager.spawnDustParticles(player.getHitBox().getCenterX(), player.getHitBox().getCenterY(), 15 + new java.util.Random().nextInt(6), DustType.PLAYER_HIT, player.getFlipSign(), player);
+        String dmgText = String.format("%.1f", damageValue);
+        effectManager.spawnDamageNumber(dmgText, player.getHitBox().getCenterX(), player.getHitBox().y, Constants.DAMAGE_COLOR);
     }
 }
