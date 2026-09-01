@@ -273,6 +273,8 @@ public class Player extends Entity {
 
     // Positioning
     private void updatePosition() {
+        if (checkTransitionUpdate()) return;
+
         removeAction(PlayerAction.MOVE);
         checkOnObject();
         boolean onObject = checkAction(PlayerAction.ON_OBJECT);
@@ -329,6 +331,19 @@ public class Player extends Entity {
         updateX(dx);
         minimapHandler.update();
         addAction(PlayerAction.MOVE);
+    }
+
+    private boolean checkTransitionUpdate() {
+        if (checkAction(PlayerAction.LEVEL_TRANSITION)) {
+            if (inAir) {
+                airSpeed += downwardGravity;
+                hitBox.y += airSpeed;
+            }
+            hitBox.x += getHorizontalSpeed();
+            addAction(PlayerAction.MOVE);
+            return true;
+        }
+        return false;
     }
 
     private void inAirUpdate() {

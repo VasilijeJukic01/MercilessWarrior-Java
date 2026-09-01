@@ -25,5 +25,6 @@ public enum PlayerAction {
     DYING,
     GAME_OVER,
     LAVA,
-    LOOK_DOWN
+    LOOK_DOWN,
+    LEVEL_TRANSITION
 }

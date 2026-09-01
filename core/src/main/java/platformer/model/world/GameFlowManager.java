@@ -99,6 +99,7 @@ public class GameFlowManager {
         else if (dI == 1 && dJ == 0) direction = TransitionDirection.FROM_TOP;
 
         Runnable levelLoadCallback = () -> {
+            gameState.getPlayer().removeAction(PlayerAction.LEVEL_TRANSITION);
             gameState.getPlayer().resetDirections();
             gameState.getStateController().resetKeys();
             gameState.flushAWTEventQueue();
@@ -113,6 +114,7 @@ public class GameFlowManager {
             Logger.getInstance().notify(message, Message.NOTIFICATION);
         };
 
+        gameState.getPlayer().addAction(PlayerAction.LEVEL_TRANSITION);
         gameState.getTransitionManager().startTransition(direction, levelLoadCallback);
     }
 
