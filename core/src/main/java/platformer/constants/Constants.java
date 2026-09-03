@@ -456,8 +456,8 @@ public final class Constants {
     public static final int RORIC_AURA_HEI = scale(100);
 
     // Camera Constants
-    public static final double CAMERA_LERP_FACTOR_X = 0.08;
-    public static final double CAMERA_LERP_FACTOR_Y = 0.08;
+    public static final int DEADZONE_X = scale(80);
+    public static final int DEADZONE_Y = scale(50);
     public static final int CAMERA_LOOK_DOWN_OFFSET = scale(100);
 
     public static int scale(double value) {

@@ -96,6 +96,7 @@ public class InteriorManager {
 
                 context.getGameState().getPlayer().setSpawn(interiorLevel.getPlayerSpawn(LvlTriggerType.SPAWN_A));
                 context.getGameState().getCamera().updateLevelBounds(interiorLevel);
+                context.getGameState().getCamera().snapToPlayer(context.getGameState().getPlayer());
 
                 context.getEffectManager().setAmbientEffectsActive(false);
                 context.getLightManager().overrideAmbientDarkness(150);

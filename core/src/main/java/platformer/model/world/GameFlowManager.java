@@ -109,6 +109,7 @@ public class GameFlowManager {
             context.getMinimapManager().changeLevel();
             gameState.getPlayer().activateMinimap(true);
             gameState.getCamera().updateLevelBounds(context.getLevelManager().getCurrentLevel());
+            gameState.getCamera().snapToPlayer(gameState.getPlayer());
             gameState.getOverlayManager().reset();
             context.getQuestManager().reset();
             Logger.getInstance().notify(message, Message.NOTIFICATION);
