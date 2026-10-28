@@ -28,6 +28,7 @@ import static platformer.constants.FilePaths.*;
 public class MinimapManager {
 
     private GameContext context;
+    private int[][] minimapGray;
 
     private BufferedImage minimapImage;
     private BufferedImage[] minimapIcons;
@@ -65,7 +66,7 @@ public class MinimapManager {
         this.minimap = new BufferedImage(minimapImage.getWidth(), minimapImage.getHeight(), minimapImage.getType());
         this.levelPositions = new LinkedHashMap<>();
         loadMinimapIcons();
-        findLevelPositions();
+        this.minimapGray = ImageUtils.toGrayscale(minimapImage);
         colorizeMinimap();
     }
 
@@ -84,18 +85,22 @@ public class MinimapManager {
         }
     }
 
-    private void findLevelPositions() {
-        for (int i = 0; i < MAX_LEVELS; i++) {
-            for (int j = 0; j < MAX_LEVELS; j++) {
-                String levelName = "level" + i + j;
-                BufferedImage levelImage = ImageUtils.importImage(LEVEL_SPRITES.replace("level$", levelName), -1, -1);
-                if (levelImage == null) continue;
-                int width = levelImage.getWidth() / 3;
-                BufferedImage img = levelImage.getSubimage(0, 0, width, levelImage.getHeight());
-                Point position = findImageOnMinimap(img, minimapImage);
-                if (position != null) levelPositions.put(levelName, position);
-            }
+    private Point getOrFindLevelPosition(String levelName) {
+        if (levelPositions.containsKey(levelName)) {
+            return levelPositions.get(levelName);
         }
+
+        BufferedImage levelImage = ImageUtils.importImage(LEVEL_SPRITES.replace("level$", levelName), -1, -1);
+        if (levelImage == null) {
+            levelPositions.put(levelName, null);
+            return null;
+        }
+
+        int width = levelImage.getWidth() / 3;
+        BufferedImage img = levelImage.getSubimage(0, 0, width, levelImage.getHeight());
+        Point position = findImageOnMinimap(img);
+        levelPositions.put(levelName, position);
+        return position;
     }
 
     private void colorizeMinimap() {
@@ -121,15 +126,12 @@ public class MinimapManager {
      * Time complexity: O(W_minimap × H_minimap × W_level × H_level).
      * <p>
      * @param levelImage The smaller image (level) to locate on the larger image (minimap).
-     * @param minimapImage The larger image (minimap) to search within.
      * @return The top-left position of the level image on the minimap if found.
      */
-    public Point findImageOnMinimap(BufferedImage levelImage, BufferedImage minimapImage) {
+    public Point findImageOnMinimap(BufferedImage levelImage) {
         int levelWidth = levelImage.getWidth(), levelHeight = levelImage.getHeight();
-        int minimapWidth = minimapImage.getWidth(), minimapHeight = minimapImage.getHeight();
+        int minimapHeight = minimapGray.length, minimapWidth = minimapGray[0].length;
 
-        // Images -> Grayscale
-        int[][] minimapGray = ImageUtils.toGrayscale(minimapImage);
         int[][] levelGray = ImageUtils.toGrayscale(levelImage);
 
         // Thread-safe SAD Tracking
@@ -207,7 +209,7 @@ public class MinimapManager {
         int levelHeightInPixels = currentLevel.getLevelTilesHeight() * TILES_SIZE;
 
         String levelName = "level" + levelManager.getLevelIndexI() + levelManager.getLevelIndexJ();
-        Point levelPosOnMinimap = levelPositions.get(levelName);
+        Point levelPosOnMinimap = getOrFindLevelPosition(levelName);
         if (levelPosOnMinimap == null) return;
 
         int levelWidthOnMinimap = currentLevel.getLevelTilesWidth();
