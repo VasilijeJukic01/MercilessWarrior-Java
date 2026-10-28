@@ -10,7 +10,6 @@ import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.util.Objects;
 
 /**
  * A utility class providing static methods for common image processing operations.
@@ -56,10 +55,10 @@ public final class ImageUtils {
             Logger.getInstance().notify("Attempted to resize image to zero dimensions.", Message.WARNING);
             return new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
         }
-        Image tmp = img.getScaledInstance(newW, newH, Image.SCALE_SMOOTH);
         BufferedImage newImg = new BufferedImage(newW, newH, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2d = newImg.createGraphics();
-        g2d.drawImage(tmp, 0, 0, null);
+        g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+        g2d.drawImage(img, 0, 0, newW, newH, null);
         g2d.dispose();
         return newImg;
     }

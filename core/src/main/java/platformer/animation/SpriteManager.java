@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static platformer.constants.AnimConstants.*;
@@ -27,10 +28,11 @@ public class SpriteManager {
     private static volatile SpriteManager instance;
 
     // Caches
+    private final Map<String, BufferedImage> rawSheets = new ConcurrentHashMap<>();
     private BufferedImage[][] playerAnimations, playerTransformAnimations;
-    private final Map<EnemyType, BufferedImage[][]> enemyAnimations = new HashMap<>();
-    private final Map<ObjType, BufferedImage[]> objectAnimations = new HashMap<>();
-    private final Map<NpcType, BufferedImage[]> npcAnimations = new HashMap<>();
+    private final Map<EnemyType, BufferedImage[][]> enemyAnimations = new ConcurrentHashMap<>();
+    private final Map<ObjType, BufferedImage[]> objectAnimations = new ConcurrentHashMap<>();
+    private final Map<NpcType, BufferedImage[]> npcAnimations = new ConcurrentHashMap<>();
     private final Map<NpcType, BufferedImage[][]> followerAnimations = new HashMap<>();
     private BufferedImage[][] coinAnimations;
 
@@ -70,7 +72,12 @@ public class SpriteManager {
         Runnable[] loadTasks = {
                 () -> playerAnimations = loadPlayerSpriteSheet(PLAYER_SHEET),
                 () -> playerTransformAnimations = loadPlayerSpriteSheet(PLAYER_TRANSFORM_SHEET),
-                this::loadEnemyAnimations,
+                this::loadSkeletonAnimations,
+                this::loadGhoulAnimations,
+                this::loadKnightAnimations,
+                this::loadWraithAnimations,
+                this::loadLancerAnimations,
+                this::loadRoricAnimations,
                 this::loadObjectAnimations,
                 this::loadNpcAnimations,
                 this::loadFollowerAnimations,
@@ -80,10 +87,11 @@ public class SpriteManager {
 
         AtomicInteger completedTasks = new AtomicInteger(0);
         double startProgress = 0.05;
-        double totalProgressAllocated = 0.50;
+        double totalProgressAllocated = 0.90;
 
         CompletableFuture<?>[] futures = Arrays.stream(loadTasks).map(task ->
                 CompletableFuture.runAsync(() -> {
+                    long tStart = System.currentTimeMillis();
                     task.run();
                     int done = completedTasks.incrementAndGet();
                     double progress = startProgress + ((double) done / loadTasks.length) * totalProgressAllocated;
@@ -92,6 +100,7 @@ public class SpriteManager {
         ).toArray(CompletableFuture[]::new);
 
         CompletableFuture.allOf(futures).join();
+        rawSheets.clear();
     }
 
     // Animation loader
@@ -110,11 +119,11 @@ public class SpriteManager {
      * @return animation
      */
     public BufferedImage[] loadFromSprite(String basePath, int frames, int row, int width, int height, int offset, int x, int y) {
-        BufferedImage sprite = ImageUtils.importImage(basePath, -1, -1);
+        BufferedImage sprite = rawSheets.computeIfAbsent(basePath, path -> ImageUtils.importImage(path, -1, -1));
         BufferedImage[] animation = new BufferedImage[frames];
         int yOffset = y * row;
-        for (int i = offset; i < frames+offset; i++) {
-            animation[i-offset] = ImageUtils.resizeImage(sprite.getSubimage(i * x, yOffset, x, y), width, height);
+        for (int i = offset; i < frames + offset; i++) {
+            animation[i - offset] = ImageUtils.resizeImage(sprite.getSubimage(i * x, yOffset, x, y), width, height);
         }
         return animation;
     }
