@@ -6,6 +6,7 @@ import platformer.audio.types.Sound;
 import platformer.core.GameContext;
 import platformer.model.entities.follower.Follower;
 import platformer.model.gameObjects.npc.NpcType;
+import platformer.model.levels.LevelManager;
 import platformer.model.projectiles.ProjectileFactory;
 import platformer.model.spells.SpellManager;
 import platformer.storage.StorageStrategy;
@@ -81,7 +82,7 @@ public class ObjectManager {
     }
 
     public void loadObjects(Level level) {
-        level.gatherData();
+        if (!level.isInitialized()) level.gatherData();
         this.objectsMap = level.getObjectsMap();
         this.classCache.clear();
         configureObjects();
@@ -90,7 +91,9 @@ public class ObjectManager {
 
     private void configureObjects() {
         if (lootHandler == null) return;
-        getObjects(Container.class).forEach(container -> lootHandler.generateCrateLoot(container));
+        getObjects(Container.class).forEach(container -> {
+            if (container.getItems().isEmpty()) lootHandler.generateCrateLoot(container);
+        });
         StorageStrategy storageStrategy = Framework.getInstance().getStorageStrategy();
         getObjects(Shop.class).forEach(shop -> {
             List<ShopItem> inventory = storageStrategy.getShopInventory("DEFAULT_SHOP");
@@ -471,9 +474,15 @@ public class ObjectManager {
 
     // Reset
     public void reset() {
-        objectsMap.clear();
-        classCache.clear();
-        loadObjects(context.getLevelManager().getCurrentLevel());
+        this.intersection = null;
+        this.classCache.clear();
+        Level level = context.getLevelManager().getCurrentLevel();
+        level.gatherData();
+        if (!context.getLevelManager().isInArena() && !context.getInteriorManager().isInterior()) {
+            LevelManager levelManager = context.getLevelManager();
+            context.getWorldMemoryManager().applyPermMemory(new Point(levelManager.getLevelIndexI(), levelManager.getLevelIndexJ()), level);
+        }
+        loadObjects(level);
     }
 
     public void refreshShopData() {

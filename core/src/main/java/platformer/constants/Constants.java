@@ -103,7 +103,6 @@ public final class Constants {
     public static final double RORIC_IDLE_COOLDOWN = 10.0;
 
     // Level Constants
-    public static final int MAX_LEVELS = 4;
     public static final int EMPTY_TILE = -1;
     public static final int MAX_TILE_VALUE = 49;
     public static final int PARTICLES_CAP = 50;

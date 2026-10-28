@@ -38,6 +38,7 @@ import platformer.model.projectiles.ProjectileManager;
 import platformer.model.quests.QuestManager;
 import platformer.model.spells.SpellManager;
 import platformer.model.tutorial.TutorialManager;
+import platformer.model.world.WorldMemoryManager;
 import platformer.service.multiplayer.MultiplayerManager;
 import platformer.state.types.GameState;
 
@@ -83,6 +84,7 @@ public class GameInitializer {
         context.setMinimapManager(new MinimapManager());
         context.setOverlayManager(gameState.getOverlayManager());
         context.setMultiplayerManager(new MultiplayerManager());
+        context.setWorldMemoryManager(new WorldMemoryManager());
         context.setCamera(gameState.getCamera());
         context.setScreenEffectsManager(screenEffectsManager);
 
@@ -98,6 +100,7 @@ public class GameInitializer {
         context.getProjectileManager().wire(context);
         context.getSpellManager().wire(context);
         context.getLightManager().wire(context);
+        context.getWorldMemoryManager().wire(context);
 
         ProjectileFactory.init(context.getProjectileManager());
         context.getEnemyManager().injectScreenEffectsManager(screenEffectsManager);

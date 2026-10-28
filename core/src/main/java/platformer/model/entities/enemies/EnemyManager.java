@@ -74,7 +74,6 @@ public class EnemyManager {
 
     public void loadEnemies(Level level) {
         this.enemies = level.getEnemiesMap();
-        reset();
     }
 
     // Render

@@ -39,6 +39,7 @@ public class GameWorld {
     private final TimeCycleManager timeCycleManager;
     private final LightManager lightManager;
     private final QuestManager questManager;
+    private final WorldMemoryManager worldMemoryManager;
 
     public GameWorld(GameContext context) {
         this.levelManager = context.getLevelManager();
@@ -51,6 +52,7 @@ public class GameWorld {
         this.lightManager = context.getLightManager();
         this.timeCycleManager = context.getTimeCycleManager();
         this.questManager = context.getQuestManager();
+        this.worldMemoryManager = context.getWorldMemoryManager();
 
         this.player = new Player(PLAYER_X, PLAYER_Y, PLAYER_WIDTH, PLAYER_HEIGHT, context);
         this.player.loadLvlData(levelManager.getCurrentLevel().getLvlData());
@@ -126,6 +128,7 @@ public class GameWorld {
 
     // Reset
     public void reset() {
+        worldMemoryManager.reset();
         enemyManager.reset();
         player.reset();
         objectManager.reset();
@@ -138,8 +141,6 @@ public class GameWorld {
     }
 
     public void levelLoadReset(LvlTriggerType spawn) {
-        enemyManager.reset();
-        objectManager.reset();
         spellManager.initBossSpells();
         enemyManager.loadEnemies(levelManager.getCurrentLevel());
         objectManager.loadObjects(levelManager.getCurrentLevel());

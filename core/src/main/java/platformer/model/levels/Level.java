@@ -36,6 +36,7 @@ public class Level {
     private final String tilesetName;
     private final BufferedImage levelImg;
     private int[][] lvlData, decoData, layerData;
+    private boolean initialized = false;
 
     // Items
     private final Map<EnemyType, List<Enemy>> enemiesMap = new HashMap<>();
@@ -81,6 +82,7 @@ public class Level {
             }
         }
         getTriggerData(panelWidth);
+        this.initialized = true;
     }
 
     private void getEnemyData(int i, int j, int valueG) {
@@ -386,5 +388,9 @@ public class Level {
 
     public List<Trigger> getTriggers() {
         return triggers;
+    }
+
+    public boolean isInitialized() {
+        return initialized;
     }
 }

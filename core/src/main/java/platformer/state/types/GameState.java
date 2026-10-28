@@ -189,6 +189,7 @@ public class GameState extends AbstractState implements State {
         this.getPlayer().getPlayerDataManager().loadPlayerData();
         this.getPlayer().getInventory().fillItems(Framework.getInstance().getAccount().getItems());
         context.getPerksManager().loadUnlockedPerks(Framework.getInstance().getAccount().getPerks());
+        context.getWorldMemoryManager().loadFromAccount(Framework.getInstance().getAccount().getWorldFlags());
         context.getLevelManager().loadSavePoint(Framework.getInstance().getAccount().getSpawn());
         context.getMinimapManager().loadExplorationData(Framework.getInstance().getAccount().getExplorationData());
         this.overlayManager.reset();
@@ -208,6 +209,7 @@ public class GameState extends AbstractState implements State {
         context.getPerksManager().reset();
         context.getPerksManager().loadUnlockedPerks(Framework.getInstance().getAccount().getPerks());
         context.getMinimapManager().loadExplorationData(Framework.getInstance().getAccount().getExplorationData());
+        context.getWorldMemoryManager().loadFromAccount(Framework.getInstance().getAccount().getWorldFlags());
         getPlayer().getInventory().fillItems(Framework.getInstance().getAccount().getItems());
         Logger.getInstance().notify("Player data fully refreshed from loaded save.", Message.INFORMATION);
     }

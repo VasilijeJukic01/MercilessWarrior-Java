@@ -4,6 +4,7 @@ import platformer.audio.Audio;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
 import platformer.event.EventBus;
+import platformer.event.events.BrickDestroyedEvent;
 import platformer.event.events.CrateDestroyedEvent;
 import platformer.model.gameObjects.objects.*;
 import platformer.model.projectiles.Projectile;
@@ -116,6 +117,7 @@ public class ObjectBreakHandler {
     private void breakBrick(Brick brick) {
         brick.setAnimate(true);
         Logger.getInstance().notify("Player breaks brick.", Message.NOTIFICATION);
+        EventBus.getInstance().publish(new BrickDestroyedEvent(brick));
     }
 
     private <T extends GameObject> List<T> getObjects(Class<T> objectType) {

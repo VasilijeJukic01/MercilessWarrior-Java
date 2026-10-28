@@ -150,6 +150,7 @@ public class LevelManager {
             context.getGameState().getGame().startMenuState();
             return;
         }
+        context.getWorldMemoryManager().onRoomEntered(levelIndexI, levelIndexJ, newLevel);
         this.currentLevel = newLevel;
         context.getGameState().getPlayer().loadLvlData(newLevel.getLvlData());
         context.getEnemyManager().loadEnemies(newLevel);
@@ -364,6 +365,10 @@ public class LevelManager {
     // Getters
     public LevelMetadata getCurrentLevelMetadata() {
         return currentLevelMetadata;
+    }
+
+    public Level getLevel(int i, int j) {
+        return levels.get(new Point(i, j));
     }
 
     public int getLevelIndexI() {
