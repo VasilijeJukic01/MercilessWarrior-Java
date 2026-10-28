@@ -18,9 +18,10 @@ import platformer.state.types.PlayingState;
 import platformer.ui.overlays.DialogueOverlay;
 import platformer.ui.overlays.OverlayManager;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.lang.reflect.Type;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -56,13 +57,11 @@ public class DialogueManager {
     }
 
     private void readDialogueFile() {
-        try {
-            String file = Objects.requireNonNull(getClass().getResource(OBJECT_DIALOGUES)).getFile();
-            BufferedReader reader = new BufferedReader(new FileReader(file));
+        try (InputStream is = Objects.requireNonNull(getClass().getResourceAsStream(OBJECT_DIALOGUES));
+             InputStreamReader reader = new InputStreamReader(is, StandardCharsets.UTF_8)) {
             Gson gson = new Gson();
             Type dialogueFileType = new TypeToken<DialogueFile>() {}.getType();
             DialogueFile dialogueFile = gson.fromJson(reader, dialogueFileType);
-            reader.close();
 
             for (Dialogue dialogue : dialogueFile.getDialogues()) {
                 replacePlaceholders(dialogue);
@@ -70,8 +69,8 @@ public class DialogueManager {
                 dialogues.putIfAbsent(key, new ArrayList<>());
                 dialogues.get(key).add(dialogue);
             }
-        } catch (Exception ignored) {
-            Logger.getInstance().notify("Reading dialogue file failed!", Message.ERROR);
+        } catch (Exception e) {
+            Logger.getInstance().notify("Reading dialogue file failed: " + e.getMessage(), Message.ERROR);
         }
     }
 
