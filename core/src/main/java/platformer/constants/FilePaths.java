@@ -68,6 +68,9 @@ public final class FilePaths {
     public static final String NIKOLAS_SHEET = "/images/objs/npc/NikolasSprite.png";
     public static final String SIR_DEJANOVIC_SHEET = "/images/objs/npc/SirDejanovicSprite.png";
     public static final String KRYSANTHE_SHEET = "/images/objs/npc/KrysantheSprite.png";
+    public static final String MITCH_SHEET = "/images/objs/npc/MitchSprite.png";
+    public static final String ANDELLIA_SHEET = "/images/objs/npc/AndelliaSprite.png";
+    public static final String EERYN_SHEET = "/images/objs/npc/EerynSprite.png";
     public static final String AVATAR_PATH= "/images/avatars/$.png";
 
     // Dialogue

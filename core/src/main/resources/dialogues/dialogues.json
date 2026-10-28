@@ -1,199 +1,298 @@
 {
   "dialogues": [
     {
-      "object": "Blacksmith",
-      "id": "0",
-      "once": true,
+      "object": "Board",
+      "id": "board_tutorial_1",
+      "once": false,
       "lines": [
-        "Perk upgrades are a way to enhance your abilities and skills. As you gain experience and progress in the game, you'll earn tokens.",
-        "These tokens can be used to unlock various perks.",
-        "You earn tokens by completing quests, defeating enemies, and making progress in the game. The tougher the challenge, the more you'll earn.",
-        "To upgrade a perk, you need to spend tokens.",
-        "I've got a selection of powerful perks that can give you the edge you need in your journey.",
-        "Take a look and let me know what catches your eye."
+        "Notice to travelers: the road ahead is crawling with the dead.",
+        "Use %%JUMP%% to clear gaps and traps, and press %%ATTACK%% to cut down anything that gets in your way."
       ]
     },
     {
       "object": "Blacksmith",
-      "id": "1",
+      "id": "blacksmith_1",
       "once": false,
       "lines": [
-        "Take a look and let me know what catches your eye."
+        "Fire's hot and the anvil is waiting. Hand over your upgrade tokens if you want me to make you stronger."
+      ]
+    },
+    {
+      "object": "Blacksmith",
+      "id": "blacksmith_2",
+      "once": false,
+      "lines": [
+        "Don't go out there with a dull edge. Let's see what we can upgrade."
       ]
     },
     {
       "object": "Shop",
-      "id": "0",
+      "id": "shop_1",
       "once": false,
       "lines": [
-        "Welcome, adventurer! Looking to buy some gear to enhance your journey?",
-        "Take a look at my wares."
+        "Potions, gear, and whatever else I pulled off the last guy who went into the woods. Take a look."
       ]
     },
     {
       "object": "Shop",
-      "id": "1",
+      "id": "shop_2",
       "once": false,
       "lines": [
-        "Hey there, adventurer! Looking for something to give you an edge? Or maybe just a new pair of socks?",
-        "Check out my inventory, but be warned, my prices are as steep as the mountains around here!"
+        "Got coins to spend or junk to sell? Make it quick, I don't do refunds."
       ]
-    },
-    {
-      "object": "Shop",
-      "id": "2",
-      "once": false,
-      "lines": [
-        "Welcome, adventurer! I've got the best gear in town. And if you believe that, I've got a bridge to sell you too!",
-        "Have a look around, just don't break anything. You break it, you buy it!"
-      ]
-    },
-    {
-      "object": "Dog",
-      "id": "0",
-      "once": false,
-      "lines": ["Wuf!"]
-    },
-    {
-      "object": "Dog",
-      "id": "1",
-      "once": false,
-      "lines": ["Grrr... Be careful!"]
     },
     {
       "object": "SaveTotem",
-      "id": "0",
-      "once": false,
-      "lines": ["Press X to save game or ESC to close."]
-    },
-    {
-      "object": "Board",
-      "id": "0",
+      "id": "totem_1",
       "once": false,
       "lines": [
-        "Welcome, adventurer! This is your tutorial board. Here you can learn the basics of the game.",
-        "Use the %%JUMP%% key to jump.",
-        "The %%ATTACK%% key is for attack.",
-        "Remember, your journey is filled with challenges. Use your commands wisely.",
-        "Good luck on your journey, adventurer!"
+        "The stone hums softly. Your progress is carved into its memory."
       ]
     },
     {
-      "object": "NpcRoric",
-      "id": "0",
+      "object": "Dog",
+      "id": "dog_1",
       "once": false,
       "lines": [
-        "So, the mortal arrives. Your steps have echoed in the halls of fate for some time.",
-        "You seek to challenge me? To unravel what has been woven?",
-        "Let's dance!"
-      ],
-      "question": {
-        "answers": [
-          {
-            "answer": "Yes",
-            "next": "FIGHT_RORIC"
-          },
-          {
-            "answer": "No",
-            "next": ""
-          }
-        ]
-      }
-    },
-    {
-      "object": "NpcRoric",
-      "id": "1",
-      "once": false,
-      "lines": [
-        "Impossible...",
-        "You have bested me, mortal.",
-        "Go. Return to your world. My watch is ended."
+        "Woof! *He wags his tail, happy to see someone who isn't a skeleton.*"
       ]
     },
+    {
+      "object": "Dog",
+      "id": "dog_2",
+      "once": false,
+      "lines": [
+        "*The dog sniffs your boots, probably hoping you dropped some food.*"
+      ]
+    },
+
+    {
+      "object": "NpcAndellia",
+      "id": "andellia_seq_0",
+      "once": false,
+      "lines": [
+        "Oh, good, someone who can actually hold a sword. I am Andellia. You have probably heard of my thesis on the sunken spire.",
+        "The other scholars were too terrified to leave the capital, so I had to map these save totems all by myself.",
+        "Honestly, nobody else has the intellect for it.",
+        "It took me three days to decode the runes on those stones, a feat my peers said would take a century.",
+        "They anchor your soul so the forest curse cannot hollow you out like the soldiers outside.",
+        "Try not to get killed out there. It would be a tragedy if nobody was left alive to appreciate my research."
+      ]
+    },
+    {
+      "object": "NpcAndellia",
+      "id": "andellia_seq_1_dummy",
+      "once": false,
+      "lines": [
+        "Do make sure to use the save totems. I did not decipher their ancient magic just for you to ignore them!"
+      ]
+    },
+
     {
       "object": "NpcAnita",
-      "id": "0",
+      "id": "anita_seq_0",
       "once": false,
       "lines": [
-        "Hello, handsome! It's so rare to see a new face around here.",
-        "Can you help me? A group of RAF bandits has taken over my town and I'm too scared to go out there.",
-        "I don't know what to do. I'm so lost.",
-        "Can you help me to get rid of them?",
-        "If you do, I'll give you a reward. I promise."
+        "Easy with that weapon! My eyes might glow, but I'm not one of those monsters.",
+        "I'm Anita. My scouting group got ambushed by ghouls just up ahead.",
+        "My wind magic can slow them down, but there are too many for me to take alone.",
+        "Help me clear them out, and I'll watch your back. What do you say?"
       ],
       "question": {
         "answers": [
           {
-            "answer": "Yes",
+            "answer": "Accept",
             "next": "Quest: Helping Anita"
           },
           {
-            "answer": "No",
-            "next": ""
+            "answer": "Decline",
+            "next": "Close"
           }
         ]
       }
     },
     {
       "object": "NpcAnita",
-      "id": "1",
+      "id": "anita_seq_1_dummy",
       "once": false,
-      "lines": ["Have you done it yet?"]
+      "lines": [
+        "Changed your mind? Those ghouls aren't going to clear themselves out. Ready to fight?"
+      ],
+      "question": {
+        "answers": [
+          {
+            "answer": "Accept",
+            "next": "Quest: Helping Anita"
+          },
+          {
+            "answer": "Decline",
+            "next": "Close"
+          }
+        ]
+      }
+    },
+
+    {
+      "object": "NpcRoric",
+      "id": "roric_seq_0_prefight",
+      "once": false,
+      "lines": [
+        "You have come far through the mist, warrior.",
+        "I am Roric. For years, my bow has kept the rot of these woods from spreading to the lands beyond.",
+        "If you want to pass, you have to prove your will won't break under the storm. Draw your weapon and survive my trial."
+      ],
+      "question": {
+        "answers": [
+          {
+            "answer": "Accept",
+            "next": "FIGHT_RORIC"
+          },
+          {
+            "answer": "Decline",
+            "next": "Close"
+          }
+        ]
+      }
+    },
+    {
+      "object": "NpcRoric",
+      "id": "roric_seq_1_postfight",
+      "once": false,
+      "lines": [
+        "The storm fades, and you are still standing.",
+        "It has been a long time since I fought someone with your resolve.",
+        "My trial is over. Go on ahead, warrior. You have earned it."
+      ]
+    },
+
+    {
+      "object": "NpcMitchOfAssis",
+      "id": "mitch_rand_1",
+      "once": false,
+      "lines": [
+        "Keep this between us, alright? Nikolas keeps telling everyone he fought off ten knights, but...",
+        "The barkeep saw him trip over a barrel running from a single skeleton.",
+        "Also, did you hear the blacksmith waters down his quenching oil?",
+        "People talk when they think I'm just staring at the floor under this hat."
+      ]
+    },
+    {
+      "object": "NpcMitchOfAssis",
+      "id": "mitch_rand_2",
+      "once": false,
+      "lines": [
+        "Hey, has Eeryn said anything about me? I polished my katana three times today and stood by her table for an hour.",
+        "She looked right through me and asked the air for a refill. I think she's just playing hard to get. Definitely."
+      ]
+    },
+    {
+      "object": "NpcMitchOfAssis",
+      "id": "mitch_rand_3",
+      "once": false,
+      "lines": [
+        "Word around the tavern is that Andellia got kicked out of the royal academy for bragging too much during a lecture.",
+        "Still, if I can find a rare flower out in the woods, maybe Eeryn will finally look at me for more than two seconds."
+      ]
+    },
+
+    {
+      "object": "NpcNikolas",
+      "id": "nikolas_rand_1",
+      "once": false,
+      "lines": [
+        "Stand back, citizen! You are looking at Nikolas, the greatest bladesman to ever walk these woods.",
+        "The guys in the tavern always burst out laughing when I say that.",
+        "It's nice to see my legendary reputation brings so much joy to the common folk!"
+      ]
     },
     {
       "object": "NpcNikolas",
-      "id": "0",
+      "id": "nikolas_rand_2",
       "once": false,
       "lines": [
-        "Hey, weak creature!",
-        "Do you know who I am? I am Nikolas the best fighter in the world.",
-        "You will never be strong like me. I'm the best!!!",
-        "You know what they say 'If you can't win a fight, it's only your fault' hue-hue-hue.",
-        "I train every day to become the best fighter in the world !!!"
+        "I was about to defeat that Lancer myself, you know. Had her right where I wanted her.",
+        "Then I remembered I left my favorite lute string back at the tavern. It was a tactical retreat, no matter what Mitch tells you."
+      ]
+    },
+    {
+      "object": "NpcNikolas",
+      "id": "nikolas_rand_3",
+      "once": false,
+      "lines": [
+        "Dejanovic told me my fighting stance looks like a wet scarecrow.",
+        "Coming from a guy in full plate armor, I take that as a compliment on my flexibility!",
+        "Anyway, I'll let you handle the monsters today. Wouldn't want to hog all the glory."
+      ]
+    },
+
+    {
+      "object": "NpcSirDejanovic",
+      "id": "dejanovic_tavern_1",
+      "location": "tavern",
+      "once": false,
+      "lines": [
+        "I swore I wouldn't take this helmet off until the forest curse is broken.",
+        "Though I have to admit, drinking tavern ale through a steel visor takes a lot of practice."
       ]
     },
     {
       "object": "NpcSirDejanovic",
-      "id": "0",
+      "id": "dejanovic_tavern_2",
+      "location": "tavern",
       "once": false,
       "lines": [
-        "Hello, young warrior! What brings you to this fire pit?",
-        "Be careful, this place is dangerous. I've heard that there are some flying creatures around here.",
-        "Drink beer with me and I'll tell you a secret about this place."
+        "Listening to Mitch brag by the fireplace is more exhausting than fighting wraiths.",
+        "At least the fire is warm in here. Rest your bones while you can, warrior."
       ]
     },
     {
-      "object": "NpcKrysanthe",
-      "id": "0",
-      "once": true,
+      "object": "NpcSirDejanovic",
+      "id": "dejanovic_outside_1",
+      "location": "main_map",
+      "once": false,
       "lines": [
-        "Ah, the Warrior of Unwritten Pages. I have been watching the threads of your destiny converge on this very spot.",
-        "Do not be startled. The tapestry of fate is an open book to me, and your chapter is stained with... potential.",
-        "You carry the weight of choices not yet made, and the echoes of battles yet to be fought."
+        "Those armored knights roaming the ruins were once my sworn brothers.",
+        "Now they are just empty shells bound to a dead oath. If they block your path, give them a clean end."
       ]
     },
     {
-      "object": "NpcKrysanthe",
-      "id": "1",
+      "object": "NpcSirDejanovic",
+      "id": "dejanovic_outside_2",
+      "location": "main_map",
       "once": false,
       "lines": [
-        "The threads of fate are ever-shifting. Walk carefully."
+        "Keep your shield ready out here. The undead knights hit hard, and the mist hides their approach.",
+        "Good armor will save your life when your reflexes fail."
+      ]
+    },
+
+    {
+      "object": "NpcEeryn",
+      "id": "eeryn_rand_1",
+      "once": false,
+      "lines": [
+        "My, you look strong. Listen, I accidentally dropped my favorite ruby ring at the bottom of a spike pit just east of here.",
+        "Why don't you jump right in and grab it for me? I promise there's no trap at the bottom. You can trust this smile, can't you?"
       ]
     },
     {
-      "object": "NpcKrysanthe",
-      "id": "2",
+      "object": "NpcEeryn",
+      "id": "eeryn_rand_2",
       "once": false,
       "lines": [
-        "I see a crossroads in your future. One path leads to glory, the other... to dust."
+        "People are so easy to read. Wave a little illusion in front of their eyes, tell them they're special, and they'll hand over their whole coin purse.",
+        "Speaking of pathetic, there is a man in a straw hat who keeps breathing loudly near my elbow.",
+        "Do you know if he is a coat rack, or can I pay you to shoo him away?"
       ]
     },
     {
-      "object": "NpcKrysanthe",
-      "id": "3",
+      "object": "NpcEeryn",
+      "id": "eeryn_rand_3",
       "once": false,
       "lines": [
-        "Your journey is far from over. The loom of destiny has much more to weave."
+        "If you find any mythic relics out there, bring them straight to me.",
+        "They are terribly cursed and dangerous for a brute like you.",
+        "I will gladly take them off your hands for free, purely out of the goodness of my heart."
       ]
     }
   ]

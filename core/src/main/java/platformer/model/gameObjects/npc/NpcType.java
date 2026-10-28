@@ -21,7 +21,16 @@ public enum NpcType {
             scale(110), scale(90), scale(80), scale(42), scale(10), scale(60), 220, 160
     ),
     RORIC(12, new Color(0x9CDD4A), "Roric", DialogueBehavior.SEQUENTIAL,
-    scale(250), scale(150), scale(80), scale(50), scale(90), scale(96), RORIC_W, RORIC_H);
+    scale(250), scale(150), scale(80), scale(50), scale(90), scale(96), RORIC_W, RORIC_H),
+    MITCH_OF_ASSIS(5, new Color(0xC8A800), "Mitch of Assis", DialogueBehavior.RANDOM,
+            scale(40), scale(52), scale(80), scale(45), scale(-20), scale(4), 34, 34
+    ),
+    ANDELLIA(4, new Color(0x2D3FB5), "Andellia the Demi-Scholar", DialogueBehavior.SEQUENTIAL,
+            scale(40), scale(52), scale(80), scale(45), scale(-20), scale(4), 32, 32
+    ),
+    EERYN(4, new Color(0x8500FF), "Eeryn the Illusionist", DialogueBehavior.RANDOM,
+            scale(40), scale(52), scale(80), scale(45), scale(-20), scale(4), 32, 32
+    );
 
     private final int sprites;
     private final String name;

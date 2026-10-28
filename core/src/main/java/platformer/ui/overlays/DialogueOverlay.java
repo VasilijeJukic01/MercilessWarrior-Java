@@ -280,6 +280,12 @@ public class DialogueOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
         }
     }
 
+    void checkLastQuestion() {
+        if (this.question != null && this.dialogues != null && this.dialogues.size() == 1) {
+            this.onLastQuestion = true;
+        }
+    }
+
     /**
      * Sets the dialogues and intersection object.
      *
@@ -292,6 +298,7 @@ public class DialogueOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
         this.intersectionObject = intersectionObject;
         configurePortrait();
         reset();
+        checkLastQuestion();
     }
 
     // Getters

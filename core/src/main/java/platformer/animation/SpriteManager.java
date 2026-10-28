@@ -317,11 +317,14 @@ public class SpriteManager {
 
     // NPC
     private void loadNpcAnimations() {
-        npcAnimations.put(NpcType.ANITA,         loadSingleNpcAnimation(ANITA_SHEET, 4, 0, NpcType.ANITA));
-        npcAnimations.put(NpcType.NIKOLAS,       loadSingleNpcAnimation(NIKOLAS_SHEET, 4, 0, NpcType.NIKOLAS));
-        npcAnimations.put(NpcType.SIR_DEJANOVIC, loadSingleNpcAnimation(SIR_DEJANOVIC_SHEET, 4, 0, NpcType.SIR_DEJANOVIC));
-        npcAnimations.put(NpcType.KRYSANTHE,     loadSingleNpcAnimation(KRYSANTHE_SHEET, 8, 0, NpcType.KRYSANTHE));
-        npcAnimations.put(NpcType.RORIC,         loadFromSprite(RORIC_SHEET, 12, 0, NpcType.RORIC.getWid(), NpcType.RORIC.getHei(), 0, RORIC_W, RORIC_H));
+        npcAnimations.put(NpcType.ANITA,         	loadSingleNpcAnimation(ANITA_SHEET, 4, 0, NpcType.ANITA));
+        npcAnimations.put(NpcType.NIKOLAS,       	loadSingleNpcAnimation(NIKOLAS_SHEET, 4, 0, NpcType.NIKOLAS));
+        npcAnimations.put(NpcType.SIR_DEJANOVIC, 	loadSingleNpcAnimation(SIR_DEJANOVIC_SHEET, 4, 0, NpcType.SIR_DEJANOVIC));
+        npcAnimations.put(NpcType.KRYSANTHE,     	loadSingleNpcAnimation(KRYSANTHE_SHEET, 8, 0, NpcType.KRYSANTHE));
+        npcAnimations.put(NpcType.RORIC,         	loadFromSprite(RORIC_SHEET, 12, 0, NpcType.RORIC.getWid(), NpcType.RORIC.getHei(), 0, RORIC_W, RORIC_H));
+        npcAnimations.put(NpcType.MITCH_OF_ASSIS,   loadSingleNpcAnimation(MITCH_SHEET, 5, 0, NpcType.MITCH_OF_ASSIS));
+        npcAnimations.put(NpcType.ANDELLIA,      	loadSingleNpcAnimation(ANDELLIA_SHEET, 4, 0, NpcType.ANDELLIA));
+        npcAnimations.put(NpcType.EERYN,         	loadSingleNpcAnimation(EERYN_SHEET, 4, 0, NpcType.EERYN));
 
         for (NpcType type : NpcType.values()) {
             String path = AVATAR_PATH.replace("$", type.name());

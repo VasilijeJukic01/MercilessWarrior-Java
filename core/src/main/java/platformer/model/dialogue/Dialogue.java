@@ -13,6 +13,7 @@ public class Dialogue {
 
     private String object;
     private String id;
+    private String location;
     private boolean once;
     private List<String> lines;
     private Question question;

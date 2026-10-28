@@ -144,7 +144,10 @@ public class DialogueManager {
      */
     public void declineQuestion() {
         if (getOverlay().getQuestion() == null || !getOverlay().isOnLastQuestion()) return;
-        getOverlay().next();
+        ObjectManager objectManager = context.getGameState().getObjectManager();
+        if (objectManager.getIntersection() instanceof Npc npc) {
+            npc.increaseDialogueIndicator();
+        }
         EventBus.getInstance().publish(new OverlayChangeEvent(null));
         getOverlay().reset();
     }
@@ -182,8 +185,13 @@ public class DialogueManager {
     }
 
     private List<Dialogue> getDialogues(String id) {
+        String currentLocation = context.getInteriorManager().isInterior()
+                ? context.getInteriorManager().getCurrentInteriorId()
+                : "main_map";
+
         return dialogues.get(id).stream()
                 .filter(d -> !d.isActivated())
+                .filter(d -> d.getLocation() == null || d.getLocation().equals(currentLocation))
                 .collect(Collectors.toList());
     }
 

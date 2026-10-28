@@ -123,12 +123,14 @@ public class Npc extends GameObject implements Interactable {
 
     }
 
-    // TODO: Refactor later
     @Override
     public String getInteractionPrompt() {
-        String typeName = getNpcType().name();
-        String pascalCaseName = typeName.substring(0, 1).toUpperCase() + typeName.substring(1).toLowerCase();
-        if (typeName.equals("SIR_DEJANOVIC")) pascalCaseName = "SirDejanovic";
+        String[] parts = getNpcType().name().split("_");
+        StringBuilder pascalCaseName = new StringBuilder();
+        for (String part : parts) {
+            pascalCaseName.append(part.substring(0, 1).toUpperCase())
+                    .append(part.substring(1).toLowerCase());
+        }
         return "Npc" + pascalCaseName;
     }
 
