@@ -85,21 +85,29 @@ public class MinimapManager {
         }
     }
 
-    private Point getOrFindLevelPosition(String levelName) {
-        if (levelPositions.containsKey(levelName)) {
-            return levelPositions.get(levelName);
+    private Point getOrFindLevelPosition(String levelId) {
+        if (levelPositions.containsKey(levelId)) {
+            return levelPositions.get(levelId);
         }
 
-        BufferedImage levelImage = ImageUtils.importImage(LEVEL_SPRITES.replace("level$", levelName), -1, -1);
+        // Lookup coordinates in world_map.json
+        Point configuredPos = context.getLevelManager().getConfiguredMinimapPosition(levelId);
+        if (configuredPos != null) {
+            levelPositions.put(levelId, configuredPos);
+            return configuredPos;
+        }
+
+        // Fallback to SAD image matching
+        BufferedImage levelImage = ImageUtils.importImage(LEVEL_SPRITES.replace("$", levelId), -1, -1);
         if (levelImage == null) {
-            levelPositions.put(levelName, null);
+            levelPositions.put(levelId, null);
             return null;
         }
 
         int width = levelImage.getWidth() / 3;
         BufferedImage img = levelImage.getSubimage(0, 0, width, levelImage.getHeight());
         Point position = findImageOnMinimap(img);
-        levelPositions.put(levelName, position);
+        levelPositions.put(levelId, position);
         return position;
     }
 
@@ -208,8 +216,8 @@ public class MinimapManager {
         int levelWidthInPixels = currentLevel.getLevelTilesWidth() * TILES_SIZE;
         int levelHeightInPixels = currentLevel.getLevelTilesHeight() * TILES_SIZE;
 
-        String levelName = "level" + levelManager.getLevelIndexI() + levelManager.getLevelIndexJ();
-        Point levelPosOnMinimap = getOrFindLevelPosition(levelName);
+        String levelId = levelManager.getCurrentLevelId();
+        Point levelPosOnMinimap = getOrFindLevelPosition(levelId);
         if (levelPosOnMinimap == null) return;
 
         int levelWidthOnMinimap = currentLevel.getLevelTilesWidth();

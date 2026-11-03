@@ -6,7 +6,6 @@ import platformer.audio.types.Sound;
 import platformer.core.GameContext;
 import platformer.model.entities.follower.Follower;
 import platformer.model.gameObjects.npc.NpcType;
-import platformer.model.levels.LevelManager;
 import platformer.model.projectiles.ProjectileFactory;
 import platformer.model.spells.SpellManager;
 import platformer.storage.StorageStrategy;
@@ -479,8 +478,7 @@ public class ObjectManager {
         Level level = context.getLevelManager().getCurrentLevel();
         level.gatherData();
         if (!context.getLevelManager().isInArena() && !context.getInteriorManager().isInterior()) {
-            LevelManager levelManager = context.getLevelManager();
-            context.getWorldMemoryManager().applyPermMemory(new Point(levelManager.getLevelIndexI(), levelManager.getLevelIndexJ()), level);
+            context.getWorldMemoryManager().applyPermMemory(context.getLevelManager().getCurrentLevelId(), level);
         }
         loadObjects(level);
     }

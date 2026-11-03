@@ -5,10 +5,7 @@ import com.google.gson.reflect.TypeToken;
 import platformer.core.GameContext;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
-import platformer.model.levels.metadata.DecorationMetadata;
-import platformer.model.levels.metadata.LevelMetadata;
-import platformer.model.levels.metadata.ObjectMetadata;
-import platformer.model.levels.metadata.TilesetMetadata;
+import platformer.model.levels.metadata.*;
 import platformer.utils.ImageUtils;
 
 import java.awt.*;
@@ -26,11 +23,7 @@ import static platformer.constants.Constants.*;
 import static platformer.constants.FilePaths.*;
 
 /**
- * This class is managing the levels in the game.
- * It holds references to all the levels and provides methods for loading and rendering them.
- * <p>
- * It uses the Flyweight pattern for managing Particle objects to save memory.
- * The ParticleFactory class is used to create and manage Particle objects.
+ * Manages loading, caching, and rendering of levels in the world graph.
  */
 public class LevelManager {
 
@@ -41,10 +34,12 @@ public class LevelManager {
 
     private final Map<String, BufferedImage[]> tilesetSprites = new HashMap<>();
     private final Map<String, Map<Integer, DecorationMetadata>> decorationSets = new HashMap<>();
-    private final Map<Point, Level> levels = new HashMap<>();
+    private final Map<String, Level> levels = new HashMap<>();
+    private WorldMapMetadata worldMap;
+
     private Level arenaLevel;
     private Level currentLevel;
-    private int levelIndexI = 0, levelIndexJ = 0;
+    private String currentLevelId = "level00";
     private BufferedImage currentBackground;
     private LevelMetadata currentLevelMetadata, arenaLevelMetadata;
 
@@ -53,6 +48,7 @@ public class LevelManager {
         this.backgroundManager = new BackgroundManager();
         this.currentBackground = backgroundManager.getDefaultBackground();
         this.levelObjectManager = new LevelObjectManager();
+        loadWorldMap();
         loadTilesets();
         loadDecorationSets();
         buildArenaLevels();
@@ -60,32 +56,44 @@ public class LevelManager {
 
     public void wire(GameContext context) {
         this.context = context;
-        this.currentLevel = getOrLoadLevel(levelIndexI, levelIndexJ);
+        this.currentLevel = getOrLoadLevel(currentLevelId);
         loadMetadata();
         loadBackground();
     }
 
-    // Init
-    /**
-     * Lazily loads a level at grid coordinates (i, j) if it hasn't been loaded yet, and caches it for fast access later.
-     */
-    private Level getOrLoadLevel(int i, int j) {
-        Point coords = new Point(i, j);
-        if (levels.containsKey(coords)) return levels.get(coords);
+    private void loadWorldMap() {
+        try (InputStream is = getClass().getResourceAsStream(WORLD_MAP_META)) {
+            if (is != null) {
+                try (InputStreamReader reader = new InputStreamReader(is, StandardCharsets.UTF_8)) {
+                    this.worldMap = new Gson().fromJson(reader, WorldMapMetadata.class);
+                    if (worldMap != null && worldMap.getStartLevel() != null) {
+                        this.currentLevelId = worldMap.getStartLevel();
+                    }
+                }
+            }
+        } catch (Exception e) {
+            Logger.getInstance().notify("Failed to load world_map.json: " + e.getMessage(), Message.ERROR);
+        }
+        if (this.worldMap == null) this.worldMap = new WorldMapMetadata();
+    }
 
-        String levelId = i + "" + j;
+    /**
+     * Lazily loads a level by its string ID if it hasn't been loaded yet, and caches it.
+     */
+    private Level getOrLoadLevel(String levelId) {
+        if (levels.containsKey(levelId)) return levels.get(levelId);
+
         BufferedImage levelImg = ImageUtils.importImage(LEVEL_SPRITES.replace("$", levelId), -1, -1);
         if (levelImg == null) {
-            Logger.getInstance().notify("Level image not found for: (" + i + ", " + j + ")", Message.WARNING);
+            Logger.getInstance().notify("Level image not found for ID: " + levelId, Message.WARNING);
             return null;
         }
 
-        String levelName = "level" + levelId;
-        LevelMetadata meta = loadMetadataForLevel(levelName);
+        LevelMetadata meta = loadMetadataForLevel(levelId);
         String tileset = (meta != null && meta.getTileset() != null) ? meta.getTileset() : "Forest";
 
         Level level = new Level(levelImg, tileset);
-        levels.put(coords, level);
+        levels.put(levelId, level);
         return level;
     }
 
@@ -135,7 +143,7 @@ public class LevelManager {
      * It loads the arena level image and creates a new Level object for it.
      */
     private void buildArenaLevels() {
-        BufferedImage arenaImg = ImageUtils.importImage(LEVEL_SPRITES.replace("$", "arena1"), -1, -1);
+        BufferedImage arenaImg = ImageUtils.importImage(LEVEL_SPRITES.replace("$", "levelarena1"), -1, -1);
         if (arenaImg != null) {
             arenaLevelMetadata = loadMetadataForLevel("levelarena1");
             String tileset = (arenaLevelMetadata != null && arenaLevelMetadata.getTileset() != null) ? arenaLevelMetadata.getTileset() : "Forest";
@@ -145,12 +153,12 @@ public class LevelManager {
 
     // Level flow
     private void loadLevel() {
-        Level newLevel = getOrLoadLevel(levelIndexI, levelIndexJ);
+        Level newLevel = getOrLoadLevel(currentLevelId);
         if (newLevel == null) {
             context.getGameState().getGame().startMenuState();
             return;
         }
-        context.getWorldMemoryManager().onRoomEntered(levelIndexI, levelIndexJ, newLevel);
+        context.getWorldMemoryManager().onRoomEntered(currentLevelId, newLevel);
         this.currentLevel = newLevel;
         context.getGameState().getPlayer().loadLvlData(newLevel.getLvlData());
         context.getEnemyManager().loadEnemies(newLevel);
@@ -162,16 +170,38 @@ public class LevelManager {
         loadBackground();
     }
 
-    public void loadNextLevel(int dI, int dJ) {
-        int nextI = levelIndexI + dI, nextJ = levelIndexJ + dJ;
-
-        Level next = getOrLoadLevel(nextI, nextJ);
+    /**
+     * Transitions to the specified target level ID in the world graph.
+     */
+    public void loadLevelById(String targetLevelId) {
+        Level next = getOrLoadLevel(targetLevelId);
         if (next == null) context.getGameState().getGame().startMenuState();
         else {
-            levelIndexI = nextI;
-            levelIndexJ = nextJ;
+            this.currentLevelId = targetLevelId;
             loadLevel();
         }
+    }
+
+    /**
+     * Resolves the exit transition rule for the current room given a trigger type and tile coordinates.
+     */
+    public RoomExitMetadata resolveExit(LvlTriggerType triggerType, int tileX, int tileY) {
+        if (worldMap == null || worldMap.getRooms() == null) return null;
+        RoomNodeMetadata node = worldMap.getRooms().get(currentLevelId);
+        if (node == null) return null;
+        return node.findExit(triggerType, tileX, tileY);
+    }
+
+    /**
+     * Returns the minimap top-left coordinates (mapX, mapY) for a level ID if configured in world_map.json.
+     */
+    public Point getConfiguredMinimapPosition(String levelId) {
+        if (worldMap == null || worldMap.getRooms() == null) return null;
+        RoomNodeMetadata node = worldMap.getRooms().get(levelId);
+        if (node != null && node.getMapX() != null && node.getMapY() != null) {
+            return new Point(node.getMapX(), node.getMapY());
+        }
+        return null;
     }
 
     private void loadBackground() {
@@ -195,8 +225,7 @@ public class LevelManager {
     }
 
     private void loadMetadata() {
-        String levelName = "level" + levelIndexI + levelIndexJ;
-        this.currentLevelMetadata = loadMetadataForLevel(levelName);
+        this.currentLevelMetadata = loadMetadataForLevel(currentLevelId);
         loadMetadataDecorations();
     }
 
@@ -226,7 +255,7 @@ public class LevelManager {
     }
 
     public void restoreMainMap() {
-        this.currentLevel = getOrLoadLevel(levelIndexI, levelIndexJ);
+        this.currentLevel = getOrLoadLevel(currentLevelId);
         loadMetadata();
         loadBackground();
 
@@ -350,15 +379,13 @@ public class LevelManager {
     public void loadSavePoint(int spawnId) {
         for (Spawn spawn : Spawn.values()) {
             if (spawn.getId() == spawnId) {
-                this.levelIndexI = spawn.getLevelI();
-                this.levelIndexJ = spawn.getLevelJ();
+                this.currentLevelId = spawn.getLevelId();
                 loadLevel();
                 return;
             }
         }
 
-        this.levelIndexI = Spawn.INITIAL.getLevelI();
-        this.levelIndexJ = Spawn.INITIAL.getLevelJ();
+        this.currentLevelId = Spawn.INITIAL.getLevelId();
         loadLevel();
     }
 
@@ -367,16 +394,12 @@ public class LevelManager {
         return currentLevelMetadata;
     }
 
-    public Level getLevel(int i, int j) {
-        return levels.get(new Point(i, j));
+    public Level getLevel(String levelId) {
+        return levels.get(levelId);
     }
 
-    public int getLevelIndexI() {
-        return levelIndexI;
-    }
-
-    public int getLevelIndexJ() {
-        return levelIndexJ;
+    public String getCurrentLevelId() {
+        return currentLevelId;
     }
 
     public BufferedImage getCurrentBackground() {

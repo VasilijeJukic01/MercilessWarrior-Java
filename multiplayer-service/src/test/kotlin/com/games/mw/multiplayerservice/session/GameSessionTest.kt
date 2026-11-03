@@ -50,7 +50,7 @@ class GameSessionTest {
         gameSession.addPlayer(mockSession2)
         val messageQueue2 = ConcurrentLinkedQueue<String>()
         gameSession.publisherFor(mockSession2.id).subscribe { messageQueue2.add(it.payloadAsText) }
-        val playerState = PlayerStateDTO("client1", "PlayerOne", 10.0, 20.0, 0, 0, 1, 1, 1, 0, false)
+        val playerState = PlayerStateDTO("client1", "PlayerOne", 10.0, 20.0, "begin", 1, 1, 1, 0, false)
         val message = objectMapper.writeValueAsString(playerState)
 
         // Act
@@ -89,7 +89,7 @@ class GameSessionTest {
         // Arrange
         gameSession.addPlayer(mockSession1)
         gameSession.addPlayer(mockSession2)
-        val playerState = PlayerStateDTO("client1", "PlayerOne", 0.0, 0.0, 0, 0, 0, 0, 1, 0, false)
+        val playerState = PlayerStateDTO("client1", "PlayerOne", 0.0, 0.0, "begin", 0, 0, 1, 0, false)
         val messageQueue1 = ConcurrentLinkedQueue<String>()
         val messageQueue2 = ConcurrentLinkedQueue<String>()
         gameSession.publisherFor(mockSession1.id).subscribe { messageQueue1.add(it.payloadAsText) }
@@ -116,7 +116,7 @@ class GameSessionTest {
         // Arrange
         gameSession.addPlayer(mockSession1)
         gameSession.addPlayer(mockSession2)
-        val playerState = PlayerStateDTO("client1", "PlayerOne", 0.0, 0.0, 0, 0, 0, 0, 1, 0, false)
+        val playerState = PlayerStateDTO("client1", "PlayerOne", 0.0, 0.0, "begin", 0, 0, 1, 0, false)
         val messageQueue2 = ConcurrentLinkedQueue<String>()
         gameSession.publisherFor(mockSession2.id).subscribe { messageQueue2.add(it.payloadAsText) }
 
@@ -146,7 +146,7 @@ class GameSessionTest {
         gameSession.addPlayer(mockSession1)
         gameSession.addPlayer(mockSession2)
         val publisher = gameSession.publisherFor(mockSession1.id)
-        val playerState = PlayerStateDTO("client2", "PlayerTwo", 0.0, 0.0, 0, 0, 0, 0, 1, 0, false)
+        val playerState = PlayerStateDTO("client2", "PlayerTwo", 0.0, 0.0, "begin", 0, 0, 1, 0, false)
         val playerStateMessage = objectMapper.writeValueAsString(playerState)
 
         // Act & Assert

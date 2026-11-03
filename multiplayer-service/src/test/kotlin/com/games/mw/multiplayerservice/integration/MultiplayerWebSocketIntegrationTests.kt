@@ -135,7 +135,7 @@ class MultiplayerWebSocketIntegrationTests {
         objectMapper.readValue<SessionJoinedDTO>(joinerMessages.pollAwait()) // Consume join message
 
         // Client Sending State
-        val joinerState = PlayerStateDTO("client-joiner", "Joiner", 100.0, 100.0, 1, 1, 0, 0, 1, 0, false)
+        val joinerState = PlayerStateDTO("client-joiner", "Joiner", 100.0, 100.0, "forest01", 0, 0, 1, 0, false)
         joinerSink.tryEmitNext(objectMapper.writeValueAsString(joinerState))
 
         val receivedMessage = hostMessages.pollAwait()
@@ -196,7 +196,7 @@ class MultiplayerWebSocketIntegrationTests {
 
         await().atMost(Duration.ofSeconds(5)).until { joinerSession != null }
 
-        val joinerState = PlayerStateDTO("client-to-disconnect", "Leaver", 0.0, 0.0, 0, 0, 0, 0, 1, 0, false)
+        val joinerState = PlayerStateDTO("client-to-disconnect", "Leaver", 0.0, 0.0, "begin", 0, 0, 1, 0, false)
         joinerSink.tryEmitNext(objectMapper.writeValueAsString(joinerState))
 
         val stateMessage = hostMessages.pollAwait()

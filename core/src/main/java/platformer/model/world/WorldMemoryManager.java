@@ -15,12 +15,10 @@ import platformer.model.gameObjects.ObjType;
 import platformer.model.gameObjects.objects.Brick;
 import platformer.model.levels.Level;
 
-import java.awt.*;
 import java.util.*;
-import java.util.List;
 
 /**
- * Centralizes all short-term and long-term world state persistence.
+ * Centralizes all short-term and long-term world state persistence across named rooms.
  */
 public class WorldMemoryManager {
 
@@ -29,7 +27,7 @@ public class WorldMemoryManager {
     private GameContext context;
 
     // Short-term memory -> the last 2 visited room coordinates (A <-> B)
-    private final Deque<Point> recentRooms = new ArrayDeque<>();
+    private final Deque<String> recentRooms = new ArrayDeque<>();
     // Long-term memory -> permanent flags saved to Account
     private final Set<String> permanentFlags = new HashSet<>();
 
@@ -51,45 +49,45 @@ public class WorldMemoryManager {
      * Called when the player enters a room at (levelI, levelJ).
      * Manages the A -> B -> C queue and evicts/resets the oldest room if needed.
      */
-    public void onRoomEntered(int levelI, int levelJ, Level currentLevel) {
-        Point coords = new Point(levelI, levelJ);
-
+    public void onRoomEntered(String levelId, Level currentLevel) {
         if (!currentLevel.isInitialized()) currentLevel.gatherData();
 
         // Strip out permanently broken bricks / dead bosses
-        applyPermMemory(coords, currentLevel);
+        applyPermMemory(levelId, currentLevel);
 
         // If moving back and forth between the 2 most recent rooms (A <-> B), don't reset anything!
-        if (recentRooms.contains(coords)) {
-            recentRooms.remove(coords);
-            recentRooms.addLast(coords);
+        if (recentRooms.contains(levelId)) {
+            recentRooms.remove(levelId);
+            recentRooms.addLast(levelId);
             return;
         }
 
         // Entered a 3rd room (C) -> Evict the oldest room (A) so it respawns next time!
         if (recentRooms.size() >= MAX_RECENT_ROOMS) {
-            Point evictedCoords = recentRooms.removeFirst();
-            Level evictedLevel = context.getLevelManager().getLevel(evictedCoords.x, evictedCoords.y);
-            evictedLevel.gatherData();
-            applyPermMemory(evictedCoords, evictedLevel);
-            Logger.getInstance().notify("Room (" + evictedCoords.x + "," + evictedCoords.y + ") evicted from short-term memory and respawned.", Message.INFORMATION);
+            String evictedLevelId = recentRooms.removeFirst();
+            Level evictedLevel = context.getLevelManager().getLevel(evictedLevelId);
+            if (evictedLevel != null) {
+                evictedLevel.gatherData();
+                applyPermMemory(evictedLevelId, evictedLevel);
+                Logger.getInstance().notify("Room '" + evictedLevelId + "' evicted from short-term memory and respawned.", Message.INFORMATION);
+            }
         }
 
-        recentRooms.addLast(coords);
+        recentRooms.addLast(levelId);
     }
 
     /**
      * Removes any permanently destroyed objects or defeated bosses from a Level.
      * This keeps Level.java completely clean of save-data logic!
      */
-    public void applyPermMemory(Point coords, Level level) {
+    public void applyPermMemory(String levelId, Level level) {
         List<GameObject> bricks = level.getObjectsMap().get(ObjType.BRICK);
         if (bricks != null) {
-            bricks.removeIf(obj -> permanentFlags.contains(createBrickFlag(coords.x, coords.y, obj)));
+            bricks.removeIf(obj -> permanentFlags.contains(createBrickFlag(levelId, obj)));
         }
         List<Enemy> lancers = level.getEnemiesMap().get(EnemyType.LANCER);
         if (lancers != null) {
-            lancers.removeIf(boss -> permanentFlags.contains(createBossFlag(coords.x, coords.y, EnemyType.LANCER)));
+            lancers.removeIf(boss -> permanentFlags.contains(createBossFlag(levelId, EnemyType.LANCER)));
         }
     }
 
@@ -97,18 +95,15 @@ public class WorldMemoryManager {
      * Records a permanently broken shortcut brick.
      */
     public void recordBrickBroken(Brick brick) {
-        int i = context.getLevelManager().getLevelIndexI();
-        int j = context.getLevelManager().getLevelIndexJ();
-        String flag = createBrickFlag(i, j, brick);
-        permanentFlags.add(flag);
+        String levelId = context.getLevelManager().getCurrentLevelId();
+        permanentFlags.add(createBrickFlag(levelId, brick));
         syncToAccount();
     }
 
     private void onEnemyDefeated(EnemyDefeatedEvent event) {
         if (event.defeatedEnemy().getEnemyType() == EnemyType.LANCER) {
-            int i = context.getLevelManager().getLevelIndexI();
-            int j = context.getLevelManager().getLevelIndexJ();
-            permanentFlags.add(createBossFlag(i, j, EnemyType.LANCER));
+            String levelId = context.getLevelManager().getCurrentLevelId();
+            permanentFlags.add(createBossFlag(levelId, EnemyType.LANCER));
             syncToAccount();
         }
     }
@@ -117,11 +112,11 @@ public class WorldMemoryManager {
      * Clears short-term memory (when the player dies and respawns, all regular enemies respawn).
      */
     public void reset() {
-        for (Point coords : recentRooms) {
-            Level level = context.getLevelManager().getLevel(coords.x, coords.y);
+        for (String levelId : recentRooms) {
+            Level level = context.getLevelManager().getLevel(levelId);
             if (level != null) {
                 level.gatherData();
-                applyPermMemory(coords, level);
+                applyPermMemory(levelId, level);
             }
         }
         recentRooms.clear();
@@ -138,12 +133,11 @@ public class WorldMemoryManager {
         Framework.getInstance().getAccount().setWorldFlags(new ArrayList<>(permanentFlags));
     }
 
-    // Key Generators
-    private String createBrickFlag(int levelI, int levelJ, GameObject brick) {
-        return "BRICK_" + levelI + "_" + levelJ + "_" + (int) brick.getHitBox().x + "_" + (int) brick.getHitBox().y;
+    private String createBrickFlag(String levelId, GameObject brick) {
+        return "BRICK_" + levelId + "_" + (int) brick.getHitBox().x + "_" + (int) brick.getHitBox().y;
     }
 
-    private String createBossFlag(int levelI, int levelJ, EnemyType type) {
-        return "BOSS_" + type.name() + "_" + levelI + "_" + levelJ;
+    private String createBossFlag(String levelId, EnemyType type) {
+        return "BOSS_" + type.name() + "_" + levelId;
     }
 }

@@ -15,7 +15,8 @@ public final class FilePaths {
     public static final String PLAYER_ABILITY_SHEET = "/images/player/abilitiesSheet.png";
 
     // Levels
-    public static final String LEVEL_SPRITES = "/images/levels/level$.png";
+    public static final String LEVEL_SPRITES = "/images/levels/$.png";
+    public static final String WORLD_MAP_META = "/meta/world_map.json";
     public static final String TILESET_META = "/meta/blocks/tilesets.json";
     public static final String DECORATION_META ="/meta/blocks/decoration_sets.json";
     public static final String DECORATION_SPRITES = "/images/levels/levelObjects/";
