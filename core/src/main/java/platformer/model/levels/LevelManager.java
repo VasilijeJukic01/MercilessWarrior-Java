@@ -390,6 +390,11 @@ public class LevelManager {
     }
 
     // Getters
+    public DecorationMetadata getDecorationMetadata(String tilesetName, int colorValue) {
+        Map<Integer, DecorationMetadata> set = decorationSets.get(tilesetName);
+        return (set != null) ? set.get(colorValue) : null;
+    }
+
     public LevelMetadata getCurrentLevelMetadata() {
         return currentLevelMetadata;
     }

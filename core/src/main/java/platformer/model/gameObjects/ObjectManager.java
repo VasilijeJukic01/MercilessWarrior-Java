@@ -103,10 +103,17 @@ public class ObjectManager {
         });
     }
 
+    // TODO: Ugly method
     private void configureNpcs() {
+        String currentLevelId = context.getLevelManager().getCurrentLevelId();
+        boolean villageCleared = context.getWorldMemoryManager().hasFlag("VILLAGE_CLEARED_deepmoss01");
         for (Npc npc : getObjects(Npc.class)) {
-            if (npc.getNpcType() == NpcType.ANITA && context.getQuestManager().isQuestActive("Helping Anita")) {
-                npc.setAlive(false);
+            if (npc.getNpcType() == NpcType.ANITA) {
+                if (context.getQuestManager().isQuestActive("Helping Anita")) {
+                    npc.setAlive(false);
+                } else if (villageCleared && !"deepmoss01".equalsIgnoreCase(currentLevelId)) {
+                    npc.setAlive(false);
+                }
             }
         }
     }
@@ -461,6 +468,10 @@ public class ObjectManager {
 
     public void spawnFollower(NpcType type, int x, int y) {
         this.activeFollower = new Follower(x, y, type, context.getEffectManager(), this);
+    }
+
+    public void despawnFollower() {
+        this.activeFollower = null;
     }
 
     public Npc getNpcByType(NpcType type) {

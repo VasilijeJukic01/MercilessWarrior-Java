@@ -1,0 +1,189 @@
+{
+  "startLevel": "begin",
+  "rooms": {
+    "begin": {
+      "mapX": 0,
+      "mapY": 14,
+      "exits": [
+        {
+          "trigger": "LOAD_RIGHT_LEVEL",
+          "targetLevel": "forest01",
+          "targetSpawn": "SPAWN_B"
+        }
+      ]
+    },
+    "deepmoss01": {
+      "mapX": 100,
+      "mapY": 44,
+      "exits": [
+        {
+          "trigger": "LOAD_LEFT_LEVEL",
+          "targetLevel": "deepmoss02",
+          "targetSpawn": "SPAWN_B"
+        },
+        {
+          "trigger": "LOAD_DOWN_LEVEL",
+          "targetLevel": "forest11",
+          "targetSpawn": "SPAWN_D"
+        },
+        {
+          "trigger": "LOAD_RIGHT_LEVEL",
+          "targetLevel": "forest12",
+          "targetSpawn": "SPAWN_B"
+        }
+      ]
+    },
+    "deepmoss02": {
+      "mapX": 22,
+      "mapY": 44,
+      "exits": [
+        {
+          "trigger": "LOAD_RIGHT_LEVEL",
+          "targetLevel": "deepmoss01",
+          "targetSpawn": "SPAWN_A"
+        }
+      ]
+    },
+    "forest01": {
+      "mapX": 56,
+      "mapY": 14,
+      "exits": [
+        {
+          "trigger": "LOAD_LEFT_LEVEL",
+          "targetLevel": "begin",
+          "targetSpawn": "SPAWN_A"
+        },
+        {
+          "trigger": "LOAD_RIGHT_LEVEL",
+          "targetLevel": "forest02",
+          "targetSpawn": "SPAWN_B"
+        }
+      ]
+    },
+    "forest02": {
+      "mapX": 121,
+      "mapY": 3,
+      "exits": [
+        {
+          "trigger": "LOAD_LEFT_LEVEL",
+          "targetLevel": "forest01",
+          "targetSpawn": "SPAWN_A"
+        },
+        {
+          "trigger": "LOAD_DOWN_LEVEL",
+          "targetLevel": "forest12",
+          "targetSpawn": "SPAWN_D"
+        },
+        {
+          "trigger": "LOAD_RIGHT_LEVEL",
+          "targetLevel": "forest03",
+          "targetSpawn": "SPAWN_B"
+        }
+      ]
+    },
+    "forest03": {
+      "mapX": 181,
+      "mapY": 0,
+      "exits": [
+        {
+          "trigger": "LOAD_LEFT_LEVEL",
+          "targetLevel": "forest02",
+          "targetSpawn": "SPAWN_A"
+        }
+      ]
+    },
+    "forest10": {
+      "mapX": 71,
+      "mapY": 77,
+      "exits": [
+        {
+          "trigger": "LOAD_RIGHT_LEVEL",
+          "targetLevel": "forest11",
+          "targetSpawn": "SPAWN_B"
+        }
+      ]
+    },
+    "forest11": {
+      "mapX": 113,
+      "mapY": 73,
+      "exits": [
+        {
+          "trigger": "LOAD_LEFT_LEVEL",
+          "targetLevel": "forest10",
+          "targetSpawn": "SPAWN_A"
+        },
+        {
+          "trigger": "LOAD_UP_LEVEL",
+          "targetLevel": "deepmoss01",
+          "targetSpawn": "SPAWN_C"
+        },
+        {
+          "trigger": "LOAD_RIGHT_LEVEL",
+          "targetLevel": "forest12",
+          "targetSpawn": "SPAWN_B"
+        }
+      ]
+    },
+    "forest12": {
+      "mapX": 149,
+      "mapY": 43,
+      "exits": [
+        {
+          "trigger": "LOAD_LEFT_LEVEL",
+          "targetLevel": "deepmoss01",
+          "targetSpawn": "SPAWN_B",
+          "minX": 0,
+          "maxX": 4,
+          "minY": 13,
+          "maxY": 21
+        },
+        {
+          "trigger": "LOAD_LEFT_LEVEL",
+          "targetLevel": "forest11",
+          "targetSpawn": "SPAWN_A",
+          "minX": 0,
+          "maxX": 4,
+          "minY": 34,
+          "maxY": 42
+        },
+        {
+          "trigger": "LOAD_UP_LEVEL",
+          "targetLevel": "forest02",
+          "targetSpawn": "SPAWN_C"
+        },
+        {
+          "trigger": "LOAD_RIGHT_LEVEL",
+          "targetLevel": "forest13",
+          "targetSpawn": "SPAWN_B"
+        }
+      ]
+    },
+    "forest13": {
+      "mapX": 185,
+      "mapY": 43,
+      "exits": [
+        {
+          "trigger": "LOAD_LEFT_LEVEL",
+          "targetLevel": "forest12",
+          "targetSpawn": "SPAWN_A"
+        },
+        {
+          "trigger": "LOAD_DOWN_LEVEL",
+          "targetLevel": "forest23",
+          "targetSpawn": "SPAWN_D"
+        }
+      ]
+    },
+    "forest23": {
+      "mapX": 186,
+      "mapY": 73,
+      "exits": [
+        {
+          "trigger": "LOAD_UP_LEVEL",
+          "targetLevel": "forest13",
+          "targetSpawn": "SPAWN_C"
+        }
+      ]
+    }
+  }
+}

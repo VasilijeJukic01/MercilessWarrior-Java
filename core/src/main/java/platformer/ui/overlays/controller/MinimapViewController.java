@@ -45,7 +45,8 @@ public class MinimapViewController {
             if (isWithinOverlay(e.getPoint())) {
                 MinimapIcon foundIcon = findIconAtScreenPos(e.getX(), e.getY());
                 Point minimapCoords = screenToMinimap(e.getX(), e.getY());
-                if (isValid(minimapManager.getMinimap(), minimapCoords) && minimapManager.isExplored(minimapCoords)) {
+                boolean isQuestTarget = minimapManager.getActiveQuestMinimapTargets().stream().anyMatch(qt -> qt.distance(minimapCoords) <= 4.0);
+                if (isValid(minimapManager.getMinimap(), minimapCoords) && (minimapManager.isExplored(minimapCoords) || isQuestTarget)) {
                     minimapManager.handlePinRequest(minimapCoords, foundIcon);
                 }
             }

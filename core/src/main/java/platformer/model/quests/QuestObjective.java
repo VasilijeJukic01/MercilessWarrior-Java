@@ -8,6 +8,9 @@ public class QuestObjective {
 
     private QuestObjectiveType type;
     private ObjectiveTarget target;
+    private String levelId;
+    private Integer targetX;
+    private Integer targetY;
     private String description;
     private int requiredAmount;
     private int currentAmount;
@@ -50,5 +53,21 @@ public class QuestObjective {
 
     public void setCurrentAmount(int currentAmount) {
         this.currentAmount = currentAmount;
+    }
+
+    public Integer getTargetX() {
+        return targetX;
+    }
+
+    public Integer getTargetY() {
+        return targetY;
+    }
+
+    public String getLevelId() {
+        return levelId;
+    }
+
+    public void setLevelId(String levelId) {
+        this.levelId = levelId;
     }
 }

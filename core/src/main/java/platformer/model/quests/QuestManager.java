@@ -99,12 +99,16 @@ public class QuestManager {
      * @param eventTarget The specific target of the objective (e.g., SKELETON, CRATE).
      */
     public void updateQuestProgress(QuestObjectiveType eventType, ObjectiveTarget eventTarget) {
+        String currentLevelId = context.getLevelManager().getCurrentLevelId();
         for (QuestSlot slot : new ArrayList<>(slots)) {
             Quest quest = slot.getQuest();
             if (quest.isCompleted() || quest.getObjectives() == null || quest.getObjectives().isEmpty()) continue;
 
             if (quest.getActiveObjectiveIndex() < quest.getObjectives().size()) {
                 QuestObjective activeObjective = quest.getObjectives().get(quest.getActiveObjectiveIndex());
+                if (activeObjective.getLevelId() != null && !activeObjective.getLevelId().equalsIgnoreCase(currentLevelId)) {
+                    continue;
+                }
                 if (activeObjective.getType() == eventType && activeObjective.getTarget() == eventTarget) {
                     activeObjective.setCurrentAmount(activeObjective.getCurrentAmount() + 1);
                     checkObjectiveCompletion(quest);
@@ -207,6 +211,18 @@ public class QuestManager {
         });
     }
 
+    public void completeObjectiveStep(String questName, int stepIndex) {
+        for (QuestSlot slot : new ArrayList<>(slots)) {
+            Quest quest = slot.getQuest();
+            if (quest.getName().equals(questName) && !quest.isCompleted() && quest.getActiveObjectiveIndex() == stepIndex) {
+                QuestObjective obj = quest.getObjectives().get(stepIndex);
+                obj.setCurrentAmount(obj.getRequiredAmount());
+                checkObjectiveCompletion(quest);
+                break;
+            }
+        }
+    }
+
     private void launchStartSideEffect(String questName) {
         if (questName.equals("Helping Anita")) {
             Npc anita = context.getObjectManager().getNpcByType(NpcType.ANITA);
@@ -228,6 +244,10 @@ public class QuestManager {
             }
         }
         return false;
+    }
+
+    public boolean isQuestCompleted(String questName) {
+        return allQuests.stream().anyMatch(q -> q.getName().equals(questName) && q.isCompleted());
     }
 
     public void reset() {

@@ -87,6 +87,7 @@ public final class FilePaths {
     public static final String RORIC_ARROW_IMG = "/images/enemies/boss/RoricArrow.png";
 
     // Effects
+    public static final String CUTSCENES_PATH = "/cutscenes/cutscenes.json";
     public static final String PARTICLE_SHEET = "/images/particles/ParticleSprite.png";
     public static final String SMOKE_SHEET = "/images/particles/Smoke.png";
     public static final String RORIC_AURA_SHEET = "/images/particles/RoricAuraEffect.png";

@@ -59,14 +59,20 @@
     { "colorValue": 56, "id": "SHROOM2", "wid": 64, "hei": 64, "xOffset": 15, "yOffset": 2 },
     { "colorValue": 57, "id": "SHROOM3", "wid": 64, "hei": 64, "xOffset": 15, "yOffset": 2 },
     { "colorValue": 58, "id": "SHROOM4", "wid": 128, "hei": 128, "xOffset": 15, "yOffset": 2 },
-    { "colorValue": 59, "id": "TREE1", "wid": 192, "hei": 320, "xOffset": 14, "yOffset": -7 },
-    { "colorValue": 60, "id": "TREE2", "wid": 192, "hei": 320, "xOffset": 14, "yOffset": -7 },
-    { "colorValue": 61, "id": "TREE3", "wid": 192, "hei": 256, "xOffset": 14, "yOffset": -7 },
+    { "colorValue": 59, "id": "TREE1", "wid": 192, "hei": 320, "xOffset": 14, "yOffset": -2 },
+    { "colorValue": 60, "id": "TREE2", "wid": 192, "hei": 320, "xOffset": 14, "yOffset": -2 },
+    { "colorValue": 61, "id": "TREE3", "wid": 192, "hei": 256, "xOffset": 14, "yOffset": -2 },
     { "colorValue": 62, "id": "PLANT12", "wid": 64, "hei": 64, "xOffset": 8, "yOffset": 2 },
     { "colorValue": 63, "id": "PLANT13", "wid": 64, "hei": 64, "xOffset": 8, "yOffset": 2 },
     { "colorValue": 64, "id": "CRYSTAL1", "wid": 64, "hei": 64, "xOffset": 8, "yOffset": 2 },
     { "colorValue": 65, "id": "CRYSTAL2", "wid": 64, "hei": 64, "xOffset": 8, "yOffset": 2 },
-    { "colorValue": 66, "id": "TAVERN_BUILDING", "wid": 384, "hei": 256, "xOffset": 8, "yOffset": 0 }
+    { "colorValue": 66, "id": "TAVERN_BUILDING", "wid": 384, "hei": 256, "xOffset": 8, "yOffset": 0 },
+    { "colorValue": 67, "id": "LODGE1_BUILDING", "wid": 384, "hei": 256, "xOffset": 8, "yOffset": 0 },
+    { "colorValue": 68, "id": "LODGE2_BUILDING", "wid": 384, "hei": 256, "xOffset": 8, "yOffset": 0 },
+    { "colorValue": 69, "id": "LODGE3_BUILDING", "wid": 384, "hei": 256, "xOffset": 8, "yOffset": 0 },
+    { "colorValue": 70, "id": "TENT_BUILDING", "wid": 384, "hei": 256, "xOffset": 15, "yOffset": 0 },
+    { "colorValue": 71, "id": "WELL", "wid": 128, "hei": 128, "xOffset": 10, "yOffset": 0 },
+    { "colorValue": 72, "id": "ALTAIR", "wid": 256, "hei": 256, "xOffset": 12, "yOffset": 0 }
   ],
   "Invisible": [
     { "colorValue": 66, "id": "AMBIENT_LIGHT", "wid": 32, "hei": 32, "xOffset": 0, "yOffset": 0 }

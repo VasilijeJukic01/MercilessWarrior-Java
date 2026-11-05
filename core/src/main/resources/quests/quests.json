@@ -99,10 +99,10 @@
     "name": "Helping Anita",
     "type": "PROGRESSIVE",
     "id": 4,
-    "description": "Anita is scared of bandits in her town. Defeat them for her.",
+    "description": "Anita's home of Deepmoss has been overrun by ghouls. Escort her to the village and clear them out.",
     "objectives": [
-      { "type": "KILL", "target": "KNIGHT", "description": "Defeat the bandits", "requiredAmount": 3, "currentAmount": 0 },
-      { "type": "INTERACT", "target": "ANITA", "description": "Report back to Anita", "requiredAmount": 1, "currentAmount": 0 }
+      { "type": "KILL", "target": "GHOUL", "levelId": "deepmoss02", "targetX": 20, "targetY": 18, "description": "Clear the Ghouls in Deepmoss", "requiredAmount": 5, "currentAmount": 0 },
+      { "type": "INTERACT", "target": "ANITA", "levelId": "deepmoss02", "targetX": 18, "targetY": 18, "description": "Speak with Anita in the village", "requiredAmount": 1, "currentAmount": 0 }
     ],
     "itemRewards": {
       "SILVER_ORE": 10

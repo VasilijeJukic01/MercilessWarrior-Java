@@ -70,6 +70,7 @@ public class MinimapRenderer {
 
         if (minimapManager.isFlashVisible()) renderPlayer(g2d, mapX, mapY, mapWid, mapHei, minimap, minimapManager);
         renderPath(g2d, mapX, mapY, mapWid, mapHei, minimap, minimapManager);
+        renderQuestMarkers(g2d, mapX, mapY, scaledPixelWid, scaledPixelHei, minimapManager);
 
         if (pinnedIcon == null && minimapManager.getPinnedLocation() != null) {
             renderFlagPin(g2d, mapX, mapY, scaledPixelWid, scaledPixelHei, minimapManager);
@@ -138,6 +139,39 @@ public class MinimapRenderer {
             int dotY = mapY + (int) (point.y * scaledPixelHeight);
             int dotSize = (int) (2 * SCALE);
             g2d.fillOval(dotX + (int)(scaledPixelWidth / 2.1), dotY + (int)(scaledPixelHeight / 2.1), dotSize, dotSize);
+        }
+    }
+
+    private void renderQuestMarkers(Graphics2D g2d, int mapX, int mapY, double scaleW, double scaleH, MinimapManager minimapManager) {
+        List<Point> questTargets = minimapManager.getActiveQuestMinimapTargets();
+        if (questTargets.isEmpty()) return;
+
+        float pulse = (float) (0.75 + 0.25 * Math.sin(System.currentTimeMillis() / 200.0));
+        int markerSize = (int) Math.max(8 * SCALE, 2.2 * scaleW);
+
+        for (Point pt : questTargets) {
+            int cx = mapX + (int) (pt.x * scaleW);
+            int cy = mapY + (int) (pt.y * scaleH);
+
+            Graphics2D gMarker = (Graphics2D) g2d.create();
+            gMarker.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+            // Ring
+            int ringSize = (int) (markerSize * (1.1 + 0.3 * pulse));
+            gMarker.setColor(new Color(255, 215, 0, (int) (180 * pulse)));
+            gMarker.setStroke(new BasicStroke(2.0f));
+            gMarker.drawOval(cx - ringSize / 2, cy - ringSize / 2, ringSize, ringSize);
+
+            gMarker.setColor(new Color(255, 190, 0, 235));
+            gMarker.fillOval(cx - markerSize / 2, cy - markerSize / 2, markerSize, markerSize);
+            gMarker.setColor(new Color(40, 20, 0));
+            gMarker.setFont(new Font("Arial", Font.BOLD, Math.max(10, (int) (markerSize * 0.75))));
+            FontMetrics fm = gMarker.getFontMetrics();
+            int tx = cx - fm.stringWidth("!") / 2;
+            int ty = cy + (fm.getAscent() - fm.getDescent()) / 2;
+            gMarker.drawString("!", tx, ty);
+
+            gMarker.dispose();
         }
     }
 }

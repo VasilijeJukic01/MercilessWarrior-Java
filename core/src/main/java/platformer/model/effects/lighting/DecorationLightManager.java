@@ -4,23 +4,22 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
-import platformer.model.levels.LvlObjType;
 
 import java.io.InputStreamReader;
 import java.lang.reflect.Type;
-import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
 import static platformer.constants.FilePaths.LIGHT_METADATA;
 
 /**
- * Manages light properties for decorations, loaded from an external configuration file.
+ * Manages light properties for decorations by their string ID, loaded from decoration_lights.json.
  */
 public class DecorationLightManager {
 
     private static volatile DecorationLightManager instance;
-    private final Map<LvlObjType, DecorationLightData> lightDataMap = new EnumMap<>(LvlObjType.class);
+    private final Map<String, DecorationLightData> lightDataMap = new HashMap<>();
 
     private DecorationLightManager() {
         loadDecorationLights();
@@ -40,15 +39,9 @@ public class DecorationLightManager {
     private void loadDecorationLights() {
         try (InputStreamReader reader = new InputStreamReader(Objects.requireNonNull(getClass().getResourceAsStream(LIGHT_METADATA)))) {
             Type type = new TypeToken<Map<String, DecorationLightData>>() {}.getType();
-            Map<String, DecorationLightData> stringMap = new Gson().fromJson(reader, type);
-
-            for (Map.Entry<String, DecorationLightData> entry : stringMap.entrySet()) {
-                try {
-                    LvlObjType objType = LvlObjType.valueOf(entry.getKey());
-                    lightDataMap.put(objType, entry.getValue());
-                } catch (IllegalArgumentException e) {
-                    Logger.getInstance().notify("Invalid LvlObjType in decoration_lights.json: " + entry.getKey(), Message.WARNING);
-                }
+            Map<String, DecorationLightData> loaded = new Gson().fromJson(reader, type);
+            if (loaded != null) {
+                lightDataMap.putAll(loaded);
             }
         } catch (Exception e) {
             Logger.getInstance().notify("Failed to load decoration_lights.json: " + e.getMessage(), Message.ERROR);
@@ -56,12 +49,10 @@ public class DecorationLightManager {
     }
 
     /**
-     * Retrieves the light data for a given decoration type.
-     *
-     * @param type The LvlObjType to look up.
-     * @return The DecorationLightData if it exists, otherwise null.
+     * Retrieves the light data for a given decoration ID.
      */
-    public DecorationLightData getLightData(LvlObjType type) {
-        return lightDataMap.get(type);
+    public DecorationLightData getLightData(String decorationId) {
+        if (decorationId == null) return null;
+        return lightDataMap.get(decorationId);
     }
 }

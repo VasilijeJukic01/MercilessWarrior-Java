@@ -6,6 +6,9 @@ import platformer.debug.logger.Message;
 import platformer.model.levels.Level;
 import platformer.model.levels.LevelManager;
 import platformer.model.minimap.astar.AStarPathfinding;
+import platformer.model.quests.Quest;
+import platformer.model.quests.QuestObjective;
+import platformer.ui.components.slots.QuestSlot;
 import platformer.utils.ImageUtils;
 
 import java.awt.*;
@@ -354,6 +357,32 @@ public class MinimapManager {
             }
         }
         return Base64.getEncoder().encodeToString(data);
+    }
+
+    /**
+     * Computes the global minimap coordinates for all active quest objectives that specify a target levelId.
+     */
+    public List<Point> getActiveQuestMinimapTargets() {
+        List<Point> targets = new ArrayList<>();
+        if (context == null || context.getQuestManager() == null) return targets;
+
+        for (QuestSlot slot : context.getQuestManager().getSlots()) {
+            Quest quest = slot.getQuest();
+            if (quest == null || quest.isCompleted() || quest.getObjectives() == null) continue;
+            int idx = quest.getActiveObjectiveIndex();
+            if (idx >= 0 && idx < quest.getObjectives().size()) {
+                QuestObjective obj = quest.getObjectives().get(idx);
+                if (obj.getLevelId() != null) {
+                    Point roomPos = getOrFindLevelPosition(obj.getLevelId());
+                    if (roomPos != null) {
+                        int tx = obj.getTargetX() != null ? obj.getTargetX() : 20;
+                        int ty = obj.getTargetY() != null ? obj.getTargetY() : 15;
+                        targets.add(new Point(roomPos.x + tx, roomPos.y + ty));
+                    }
+                }
+            }
+        }
+        return targets;
     }
 
     public void changeLevel() {

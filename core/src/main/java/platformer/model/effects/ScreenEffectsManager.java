@@ -5,8 +5,7 @@ import platformer.core.Game;
 import java.awt.*;
 import java.util.Random;
 
-import static platformer.constants.Constants.GAME_HEIGHT;
-import static platformer.constants.Constants.GAME_WIDTH;
+import static platformer.constants.Constants.*;
 
 /**
  * Manages global, screen-wide visual effects like screen shake and full-screen flashes.
@@ -23,6 +22,11 @@ public class ScreenEffectsManager {
     private int screenShakeDuration = 0;
     private double screenShakeIntensity = 0;
 
+    // Cutscene Visuals
+    private boolean letterboxActive = false;
+    private float letterboxProgress = 0.0f;
+    private float cutsceneFadeAlpha = 0.0f;
+
     // Hit Stop
     private int hitStopDuration = 0;
 
@@ -36,6 +40,7 @@ public class ScreenEffectsManager {
         if (updateHitStop()) return;
         updateFlash();
         updateScreenShake();
+        updateCutscene();
     }
 
     /**
@@ -65,6 +70,26 @@ public class ScreenEffectsManager {
     }
 
     /**
+     * Renders cutscene-related visual effects like letterboxing and fade-in/out.
+     *
+     * @param g The graphics context to draw on.
+     */
+    public void renderCutsceneEffects(Graphics g) {
+        if (cutsceneFadeAlpha > 0.0f) {
+            Graphics2D g2d = (Graphics2D) g.create();
+            g2d.setColor(new Color(0, 0, 0, Math.min(255, (int) (cutsceneFadeAlpha * 255))));
+            g2d.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+            g2d.dispose();
+        }
+        if (letterboxProgress > 0.0f) {
+            int barHeight = (int) (28 * SCALE * letterboxProgress);
+            g.setColor(Color.BLACK);
+            g.fillRect(0, 0, GAME_WIDTH, barHeight);
+            g.fillRect(0, GAME_HEIGHT - barHeight, GAME_WIDTH, barHeight);
+        }
+    }
+
+    /**
      * Reverts the screen shake translation at the end of a render frame.
      *
      * @param g The graphics context to revert.
@@ -88,6 +113,11 @@ public class ScreenEffectsManager {
         if (screenShakeDuration > 0) {
             screenShakeDuration--;
         }
+    }
+
+    private void updateCutscene() {
+        if (letterboxActive) letterboxProgress = Math.min(1.0f, letterboxProgress + 0.04f);
+        else letterboxProgress = Math.max(0.0f, letterboxProgress - 0.04f);
     }
 
     private boolean updateHitStop() {
@@ -116,11 +146,26 @@ public class ScreenEffectsManager {
         return hitStopDuration > 0;
     }
 
+    public void setLetterboxActive(boolean active) {
+        this.letterboxActive = active;
+    }
+
+    public float getCutsceneFadeAlpha() {
+        return cutsceneFadeAlpha;
+    }
+
+    public void setCutsceneFadeAlpha(float alpha) {
+        this.cutsceneFadeAlpha = Math.max(0.0f, Math.min(1.0f, alpha));
+    }
+
     // Reset
     public void reset() {
         screenFlashAlpha = 0;
         screenShakeDuration = 0;
         screenShakeIntensity = 0;
+        letterboxActive = false;
+        letterboxProgress = 0.0f;
+        cutsceneFadeAlpha = 0.0f;
     }
 
 }

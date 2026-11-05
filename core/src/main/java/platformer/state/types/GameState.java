@@ -132,6 +132,7 @@ public class GameState extends AbstractState implements State {
             context.getMinimapManager().update();
             camera.update(getPlayer());
             overlayManager.update(state);
+            context.getCutsceneManager().update();
         } catch (Exception ignored) {}
     }
 
@@ -145,6 +146,7 @@ public class GameState extends AbstractState implements State {
         getPlayer().getPlayerStatusManager().getUserInterface().render(g);
         bossInterface.render(g);
         overlayManager.render(g);
+        screenEffectsManager.renderCutsceneEffects(g2d);
         transitionManager.render(g);
     }
 
@@ -224,6 +226,7 @@ public class GameState extends AbstractState implements State {
         if (!isRespawning) context.getMinimapManager().reset();
         isRespawning = false;
         isDarkPhase = false;
+        context.getCutsceneManager().reset();
     }
 
     @Override
@@ -254,6 +257,7 @@ public class GameState extends AbstractState implements State {
     @Override
     public void keyPressed(KeyEvent e) {
         if (transitionManager.isActive()) return;
+        if (context.getCutsceneManager().isActive() && state != PlayingState.DIALOGUE) return;
         if (isMultiplayer && overlayManager.getChatOverlay().isActive()) {
             overlayManager.getChatOverlay().keyPressed(e);
             return;
@@ -265,6 +269,7 @@ public class GameState extends AbstractState implements State {
     @Override
     public void keyReleased(KeyEvent e) {
         if (transitionManager.isActive()) return;
+        if (context.getCutsceneManager().isActive() && state != PlayingState.DIALOGUE) return;
         if (isMultiplayer && e.getKeyCode() == KeyEvent.VK_BACK_QUOTE) {
             overlayManager.getChatOverlay().toggle();
             return;

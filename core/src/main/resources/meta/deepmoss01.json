@@ -1,0 +1,16 @@
+{
+  "backgroundId": "FOREST2",
+  "ambientParticlesEnabled": true,
+  "tileset": "Forest",
+  "lights": [],
+  "decorations": [
+    {
+      "x": 42,
+      "y": 2,
+      "layer": 4,
+      "rotation": 179.64413016937817,
+      "scaleX": 1.0,
+      "scaleY": 1.0
+    }
+  ]
+}

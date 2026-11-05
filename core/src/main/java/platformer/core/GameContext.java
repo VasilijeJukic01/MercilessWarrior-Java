@@ -2,6 +2,7 @@ package platformer.core;
 
 import lombok.Getter;
 import lombok.Setter;
+import platformer.model.cutscene.CutsceneManager;
 import platformer.model.dialogue.DialogueManager;
 import platformer.model.effects.EffectManager;
 import platformer.model.effects.ScreenEffectsManager;
@@ -53,5 +54,6 @@ public final class GameContext {
     private MultiplayerManager multiplayerManager;
     private WorldMemoryManager worldMemoryManager;
     private Camera camera;
+    private CutsceneManager cutsceneManager;
     private Player player;
 }

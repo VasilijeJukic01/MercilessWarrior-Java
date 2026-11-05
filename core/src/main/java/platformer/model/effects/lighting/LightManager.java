@@ -7,7 +7,7 @@ import platformer.model.gameObjects.GameObject;
 import platformer.model.gameObjects.objects.*;
 import platformer.model.gameObjects.objects.Container;
 import platformer.model.levels.Level;
-import platformer.model.levels.LvlObjType;
+import platformer.model.levels.metadata.DecorationMetadata;
 import platformer.model.levels.metadata.LevelMetadata;
 import platformer.model.levels.metadata.LightMetadata;
 import platformer.state.types.GameState;
@@ -361,14 +361,17 @@ public class LightManager {
         Level currentLevel = context.getLevelManager().getCurrentLevel();
         if (currentLevel == null) return;
         int[][] decoData = currentLevel.getDecoData();
+        String tilesetName = currentLevel.getTilesetName();
         for (int j = 0; j < decoData[0].length; j++) {
             for (int i = 0; i < decoData.length; i++) {
                 int decoIndex = decoData[i][j];
                 if (decoIndex != -1) {
-                    LvlObjType objType = LvlObjType.values()[decoIndex];
-                    DecorationLightData lightData = DecorationLightManager.getInstance().getLightData(objType);
-                    if (lightData != null) {
-                        renderSingleDecorationLight(lightmapG2d, colorMapG2d, lightData, i, j, xLevelOffset, yLevelOffset);
+                    DecorationMetadata decoMeta = context.getLevelManager().getDecorationMetadata(tilesetName, decoIndex);
+                    if (decoMeta != null) {
+                        DecorationLightData lightData = DecorationLightManager.getInstance().getLightData(decoMeta.getId());
+                        if (lightData != null) {
+                            renderSingleDecorationLight(lightmapG2d, colorMapG2d, lightData, i, j, xLevelOffset, yLevelOffset);
+                        }
                     }
                 }
             }

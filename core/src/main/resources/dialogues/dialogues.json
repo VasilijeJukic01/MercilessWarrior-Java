@@ -131,6 +131,26 @@
         ]
       }
     },
+    {
+      "object": "NpcAnita",
+      "id": "anita_village_arrival",
+      "once": false,
+      "lines": [
+        "Look down there... those ghouls have overrun the whole village!",
+        "Let's jump in and clear every last one of them out!"
+      ]
+    },
+    {
+      "object": "NpcAnita",
+      "id": "anita_seq_2_victory",
+      "once": false,
+      "lines": [
+        "We actually did it. The ghouls are gone, and Deepmoss can finally breathe again.",
+        "The houses and the old shrine took a beating, though... With enough coin and timber, we could rebuild this place.",
+        "Take this for saving my home, warrior.",
+        "You always have a place by our fire."
+      ]
+    },
 
     {
       "object": "NpcRoric",

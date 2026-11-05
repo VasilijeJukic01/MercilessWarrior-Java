@@ -11,9 +11,11 @@ import platformer.event.EventBus;
 import platformer.event.events.FightInitiatedEvent;
 import platformer.event.events.ui.OverlayChangeEvent;
 import platformer.model.gameObjects.GameObject;
+import platformer.model.gameObjects.ObjType;
 import platformer.model.gameObjects.ObjectManager;
 import platformer.model.gameObjects.npc.DialogueBehavior;
 import platformer.model.gameObjects.npc.Npc;
+import platformer.model.gameObjects.npc.NpcType;
 import platformer.state.types.PlayingState;
 import platformer.ui.overlays.DialogueOverlay;
 import platformer.ui.overlays.OverlayManager;
@@ -180,6 +182,35 @@ public class DialogueManager {
             else EventBus.getInstance().publish(new OverlayChangeEvent(null));
 
             getOverlay().reset();
+        }
+    }
+
+    /**
+     * Activates a specific dialogue entry by its unique ID in dialogues.json.
+     *
+     * @param dialogueId  The unique ID of the dialogue entry.
+     * @param speakerType Optional NPC type used to display the speaker's portrait and name.
+     */
+    public void activateDialogueById(String dialogueId, NpcType speakerType) {
+        if (dialogueId == null) return;
+        for (List<Dialogue> list : dialogues.values()) {
+            for (Dialogue d : list) {
+                if (dialogueId.equals(d.getId())) {
+                    if (getOverlay() != null) getOverlay().reset();
+                    EventBus.getInstance().publish(new OverlayChangeEvent(PlayingState.DIALOGUE));
+                    d.setActivated();
+
+                    GameObject speakerObj = null;
+                    if (speakerType != null) {
+                        speakerObj = context.getObjectManager().getNpcByType(speakerType);
+                        if (speakerObj == null) {
+                            speakerObj = new Npc(ObjType.NPC, 0, 0, speakerType);
+                        }
+                    }
+                    setDialogueObject(d, speakerObj);
+                    return;
+                }
+            }
         }
     }
 

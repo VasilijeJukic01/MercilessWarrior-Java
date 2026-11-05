@@ -21,6 +21,7 @@ import platformer.event.handlers.GameFlowEventHandler;
 import platformer.event.handlers.LancerEventHandler;
 import platformer.event.handlers.RoricEventHandler;
 import platformer.event.listeners.QuestSystemListener;
+import platformer.model.cutscene.CutsceneManager;
 import platformer.model.dialogue.DialogueManager;
 import platformer.model.effects.EffectManager;
 import platformer.model.effects.RainManager;
@@ -85,6 +86,7 @@ public class GameInitializer {
         context.setOverlayManager(gameState.getOverlayManager());
         context.setMultiplayerManager(new MultiplayerManager());
         context.setWorldMemoryManager(new WorldMemoryManager());
+        context.setCutsceneManager(new CutsceneManager());
         context.setCamera(gameState.getCamera());
         context.setScreenEffectsManager(screenEffectsManager);
 
@@ -101,6 +103,7 @@ public class GameInitializer {
         context.getSpellManager().wire(context);
         context.getLightManager().wire(context);
         context.getWorldMemoryManager().wire(context);
+        context.getCutsceneManager().wire(context);
 
         ProjectileFactory.init(context.getProjectileManager());
         context.getEnemyManager().injectScreenEffectsManager(screenEffectsManager);
