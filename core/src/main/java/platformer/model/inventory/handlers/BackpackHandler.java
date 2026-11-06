@@ -212,6 +212,13 @@ public class BackpackHandler {
         return inventoryMap;
     }
 
+    public boolean consumeResourcesIfPresent(Map<String, Integer> resources) {
+        if (!hasEnoughResources(resources)) return false;
+        useResources(resources);
+        refreshAccountItems();
+        return true;
+    }
+
     /**
      * Formats the items in the backpack and equipped items for saving to the account.
      * It creates a list of strings where each string represents an item in the format "item,0" for backpack items

@@ -45,6 +45,7 @@ public class MinimapRenderer {
         MinimapIcon pinnedIcon = minimapManager.getPinnedIcon();
 
         for (MinimapIcon icon : icons) {
+            if (!minimapManager.isExplored(icon.position())) continue;
             BufferedImage originalImage = minimapIcons[icon.type().ordinal()];
             int wid = (int) (1.8 * scaledPixelWid);
             int hei = (int) (1.8 * scaledPixelHei);

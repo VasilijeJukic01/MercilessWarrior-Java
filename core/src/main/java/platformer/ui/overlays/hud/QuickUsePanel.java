@@ -8,6 +8,7 @@ import platformer.utils.ImageUtils;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.util.Objects;
 import java.util.Optional;
 
 import static platformer.constants.Constants.*;
@@ -76,6 +77,7 @@ public class QuickUsePanel {
         if (itemId == null) return;
         Inventory inventory = player.getInventory();
         Optional<InventoryItem> itemOptional = inventory.getBackpack().stream()
+                .filter(Objects::nonNull)
                 .filter(i -> i.getItemId().equals(itemId))
                 .findFirst();
 
