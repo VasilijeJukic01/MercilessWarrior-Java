@@ -56,7 +56,9 @@ public class Skeleton extends Enemy {
 
     @Override
     public void spellHit(double damage) {
+        if (entityState == Anim.DEATH || !alive) return;
         currentHealth -= damage;
+        enemySpeed = 0;
         if (currentHealth <= 0) {
             checkDeath();
         }
@@ -64,8 +66,6 @@ public class Skeleton extends Enemy {
             if (entityState == Anim.HIT) setEnemyActionNoReset(Anim.HIT);
             else setEnemyAction(Anim.HIT);
         }
-        if (pushOffset == 0) pushOffsetDirection = Direction.UP;
-        enemySpeed = 0;
     }
 
     private void blockAttack() {

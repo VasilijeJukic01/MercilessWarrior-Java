@@ -74,6 +74,9 @@ public abstract class Enemy extends Entity implements DamageSource, Debug<Graphi
             if (isAttacking()) {
                 cooldown[Cooldown.ATTACK.ordinal()] = 2.8 + rand.nextDouble() * 1.5;
             }
+            if (entityState == Anim.HIT) {
+                enemySpeed = ENEMY_SPEED_SLOW;
+            }
             entityState = Anim.IDLE;
         }
         else if (entityState == Anim.HIDE) entityState = Anim.REVEAL;

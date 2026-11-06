@@ -190,6 +190,7 @@ public class EnemyManager {
             Rectangle2D intersection = attackBox.createIntersection(enemy.getHitBox());
             spawnParticles((Rectangle2D.Double) intersection, player, enemy, isCritical);
 
+            enemy.setPushDirection(enemy.getHitBox().getCenterX() >= player.getHitBox().getCenterX() ? Direction.RIGHT : Direction.LEFT);
             if (enemy.hit(finalDamage, true, false)) {
                 if (enemy.getEnemyAction() == Anim.BLOCK) {
                     if (result != HitResult.HIT) result = HitResult.BLOCK;
@@ -243,7 +244,7 @@ public class EnemyManager {
     public <T extends Enemy> void handleEnemySpellHit(Class<T> enemyClass, double dmg) {
         Flame flame = context.getSpellManager().getFlames();
         for (T enemy : getEnemies(enemyClass)) {
-            if (enemy.isAlive() && enemy.getEnemyAction() != Anim.DEATH) {
+            if (enemy.isAlive() && enemy.getEnemyAction() != Anim.DEATH && enemy.getEnemyAction() != Anim.HIDE) {
                 if (flame.isActive() && flame.getHitBox().intersects(enemy.getHitBox())) {
                     enemy.spellHit(dmg);
                     if (!spellHitTimers.containsKey(enemy) || spellHitTimers.get(enemy) == 0) {
@@ -252,7 +253,6 @@ public class EnemyManager {
                         spellHitTimers.put(enemy, SPELL_HIT_DISPLAY_COOLDOWN);
                     }
                     checkEnemyDying(enemy);
-                    return;
                 }
             }
         }

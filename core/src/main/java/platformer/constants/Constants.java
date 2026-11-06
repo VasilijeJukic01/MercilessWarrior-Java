@@ -97,9 +97,6 @@ public final class Constants {
     public static final double PLAYER_DASH_CD = 1.75;
     public static final double PLAYER_SPELL_CD = 2.5;
 
-    public static final double GHOUL_ATT_CD = 10;
-    public static final double GHOUL_DASH_CD = 6;
-
     public static final double RORIC_IDLE_COOLDOWN = 10.0;
 
     // Level Constants
@@ -223,7 +220,7 @@ public final class Constants {
     public static final int ARROW_TRAP_WID = scale(96);
     public static final int ARROW_TRAP_HEI = scale(32);
     public static final int ARROW_TRAP_HB_SIZE = scale(32);
-    public static final int ARROW_TRAP_OFFSET = scale(6);
+    public static final int ARROW_TRAP_OFFSET = scale(0);
 
     public static final int COIN_WID = scale(15);
     public static final int COIN_HEI = scale(15);
