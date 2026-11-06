@@ -792,9 +792,9 @@ public class Player extends Entity {
 
     private void resetFlags() {
         inAir = false;
-        removeActions(PlayerAction.DYING, PlayerAction.GAME_OVER);
+        removeActions(PlayerAction.DYING, PlayerAction.GAME_OVER, PlayerAction.LAVA);
         removeActions(PlayerAction.HIT, PlayerAction.BLOCK, PlayerAction.ATTACK, PlayerAction.MOVE, PlayerAction.DASH);
-        removeActions(PlayerAction.LEFT, PlayerAction.RIGHT, PlayerAction.JUMP);
+        removeActions(PlayerAction.LEFT, PlayerAction.RIGHT, PlayerAction.JUMP, PlayerAction.ON_WALL, PlayerAction.ON_OBJECT, PlayerAction.LOOK_DOWN);
     }
 
     // Facade
