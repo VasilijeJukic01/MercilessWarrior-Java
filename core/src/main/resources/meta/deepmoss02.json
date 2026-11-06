@@ -11,5 +11,11 @@
       "direction": "RIGHT",
       "requiredFlag": "VILLAGE_CLEARED_deepmoss02"
     }
+  ],
+  "objects": [
+    {
+      "type": "JUMP_PAD",
+      "requiredFlag": "VILLAGE_CLEARED_deepmoss02"
+    }
   ]
 }

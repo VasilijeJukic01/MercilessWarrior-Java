@@ -62,7 +62,9 @@ public class OverlayManager {
         if (overlay != null) {
             overlays.get(overlay).render(g);
         }
-        if (gameState.isMultiplayer()) chatOverlay.render(g);
+        if (gameState.isMultiplayer() && !gameState.getContext().getCutsceneManager().isActive()) {
+            chatOverlay.render(g);
+        }
     }
 
     public void mouseClicked(MouseEvent e) {

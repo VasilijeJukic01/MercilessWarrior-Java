@@ -210,7 +210,7 @@ public class QuestManager {
                 slots.add(newSlot);
                 sortAndRepositionSlots();
                 Logger.getInstance().notify("Quest Started: " + questName, Message.INFORMATION);
-                launchStartSideEffect(questName);
+                launchStartSideEffect(quest);
             }
             else Logger.getInstance().notify("Quest already started: " + questName, Message.WARNING);
         });
@@ -228,11 +228,23 @@ public class QuestManager {
         }
     }
 
-    private void launchStartSideEffect(String questName) {
-        if (questName.equals("Helping Anita")) {
-            Npc anita = context.getObjectManager().getNpcByType(NpcType.ANITA);
-            anita.setAlive(false);
-            context.getObjectManager().spawnFollower(NpcType.ANITA, (int)anita.getHitBox().x, (int)anita.getHitBox().y);
+    public NpcType getActiveFollowerType() {
+        for (QuestSlot slot : slots) {
+            Quest q = slot.getQuest();
+            if (q != null && !q.isCompleted() && q.getFollower() != null) {
+                return q.getFollower();
+            }
+        }
+        return null;
+    }
+
+    private void launchStartSideEffect(Quest quest) {
+        if (quest.getFollower() != null) {
+            Npc npc = context.getObjectManager().getNpcByType(quest.getFollower());
+            if (npc != null) {
+                npc.setAlive(false);
+                context.getObjectManager().spawnFollower(quest.getFollower(), (int) npc.getHitBox().x, (int) npc.getHitBox().y);
+            }
         }
     }
 

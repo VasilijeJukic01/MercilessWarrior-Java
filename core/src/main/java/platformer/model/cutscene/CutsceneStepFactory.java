@@ -241,8 +241,7 @@ public final class CutsceneStepFactory {
             npc.setDirection(direction);
             npc.setAlive(true);
 
-            String levelId = context.getLevelManager().getCurrentLevelId();
-            context.getWorldMemoryManager().recordNpcRelocation(npcType, levelId, tileX, tileY, direction);
+            context.getObjectManager().applyObjectMetadata();
         }
 
         @Override

@@ -80,9 +80,9 @@ public class GameWorld {
     }
 
     private void checkFollowerSpawn() {
-        if (questManager.isQuestActive("Helping Anita")) {
-            objectManager.spawnFollower(NpcType.ANITA, (int)player.getHitBox().x, (int)player.getHitBox().y);
-        }
+        NpcType followerType = questManager.getActiveFollowerType();
+        if (followerType != null) objectManager.spawnFollower(followerType, (int) player.getHitBox().x, (int) player.getHitBox().y);
+        else objectManager.despawnFollower();
     }
 
     // Core

@@ -6,6 +6,7 @@ import platformer.audio.types.Sound;
 import platformer.core.GameContext;
 import platformer.model.entities.follower.Follower;
 import platformer.model.gameObjects.npc.NpcType;
+import platformer.model.levels.metadata.GameObjectMetadata;
 import platformer.model.levels.metadata.LevelMetadata;
 import platformer.model.levels.metadata.NpcMetadata;
 import platformer.model.projectiles.ProjectileFactory;
@@ -91,6 +92,7 @@ public class ObjectManager {
         this.classCache.clear();
         configureObjects();
         applyNpcMetadata();
+        applyObjectMetadata();
     }
 
     private void configureObjects() {
@@ -123,6 +125,30 @@ public class ObjectManager {
             }
             if (existing == null && npcMeta.getX() != null && npcMeta.getY() != null) {
                 spawnNpcFromMetadata(npcMeta, lvlData);
+            }
+        }
+    }
+
+    /**
+     * Evaluates conditional visibility rules for game objects defined in the current level's metadata.
+     */
+    public void applyObjectMetadata() {
+        LevelMetadata meta = context.getLevelManager().getCurrentLevelMetadata();
+        if (meta == null || meta.getObjects() == null) return;
+
+        WorldMemoryManager memory = context.getWorldMemoryManager();
+        QuestManager quests = context.getQuestManager();
+        for (GameObjectMetadata objMeta : meta.getObjects()) {
+            List<GameObject> matchingObjects = objectsMap.get(objMeta.getType());
+            if (matchingObjects == null) continue;
+
+            boolean shouldBeActive = objMeta.isConditionMet(memory, quests);
+            for (GameObject obj : matchingObjects) {
+                int objTileX = (int) (obj.getHitBox().x / TILES_SIZE);
+                int objTileY = (int) (obj.getHitBox().y / TILES_SIZE);
+                if (objMeta.matchesObject(objTileX, objTileY)) {
+                    obj.setAlive(shouldBeActive);
+                }
             }
         }
     }
@@ -512,6 +538,7 @@ public class ObjectManager {
             context.getWorldMemoryManager().applyPermMemory(context.getLevelManager().getCurrentLevelId(), level);
         }
         loadObjects(level);
+        resetFollowers();
     }
 
     public void refreshShopData() {
@@ -523,6 +550,15 @@ public class ObjectManager {
                 shop.getShopItems().addAll(inventory);
             }
         });
+    }
+
+    private void resetFollowers() {
+        NpcType followerType = context.getQuestManager().getActiveFollowerType();
+        if (followerType != null && !context.getWorldMemoryManager().hasFlag("VILLAGE_CLEARED_deepmoss02")) {
+            Player player = context.getPlayer();
+            spawnFollower(followerType, (int) player.getHitBox().x, (int) player.getHitBox().y);
+        }
+        else despawnFollower();
     }
 
     // Hashmap operations

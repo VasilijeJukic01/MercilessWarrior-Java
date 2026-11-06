@@ -143,10 +143,12 @@ public class GameState extends AbstractState implements State {
         world.render(g2d, camera.getXOffset(), camera.getYOffset(), isDarkPhase);
         if (isMultiplayer) multiplayerHandler.render(g, camera.getXOffset(), camera.getYOffset());
         screenEffectsManager.renderFlash(g2d);
-        getPlayer().getPlayerStatusManager().getUserInterface().render(g);
-        bossInterface.render(g);
-        overlayManager.render(g);
+        if (!context.getCutsceneManager().isActive()) {
+            getPlayer().getPlayerStatusManager().getUserInterface().render(g);
+            bossInterface.render(g);
+        }
         screenEffectsManager.renderCutsceneEffects(g2d);
+        overlayManager.render(g);
         transitionManager.render(g);
     }
 

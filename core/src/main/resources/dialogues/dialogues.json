@@ -160,8 +160,8 @@
             "answer": "Accept",
             "quest": "Rebuilding Deepmoss",
             "requiredItems": {
-              "WOODEN_PLANKS": 0,
-              "IRON_INGOT": 0
+              "WOODEN_PLANKS": 5,
+              "IRON_INGOT": 3
             },
             "requiredCoins": 150,
             "cutscene": "deepmoss_restoration",
