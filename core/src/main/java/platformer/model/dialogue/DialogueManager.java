@@ -10,6 +10,8 @@ import platformer.debug.logger.Message;
 import platformer.event.EventBus;
 import platformer.event.events.FightInitiatedEvent;
 import platformer.event.events.ui.OverlayChangeEvent;
+import platformer.model.dialogue.question.Answer;
+import platformer.model.entities.player.Player;
 import platformer.model.gameObjects.GameObject;
 import platformer.model.gameObjects.ObjType;
 import platformer.model.gameObjects.ObjectManager;
@@ -95,18 +97,20 @@ public class DialogueManager {
      * @param object the game object
      */
     public void activateDialogue(String id, GameObject object) {
+        List<Dialogue> availableDialogues = getDialogues(id);
+        if (availableDialogues.isEmpty()) return;
+
         if (getOverlay() != null) getOverlay().reset();
         EventBus.getInstance().publish(new OverlayChangeEvent(PlayingState.DIALOGUE));
         Random random = new Random();
-        int index = random.nextInt(getDialogues(id).size());
-        if (object instanceof Npc) {
-            Npc npc = (Npc) object;
+        int index = random.nextInt(availableDialogues.size());
+        if (object instanceof Npc npc) {
             if (npc.getDialogueBehavior() == DialogueBehavior.RANDOM) {
-                index = random.nextInt(getDialogues(id).size());
+                index = random.nextInt(availableDialogues.size());
             }
-            else index = npc.getDialogueIndicator();
+            else index = Math.min(npc.getDialogueIndicator(), availableDialogues.size() - 1);
         }
-        Dialogue dialogue = getDialogues(id).get(index);
+        Dialogue dialogue = availableDialogues.get(index);
         dialogue.setActivated();
         setDialogueObject(dialogue, object);
     }
@@ -126,18 +130,8 @@ public class DialogueManager {
      */
     public void acceptQuestion() {
         if (getOverlay().getQuestion() == null || !getOverlay().isOnLastQuestion()) return;
-        String nextAction = getOverlay().getQuestion().getAnswers().get(0).getNext();
-
-        if (nextAction.equals("FIGHT_RORIC")) {
-            EventBus.getInstance().publish(new OverlayChangeEvent(null));
-            getOverlay().reset();
-            EventBus.getInstance().publish(new FightInitiatedEvent("RORIC"));
-            return;
-        }
-
-        String questName = nextAction.replace("Quest: ", "");
-        context.getQuestManager().startNPCQuest(questName);
-        updateDialogue("QUESTION");
+        Answer acceptAnswer = getOverlay().getQuestion().getAnswers().get(0);
+        executeAnswer(acceptAnswer, true);
     }
 
     /**
@@ -145,12 +139,60 @@ public class DialogueManager {
      */
     public void declineQuestion() {
         if (getOverlay().getQuestion() == null || !getOverlay().isOnLastQuestion()) return;
-        ObjectManager objectManager = context.getGameState().getObjectManager();
-        if (objectManager.getIntersection() instanceof Npc npc) {
-            npc.increaseDialogueIndicator();
+        List<Answer> answers = getOverlay().getQuestion().getAnswers();
+        if (answers.size() > 1) executeAnswer(answers.get(1), false);
+        else {
+            EventBus.getInstance().publish(new OverlayChangeEvent(null));
+            getOverlay().reset();
         }
-        EventBus.getInstance().publish(new OverlayChangeEvent(null));
-        getOverlay().reset();
+    }
+
+    private void executeAnswer(Answer answer, boolean isAccept) {
+        if (answer.getQuest() != null) startQuestIfNeeded(answer.getQuest());
+        else if (answer.getNext() != null && answer.getNext().startsWith("Quest: ")) {
+            startQuestIfNeeded(answer.getNext().replace("Quest: ", ""));
+        }
+
+        if (answer.getRequiredItems() != null || answer.getRequiredCoins() > 0) {
+            Map<String, Integer> items = answer.getRequiredItems() != null ? answer.getRequiredItems() : Collections.emptyMap();
+            Player player = context.getPlayer();
+            if (!player.getInventory().hasAndConsumeResources(items, answer.getRequiredCoins(), player)) {
+                NpcType speaker = (context.getObjectManager().getIntersection() instanceof Npc npc) ? npc.getNpcType() : null;
+                getOverlay().reset();
+                activateDialogueById(answer.getFailureDialogue(), speaker);
+                return;
+            }
+        }
+
+        if (answer.getCutscene() != null) {
+            EventBus.getInstance().publish(new OverlayChangeEvent(null));
+            getOverlay().reset();
+            context.getCutsceneManager().startCutsceneById(answer.getCutscene());
+            return;
+        }
+
+        // TODO: Temp
+        if ("FIGHT_RORIC".equals(answer.getNext())) {
+            EventBus.getInstance().publish(new OverlayChangeEvent(null));
+            getOverlay().reset();
+            EventBus.getInstance().publish(new FightInitiatedEvent("RORIC"));
+            return;
+        }
+
+        if (isAccept) updateDialogue("QUESTION");
+        else {
+            if (context.getObjectManager().getIntersection() instanceof Npc npc) {
+                npc.increaseDialogueIndicator();
+            }
+            EventBus.getInstance().publish(new OverlayChangeEvent(null));
+            getOverlay().reset();
+        }
+    }
+
+    private void startQuestIfNeeded(String questName) {
+        if (!context.getQuestManager().isQuestActive(questName) && !context.getQuestManager().isQuestCompleted(questName)) {
+            context.getQuestManager().startNPCQuest(questName);
+        }
     }
 
     /**
@@ -215,13 +257,15 @@ public class DialogueManager {
     }
 
     private List<Dialogue> getDialogues(String id) {
-        String currentLocation = context.getInteriorManager().isInterior()
-                ? context.getInteriorManager().getCurrentInteriorId()
-                : "main_map";
+        if (!dialogues.containsKey(id)) return Collections.emptyList();
+        String currentLocation = context.getInteriorManager().isInterior() ? context.getInteriorManager().getCurrentInteriorId() : "main_map";
 
         return dialogues.get(id).stream()
                 .filter(d -> !d.isActivated())
+                .filter(d -> !d.isCutsceneOnly())
                 .filter(d -> d.getLocation() == null || d.getLocation().equals(currentLocation))
+                .filter(d -> d.getRequiredFlag() == null || context.getWorldMemoryManager().hasFlag(d.getRequiredFlag()))
+                .filter(d -> d.getExcludeFlag() == null || !context.getWorldMemoryManager().hasFlag(d.getExcludeFlag()))
                 .collect(Collectors.toList());
     }
 

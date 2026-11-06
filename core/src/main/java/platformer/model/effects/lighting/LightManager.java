@@ -368,9 +368,13 @@ public class LightManager {
                 if (decoIndex != -1) {
                     DecorationMetadata decoMeta = context.getLevelManager().getDecorationMetadata(tilesetName, decoIndex);
                     if (decoMeta != null) {
-                        DecorationLightData lightData = DecorationLightManager.getInstance().getLightData(decoMeta.getId());
+                        String lookupId = decoMeta.getId();
+                        if (context.getWorldMemoryManager().hasFlag("RESTORED_" + context.getLevelManager().getCurrentLevelId()) && DecorationLightManager.getInstance().getLightData(lookupId + "_LIVELY") != null) {
+                            lookupId = lookupId + "_LIVELY";
+                        }
+                        DecorationLightData lightData = DecorationLightManager.getInstance().getLightData(lookupId);
                         if (lightData != null) {
-                            renderSingleDecorationLight(lightmapG2d, colorMapG2d, lightData, i, j, xLevelOffset, yLevelOffset);
+                            renderSingleDecorationLight(lightmapG2d, colorMapG2d, lightData, decoMeta, i, j, xLevelOffset, yLevelOffset);
                         }
                     }
                 }
@@ -378,22 +382,25 @@ public class LightManager {
         }
     }
 
-    private void renderSingleDecorationLight(Graphics2D lightmapG2d, Graphics2D colorMapG2d, DecorationLightData lightData, int tileX, int tileY, int xLevelOffset, int yLevelOffset) {
+    private void renderSingleDecorationLight(Graphics2D lightmapG2d, Graphics2D colorMapG2d, DecorationLightData lightData, DecorationMetadata decoMeta, int tileX, int tileY, int xLevelOffset, int yLevelOffset) {
         try {
-            int baseRadius = (int)(lightData.getLightRadius() * SCALE);
+            int baseRadius = (int) (lightData.getLightRadius() * SCALE);
             int baseDiameter = baseRadius * 2;
             double pulseFactor = 1.0 + 0.05 * Math.sin(pulseTimer * 0.5);
-            int pulsatingDiameter = (int)(baseDiameter * pulseFactor);
+            int pulsatingDiameter = (int) (baseDiameter * pulseFactor);
             Color lightColor = Color.decode(lightData.getLightColor());
             String colorCacheKey = lightColor.getRGB() + "_" + baseRadius;
             String whiteCacheKey = "white_" + baseRadius;
             BufferedImage coloredLightTexture = lightTextureCache.computeIfAbsent(colorCacheKey, k -> createColoredLightTexture(baseDiameter, lightColor));
             BufferedImage whiteLightTexture = lightTextureCache.computeIfAbsent(whiteCacheKey, k -> createLightTexture(baseDiameter, new float[]{0f, 1f}, new Color[]{Color.WHITE, new Color(1.0f, 1.0f, 1.0f, 0f)}));
 
-            int worldX = tileX * TILES_SIZE;
-            int worldY = tileY * TILES_SIZE;
-            int drawX = worldX - xLevelOffset - pulsatingDiameter / 2 + TILES_SIZE / 2;
-            int drawY = worldY - yLevelOffset - pulsatingDiameter / 2 + TILES_SIZE / 2;
+            int worldX = tileX * TILES_SIZE + (int) (decoMeta.getYOffset() * SCALE);
+            int worldY = tileY * TILES_SIZE + (int) (decoMeta.getXOffset() * SCALE);
+            int centerX = worldX + decoMeta.getWid() / 2;
+            int centerY = worldY + decoMeta.getHei() / 2;
+
+            int drawX = centerX - xLevelOffset - pulsatingDiameter / 2;
+            int drawY = centerY - yLevelOffset - pulsatingDiameter / 2;
 
             colorMapG2d.drawImage(coloredLightTexture, drawX, drawY, pulsatingDiameter, pulsatingDiameter, null);
             lightmapG2d.drawImage(whiteLightTexture, drawX, drawY, pulsatingDiameter, pulsatingDiameter, null);

@@ -91,6 +91,7 @@
     {
       "object": "NpcAnita",
       "id": "anita_seq_0",
+      "excludeFlag": "VILLAGE_CLEARED_deepmoss02",
       "once": false,
       "lines": [
         "Easy with that weapon! My eyes might glow, but I'm not one of those monsters.",
@@ -100,40 +101,30 @@
       ],
       "question": {
         "answers": [
-          {
-            "answer": "Accept",
-            "next": "Quest: Helping Anita"
-          },
-          {
-            "answer": "Decline",
-            "next": "Close"
-          }
+          { "answer": "Accept", "next": "Quest: Helping Anita" },
+          { "answer": "Decline", "next": "Close" }
         ]
       }
     },
     {
       "object": "NpcAnita",
       "id": "anita_seq_1_dummy",
+      "excludeFlag": "VILLAGE_CLEARED_deepmoss02",
       "once": false,
       "lines": [
         "Changed your mind? Those ghouls aren't going to clear themselves out. Ready to fight?"
       ],
       "question": {
         "answers": [
-          {
-            "answer": "Accept",
-            "next": "Quest: Helping Anita"
-          },
-          {
-            "answer": "Decline",
-            "next": "Close"
-          }
+          { "answer": "Accept", "next": "Quest: Helping Anita" },
+          { "answer": "Decline", "next": "Close" }
         ]
       }
     },
     {
       "object": "NpcAnita",
       "id": "anita_village_arrival",
+      "cutsceneOnly": true,
       "once": false,
       "lines": [
         "Look down there... those ghouls have overrun the whole village!",
@@ -143,12 +134,75 @@
     {
       "object": "NpcAnita",
       "id": "anita_seq_2_victory",
+      "cutsceneOnly": true,
       "once": false,
       "lines": [
-        "We actually did it. The ghouls are gone, and Deepmoss can finally breathe again.",
+        "We actually did it. The ghouls are gone.",
+        "Deepmoss can finally breathe again!!!",
         "The houses and the old shrine took a beating, though... With enough coin and timber, we could rebuild this place.",
-        "Take this for saving my home, warrior.",
-        "You always have a place by our fire."
+        "Take this for saving my home, warrior. You always have a place by our fire."
+      ]
+    },
+    {
+      "object": "NpcAnita",
+      "id": "anita_offer_rebuild",
+      "requiredFlag": "VILLAGE_CLEARED_deepmoss02",
+      "excludeFlag": "RESTORED_deepmoss02",
+      "once": false,
+      "lines": [
+        "It feels good to stand in my home without looking over my shoulder for ghouls.",
+        "If we want people to live here again, we need to patch the roofs, mend the well, and consecrate the old altar.",
+        "Bring me resources and we can rebuild the whole village."
+      ],
+      "question": {
+        "answers": [
+          {
+            "answer": "Accept",
+            "quest": "Rebuilding Deepmoss",
+            "requiredItems": {
+              "WOODEN_PLANKS": 0,
+              "IRON_INGOT": 0
+            },
+            "requiredCoins": 150,
+            "cutscene": "deepmoss_restoration",
+            "failureDialogue": "anita_not_enough_materials"
+          },
+          {
+            "answer": "Decline",
+            "next": "Close"
+          }
+        ]
+      }
+    },
+    {
+      "object": "NpcAnita",
+      "id": "anita_not_enough_materials",
+      "cutsceneOnly": true,
+      "once": false,
+      "lines": [
+        "Looks like we are still short on supplies. We need 5 Wooden Planks, 3 Iron Ingots, and 150 Coins.",
+        "You can craft planks from timber and smelt iron ingots at any crafting table."
+      ]
+    },
+    {
+      "object": "NpcAnita",
+      "id": "anita_restoration_complete",
+      "cutsceneOnly": true,
+      "once": false,
+      "lines": [
+        "Look at the lanterns glowing in the windows...",
+        "Deepmoss looks alive again, just like I remember it!",
+        "Take this Aetherium Crystal we found beneath the restored altar.",
+        "You have given us our home back, warrior."
+      ]
+    },
+    {
+      "object": "NpcAnita",
+      "id": "anita_village_restored_idle",
+      "requiredFlag": "RESTORED_deepmoss02",
+      "once": false,
+      "lines": [
+        "The fires are warm and the roofs are solid. Rest here as long as you need, warrior."
       ]
     },
 

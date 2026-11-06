@@ -35,5 +35,26 @@
       { "type": "DIALOGUE", "dialogueId": "anita_seq_2_victory", "speaker": "ANITA" },
       { "type": "COMPLETE_OBJECTIVE", "questName": "Helping Anita", "objectiveType": "INTERACT", "target": "ANITA" }
     ]
+  },
+  {
+    "id": "deepmoss_restoration",
+    "triggerType": "MANUAL",
+    "levelId": "deepmoss02",
+    "onceFlag": "RESTORED_deepmoss02",
+    "steps": [
+      { "type": "LETTERBOX", "active": true },
+      { "type": "FADE", "targetAlpha": 1.0, "duration": 90 },
+      { "type": "RELOAD_LEVEL_VARIANT" },
+      { "type": "SPAWN_NPC", "npcType": "ANITA", "tileX": 23, "tileY": 9, "direction": "RIGHT" },
+      { "type": "TELEPORT_PLAYER", "tileX": 22, "tileY": 9 },
+      { "type": "WAIT", "duration": 60 },
+      { "type": "FADE", "targetAlpha": 0.0, "duration": 90 },
+      { "type": "CAMERA_PAN", "tileX": 10, "tileY": 19, "duration": 400 },
+      { "type": "CAMERA_PAN", "tileX": 36, "tileY": 19, "duration": 600 },
+      { "type": "CAMERA_RESET", "duration": 350 },
+      { "type": "LETTERBOX", "active": false },
+      { "type": "DIALOGUE", "dialogueId": "anita_restoration_complete", "speaker": "ANITA" },
+      { "type": "COMPLETE_OBJECTIVE", "questName": "Rebuilding Deepmoss", "objectiveType": "INTERACT", "target": "ANITA" }
+    ]
   }
 ]

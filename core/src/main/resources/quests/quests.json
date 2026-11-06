@@ -112,5 +112,31 @@
     "levelRequirement": 1,
     "npcRequest": 1,
     "prerequisites": []
+  },
+  {
+    "name": "Rebuilding Deepmoss",
+    "type": "PROGRESSIVE",
+    "id": 5,
+    "description": "Gather 5 Wooden Planks, 3 Iron Ingots, and 150 Coins, then speak with Anita to restore Deepmoss Village.",
+    "objectives": [
+      {
+        "type": "INTERACT",
+        "target": "ANITA",
+        "levelId": "deepmoss02",
+        "targetX": 18,
+        "targetY": 18,
+        "description": "Deliver 5 Wooden Planks, 3 Iron Ingots & 150 Coins to Anita",
+        "requiredAmount": 1,
+        "currentAmount": 0
+      }
+    ],
+    "itemRewards": {
+      "AETHERIUM_CRYSTAL": 1
+    },
+    "coinReward": 0,
+    "expReward": 800,
+    "levelRequirement": 1,
+    "npcRequest": 1,
+    "prerequisites": [4]
   }
 ]

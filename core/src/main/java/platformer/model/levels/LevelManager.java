@@ -152,18 +152,31 @@ public class LevelManager {
     }
 
     // Level flow
+    /**
+     * Resolves the underlying filename for a logical room ID. If a room has been restored, loads <levelId>_restored instead.
+     */
+    private String resolveEffectiveFileId(String levelId) {
+        if (context != null && context.getWorldMemoryManager() != null) {
+            if (context.getWorldMemoryManager().hasFlag("RESTORED_" + levelId)) {
+                return levelId + "_restored";
+            }
+        }
+        return levelId;
+    }
+
     private void loadLevel() {
-        Level newLevel = getOrLoadLevel(currentLevelId);
+        String effectiveId = resolveEffectiveFileId(currentLevelId);
+        Level newLevel = getOrLoadLevel(effectiveId);
         if (newLevel == null) {
             context.getGameState().getGame().startMenuState();
             return;
         }
+        loadMetadata();
         context.getWorldMemoryManager().onRoomEntered(currentLevelId, newLevel);
         this.currentLevel = newLevel;
         context.getGameState().getPlayer().loadLvlData(newLevel.getLvlData());
         context.getEnemyManager().loadEnemies(newLevel);
         context.getObjectManager().loadObjects(newLevel);
-        loadMetadata();
         context.getSpellManager().initBossSpells();
         context.getMinimapManager().changeLevel();
         context.getGameState().getPlayer().activateMinimap(true);
@@ -225,7 +238,8 @@ public class LevelManager {
     }
 
     private void loadMetadata() {
-        this.currentLevelMetadata = loadMetadataForLevel(currentLevelId);
+        String effectiveId = resolveEffectiveFileId(currentLevelId);
+        this.currentLevelMetadata = loadMetadataForLevel(effectiveId);
         loadMetadataDecorations();
     }
 
@@ -255,11 +269,34 @@ public class LevelManager {
     }
 
     public void restoreMainMap() {
-        this.currentLevel = getOrLoadLevel(currentLevelId);
+        String effectiveId = resolveEffectiveFileId(currentLevelId);
+        this.currentLevel = getOrLoadLevel(effectiveId);
         loadMetadata();
         loadBackground();
 
         context.getLightManager().releaseAmbientDarkness();
+        boolean particles = currentLevelMetadata == null || currentLevelMetadata.getAmbientParticlesEnabled() == null || currentLevelMetadata.getAmbientParticlesEnabled();
+        context.getEffectManager().setAmbientEffectsActive(particles);
+    }
+
+    /**
+     * Hot-swaps the current room to its restored variant during a fade-to-black cutscene, loading all newly placed objects, NPCs, and metadata.
+     */
+    public void reloadCurrentLevelVariant() {
+        String effectiveId = resolveEffectiveFileId(currentLevelId);
+        Level variantLevel = getOrLoadLevel(effectiveId);
+        if (variantLevel == null) return;
+
+        this.currentLevel = variantLevel;
+        loadMetadata();
+        loadBackground();
+
+        context.getPlayer().loadLvlData(variantLevel.getLvlData());
+        context.getEnemyManager().loadEnemies(variantLevel);
+        context.getObjectManager().loadObjects(variantLevel);
+        context.getSpellManager().initBossSpells();
+        context.getCamera().updateLevelBounds(variantLevel);
+
         boolean particles = currentLevelMetadata == null || currentLevelMetadata.getAmbientParticlesEnabled() == null || currentLevelMetadata.getAmbientParticlesEnabled();
         context.getEffectManager().setAmbientEffectsActive(particles);
     }
@@ -278,8 +315,8 @@ public class LevelManager {
 
                 DecorationMetadata decoMeta = currentDecoSet.get(decorationIndex);
                 if (decoMeta == null) continue;
-                BufferedImage model = levelObjectManager.getModel(decoMeta.getId(), level.getTilesetName(), decoMeta.getFilename(), decoMeta.isFlipped());
-                if (model == null) continue;
+                boolean useLively = context.getWorldMemoryManager() != null && context.getWorldMemoryManager().hasFlag("RESTORED_" + currentLevelId);
+                BufferedImage model = levelObjectManager.getModel(decoMeta.getId(), level.getTilesetName(), decoMeta.getFilename(), decoMeta.isFlipped(), useLively); if (model == null) continue;
 
                 ObjectMetadata meta = decorationMetadata.get(new Point(i, j));
                 double rotation = (meta != null) ? meta.getRotation() : 0.0;

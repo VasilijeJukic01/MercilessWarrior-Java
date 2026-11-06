@@ -129,7 +129,6 @@ public class GameFlowManager {
             gameState.getCamera().updateLevelBounds(context.getLevelManager().getCurrentLevel());
             gameState.getCamera().snapToPlayer(gameState.getPlayer());
             gameState.getOverlayManager().reset();
-            context.getQuestManager().reset();
             Logger.getInstance().notify("Loaded level: " + targetLevelId + " at " + spawn, Message.NOTIFICATION);
         };
 

@@ -1,5 +1,12 @@
 {
   "backgroundId": "FOREST1",
   "ambientParticlesEnabled": true,
-  "tileset": "Forest"
+  "tileset": "Forest",
+  "npcs": [
+    {
+      "type": "ANITA",
+      "excludeFlag": "VILLAGE_CLEARED_deepmoss02",
+      "excludeQuestActive": "Helping Anita"
+    }
+  ]
 }

@@ -195,7 +195,7 @@ public class GameState extends AbstractState implements State {
         context.getLevelManager().loadSavePoint(Framework.getInstance().getAccount().getSpawn());
         context.getMinimapManager().loadExplorationData(Framework.getInstance().getAccount().getExplorationData());
         this.overlayManager.reset();
-        context.getQuestManager().reset();
+        context.getQuestManager().loadFromAccount(Framework.getInstance().getAccount().getQuests());
         reset();
         camera.updateLevelBounds(getLevelManager().getCurrentLevel());
     }
@@ -212,6 +212,7 @@ public class GameState extends AbstractState implements State {
         context.getPerksManager().loadUnlockedPerks(Framework.getInstance().getAccount().getPerks());
         context.getMinimapManager().loadExplorationData(Framework.getInstance().getAccount().getExplorationData());
         context.getWorldMemoryManager().loadFromAccount(Framework.getInstance().getAccount().getWorldFlags());
+        context.getQuestManager().loadFromAccount(Framework.getInstance().getAccount().getQuests());
         getPlayer().getInventory().fillItems(Framework.getInstance().getAccount().getItems());
         Logger.getInstance().notify("Player data fully refreshed from loaded save.", Message.INFORMATION);
     }

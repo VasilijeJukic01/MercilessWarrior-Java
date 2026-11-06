@@ -3,9 +3,12 @@ package platformer.model.quests;
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 import lombok.Getter;
+import platformer.core.Framework;
 import platformer.core.GameContext;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
+import platformer.event.EventBus;
+import platformer.event.events.PreSaveEvent;
 import platformer.model.entities.player.Player;
 import platformer.model.gameObjects.npc.Npc;
 import platformer.model.gameObjects.npc.NpcType;
@@ -37,6 +40,7 @@ public class QuestManager {
     public QuestManager() {
         loadQuests(QUESTS_PATH);
         initSlots();
+        EventBus.getInstance().register(PreSaveEvent.class, e -> syncToAccount());
     }
 
     public void wire(GameContext context) {
@@ -168,6 +172,7 @@ public class QuestManager {
     private List<Quest> findNextQuests(Quest completedQuest) {
         if (completedQuest.getId() == -1) return new ArrayList<>();
         return progressiveQuests.stream()
+                .filter(q -> q.getNpcRequest() == 0)
                 .filter(q -> q.getPrerequisites() != null && q.getPrerequisites().contains(completedQuest.getId()))
                 .filter(this::areAllPrerequisitesMet)
                 .collect(Collectors.toList());
@@ -250,8 +255,58 @@ public class QuestManager {
         return allQuests.stream().anyMatch(q -> q.getName().equals(questName) && q.isCompleted());
     }
 
+    public void syncToAccount() {
+        List<String> serialized = new ArrayList<>();
+        Set<Quest> savedSet = new LinkedHashSet<>();
+        for (QuestSlot slot : slots) {
+            if (slot.getQuest() != null) savedSet.add(slot.getQuest());
+        }
+        for (Quest q : allQuests) {
+            if (q.isCompleted()) savedSet.add(q);
+        }
+
+        for (Quest q : savedSet) {
+            boolean inSlots = slots.stream().anyMatch(s -> s.getQuest().equals(q));
+            String counts = q.getObjectives() == null ? "" :
+                    q.getObjectives().stream()
+                            .map(o -> String.valueOf(o.getCurrentAmount()))
+                            .collect(Collectors.joining(","));
+            serialized.add(q.getName() + "|" + (q.isCompleted() ? 1 : 0) + "|" + (inSlots ? 1 : 0) + "|" + q.getActiveObjectiveIndex() + "|" + counts);
+        }
+        Framework.getInstance().getAccount().setQuests(serialized);
+    }
+
+    public void loadFromAccount(List<String> savedQuests) {
+        reset();
+        if (savedQuests == null || savedQuests.isEmpty()) return;
+
+        slots.clear();
+        for (String entry : savedQuests) {
+            String[] parts = entry.split("\\|", -1);
+            if (parts.length < 5) continue;
+
+            String name = parts[0];
+            boolean completed = "1".equals(parts[1]);
+            boolean inSlots = "1".equals(parts[2]);
+            int activeIdx = Integer.parseInt(parts[3]);
+            String[] counts = parts[4].isEmpty() ? new String[0] : parts[4].split(",");
+            findQuestByName(name).ifPresent(quest -> {
+                quest.setCompleted(completed);
+                quest.setActiveObjectiveIndex(activeIdx);
+                if (quest.getObjectives() != null) {
+                    for (int i = 0; i < Math.min(counts.length, quest.getObjectives().size()); i++) {
+                        quest.getObjectives().get(i).setCurrentAmount(Integer.parseInt(counts[i]));
+                    }
+                }
+                if (inSlots) slots.add(new QuestSlot(quest, 0, 0));
+            });
+        }
+        sortAndRepositionSlots();
+    }
+
     public void reset() {
-        // Should be empty (can be used to reset all quests)
+        if (allQuests != null) allQuests.forEach(Quest::reset);
+        initSlots();
     }
 
     // Custom Deserializers

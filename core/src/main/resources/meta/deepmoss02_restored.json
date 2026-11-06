@@ -1,0 +1,15 @@
+{
+  "backgroundId": "FOREST1",
+  "ambientParticlesEnabled": true,
+  "tileset": "Forest",
+  "clearEnemiesFlag": "VILLAGE_CLEARED_deepmoss02",
+  "npcs": [
+    {
+      "type": "ANITA",
+      "x": 23,
+      "y": 9,
+      "direction": "RIGHT",
+      "requiredFlag": "VILLAGE_CLEARED_deepmoss02"
+    }
+  ]
+}

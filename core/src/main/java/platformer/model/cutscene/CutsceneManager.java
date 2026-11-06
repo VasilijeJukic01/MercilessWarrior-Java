@@ -148,6 +148,13 @@ public class CutsceneManager {
         context.getScreenEffectsManager().setCutsceneFadeAlpha(0.0f);
     }
 
+    public void startCutsceneById(String cutsceneId) {
+        definitions.stream()
+                .filter(d -> d.getId().equalsIgnoreCase(cutsceneId))
+                .findFirst()
+                .ifPresent(this::startCutscene);
+    }
+
     public boolean isActive() {
         return activeDefinition != null || currentStep != null || !activeSteps.isEmpty();
     }

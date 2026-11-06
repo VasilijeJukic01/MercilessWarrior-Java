@@ -19,6 +19,7 @@ public class Account {
     private List<String> perks = new ArrayList<>();
     private List<String> items = new ArrayList<>();
     private List<String> worldFlags = new ArrayList<>();
+    private List<String> quests = new ArrayList<>();
     private String explorationData;
 
     private String lastTimeSaved;
@@ -70,6 +71,7 @@ public class Account {
         this.perks = account.getPerks();
         this.items = account.getItems();
         this.worldFlags = account.getWorldFlags() != null ? new ArrayList<>(account.getWorldFlags()) : new ArrayList<>();
+        this.quests = account.getQuests() != null ? new ArrayList<>(account.getQuests()) : new ArrayList<>();
         this.enableCheats = account.enableCheats;
         this.playtime = account.playtime;
     }
@@ -86,6 +88,7 @@ public class Account {
         setPlaytime(slotData.getPlaytime());
         setExplorationData(slotData.getExplorationData());
         setWorldFlags(slotData.getWorldFlags() != null ? new ArrayList<>(slotData.getWorldFlags()) : new ArrayList<>());
+        setQuests(slotData.getQuests() != null ? new ArrayList<>(slotData.getQuests()) : new ArrayList<>());
     }
 
     // Timer
@@ -108,6 +111,7 @@ public class Account {
         this.perks = new ArrayList<>();
         this.items = new ArrayList<>();
         this.worldFlags = new ArrayList<>();
+        this.quests = new ArrayList<>();
         stopGameTimer();
         this.playtime = 0;
     }

@@ -6,8 +6,13 @@ import platformer.audio.types.Sound;
 import platformer.core.GameContext;
 import platformer.model.entities.follower.Follower;
 import platformer.model.gameObjects.npc.NpcType;
+import platformer.model.levels.metadata.LevelMetadata;
+import platformer.model.levels.metadata.NpcMetadata;
 import platformer.model.projectiles.ProjectileFactory;
+import platformer.model.quests.QuestManager;
 import platformer.model.spells.SpellManager;
+import platformer.model.world.WorldMemoryManager;
+import platformer.physics.CollisionDetector;
 import platformer.storage.StorageStrategy;
 import platformer.core.Framework;
 import platformer.model.entities.Direction;
@@ -85,7 +90,7 @@ public class ObjectManager {
         this.objectsMap = level.getObjectsMap();
         this.classCache.clear();
         configureObjects();
-        configureNpcs();
+        applyNpcMetadata();
     }
 
     private void configureObjects() {
@@ -103,19 +108,34 @@ public class ObjectManager {
         });
     }
 
-    // TODO: Ugly method
-    private void configureNpcs() {
-        String currentLevelId = context.getLevelManager().getCurrentLevelId();
-        boolean villageCleared = context.getWorldMemoryManager().hasFlag("VILLAGE_CLEARED_deepmoss01");
-        for (Npc npc : getObjects(Npc.class)) {
-            if (npc.getNpcType() == NpcType.ANITA) {
-                if (context.getQuestManager().isQuestActive("Helping Anita")) {
-                    npc.setAlive(false);
-                } else if (villageCleared && !"deepmoss01".equalsIgnoreCase(currentLevelId)) {
-                    npc.setAlive(false);
-                }
+    private void applyNpcMetadata() {
+        LevelMetadata meta = context.getLevelManager().getCurrentLevelMetadata();
+        if (meta == null || meta.getNpcs() == null) return;
+
+        WorldMemoryManager memory = context.getWorldMemoryManager();
+        QuestManager quests = context.getQuestManager();
+        int[][] lvlData = context.getLevelManager().getCurrentLevel().getLvlData();
+        for (NpcMetadata npcMeta : meta.getNpcs()) {
+            Npc existing = getNpcByType(npcMeta.getType());
+            if (!npcMeta.isConditionMet(memory, quests)) {
+                if (existing != null) existing.setAlive(false);
+                continue;
+            }
+            if (existing == null && npcMeta.getX() != null && npcMeta.getY() != null) {
+                spawnNpcFromMetadata(npcMeta, lvlData);
             }
         }
+    }
+
+    private void spawnNpcFromMetadata(NpcMetadata npcMeta, int[][] lvlData) {
+        int px = npcMeta.getX() * TILES_SIZE;
+        int py = npcMeta.getY() * TILES_SIZE;
+        Npc npc = new Npc(ObjType.NPC, px, py, npcMeta.getType());
+        double groundY = CollisionDetector.getGroundY(px, py, lvlData);
+        npc.getHitBox().x = px;
+        npc.getHitBox().y = groundY - npc.getHitBox().height;
+        if (npcMeta.getDirection() != null) npc.setDirection(npcMeta.getDirection());
+        addGameObject(npc);
     }
 
     // Intersection Handler

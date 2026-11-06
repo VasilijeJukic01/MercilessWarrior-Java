@@ -10,5 +10,25 @@
   "AMBIENT_LIGHT": {
     "lightColor": "#FFCC00",
     "lightRadius": 120
+  },
+  "ALTAIR_LIVELY": {
+    "lightColor": "#FFB833",
+    "lightRadius": 95
+  },
+  "LODGE1_BUILDING_LIVELY": {
+    "lightColor": "#FFA822",
+    "lightRadius": 110
+  },
+  "LODGE2_BUILDING_LIVELY": {
+    "lightColor": "#FFA822",
+    "lightRadius": 100
+  },
+  "LODGE3_BUILDING_LIVELY": {
+    "lightColor": "#FFB02E",
+    "lightRadius": 115
+  },
+  "WELL_LIVELY": {
+    "lightColor": "#FFCC44",
+    "lightRadius": 70
   }
 }

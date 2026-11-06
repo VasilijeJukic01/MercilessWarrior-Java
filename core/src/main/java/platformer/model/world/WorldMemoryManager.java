@@ -8,15 +8,15 @@ import platformer.event.EventBus;
 import platformer.event.events.BrickDestroyedEvent;
 import platformer.event.events.EnemyDefeatedEvent;
 import platformer.event.events.PreSaveEvent;
+import platformer.model.entities.Direction;
 import platformer.model.entities.enemies.Enemy;
 import platformer.model.entities.enemies.EnemyType;
 import platformer.model.gameObjects.GameObject;
 import platformer.model.gameObjects.ObjType;
-import platformer.model.gameObjects.npc.Npc;
 import platformer.model.gameObjects.npc.NpcType;
 import platformer.model.gameObjects.objects.Brick;
 import platformer.model.levels.Level;
-import platformer.physics.CollisionDetector;
+import platformer.model.levels.metadata.LevelMetadata;
 
 import java.util.*;
 
@@ -93,24 +93,9 @@ public class WorldMemoryManager {
             lancers.removeIf(boss -> permanentFlags.contains(createBossFlag(levelId, EnemyType.LANCER)));
         }
 
-        // TODO: Ugly
-        if (hasFlag("VILLAGE_CLEARED_" + levelId)) {
+        LevelMetadata meta = context.getLevelManager().getCurrentLevelMetadata();
+        if (meta != null && meta.getClearEnemiesFlag() != null && hasFlag(meta.getClearEnemiesFlag())) {
             level.getEnemiesMap().clear();
-            List<GameObject> npcs = level.getObjectsMap().get(ObjType.NPC);
-            if (npcs != null) {
-                boolean hasAnita = npcs.stream().anyMatch(o -> o instanceof Npc n && n.getNpcType() == NpcType.ANITA);
-                if (!hasAnita) {
-                    int tx = 18 * platformer.constants.Constants.TILES_SIZE;
-                    int ty = 10 * platformer.constants.Constants.TILES_SIZE;
-                    Npc anita = new Npc(ObjType.NPC, tx, ty, NpcType.ANITA);
-                    double groundY = CollisionDetector.getGroundY(tx, ty, level.getLvlData());
-                    anita.getHitBox().x = tx;
-                    anita.getHitBox().y = groundY - anita.getHitBox().height;
-                    while (anita.getProgression() < 2) anita.progress();
-                    while (anita.getDialogueIndicator() < 2) anita.increaseDialogueIndicator();
-                    npcs.add(anita);
-                }
-            }
         }
     }
 
@@ -157,6 +142,12 @@ public class WorldMemoryManager {
     }
 
     // Actions
+    public void recordNpcRelocation(NpcType npcType, String levelId, int tileX, int tileY, Direction direction) {
+        permanentFlags.removeIf(flag -> flag.startsWith("NPC_RELOCATED_" + npcType.name() + "_"));
+        permanentFlags.add("NPC_RELOCATED_" + npcType.name() + "_" + levelId + "_" + tileX + "_" + tileY + "_" + direction.name());
+        syncToAccount();
+    }
+
     private String createBrickFlag(String levelId, GameObject brick) {
         return "BRICK_" + levelId + "_" + (int) brick.getHitBox().x + "_" + (int) brick.getHitBox().y;
     }

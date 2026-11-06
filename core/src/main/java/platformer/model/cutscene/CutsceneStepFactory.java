@@ -1,5 +1,7 @@
 package platformer.model.cutscene;
 
+import platformer.audio.Audio;
+import platformer.audio.types.Sound;
 import platformer.core.GameContext;
 import platformer.model.entities.Direction;
 import platformer.model.entities.player.Player;
@@ -60,6 +62,7 @@ public final class CutsceneStepFactory {
                     data.getObjectiveType() != null ? QuestObjectiveType.valueOf(data.getObjectiveType()) : null,
                     data.getTarget() != null ? ObjectiveTarget.valueOf(data.getTarget()) : null
             );
+            case "RELOAD_LEVEL_VARIANT" -> new ReloadLevelVariantStep();
             default -> new WaitStep(1);
         };
     }
@@ -237,6 +240,9 @@ public final class CutsceneStepFactory {
             npc.getHitBox().y = groundY - npc.getHitBox().height;
             npc.setDirection(direction);
             npc.setAlive(true);
+
+            String levelId = context.getLevelManager().getCurrentLevelId();
+            context.getWorldMemoryManager().recordNpcRelocation(npcType, levelId, tileX, tileY, direction);
         }
 
         @Override
@@ -318,6 +324,19 @@ public final class CutsceneStepFactory {
             if (objectiveType != null && target != null) {
                 context.getQuestManager().updateQuestProgress(objectiveType, target);
             }
+        }
+
+        @Override
+        public boolean update(GameContext context) {
+            return true;
+        }
+    }
+
+    private static class ReloadLevelVariantStep implements CutsceneStep {
+        @Override
+        public void start(GameContext context) {
+            Audio.getInstance().getAudioPlayer().playSound(Sound.CRAFTING);
+            context.getLevelManager().reloadCurrentLevelVariant();
         }
 
         @Override
