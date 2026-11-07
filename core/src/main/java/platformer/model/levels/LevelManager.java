@@ -364,7 +364,8 @@ public class LevelManager {
             for (int j = startY; j <= endY; j++) {
                 if (level.isDecorationCut(i, j)) continue;
                 DecorationMetadata decoMeta = currentDecoSet.get(level.getDecoSpriteIndex(i, j));
-                if (decoMeta == null || !decoMeta.getSway().equalsIgnoreCase("BOTTOM")) continue;
+                if (decoMeta == null) continue;
+                if (decoMeta.getSway() != null && !decoMeta.getSway().equalsIgnoreCase("BOTTOM")) continue;
 
                 int worldX = (TILES_SIZE * i) + (int) (decoMeta.getYOffset() * SCALE);
                 int worldY = (TILES_SIZE * j) + (int) (decoMeta.getXOffset() * SCALE);

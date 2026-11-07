@@ -30,8 +30,9 @@ public class AStarPathfinding {
     public List<Point> findPath(BufferedImage minimap, Point start, Point end) {
         boolean[][] walkable = preprocessWalkability(minimap);
 
-        if (!isWalkableAndValid(walkable, start) || !isWalkableAndValid(walkable, end))
-            throw new IllegalArgumentException("Start or end point is not walkable or valid.");
+        if (!isWalkableAndValid(walkable, start) || !isWalkableAndValid(walkable, end)) {
+            return Collections.emptyList();
+        }
 
         PriorityQueue<AStarNode> openSet = new PriorityQueue<>(Comparator.comparingDouble(AStarNode::getF));
         Set<Point> closedSet = new HashSet<>();

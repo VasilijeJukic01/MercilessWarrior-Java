@@ -39,6 +39,7 @@ public class MinimapManager {
     private BufferedImage minimap;
     private Point2D.Double playerLocation;
     private Point pinnedLocation;
+    private Point lastPathStart = null;
     private List<Point> pathPoints = new ArrayList<>();
     private Map<String, Point> levelPositions;
     private final List<MinimapIcon> icons = new ArrayList<>();
@@ -260,7 +261,10 @@ public class MinimapManager {
             unpin();
             return;
         }
-        findPath();
+        if (playerIntLocation != null && !playerIntLocation.equals(lastPathStart)) {
+            lastPathStart = new Point(playerIntLocation);
+            findPath();
+        }
     }
 
     private void updateMinimap() {
@@ -408,11 +412,13 @@ public class MinimapManager {
                 Logger.getInstance().notify("Minimap location pinned at: (" + location.x + ", " + location.y + ")", Message.NOTIFICATION);
             }
         }
+        lastPathStart = null;
     }
 
     public void unpin() {
         pinnedIcon = null;
         pinnedLocation = null;
+        lastPathStart = null;
         pathPoints.clear();
     }
 
