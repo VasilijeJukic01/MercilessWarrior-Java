@@ -29,6 +29,14 @@ public class BackgroundManager {
         backgrounds.put("FOREST2", ImageUtils.importImage(FOREST_BG_2, GAME_WIDTH, GAME_HEIGHT));
         backgrounds.put("FOREST3", ImageUtils.importImage(FOREST_BG_3, GAME_WIDTH, GAME_HEIGHT));
         backgrounds.put("FOREST4", ImageUtils.importImage(FOREST_BG_4, GAME_WIDTH, GAME_HEIGHT));
+        backgrounds.put("FOREST_ENTRANCE", ImageUtils.importImage(FOREST_ENTRANCE_BG, GAME_WIDTH, GAME_HEIGHT));
+        backgrounds.put("FOREST_ROOTS", ImageUtils.importImage(FOREST_ROOTS_BG, GAME_WIDTH, GAME_HEIGHT));
+        backgrounds.put("FOREST_DEEP", ImageUtils.importImage(FOREST_DEEP_BG, GAME_WIDTH, GAME_HEIGHT));
+        backgrounds.put("FOREST_STORM_PEAK", ImageUtils.importImage(FOREST_STORM_PEAK_BG, GAME_WIDTH, GAME_HEIGHT));
+        backgrounds.put("FOREST_VILLAGE", ImageUtils.importImage(FOREST_VILLAGE_BG, GAME_WIDTH, GAME_HEIGHT));
+        backgrounds.put("FOREST_VILLAGE_ENTRANCE", ImageUtils.importImage(FOREST_VILLAGE_ENTRANCE_BG, GAME_WIDTH, GAME_HEIGHT));
+        backgrounds.put("RORIC_ARENA", ImageUtils.importImage(RORIC_ARENA_BG, GAME_WIDTH, GAME_HEIGHT));
+        backgrounds.put("FOREST_THORNS", ImageUtils.importImage(FOREST_THORNS_BG, GAME_WIDTH, GAME_HEIGHT));
         backgrounds.put("TAVERN", ImageUtils.importImage(TAVERN_BG, -1, -1));
     }
 

@@ -18,10 +18,8 @@ import platformer.utils.CollectionUtils;
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import static platformer.constants.Constants.*;
@@ -42,6 +40,8 @@ public class Level {
     private final Map<EnemyType, List<Enemy>> enemiesMap = new HashMap<>();
     private final Map<ObjType, List<GameObject>> objectsMap = new HashMap<>();
     private final Map<SpellType, List<Spell>> spellsMap = new HashMap<>();
+    private final Set<Point> cutDecorations = new HashSet<>();
+    private final Map<Point, Double> decorationBends = new HashMap<>();
 
     private final List<Trigger> triggers = new ArrayList<>();
     private final Map<LvlTriggerType, Point> spawnPoints = new HashMap<>();
@@ -291,6 +291,23 @@ public class Level {
         };
     }
 
+    // Cutting
+    public void markDecorationCut(int tileX, int tileY) {
+        cutDecorations.add(new Point(tileX, tileY));
+    }
+
+    public boolean isDecorationCut(int tileX, int tileY) {
+        return cutDecorations.contains(new Point(tileX, tileY));
+    }
+
+    public void setDecorationBend(Point pt, double bend) {
+        decorationBends.put(pt, bend);
+    }
+
+    public double getDecorationBend(int tileX, int tileY) {
+        return decorationBends.getOrDefault(new Point(tileX, tileY), 0.0);
+    }
+
     // Other
     /**
      * Sets the offset values for the level based on the width and height of the level image.
@@ -309,6 +326,8 @@ public class Level {
         objectsMap.clear();
         spellsMap.clear();
         triggers.clear();
+        cutDecorations.clear();
+        decorationBends.clear();
     }
 
     // Getters
@@ -350,6 +369,10 @@ public class Level {
 
     public int getLevelTilesHeight() {
         return levelTilesHeight;
+    }
+
+    public Map<Point, Double> getDecorationBends() {
+        return decorationBends;
     }
 
     /**

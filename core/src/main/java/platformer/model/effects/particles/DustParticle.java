@@ -20,6 +20,7 @@ import lombok.Setter;
 public class DustParticle {
 
     private final ParticleBehavior behavior;
+    private final int flipSign;
     private final Entity target;
     private final DustType type;
 
@@ -43,6 +44,7 @@ public class DustParticle {
         this.type = type;
         this.behavior = behavior;
         this.target = target;
+        this.flipSign = playerFlipSign;
         this.initialAlpha = 0.7f;
         this.currentAlpha = initialAlpha;
 

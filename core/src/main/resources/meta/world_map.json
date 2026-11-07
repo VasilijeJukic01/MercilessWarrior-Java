@@ -3,7 +3,7 @@
   "rooms": {
     "begin": {
       "mapX": 0,
-      "mapY": 14,
+      "mapY": 20,
       "exits": [
         {
           "trigger": "LOAD_RIGHT_LEVEL",
@@ -13,8 +13,8 @@
       ]
     },
     "deepmoss01": {
-      "mapX": 100,
-      "mapY": 44,
+      "mapX": 122,
+      "mapY": 50,
       "exits": [
         {
           "trigger": "LOAD_LEFT_LEVEL",
@@ -34,8 +34,8 @@
       ]
     },
     "deepmoss02": {
-      "mapX": 22,
-      "mapY": 44,
+      "mapX": 44,
+      "mapY": 50,
       "exits": [
         {
           "trigger": "LOAD_RIGHT_LEVEL",
@@ -45,8 +45,8 @@
       ]
     },
     "forest01": {
-      "mapX": 56,
-      "mapY": 14,
+      "mapX": 78,
+      "mapY": 0,
       "exits": [
         {
           "trigger": "LOAD_LEFT_LEVEL",
@@ -61,8 +61,8 @@
       ]
     },
     "forest02": {
-      "mapX": 121,
-      "mapY": 3,
+      "mapX": 143,
+      "mapY": 9,
       "exits": [
         {
           "trigger": "LOAD_LEFT_LEVEL",
@@ -82,8 +82,8 @@
       ]
     },
     "forest03": {
-      "mapX": 181,
-      "mapY": 0,
+      "mapX": 203,
+      "mapY": 6,
       "exits": [
         {
           "trigger": "LOAD_LEFT_LEVEL",
@@ -93,8 +93,8 @@
       ]
     },
     "forest10": {
-      "mapX": 71,
-      "mapY": 77,
+      "mapX": 93,
+      "mapY": 83,
       "exits": [
         {
           "trigger": "LOAD_RIGHT_LEVEL",
@@ -104,8 +104,8 @@
       ]
     },
     "forest11": {
-      "mapX": 113,
-      "mapY": 73,
+      "mapX": 135,
+      "mapY": 79,
       "exits": [
         {
           "trigger": "LOAD_LEFT_LEVEL",
@@ -125,8 +125,8 @@
       ]
     },
     "forest12": {
-      "mapX": 149,
-      "mapY": 43,
+      "mapX": 171,
+      "mapY": 49,
       "exits": [
         {
           "trigger": "LOAD_LEFT_LEVEL",
@@ -159,8 +159,8 @@
       ]
     },
     "forest13": {
-      "mapX": 185,
-      "mapY": 43,
+      "mapX": 207,
+      "mapY": 49,
       "exits": [
         {
           "trigger": "LOAD_LEFT_LEVEL",
@@ -175,8 +175,8 @@
       ]
     },
     "forest23": {
-      "mapX": 186,
-      "mapY": 73,
+      "mapX": 208,
+      "mapY": 79,
       "exits": [
         {
           "trigger": "LOAD_UP_LEVEL",

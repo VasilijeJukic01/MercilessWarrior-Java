@@ -18,6 +18,7 @@ import platformer.model.quests.QuestManager;
 import platformer.model.spells.SpellManager;
 
 import java.awt.*;
+import java.awt.image.BufferedImage;
 
 import static platformer.constants.Constants.*;
 
@@ -88,6 +89,7 @@ public class GameWorld {
     // Core
     public void update() {
         player.update();
+        levelManager.updateGrassInteraction(player);
         enemyManager.update(levelManager.getCurrentLevel().getLvlData(), player, objectManager.getActiveFollower());
         objectManager.update(levelManager.getCurrentLevel().getLvlData(), player);
         projectileManager.update(levelManager.getCurrentLevel().getLvlData(), player);
@@ -101,11 +103,7 @@ public class GameWorld {
     public void render(Graphics g, int xLevelOffset, int yLevelOffset, boolean isDarkPhase) {
         g.setColor(Color.BLACK);
         g.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
-
-        if (levelManager.getCurrentLevelMetadata().getTileset().equals("Invisible")) {
-            g.drawImage(levelManager.getCurrentBackground(), -xLevelOffset, -yLevelOffset, null);
-        }
-        else g.drawImage(levelManager.getCurrentBackground(), 0, 0, null);
+        renderBackground(xLevelOffset, yLevelOffset, g);
 
         effectManager.renderAmbientEffects(g, xLevelOffset, yLevelOffset);
         rainManager.render(g);
@@ -121,9 +119,31 @@ public class GameWorld {
         if (!isDarkPhase) enemyManager.render(g, xLevelOffset, yLevelOffset);
         player.render(g, xLevelOffset, yLevelOffset);
         objectManager.secondRender(g, xLevelOffset, yLevelOffset);
+        lightManager.renderPostProcessing(g);
         if (!isDarkPhase) projectileManager.render(g, xLevelOffset, yLevelOffset);
         spellManager.render(g, xLevelOffset, yLevelOffset);
         effectManager.renderForegroundEffects(g, xLevelOffset, yLevelOffset);
+    }
+
+    private void renderBackground(int xLevelOffset, int yLevelOffset, Graphics g) {
+        BufferedImage bg = levelManager.getCurrentBackground();
+        if (levelManager.getCurrentLevelMetadata().getTileset().equals("Invisible")) {
+            g.drawImage(bg, -xLevelOffset, -yLevelOffset, null);
+        }
+        else {
+            double parallaxScale = 1.15;
+            int drawW = (int) (GAME_WIDTH * parallaxScale);
+            int drawH = (int) (GAME_HEIGHT * parallaxScale);
+            int maxX = Math.max(1, levelManager.getCurrentLevel().getXMaxLevelOffset());
+            int maxY = Math.max(1, levelManager.getCurrentLevel().getYMaxLevelOffset());
+
+            double progressX = Math.min(1.0, Math.max(0.0, (double) xLevelOffset / maxX));
+            double progressY = Math.min(1.0, Math.max(0.0, (double) yLevelOffset / maxY));
+            int bgX = (int) -((drawW - GAME_WIDTH) * progressX);
+            int bgY = (int) -((drawH - GAME_HEIGHT) * progressY);
+
+            g.drawImage(bg, bgX, bgY, drawW, drawH, null);
+        }
     }
 
     // Reset

@@ -1,5 +1,5 @@
 {
-  "backgroundId": "FOREST1",
+  "backgroundId": "FOREST_VILLAGE",
   "ambientParticlesEnabled": true,
   "tileset": "Forest",
   "clearEnemiesFlag": "VILLAGE_CLEARED_deepmoss02",

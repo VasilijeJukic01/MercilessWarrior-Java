@@ -316,8 +316,14 @@ public class LightManager {
             g2dColoredLights.dispose();
         }
 
-        renderTimeCycleTint(g);
         glowObjects(g2d, xLevelOffset, yLevelOffset);
+    }
+
+    /**
+     * Renders full-screen atmospheric color grading and flash effects after all world entities are drawn.
+     */
+    public void renderPostProcessing(Graphics g) {
+        renderTimeCycleTint(g);
         renderFlashEffects(g);
     }
 

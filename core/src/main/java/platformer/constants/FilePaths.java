@@ -27,6 +27,14 @@ public final class FilePaths {
     public static final String FOREST_BG_2 = "/images/levels/backgrounds/forest2.png";
     public static final String FOREST_BG_3 = "/images/levels/backgrounds/forest3.png";
     public static final String FOREST_BG_4 = "/images/levels/backgrounds/forest4.png";
+    public static final String FOREST_ENTRANCE_BG = "/images/levels/backgrounds/FOREST_ENTRANCE.png";
+    public static final String FOREST_ROOTS_BG = "/images/levels/backgrounds/FOREST_ROOTS.png";
+    public static final String FOREST_DEEP_BG = "/images/levels/backgrounds/FOREST_DEEP.png";
+    public static final String FOREST_STORM_PEAK_BG = "/images/levels/backgrounds/FOREST_STORM_PEAK.png";
+    public static final String FOREST_VILLAGE_BG = "/images/levels/backgrounds/FOREST_VILLAGE.png";
+    public static final String FOREST_VILLAGE_ENTRANCE_BG = "/images/levels/backgrounds/FOREST_VILLAGE_ENTRANCE.png";
+    public static final String RORIC_ARENA_BG = "/images/levels/backgrounds/RORIC_ARENA.png";
+    public static final String FOREST_THORNS_BG = "/images/levels/backgrounds/FOREST_THORNS.png";
 
     public static final String TAVERN_BG = "/images/levels/backgrounds/tavern.png";
 

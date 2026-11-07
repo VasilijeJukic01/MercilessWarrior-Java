@@ -484,6 +484,7 @@ public class Player extends Entity {
         }
 
         objectManager.checkObjectBreak(attackBox);
+        levelManager.checkDecorationCut(attackBox);
         projectileManager.checkProjectileDeflect(attackBox);
     }
 
@@ -704,6 +705,7 @@ public class Player extends Entity {
         if (spellState == 1) {
             changeStamina(FLAME_COST);
             enemyManager.checkEnemySpellHit();
+            levelManager.checkDecorationCut(attackBox);
             objectManager.checkObjectBreak(attackBox);
         }
         boolean transform = checkAction(PlayerAction.TRANSFORM);

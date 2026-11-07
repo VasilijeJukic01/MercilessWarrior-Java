@@ -13,5 +13,7 @@ public class DecorationMetadata {
     // Optional for special cases
     private String filename;
     private boolean flipped;
+    private String sway;
+    private boolean cuttable;
 
 }
