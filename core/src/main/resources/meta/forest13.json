@@ -1,5 +1,6 @@
 {
   "backgroundId": "FOREST_THORNS",
   "ambientParticlesEnabled": false,
-  "tileset": "Forest"
+  "tileset": "Forest",
+  "biome": "FOREST"
 }

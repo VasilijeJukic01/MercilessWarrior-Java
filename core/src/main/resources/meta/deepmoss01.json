@@ -2,6 +2,7 @@
   "backgroundId": "FOREST_VILLAGE_ENTRANCE",
   "ambientParticlesEnabled": true,
   "tileset": "Forest",
+  "biome": "DEEPMOSS",
   "lights": [],
   "decorations": [
     {

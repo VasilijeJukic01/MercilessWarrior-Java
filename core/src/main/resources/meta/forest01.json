@@ -1,5 +1,6 @@
 {
   "backgroundId": "FOREST_DEEP",
   "ambientParticlesEnabled": true,
-  "tileset": "Forest"
+  "tileset": "Forest",
+  "biome": "FOREST"
 }

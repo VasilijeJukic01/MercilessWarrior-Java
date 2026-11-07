@@ -77,12 +77,11 @@ public final class Constants {
     // Minimap Constants
     public static final double MIN_ZOOM = 1.0;
     public static final double MAX_ZOOM = 2.0;
-    public static final double MINIMAP_ZOOM = 6.5;
+    public static final double MINIMAP_ZOOM = 4.5;
 
-    public static final int MINIMAP_ICONS_COUNT = 7;
+    public static final int MINIMAP_ICONS_COUNT = 10;
 
     public static final Color MINIMAP_WALKABLE = new Color(78, 105, 80);
-    public static final Color MINIMAP_UNWALKABLE =  new Color(41, 59, 41);
     public static final Color MINIMAP_HOVER =  new Color(255, 180, 40);
     public static final Color MINIMAP_PINNED =  new Color(80, 200, 255);
 

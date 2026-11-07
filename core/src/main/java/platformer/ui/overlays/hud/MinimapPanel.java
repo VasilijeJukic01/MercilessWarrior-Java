@@ -8,6 +8,7 @@ import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 
 import static platformer.constants.Constants.MINIMAP_ZOOM;
+import static platformer.constants.Constants.SCALE;
 
 public class MinimapPanel {
 
@@ -41,12 +42,13 @@ public class MinimapPanel {
         BufferedImage fogImage = minimapManager.getFogImage();
         g2d.setClip(x, y, width, height);
 
-        int mapWidth = (int) (minimap.getWidth() * MINIMAP_ZOOM);
-        int mapHeight = (int) (minimap.getHeight() * MINIMAP_ZOOM);
+        double zoom = MINIMAP_ZOOM * (SCALE / 1.5);
+        int mapWidth = (int) (minimap.getWidth() * zoom);
+        int mapHeight = (int) (minimap.getHeight() * zoom);
         int mapX = x + offsetX;
         int mapY = y + offsetY;
 
-        g2d.drawImage(minimap, mapX, mapY, mapWidth, mapHeight, null);
+        g2d.drawImage(minimapManager.getVisualMinimap(), mapX, mapY, mapWidth, mapHeight, null);
         if (fogImage != null) {
             g2d.drawImage(fogImage, mapX, mapY, mapWidth, mapHeight, null);
         }
@@ -56,11 +58,13 @@ public class MinimapPanel {
     private void centerOnPlayer() {
         Point2D.Double playerLocation = minimapManager.getPlayerLocation();
         if (playerLocation != null) {
-            int mapWidth = (int) (minimapManager.getMinimap().getWidth() * MINIMAP_ZOOM);
-            int mapHeight = (int) (minimapManager.getMinimap().getHeight() * MINIMAP_ZOOM);
+            BufferedImage minimap = minimapManager.getMinimap();
+            double zoom = MINIMAP_ZOOM * (SCALE / 1.5);
+            int mapWidth = (int) (minimap.getWidth() * zoom);
+            int mapHeight = (int) (minimap.getHeight() * zoom);
 
-            offsetX = (width / 2) - (int) (playerLocation.x * MINIMAP_ZOOM);
-            offsetY = (height / 2) - (int) (playerLocation.y * MINIMAP_ZOOM);
+            offsetX = (width / 2) - (int) (playerLocation.x * zoom);
+            offsetY = (height / 2) - (int) (playerLocation.y * zoom);
 
             offsetX = Math.max(width - mapWidth, Math.min(0, offsetX));
             offsetY = Math.max(height - mapHeight, Math.min(0, offsetY));

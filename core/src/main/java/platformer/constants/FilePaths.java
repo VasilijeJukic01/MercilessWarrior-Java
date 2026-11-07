@@ -21,7 +21,7 @@ public final class FilePaths {
     public static final String DECORATION_META ="/meta/blocks/decoration_sets.json";
     public static final String DECORATION_SPRITES = "/images/levels/levelObjects/";
     public static final String MINIMAP = "/images/levels/minimap.png";
-    public static final String MINIMAP_ICONS = "/images/levels/mapIcons.png";
+    public static final String MINIMAP_ICONS = "/images/levels/MapIcons.png";
 
     public static final String FOREST_BG_1 = "/images/levels/backgrounds/forest1.png";
     public static final String FOREST_BG_2 = "/images/levels/backgrounds/forest2.png";

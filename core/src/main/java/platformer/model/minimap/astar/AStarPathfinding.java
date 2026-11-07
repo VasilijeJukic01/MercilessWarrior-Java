@@ -86,8 +86,10 @@ public class AStarPathfinding {
 
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
-                int rgb = minimap.getRGB(x, y) & 0xFFFFFF;
-                walkable[x][y] = (rgb == (MINIMAP_WALKABLE.getRGB() & 0xFFFFFF));
+                int argb = minimap.getRGB(x, y);
+                int alpha = (argb >>> 24) & 0xFF;
+                int rgb = argb & 0xFFFFFF;
+                walkable[x][y] = (alpha == 254) || (rgb == (MINIMAP_WALKABLE.getRGB() & 0xFFFFFF));
             }
         }
 

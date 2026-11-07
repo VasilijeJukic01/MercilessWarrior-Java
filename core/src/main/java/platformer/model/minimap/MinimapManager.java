@@ -37,6 +37,7 @@ public class MinimapManager {
     private BufferedImage[] minimapIcons;
 
     private BufferedImage minimap;
+    private BufferedImage visualMinimap;
     private Point2D.Double playerLocation;
     private Point pinnedLocation;
     private Point lastPathStart = null;
@@ -67,11 +68,13 @@ public class MinimapManager {
         this.explorationMap = new float[minimapImage.getWidth()][minimapImage.getHeight()];
         this.fogImage = new BufferedImage(minimapImage.getWidth(), minimapImage.getHeight(), BufferedImage.TYPE_INT_ARGB);
         initializeBlurFilter();
-        this.minimap = new BufferedImage(minimapImage.getWidth(), minimapImage.getHeight(), minimapImage.getType());
+        this.minimap = new BufferedImage(minimapImage.getWidth(), minimapImage.getHeight(), BufferedImage.TYPE_INT_ARGB);
         this.levelPositions = new LinkedHashMap<>();
         loadMinimapIcons();
         this.minimapGray = ImageUtils.toGrayscale(minimapImage);
         colorizeMinimap();
+        updateMinimap();
+        this.visualMinimap = buildSmoothVisualMinimap(minimapImage);
     }
 
     private void initializeBlurFilter() {
@@ -118,18 +121,69 @@ public class MinimapManager {
     private void colorizeMinimap() {
         for (int y = 0; y < minimapImage.getHeight(); y++) {
             for (int x = 0; x < minimapImage.getWidth(); x++) {
-                int rgb = minimapImage.getRGB(x, y);
-                int r = (rgb >> 16) & 0xFF;
-                int g = (rgb >> 8) & 0xFF;
-                int b = rgb & 0xFF;
-                if (r == 254 && g == 254 && b >= 1 && b <= 5) {
+                int argb = minimapImage.getRGB(x, y);
+                int r = (argb >> 16) & 0xFF;
+                int g = (argb >> 8) & 0xFF;
+                int b = argb & 0xFF;
+                if (r == 254 && g == 254 && b >= 0 && b < MinimapIconType.values().length && b != MinimapIconType.PLAYER.ordinal() && b != MinimapIconType.FLAG.ordinal()) {
                     icons.add(new MinimapIcon(new Point(x, y), MinimapIconType.values()[b]));
-                    minimapImage.setRGB(x, y, MINIMAP_WALKABLE.getRGB());
+                    int neighborColor = sampleNeighborWalkableColor(x, y);
+                    minimapImage.setRGB(x, y, neighborColor);
                 }
-                else if (r == 254 && g == 254 && b == 254) minimapImage.setRGB(x, y, MINIMAP_WALKABLE.getRGB());
-                else minimapImage.setRGB(x, y, MINIMAP_UNWALKABLE.getRGB());
             }
         }
+    }
+
+    private int sampleNeighborWalkableColor(int cx, int cy) {
+        int[][] dirs = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+        for (int[] d : dirs) {
+            int nx = cx + d[0], ny = cy + d[1];
+            if (nx >= 0 && nx < minimapImage.getWidth() && ny >= 0 && ny < minimapImage.getHeight()) {
+                int argb = minimapImage.getRGB(nx, ny);
+                int a = (argb >>> 24) & 0xFF;
+                int r = (argb >> 16) & 0xFF;
+                int g = (argb >> 8) & 0xFF;
+                if (a == 254 && !(r == 254 && g == 254)) {
+                    return argb;
+                }
+            }
+        }
+        return new Color(63, 94, 77, 254).getRGB();
+    }
+
+    private BufferedImage buildSmoothVisualMinimap(BufferedImage src) {
+        BufferedImage pass1 = scale2x(src);
+        return scale2x(pass1);
+    }
+
+    private BufferedImage scale2x(BufferedImage src) {
+        int w = src.getWidth();
+        int h = src.getHeight();
+        BufferedImage dst = new BufferedImage(w * 2, h * 2, BufferedImage.TYPE_INT_ARGB);
+
+        for (int y = 0; y < h; y++) {
+            for (int x = 0; x < w; x++) {
+                int p = src.getRGB(x, y);
+                int b = (y > 0) ? src.getRGB(x, y - 1) : p;
+                int hCol = (y < h - 1) ? src.getRGB(x, y + 1) : p;
+                int d = (x > 0) ? src.getRGB(x - 1, y) : p;
+                int f = (x < w - 1) ? src.getRGB(x + 1, y) : p;
+
+                int e0 = p, e1 = p, e2 = p, e3 = p;
+                if (b != hCol && d != f) {
+                    e0 = (d == b) ? d : p;
+                    e1 = (b == f) ? f : p;
+                    e2 = (d == hCol) ? d : p;
+                    e3 = (hCol == f) ? f : p;
+                }
+
+                dst.setRGB(x * 2, y * 2, e0);
+                dst.setRGB(x * 2 + 1, y * 2, e1);
+                dst.setRGB(x * 2, y * 2 + 1, e2);
+                dst.setRGB(x * 2 + 1, y * 2 + 1, e3);
+            }
+        }
+        return dst;
     }
 
     /**
@@ -269,19 +323,19 @@ public class MinimapManager {
 
     private void updateMinimap() {
         Graphics2D g2d = minimap.createGraphics();
+        g2d.setComposite(AlphaComposite.Src);
         g2d.drawImage(minimapImage, 0, 0, null);
         g2d.dispose();
     }
 
     /**
-     * Updates the fog overlay on the minimap. It creates a smooth fog effect in  following steps:
-     * <p>
-     * 1. Creates a grayscale image with padding for blur processing <br>
-     * 2. Converts exploration data to binary values (255 for fog, 0 for explored areas) <br>
-     * 3. Replicates edge pixels to prevent blur artifacts at boundaries <br>
-     * 4. Applies Gaussian blur using a predefined convolution operation <br>
-     * 5. Removes padding from the blurred result <br>
-     * 6. Converts grayscale values to ARGB format with the configured fog color <br>
+     * Updates the fog overlay on the minimap by applying a blur effect to simulate a smooth transition between explored and unexplored areas.
+     * <ul>
+     *   <li>Generates a hard fog image based on the exploration map, where unexplored areas are opaque.</li>
+     *   <li>Applies edge replication to handle boundary conditions for the blur operation.</li>
+     *   <li>Uses a convolution filter to blur the fog image.</li>
+     *   <li>Combines the blurred fog with a predefined fog color and updates the fog image.</li>
+     * </ul>
      */
     public void updateFogImage() {
         int width = minimapImage.getWidth();
@@ -331,22 +385,35 @@ public class MinimapManager {
     }
 
     public void loadExplorationData(String base64) {
-        if (base64 == null || base64.isEmpty()) {
-            this.explorationMap = new float[minimapImage.getWidth()][minimapImage.getHeight()];
-            return;
-        }
+        unpin();
+        int width = minimapImage.getWidth();
+        int height = minimapImage.getHeight();
+        this.explorationMap = new float[width][height];
+        if (base64 == null || base64.isEmpty()) return;
         try {
-            byte[] data = Base64.getDecoder().decode(base64);
-            int width = minimapImage.getWidth();
-            int height = minimapImage.getHeight();
-            this.explorationMap = new float[width][height];
-            for (int i = 0; i < data.length; i++) {
-                int x = i % width;
-                int y = i / width;
-                this.explorationMap[x][y] = (data[i] & 0xFF) / 255.0f;
+            int savedW = width;
+            String payload = base64;
+            if (base64.contains(":")) {
+                String[] parts = base64.split(":", 2);
+                String[] dims = parts[0].split(",");
+                savedW = Integer.parseInt(dims[0]);
+                payload = parts[1];
             }
+
+            byte[] data = Base64.getDecoder().decode(payload);
+            if (!base64.contains(":") && data.length != width * height && height > 0 && data.length % height == 0) {
+                savedW = data.length / height;
+            }
+            for (int i = 0; i < data.length; i++) {
+                int x = i % savedW;
+                int y = i / savedW;
+                if (x < width && y < height) {
+                    this.explorationMap[x][y] = (data[i] & 0xFF) / 255.0f;
+                }
+            }
+            updateFogImage();
         } catch (Exception e) {
-            this.explorationMap = new float[minimapImage.getWidth()][minimapImage.getHeight()];
+            this.explorationMap = new float[width][height];
             Logger.getInstance().notify("Could not load minimap exploration data. Resetting fog.", Message.WARNING);
         }
     }
@@ -360,7 +427,7 @@ public class MinimapManager {
                 data[y * width + x] = (byte) (explorationMap[x][y] * 255);
             }
         }
-        return Base64.getEncoder().encodeToString(data);
+        return width + "," + height + ":" + Base64.getEncoder().encodeToString(data);
     }
 
     /**
@@ -433,8 +500,16 @@ public class MinimapManager {
     }
 
     public boolean isExplored(Point point) {
-        if (point.x < 0 || point.x >= explorationMap.length || point.y < 0 || point.y >= explorationMap[0].length) return false;
-        return explorationMap[point.x][point.y] == 1.0f;
+        for (int dx = -2; dx <= 2; dx++) {
+            for (int dy = -2; dy <= 2; dy++) {
+                int nx = point.x + dx;
+                int ny = point.y + dy;
+                if (nx >= 0 && nx < explorationMap.length && ny >= 0 && ny < explorationMap[0].length) {
+                    if (explorationMap[nx][ny] >= 0.5f) return true;
+                }
+            }
+        }
+        return false;
     }
 
     public void reset() {
@@ -444,8 +519,11 @@ public class MinimapManager {
 
     // Getters & Setters
     public BufferedImage getMinimap() {
-        updateMinimap();
         return minimap;
+    }
+
+    public BufferedImage getVisualMinimap() {
+        return visualMinimap != null ? visualMinimap : minimap;
     }
 
     public Point2D.Double getPlayerLocation() {

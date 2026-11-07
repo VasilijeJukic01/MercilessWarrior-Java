@@ -76,7 +76,7 @@ public final class AnimConstants {
 
     public static final int ABILITY_SLOT_W = 45, ABILITY_SLOT_H = 45;
 
-    public static final int MINIMAP_ICON_SIZE = 16;
+    public static final int MINIMAP_ICON_SIZE = 64;
 
     // Frames
     public static final int MENU_FRAMES = 24;

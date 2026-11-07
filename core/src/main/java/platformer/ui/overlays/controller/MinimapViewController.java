@@ -172,8 +172,10 @@ public class MinimapViewController {
 
     private boolean isValid(BufferedImage image, Point point) {
         if (point.x >= 0 && point.y >= 0 && point.x < image.getWidth() && point.y < image.getHeight()) {
-            int rgb = image.getRGB(point.x, point.y);
-            return (rgb & 0xFFFFFF) == (MINIMAP_WALKABLE.getRGB() & 0xFFFFFF);
+            int argb = image.getRGB(point.x, point.y);
+            int alpha = (argb >>> 24) & 0xFF;
+            int rgb = argb & 0xFFFFFF;
+            return (alpha == 254) || (rgb == (MINIMAP_WALKABLE.getRGB() & 0xFFFFFF));
         }
         return false;
     }

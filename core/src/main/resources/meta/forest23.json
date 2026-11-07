@@ -1,6 +1,7 @@
 {
   "ambientParticlesEnabled": false,
   "tileset": "Forest",
+  "biome": "FOREST",
   "decorations": [
     {
       "x": 0,

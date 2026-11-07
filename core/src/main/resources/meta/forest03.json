@@ -2,6 +2,7 @@
   "backgroundId": "FOREST_STORM_PEAK",
   "ambientParticlesEnabled": false,
   "tileset": "Forest",
+  "biome": "FOREST",
   "decorations": [
     {
       "x": 5,

@@ -89,7 +89,7 @@ public class MinimapOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
         int x = MAP_OVERLAY_X + controller.getOffsetX();
         int y = MAP_OVERLAY_Y + controller.getOffsetY();
 
-        g2d.drawImage(map, x, y, width, height, null);
+        g2d.drawImage(minimapManager.getVisualMinimap(), x, y, width, height, null);
         if (fogImage != null) {
             g2d.drawImage(fogImage, x, y, width, height, null);
         }
@@ -113,30 +113,38 @@ public class MinimapOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
         g2d.setColor(new Color(0, 0, 0, 150));
         g2d.fillRoundRect(LEGEND_X, LEGEND_Y, LEGEND_WID, LEGEND_HEI, 15, 15);
         g.setFont(new Font("Arial", Font.BOLD, FONT_LIGHT));
+        FontMetrics fm = g.getFontMetrics();
         g.setColor(Color.WHITE);
 
         BufferedImage[] icons = minimapManager.getMinimapIcons();
         int itemX = LEGEND_X + LEGEND_PADDING;
         int itemY = LEGEND_Y + (LEGEND_HEI / 2) - (LEGEND_ICON_SIZE / 2);
+        int gapBetweenItems = (int) (12 * SCALE);
 
         for (MinimapIconType type : MinimapIconType.values()) {
-            if (itemX + LEGEND_ITEM_SPACING > LEGEND_X + LEGEND_WID) break;
+            String label = getLabelForIconType(type);
+            int entryWidth = LEGEND_TEXT_OFFSET + fm.stringWidth(label) + gapBetweenItems;
+            if (itemX + entryWidth > LEGEND_X + LEGEND_WID) break;
+
             BufferedImage iconImg = icons[type.ordinal()];
             g.drawImage(iconImg, itemX, itemY, LEGEND_ICON_SIZE, LEGEND_ICON_SIZE, null);
-            g.drawString(getLabelForIconType(type), itemX + LEGEND_TEXT_OFFSET, itemY + LEGEND_ICON_SIZE / 2 + FONT_LIGHT / 2);
-            itemX += LEGEND_ITEM_SPACING;
+            g.drawString(label, itemX + LEGEND_TEXT_OFFSET, itemY + LEGEND_ICON_SIZE / 2 + FONT_LIGHT / 2);
+            itemX += entryWidth;
         }
     }
 
     private String getLabelForIconType(MinimapIconType type) {
         return switch (type) {
-            case PLAYER -> "Player";
+            case TAVERN -> "Tavern";
+            case HERB -> "Herb";
+            case NPC -> "NPC";
             case SAVE -> "Totem";
             case SHOP -> "Shop";
             case BLACKSMITH -> "Blacksmith";
-            case CRAFTING -> "Crafting Table";
-            case BOSS -> "Danger Zone";
-            case FLAG -> "Pinned Location";
+            case PLAYER -> "Player";
+            case CRAFTING -> "Crafting";
+            case BOSS -> "Boss";
+            case FLAG -> "Pin";
         };
     }
 
