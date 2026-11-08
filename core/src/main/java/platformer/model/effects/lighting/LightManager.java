@@ -400,10 +400,10 @@ public class LightManager {
             BufferedImage coloredLightTexture = lightTextureCache.computeIfAbsent(colorCacheKey, k -> createColoredLightTexture(baseDiameter, lightColor));
             BufferedImage whiteLightTexture = lightTextureCache.computeIfAbsent(whiteCacheKey, k -> createLightTexture(baseDiameter, new float[]{0f, 1f}, new Color[]{Color.WHITE, new Color(1.0f, 1.0f, 1.0f, 0f)}));
 
-            int worldX = tileX * TILES_SIZE + (int) (decoMeta.getYOffset() * SCALE);
-            int worldY = tileY * TILES_SIZE + (int) (decoMeta.getXOffset() * SCALE);
-            int centerX = worldX + decoMeta.getWid() / 2;
-            int centerY = worldY + decoMeta.getHei() / 2;
+            int offsetX = (int) (decoMeta.getYOffset() / 2.0 * SCALE), offsetY = (int) (decoMeta.getXOffset() / 2.0 * SCALE);
+            int decoWid = (int) (decoMeta.getWid() / 2.0 * SCALE), decoHei = (int) (decoMeta.getHei() / 2.0 * SCALE);
+            int worldX = tileX * TILES_SIZE + offsetX, worldY = tileY * TILES_SIZE + offsetY;
+            int centerX = worldX + decoWid / 2, centerY = worldY + decoHei / 2;
 
             int drawX = centerX - xLevelOffset - pulsatingDiameter / 2;
             int drawY = centerY - yLevelOffset - pulsatingDiameter / 2;

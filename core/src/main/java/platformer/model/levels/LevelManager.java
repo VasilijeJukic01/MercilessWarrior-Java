@@ -308,7 +308,7 @@ public class LevelManager {
         context.getEffectManager().setAmbientEffectsActive(particles);
     }
 
-    public void checkDecorationCut(Rectangle2D.Double attackBox) {
+    public void checkDecorationCut(java.awt.geom.Rectangle2D.Double attackBox) {
         Level level = currentLevel;
         Map<Integer, DecorationMetadata> currentDecoSet = decorationSets.get(level.getTilesetName());
         if (currentDecoSet == null) return;
@@ -322,9 +322,11 @@ public class LevelManager {
                 if (level.isDecorationCut(i, j)) continue;
                 DecorationMetadata decoMeta = currentDecoSet.get(level.getDecoSpriteIndex(i, j));
                 if (decoMeta == null || !decoMeta.isCuttable()) continue;
-                int worldX = (TILES_SIZE * i) + (int) (decoMeta.getYOffset() * SCALE);
-                int worldY = (TILES_SIZE * j) + (int) (decoMeta.getXOffset() * SCALE);
-                Rectangle2D.Double decoBounds = new Rectangle2D.Double(worldX, worldY, decoMeta.getWid(), decoMeta.getHei());
+
+                int offsetX = (int) (decoMeta.getYOffset() / 2.0 * SCALE), offsetY = (int) (decoMeta.getXOffset() / 2.0 * SCALE);
+                int decoWid = (int) (decoMeta.getWid() / 2.0 * SCALE), decoHei = (int) (decoMeta.getHei() / 2.0 * SCALE);
+                int worldX = (TILES_SIZE * i) + offsetX, worldY = (TILES_SIZE * j) + offsetY;
+                Rectangle2D.Double decoBounds = new Rectangle2D.Double(worldX, worldY, decoWid, decoHei);
                 if (attackBox.intersects(decoBounds)) {
                     level.markDecorationCut(i, j);
                     int slashDir = context.getPlayer() != null ? context.getPlayer().getFlipSign() : 0;

@@ -33,21 +33,21 @@ public class DecorationRenderer {
                 DecorationMetadata decoMeta = decoSet.get(level.getDecoSpriteIndex(i, j));
                 if (decoMeta == null) continue;
 
-                int xPos = (TILES_SIZE * i - xLevelOffset) + (int) (decoMeta.getYOffset() * SCALE);
-                int yPos = (TILES_SIZE * j - yLevelOffset) + (int) (decoMeta.getXOffset() * SCALE);
-                if (!isVisible(xPos, yPos, decoMeta.getWid(), decoMeta.getHei())) continue;
+                int offsetX = (int) (decoMeta.getYOffset() / 2.0 * SCALE), offsetY = (int) (decoMeta.getXOffset() / 2.0 * SCALE);
+                int wid = (int) (decoMeta.getWid() / 2.0 * SCALE), hei = (int) (decoMeta.getHei() / 2.0 * SCALE);
+                int xPos = (TILES_SIZE * i - xLevelOffset) + offsetX, yPos = (TILES_SIZE * j - yLevelOffset) + offsetY;
+
+                if (!isVisible(xPos, yPos, wid, hei)) continue;
 
                 BufferedImage model = levelObjectManager.getModel(decoMeta.getId(), level.getTilesetName(), decoMeta.getFilename(), decoMeta.isFlipped(), useLively);
                 if (model == null) continue;
                 if (level.isDecorationCut(i, j)) {
-                    drawCutStubble(g, model, xPos, yPos, decoMeta.getWid(), decoMeta.getHei());
+                    drawCutStubble(g, model, xPos, yPos, wid, hei);
                     continue;
                 }
                 ObjectMetadata objMeta = objMetaMap.get(new Point(i, j));
-                if (!requiresTransform(objMeta, decoMeta)) {
-                    g.drawImage(model, xPos, yPos, decoMeta.getWid(), decoMeta.getHei(), null);
-                }
-                else drawTransformed(g, model, decoMeta, objMeta, i, j, xPos, yPos, xLevelOffset, yLevelOffset, baseTime, level);
+                if (!requiresTransform(objMeta, decoMeta)) g.drawImage(model, xPos, yPos, wid, hei, null);
+                else drawTransformed(g, model, decoMeta, objMeta, i, j, xPos, yPos, wid, hei, xLevelOffset, yLevelOffset, baseTime, level);
             }
         }
     }
@@ -62,9 +62,7 @@ public class DecorationRenderer {
         return objMeta.getRotation() != 0.0 || objMeta.getScaleX() != 1.0 || objMeta.getScaleY() != 1.0;
     }
 
-    private void drawTransformed(Graphics g, BufferedImage model, DecorationMetadata decoMeta, ObjectMetadata objMeta, int i, int j, int xPos, int yPos, int xLevelOffset, int yLevelOffset, double baseTime, Level level) {
-        int wid = decoMeta.getWid();
-        int hei = decoMeta.getHei();
+    private void drawTransformed(Graphics g, BufferedImage model, DecorationMetadata decoMeta, ObjectMetadata objMeta, int i, int j, int xPos, int yPos, int wid, int hei, int xLevelOffset, int yLevelOffset, double baseTime, Level level) {
         Graphics2D g2d = (Graphics2D) g.create();
 
         int baseX = (objMeta != null) ? (TILES_SIZE * i - xLevelOffset) : xPos;
