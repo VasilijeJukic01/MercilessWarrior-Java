@@ -6,18 +6,16 @@ import platformer.state.AbstractState;
 import platformer.state.State;
 import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.MediumButton;
+import platformer.ui.buttons.UIButtonRenderer;
 import platformer.ui.overlays.OverlayLayer;
-import platformer.utils.ImageUtils;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
-import java.awt.image.BufferedImage;
 import java.util.Arrays;
 
 import static platformer.constants.Constants.*;
-import static platformer.constants.FilePaths.LOAD_TXT;
 import static platformer.constants.UI.*;
 
 /**
@@ -26,21 +24,15 @@ import static platformer.constants.UI.*;
  */
 public class ChoseGameState extends AbstractState implements State {
 
-    private BufferedImage loadText;
     private final MediumButton[] buttons;
 
     public ChoseGameState(Game game) {
         super(game);
         this.buttons = new MediumButton[3];
-        loadImages();
         loadButtons();
     }
 
     // Init
-    private void loadImages() {
-        this.loadText = ImageUtils.importImage(LOAD_TXT, SAVE_LOAD_TEXT_WID, SAVE_LOAD_TEXT_HEI);
-    }
-
     private void loadButtons() {
         buttons[0] = new MediumButton(LOAD_SAVE_BTN_X, LOAD_BTN_Y, TINY_BTN_WID, TINY_BTN_HEI, ButtonType.LOAD);
         buttons[1] = new MediumButton(DELETE_SAVE_BTN_X, LOAD_BTN_Y, TINY_BTN_WID, TINY_BTN_HEI, ButtonType.DELETE);
@@ -57,7 +49,7 @@ public class ChoseGameState extends AbstractState implements State {
     @Override
     public void render(Graphics g) {
         OverlayLayer.getInstance().render(g);
-        g.drawImage(loadText, SAVE_LOAD_TEXT_X, SAVE_LOAD_TEXT_Y, loadText.getWidth(), loadText.getHeight(), null);
+        UIButtonRenderer.drawRunicHeader(g, "LOAD GAME", OVERLAY_X + OVERLAY_WID / 2, SAVE_LOAD_TEXT_Y);
         renderSlots(g);
         Arrays.stream(buttons).forEach(b -> b.render(g));
     }

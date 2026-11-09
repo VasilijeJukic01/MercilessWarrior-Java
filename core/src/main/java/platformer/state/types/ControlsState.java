@@ -5,18 +5,16 @@ import platformer.state.AbstractState;
 import platformer.state.State;
 import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.SmallButton;
+import platformer.ui.buttons.UIButtonRenderer;
 import platformer.ui.options.ControlsPanel;
 import platformer.ui.overlays.OverlayLayer;
-import platformer.utils.ImageUtils;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
-import java.awt.image.BufferedImage;
 
 import static platformer.constants.Constants.*;
-import static platformer.constants.FilePaths.CONTROLS_TXT;
 import static platformer.constants.UI.*;
 
 /**
@@ -25,19 +23,13 @@ import static platformer.constants.UI.*;
  */
 public class ControlsState extends AbstractState implements State {
 
-    private BufferedImage controlsText;
     private SmallButton exitBtn;
     private final ControlsPanel controlsPanel;
 
     public ControlsState(Game game) {
         super(game);
         this.controlsPanel = new ControlsPanel(this.getClass());
-        loadImages();
         loadButtons();
-    }
-
-    private void loadImages() {
-        this.controlsText = ImageUtils.importImage(CONTROLS_TXT, CONTROLS_TXT_WID, CONTROLS_TXT_HEI);
     }
 
     private void loadButtons() {
@@ -54,7 +46,7 @@ public class ControlsState extends AbstractState implements State {
     @Override
     public void render(Graphics g) {
         OverlayLayer.getInstance().render(g);
-        g.drawImage(controlsText, CONTROLS_TXT_X, CONTROLS_TXT_Y, controlsText.getWidth(), controlsText.getHeight(), null);
+        UIButtonRenderer.drawRunicHeader(g, "CONTROLS", OVERLAY_X + OVERLAY_WID / 2, CONTROLS_TXT_Y);
         exitBtn.render(g);
         controlsPanel.render(g);
     }

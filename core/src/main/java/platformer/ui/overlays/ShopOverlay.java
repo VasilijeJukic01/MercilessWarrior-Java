@@ -34,7 +34,6 @@ public class ShopOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
     private final ShopViewController controller;
 
     private Rectangle2D overlay;
-    private BufferedImage shopText;
     private final MediumButton[] mediumButtons;
     private final SmallButton[] smallButtons;
     private Rectangle2D buyPanel, sellPanel;
@@ -65,7 +64,6 @@ public class ShopOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
         this.overlay = new Rectangle2D.Double(INV_OVERLAY_X, INV_OVERLAY_Y, INV_OVERLAY_WID, INV_OVERLAY_HEI);
         this.buyPanel = new Rectangle2D.Double(SHOP_BUY_OVERLAY_X, SHOP_BUY_OVERLAY_Y, SHOP_PANEL_WID, SHOP_PANEL_HEI);
         this.sellPanel = new Rectangle2D.Double(SHOP_SELL_OVERLAY_X, SHOP_SELL_OVERLAY_Y, SHOP_PANEL_WID, SHOP_PANEL_HEI);
-        this.shopText = ImageUtils.importImage(SHOP_TXT, SHOP_TEXT_WID, SHOP_TEXT_HEI);
         this.slotImage = ImageUtils.importImage(SLOT_IMG, SLOT_SIZE, SLOT_SIZE);
         this.coinIcon = SpriteManager.getInstance().loadFromSprite(COIN_SHEET, 1, 1, COIN_WID, COIN_HEI, 0, COIN_W, COIN_H)[0];
     }
@@ -124,13 +122,8 @@ public class ShopOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
     }
 
     private void renderOverlay(Graphics g) {
-        Graphics2D g2d = (Graphics2D) g;
-        g2d.setColor(OVERLAY_COLOR);
-        g2d.fill(overlay);
-        g2d.setColor(Color.WHITE);
-        g2d.setStroke(new BasicStroke(2));
-        g2d.draw(overlay);
-        g.drawImage(shopText, SHOP_TEXT_X, SHOP_TEXT_Y, shopText.getWidth(), shopText.getHeight(), null);
+        UIButtonRenderer.drawRunicPanel(g, overlay);
+        UIButtonRenderer.drawRunicHeader(g, "SHOP", INV_OVERLAY_X + INV_OVERLAY_WID / 2, SHOP_TEXT_Y);
     }
 
     private void renderPanels(Graphics2D g2d) {

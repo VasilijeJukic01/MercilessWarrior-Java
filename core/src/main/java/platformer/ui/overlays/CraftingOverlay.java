@@ -11,6 +11,7 @@ import platformer.state.types.GameState;
 import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.MediumButton;
 import platformer.ui.buttons.SmallButton;
+import platformer.ui.buttons.UIButtonRenderer;
 import platformer.ui.overlays.controller.CraftingViewController;
 import platformer.utils.ImageUtils;
 
@@ -36,7 +37,6 @@ public class CraftingOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
     private final CraftingViewController controller;
 
     private Rectangle2D overlay;
-    private BufferedImage craftingText;
     private final MediumButton[] mediumButtons;
     private final SmallButton[] smallButtons;
 
@@ -66,7 +66,6 @@ public class CraftingOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
 
     private void loadImages() {
         this.overlay = new Rectangle2D.Double(INV_OVERLAY_X, INV_OVERLAY_Y, INV_OVERLAY_WID, INV_OVERLAY_HEI);
-        this.craftingText = ImageUtils.importImage(CRAFTING_TXT, INV_TEXT_WID, INV_TEXT_HEI);
         this.craftingPanel = new Rectangle2D.Double(BACKPACK_X, BACKPACK_Y, BACKPACK_WID, BACKPACK_HEI);
         this.slotImage = ImageUtils.importImage(SLOT_INVENTORY, SLOT_SIZE, SLOT_SIZE);
         this.coinIcon = SpriteManager.getInstance().loadFromSprite(COIN_SHEET, 1, 1, COIN_WID, COIN_HEI, 0, COIN_W, COIN_H)[0];
@@ -116,12 +115,8 @@ public class CraftingOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
     }
 
     private void renderOverlay(Graphics2D g2d) {
-        g2d.setColor(OVERLAY_COLOR);
-        g2d.fill(overlay);
-        g2d.setColor(Color.WHITE);
-        g2d.setStroke(new BasicStroke(2));
-        g2d.draw(overlay);
-        g2d.drawImage(craftingText, INV_TEXT_X, INV_TEXT_Y, craftingText.getWidth(), craftingText.getHeight(), null);
+        UIButtonRenderer.drawRunicPanel(g2d, overlay);
+        UIButtonRenderer.drawRunicHeader(g2d, "CRAFTING", INV_OVERLAY_X + INV_OVERLAY_WID / 2, INV_TEXT_Y);
     }
 
     private void renderCraftingPanel(Graphics2D g2d) {

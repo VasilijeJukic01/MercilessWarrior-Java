@@ -210,4 +210,24 @@ public class MinimapRenderer {
             gMarker.dispose();
         }
     }
+
+    /**
+     * Renders a single styled icon badge for the minimap legend.
+     */
+    public void renderLegendBadge(Graphics2D g2d, MinimapIconType type, BufferedImage originalImage, int cx, int cy, int badgeSize) {
+        if (originalImage == null) return;
+        int iconSize = (int) Math.round(badgeSize / 1.35);
+        Color themeColor = getThemeColor(type);
+
+        BufferedImage iconToDraw = (type == MinimapIconType.PLAYER || type == MinimapIconType.FLAG) ? originalImage : defaultTintedCache.computeIfAbsent(type, k -> createTintedIcon(originalImage, themeColor));
+
+        g2d.setColor(new Color(16, 22, 20, 225));
+        g2d.fillOval(cx - badgeSize / 2, cy - badgeSize / 2, badgeSize, badgeSize);
+
+        g2d.setColor(new Color(themeColor.getRed(), themeColor.getGreen(), themeColor.getBlue(), 180));
+        g2d.setStroke(new BasicStroke(1.2f));
+        g2d.drawOval(cx - badgeSize / 2, cy - badgeSize / 2, badgeSize, badgeSize);
+
+        g2d.drawImage(iconToDraw, cx - iconSize / 2, cy - iconSize / 2, iconSize, iconSize, null);
+    }
 }

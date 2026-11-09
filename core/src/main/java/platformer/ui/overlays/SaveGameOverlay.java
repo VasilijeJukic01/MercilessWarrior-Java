@@ -6,16 +6,14 @@ import platformer.event.events.ui.OverlayChangeEvent;
 import platformer.ui.buttons.AbstractButton;
 import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.MediumButton;
-import platformer.utils.ImageUtils;
+import platformer.ui.buttons.UIButtonRenderer;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
-import java.awt.image.BufferedImage;
 import java.util.Arrays;
 
 import static platformer.constants.Constants.*;
-import static platformer.constants.FilePaths.SAVE_TXT;
 import static platformer.constants.UI.*;
 
 /**
@@ -24,17 +22,11 @@ import static platformer.constants.UI.*;
  */
 public class SaveGameOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
 
-    private BufferedImage saveText;
     private final MediumButton[] buttons;
 
     public SaveGameOverlay() {
         this.buttons = new MediumButton[2];
-        loadImages();
         loadButtons();
-    }
-
-    private void loadImages() {
-        this.saveText = ImageUtils.importImage(SAVE_TXT, SAVE_LOAD_TEXT_WID, SAVE_LOAD_TEXT_HEI);
     }
 
     private void loadButtons() {
@@ -52,7 +44,7 @@ public class SaveGameOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
         g.setColor(new Color(0, 0, 0, 150));
         g.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
         OverlayLayer.getInstance().renderOverlay(g);
-        g.drawImage(saveText, SAVE_LOAD_TEXT_X, SAVE_LOAD_TEXT_Y, saveText.getWidth(), saveText.getHeight(), null);
+        UIButtonRenderer.drawRunicHeader(g, "SAVE GAME", OVERLAY_X + OVERLAY_WID / 2, SAVE_LOAD_TEXT_Y);
         Framework.getInstance().getSaveController().getGameSlots().forEach(s -> s.render(g));
         Arrays.stream(buttons).forEach(b -> b.render(g));
     }

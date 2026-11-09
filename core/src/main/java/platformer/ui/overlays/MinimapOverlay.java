@@ -3,6 +3,7 @@ package platformer.ui.overlays;
 import platformer.core.GameContext;
 import platformer.model.minimap.MinimapIconType;
 import platformer.model.minimap.MinimapManager;
+import platformer.ui.buttons.UIButtonRenderer;
 import platformer.ui.overlays.controller.MinimapViewController;
 import platformer.ui.overlays.render.MinimapRenderer;
 
@@ -100,37 +101,49 @@ public class MinimapOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
     }
 
     private void renderOverlay(Graphics g) {
-        Graphics2D g2d = (Graphics2D) g;
-        g2d.setColor(OVERLAY_COLOR);
-        g2d.fill(overlay);
-        g2d.setColor(Color.WHITE);
-        g2d.setStroke(new BasicStroke(2));
-        g2d.draw(overlay);
+        UIButtonRenderer.drawRunicPanel(g, overlay);
     }
 
     private void renderLegend(Graphics g) {
-        Graphics2D g2d = (Graphics2D) g;
-        g2d.setColor(new Color(0, 0, 0, 150));
+        Graphics2D g2d = (Graphics2D) g.create();
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+
+        g2d.setColor(new Color(16, 12, 18, 210));
         g2d.fillRoundRect(LEGEND_X, LEGEND_Y, LEGEND_WID, LEGEND_HEI, 15, 15);
-        g.setFont(new Font("Arial", Font.BOLD, FONT_LIGHT));
-        FontMetrics fm = g.getFontMetrics();
-        g.setColor(Color.WHITE);
+        g2d.setColor(new Color(255, 255, 255, 60));
+        g2d.setStroke(new BasicStroke(1.2f));
+        g2d.drawRoundRect(LEGEND_X, LEGEND_Y, LEGEND_WID, LEGEND_HEI, 15, 15);
+
+        g2d.setFont(new Font("Arial", Font.BOLD, FONT_LIGHT));
+        FontMetrics fm = g2d.getFontMetrics();
+        MinimapIconType[] types = MinimapIconType.values();
+        int badgeSize = LEGEND_ICON_SIZE;
+        int iconToTextGap = (int) (4 * SCALE);
+        int itemGap = (int) (13 * SCALE);
+
+        int totalContentWidth = 0;
+        for (int i = 0; i < types.length; i++) {
+            String label = getLabelForIconType(types[i]);
+            totalContentWidth += badgeSize + iconToTextGap + fm.stringWidth(label);
+            if (i < types.length - 1) totalContentWidth += itemGap;
+        }
+
+        int currentX = LEGEND_X + (LEGEND_WID - totalContentWidth) / 2;
+        int centerY = LEGEND_Y + LEGEND_HEI / 2;
+        int textY = centerY + (fm.getAscent() - fm.getDescent()) / 2;
 
         BufferedImage[] icons = minimapManager.getMinimapIcons();
-        int itemX = LEGEND_X + LEGEND_PADDING;
-        int itemY = LEGEND_Y + (LEGEND_HEI / 2) - (LEGEND_ICON_SIZE / 2);
-        int gapBetweenItems = (int) (12 * SCALE);
-
-        for (MinimapIconType type : MinimapIconType.values()) {
+        for (MinimapIconType type : types) {
             String label = getLabelForIconType(type);
-            int entryWidth = LEGEND_TEXT_OFFSET + fm.stringWidth(label) + gapBetweenItems;
-            if (itemX + entryWidth > LEGEND_X + LEGEND_WID) break;
-
-            BufferedImage iconImg = icons[type.ordinal()];
-            g.drawImage(iconImg, itemX, itemY, LEGEND_ICON_SIZE, LEGEND_ICON_SIZE, null);
-            g.drawString(label, itemX + LEGEND_TEXT_OFFSET, itemY + LEGEND_ICON_SIZE / 2 + FONT_LIGHT / 2);
-            itemX += entryWidth;
+            int badgeCenterX = currentX + badgeSize / 2;
+            minimapRenderer.renderLegendBadge(g2d, type, icons[type.ordinal()], badgeCenterX, centerY, badgeSize);
+            g2d.setColor(new Color(230, 230, 235));
+            int textX = currentX + badgeSize + iconToTextGap;
+            g2d.drawString(label, textX, textY);
+            currentX = textX + fm.stringWidth(label) + itemGap;
         }
+        g2d.dispose();
     }
 
     private String getLabelForIconType(MinimapIconType type) {

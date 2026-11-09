@@ -7,10 +7,7 @@ import platformer.model.inventory.InventoryBonus;
 import platformer.model.inventory.item.InventoryItem;
 import platformer.model.inventory.item.ItemData;
 import platformer.state.types.GameState;
-import platformer.ui.buttons.AbstractButton;
-import platformer.ui.buttons.ButtonType;
-import platformer.ui.buttons.MediumButton;
-import platformer.ui.buttons.SmallButton;
+import platformer.ui.buttons.*;
 import platformer.ui.components.ItemComparisonTooltip;
 import platformer.ui.dnd.DragAndDropManager;
 import platformer.ui.dnd.DragSourceType;
@@ -39,7 +36,6 @@ public class InventoryOverlay implements Overlay<MouseEvent, KeyEvent, Graphics>
     private final Map<String, Integer> equipmentSlots;
 
     private Rectangle2D overlay;
-    private BufferedImage inventoryText;
     private final MediumButton[] mediumButtons;
     private MediumButton unequipBtn;
     private final SmallButton[] smallButtons;
@@ -75,7 +71,6 @@ public class InventoryOverlay implements Overlay<MouseEvent, KeyEvent, Graphics>
         this.overlay = new Rectangle2D.Double(INV_OVERLAY_X, INV_OVERLAY_Y, INV_OVERLAY_WID, INV_OVERLAY_HEI);
         this.backpackPanel = new Rectangle2D.Double(BACKPACK_X, BACKPACK_Y, BACKPACK_WID, BACKPACK_HEI);
         this.equipPanel = new Rectangle2D.Double(EQUIPMENT_X, EQUIPMENT_Y, EQUIPMENT_WID, EQUIPMENT_HEI);
-        this.inventoryText = ImageUtils.importImage(INVENTORY_TXT, INV_TEXT_WID, INV_TEXT_HEI);
         this.slotImage = ImageUtils.importImage(SLOT_INVENTORY, SLOT_SIZE, SLOT_SIZE);
 
         this.equipmentPlaceholders = new BufferedImage[6];
@@ -177,12 +172,8 @@ public class InventoryOverlay implements Overlay<MouseEvent, KeyEvent, Graphics>
     }
 
     private void renderOverlay(Graphics2D g2d) {
-        g2d.setColor(OVERLAY_COLOR);
-        g2d.fill(overlay);
-        g2d.setColor(Color.WHITE);
-        g2d.setStroke(new BasicStroke(2));
-        g2d.draw(overlay);
-        g2d.drawImage(inventoryText, INV_TEXT_X, INV_TEXT_Y, inventoryText.getWidth(), inventoryText.getHeight(), null);
+        UIButtonRenderer.drawRunicPanel(g2d, overlay);
+        UIButtonRenderer.drawRunicHeader(g2d, "INVENTORY", INV_OVERLAY_X + INV_OVERLAY_WID / 2, INV_TEXT_Y);
     }
 
     private void renderBackpackPanel(Graphics2D g2d) {

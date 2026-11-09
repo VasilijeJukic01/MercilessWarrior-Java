@@ -102,46 +102,22 @@ public final class FilePaths {
     public static final String LIGHT_METADATA = "/light/decoration_lights.json";
 
     // Buttons
-    public static final String BTN_BUY_SHEET = "/images/buttons/BuyButton.png";
-    public static final String BTN_SELL_SHEET = "/images/buttons/SellButton.png";
-    public static final String BTN_LEAVE_SHEET = "/images/buttons/LeaveButton.png";
-    public static final String CRE_BTN_SHEET = "/images/buttons/CREButtons.png";
-    public static final String MENU_BTN_SHEET = "/images/buttons/MenuButtons.png";
-    public static final String AUDIO_BTN_SHEET = "/images/buttons/AudioButtons.png";
+    public static final String RUNIC_RECT_BTN_SHEET = "/images/buttons/RunicRectButton.png";
+    public static final String RUNIC_SQUARE_BTN_SHEET = "/images/buttons/RunicSquareButton.png";
     public static final String SLIDE_BTN_SHEET = "/images/buttons/SliderButton.png";
     public static final String SLIDER_IMG = "/images/buttons/Slider.png";
     public static final String LEADERBOARD_BTN_SHEET = "/images/buttons/LeaderboardButtons.png";
     public static final String CREDITS_BTN_SHEET = "/images/buttons/CreditsButtons.png";
-    public static final String INVENTORY_BTN_SHEET = "/images/buttons/InventoryButtons.png";
-    public static final String LOOT_BTN_SHEET = "/images/buttons/LootButtons.png";
-    public static final String CRAFT_BTN_SHEET = "/images/buttons/CraftButton.png";
-    public static final String SAVE_BTN_SHEET = "/images/buttons/SaveButtons.png";
 
     // UI
-    public static final String MENU_SPRITES = "/images/menu/background/Background$.png";
     public static final String MENU_LOGO = "/images/menu/menuLogo.png";
     public static final String LANCER_BOSS_BAR = "/images/enemies/boss/LancerBar.png";
     public static final String RORIC_BOSS_BAR = "/images/enemies/boss/RoricBar.png";
     public static final String PLAYER_HUD = "/images/playerHUD.png";
     public static final String PLAYER_PORTRAIT = "/images/portraitHUD.png";
     public static final String TIME_CYCLE_ICONS = "/images/player/hud/TimeCycleSheet.png";
-    public static final String PAUSE_TXT = "/images/buttons/PauseText.png";
-    public static final String DEAD_TXT = "/images/buttons/DeadText.png";
-    public static final String RESPAWN_TXT = "/images/buttons/RespawnText.png";
-    public static final String MENU_TXT = "/images/buttons/MenuText.png";
-    public static final String SHOP_TXT = "/images/buttons/ShopText.png";
     public static final String SLOT_IMG = "/images/inventory/Slot.png";
     public static final String SLOT_INVENTORY = "/images/inventory/Slot.png";
-    public static final String PERKS_TXT_IMG = "/images/buttons/PerksText.png";
-    public static final String CONTROLS_TXT = "/images/buttons/ControlsText.png";
-    public static final String OPTIONS_TXT = "/images/buttons/OptionsText.png";
-    public static final String BOARD_TXT = "/images/buttons/BoardText.png";
-    public static final String INVENTORY_TXT = "/images/buttons/InventoryText.png";
-    public static final String CRAFTING_TXT = "/images/buttons/CraftingText.png";
-    public static final String QUESTS_TXT = "/images/buttons/QuestsText.png";
-    public static final String LOAD_TXT = "/images/buttons/LoadText.png";
-    public static final String SAVE_TXT = "/images/buttons/SaveText.png";
-    public static final String CREDITS_TXT = "/images/buttons/CreditsText.png";
 
     public static final String ORANGE_GLOW = "/images/particles/orangeGlow.png";
     public static final String WHITE_RADIAL_GLOW = "/images/particles/whiteRadialGlow.png";

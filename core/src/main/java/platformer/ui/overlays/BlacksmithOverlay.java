@@ -6,6 +6,7 @@ import platformer.model.perks.PerksManager;
 import platformer.state.types.GameState;
 import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.MediumButton;
+import platformer.ui.buttons.UIButtonRenderer;
 import platformer.ui.overlays.controller.BlacksmithViewController;
 import platformer.utils.ImageUtils;
 
@@ -17,7 +18,6 @@ import java.awt.image.BufferedImage;
 import java.util.Arrays;
 
 import static platformer.constants.Constants.*;
-import static platformer.constants.FilePaths.PERKS_TXT_IMG;
 import static platformer.constants.FilePaths.SLOT_IMG;
 import static platformer.constants.UI.*;
 
@@ -32,7 +32,6 @@ public class BlacksmithOverlay implements Overlay<MouseEvent, KeyEvent, Graphics
     private final PerksManager perksManager;
 
     private Rectangle2D overlay;
-    private BufferedImage shopText;
     private final MediumButton[] buttons;
 
     private BufferedImage slotImage;
@@ -65,7 +64,6 @@ public class BlacksmithOverlay implements Overlay<MouseEvent, KeyEvent, Graphics
     // Init
     private void loadImages() {
         this.overlay = new Rectangle2D.Double(PERKS_OVERLAY_X, PERKS_OVERLAY_Y, PERKS_OVERLAY_WID, PERKS_OVERLAY_HEI);
-        this.shopText = ImageUtils.importImage(PERKS_TXT_IMG, SHOP_TEXT_WID, SHOP_TEXT_HEI);
         this.slotImage = ImageUtils.importImage(SLOT_IMG, SLOT_SIZE, SLOT_SIZE);
     }
 
@@ -106,13 +104,8 @@ public class BlacksmithOverlay implements Overlay<MouseEvent, KeyEvent, Graphics
 
     // Render
     private void renderOverlay(Graphics g) {
-        Graphics2D g2d = (Graphics2D) g;
-        g2d.setColor(OVERLAY_COLOR);
-        g2d.fill(overlay);
-        g2d.setColor(Color.WHITE);
-        g2d.setStroke(new BasicStroke(2));
-        g2d.draw(overlay);
-        g.drawImage(shopText, PERKS_TEXT_X, PERKS_TEXT_Y, shopText.getWidth(), shopText.getHeight(), null);
+        UIButtonRenderer.drawRunicPanel(g, overlay);
+        UIButtonRenderer.drawRunicHeader(g, "PERKS", PERKS_OVERLAY_X + PERKS_OVERLAY_WID / 2, PERKS_TEXT_Y - (int) (12 * SCALE));
     }
 
     private void renderButtons(Graphics g) {

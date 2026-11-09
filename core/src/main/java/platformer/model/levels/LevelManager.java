@@ -176,18 +176,18 @@ public class LevelManager {
         String effectiveId = resolveEffectiveFileId(currentLevelId);
         Level newLevel = getOrLoadLevel(effectiveId);
         if (newLevel == null) {
-            context.getGameState().getGame().startMenuState();
+            if (context.getGameState() != null) context.getGameState().getGame().startMenuState();
             return;
         }
         loadMetadata();
         context.getWorldMemoryManager().onRoomEntered(currentLevelId, newLevel);
         this.currentLevel = newLevel;
-        context.getGameState().getPlayer().loadLvlData(newLevel.getLvlData());
+        context.getPlayer().loadLvlData(newLevel.getLvlData());
         context.getEnemyManager().loadEnemies(newLevel);
         context.getObjectManager().loadObjects(newLevel);
         context.getSpellManager().initBossSpells();
         context.getMinimapManager().changeLevel();
-        context.getGameState().getPlayer().activateMinimap(true);
+        context.getPlayer().activateMinimap(true);
         loadBackground();
     }
 

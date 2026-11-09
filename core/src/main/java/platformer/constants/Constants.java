@@ -396,14 +396,14 @@ public final class Constants {
     public static final int FLASH_OFFSET_X = (int)(FLASH_WIDTH / 2.4);
 
     // Button Constants
-    public static final int BIG_BTN_WID = scale(120);
+    public static final int BIG_BTN_WID = scale(136);
     public static final int BIG_BTN_HEI = scale(42);
-    public static final int MEDIUM_BTN_WID = scale(94);
+    public static final int MEDIUM_BTN_WID = scale(96);
     public static final int MEDIUM_BTN_HEI = scale(34);
-    public static final int SMALL_BTN_WID = scale(65);
-    public static final int SMALL_BTN_HEI = scale(25);
-    public static final int TINY_BTN_WID = scale(50);
-    public static final int TINY_BTN_HEI = scale(20);
+    public static final int SMALL_BTN_WID = scale(68);
+    public static final int SMALL_BTN_HEI = scale(26);
+    public static final int TINY_BTN_WID = scale(52);
+    public static final int TINY_BTN_HEI = scale(23);
     public static final int SOUND_BTN_SIZE = scale(30);
     public static final int CRE_BTN_SIZE = scale(30);
     public static final int SMALL_BTN_SIZE = scale(25);
@@ -411,7 +411,6 @@ public final class Constants {
     public static final int SLIDER_BTN_SIZE = scale(15);
     public static final int SLIDER_WID = scale(150);
     public static final int SLIDER_HEI = scale(30);
-    public static final int SLIDER_LEN = scale(144);
 
     // UI
     public static final int FONT_BIG = scale(20);
