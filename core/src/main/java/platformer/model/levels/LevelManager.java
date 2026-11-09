@@ -6,6 +6,7 @@ import platformer.core.GameContext;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
 import platformer.model.effects.particles.DustType;
+import platformer.model.entities.player.Player;
 import platformer.model.entities.player.PlayerAction;
 import platformer.model.levels.metadata.*;
 import platformer.model.levels.render.DecorationRenderer;
@@ -323,7 +324,7 @@ public class LevelManager {
                 DecorationMetadata decoMeta = currentDecoSet.get(level.getDecoSpriteIndex(i, j));
                 if (decoMeta == null || !decoMeta.isCuttable()) continue;
 
-                int offsetX = (int) (decoMeta.getYOffset() / 2.0 * SCALE), offsetY = (int) (decoMeta.getXOffset() / 2.0 * SCALE);
+                int offsetX = (int) (decoMeta.getXOffset() / 2.0 * SCALE), offsetY = (int) (decoMeta.getYOffset() / 2.0 * SCALE);
                 int decoWid = (int) (decoMeta.getWid() / 2.0 * SCALE), decoHei = (int) (decoMeta.getHei() / 2.0 * SCALE);
                 int worldX = (TILES_SIZE * i) + offsetX, worldY = (TILES_SIZE * j) + offsetY;
                 Rectangle2D.Double decoBounds = new Rectangle2D.Double(worldX, worldY, decoWid, decoHei);
@@ -339,16 +340,9 @@ public class LevelManager {
     /**
      * Updates interactive grass bending and spawns rustle particles when the player moves through foliage.
      */
-    public void updateGrassInteraction(platformer.model.entities.player.Player player) {
+    public void updateGrassInteraction(Player player) {
         Level level = currentLevel;
         if (level == null || player == null) return;
-
-        level.getDecorationBends().entrySet().removeIf(entry -> {
-            double decayed = entry.getValue() * 0.90;
-            if (Math.abs(decayed) < 0.005) return true;
-            entry.setValue(decayed);
-            return false;
-        });
 
         Map<Integer, DecorationMetadata> currentDecoSet = decorationSets.get(level.getTilesetName());
         if (currentDecoSet == null) return;
@@ -362,22 +356,34 @@ public class LevelManager {
         int endY = Math.min(level.getLvlData()[0].length - 1, (int) ((pBox.y + pBox.height) / TILES_SIZE) + 1);
 
         Set<Point> currentlyIntersecting = new HashSet<>();
+        Set<Point> activelyPushedTiles = new HashSet<>();
+
         for (int i = startX; i <= endX; i++) {
             for (int j = startY; j <= endY; j++) {
                 if (level.isDecorationCut(i, j)) continue;
                 DecorationMetadata decoMeta = currentDecoSet.get(level.getDecoSpriteIndex(i, j));
-                if (decoMeta == null) continue;
-                if (decoMeta.getSway() != null && !decoMeta.getSway().equalsIgnoreCase("BOTTOM")) continue;
+                if (decoMeta == null || !"BOTTOM".equalsIgnoreCase(decoMeta.getSway())) continue;
 
-                int worldX = (TILES_SIZE * i) + (int) (decoMeta.getYOffset() * SCALE);
-                int worldY = (TILES_SIZE * j) + (int) (decoMeta.getXOffset() * SCALE);
-                Rectangle2D.Double decoBounds = new Rectangle2D.Double(worldX, worldY, decoMeta.getWid(), decoMeta.getHei());
+                int offsetX = (int) (decoMeta.getXOffset() / 2.0 * SCALE), offsetY = (int) (decoMeta.getYOffset() / 2.0 * SCALE);
+                int decoWid = (int) (decoMeta.getWid() / 2.0 * SCALE);
+                int decoHei = (int) (decoMeta.getHei() / 2.0 * SCALE);
+
+                int worldX = (TILES_SIZE * i) + offsetX;
+                int worldY = (TILES_SIZE * j) + offsetY;
+                Rectangle2D.Double decoBounds = new Rectangle2D.Double(worldX, worldY, decoWid, decoHei);
+
                 if (pBox.intersects(decoBounds)) {
                     Point pt = new Point(i, j);
                     currentlyIntersecting.add(pt);
                     if (isMoving) {
-                        double targetBend = -player.getFlipSign() * (isDashing ? 0.35 : 0.22);
-                        level.setDecorationBend(pt, targetBend);
+                        activelyPushedTiles.add(pt);
+                        double heightFactor = Math.min(1.0, (double) TILES_SIZE / Math.max(1, decoHei));
+                        double maxBend = (isDashing ? 0.32 : 0.20) * heightFactor;
+                        double targetBend = -player.getFlipSign() * maxBend;
+
+                        double currentBend = level.getDecorationBend(i, j);
+                        double smoothedBend = currentBend + (targetBend - currentBend) * 0.08;
+                        level.setDecorationBend(pt, smoothedBend);
                         if (!touchedGrassTiles.contains(pt) && decoMeta.isCuttable()) {
                             int leafCount = isDashing ? 4 : 2;
                             context.getEffectManager().spawnDustParticles(decoBounds.getCenterX(), decoBounds.getCenterY(), leafCount, DustType.HERB_CUT, player.getFlipSign(), null);
@@ -386,6 +392,15 @@ public class LevelManager {
                 }
             }
         }
+
+        level.getDecorationBends().entrySet().removeIf(entry -> {
+            if (activelyPushedTiles.contains(entry.getKey())) return false;
+            double decayed = entry.getValue() * 0.93;
+            if (Math.abs(decayed) < 0.004) return true;
+            entry.setValue(decayed);
+            return false;
+        });
+
         touchedGrassTiles.clear();
         touchedGrassTiles.addAll(currentlyIntersecting);
     }

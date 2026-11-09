@@ -33,7 +33,7 @@ public class DecorationRenderer {
                 DecorationMetadata decoMeta = decoSet.get(level.getDecoSpriteIndex(i, j));
                 if (decoMeta == null) continue;
 
-                int offsetX = (int) (decoMeta.getYOffset() / 2.0 * SCALE), offsetY = (int) (decoMeta.getXOffset() / 2.0 * SCALE);
+                int offsetX = (int) (decoMeta.getXOffset() / 2.0 * SCALE), offsetY = (int) (decoMeta.getYOffset() / 2.0 * SCALE);
                 int wid = (int) (decoMeta.getWid() / 2.0 * SCALE), hei = (int) (decoMeta.getHei() / 2.0 * SCALE);
                 int xPos = (TILES_SIZE * i - xLevelOffset) + offsetX, yPos = (TILES_SIZE * j - yLevelOffset) + offsetY;
 

@@ -30,5 +30,17 @@
   "WELL_LIVELY": {
     "lightColor": "#FFCC44",
     "lightRadius": 70
+  },
+  "HANGING_SHROOMS": {
+    "lightColor": "#00FFE5",
+    "lightRadius": 80
+  },
+  "GLOW_COCOONS": {
+    "lightColor": "#00FFE5",
+    "lightRadius": 100
+  },
+  "TREE_HOLLOW_GLOW": {
+    "lightColor": "#00FFE5",
+    "lightRadius": 90
   }
 }
