@@ -96,6 +96,7 @@ public class GameWorld {
         timeCycleManager.update();
         lightManager.update(timeCycleManager);
         spellManager.update();
+        effectManager.updateTimeOfDay(timeCycleManager);
         effectManager.update();
         rainManager.update();
     }

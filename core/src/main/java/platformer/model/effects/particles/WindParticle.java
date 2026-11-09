@@ -86,14 +86,18 @@ public class WindParticle {
      * @param g2d The graphics context to draw on.
      * @param xLevelOffset The camera's horizontal offset.
      * @param yLevelOffset The camera's vertical offset.
+     * @param visibilityMultiplier A multiplier for the particle's alpha to simulate day/night visibility.
      */
-    public void render(Graphics2D g2d, int xLevelOffset, int yLevelOffset) {
+    public void render(Graphics2D g2d, int xLevelOffset, int yLevelOffset, float visibilityMultiplier) {
+        float finalAlpha = alpha * visibilityMultiplier;
+        if (finalAlpha <= 0.02f) return;
+
         Composite originalComposite = g2d.getComposite();
-        g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha));
+        g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, Math.min(1.0f, finalAlpha)));
         g2d.setColor(this.color);
 
-        int renderX = (int)(this.x - (xLevelOffset * parallaxFactor));
-        int renderY = (int)(this.y - (yLevelOffset * parallaxFactor));
+        int renderX = (int) (this.x - (xLevelOffset * parallaxFactor));
+        int renderY = (int) (this.y - (yLevelOffset * parallaxFactor));
 
         g2d.fillRect(renderX, renderY, size, size);
         g2d.setComposite(originalComposite);
