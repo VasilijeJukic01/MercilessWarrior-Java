@@ -1,56 +1,64 @@
-/* Loading Screen Styles */
+.root {
+    -fx-background-color: radial-gradient(center 50% 35%, radius 75%, #16282e, #080f12);
+}
 
-/* Main loading label style */
 .loading-label {
-    -fx-font-family: 'Trebuchet MS', sans-serif;
-    -fx-font-size: 28px;
+    -fx-font-family: "Georgia", "Serif";
+    -fx-font-size: 26px;
     -fx-font-weight: bold;
-    -fx-text-fill: #e8e8e8;
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.7), 6, 0.0, 0, 2);
+    -fx-text-fill: #e2eeed;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 230, 220, 0.35), 10, 0.2, 0, 0);
 }
 
-/* Progress bar styling */
 .loading-progress-bar {
-    -fx-pref-width: 500px;
-    -fx-pref-height: 15px;
-    -fx-accent: #b22525;
-    -fx-background-color: #333333;
-    -fx-border-color: #666666;
-    -fx-border-width: 1px;
-    -fx-border-radius: 2px;
+    -fx-pref-width: 520px;
+    -fx-pref-height: 18px;
 }
 
-/* Status label styling */
+.loading-progress-bar > .track {
+    -fx-background-color: linear-gradient(to bottom, #0c1417, #152328);
+    -fx-background-insets: 0;
+    -fx-background-radius: 4px;
+    -fx-border-color: #6c8286;
+    -fx-border-width: 2px;
+    -fx-border-radius: 4px;
+}
+
+.loading-progress-bar > .bar {
+    -fx-background-color: linear-gradient(to right, #0099a8, #38e5df);
+    -fx-background-insets: 3px;
+    -fx-background-radius: 2px;
+    -fx-effect: dropshadow(three-pass-box, rgba(56, 229, 223, 0.6), 8, 0.3, 0, 0);
+}
+
 .status-label {
-    -fx-font-family: 'Trebuchet MS', sans-serif;
-    -fx-font-size: 16px;
-    -fx-text-fill: #3e3e3e;
+    -fx-font-family: "Georgia", "Serif";
+    -fx-font-size: 15px;
+    -fx-text-fill: #8fb3b8;
     -fx-font-style: italic;
 }
 
-/* Game tip label styling */
 .tip-label {
-    -fx-font-family: 'Trebuchet MS', sans-serif;
-    -fx-font-size: 18px;
-    -fx-text-fill: #ffcc00;
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.7), 3, 0.0, 0, 1);
+    -fx-font-family: "Georgia", "Serif";
+    -fx-font-size: 16px;
+    -fx-text-fill: #62f2eb;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.85), 4, 0.0, 0, 1);
 }
 
-/* Bottom box styling */
 .bottom-box {
     -fx-alignment: center;
-    -fx-padding: 20px;
-    -fx-background-color: rgba(0, 0, 0, 0.6);
+    -fx-padding: 18px;
+    -fx-background-color: rgba(10, 18, 22, 0.85);
+    -fx-border-color: rgba(56, 229, 223, 0.35) transparent transparent transparent;
+    -fx-border-width: 1.5px;
 }
 
-/* Content box styling */
 .content-box {
     -fx-alignment: center;
     -fx-padding: 30px;
-    -fx-spacing: 15px;
+    -fx-spacing: 16px;
 }
 
-/* Logo styling */
 .game-logo {
-    -fx-effect: dropshadow(three-pass-box, black, 10, 0.0, 0, 0);
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.85), 14, 0.2, 0, 3);
 }

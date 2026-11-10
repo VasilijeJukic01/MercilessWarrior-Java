@@ -40,10 +40,9 @@ public class RegisterView extends Stage {
     private Image launcherIcon;
     private Image logo;
 
-    public RegisterView(LauncherView launcherView) {
+    public RegisterView() {
         initModality(Modality.APPLICATION_MODAL);
         loadImages();
-        root.setBackground(launcherView.getLauncherBackground());
         init();
     }
 

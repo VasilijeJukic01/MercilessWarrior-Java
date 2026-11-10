@@ -78,7 +78,7 @@ public class LauncherView extends BaseView {
 
         root.getChildren().add(imgLogo);
         tgCheats.getToggles().addAll(rbEnableCheatsYes, rbEnableCheatsNo);
-        cbResolution.setItems(FXCollections.observableArrayList("832x448", "1248x672", "1664x896"));
+        cbResolution.setItems(FXCollections.observableArrayList("832 x 448", "1248 x 672", "1664 x 896"));
         cbResolution.getSelectionModel().select(2);
         rbEnableCheatsNo.setSelected(true);
     }
@@ -95,7 +95,7 @@ public class LauncherView extends BaseView {
 
     private void initButtons() {
         btnLaunch.setOnAction(new LaunchController(this, tfName, tfPassword, rbEnableCheatsYes, cbResolution, cbFullScreen));
-        btnRegister.setOnAction(e -> new RegisterView(this).show());
+        btnRegister.setOnAction(e -> new RegisterView().show());
         btnControls.setOnAction(e -> new ControlsView().show());
         btnExit.setOnAction(e -> System.exit(0));
     }
