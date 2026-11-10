@@ -59,10 +59,19 @@ public class GameSaveController {
         }
     }
 
+    public boolean canDeleteSelectedSlot() {
+        for (GameSlot s : gameSlots) {
+            if (s.isSelected()) {
+                return !s.isDatabaseSlot() && s.getAccount() != null;
+            }
+        }
+        return false;
+    }
+
     public void deleteSlot() {
         for (GameSlot s : gameSlots) {
             if (s.isSelected()) {
-                if (s.getAccount() == null) return;
+                if (s.isDatabaseSlot() || s.getAccount() == null) return;
                 Framework.getInstance().localDelete(s.getIndex() - 1);
                 initSlots();
                 return;
