@@ -26,6 +26,7 @@ public class SpellManager {
     private final List<Spell> activeSpells = new ArrayList<>();
     private final Flame flame;
 
+    private boolean alternateLightningPattern = false;
     private boolean isTelegraphingArrowRain = false;
     private Point telegraphPosition;
 
@@ -43,14 +44,11 @@ public class SpellManager {
     // Init
     public void initBossSpells() {
         activeSpells.clear();
-        activeSpells.addAll(context.getLevelManager().getCurrentLevel().getSpells(Lightning.class));
-        activeSpells.addAll(context.getLevelManager().getCurrentLevel().getSpells(Flash.class));
     }
 
     // Core
     public void update() {
         flame.update(context.getGameState().getPlayer());
-        activeSpells.removeIf(spell -> !isStaticSpell(spell) && !spell.isActive());
         for (Spell spell : activeSpells) {
             spell.update(context.getGameState().getPlayer());
         }
@@ -90,28 +88,35 @@ public class SpellManager {
 
     // Activators
     public void activateLightnings() {
-        activeSpells.stream()
-                .filter(spell -> spell instanceof Lightning)
-                .forEach(spell -> {
-                    spell.setAnimIndex(0);
-                    spell.setActive(true);
-                });
-        context.getLightManager().setCurrentAmbientAlpha(0);
+        int[][] lvlData = context.getLevelManager().getCurrentLevel().getLvlData();
+        double[] tileColumns = alternateLightningPattern ? new double[]{4.5, 8.0, 11.5, 15.0, 18.5, 22.0} : new double[]{6.0, 9.5, 13.0, 16.5, 20.0};
+        alternateLightningPattern = !alternateLightningPattern;
+        for (double col : tileColumns) {
+            int xPos = (int) (col * TILES_SIZE);
+            double groundY = getGroundY(xPos, 6 * TILES_SIZE, lvlData);
+            int yPos = (int) groundY - LIGHTNING_HEIGHT;
+            Lightning bolt = new Lightning(SpellType.LIGHTNING, xPos, yPos);
+            bolt.setActive(true);
+            activeSpells.add(bolt);
+        }
     }
 
     public void activateFlashes() {
-        List<Flash> flashes = activeSpells.stream()
-                .filter(spell -> spell instanceof Flash)
-                .map(spell -> (Flash) spell)
-                .toList();
+        int[][] lvlData = context.getLevelManager().getCurrentLevel().getLvlData();
+        Player player = context.getGameState().getPlayer();
+        double playerTileX = player.getHitBox().getCenterX() / TILES_SIZE;
+        double offsetTiles = 2.8 + rand.nextDouble() * 2.5;
+        double leftCol = Math.max(4.5, Math.min(22.0, playerTileX - offsetTiles));
+        double rightCol = Math.max(4.5, Math.min(22.0, playerTileX + offsetTiles));
 
-        if (flashes.isEmpty()) return;
-        int n = flashes.size();
-        int k = rand.nextInt(n);
-        flashes.get(k).setAnimIndex(0);
-        flashes.get(k).setActive(true);
-        flashes.get(n - k - 1).setAnimIndex(0);
-        flashes.get(n - k - 1).setActive(true);
+        for (double col : new double[]{leftCol, rightCol}) {
+            int xPos = (int) (col * TILES_SIZE);
+            double groundY = getGroundY(xPos, 6 * TILES_SIZE, lvlData);
+            int yPos = (int) groundY - LIGHTNING_HEIGHT;
+            Lightning bolt = new Lightning(SpellType.LIGHTNING, xPos, yPos);
+            bolt.setActive(true);
+            activeSpells.add(bolt);
+        }
     }
 
     public void activateRoricBeam(Roric roric) {
@@ -151,15 +156,8 @@ public class SpellManager {
         this.isTelegraphingArrowRain = false;
     }
 
-    private boolean isStaticSpell(Spell spell) {
-        return spell instanceof Lightning || spell instanceof Flash;
-    }
-
     public void reset() {
-        activeSpells.forEach(spell -> {
-            if (isStaticSpell(spell)) spell.reset();
-        });
-        activeSpells.removeIf(spell -> !isStaticSpell(spell));
+        activeSpells.clear();
         isTelegraphingArrowRain = false;
     }
 

@@ -30,6 +30,9 @@ public enum NpcType {
     ),
     EERYN(4, new Color(0x8500FF), "Eeryn the Illusionist", DialogueBehavior.RANDOM,
             scale(40), scale(52), scale(80), scale(45), scale(-20), scale(4), 32, 32
+    ),
+    LANCER(1, new Color(0x4EE8FF), "Lancer", DialogueBehavior.SEQUENTIAL,
+            scale(40), scale(52), scale(80), scale(45), scale(-20), scale(4), 32, 32
     );
 
     private final int sprites;

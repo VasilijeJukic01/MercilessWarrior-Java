@@ -234,7 +234,7 @@ public class LightManager {
 
         if (ambientDarknessOverridden) {
             if (currentAmbientAlpha < targetAlpha) {
-                currentAmbientAlpha = Math.min(currentAmbientAlpha + 2, targetAlpha);
+                currentAmbientAlpha = Math.min(currentAmbientAlpha + 5, targetAlpha);
             }
         }
         // Faster recovery from effect

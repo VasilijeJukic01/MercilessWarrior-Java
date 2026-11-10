@@ -42,6 +42,10 @@ public class EffectManager {
     private float dayFactor = 0.0f;
     private float nightFactor = 1.0f;
 
+    // TODO: Temporary
+    private boolean stormPeakMode = false;
+    private double stormIntensity = 1.0;
+
     private BufferedImage[] smokeParticleFrames;
     private final Map<Integer, BufferedImage[]> dustParticleCache = new HashMap<>();
 
@@ -187,12 +191,16 @@ public class EffectManager {
         updateItemPickupTexts();
         if (ambientEffectsActive) {
             Arrays.stream(smokeParticles).forEach(SmokeParticle::update);
-            if (nightFactor > 0.02f) {
-                Arrays.stream(ambientParticles).forEach(AmbientParticle::update);
-                Arrays.stream(windParticles).forEach(WindParticle::update);
-            }
-            if (dayFactor > 0.02f) {
-                Arrays.stream(fallingLeafParticles).forEach(FallingLeafParticle::update);
+            if (stormPeakMode) {
+                Arrays.stream(windParticles).forEach(p -> p.update(stormIntensity));
+            } else {
+                if (nightFactor > 0.02f) {
+                    Arrays.stream(ambientParticles).forEach(AmbientParticle::update);
+                    Arrays.stream(windParticles).forEach(WindParticle::update);
+                }
+                if (dayFactor > 0.02f) {
+                    Arrays.stream(fallingLeafParticles).forEach(FallingLeafParticle::update);
+                }
             }
         }
     }
@@ -262,6 +270,10 @@ public class EffectManager {
     public void renderAmbientEffectsAbove(Graphics g, int xLevelOffset, int yLevelOffset) {
         if (!ambientEffectsActive) return;
         Graphics2D g2d = (Graphics2D) g;
+        if (stormPeakMode) {
+            Arrays.stream(windParticles).forEach(p -> p.render(g2d, xLevelOffset, yLevelOffset, 1.0f));
+            return;
+        }
         if (nightFactor > 0.02f) {
             Arrays.stream(windParticles).forEach(p -> p.render(g2d, xLevelOffset, yLevelOffset, nightFactor));
         }
@@ -328,6 +340,16 @@ public class EffectManager {
 
     public void setAmbientEffectsActive(boolean ambientEffectsActive) {
         this.ambientEffectsActive = ambientEffectsActive;
+    }
+
+    public void setStormPeakMode(boolean stormPeakMode) {
+        this.stormPeakMode = stormPeakMode;
+        this.stormIntensity = 1.0;
+        Arrays.stream(windParticles).forEach(p -> p.setStormPeakMode(stormPeakMode));
+    }
+
+    public void setStormIntensity(double stormIntensity) {
+        this.stormIntensity = stormIntensity;
     }
 
 }

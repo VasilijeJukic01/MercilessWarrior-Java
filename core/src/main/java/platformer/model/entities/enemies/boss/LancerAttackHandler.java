@@ -10,6 +10,8 @@ import platformer.model.entities.player.Player;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
@@ -20,54 +22,77 @@ public class LancerAttackHandler {
 
     private final Lancer lancer;
     private final Rectangle2D.Double hitBox;
+    private final Random rand = new Random();
 
-    private final List<Anim> actions;
+    private final List<Anim> moveBag = new ArrayList<>();
+    private Anim lastMove = null;
 
-    public LancerAttackHandler(Lancer lancer, List<Anim> actions) {
+    public LancerAttackHandler(Lancer lancer) {
         this.lancer = lancer;
         this.hitBox = lancer.getHitBox();
-        this.actions = actions;
+        refillBag();
     }
 
-    // Teleport
-    public void teleport(int[][] levelData, Player player, int tiles) {
-        Random rand = new Random();
-        double playerX = player.getHitBox().x;
-        double rightTeleport = playerX + tiles * TILES_SIZE;
-        double leftTeleport = playerX - tiles * TILES_SIZE;
-        int k = rand.nextInt(2);
-        doTeleport(levelData, k, rightTeleport, leftTeleport);
-        lancer.setDirection((playerX < hitBox.x) ? Direction.LEFT : Direction.RIGHT);
+    private void refillBag() {
+        moveBag.clear();
+        moveBag.add(Anim.ATTACK_1);
+        moveBag.add(Anim.ATTACK_3);
+        moveBag.add(Anim.SPELL_1);
+        moveBag.add(Anim.SPELL_2);
+        moveBag.add(Anim.SPELL_3);
+        moveBag.add(Anim.SPELL_4);
+        Collections.shuffle(moveBag);
+        if (lastMove != null && moveBag.size() > 1 && moveBag.get(0) == lastMove) {
+            Collections.swap(moveBag, 0, moveBag.size() - 1);
+        }
     }
 
-    private void doTeleport(int[][] levelData, int k, double rightTeleport, double leftTeleport) {
-        double targetX = hitBox.x;
-        if (k == 0 && canMoveHere(rightTeleport, hitBox.y, hitBox.width, hitBox.height, levelData))
-            targetX = rightTeleport;
-        else if (k == 0 && canMoveHere(leftTeleport, hitBox.y, hitBox.width, hitBox.height, levelData))
-            targetX = leftTeleport;
-        else if (k == 1 && canMoveHere(leftTeleport, hitBox.y, hitBox.width, hitBox.height, levelData))
-            targetX = leftTeleport;
-        else if (k == 1 && canMoveHere(rightTeleport, hitBox.y, hitBox.width, hitBox.height, levelData))
-            targetX = rightTeleport;
-        performTeleport(targetX, hitBox.y);
+    private Anim drawNextMove() {
+        if (moveBag.isEmpty()) refillBag();
+        Anim next = moveBag.remove(0);
+        lastMove = next;
+        return next;
     }
 
-    // Attacks
+    public void attack(int[][] levelData, Player player) {
+        lancer.attackReset();
+        Anim next = drawNextMove();
+        lancer.setEnemyAction(next);
+        switch (next) {
+            case ATTACK_1, SPELL_1 -> {
+                lancer.prepareForClassicAttack();
+                classicAttack(levelData, player);
+            }
+            case ATTACK_3 -> {
+                lancer.changeAttackBox();
+                dashSlashAttack(levelData, player);
+            }
+            case SPELL_2 -> lightningBallAttack();
+            case SPELL_3 -> thunderSlamAttack();
+            case SPELL_4 -> lancer.setSpecialAttackIndex(multiLightningBallAttack());
+            default -> {}
+        }
+    }
+
+    public void startThunderSlam() {
+        lancer.attackReset();
+        lancer.setEnemyAction(Anim.SPELL_3);
+        thunderSlamAttack();
+    }
+
     private void thunderSlamAttack() {
-        performTeleport(12.5 * TILES_SIZE, 4 * TILES_SIZE);
+        performTeleport(13.5 * TILES_SIZE, 4.5 * TILES_SIZE);
     }
 
     private void lightningBallAttack() {
-        Random rand = new Random();
         double targetX;
         if (rand.nextInt(2) == 0) {
             lancer.setDirection(Direction.LEFT);
-            targetX = 23 * TILES_SIZE;
+            targetX = 22 * TILES_SIZE;
         }
         else {
             lancer.setDirection(Direction.RIGHT);
-            targetX = 3 * TILES_SIZE;
+            targetX = 3.5 * TILES_SIZE;
         }
         performTeleport(targetX, lancer.getYPos());
     }
@@ -79,8 +104,8 @@ public class LancerAttackHandler {
     }
 
     private int multiLightningBallAttack() {
-        performTeleport(12.5 * TILES_SIZE, 4 * TILES_SIZE);
-        return new Random().nextInt(2);
+        performTeleport(13.5 * TILES_SIZE, 4.5 * TILES_SIZE);
+        return rand.nextInt(2);
     }
 
     private void classicAttack(int[][] levelData, Player player) {
@@ -88,34 +113,26 @@ public class LancerAttackHandler {
         lancer.setAttackCooldown(5.5);
     }
 
-    public void attack(int[][] levelData, Player player, Anim prevAnim) {
-        Random rand = new Random();
-        lancer.attackReset();
+    public void teleport(int[][] levelData, Player player, int tiles) {
+        double playerX = player.getHitBox().x;
+        double rightTeleport = playerX + tiles * TILES_SIZE;
+        double leftTeleport = playerX - tiles * TILES_SIZE;
+        int k = rand.nextInt(2);
+        doTeleport(levelData, k, rightTeleport, leftTeleport);
+        lancer.setDirection((playerX < hitBox.x) ? Direction.LEFT : Direction.RIGHT);
+    }
 
-        Anim next;
-        do {
-            next = actions.get(rand.nextInt(actions.size()));
-        } while (next == prevAnim || next == Anim.ATTACK_2);
-        lancer.setEnemyAction(next);
-
-        switch (lancer.getEnemyAction()) {
-            case ATTACK_1:
-            case SPELL_1:
-                lancer.prepareForClassicAttack();
-                classicAttack(levelData, player); break;
-            case ATTACK_3:
-                lancer.changeAttackBox();
-                dashSlashAttack(levelData, player); break;
-            case SPELL_2:
-                lightningBallAttack(); break;
-            case SPELL_3:
-                thunderSlamAttack(); break;
-            case SPELL_4:
-                lancer.setSpecialAttackIndex(multiLightningBallAttack()); break;
-            default: break;
-
-        }
-
+    private void doTeleport(int[][] levelData, int k, double rightTeleport, double leftTeleport) {
+        double targetX = hitBox.x;
+        if (k == 0 && canMoveHere(rightTeleport, lancer.getYPos(), hitBox.width, hitBox.height, levelData))
+            targetX = rightTeleport;
+        else if (k == 0 && canMoveHere(leftTeleport, lancer.getYPos(), hitBox.width, hitBox.height, levelData))
+            targetX = leftTeleport;
+        else if (k == 1 && canMoveHere(leftTeleport, lancer.getYPos(), hitBox.width, hitBox.height, levelData))
+            targetX = leftTeleport;
+        else if (k == 1 && canMoveHere(rightTeleport, lancer.getYPos(), hitBox.width, hitBox.height, levelData))
+            targetX = rightTeleport;
+        performTeleport(targetX, lancer.getYPos());
     }
 
     private void performTeleport(double newX, double newY) {
@@ -124,5 +141,4 @@ public class LancerAttackHandler {
         hitBox.y = newY;
         EventBus.getInstance().publish(new LancerTeleportEvent(new Point((int) hitBox.getCenterX(), (int) hitBox.getCenterY()), true));
     }
-
 }

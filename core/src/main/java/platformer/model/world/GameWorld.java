@@ -77,6 +77,9 @@ public class GameWorld {
             int levelWidth = levelManager.getCurrentLevel().getLevelTilesWidth() * TILES_SIZE;
             int levelHeight = levelManager.getCurrentLevel().getLevelTilesHeight() * TILES_SIZE;
             effectManager.reinitializeAmbientParticles(levelWidth, levelHeight);
+            // TODO: Temporary
+            boolean isStormPeak = metadata != null && "FOREST_STORM_PEAK".equals(metadata.getBackgroundId());
+            effectManager.setStormPeakMode(isStormPeak);
         }
     }
 
@@ -158,6 +161,7 @@ public class GameWorld {
         effectManager.reset();
         lightManager.reset();
         rainManager.reset();
+        timeCycleManager.reset();
         reinitializeParticles();
     }
 

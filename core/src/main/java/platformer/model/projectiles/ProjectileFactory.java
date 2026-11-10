@@ -74,32 +74,68 @@ public final class ProjectileFactory {
         addProjectile(new CelestialOrb(spawnX, spawnY, angle));
     }
 
-    public static void createLightningBall(Lancer lancer) {
-        Direction direction = (lancer.getFlipSign() == 1) ? Direction.LEFT : Direction.RIGHT;
-        addProjectile(new LightningBall((int) lancer.getHitBox().x, (int) lancer.getHitBox().y, direction));
+    public static void createLightningBall(Lancer lancer, int shotIndex) {
+        Direction dir = lancer.getDirection();
+        double dirSign = (dir == Direction.LEFT) ? -1.0 : 1.0;
+        int handX = (int) (lancer.getHitBox().getCenterX() + dirSign * (20 * SCALE));
+        int handY = (int) (lancer.getHitBox().getCenterY() - 2 * SCALE);
+        double baseAngle = (dir == Direction.LEFT) ? Math.PI : 0.0;
+        double speed = 1.18 * SCALE;
+
+        if (shotIndex == 0) {
+            addProjectiles(new Projectile[]{
+                    new LightningBall(handX, handY, dir, LightningBall.Mode.SPEAR_HURL_LOW),
+                    new LightningBall(handX, handY, baseAngle - dirSign * Math.toRadians(22), speed, 1, false)
+            });
+        }
+        else if (shotIndex == 1) {
+            addProjectiles(new Projectile[]{
+                    new LightningBall(handX, handY, baseAngle - dirSign * Math.toRadians(10), speed, 1, false),
+                    new LightningBall(handX, handY, baseAngle - dirSign * Math.toRadians(26), speed, 1, false)
+            });
+        }
+        else {
+            addProjectiles(new Projectile[]{
+                    new LightningBall(handX, handY, dir, LightningBall.Mode.SPEAR_HURL_LOW),
+                    new LightningBall(handX, handY, baseAngle - dirSign * Math.toRadians(16), speed * 1.05, 1, false),
+                    new LightningBall(handX, handY, baseAngle - dirSign * Math.toRadians(30), speed * 1.05, 1, false)
+            });
+        }
     }
 
     public static void createTrackingLightningBall(Lancer lancer) {
-        addProjectile(new LightningBall((int)(lancer.getHitBox().x/1.1), (int)(lancer.getHitBox().y*1.3), Direction.TRACK));
+        int cx = (int) lancer.getHitBox().getCenterX();
+        int cy = (int) lancer.getHitBox().getCenterY();
+        double speed = 1.35 * SCALE;
+        addProjectiles(new Projectile[]{
+                new LightningBall(cx, cy, Math.toRadians(55), speed, 2, true),
+                new LightningBall(cx, cy, Math.toRadians(90), speed, 2, true),
+                new LightningBall(cx, cy, Math.toRadians(125), speed, 2, true)
+        });
     }
 
     public static void createMultiLightningBallVariation1(Lancer lancer) {
-        double x = lancer.getHitBox().x, y = lancer.getHitBox().y;
-        addProjectiles(new Projectile[]{
-                new LightningBall((int)(x / 1.1), (int)(y * 1.3), Direction.DOWN),
-                new LightningBall((int)x, (int)(y * 1.3), Direction.DEGREE_45),
-                new LightningBall((int)(x * 1.1), (int)(y * 1.2), Direction.DEGREE_30),
-                new LightningBall((int)(x / 1.23), (int)(y * 1.3), Direction.N_DEGREE_45),
-                new LightningBall((int)(x / 1.38), (int)(y * 1.2), Direction.N_DEGREE_30)
-        });
+        int cx = (int) lancer.getHitBox().getCenterX();
+        int cy = (int) lancer.getHitBox().getCenterY();
+        double speed = 1.35 * SCALE;
+        double[] anglesDeg = {30, 60, 90, 120, 150};
+        Projectile[] volley = new Projectile[anglesDeg.length];
+        for (int i = 0; i < anglesDeg.length; i++) {
+            volley[i] = new LightningBall(cx, cy, Math.toRadians(anglesDeg[i]), speed, 2, true);
+        }
+        addProjectiles(volley);
     }
 
     public static void createMultiLightningBallVariation2(Lancer lancer) {
-        double x = lancer.getHitBox().x, y = lancer.getHitBox().y;
-        addProjectiles(new Projectile[]{
-                new LightningBall((int)x, (int)(y * 1.3), Direction.DEGREE_60),
-                new LightningBall((int)(x / 1.15), (int)(y * 1.3), Direction.N_DEGREE_60)
-        });
+        int cx = (int) lancer.getHitBox().getCenterX();
+        int cy = (int) lancer.getHitBox().getCenterY();
+        double speed = 1.35 * SCALE;
+        double[] anglesDeg = {42, 74, 106, 138};
+        Projectile[] volley = new Projectile[anglesDeg.length];
+        for (int i = 0; i < anglesDeg.length; i++) {
+            volley[i] = new LightningBall(cx, cy, Math.toRadians(anglesDeg[i]), speed, 2, true);
+        }
+        addProjectiles(volley);
     }
 
 }

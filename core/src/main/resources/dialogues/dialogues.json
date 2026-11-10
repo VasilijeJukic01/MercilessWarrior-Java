@@ -368,6 +368,18 @@
         "They are terribly cursed and dangerous for a brute like you.",
         "I will gladly take them off your hands for free, purely out of the goodness of my heart."
       ]
+    },
+
+    {
+      "object": "NpcLancer",
+      "id": "lancer_intro_dialogue",
+      "cutsceneOnly": true,
+      "once": false,
+      "lines": [
+        "Halt, wanderer. None cross the Storm Peak while I still draw breath.",
+        "Countless warriors have climbed these roots seeking glory, only to be reduced to ash by my spear.",
+        "Draw your blade! Let the thunder judge if your resolve is real!"
+      ]
     }
   ]
 }

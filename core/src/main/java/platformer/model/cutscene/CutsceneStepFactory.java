@@ -4,6 +4,7 @@ import platformer.audio.Audio;
 import platformer.audio.types.Sound;
 import platformer.core.GameContext;
 import platformer.model.entities.Direction;
+import platformer.model.entities.enemies.boss.Lancer;
 import platformer.model.entities.player.Player;
 import platformer.model.gameObjects.ObjType;
 import platformer.model.gameObjects.npc.Npc;
@@ -63,6 +64,7 @@ public final class CutsceneStepFactory {
                     data.getTarget() != null ? ObjectiveTarget.valueOf(data.getTarget()) : null
             );
             case "RELOAD_LEVEL_VARIANT" -> new ReloadLevelVariantStep();
+            case "START_BOSS_FIGHT" -> new StartBossFightStep();
             default -> new WaitStep(1);
         };
     }
@@ -336,6 +338,22 @@ public final class CutsceneStepFactory {
         public void start(GameContext context) {
             Audio.getInstance().getAudioPlayer().playSound(Sound.CRAFTING);
             context.getLevelManager().reloadCurrentLevelVariant();
+        }
+
+        @Override
+        public boolean update(GameContext context) {
+            return true;
+        }
+    }
+
+    private static class StartBossFightStep implements CutsceneStep {
+        @Override
+        public void start(GameContext context) {
+            context.getEnemyManager().getAllEnemies().stream()
+                    .filter(e -> e instanceof Lancer)
+                    .map(e -> (Lancer) e)
+                    .findFirst()
+                    .ifPresent(lancer -> lancer.engageFight(context.getObjectManager()));
         }
 
         @Override

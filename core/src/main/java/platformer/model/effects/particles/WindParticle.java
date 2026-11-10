@@ -11,6 +11,13 @@ import static platformer.constants.Constants.*;
  */
 public class WindParticle {
 
+    private static final Color[] STORM_PALETTE = {
+            new Color(80, 245, 255),
+            new Color(195, 250, 255),
+            new Color(30, 180, 255),
+            new Color(150, 130, 255)
+    };
+
     private final int levelWidth, levelHeight;
     private double x, y;
     private double xDrift;
@@ -24,6 +31,7 @@ public class WindParticle {
     private double angle;
     private double amplitude;
     private double frequency;
+    private boolean stormPeakMode = false;
 
     private final double parallaxFactor = 0.8;
 
@@ -33,32 +41,31 @@ public class WindParticle {
         reset(true);
     }
 
-    /**
-     * Resets the particle's state. This is used for initialization and when the particle wraps around the screen.
-     *
-     * @param isInitial If true, the particle can spawn anywhere in the level.
-     */
+    public void setStormPeakMode(boolean stormPeakMode) {
+        if (this.stormPeakMode != stormPeakMode) {
+            this.stormPeakMode = stormPeakMode;
+            reset(true);
+        }
+    }
+
     public void reset(boolean isInitial) {
-        this.size = (int)((rand.nextInt(3) + 1) * SCALE);
-
-        this.ySpeed = (0.2 + rand.nextDouble() * 0.3) * SCALE;
-        if (rand.nextBoolean()) this.ySpeed *= -1;
-
-        this.xDrift = (rand.nextDouble() - 0.5) * 0.1 * SCALE;
-        this.alpha = rand.nextFloat() * 0.4f + 0.5f;
-
-        if (rand.nextInt(10) < 9) this.color = new Color(255, 240, 180);
-        else this.color = new Color(255, 200, 110);
-
-        if (isInitial) {
-            this.baseX = rand.nextInt(levelWidth);
-            this.y = rand.nextInt(levelHeight);
+        this.size = (int) ((rand.nextInt(3) + 1) * SCALE);
+        this.alpha = rand.nextFloat() * 0.45f + 0.45f;
+        if (stormPeakMode) {
+            this.ySpeed = -(0.28 + rand.nextDouble() * 0.42) * SCALE;
+            this.xDrift = (rand.nextDouble() - 0.5) * 0.08 * SCALE;
+            this.color = STORM_PALETTE[rand.nextInt(STORM_PALETTE.length)];
         }
         else {
-            this.baseX = rand.nextInt(levelWidth);
-            if (ySpeed > 0) this.y = -size;
-            else this.y = levelHeight;
+            this.ySpeed = (0.2 + rand.nextDouble() * 0.3) * SCALE;
+            if (rand.nextBoolean()) this.ySpeed *= -1;
+            this.xDrift = (rand.nextDouble() - 0.5) * 0.1 * SCALE;
+            this.color = (rand.nextInt(10) < 9) ? new Color(255, 240, 180) : new Color(255, 200, 110);
         }
+
+        this.baseX = rand.nextInt(Math.max(1, levelWidth));
+        if (isInitial) this.y = rand.nextInt(Math.max(1, levelHeight));
+        else this.y = (ySpeed > 0) ? -size : levelHeight + size;
         this.x = this.baseX;
 
         this.angle = rand.nextDouble() * Math.PI * 2;
@@ -71,11 +78,15 @@ public class WindParticle {
      * The particle drifts vertically and sways horizontally using a sine wave.
      */
     public void update() {
-        baseX += xDrift;
-        y += ySpeed;
-        angle += frequency;
+        update(1.0);
+    }
+
+    public void update(double speedMultiplier) {
+        baseX += xDrift * speedMultiplier;
+        y += ySpeed * speedMultiplier;
+        angle += frequency * speedMultiplier;
         x = baseX + Math.sin(angle) * amplitude;
-        if ((ySpeed > 0 && y > levelHeight) || (ySpeed < 0 && y < -size)) {
+        if ((ySpeed > 0 && y > levelHeight + size) || (ySpeed < 0 && y < -size)) {
             reset(false);
         }
     }
@@ -89,16 +100,23 @@ public class WindParticle {
      * @param visibilityMultiplier A multiplier for the particle's alpha to simulate day/night visibility.
      */
     public void render(Graphics2D g2d, int xLevelOffset, int yLevelOffset, float visibilityMultiplier) {
-        float finalAlpha = alpha * visibilityMultiplier;
+        float pulse = stormPeakMode ? (float) (0.75 + 0.25 * Math.sin(angle * 2.5)) : 1.0f;
+        float finalAlpha = alpha * visibilityMultiplier * pulse;
         if (finalAlpha <= 0.02f) return;
-
-        Composite originalComposite = g2d.getComposite();
-        g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, Math.min(1.0f, finalAlpha)));
-        g2d.setColor(this.color);
 
         int renderX = (int) (this.x - (xLevelOffset * parallaxFactor));
         int renderY = (int) (this.y - (yLevelOffset * parallaxFactor));
 
+        Composite originalComposite = g2d.getComposite();
+        if (stormPeakMode && size >= 2 * SCALE) {
+            g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, Math.min(1.0f, finalAlpha * 0.35f)));
+            g2d.setColor(this.color);
+            int glowSize = size * 3;
+            g2d.fillOval(renderX - glowSize / 3, renderY - glowSize / 3, glowSize, glowSize);
+        }
+
+        g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, Math.min(1.0f, finalAlpha)));
+        g2d.setColor(this.color);
         g2d.fillRect(renderX, renderY, size, size);
         g2d.setComposite(originalComposite);
     }

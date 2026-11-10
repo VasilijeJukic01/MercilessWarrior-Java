@@ -1,8 +1,16 @@
 {
   "backgroundId": "FOREST_STORM_PEAK",
-  "ambientParticlesEnabled": false,
+  "ambientParticlesEnabled": true,
   "tileset": "Forest",
   "biome": "FOREST",
+  "lights": [
+    { "x": 6, "y": 4, "radius": 85, "color": "#00C8FF" },
+    { "x": 9, "y": 4, "radius": 80, "color": "#00E5FF" },
+    { "x": 12, "y": 4, "radius": 85, "color": "#00C8FF" },
+    { "x": 17, "y": 4, "radius": 85, "color": "#00E5FF" },
+    { "x": 20, "y": 4, "radius": 80, "color": "#00C8FF" },
+    { "x": 23, "y": 4, "radius": 85, "color": "#00E5FF" }
+  ],
   "decorations": [
     {
       "x": 5,

@@ -9,18 +9,12 @@ import platformer.model.gameObjects.npc.Npc;
 import platformer.model.gameObjects.npc.NpcType;
 import platformer.model.gameObjects.objects.Container;
 import platformer.model.gameObjects.objects.*;
-import platformer.model.spells.types.Flash;
-import platformer.model.spells.types.Lightning;
-import platformer.model.spells.Spell;
-import platformer.model.spells.SpellType;
-import platformer.utils.CollectionUtils;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.*;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static platformer.constants.Constants.*;
 
@@ -39,7 +33,6 @@ public class Level {
     // Items
     private final Map<EnemyType, List<Enemy>> enemiesMap = new HashMap<>();
     private final Map<ObjType, List<GameObject>> objectsMap = new HashMap<>();
-    private final Map<SpellType, List<Spell>> spellsMap = new HashMap<>();
     private final Set<Point> cutDecorations = new HashSet<>();
     private final Map<Point, Double> decorationBends = new HashMap<>();
 
@@ -78,7 +71,6 @@ public class Level {
 
                 getEnemyData(i, j, colorP1.getGreen());
                 getObjectData(i, j, colorP1.getBlue(), colorP3);
-                getSpellData(i, j, colorP1.getGreen(), colorP1.getBlue());
             }
         }
         getTriggerData(panelWidth);
@@ -176,16 +168,6 @@ public class Level {
         }
     }
 
-    private void getSpellData(int i, int j, int valueG, int valueB) {
-        // 100 : >100 Rule
-        if (valueG == 100 && valueB == 101) {
-            addSpell(new Lightning(SpellType.LIGHTNING, i*TILES_SIZE, j*TILES_SIZE));
-        }
-        else if (valueG == 100 && valueB == 102) {
-            addSpell(new Flash(SpellType.FLASH, i*TILES_SIZE, (j+1)*TILES_SIZE));
-        }
-    }
-
     private void addGameObject(GameObject gameObject) {
         ObjType type = gameObject.getObjType();
         objectsMap.computeIfAbsent(type, k -> new ArrayList<>()).add(gameObject);
@@ -194,11 +176,6 @@ public class Level {
     private void addEnemy(Enemy enemy) {
         EnemyType type = enemy.getEnemyType();
         enemiesMap.computeIfAbsent(type, k -> new ArrayList<>()).add(enemy);
-    }
-
-    private void addSpell(Spell spell) {
-        SpellType type = spell.getSpellType();
-        spellsMap.computeIfAbsent(type, k -> new ArrayList<>()).add(spell);
     }
 
     // Data Gatherer
@@ -324,7 +301,6 @@ public class Level {
     private void reset() {
         enemiesMap.clear();
         objectsMap.clear();
-        spellsMap.clear();
         triggers.clear();
         cutDecorations.clear();
         decorationBends.clear();
@@ -388,17 +364,6 @@ public class Level {
         // Fallback
         if (!spawnPoints.isEmpty()) return spawnPoints.values().iterator().next();
         return new Point(5 * TILES_SIZE, 8 * TILES_SIZE);
-    }
-
-    private List<Spell> getAllSpells() {
-        return CollectionUtils.getAllItems(spellsMap);
-    }
-
-    public <T> List<T> getSpells(Class<T> spellType) {
-        return getAllSpells().stream()
-                .filter(spellType::isInstance)
-                .map(spellType::cast)
-                .collect(Collectors.toList());
     }
 
     public Map<EnemyType, List<Enemy>> getEnemiesMap() {

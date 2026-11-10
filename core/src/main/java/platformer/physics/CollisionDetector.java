@@ -4,6 +4,7 @@ import platformer.model.entities.Direction;
 import platformer.model.projectiles.types.LightningBall;
 import platformer.model.projectiles.Projectile;
 
+import java.awt.*;
 import java.awt.geom.Rectangle2D;
 
 import static platformer.constants.Constants.*;
@@ -311,10 +312,15 @@ public final class CollisionDetector {
      * @return {@code true} if the projectile is hitting a solid tile, {@code false} otherwise.
      */
     public static boolean isProjectileHitLevel(int[][] lvlData, Projectile projectile) {
-        double wid = projectile.getShapeBounds().getBounds().width;
-        double hei = projectile.getShapeBounds().getBounds().height;
-        if (projectile instanceof LightningBall) hei = ARROW_HEI;
-        return isSolid(projectile.getShapeBounds().getBounds().x + wid, projectile.getShapeBounds().getBounds().y + hei, lvlData);
+        Rectangle bounds = projectile.getShapeBounds().getBounds();
+        if (projectile instanceof LightningBall) {
+            double centerX = bounds.getCenterX(), centerY = bounds.getCenterY();
+            if (centerX <= TILES_SIZE * 2 || centerX >= (lvlData.length - 2) * TILES_SIZE) {
+                return isSolid(centerX, centerY, lvlData);
+            }
+            return centerY >= (lvlData[0].length - 1) * TILES_SIZE;
+        }
+        return isSolid(bounds.x + bounds.width, bounds.y + bounds.height, lvlData);
     }
 
     /**

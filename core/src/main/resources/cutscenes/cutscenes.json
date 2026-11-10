@@ -56,5 +56,20 @@
       { "type": "DIALOGUE", "dialogueId": "anita_restoration_complete", "speaker": "ANITA" },
       { "type": "COMPLETE_OBJECTIVE", "questName": "Rebuilding Deepmoss", "objectiveType": "INTERACT", "target": "ANITA" }
     ]
+  },
+  {
+    "id": "lancer_intro",
+    "triggerType": "CUTSCENE_TILE",
+    "levelId": "forest03",
+    "onceFlag": "CS_LANCER_INTRO",
+    "steps": [
+      { "type": "LETTERBOX", "active": true },
+      { "type": "CAMERA_PAN", "tileX": 18, "tileY": 8, "duration": 180 },
+      { "type": "WAIT", "duration": 40 },
+      { "type": "DIALOGUE", "dialogueId": "lancer_intro_dialogue", "speaker": "LANCER" },
+      { "type": "CAMERA_RESET", "duration": 140 },
+      { "type": "LETTERBOX", "active": false },
+      { "type": "START_BOSS_FIGHT" }
+    ]
   }
 ]
