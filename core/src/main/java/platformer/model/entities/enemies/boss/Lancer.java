@@ -2,9 +2,6 @@ package platformer.model.entities.enemies.boss;
 
 import platformer.animation.Anim;
 import platformer.animation.SpriteManager;
-import platformer.audio.Audio;
-import platformer.audio.types.Song;
-import platformer.audio.types.Sound;
 import platformer.event.EventBus;
 import platformer.event.events.effects.ScreenShakeEvent;
 import platformer.event.events.lancer.LancerAuraEvent;
@@ -14,6 +11,8 @@ import platformer.model.entities.Direction;
 import platformer.model.entities.Entity;
 import platformer.model.entities.enemies.Enemy;
 import platformer.model.entities.enemies.EnemyType;
+import platformer.model.entities.enemies.boss.lancer.LancerAttackHandler;
+import platformer.model.entities.enemies.boss.lancer.LancerAudioHandler;
 import platformer.model.entities.player.Player;
 import platformer.model.gameObjects.ObjectManager;
 import platformer.model.projectiles.ProjectileFactory;
@@ -30,6 +29,7 @@ import static platformer.physics.CollisionDetector.*;
 public class Lancer extends Enemy {
 
     private final LancerAttackHandler handler;
+    private final LancerAudioHandler audioHandler;
 
     private int attackOffset;
     private boolean start = false;
@@ -54,7 +54,8 @@ public class Lancer extends Enemy {
         initHitBox(LANCER_HB_WID, LANCER_HB_HEI);
         initAttackBox();
         super.cooldown = new double[1];
-        this.handler = new LancerAttackHandler(this);
+        this.audioHandler = new LancerAudioHandler();
+        this.handler = new LancerAttackHandler(this, audioHandler);
     }
 
     // Init
@@ -83,6 +84,7 @@ public class Lancer extends Enemy {
         if (entityState == Anim.DEATH || !alive) return false;
         currentHealth -= damage;
         slashCount = 0;
+        audioHandler.playHitGrunt();
         if (currentHealth <= 0) {
             EventBus.getInstance().publish(new LancerAuraEvent(this, false));
             setEnemyAction(Anim.DEATH);
@@ -125,11 +127,12 @@ public class Lancer extends Enemy {
 
     private void classicAttackAction(int[][] levelData, Player player) {
         if (animIndex == 0 && animTick == 0) {
-            Audio.getInstance().getAudioPlayer().playSound(Sound.LANCER_ROAR_2);
+            audioHandler.playBattleCry();
             attackCheck = false;
         }
         if (animIndex == 2) {
             if (animTick == 0) {
+                audioHandler.playClassicSwing();
                 EventBus.getInstance().publish(new ScreenShakeEvent(7, 4.5));
                 EventBus.getInstance().publish(new LancerAuraEvent(this, LancerAuraEvent.EffectType.BLADE_SWING));
             }
@@ -143,7 +146,7 @@ public class Lancer extends Enemy {
         if (slashCount == 0) dashSlash(levelData);
         else if (animIndex == 2) {
             if (animTick == 0) {
-                Audio.getInstance().getAudioPlayer().playSound(Sound.LANCER_ROAR_1);
+                audioHandler.playFollowUpSwing();
                 EventBus.getInstance().publish(new ScreenShakeEvent(7, 4.5));
                 EventBus.getInstance().publish(new LancerAuraEvent(this, LancerAuraEvent.EffectType.BLADE_SWING));
             }
@@ -155,6 +158,7 @@ public class Lancer extends Enemy {
     private void dashSlash(int[][] levelData) {
         if (animIndex == 0) attackCheck = false;
         if (animIndex == 2 && !attackCheck) {
+            if (animTick == 0) audioHandler.playDashSlash();
             Point2D.Double startPos = new Point2D.Double(hitBox.getCenterX(), hitBox.y);
             double xSpeed = (direction == Direction.LEFT) ? -enemySpeed : enemySpeed;
             if (canMoveHere(hitBox.x + xSpeed * 80, hitBox.y, hitBox.width, hitBox.height, levelData)) {
@@ -179,14 +183,16 @@ public class Lancer extends Enemy {
     private void rapidSlashAction(int[][] levelData, Player player) {
         if (animIndex == 0 && animTick == 0) {
             facePlayer(player);
-            Audio.getInstance().getAudioPlayer().playSound(Sound.LANCER_ROAR_3);
+            audioHandler.playRapidFlurryStart();
         }
         else if (animIndex == 12 && rapidSlashCount < 1) {
             rapidSlashCount++;
             animIndex = 2;
             facePlayer(player);
+            audioHandler.playBattleCry();
         }
         if (animIndex >= 2 && animIndex <= 11 && animTick == 0 && animIndex % 2 == 0) {
+            audioHandler.playRapidCut(animIndex);
             EventBus.getInstance().publish(new LancerAuraEvent(this, LancerAuraEvent.EffectType.RAPID_THRUST));
             if (animIndex % 4 == 0) {
                 EventBus.getInstance().publish(new ScreenShakeEvent(6, 4.0));
@@ -197,9 +203,10 @@ public class Lancer extends Enemy {
     }
 
     private void lightningBallAction() {
+        if (animIndex == 2 && animTick == 0) audioHandler.playCharge();
         if (animIndex == 7 && !shooting) {
             ProjectileFactory.createLightningBall(this, shootCount);
-            Audio.getInstance().getAudioPlayer().playSound(Sound.LIGHTNING_2);
+            audioHandler.playOrbCast();
             EventBus.getInstance().publish(new ScreenShakeEvent(9, 6.0));
             EventBus.getInstance().publish(new LancerAuraEvent(this, LancerAuraEvent.EffectType.ORB_CAST));
             shooting = true;
@@ -216,14 +223,14 @@ public class Lancer extends Enemy {
             slamTriggered = false;
             attackCheck = false;
         }
+        if (animIndex == 1 && animTick == 0) audioHandler.playCharge();
         if (animIndex >= 12 && animIndex <= 15 && !attackCheck) {
             checkEntityHit(attackBox, player);
         }
-        if (animIndex == 11 && animTick == 0) {
-            Audio.getInstance().getAudioPlayer().playSound(Sound.LANCER_ROAR_2);
-        }
+        if (animIndex == 11 && animTick == 0) audioHandler.playBattleCry();
         else if (animIndex >= 13 && !slamTriggered) {
             slamTriggered = true;
+            audioHandler.playThunderSlamImpact();
             spellManager.activateLightnings();
             EventBus.getInstance().publish(new LancerAuraEvent(this, LancerAuraEvent.EffectType.THUNDER_SLAM_IMPACT));
             EventBus.getInstance().publish(new ScreenShakeEvent(30, 14.0));
@@ -232,6 +239,7 @@ public class Lancer extends Enemy {
 
     private void multiLightningBallAction(SpellManager spellManager) {
         if (multiShootCount == 0 && multiShootFlag == 0 && animIndex == 0 && animTick == 0) {
+            audioHandler.playCharge();
             EventBus.getInstance().publish(new LancerAuraEvent(this, true));
         }
         if (specialAttackIndex == 1) oscillationProjectiles();
@@ -308,8 +316,14 @@ public class Lancer extends Enemy {
     // Projectiles
     private void oscillationProjectiles() {
         if (animIndex == 1 && !shooting) {
-            if (multiShootFlag == 1) ProjectileFactory.createMultiLightningBallVariation1(this);
-            else if (multiShootFlag == 5) ProjectileFactory.createMultiLightningBallVariation2(this);
+            if (multiShootFlag == 1) {
+                ProjectileFactory.createMultiLightningBallVariation1(this);
+                audioHandler.playOrbVolley();
+            }
+            else if (multiShootFlag == 5) {
+                ProjectileFactory.createMultiLightningBallVariation2(this);
+                audioHandler.playOrbVolley();
+            }
             multiShootFlag = (multiShootFlag + 1) % 8;
             shooting = true;
         }
@@ -317,7 +331,10 @@ public class Lancer extends Enemy {
 
     private void trackingProjectiles(SpellManager spellManager) {
         if (animIndex == 1 && !shooting) {
-            if (multiShootFlag == 2) ProjectileFactory.createTrackingLightningBall(this);
+            if (multiShootFlag == 2) {
+                ProjectileFactory.createTrackingLightningBall(this);
+                audioHandler.playOrbVolley();
+            }
             if (multiShootFlag == 0) {
                 if (canFlash) spellManager.activateFlashes();
                 canFlash = !canFlash;
@@ -335,6 +352,7 @@ public class Lancer extends Enemy {
     public void update(int[][] levelData, Player player, Entity follower) {}
 
     public void update(int[][] levelData, Player player, SpellManager spellManager, ObjectManager objectManager, BossInterface bossInterface) {
+        audioHandler.update();
         updateMove(levelData, player, spellManager, objectManager);
         updateAnimation();
         updateAttackBox();
@@ -396,6 +414,7 @@ public class Lancer extends Enemy {
     public void reset() {
         super.reset();
         if (start) setStart(false);
+        audioHandler.reset();
         EventBus.getInstance().publish(new LancerAuraEvent(this, false));
         slamTriggered = false;
         multiShootCount = shootCount = 0;
@@ -419,8 +438,7 @@ public class Lancer extends Enemy {
     // Setters
     public void setStart(boolean start) {
         this.start = start;
-        if (start) Audio.getInstance().getAudioPlayer().playSong(Song.BOSS_1);
-        else Audio.getInstance().getAudioPlayer().playSong(Song.FOREST_1);
+        audioHandler.playBossTheme(start);
     }
 
     public void setAttackCooldown(double value) {

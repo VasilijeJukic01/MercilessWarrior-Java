@@ -1,11 +1,10 @@
-package platformer.model.entities.enemies.boss;
+package platformer.model.entities.enemies.boss.lancer;
 
 import platformer.animation.Anim;
-import platformer.audio.Audio;
-import platformer.audio.types.Sound;
 import platformer.event.EventBus;
 import platformer.event.events.lancer.LancerTeleportEvent;
 import platformer.model.entities.Direction;
+import platformer.model.entities.enemies.boss.Lancer;
 import platformer.model.entities.player.Player;
 
 import java.awt.*;
@@ -21,14 +20,16 @@ import static platformer.physics.CollisionDetector.canMoveHere;
 public class LancerAttackHandler {
 
     private final Lancer lancer;
+    private final LancerAudioHandler audioHandler;
     private final Rectangle2D.Double hitBox;
     private final Random rand = new Random();
 
     private final List<Anim> moveBag = new ArrayList<>();
     private Anim lastMove = null;
 
-    public LancerAttackHandler(Lancer lancer) {
+    public LancerAttackHandler(Lancer lancer, LancerAudioHandler audioHandler) {
         this.lancer = lancer;
+        this.audioHandler = audioHandler;
         this.hitBox = lancer.getHitBox();
         refillBag();
     }
@@ -58,6 +59,7 @@ public class LancerAttackHandler {
         lancer.attackReset();
         Anim next = drawNextMove();
         lancer.setEnemyAction(next);
+
         switch (next) {
             case ATTACK_1, SPELL_1 -> {
                 lancer.prepareForClassicAttack();
@@ -99,7 +101,7 @@ public class LancerAttackHandler {
 
     private void dashSlashAttack(int[][] levelData, Player player) {
         teleport(levelData, player, 8);
-        Audio.getInstance().getAudioPlayer().playSound(Sound.LANCER_ROAR_1);
+        audioHandler.playCharge();
         lancer.setAttackCooldown(5.5);
     }
 
@@ -136,6 +138,7 @@ public class LancerAttackHandler {
     }
 
     private void performTeleport(double newX, double newY) {
+        audioHandler.playTeleport();
         EventBus.getInstance().publish(new LancerTeleportEvent(new Point((int) hitBox.getCenterX(), (int) hitBox.getCenterY()), false));
         hitBox.x = newX;
         hitBox.y = newY;
