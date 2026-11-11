@@ -119,11 +119,11 @@ public class GameWorld {
         }
         lightManager.render(g, xLevelOffset, yLevelOffset);
         effectManager.renderBackgroundEffects(g, xLevelOffset, yLevelOffset);
-        effectManager.renderAmbientEffectsAbove(g, xLevelOffset, yLevelOffset);
         if (!isDarkPhase) enemyManager.render(g, xLevelOffset, yLevelOffset);
         player.render(g, xLevelOffset, yLevelOffset);
         objectManager.secondRender(g, xLevelOffset, yLevelOffset);
         lightManager.renderPostProcessing(g);
+        effectManager.renderAmbientEffectsAbove(g, xLevelOffset, yLevelOffset);
         if (!isDarkPhase) projectileManager.render(g, xLevelOffset, yLevelOffset);
         spellManager.render(g, xLevelOffset, yLevelOffset);
         effectManager.renderForegroundEffects(g, xLevelOffset, yLevelOffset);

@@ -192,6 +192,7 @@ public class EffectManager {
         if (ambientEffectsActive) {
             Arrays.stream(smokeParticles).forEach(SmokeParticle::update);
             if (stormPeakMode) {
+                Arrays.stream(ambientParticles).forEach(AmbientParticle::update);
                 Arrays.stream(windParticles).forEach(p -> p.update(stormIntensity));
             } else {
                 if (nightFactor > 0.02f) {
@@ -266,48 +267,26 @@ public class EffectManager {
         }
     }
 
-
     public void renderAmbientEffectsAbove(Graphics g, int xLevelOffset, int yLevelOffset) {
         if (!ambientEffectsActive) return;
         Graphics2D g2d = (Graphics2D) g;
-        double density = Settings.getInstance().getParticleDensity();
         if (stormPeakMode) {
-            int windLimit = (int) (windParticles.length * density);
-            for (int i = 0; i < windLimit; i++) {
-                windParticles[i].render(g2d, xLevelOffset, yLevelOffset, 1.0f);
-            }
+            Arrays.stream(windParticles).forEach(p -> p.render(g2d, xLevelOffset, yLevelOffset, 1.0f));
             return;
         }
-        if (nightFactor > 0.02f) {
-            int windLimit = (int) (windParticles.length * density);
-            for (int i = 0; i < windLimit; i++) {
-                windParticles[i].render(g2d, xLevelOffset, yLevelOffset, nightFactor);
-            }
-        }
-        if (dayFactor > 0.02f) {
-            int leafLimit = (int) (fallingLeafParticles.length * density);
-            for (int i = 0; i < leafLimit; i++) {
-                fallingLeafParticles[i].render(g2d, xLevelOffset, yLevelOffset, dayFactor);
-            }
-        }
+        if (nightFactor > 0.02f) Arrays.stream(windParticles).forEach(p -> p.render(g2d, xLevelOffset, yLevelOffset, nightFactor));
+        if (dayFactor > 0.02f) Arrays.stream(fallingLeafParticles).forEach(p -> p.render(g2d, xLevelOffset, yLevelOffset, dayFactor));
     }
 
     public void renderAmbientEffects(Graphics g, int xLevelOffset, int yLevelOffset) {
         if (!ambientEffectsActive) return;
         Graphics2D g2d = (Graphics2D) g;
-        double density = Settings.getInstance().getParticleDensity();
-        int smokeLimit = (int) (smokeParticles.length * density);
-        for (int i = 0; i < smokeLimit; i++) {
-            smokeParticles[i].update();
-            smokeParticles[i].render(g2d);
-        }
-        if (nightFactor > 0.02f) {
+        Arrays.stream(smokeParticles).forEach(p -> p.render(g2d));
+        float visibility = stormPeakMode ? 1.0f : nightFactor;
+        if (visibility > 0.02f) {
             Composite old = g2d.getComposite();
-            g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, nightFactor));
-            int dustLimit = (int) (ambientParticles.length * density);
-            for (int i = 0; i < dustLimit; i++) {
-                ambientParticles[i].render(g2d);
-            }
+            g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, visibility));
+            Arrays.stream(ambientParticles).forEach(p -> p.render(g2d));
             g2d.setComposite(old);
         }
     }
