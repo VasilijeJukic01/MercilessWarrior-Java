@@ -121,6 +121,7 @@ public class GameStateController {
         initAction(releaseActions, "Fireball", () -> player.getActionHandler().doFireBall());
         initAction(releaseActions, "Interact", this::interact);
         initAction(releaseActions, "Inventory", this::openInventory);
+        initAction(releaseActions, "Perks", this::openPerks);
         initAction(releaseActions, "Quest", this::openQuests);
         initAction(releaseActions, "Accept", () -> context.getDialogueManager().acceptQuestion());
         initAction(releaseActions, "Decline", () -> context.getDialogueManager().declineQuestion());
@@ -240,6 +241,11 @@ public class GameStateController {
         EventBus.getInstance().publish(new OverlayChangeEvent(PlayingState.INVENTORY));
     }
 
+    private void openPerks() {
+        PlayingState active = context.getGameState().getActiveState();
+        EventBus.getInstance().publish(new OverlayChangeEvent(active == PlayingState.PERKS ? null : PlayingState.PERKS));
+    }
+
     private void openQuests() {
         EventBus.getInstance().publish(new OverlayChangeEvent(PlayingState.QUEST));
     }
@@ -274,6 +280,7 @@ public class GameStateController {
         PlayingState[] breakableStates = {
                 PlayingState.SHOP,
                 PlayingState.BLACKSMITH,
+                PlayingState.PERKS,
                 PlayingState.DIALOGUE,
                 PlayingState.SAVE,
                 PlayingState.INVENTORY,

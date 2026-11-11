@@ -5,6 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.reflect.TypeToken;
 import platformer.audio.Audio;
 import platformer.audio.types.Sound;
+import platformer.core.config.BalanceManager;
 import platformer.model.effects.EffectManager;
 import platformer.model.effects.particles.DustType;
 import platformer.model.entities.enemies.EnemyType;
@@ -64,7 +65,7 @@ public class LootHandler {
      * Generates loot from a defeated enemy.
      */
     public void generateEnemyLoot(Rectangle2D.Double location, EnemyType enemyType) {
-        generateCoins(location);
+        generateCoins(location, enemyType);
         generateLoot(location, enemyType);
     }
 
@@ -74,8 +75,11 @@ public class LootHandler {
      *
      * @param location The location where coins should be spawned.
      */
-    private void generateCoins(Rectangle2D.Double location) {
-        int totalValue = rand.nextInt(11) + 5 + PerksBonus.getInstance().getBonusCoin();
+    private void generateCoins(Rectangle2D.Double location, EnemyType enemyType) {
+        BalanceManager.EnemyBalance eb = BalanceManager.getInstance().getEnemyBalance(enemyType);
+        int range = Math.max(1, eb.getMaxCoins() - eb.getMinCoins() + 1);
+        int baseCoins = eb.getMinCoins() + rand.nextInt(range);
+        int totalValue = baseCoins + PerksBonus.getInstance().getBonusCoin();
 
         while (totalValue > 0) {
             CoinType dropType;

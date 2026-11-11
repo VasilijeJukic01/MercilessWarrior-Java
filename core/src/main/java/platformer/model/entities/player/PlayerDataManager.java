@@ -2,8 +2,8 @@ package platformer.model.entities.player;
 
 import platformer.core.Account;
 import platformer.core.Framework;
+import platformer.core.config.BalanceManager;
 import platformer.model.effects.TimeCycleManager;
-import platformer.model.inventory.InventoryBonus;
 import platformer.model.levels.Spawn;
 import platformer.model.minimap.MinimapManager;
 import platformer.model.perks.PerksBonus;
@@ -59,17 +59,13 @@ public class PlayerDataManager {
     // Core
     public void update(boolean isMinimapVisible) {
         double currentHealth = player.getCurrentHealth();
-        double maxHealth = PLAYER_MAX_HP + PerksBonus.getInstance().getBonusHealth();
-        double equipmentBonusHealth = InventoryBonus.getInstance().getHealth() * maxHealth;
-        maxHealth += equipmentBonusHealth;
-
+        double maxHealth = player.getMaxHealth();
         double currentStamina = player.getCurrentStamina();
-        double maxStamina = PLAYER_MAX_ST + PerksBonus.getInstance().getBonusPower();
-        double equipmentBonusStamina = InventoryBonus.getInstance().getStamina() * maxStamina;
-        maxStamina += equipmentBonusStamina;
+        double maxStamina = player.getMaxStamina();
+        int xpMult = BalanceManager.getInstance().getPlayerBalance().getXpPerLevelMultiplier();
 
         userInterface.setMinimapVisible(isMinimapVisible);
-        userInterface.update(currentHealth, maxHealth, currentStamina, maxStamina, exp, 1000*level);
+        userInterface.update(currentHealth, maxHealth, currentStamina, maxStamina, exp, xpMult * level);
     }
 
     // Actions
@@ -91,12 +87,20 @@ public class PlayerDataManager {
     }
 
     public void changeExp(double value) {
-        exp += (int) (value + PerksBonus.getInstance().getBonusExp());
+        var pb = BalanceManager.getInstance().getPlayerBalance();
+        int xpCapForLevel = pb.getXpPerLevelMultiplier() * level;
+
+        double bonusPct = PerksBonus.getInstance().getBonusExp() / 100.0;
+        exp += (int) Math.round(value * (1.0 + bonusPct));
         exp = Math.max(Math.min(exp, XP_CAP), 0);
-        if (exp > 1000*level) {
-            exp = exp % (1000*level);
+
+        while (exp >= xpCapForLevel) {
+            exp -= xpCapForLevel;
             level++;
-            if (level % 2 == 0) changeUpgradeTokens(1);
+            if (level % Math.max(1, pb.getLevelsPerToken()) == 0) {
+                changeUpgradeTokens(pb.getTokensPerLevel());
+            }
+            xpCapForLevel = pb.getXpPerLevelMultiplier() * level;
             Framework.getInstance().getAccount().setLevel(level);
         }
         Framework.getInstance().getAccount().setExp(exp);

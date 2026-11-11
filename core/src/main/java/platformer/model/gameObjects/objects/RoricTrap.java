@@ -1,5 +1,6 @@
 package platformer.model.gameObjects.objects;
 
+import platformer.core.config.BalanceManager;
 import platformer.model.entities.Direction;
 import platformer.model.gameObjects.GameObject;
 import platformer.model.gameObjects.ObjType;
@@ -11,8 +12,7 @@ public class RoricTrap extends GameObject {
 
     private final Direction direction;
 
-    private int health = 10;
-    public static final int TRAP_DAMAGE = 10;
+    private int health = BalanceManager.getInstance().getCombat().getRoricTrapHealth();
 
     public RoricTrap(int xPos, int yPos, Direction direction) {
         super(ObjType.RORIC_TRAP, xPos, yPos);

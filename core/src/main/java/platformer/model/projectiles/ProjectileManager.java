@@ -1,6 +1,7 @@
 package platformer.model.projectiles;
 
 import platformer.core.GameContext;
+import platformer.core.config.BalanceManager;
 import platformer.model.entities.player.Player;
 import platformer.model.perks.PerksBonus;
 import platformer.model.projectiles.types.*;
@@ -11,7 +12,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static platformer.constants.Constants.*;
 import static platformer.physics.CollisionDetector.isProjectileHitLevel;
 
 /**
@@ -35,7 +35,8 @@ public class ProjectileManager {
                 projectile.updatePosition(player);
                 projectile.updatePosition(player, context.getObjectManager(), lvlData);
                 if (projectile.getShapeBounds().intersects(player.getHitBox())) {
-                    player.changeHealth(-PLAYER_PROJECTILE_DMG, projectile);
+                    double dmg = BalanceManager.getInstance().getCombat().getEnemyProjectileToPlayerDamage();
+                    player.changeHealth(-dmg, projectile);
                     projectile.setAlive(false);
                 }
                 else if (isProjectileHitLevel(lvlData, projectile)) {
@@ -65,8 +66,11 @@ public class ProjectileManager {
     public void checkProjectileDeflect(Rectangle2D.Double attackBox) {
         if (!PerksBonus.getInstance().isDeflect()) return;
         projectiles.stream()
-                .filter(projectile -> projectile.isAlive() && projectile.getShapeBounds().intersects(attackBox))
-                .forEach(projectile -> projectile.setAlive(false));
+                .filter(projectile -> projectile.isAlive() && !(projectile instanceof Fireball) && projectile.getShapeBounds().intersects(attackBox))
+                .forEach(projectile -> {
+                    projectile.setAlive(false);
+                    context.getPlayer().changeStamina(8);
+                });
     }
 
     // Activators

@@ -1,27 +1,26 @@
 package platformer.ui.overlays.controller;
 
-import platformer.model.inventory.item.InventoryItem;
+import platformer.event.EventBus;
+import platformer.event.events.ui.OverlayChangeEvent;
 import platformer.model.inventory.craft.Recipe;
 import platformer.model.inventory.craft.RecipeManager;
+import platformer.model.inventory.item.InventoryItem;
 import platformer.state.types.GameState;
 import platformer.ui.buttons.AbstractButton;
 import platformer.ui.buttons.ButtonType;
 import platformer.ui.overlays.CraftingOverlay;
 
+import javax.swing.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 
 import static platformer.constants.Constants.*;
 import static platformer.constants.UI.*;
 
-//Javadoc this
-
 /**
- * Handles the logic for the crafting overlay in the game.
- * It manages user interactions to navigate through the crafting recipes and perform crafting actions.
+ * Handles the logic for the Alchemy & Material Crafting Table overlay.
  */
 public class CraftingViewController {
 
@@ -40,10 +39,13 @@ public class CraftingViewController {
     public void mousePressed(MouseEvent e) {
         setMousePressed(e, craftingOverlay.getSmallButtons());
         setMousePressed(e, craftingOverlay.getMediumButtons());
-        changeSlot(e);
+        if (changeSlot(e) && SwingUtilities.isRightMouseButton(e)) {
+            craftItem();
+        }
     }
 
     public void mouseReleased(MouseEvent e) {
+        if (SwingUtilities.isRightMouseButton(e)) return;
         releaseSmallButtons(e);
         releaseMediumButtons(e);
         Arrays.stream(craftingOverlay.getSmallButtons()).forEach(AbstractButton::resetMouseSet);
@@ -55,9 +57,7 @@ public class CraftingViewController {
         setMouseMoved(e, craftingOverlay.getMediumButtons());
     }
 
-    public void keyPressed(KeyEvent e) {
-
-    }
+    public void keyPressed(KeyEvent e) {}
 
     public void keyReleased(KeyEvent e) {
         switch (e.getKeyCode()) {
@@ -65,11 +65,10 @@ public class CraftingViewController {
             case KeyEvent.VK_DOWN -> moveDown();
             case KeyEvent.VK_LEFT -> moveLeft();
             case KeyEvent.VK_RIGHT -> moveRight();
-            case KeyEvent.VK_C -> craftItem();
+            case KeyEvent.VK_C, KeyEvent.VK_ENTER -> craftItem();
         }
     }
 
-    // Actions
     private void releaseSmallButtons(MouseEvent e) {
         for (AbstractButton button : craftingOverlay.getSmallButtons()) {
             if (isMouseInButton(e, button) && button.isMousePressed()) {
@@ -83,8 +82,10 @@ public class CraftingViewController {
     private void releaseMediumButtons(MouseEvent e) {
         for (AbstractButton button : craftingOverlay.getMediumButtons()) {
             if (isMouseInButton(e, button) && button.isMousePressed()) {
-                if (Objects.requireNonNull(button.getButtonType()) == ButtonType.CRAFT) {
+                if (button.getButtonType() == ButtonType.CRAFT) {
                     craftItem();
+                } else if (button.getButtonType() == ButtonType.CLOSE) {
+                    EventBus.getInstance().publish(new OverlayChangeEvent(null));
                 }
             }
         }
@@ -92,14 +93,15 @@ public class CraftingViewController {
 
     private void craftItem() {
         List<Recipe> recipes = RecipeManager.getInstance().getRecipes();
-        if (slotNumber >= recipes.size()) return;
-        Recipe recipe = recipes.get(slotNumber);
+        int absSlot = slotNumber + (craftingSlot * (INVENTORY_SLOT_MAX_ROW * INVENTORY_SLOT_MAX_COL));
+        if (absSlot >= recipes.size()) return;
+        Recipe recipe = recipes.get(absSlot);
         if (recipe == null) return;
         InventoryItem itemToCraft = new InventoryItem(recipe.getOutput(), recipe.getAmount());
         gameState.getPlayer().getInventory().craftItem(itemToCraft, recipe.getIngredients());
     }
 
-    private void changeSlot(MouseEvent e) {
+    private boolean changeSlot(MouseEvent e) {
         for (int j = 0; j < INVENTORY_SLOT_MAX_COL; j++) {
             for (int i = 0; i < INVENTORY_SLOT_MAX_ROW; i++) {
                 int xStart = i * SLOT_SPACING + BACKPACK_SLOT_X;
@@ -110,10 +112,11 @@ public class CraftingViewController {
                 if (e.getX() >= xStart && e.getX() <= xEnd && e.getY() >= yStart && e.getY() <= yEnd) {
                     slotNumber = i + (j * INVENTORY_SLOT_MAX_ROW);
                     craftingOverlay.updateSelectedSlot();
-                    return;
+                    return true;
                 }
             }
         }
+        return false;
     }
 
     private void moveUp() {
@@ -143,8 +146,8 @@ public class CraftingViewController {
     }
 
     private void nextCraftingSlot() {
-        int maxPages = (int)Math.ceil((double)RecipeManager.getInstance().getRecipes().size() / (INVENTORY_SLOT_MAX_ROW * INVENTORY_SLOT_MAX_COL));
-        this.craftingSlot = Math.min(craftingSlot + 1, maxPages-1);
+        int maxPages = Math.max(1, (int) Math.ceil((double) RecipeManager.getInstance().getRecipes().size() / (INVENTORY_SLOT_MAX_ROW * INVENTORY_SLOT_MAX_COL)));
+        this.craftingSlot = Math.min(craftingSlot + 1, maxPages - 1);
     }
 
     // Helpers
@@ -161,7 +164,6 @@ public class CraftingViewController {
         return button.getButtonHitBox().contains(e.getPoint());
     }
 
-    // Getters
     public int getCraftingSlot() {
         return craftingSlot;
     }

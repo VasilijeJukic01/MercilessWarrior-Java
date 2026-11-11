@@ -1,30 +1,34 @@
 [
   {
-    "output": "IRON_INGOT",
+    "output": "HEALTH_POTION",
     "amount": 1,
     "ingredients": {
-      "IRON_ORE": 2
+      "WILD_GRASS": 2,
+      "SUN_KISSED_BERRY": 1
     }
   },
   {
-    "output": "GOLD_INGOT",
+    "output": "STAMINA_POTION",
     "amount": 1,
     "ingredients": {
-      "GOLD_ORE": 2
+      "WILD_GRASS": 2,
+      "CAVERN_BEANS": 1
     }
   },
   {
-    "output": "NAILS",
-    "amount": 10,
+    "output": "HEALTH_POTION",
+    "amount": 3,
     "ingredients": {
-      "IRON_INGOT": 1
+      "BLOOD_VEIN_LEAF": 1,
+      "MENDERS_BERRY": 1
     }
   },
   {
-    "output": "GOLD_POWDER",
-    "amount": 1,
+    "output": "STAMINA_POTION",
+    "amount": 3,
     "ingredients": {
-      "GOLD_INGOT": 1
+      "FAE_LEAF": 1,
+      "GLIMMER_ROOT_BERRY": 1
     }
   },
   {
@@ -35,6 +39,37 @@
     }
   },
   {
+    "output": "TWINE",
+    "amount": 2,
+    "ingredients": {
+      "WILD_GRASS": 2
+    }
+  },
+  {
+    "output": "ROPE",
+    "amount": 1,
+    "ingredients": {
+      "TWINE": 3,
+      "GOBLINS_IVY": 1
+    }
+  },
+  {
+    "output": "LINEN_ROLL",
+    "amount": 1,
+    "ingredients": {
+      "COTTON_TUFTS": 2,
+      "TWINE": 1
+    }
+  },
+  {
+    "output": "LEATHER",
+    "amount": 1,
+    "ingredients": {
+      "GHOUL_CLAW": 2,
+      "BONES": 2
+    }
+  },
+  {
     "output": "LEATHER_STRAPS",
     "amount": 3,
     "ingredients": {
@@ -42,34 +77,37 @@
     }
   },
   {
-    "output": "LINEN_ROLL",
+    "output": "SILK",
     "amount": 1,
     "ingredients": {
-      "COTTON": 3
+      "LINEN_ROLL": 1,
+      "GHOST_LEAF": 1,
+      "WRAITH_ESSENCE": 1
     }
   },
   {
-    "output": "ROPE",
+    "output": "CRIMSON_CRYSTAL",
     "amount": 1,
     "ingredients": {
-      "TWINE": 4
+      "JADE_SHARD": 2,
+      "BLOOD_VEIN_LEAF": 1
     }
   },
   {
-    "output": "ARMOR_GUARDIAN",
+    "output": "EMBER_CRYSTAL",
     "amount": 1,
     "ingredients": {
-      "IRON_ORE": 3,
-      "SONIC_QUARTZ_ORE": 1,
-      "ELECTRICITE_ORE": 1
+      "CRIMSON_CRYSTAL": 1,
+      "GRAVE_WORT_BERRY": 2
     }
   },
   {
-    "output": "RING_AMETHYST",
+    "output": "SOUL_GEM_FRAGMENT",
     "amount": 1,
     "ingredients": {
-      "COPPER_ORE": 4,
-      "AMETHYST_ORE": 3
+      "WRAITH_ESSENCE": 3,
+      "GLOOMSHROOM": 1,
+      "VOID_GRAPES": 1
     }
   }
 ]

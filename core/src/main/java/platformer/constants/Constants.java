@@ -59,8 +59,6 @@ public final class Constants {
     public static final int PLAYER_HB_OFFSET_Y = scale(16);
 
     public static final int XP_CAP = 10000;
-    public static final int PLAYER_MAX_HP = 100;
-    public static final int PLAYER_MAX_ST = 100;
     public static final double PLAYER_SPEED = dScale(0.65);
     public static final double LAVA_PLAYER_SPEED = dScale(0.3);
     public static final double PLAYER_BOOST = dScale(0.65);
@@ -69,10 +67,6 @@ public final class Constants {
     public static final double PUSH_LIMIT = -30;
     public static final double PUSH_SPEED = 0.95;
     public static final double DASH_SPEED = 6;
-    public static final double FLAME_COST = -0.20;
-    public static final double TRANSFORM_COST = -0.025;
-
-    public static final double LAVA_DMG = 0.5;
 
     // Minimap Constants
     public static final double MIN_ZOOM = 1.0;
@@ -91,10 +85,6 @@ public final class Constants {
 
     // Cooldown Constants
     public static final double COOLDOWN_TICK = 0.1;
-    public static final double PLAYER_ATTACK_CD = 0.75;
-    public static final double PLAYER_BLOCK_CD = 1.2;
-    public static final double PLAYER_DASH_CD = 1.75;
-    public static final double PLAYER_SPELL_CD = 2.5;
 
     public static final double RORIC_IDLE_COOLDOWN = 10.0;
 
@@ -188,9 +178,6 @@ public final class Constants {
     public static final int FOLLOWER_Y_OFFSET = (int)(88 * SCALE);
 
     // Object Constants
-    public static final int HEAL_POTION_VAL = 15;
-    public static final int STAMINA_POTION_VAL = 10;
-
     public static final int CONTAINER_WID = scale(40);
     public static final int CONTAINER_HEI = scale(30);
     public static final int BOX_HB_WID = scale(25);
@@ -337,12 +324,6 @@ public final class Constants {
     public static final int LB_HEI = scale(60);
     public static final double LB_SPEED_FAST = dScale(1);
     public static final double LB_SPEED_SLOW = dScale(0.5);
-    public static final int LB_OFFSET_X = scale(40);
-    public static final int LB_OFFSET_Y = scale(15);
-
-    public static final int LB_PERIOD = scale(50);
-    public static final double LB_T = dScale(1);
-    public static final int LB_D = scale(25);
 
     public static final int FB_WID = scale(50);
     public static final int FB_HEI = scale(50);
@@ -351,9 +332,6 @@ public final class Constants {
     public static final double FIREBALL_SPEED = dScale(1.5);
 
     public static final int TRACKING_PROJECTILE_DISTANCE = scale(50);
-    public static final int ENEMY_PROJECTILE_DMG = 5;
-    public static final int FIREBALL_PROJECTILE_DMG = 10;
-    public static final int PLAYER_PROJECTILE_DMG = 10;
 
     public static final int RORIC_BEAM_WID = scale(800);
     public static final int RORIC_BEAM_HEI = scale(148);
@@ -393,7 +371,6 @@ public final class Constants {
 
     public static final int FLASH_WIDTH = scale(48);
     public static final int FLASH_HEIGHT = scale(192);
-    public static final int FLASH_OFFSET_X = (int)(FLASH_WIDTH / 2.4);
 
     // Button Constants
     public static final int BIG_BTN_WID = scale(136);
@@ -419,7 +396,7 @@ public final class Constants {
     public static final int FONT_LIGHT = scale(8);
     public static final int FONT_SMALL = scale(7);
     public static final int SHOP_SLOT_MAX_ROW = 4, SHOP_SLOT_MAX_COL = 5;
-    public static final int PERK_SLOT_MAX_ROW = 4, PERK_SLOT_MAX_COL = 7;
+    public static final int PERK_SLOT_MAX_ROW = 5, PERK_SLOT_MAX_COL = 7;
     public static final int INVENTORY_SLOT_MAX_ROW = 5, INVENTORY_SLOT_MAX_COL = 5;
     public static final int EQUIPMENT_SLOT_MAX_ROW = 2, EQUIPMENT_SLOT_MAX_COL = 3;
     public static final int SLOT_SPACING = scale(40);

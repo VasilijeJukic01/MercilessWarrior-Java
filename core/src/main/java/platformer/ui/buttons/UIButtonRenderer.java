@@ -5,10 +5,10 @@ import java.awt.geom.Arc2D;
 import java.awt.geom.Path2D;
 import java.io.InputStream;
 
-import static platformer.constants.Constants.SCALE;
+import static platformer.constants.Constants.*;
 
 /**
- * Renders runic typography and crisp vector icons onto the blank stone button plaques.
+ * Renders runic typography, crisp vector icons, and procedural dark-slate UI plaques/slots.
  */
 public final class UIButtonRenderer {
 
@@ -18,6 +18,15 @@ public final class UIButtonRenderer {
     private static final Color PRESSED_COLOR = new Color(145, 160, 160);
     private static final Color SHADOW_COLOR = new Color(10, 16, 18, 220);
     private static final Color MUTE_RED = new Color(255, 85, 85);
+
+    private static final Color SUBPANEL_BG_TOP = new Color(12, 20, 24, 225);
+    private static final Color SUBPANEL_BG_BOTTOM = new Color(18, 30, 36, 235);
+    private static final Color SUBPANEL_BORDER = new Color(95, 120, 125, 200);
+    private static final Color SUBPANEL_TRIM = new Color(45, 195, 190, 65);
+
+    private static final Color SLOT_BG_TOP = new Color(9, 15, 18, 235);
+    private static final Color SLOT_BG_BOTTOM = new Color(17, 27, 32, 235);
+    private static final Color SLOT_BORDER = new Color(75, 98, 104, 185);
 
     private static Font baseFont;
 
@@ -211,6 +220,158 @@ public final class UIButtonRenderer {
         g2d.drawLine(r.x + r.width - inset, r.y + r.height - inset, r.x + r.width - inset - cornerLen, r.y + r.height - inset);
         g2d.drawLine(r.x + r.width - inset, r.y + r.height - inset, r.x + r.width - inset, r.y + r.height - inset - cornerLen);
 
+        g2d.dispose();
+    }
+
+    /**
+     * Renders a QuickUsePanel-styled runic sub-plaque for inner sections (Backpack, Equipment, Inspector, Stats).
+     */
+    public static void drawRunicSubPanel(Graphics g, int x, int y, int w, int h) {
+        Graphics2D g2d = (Graphics2D) g.create();
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        int arc = scale(6);
+        GradientPaint bg = new GradientPaint(x, y, SUBPANEL_BG_TOP, x, y + h, SUBPANEL_BG_BOTTOM);
+        g2d.setPaint(bg);
+        g2d.fillRoundRect(x, y, w, h, arc, arc);
+
+        g2d.setColor(SUBPANEL_BORDER);
+        g2d.setStroke(new BasicStroke(1.5f));
+        g2d.drawRoundRect(x, y, w, h, arc, arc);
+
+        int inset = scale(2);
+        g2d.setColor(SUBPANEL_TRIM);
+        g2d.setStroke(new BasicStroke(1.0f));
+        g2d.drawRoundRect(x + inset, y + inset, w - inset * 2, h - inset * 2, arc / 2, arc / 2);
+
+        int cLen = scale(6);
+        g2d.setColor(new Color(175, 198, 202, 200));
+        g2d.setStroke(new BasicStroke(1.8f));
+        g2d.drawLine(x, y, x + cLen, y);
+        g2d.drawLine(x, y, x, y + cLen);
+        g2d.drawLine(x + w, y, x + w - cLen, y);
+        g2d.drawLine(x + w, y, x + w, y + cLen);
+        g2d.drawLine(x, y + h, x + cLen, y + h);
+        g2d.drawLine(x, y + h, x, y + h - cLen);
+        g2d.drawLine(x + w, y + h, x + w - cLen, y + h);
+        g2d.drawLine(x + w, y + h, x + w, y + h - cLen);
+        g2d.dispose();
+    }
+
+    /**
+     * Renders a recessed runic slot matching QuickUsePanel's slot design.
+     */
+    public static void drawRunicSlot(Graphics g, int x, int y, int size, Color rarityFill, Color rarityBorder, boolean hovered) {
+        Graphics2D g2d = (Graphics2D) g.create();
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        int arc = scale(5);
+        GradientPaint slotBg = new GradientPaint(x, y, SLOT_BG_TOP, x, y + size, SLOT_BG_BOTTOM);
+        g2d.setPaint(slotBg);
+        g2d.fillRoundRect(x, y, size, size, arc, arc);
+
+        if (rarityFill != null) {
+            int inset = scale(2);
+            g2d.setColor(new Color(rarityFill.getRed(), rarityFill.getGreen(), rarityFill.getBlue(), 85));
+            g2d.fillRoundRect(x + inset, y + inset, size - inset * 2, size - inset * 2, scale(4), scale(4));
+        }
+
+        if (hovered) {
+            g2d.setColor(new Color(55, 235, 225, 40));
+            g2d.fillRoundRect(x + 1, y + 1, size - 2, size - 2, arc, arc);
+        }
+
+        g2d.setColor(hovered ? new Color(110, 235, 230, 220) : SLOT_BORDER);
+        g2d.setStroke(new BasicStroke(1.2f));
+        g2d.drawRoundRect(x, y, size, size, arc, arc);
+
+        if (rarityBorder != null) {
+            g2d.setColor(new Color(rarityBorder.getRed(), rarityBorder.getGreen(), rarityBorder.getBlue(), 165));
+            g2d.setStroke(new BasicStroke(1.1f));
+            g2d.drawRoundRect(x + 1, y + 1, size - 2, size - 2, scale(4), scale(4));
+        }
+
+        g2d.dispose();
+    }
+
+    /**
+     * Renders an animated, glowing cyan runic selection frame around the active slot.
+     */
+    public static void drawSelectedSlotFrame(Graphics g, int x, int y, int size) {
+        Graphics2D g2d = (Graphics2D) g.create();
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        float pulse = (float) (0.7 + 0.3 * Math.sin(System.currentTimeMillis() / 180.0));
+        int arc = scale(5);
+
+        // Outer glow
+        g2d.setColor(new Color(45, 240, 230, (int) (95 * pulse)));
+        g2d.setStroke(new BasicStroke(scale(2.8)));
+        g2d.drawRoundRect(x - 1, y - 1, size + 2, size + 2, arc + 2, arc + 2);
+
+        // Cyan border
+        g2d.setColor(new Color(175, 255, 250, 245));
+        g2d.setStroke(new BasicStroke(scale(1.3)));
+        g2d.drawRoundRect(x, y, size, size, arc, arc);
+
+        // Corner ticks
+        int c = scale(5);
+        g2d.setColor(Color.WHITE);
+        g2d.setStroke(new BasicStroke(scale(1.6)));
+        g2d.drawLine(x - 1, y - 1, x + c, y - 1);
+        g2d.drawLine(x - 1, y - 1, x - 1, y + c);
+        g2d.drawLine(x + size + 1, y - 1, x + size + 1 - c, y - 1);
+        g2d.drawLine(x + size + 1, y - 1, x + size + 1, y + c);
+        g2d.drawLine(x - 1, y + size + 1, x + c, y + size + 1);
+        g2d.drawLine(x - 1, y + size + 1, x - 1, y + size + 1 - c);
+        g2d.drawLine(x + size + 1, y + size + 1, x + size + 1 - c, y + size + 1);
+        g2d.drawLine(x + size + 1, y + size + 1, x + size + 1, y + size + 1 - c);
+
+        g2d.dispose();
+    }
+
+    /**
+     * Draws a crisp shadowed stack count in the bottom-right corner of a slot.
+     */
+    public static void drawStackCount(Graphics g, int amount, int slotX, int slotY, int slotSize) {
+        Graphics2D g2d = (Graphics2D) g.create();
+        g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        String text = String.valueOf(amount);
+        g2d.setFont(new Font("Arial", Font.BOLD, FONT_SMALL));
+        FontMetrics fm = g2d.getFontMetrics();
+        int tx = slotX + slotSize - fm.stringWidth(text) - scale(3);
+        int ty = slotY + slotSize - scale(3);
+
+        g2d.setColor(new Color(8, 12, 14, 235));
+        g2d.drawString(text, tx + 1, ty + 1);
+        g2d.setColor(new Color(235, 245, 245));
+        g2d.drawString(text, tx, ty);
+        g2d.dispose();
+    }
+
+    /**
+     * Draws a small pill badge.
+     */
+    public static void drawBadge(Graphics g, String text, int x, int y, Color bgColor, Color textColor) {
+        Graphics2D g2d = (Graphics2D) g.create();
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+
+        g2d.setFont(new Font("Arial", Font.BOLD, FONT_SMALL));
+        FontMetrics fm = g2d.getFontMetrics();
+        int padX = scale(5);
+        int padY = scale(2);
+        int w = fm.stringWidth(text) + padX * 2;
+        int h = fm.getHeight() + padY;
+
+        g2d.setColor(new Color(bgColor.getRed(), bgColor.getGreen(), bgColor.getBlue(), 65));
+        g2d.fillRoundRect(x, y - fm.getAscent() - padY / 2, w, h, scale(4), scale(4));
+        g2d.setColor(new Color(textColor.getRed(), textColor.getGreen(), textColor.getBlue(), 160));
+        g2d.setStroke(new BasicStroke(1.0f));
+        g2d.drawRoundRect(x, y - fm.getAscent() - padY / 2, w, h, scale(4), scale(4));
+
+        g2d.setColor(textColor);
+        g2d.drawString(text, x + padX, y);
         g2d.dispose();
     }
 

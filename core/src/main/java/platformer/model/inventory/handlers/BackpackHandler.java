@@ -3,6 +3,7 @@ package platformer.model.inventory.handlers;
 import platformer.audio.Audio;
 import platformer.audio.types.Sound;
 import platformer.core.Framework;
+import platformer.core.config.BalanceManager;
 import platformer.model.entities.player.Player;
 import platformer.model.inventory.item.InventoryItem;
 import platformer.model.inventory.item.ItemData;
@@ -28,16 +29,17 @@ public class BackpackHandler {
         if (index < 0 || index >= BACKPACK_CAPACITY || backpack.get(index) == null) return;
         InventoryItem item = backpack.get(index);
 
+        BalanceManager.ConsumableBalance cons = BalanceManager.getInstance().getConsumables();
         switch (item.getItemId()) {
-            case "HEALTH_POTION":
-                player.changeHealth(HEAL_POTION_VAL);
+            case "HEALTH_POTION" -> {
+                player.changeHealth(cons.getHealthPotionRestore());
                 consumeItem(index);
-                break;
-            case "STAMINA_POTION":
-                player.changeStamina(STAMINA_POTION_VAL);
+            }
+            case "STAMINA_POTION" -> {
+                player.changeStamina(cons.getStaminaPotionRestore());
                 consumeItem(index);
-                break;
-            default: break;
+            }
+            default -> {}
         }
     }
 

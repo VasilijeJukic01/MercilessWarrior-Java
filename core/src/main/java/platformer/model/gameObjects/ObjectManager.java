@@ -4,6 +4,7 @@ import platformer.animation.SpriteManager;
 import platformer.audio.Audio;
 import platformer.audio.types.Sound;
 import platformer.core.GameContext;
+import platformer.core.config.BalanceManager;
 import platformer.model.entities.follower.Follower;
 import platformer.model.gameObjects.npc.NpcType;
 import platformer.model.levels.metadata.GameObjectMetadata;
@@ -225,7 +226,7 @@ public class ObjectManager {
         }
         for (RoricTrap trap : getObjects(RoricTrap.class)) {
             if (trap.isAlive() && !trap.isAnimate() && trap.getHitBox().intersects(player.getHitBox())) {
-                player.changeHealth(-RoricTrap.TRAP_DAMAGE, trap);
+                player.changeHealth(-BalanceManager.getInstance().getCombat().getRoricTrapDamage(), trap);
             }
         }
     }

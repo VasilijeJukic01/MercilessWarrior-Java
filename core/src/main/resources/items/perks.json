@@ -1,210 +1,214 @@
 [
   {
-    "id": "XP_BONUS",
-    "name": "XP Bonus",
-    "description": "Increase gained XP by 15%",
-    "cost": 1,
-    "imageName": "Perk0",
-    "slot": 0,
-    "isStartPerk": true,
-    "unlocks": [1, 7],
-    "bonuses": {
-      "exp": 15.0
-    }
-  },
-  {
     "id": "STRONG_ARMS",
     "name": "Strong Arms",
-    "description": "Reduce attack cooldown by 30%",
+    "branch": "BLADEMASTER",
+    "description": "Reduces sword attack cooldown by 25%.",
     "cost": 1,
     "imageName": "Perk1",
-    "slot": 2,
+    "slot": 0,
+    "treeX": 0.17,
+    "treeY": 0.12,
     "isStartPerk": true,
-    "unlocks": [1, 3, 9],
-    "bonuses": {
-      "cooldown": -0.3
-    }
+    "unlocks": [1, 2],
+    "bonuses": { "cooldown": -0.2 }
   },
+  {
+    "id": "FURIOUS",
+    "name": "Furious Dash",
+    "branch": "BLADEMASTER",
+    "description": "Reduces Dash cooldown by 0.5s and increases Sword Damage by 10%.",
+    "cost": 1,
+    "imageName": "Perk8",
+    "slot": 1,
+    "treeX": 0.08,
+    "treeY": 0.37,
+    "isStartPerk": false,
+    "unlocks": [3],
+    "bonuses": { "dashCooldown": -0.5, "attack": 10.0 }
+  },
+  {
+    "id": "UNBREAKABLE_BONES",
+    "name": "Phantom Slash",
+    "branch": "BLADEMASTER",
+    "description": "Dashing slices through enemies in your path for full sword damage.",
+    "cost": 2,
+    "imageName": "Perk14",
+    "slot": 2,
+    "treeX": 0.26,
+    "treeY": 0.37,
+    "isStartPerk": false,
+    "unlocks": [3],
+    "bonuses": { "dashSlash": 1.0 }
+  },
+  {
+    "id": "ELEMENTARY_MAGIC",
+    "name": "Executioner",
+    "branch": "BLADEMASTER",
+    "description": "Increases Critical Hit chance by +10% and Critical Damage multiplier by +0.5x.",
+    "cost": 2,
+    "imageName": "Perk13",
+    "slot": 3,
+    "treeX": 0.17,
+    "treeY": 0.62,
+    "isStartPerk": false,
+    "unlocks": [4],
+    "bonuses": { "criticalHitChance": 10.0, "critMultiplier": 0.5 }
+  },
+  {
+    "id": "BLOODTHIRST",
+    "name": "Bloodthirst",
+    "branch": "BLADEMASTER",
+    "description": "ULTIMATE: Increases Sword Damage by 20%. Defeating an enemy restores 6% Max Health.",
+    "cost": 3,
+    "imageName": "Perk5",
+    "slot": 4,
+    "treeX": 0.17,
+    "treeY": 0.88,
+    "isStartPerk": false,
+    "unlocks": [],
+    "bonuses": { "attack": 20.0, "vampiric": 0.06 }
+  },
+
+  {
+    "id": "WARRIOR_HEART",
+    "name": "Warrior Heart",
+    "branch": "BULWARK",
+    "description": "Increases maximum Health by 15%.",
+    "cost": 1,
+    "imageName": "Perk7",
+    "slot": 5,
+    "treeX": 0.50,
+    "treeY": 0.12,
+    "isStartPerk": true,
+    "unlocks": [6, 7],
+    "bonuses": { "health": 15.0 }
+  },
+  {
+    "id": "NECROPOLIS",
+    "name": "Riposte",
+    "branch": "BULWARK",
+    "description": "Parrying an attack restores +15 Stamina and stuns nearby enemies.",
+    "cost": 1,
+    "imageName": "Perk9",
+    "slot": 6,
+    "treeX": 0.41,
+    "treeY": 0.37,
+    "isStartPerk": false,
+    "unlocks": [8],
+    "bonuses": { "restorePower": 1.0 }
+  },
+  {
+    "id": "FAST_EYE",
+    "name": "Spell-Breaker",
+    "branch": "BULWARK",
+    "description": "Sword swings destroy enemy projectiles and restore 8 Stamina per projectile.",
+    "cost": 2,
+    "imageName": "Perk10",
+    "slot": 7,
+    "treeX": 0.59,
+    "treeY": 0.37,
+    "isStartPerk": false,
+    "unlocks": [8],
+    "bonuses": { "deflect": 1.0 }
+  },
+  {
+    "id": "AMBER",
+    "name": "Molten Greaves",
+    "branch": "BULWARK",
+    "description": "Grants complete immunity to Lava damage and removes Lava movement slow.",
+    "cost": 2,
+    "imageName": "Perk11",
+    "slot": 8,
+    "treeX": 0.50,
+    "treeY": 0.62,
+    "isStartPerk": false,
+    "unlocks": [9],
+    "bonuses": { "lavaWalk": 1.0 }
+  },
+  {
+    "id": "GODS_BLOOD",
+    "name": "Titan's Blood",
+    "branch": "BULWARK",
+    "description": "ULTIMATE: Increases maximum Health by 25% and reduces all incoming damage by 15%.",
+    "cost": 3,
+    "imageName": "Perk15",
+    "slot": 9,
+    "treeX": 0.50,
+    "treeY": 0.88,
+    "isStartPerk": false,
+    "unlocks": [],
+    "bonuses": { "health": 25.0, "defense": 0.15 }
+  },
+
   {
     "id": "ANCIENT_NOTES",
     "name": "Ancient Notes",
-    "description": "Unlock fire ball spell",
+    "branch": "PYROMANCER",
+    "description": "Unlocks the Fireball spell and increases Max Stamina by 15%.",
     "cost": 1,
     "imageName": "Perk2",
-    "slot": 4,
+    "slot": 10,
+    "treeX": 0.83,
+    "treeY": 0.12,
     "isStartPerk": true,
-    "unlocks": [3, 5, 11],
-    "bonuses": {
-      "fireball": 1.0
-    }
+    "unlocks": [11, 12],
+    "bonuses": { "fireball": 1.0, "power": 15.0 }
   },
   {
-    "id": "POWER_PILLS",
-    "name": "Power Pills",
-    "description": "Increase stamina capacity by 20%",
+    "id": "SEARING_FLAMES",
+    "name": "Searing Flames",
+    "branch": "PYROMANCER",
+    "description": "Reduces Flame spell stamina drain by 40% and increases Spell Damage by 25%.",
     "cost": 1,
     "imageName": "Perk3",
-    "slot": 6,
-    "isStartPerk": true,
-    "unlocks": [5, 13],
-    "bonuses": {
-      "power": 20.0
-    }
-  },
-  {
-    "id": "LUCKY_DROP",
-    "name": "Lucky Drop",
-    "description": "Get more coins from loot",
-    "cost": 1,
-    "imageName": "Perk4",
-    "slot": 7,
+    "slot": 11,
+    "treeX": 0.74,
+    "treeY": 0.37,
     "isStartPerk": false,
-    "unlocks": [8],
-    "bonuses": {
-      "coin": 5.0
-    }
-  },
-  {
-    "id": "BROKEN_BONES",
-    "name": "Broken Bones",
-    "description": "Increase sword attack power by 20%",
-    "cost": 1,
-    "imageName": "Perk5",
-    "slot": 9,
-    "isStartPerk": false,
-    "unlocks": [8, 10, 16],
-    "bonuses": {
-      "attack": 20.0
-    }
+    "unlocks": [13],
+    "bonuses": { "flameCostReduction": 0.4, "spellDamage": 25.0 }
   },
   {
     "id": "DARK_MAGIC",
     "name": "Dark Magic",
-    "description": "Unlock fire transformation",
+    "branch": "PYROMANCER",
+    "description": "Unlocks Fire Transformation (Q), boosting base sword damage and reach.",
     "cost": 2,
     "imageName": "Perk6",
-    "slot": 11,
-    "isStartPerk": false,
-    "unlocks": [10, 12, 18],
-    "bonuses": {
-      "transform": 1.0
-    }
-  },
-  {
-    "id": "WARRIOR_HEART",
-    "name": "Warrior Heart",
-    "description": "Increase max health by 5%",
-    "cost": 1,
-    "imageName": "Perk7",
-    "slot": 13,
-    "isStartPerk": false,
-    "unlocks": [12, 20],
-    "bonuses": {
-      "health": 5.0
-    }
-  },
-  {
-    "id": "FURIOUS",
-    "name": "Furious",
-    "description": "Reduce dash cooldown",
-    "cost": 2,
-    "imageName": "Perk8",
-    "slot": 15,
-    "isStartPerk": false,
-    "unlocks": [16, 22],
-    "bonuses": {
-      "dashCooldown": -0.75
-    }
-  },
-  {
-    "id": "NECROPOLIS",
-    "name": "Necropolis",
-    "description": "Blocking an attack restores stamina",
-    "cost": 1,
-    "imageName": "Perk9",
-    "slot": 16,
-    "isStartPerk": false,
-    "unlocks": [15, 17],
-    "bonuses": {
-      "restorePower": 1.0
-    }
-  },
-  {
-    "id": "FAST_EYE",
-    "name": "Fast Eye",
-    "description": "Ability to deflect projectiles",
-    "cost": 1,
-    "imageName": "Perk10",
-    "slot": 17,
-    "isStartPerk": false,
-    "unlocks": [16, 18, 24],
-    "bonuses": {
-      "deflect": 1.0
-    }
-  },
-  {
-    "id": "AMBER",
-    "name": "Amber",
-    "description": "Ability to walk in lava",
-    "cost": 2,
-    "imageName": "Perk11",
-    "slot": 19,
-    "isStartPerk": false,
-    "unlocks": [18, 26],
-    "bonuses": {
-      "lavaWalk": 1.0
-    }
-  },
-  {
-    "id": "DRAGON_FRUIT",
-    "name": "Dragon Fruit",
-    "description": "Increase stamina by 5%",
-    "cost": 1,
-    "imageName": "Perk12",
-    "slot": 20,
+    "slot": 12,
+    "treeX": 0.92,
+    "treeY": 0.37,
     "isStartPerk": false,
     "unlocks": [13],
-    "bonuses": {
-      "power": 5.0
-    }
+    "bonuses": { "transform": 1.0 }
   },
   {
-    "id": "ELEMENTARY_MAGIC",
-    "name": "Elementary Magic",
-    "description": "Increase critical hit chance by 5%",
+    "id": "BLAZING_BARRAGE",
+    "name": "Blazing Barrage",
+    "branch": "PYROMANCER",
+    "description": "Fireballs pierce through all enemy types and deal +15% bonus damage.",
     "cost": 2,
-    "imageName": "Perk13",
-    "slot": 22,
+    "imageName": "Perk12",
+    "slot": 13,
+    "treeX": 0.83,
+    "treeY": 0.62,
     "isStartPerk": false,
-    "unlocks": [15, 21],
-    "bonuses": {
-      "criticalHitChance": 5.0
-    }
+    "unlocks": [14],
+    "bonuses": { "piercingFireball": 1.0, "spellDamage": 15.0 }
   },
   {
-    "id": "UNBREAKABLE_BONES",
-    "name": "Unbreakable Bones",
-    "description": "Dashing damages enemies",
+    "id": "AVATAR_OF_ASH",
+    "name": "Avatar of Ash",
+    "branch": "PYROMANCER",
+    "description": "ULTIMATE: Reduces Fire Transformation stamina drain by 50% and boosts XP & Coins by 20%.",
     "cost": 3,
-    "imageName": "Perk14",
-    "slot": 24,
+    "imageName": "Perk0",
+    "slot": 14,
+    "treeX": 0.83,
+    "treeY": 0.88,
     "isStartPerk": false,
-    "unlocks": [17, 25],
-    "bonuses": {
-      "dashSlash": 1.0
-    }
-  },
-  {
-    "id": "GODS_BLOOD",
-    "name": "God's Blood",
-    "description": "Increase max health by 10%",
-    "cost": 3,
-    "imageName": "Perk15",
-    "slot": 27,
-    "isStartPerk": false,
-    "unlocks": [26],
-    "bonuses": {
-      "health": 10.0
-    }
+    "unlocks": [],
+    "bonuses": { "transformCostReduction": 0.5, "exp": 20.0, "coin": 4.0 }
   }
 ]

@@ -1,6 +1,7 @@
 package platformer.model.spells.types;
 
 import platformer.animation.SpriteManager;
+import platformer.core.config.BalanceManager;
 import platformer.model.entities.Direction;
 import platformer.model.entities.player.Player;
 import platformer.model.spells.Spell;
@@ -36,7 +37,7 @@ public class RoricBeam extends Spell {
         if (!active) return;
         if (!hasHitPlayer && animIndex >= 0 && animIndex < 2) {
             if (hitBox.intersects(player.getHitBox())) {
-                player.changeHealth(-15, this);
+                player.changeHealth(-BalanceManager.getInstance().getCombat().getRoricBeamSpellDamage(), this);
                 hasHitPlayer = true;
             }
         }

@@ -27,9 +27,14 @@ import static platformer.constants.FilePaths.*;
 import static platformer.constants.UI.*;
 
 /**
- * Class that represents the overlay that is displayed when the player opens the inventory.
+ * Renders the player's Inventory overlay with runic plaques, interactive Quick-Use potion slots, equipment slots, stat summary, and item inspector.
  */
 public class InventoryOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
+
+    public static final int INV_QUICK_SLOT_X = scale(595);
+    public static final int INV_QUICK_SLOT_Y = scale(252);
+    public static final int INV_QUICK_SLOT_SIZE = scale(28);
+    public static final int INV_QUICK_SLOT_SPACING = scale(6);
 
     private final InventoryViewController controller;
     private final ItemComparisonTooltip comparisonTooltip;
@@ -40,8 +45,8 @@ public class InventoryOverlay implements Overlay<MouseEvent, KeyEvent, Graphics>
     private MediumButton unequipBtn;
     private final SmallButton[] smallButtons;
 
-    private Rectangle2D backpackPanel, equipPanel;
-    private BufferedImage slotImage, coinIcon;
+    private Rectangle2D backpackPanel, equipPanel, statsPanel, inspectorPanel;
+    private BufferedImage coinIcon;
     private BufferedImage[] playerAnim;
     private Rectangle2D.Double selectedSlot;
 
@@ -55,7 +60,7 @@ public class InventoryOverlay implements Overlay<MouseEvent, KeyEvent, Graphics>
         this.controller = new InventoryViewController(gameState, this);
         this.mediumButtons = new MediumButton[3];
         this.smallButtons = new SmallButton[2];
-        this.comparisonTooltip = new ItemComparisonTooltip((int)(160*SCALE), (int)(120*SCALE));
+        this.comparisonTooltip = new ItemComparisonTooltip((int) (170 * SCALE), (int) (125 * SCALE));
         this.equipmentSlots = new HashMap<>();
         init();
     }
@@ -71,7 +76,8 @@ public class InventoryOverlay implements Overlay<MouseEvent, KeyEvent, Graphics>
         this.overlay = new Rectangle2D.Double(INV_OVERLAY_X, INV_OVERLAY_Y, INV_OVERLAY_WID, INV_OVERLAY_HEI);
         this.backpackPanel = new Rectangle2D.Double(BACKPACK_X, BACKPACK_Y, BACKPACK_WID, BACKPACK_HEI);
         this.equipPanel = new Rectangle2D.Double(EQUIPMENT_X, EQUIPMENT_Y, EQUIPMENT_WID, EQUIPMENT_HEI);
-        this.slotImage = ImageUtils.importImage(SLOT_INVENTORY, SLOT_SIZE, SLOT_SIZE);
+        this.statsPanel = new Rectangle2D.Double(scale(570), EQUIPMENT_Y, scale(175), scale(135));
+        this.inspectorPanel = new Rectangle2D.Double(EQUIPMENT_X, scale(286), scale(365), scale(92));
 
         this.equipmentPlaceholders = new BufferedImage[6];
         BufferedImage placeholderSheet = ImageUtils.importImage(EQUIPMENT_PLACEHOLDERS_PATH, -1, -1);
@@ -146,26 +152,26 @@ public class InventoryOverlay implements Overlay<MouseEvent, KeyEvent, Graphics>
         playerAnimTick++;
         if (playerAnimTick >= playerAnimSpeed) {
             playerAnimTick = 0;
-            playerAnimIndex++;
-            if (playerAnimIndex >= playerAnim.length) {
-                playerAnimIndex = 0;
-            }
+            playerAnimIndex = (playerAnimIndex + 1) % playerAnim.length;
         }
     }
 
     @Override
     public void render(Graphics g) {
-        g.setColor(new Color(0, 0, 0, 150));
+        g.setColor(new Color(0, 0, 0, 165));
         g.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
         Graphics2D g2d = (Graphics2D) g;
+
         renderOverlay(g2d);
         renderBackpackPanel(g2d);
-        renderBackpackSlots(g);
         renderEquipmentPanel(g2d);
+        renderStatsAndQuickUsePanel(g2d);
+        renderInspectorPanel(g2d);
+        renderBackpackSlots(g);
         renderEquipmentSlots(g);
-        renderBonusInfo(g);
-        g.setColor(Color.RED);
-        g.drawRect((int)selectedSlot.x, (int)selectedSlot.y,  (int)selectedSlot.width,  (int)selectedSlot.height);
+        renderQuickUseSlots(g2d);
+
+        UIButtonRenderer.drawSelectedSlotFrame(g, (int) selectedSlot.x, (int) selectedSlot.y, (int) selectedSlot.width);
         renderButtons(g);
         renderTooltip(g);
         controller.getDndManager().render(g);
@@ -177,190 +183,260 @@ public class InventoryOverlay implements Overlay<MouseEvent, KeyEvent, Graphics>
     }
 
     private void renderBackpackPanel(Graphics2D g2d) {
-        g2d.setColor(OVERLAY_SPACE_COLOR);
-        g2d.fill(backpackPanel);
-        g2d.setColor(Color.WHITE);
-        g2d.setStroke(new BasicStroke(1));
-        g2d.draw(backpackPanel);
+        UIButtonRenderer.drawRunicSubPanel(g2d, (int) backpackPanel.getX(), (int) backpackPanel.getY(), (int) backpackPanel.getWidth(), (int) backpackPanel.getHeight());
 
-        g2d.setFont(new Font("Arial", Font.BOLD, FONT_MEDIUM));
+        g2d.setFont(UIButtonRenderer.getFont(10.5f * SCALE));
+        g2d.setColor(new Color(210, 228, 230));
+        g2d.drawString("BACKPACK", (int) backpackPanel.getX() + scale(4), (int) backpackPanel.getY() - scale(5));
+
+        g2d.setFont(new Font("Arial", Font.BOLD, FONT_LIGHT));
         g2d.setColor(INV_TEXT_LABEL);
-
         int itemsPerPage = INVENTORY_SLOT_MAX_ROW * INVENTORY_SLOT_MAX_COL;
-        int maxPages = (int) Math.ceil((double) BACKPACK_CAPACITY / itemsPerPage);
-        if (maxPages == 0) maxPages = 1;
-
-        String pageText = "Page: " + (controller.getBackpackSlot() + 1) + " / " + maxPages;
+        int maxPages = Math.max(1, (int) Math.ceil((double) BACKPACK_CAPACITY / itemsPerPage));
+        String pageText = "Page " + (controller.getBackpackSlot() + 1) + " / " + maxPages;
         FontMetrics fm = g2d.getFontMetrics();
-        int textWidth = fm.stringWidth(pageText);
-        int textX = (int) (backpackPanel.getX() + backpackPanel.getWidth() - textWidth);
-        int textY = (int) backpackPanel.getY() - (int)(5 * SCALE);
-
-        g2d.drawString(pageText, textX, textY);
+        int textX = (int) (backpackPanel.getX() + backpackPanel.getWidth() - fm.stringWidth(pageText) - scale(4));
+        g2d.drawString(pageText, textX, (int) backpackPanel.getY() - scale(5));
     }
 
     private void renderBackpackSlots(Graphics g) {
         Inventory inventory = controller.getGameState().getPlayer().getInventory();
         int pageOffset = controller.getBackpackSlot() * (INVENTORY_SLOT_MAX_ROW * INVENTORY_SLOT_MAX_COL);
+        DragAndDropManager dnd = controller.getDndManager();
+
         for (int i = 0; i < INVENTORY_SLOT_MAX_ROW; i++) {
             for (int j = 0; j < INVENTORY_SLOT_MAX_COL; j++) {
                 int xPos = i * SLOT_SPACING + BACKPACK_SLOT_X;
                 int yPos = j * SLOT_SPACING + BACKPACK_SLOT_Y;
-                g.drawImage(slotImage, xPos, yPos, slotImage.getWidth(), slotImage.getHeight(), null);
-                int slotNumber = (j * INVENTORY_SLOT_MAX_ROW + i) + pageOffset;
-                if (slotNumber < inventory.getBackpack().size()) renderBackpackItem(g, inventory, slotNumber);
+                int absSlot = (j * INVENTORY_SLOT_MAX_ROW + i) + pageOffset;
+
+                InventoryItem item = (absSlot < inventory.getBackpack().size()) ? inventory.getBackpack().get(absSlot) : null;
+                boolean beingDragged = dnd.isDragging() && !dnd.isSplitDrag() && dnd.getSource() == DragSourceType.BACKPACK && dnd.getSourceIndex() == absSlot;
+
+                Color rarityFill = (!beingDragged && item != null && item.getData() != null) ? item.getData().rarity.getColor() : null;
+                Color rarityBorder = (!beingDragged && item != null && item.getData() != null) ? item.getData().rarity.getTextColor() : null;
+                boolean hovered = controller.getHoveredBackpackSlot() == (j * INVENTORY_SLOT_MAX_ROW + i);
+
+                UIButtonRenderer.drawRunicSlot(g, xPos, yPos, SLOT_SIZE, rarityFill, rarityBorder, hovered);
+
+                if (item != null && !beingDragged) {
+                    g.drawImage(item.getModel(), xPos + ITEM_OFFSET_X, yPos + ITEM_OFFSET_Y, ITEM_SIZE, ITEM_SIZE, null);
+                    if (item.getData() != null && item.getData().stackable) {
+                        UIButtonRenderer.drawStackCount(g, item.getAmount(), xPos, yPos, SLOT_SIZE);
+                    }
+                }
             }
         }
-        renderItemInfoBackpack(g);
-    }
-
-    private void renderBackpackItem(Graphics g, Inventory inventory, int absoluteSlotNumber) {
-        DragAndDropManager dndManager = controller.getDndManager();
-        if (dndManager.isDragging() && !dndManager.isSplitDrag() && dndManager.getSource() == DragSourceType.BACKPACK && dndManager.getSourceIndex() == absoluteSlotNumber) {
-            return;
-        }
-        InventoryItem item = inventory.getBackpack().get(absoluteSlotNumber);
-        if (item == null) return;
-        ItemData itemData = item.getData();
-        int relativeSlotNumber = absoluteSlotNumber - (controller.getBackpackSlot() * (INVENTORY_SLOT_MAX_ROW * INVENTORY_SLOT_MAX_COL));
-        int xPos = (relativeSlotNumber % INVENTORY_SLOT_MAX_ROW) * SLOT_SPACING + BACKPACK_SLOT_X + ITEM_OFFSET_X;
-        int yPos = (relativeSlotNumber / INVENTORY_SLOT_MAX_ROW) * SLOT_SPACING + BACKPACK_SLOT_Y + ITEM_OFFSET_Y;
-        g.setColor(itemData.rarity.getColor());
-        g.fillRect(xPos - (int)(ITEM_OFFSET_X / 1.1), yPos - (int)(ITEM_OFFSET_Y / 1.1), (int)(SLOT_SIZE / 1.06), (int)(SLOT_SIZE / 1.06));
-        g.drawImage(item.getModel(), xPos, yPos, ITEM_SIZE, ITEM_SIZE, null);
-        g.setColor(INV_TEXT_DEFAULT);
-        g.setFont(new Font("Arial", Font.BOLD, FONT_MEDIUM));
-        g.drawString(String.valueOf(item.getAmount()), xPos + ITEM_COUNT_OFFSET_X, yPos + ITEM_COUNT_OFFSET_Y);
     }
 
     private void renderEquipmentPanel(Graphics2D g2d) {
-        g2d.setColor(OVERLAY_SPACE_COLOR);
-        g2d.fill(equipPanel);
-        g2d.setColor(Color.WHITE);
-        g2d.setStroke(new BasicStroke(1));
-        g2d.draw(equipPanel);
+        UIButtonRenderer.drawRunicSubPanel(g2d, (int) equipPanel.getX(), (int) equipPanel.getY(), (int) equipPanel.getWidth(), (int) equipPanel.getHeight());
+        g2d.setFont(UIButtonRenderer.getFont(10.5f * SCALE));
+        g2d.setColor(new Color(210, 228, 230));
+        g2d.drawString("EQUIPMENT", (int) equipPanel.getX() + scale(4), (int) equipPanel.getY() - scale(5));
+
         g2d.drawImage(playerAnim[playerAnimIndex], INV_PLAYER_X, INV_PLAYER_Y, INV_PLAYER_WID, INV_PLAYER_HEI, null);
     }
 
     private void renderEquipmentSlots(Graphics g) {
+        Inventory inventory = controller.getGameState().getPlayer().getInventory();
+        DragAndDropManager dnd = controller.getDndManager();
         Graphics2D g2d = (Graphics2D) g.create();
+
         try {
             for (int j = 0; j < EQUIPMENT_SLOT_MAX_COL; j++) {
                 for (int i = 0; i < EQUIPMENT_SLOT_MAX_ROW; i++) {
                     int xPos = i * EQUIPMENT_SLOT_SPACING + EQUIPMENT_SLOT_X;
                     int yPos = j * SLOT_SPACING + EQUIPMENT_SLOT_Y;
-                    g.drawImage(slotImage, xPos, yPos, slotImage.getWidth(), slotImage.getHeight(), null);
                     int slotIndex = j * EQUIPMENT_SLOT_MAX_ROW + i;
-                    int iconIndex = slotIconMap[slotIndex];
-                    BufferedImage placeholderIcon = equipmentPlaceholders[iconIndex];
-                    if (placeholderIcon != null && !controller.isEquipmentSlotOccupied(slotIndex)) {
-                        int iconX = xPos + (int)((SLOT_SIZE - ITEM_SIZE) / 1.2);
-                        int iconY = yPos + (int)((SLOT_SIZE - ITEM_SIZE) / 1.2);
-                        g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.2f));
-                        g2d.drawImage(placeholderIcon, iconX, iconY,  (int)(ITEM_SIZE / 1.3), (int)(ITEM_SIZE / 1.3), null);
-                        g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
+
+                    InventoryItem item = inventory.getEquipped()[slotIndex];
+                    boolean beingDragged = dnd.isDragging() && dnd.getSource() == DragSourceType.EQUIPMENT && dnd.getSourceIndex() == slotIndex;
+                    Color rarityFill = (!beingDragged && item != null && item.getData() != null) ? item.getData().rarity.getColor() : null;
+                    Color rarityBorder = (!beingDragged && item != null && item.getData() != null) ? item.getData().rarity.getTextColor() : null;
+                    UIButtonRenderer.drawRunicSlot(g2d, xPos, yPos, SLOT_SIZE, rarityFill, rarityBorder, false);
+
+                    if (item == null || beingDragged) {
+                        BufferedImage placeholderIcon = equipmentPlaceholders[slotIconMap[slotIndex]];
+                        if (placeholderIcon != null) {
+                            int iconX = xPos + (int) ((SLOT_SIZE - ITEM_SIZE) / 1.2);
+                            int iconY = yPos + (int) ((SLOT_SIZE - ITEM_SIZE) / 1.2);
+                            g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.22f));
+                            g2d.drawImage(placeholderIcon, iconX, iconY, (int) (ITEM_SIZE / 1.3), (int) (ITEM_SIZE / 1.3), null);
+                            g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
+                        }
                     }
-                    renderEquipmentItem(g, i, j);
+                    else g2d.drawImage(item.getModel(), xPos + ITEM_OFFSET_X, yPos + ITEM_OFFSET_Y, ITEM_SIZE, ITEM_SIZE, null);
                 }
             }
         } finally {
             g2d.dispose();
         }
-        renderItemInfoEquipment(g);
     }
 
-    private void renderEquipmentItem(Graphics g, int i, int j) {
+    private void renderStatsAndQuickUsePanel(Graphics2D g2d) {
+        UIButtonRenderer.drawRunicSubPanel(g2d, (int) statsPanel.getX(), (int) statsPanel.getY(), (int) statsPanel.getWidth(), (int) statsPanel.getHeight());
+
+        int x = (int) statsPanel.getX() + scale(10);
+        int rightX = (int) (statsPanel.getX() + statsPanel.getWidth() - scale(10));
+        int y = (int) statsPanel.getY() + scale(16);
+
+        // Coins header
+        g2d.setFont(new Font("Arial", Font.BOLD, FONT_MEDIUM));
+        g2d.setColor(INV_TEXT_LABEL);
+        g2d.drawString("Coins:", x, y);
+
+        String coinVal = String.valueOf(controller.getGameState().getPlayer().getCoins());
+        g2d.setColor(INV_TEXT_VALUE);
+        int coinW = g2d.getFontMetrics().stringWidth(coinVal);
+        int iconSize = (int) (COIN_WID / 1.3);
+        g2d.drawString(coinVal, rightX - coinW - iconSize - scale(3), y);
+        g2d.drawImage(coinIcon, rightX - iconSize, y - g2d.getFontMetrics().getAscent() + 1, iconSize, iconSize, null);
+
+        y += scale(6);
+        g2d.setColor(new Color(55, 215, 210, 70));
+        g2d.drawLine(x, y, rightX, y);
+        y += scale(13);
+
+        int spacing = scale(14);
+        renderStatRow(g2d, "Health", InventoryBonus.getInstance().getHealth(), x, rightX, y);
+        renderStatRow(g2d, "Defense", InventoryBonus.getInstance().getDefense(), x, rightX, y + spacing);
+        renderStatRow(g2d, "Attack", InventoryBonus.getInstance().getAttack(), x, rightX, y + spacing * 2);
+        renderStatRow(g2d, "Stamina", InventoryBonus.getInstance().getStamina(), x, rightX, y + spacing * 3);
+        renderStatRow(g2d, "Critical", InventoryBonus.getInstance().getCritical(), x, rightX, y + spacing * 4);
+        renderStatRow(g2d, "Spell Power", InventoryBonus.getInstance().getSpell(), x, rightX, y + spacing * 5);
+        renderStatRow(g2d, "Cooldown", InventoryBonus.getInstance().getCooldown(), x, rightX, y + spacing * 6);
+    }
+
+    private void renderStatRow(Graphics2D g2d, String label, double bonusValue, int leftX, int rightX, int y) {
+        g2d.setFont(new Font("Arial", Font.PLAIN, FONT_LIGHT));
+        g2d.setColor(INV_TEXT_LABEL);
+        g2d.drawString(label, leftX, y);
+
+        String valStr = String.format("+%.1f%%", bonusValue * 100);
+        g2d.setFont(new Font("Arial", Font.BOLD, FONT_LIGHT));
+        g2d.setColor(bonusValue > 0 ? INV_TEXT_BONUS : new Color(130, 145, 148));
+        int w = g2d.getFontMetrics().stringWidth(valStr);
+        g2d.drawString(valStr, rightX - w, y);
+    }
+
+    private void renderQuickUseSlots(Graphics2D g2d) {
+        String[] quickSlots = controller.getGameState().getPlayer().getInventory().getQuickUseSlots();
+        Inventory inv = controller.getGameState().getPlayer().getInventory();
+
+        int barWidth = 4 * INV_QUICK_SLOT_SIZE + 3 * INV_QUICK_SLOT_SPACING;
+        int pad = scale(5);
+        UIButtonRenderer.drawRunicSubPanel(g2d, INV_QUICK_SLOT_X - pad, INV_QUICK_SLOT_Y - pad, barWidth + pad * 2, INV_QUICK_SLOT_SIZE + pad * 2);
+
+        g2d.setFont(new Font("Arial", Font.BOLD, FONT_SMALL));
+        g2d.setColor(new Color(180, 210, 212));
+        g2d.drawString("QUICK POTIONS (1-4)", INV_QUICK_SLOT_X - pad + scale(2), INV_QUICK_SLOT_Y - pad - scale(3));
+
+        int iconSize = scale(19);
+        for (int i = 0; i < 4; i++) {
+            int sx = INV_QUICK_SLOT_X + i * (INV_QUICK_SLOT_SIZE + INV_QUICK_SLOT_SPACING);
+            int sy = INV_QUICK_SLOT_Y;
+            String itemId = quickSlots[i];
+            Optional<InventoryItem> itemOpt = (itemId == null) ? Optional.empty() : inv.getBackpack().stream().filter(Objects::nonNull).filter(it -> it.getItemId().equals(itemId)).findFirst();
+
+            Color rFill = itemOpt.map(it -> it.getData().rarity.getColor()).orElse(null);
+            Color rBorder = itemOpt.map(it -> it.getData().rarity.getTextColor()).orElse(null);
+            UIButtonRenderer.drawRunicSlot(g2d, sx, sy, INV_QUICK_SLOT_SIZE, rFill, rBorder, false);
+            if (itemOpt.isPresent()) {
+                InventoryItem item = itemOpt.get();
+                int ix = sx + (INV_QUICK_SLOT_SIZE - iconSize) / 2;
+                int iy = sy + (INV_QUICK_SLOT_SIZE - iconSize) / 2;
+                g2d.drawImage(item.getModel(), ix, iy, iconSize, iconSize, null);
+                UIButtonRenderer.drawStackCount(g2d, item.getAmount(), sx, sy, INV_QUICK_SLOT_SIZE);
+            }
+
+            // Keybind badge
+            int badgeS = scale(9);
+            g2d.setColor(new Color(14, 24, 28, 240));
+            g2d.fillRoundRect(sx - 1, sy - 1, badgeS, badgeS, scale(3), scale(3));
+            g2d.setColor(new Color(55, 215, 210, 160));
+            g2d.drawRoundRect(sx - 1, sy - 1, badgeS, badgeS, scale(3), scale(3));
+            g2d.setFont(UIButtonRenderer.getFont(6.5f * SCALE));
+            String kStr = String.valueOf(i + 1);
+            FontMetrics fm = g2d.getFontMetrics();
+            g2d.setColor(new Color(220, 245, 245));
+            g2d.drawString(kStr, sx - 1 + (badgeS - fm.stringWidth(kStr)) / 2, sy - 1 + (badgeS + (int) (fm.getAscent() * 0.72f)) / 2);
+        }
+    }
+
+    private void renderInspectorPanel(Graphics2D g2d) {
+        UIButtonRenderer.drawRunicSubPanel(g2d, (int) inspectorPanel.getX(), (int) inspectorPanel.getY(), (int) inspectorPanel.getWidth(), (int) inspectorPanel.getHeight());
+
         Inventory inventory = controller.getGameState().getPlayer().getInventory();
-        int slotIndex = j * EQUIPMENT_SLOT_MAX_ROW + i;
-        DragAndDropManager dndManager = controller.getDndManager();
-        if (dndManager.isDragging() && dndManager.getSource() == DragSourceType.EQUIPMENT && dndManager.getSourceIndex() == slotIndex) {
+        InventoryItem item = null;
+        if (controller.isInBackpack()) {
+            int absSlot = controller.getBackpackSlotNumber() + (controller.getBackpackSlot() * (INVENTORY_SLOT_MAX_ROW * INVENTORY_SLOT_MAX_COL));
+            if (absSlot < inventory.getBackpack().size()) item = inventory.getBackpack().get(absSlot);
+        }
+        else {
+            if (controller.getEquipmentSlotNumber() < inventory.getEquipped().length) {
+                item = inventory.getEquipped()[controller.getEquipmentSlotNumber()];
+                if (item != null) unequipBtn.render(g2d);
+            }
+        }
+
+        if (item == null || item.getData() == null) {
+            g2d.setFont(new Font("Arial", Font.ITALIC, FONT_LIGHT));
+            g2d.setColor(new Color(130, 150, 155));
+            String emptyMsg = "Select an item to inspect its details. (Right-Click to quick Use / Equip)";
+            FontMetrics fm = g2d.getFontMetrics();
+            int tx = (int) (inspectorPanel.getX() + (inspectorPanel.getWidth() - fm.stringWidth(emptyMsg)) / 2);
+            int ty = (int) (inspectorPanel.getY() + inspectorPanel.getHeight() / 2);
+            g2d.drawString(emptyMsg, tx, ty);
             return;
         }
-        if (inventory.getEquipped()[slotIndex] != null) {
-            InventoryItem item = inventory.getEquipped()[slotIndex];
-            ItemData itemData = item.getData();
-            if (itemData == null) return;
-            int xPos = (slotIndex % EQUIPMENT_SLOT_MAX_ROW) * EQUIPMENT_SLOT_SPACING + EQUIPMENT_SLOT_X + ITEM_OFFSET_X;
-            int yPos = (slotIndex / EQUIPMENT_SLOT_MAX_ROW) * SLOT_SPACING + EQUIPMENT_SLOT_Y + ITEM_OFFSET_Y;
-            g.setColor(itemData.rarity.getColor());
-            g.fillRect(xPos - (int)(ITEM_OFFSET_X / 1.1), yPos - (int)(ITEM_OFFSET_Y / 1.1), (int)(SLOT_SIZE / 1.06), (int)(SLOT_SIZE / 1.06));
-            g.drawImage(item.getModel(), xPos, yPos, ITEM_SIZE, ITEM_SIZE, null);
+
+        ItemData data = item.getData();
+        int pad = scale(8);
+        int previewX = (int) inspectorPanel.getX() + pad;
+        int previewY = (int) inspectorPanel.getY() + pad;
+        int previewSize = scale(36);
+
+        UIButtonRenderer.drawRunicSlot(g2d, previewX, previewY, previewSize, data.rarity.getColor(), data.rarity.getTextColor(), false);
+        g2d.drawImage(item.getModel(), previewX + scale(4), previewY + scale(4), previewSize - scale(8), previewSize - scale(8), null);
+
+        int textStartX = previewX + previewSize + scale(10);
+        int titleY = previewY + scale(12);
+
+        g2d.setFont(new Font("Arial", Font.BOLD, FONT_MEDIUM));
+        g2d.setColor(data.rarity.getTextColor());
+        g2d.drawString(data.name, textStartX, titleY);
+
+        int nameW = g2d.getFontMetrics().stringWidth(data.name);
+        String badgeLabel = (data.equip != null && data.equip.canEquip) ? data.rarity.name() + " • " + data.equip.slot.toUpperCase() : data.rarity.name();
+        UIButtonRenderer.drawBadge(g2d, badgeLabel, textStartX + nameW + scale(8), titleY, data.rarity.getColor(), data.rarity.getTextColor());
+
+        String valText = String.valueOf(data.sellValue);
+        g2d.setFont(new Font("Arial", Font.BOLD, FONT_MEDIUM));
+        int valW = g2d.getFontMetrics().stringWidth(valText);
+        int iconS = (int) (COIN_WID / 1.4);
+        int rightEdge = (int) (inspectorPanel.getX() + inspectorPanel.getWidth() - scale(10));
+        g2d.setColor(INV_TEXT_VALUE);
+        g2d.drawString(valText, rightEdge - valW - iconS - scale(3), titleY);
+        g2d.drawImage(coinIcon, rightEdge - iconS, titleY - g2d.getFontMetrics().getAscent() + 1, iconS, iconS, null);
+
+        // Desc
+        g2d.setColor(INV_TEXT_DESC);
+        g2d.setFont(new Font("Arial", Font.PLAIN, FONT_LIGHT));
+        int descMaxW = rightEdge - textStartX;
+        List<String> lines = wrapText(data.description, descMaxW, g2d.getFontMetrics());
+        int descY = titleY + scale(14);
+        for (int i = 0; i < Math.min(lines.size(), 3); i++) {
+            g2d.drawString(lines.get(i), textStartX, descY);
+            descY += g2d.getFontMetrics().getHeight();
         }
-    }
 
-    private void renderItemInfoBackpack(Graphics g) {
-        Inventory inventory = controller.getGameState().getPlayer().getInventory();
-        int absoluteSlotNumber = controller.getBackpackSlotNumber() + (controller.getBackpackSlot() * (INVENTORY_SLOT_MAX_ROW * INVENTORY_SLOT_MAX_COL));
-        if (absoluteSlotNumber >= inventory.getBackpack().size()) return;
-        InventoryItem item = inventory.getBackpack().get(absoluteSlotNumber);
-        if (item != null && controller.isInBackpack()) renderItemDescription(g, item);
-    }
-
-    private void renderItemInfoEquipment(Graphics g) {
-        Inventory inventory = controller.getGameState().getPlayer().getInventory();
-        if (controller.getEquipmentSlotNumber() >= inventory.getEquipped().length) return;
-        InventoryItem item = inventory.getEquipped()[controller.getEquipmentSlotNumber()];
-        if (item != null && !controller.isInBackpack()) {
-            renderItemDescription(g, item);
-            unequipBtn.render(g);
-        }
-    }
-
-    private void renderItemDescription(Graphics g, InventoryItem item) {
-        ItemData itemData = item.getData();
-        if (itemData == null) return;
-        g.setColor(itemData.rarity.getTextColor());
-        g.setFont(new Font("Arial", Font.BOLD, FONT_MEDIUM));
-        g.drawString(itemData.name, INV_ITEM_NAME_X, INV_ITEM_NAME_Y);
-        g.setColor(INV_TEXT_LABEL);
-        g.drawString("Value: ", INV_ITEM_VALUE_X, INV_ITEM_VALUE_Y);
-        g.setColor(INV_TEXT_VALUE);
-        String valueText = String.valueOf(itemData.sellValue);
-        g.drawString(valueText, INV_ITEM_VALUE_X + g.getFontMetrics().stringWidth("Value: "), INV_ITEM_VALUE_Y);
-        g.drawImage(coinIcon, INV_ITEM_VALUE_X + g.getFontMetrics().stringWidth("Value: " + valueText) + 2, INV_ITEM_VALUE_Y - g.getFontMetrics().getAscent() + 1, (int)(COIN_WID/1.5), (int)(COIN_HEI/1.5), null);
-
-        g.setColor(INV_TEXT_DESC);
-        g.setFont(new Font("Arial", Font.PLAIN, FONT_MEDIUM));
-        int descriptionMaxWidth = (int) (overlay.getX() + overlay.getWidth() - INV_ITEM_DESC_X - (10 * SCALE));
-        List<String> wrappedLines = wrapText(itemData.description, descriptionMaxWidth, g.getFontMetrics());
-        int lineHeight = g.getFontMetrics().getHeight();
-        int y = INV_ITEM_DESC_Y;
-        for (String line : wrappedLines) {
-            g.drawString(line, INV_ITEM_DESC_X, y);
-            y += lineHeight;
-        }
-    }
-
-    private void renderBonusInfo(Graphics g) {
-        g.setFont(new Font("Arial", Font.BOLD, FONT_MEDIUM));
-        g.setColor(INV_TEXT_COINS);
-        String coinText = "Coins: ";
-        g.drawString(coinText, INV_BONUS_X, INV_BONUS_Y);
-        g.setColor(INV_TEXT_VALUE);
-        String coinValue = String.valueOf(controller.getGameState().getPlayer().getCoins());
-        int coinTextWidth = g.getFontMetrics().stringWidth(coinText);
-        g.drawString(coinValue, INV_BONUS_X + coinTextWidth, INV_BONUS_Y);
-        g.drawImage(coinIcon, INV_BONUS_X + coinTextWidth + g.getFontMetrics().stringWidth(coinValue) + 2, INV_BONUS_Y - g.getFontMetrics().getAscent() + 1, (int)(COIN_WID/1.5), (int)(COIN_HEI/1.5), null);
-
-        g.setColor(INV_TEXT_HEADER);
-        g.setFont(new Font("Arial", Font.BOLD, FONT_MEDIUM));
-        g.drawString("Active bonuses: ", INV_BONUS_X, INV_BONUS_Y + 2 * INV_BONUS_SPACING);
-
-        renderBonusLine(g, "Health Bonus: ", InventoryBonus.getInstance().getHealth(), INV_BONUS_Y + 3 * INV_BONUS_SPACING);
-        renderBonusLine(g, "Defense Bonus: ", InventoryBonus.getInstance().getDefense(), INV_BONUS_Y + 4 * INV_BONUS_SPACING);
-        renderBonusLine(g, "Attack Bonus: ", InventoryBonus.getInstance().getAttack(), INV_BONUS_Y + 5 * INV_BONUS_SPACING);
-        renderBonusLine(g, "Stamina Bonus: ", InventoryBonus.getInstance().getStamina(), INV_BONUS_Y + 6 * INV_BONUS_SPACING);
-        renderBonusLine(g, "Critical Bonus: ", InventoryBonus.getInstance().getCritical(), INV_BONUS_Y + 7 * INV_BONUS_SPACING);
-        renderBonusLine(g, "Spell Bonus: ", InventoryBonus.getInstance().getSpell(), INV_BONUS_Y + 8 * INV_BONUS_SPACING);
-        renderBonusLine(g, "Cooldown Bonus: ", InventoryBonus.getInstance().getCooldown(), INV_BONUS_Y +  9 * INV_BONUS_SPACING);
-    }
-
-    private void renderBonusLine(Graphics g, String label, double bonusValue, int y) {
-        g.setColor(INV_TEXT_LABEL);
-        g.setFont(new Font("Arial", Font.PLAIN, FONT_MEDIUM));
-        g.drawString(label, INV_BONUS_X, y);
-        g.setColor(INV_TEXT_BONUS);
-        g.drawString(String.format("+%.1f%%", bonusValue * 100), INV_BONUS_X + g.getFontMetrics().stringWidth(label), y);
+        g2d.setFont(new Font("Arial", Font.ITALIC, FONT_SMALL));
+        g2d.setColor(new Color(120, 175, 180));
+        String hint = item.getItemId().contains("POTION")
+                ? "Tip: Press 1-4 or drag to Quick Potion bar  |  Right-Click: Drink"
+                : (data.equip != null && data.equip.canEquip ? "Tip: Right-Click to Equip / Unequip  |  Shift+Drag: Split Stack" : "Tip: Shift+Drag to Split Stack");
+        g2d.drawString(hint, previewX, (int) (inspectorPanel.getY() + inspectorPanel.getHeight() - scale(5)));
     }
 
     private void renderButtons(Graphics g) {
@@ -370,7 +446,7 @@ public class InventoryOverlay implements Overlay<MouseEvent, KeyEvent, Graphics>
 
     private void renderTooltip(Graphics g) {
         InventoryItem hoveredItem = controller.getHoveredItem();
-        if (hoveredItem != null && controller.isInBackpack() && hoveredItem.getData().equip.canEquip) {
+        if (hoveredItem != null && controller.isInBackpack() && hoveredItem.getData() != null && hoveredItem.getData().equip != null && hoveredItem.getData().equip.canEquip) {
             Inventory inventory = controller.getGameState().getPlayer().getInventory();
             String slotType = hoveredItem.getData().equip.slot;
             for (Map.Entry<String, Integer> entry : equipmentSlots.entrySet()) {
@@ -428,6 +504,7 @@ public class InventoryOverlay implements Overlay<MouseEvent, KeyEvent, Graphics>
 
     @Override
     public void mouseClicked(MouseEvent e) {
+
     }
 
     @Override

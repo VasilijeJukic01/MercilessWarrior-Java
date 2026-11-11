@@ -2,6 +2,7 @@ package platformer.model.entities.enemies;
 
 import platformer.animation.Anim;
 import platformer.core.GameContext;
+import platformer.core.config.BalanceManager;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
 import platformer.event.EventBus;
@@ -130,25 +131,35 @@ public class EnemyManager {
         if (e.getEnemyAction() == Anim.DEATH) {
             Player player = context.getPlayer();
             context.getObjectManager().generateLoot(e);
-            player.changeStamina(rand.nextInt(5));
-            player.changeExp(rand.nextInt(50)+100);
+            player.changeStamina(rand.nextInt(5) + 2);
+            BalanceManager.EnemyBalance eb = BalanceManager.getInstance().getEnemyBalance(e.getEnemyType());
+            int expRange = Math.max(1, eb.getMaxExp() - eb.getMinExp() + 1);
+            int expGain = eb.getMinExp() + rand.nextInt(expRange);
+            player.changeExp(expGain);
+            if (eb.getTokenReward() > 0) {
+                player.changeUpgradeTokens(eb.getTokenReward());
+            }
+            if (PerksBonus.getInstance().getVampiricHealPct() > 0) {
+                player.changeHealth(player.getMaxHealth() * PerksBonus.getInstance().getVampiricHealPct());
+            }
             EventBus.getInstance().publish(new EnemyDefeatedEvent(e));
         }
     }
 
     private double[] damage(Player player) {
+        BalanceManager.PlayerBalance pb = BalanceManager.getInstance().getPlayerBalance();
         double critical = 0;
-        double dmg = player.getAttackDmg() + PerksBonus.getInstance().getBonusAttack();
-        double equipmentBonus = InventoryBonus.getInstance().getAttack() * dmg;
-        dmg += equipmentBonus;
+        double baseDmg = player.getAttackDmg();
+        double perkBonusPct = PerksBonus.getInstance().getBonusAttack() / 100.0;
+        double equipBonusPct = InventoryBonus.getInstance().getAttack();
+        double dmg = baseDmg * (1.0 + perkBonusPct + equipBonusPct);
 
-        Random rand = new Random();
-        double criticalHit = rand.nextInt(100 - PerksBonus.getInstance().getCriticalHitChance());
-        if (criticalHit >= 1 && criticalHit <= 10) {
-            dmg *= 2;
+        double totalCritChance = pb.getBaseCritChance() + PerksBonus.getInstance().getCriticalHitChance() + (InventoryBonus.getInstance().getCritical() * 100.0);
+        if (new Random().nextDouble() * 100.0 < totalCritChance) {
+            dmg *= (pb.getBaseCritMultiplier() + PerksBonus.getInstance().getCritMultiplierBonus());
             critical = 1;
         }
-        return new double[] {dmg, critical};
+        return new double[]{dmg, critical};
     }
 
     /**
@@ -205,7 +216,9 @@ public class EnemyManager {
                     Color dmgColor = isCritical ? CRITICAL_COLOR : DAMAGE_COLOR;
                     context.getEffectManager().spawnDamageNumber(dmgText, enemy.getHitBox().getCenterX(), enemy.getHitBox().y, dmgColor);
                     if (damageModifier > 0.1) damageModifier *= 0.75;
-                    player.changeStamina(new Random().nextInt(3) + 1);
+                    BalanceManager.PlayerBalance pb = BalanceManager.getInstance().getPlayerBalance();
+                    int stRange = Math.max(1, pb.getMeleeHitStaminaMax() - pb.getMeleeHitStaminaMin() + 1);
+                    player.changeStamina(pb.getMeleeHitStaminaMin() + new Random().nextInt(stRange));
                 }
             }
 
@@ -259,10 +272,15 @@ public class EnemyManager {
     }
 
     public void checkEnemySpellHit() {
-        handleEnemySpellHit(Skeleton.class, 0.08);
-        handleEnemySpellHit(Ghoul.class, 0.16);
-        handleEnemySpellHit(Knight.class, 0.08);
-        handleEnemySpellHit(Wraith.class, 0.16);
+        BalanceManager.CombatBalance cb = BalanceManager.getInstance().getCombat();
+        double spellMult = 1.0 + InventoryBonus.getInstance().getSpell() + (PerksBonus.getInstance().getSpellDamageBonus() / 100.0);
+        double baseFlame = cb.getFlameTickDamage() * spellMult;
+        double undeadFlame = baseFlame * cb.getFlameUndeadMultiplier();
+
+        handleEnemySpellHit(Skeleton.class, baseFlame);
+        handleEnemySpellHit(Ghoul.class, undeadFlame);
+        handleEnemySpellHit(Knight.class, baseFlame);
+        handleEnemySpellHit(Wraith.class, undeadFlame);
     }
 
     public void checkEnemyTrapHit(GameObject object) {
@@ -275,7 +293,7 @@ public class EnemyManager {
         for (List<Enemy> enemyList : enemies.values()) {
             for (Enemy enemy : enemyList) {
                 if (enemy.isAlive() && enemy.getEnemyAction() != Anim.DEATH && object.getHitBox().intersects(enemy.getHitBox())) {
-                    enemy.hit(500, false, false);
+                    enemy.hit(BalanceManager.getInstance().getCombat().getTrapInstantKillDamage(), false, false);
                 }
             }
         }
@@ -288,21 +306,34 @@ public class EnemyManager {
     }
 
     public void checkEnemyProjectileHit(Projectile projectile) {
+        BalanceManager.CombatBalance cb = BalanceManager.getInstance().getCombat();
+        if (projectile instanceof Fireball) {
+            double spellMult = 1.0 + InventoryBonus.getInstance().getSpell() + (PerksBonus.getInstance().getSpellDamageBonus() / 100.0);
+            double fbDamage = cb.getPlayerFireballDamage() * spellMult;
+            for (Enemy enemy : getAllEnemies()) {
+                if (enemy instanceof Roric) continue;
+                if (enemy.isAlive() && enemy.getEnemyAction() != Anim.DEATH && projectile.getShapeBounds().intersects(enemy.getHitBox())) {
+                    if (enemy.hit(fbDamage, false, true)) {
+                        String dmgText = String.format("%.1f", fbDamage);
+                        context.getEffectManager().spawnDamageNumber(dmgText, enemy.getHitBox().getCenterX(), enemy.getHitBox().y, DAMAGE_COLOR);
+                    }
+                    checkEnemyDying(enemy);
+                    if (!PerksBonus.getInstance().isPiercingFireball()) {
+                        projectile.setAlive(false);
+                        break;
+                    }
+                }
+            }
+            return;
+        }
+
         for (Skeleton skeleton : getEnemies(Skeleton.class)) {
             if (skeleton.isAlive() && skeleton.getEnemyAction() != Anim.DEATH && projectile.getShapeBounds().intersects(skeleton.getHitBox())) {
-                skeleton.hit(ENEMY_PROJECTILE_DMG, false, false);
+                skeleton.hit(cb.getTrapProjectileToEnemyDamage(), false, false);
                 Direction projectileDirection = projectile.getDirection();
                 skeleton.setPushDirection(projectileDirection == Direction.LEFT ? Direction.RIGHT : Direction.LEFT);
                 projectile.setAlive(false);
                 checkEnemyDying(skeleton);
-            }
-        }
-        for (Lancer lancer : getEnemies(Lancer.class)) {
-            if (projectile instanceof Fireball && lancer.isAlive() && lancer.getEnemyAction() != Anim.DEATH) {
-                if (!projectile.getShapeBounds().intersects(lancer.getHitBox())) continue;
-                lancer.hit(FIREBALL_PROJECTILE_DMG, false, false);
-                projectile.setAlive(false);
-                checkEnemyDying(lancer);
             }
         }
     }

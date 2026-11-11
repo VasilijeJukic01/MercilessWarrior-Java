@@ -123,10 +123,12 @@ public final class FilePaths {
     public static final String WHITE_RADIAL_GLOW = "/images/particles/whiteRadialGlow.png";
 
     // Inventory / Shop
+    public static final String BALANCE_PATH = "/items/balance.json";
     public static final String ITEMS_PATH = "/items/items.json";
     public static final String RECIPES_PATH = "/items/recipes.json";
     public static final String SHOP_INV_PATH = "/items/shop_inventory.json";
     public static final String LOOT_TABLE_PATH = "/items/loot_tables.json";
+    public static final String BLACKSMITH_RECIPES_PATH = "/items/blacksmith_recipes.json";
 
     public static final String PERKS_PATH = "/items/perks.json";
     public static final String EQUIPMENT_PLACEHOLDERS_PATH = "/images/inventory/EquipmentPlaceholders.png";

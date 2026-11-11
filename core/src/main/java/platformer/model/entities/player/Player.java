@@ -5,6 +5,7 @@ import platformer.animation.SpriteManager;
 import platformer.audio.Audio;
 import platformer.audio.types.Sound;
 import platformer.core.GameContext;
+import platformer.core.config.BalanceManager;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
 import platformer.model.effects.TimeCycleManager;
@@ -14,8 +15,10 @@ import platformer.model.entities.Direction;
 import platformer.model.entities.Entity;
 import platformer.model.effects.EffectManager;
 import platformer.model.effects.particles.DustType;
+import platformer.model.entities.enemies.Enemy;
 import platformer.model.entities.enemies.EnemyManager;
 import platformer.model.gameObjects.ObjectManager;
+import platformer.model.inventory.craft.BlacksmithRecipeManager;
 import platformer.model.levels.LevelManager;
 import platformer.model.levels.interior.InteriorManager;
 import platformer.model.projectiles.Projectile;
@@ -26,6 +29,7 @@ import platformer.model.inventory.InventoryBonus;
 import platformer.model.inventory.item.ItemRarity;
 import platformer.model.minimap.MinimapManager;
 import platformer.model.perks.PerksBonus;
+import platformer.model.world.WorldMemoryManager;
 import platformer.physics.CollisionDetector;
 import platformer.physics.DamageSource;
 
@@ -48,6 +52,7 @@ public class Player extends Entity {
     private final ProjectileManager projectileManager;
     private final MinimapManager minimapManager;
     private final EffectManager effectManager;
+    private final WorldMemoryManager worldMemoryManager;
     private int[][] levelData;
 
     // Core Variables
@@ -73,8 +78,7 @@ public class Player extends Entity {
     // Status
     private int currentJumps = 0;
     private int dashTick = 0;
-    private final int attackDmg = 5, transformAttackDmg = 8;
-    private double currentStamina = 15;
+    private double currentStamina = BalanceManager.getInstance().getPlayerBalance().getInitialStamina();
     private int spellState = 0;
     private double recoilSpeedX = 0.0;
     private PlayerDataManager playerDataManager;
@@ -91,7 +95,7 @@ public class Player extends Entity {
 
 
     public Player(int xPos, int yPos, int width, int height, GameContext context) {
-        super(xPos, yPos, width, height, PLAYER_MAX_HP);
+        super(xPos, yPos, width, height, BalanceManager.getInstance().getPlayerBalance().getBaseHealth());
         this.enemyManager = context.getEnemyManager();
         this.levelManager = context.getLevelManager();
         this.interiorManager = context.getInteriorManager();
@@ -99,6 +103,7 @@ public class Player extends Entity {
         this.projectileManager = context.getProjectileManager();
         this.minimapManager = context.getMinimapManager();
         this.effectManager = context.getEffectManager();
+        this.worldMemoryManager = context.getWorldMemoryManager();
         init(context);
     }
 
@@ -188,11 +193,17 @@ public class Player extends Entity {
         boolean canBlock = checkAction(PlayerAction.CAN_BLOCK);
         if (canBlock) {
             Logger.getInstance().notify("Damage blocked successfully!", Message.INFORMATION);
-            double blockCooldown =  PLAYER_BLOCK_CD;
-            double equipmentBonus = InventoryBonus.getInstance().getCooldown() * blockCooldown;
-            blockCooldown -= equipmentBonus;
-            cooldown[Cooldown.BLOCK.ordinal()] = blockCooldown;
-            if (PerksBonus.getInstance().isRestorePower()) changeStamina(5);
+            BalanceManager.PlayerBalance pb = BalanceManager.getInstance().getPlayerBalance();
+            double blockCooldown = pb.getBlockCooldown() * (1.0 - InventoryBonus.getInstance().getCooldown());
+            cooldown[Cooldown.BLOCK.ordinal()] = Math.max(0.1, blockCooldown);
+            if (PerksBonus.getInstance().isRestorePower()) {
+                changeStamina(pb.getParryStaminaRestore());
+                for (Enemy enemy : enemyManager.getAllEnemies()) {
+                    if (enemy.isAlive() && Math.abs(enemy.getHitBox().getCenterX() - hitBox.getCenterX()) < TILES_SIZE * 2.5) {
+                        enemy.freeze(120);
+                    }
+                }
+            }
         }
     }
 
@@ -227,7 +238,7 @@ public class Player extends Entity {
         boolean onObject = checkAction(PlayerAction.ON_OBJECT);
         if (onWall && !onObject) entityState = Anim.WALL;
         boolean dash = checkAction(PlayerAction.DASH);
-        if (dash) {
+        if (dash && PerksBonus.getInstance().isDashSlash()) {
             setDashAnimation();
             return;
         }
@@ -311,8 +322,9 @@ public class Player extends Entity {
 
         boolean wallPush = checkAction(PlayerAction.WALL_PUSH);
         if (recoilSpeedX == 0) {
-            if (left) dx -= checkAction(PlayerAction.LAVA) ? LAVA_PLAYER_SPEED : PLAYER_SPEED;
-            if (right) dx += checkAction(PlayerAction.LAVA) ? LAVA_PLAYER_SPEED : PLAYER_SPEED;
+            boolean slowedByLava = checkAction(PlayerAction.LAVA) && !PerksBonus.getInstance().isLavaWalk();
+            if (left) dx -= slowedByLava ? LAVA_PLAYER_SPEED : PLAYER_SPEED;
+            if (right) dx += slowedByLava ? LAVA_PLAYER_SPEED : PLAYER_SPEED;
             if (!left && !right && !inAir) {
                 dx += CollisionDetector.getLedgeSlip(hitBox, levelData);
             }
@@ -452,8 +464,8 @@ public class Player extends Entity {
 
     private void updateAttack() {
         boolean attacking = checkAction(PlayerAction.ATTACK);
-        boolean dash = checkAction(PlayerAction.DASH);
-        if (attacking || dash) checkAttack();
+        boolean dashSlash = checkAction(PlayerAction.DASH) && PerksBonus.getInstance().isDashSlash();
+        if (attacking || dashSlash) checkAttack();
     }
 
     public void launch(double launchSpeed) {
@@ -575,19 +587,14 @@ public class Player extends Entity {
     public void changeHealth(double value) {
         if (checkAction(PlayerAction.DYING)) return;
         if (value < 0) {
-            boolean hit = checkAction(PlayerAction.HIT);
-            if (hit) return;
-            else addAction(PlayerAction.HIT);
+            if (checkAction(PlayerAction.HIT)) return;
+            addAction(PlayerAction.HIT);
         }
         else {
             String healText = String.format("+%.1f", value);
             effectManager.spawnDamageNumber(healText, getHitBox().getCenterX(), getHitBox().y, HEAL_COLOR);
         }
-        currentHealth += value;
-        double healthCap = maxHealth + PerksBonus.getInstance().getBonusHealth();
-        double equipmentBonus = InventoryBonus.getInstance().getHealth() * healthCap;
-        healthCap += equipmentBonus;
-        currentHealth = Math.max(Math.min(currentHealth, healthCap), 0);
+        currentHealth = Math.max(Math.min(currentHealth + value, getMaxHealth()), 0);
     }
 
     public void changeHealth(double value, DamageSource source) {
@@ -603,9 +610,8 @@ public class Player extends Entity {
     }
 
     private double calculateDamageAfterDefense(double rawDamage) {
-        double defenseBonus = InventoryBonus.getInstance().getDefense();
-        double damageReduction = rawDamage * defenseBonus;
-        return rawDamage - damageReduction;
+        double defenseBonus = Math.min(0.75, InventoryBonus.getInstance().getDefense() + PerksBonus.getInstance().getDefenseBonus());
+        return rawDamage * (1.0 - defenseBonus);
     }
 
     private void applyKnockback(DamageSource source) {
@@ -624,11 +630,7 @@ public class Player extends Entity {
             String dmgText = String.format("%.1f", -value);
             effectManager.spawnDamageNumber(dmgText, getHitBox().getCenterX(), getHitBox().y, DAMAGE_COLOR);
         }
-        currentHealth += value;
-        double healthCap = maxHealth + PerksBonus.getInstance().getBonusHealth();
-        double equipmentBonus = InventoryBonus.getInstance().getHealth() * healthCap;
-        healthCap += equipmentBonus;
-        currentHealth = Math.max(Math.min(currentHealth, healthCap), 0);
+        currentHealth = Math.max(Math.min(currentHealth + value, getMaxHealth()), 0);
     }
 
     public void changeStamina(double value) {
@@ -636,11 +638,7 @@ public class Player extends Entity {
             String staminaText = String.format("+%.1f", value);
             effectManager.spawnDamageNumber(staminaText, getHitBox().getCenterX(), getHitBox().y, STAMINA_COLOR);
         }
-        currentStamina += value;
-        double staminaCap = PLAYER_MAX_ST + PerksBonus.getInstance().getBonusPower();
-        double equipmentBonus = InventoryBonus.getInstance().getStamina() * staminaCap;
-        staminaCap += equipmentBonus;
-        currentStamina = Math.max(Math.min(currentStamina, staminaCap), 0);
+        currentStamina = Math.max(Math.min(currentStamina + value, getMaxStamina()), 0);
         if (currentStamina == 0) {
             removeAction(PlayerAction.TRANSFORM);
             if (spellState == 1) spellState = 2;
@@ -702,20 +700,24 @@ public class Player extends Entity {
     }
 
     private void updateSpells() {
+        BalanceManager.PlayerBalance pb = BalanceManager.getInstance().getPlayerBalance();
         if (spellState == 1) {
-            changeStamina(FLAME_COST);
+            double drain = pb.getFlameStaminaDrainPerTick() * (1.0 - PerksBonus.getInstance().getFlameCostReduction());
+            changeStamina(-drain);
             enemyManager.checkEnemySpellHit();
             levelManager.checkDecorationCut(attackBox);
             objectManager.checkObjectBreak(attackBox);
         }
-        boolean transform = checkAction(PlayerAction.TRANSFORM);
-        if (transform) {
-            changeStamina(TRANSFORM_COST);
+        if (checkAction(PlayerAction.TRANSFORM)) {
+            double drain = pb.getTransformStaminaDrainPerTick() * (1.0 - PerksBonus.getInstance().getTransformCostReduction());
+            changeStamina(-drain);
         }
     }
 
     private void updateStatus() {
-        if (checkAction(PlayerAction.LAVA)) changeHealthNoKnockback(-LAVA_DMG);
+        if (checkAction(PlayerAction.LAVA) && !PerksBonus.getInstance().isLavaWalk()) {
+            changeHealthNoKnockback(-BalanceManager.getInstance().getCombat().getLavaTickDamage());
+        }
     }
 
     // Core
@@ -787,9 +789,7 @@ public class Player extends Entity {
     }
 
     private void resetHealth() {
-        currentHealth = maxHealth + PerksBonus.getInstance().getBonusHealth();
-        double equipmentBonus = InventoryBonus.getInstance().getHealth() * currentHealth;
-        currentHealth += equipmentBonus;
+        currentHealth = getMaxHealth();
     }
 
     private void resetFlags() {
@@ -851,18 +851,13 @@ public class Player extends Entity {
         this.setAttacking(true);
 
         switch (playerAttackState) {
-            case ATTACK_1, ATTACK_2:
-                applyRecoil(0.6 * SCALE);
-                break;
-            case ATTACK_3:
-                applyRecoil(1.0 * SCALE);
-                break;
+            case ATTACK_1, ATTACK_2 -> applyRecoil(0.6 * SCALE);
+            case ATTACK_3 -> applyRecoil(1.0 * SCALE);
         }
 
-        double cd =  PLAYER_ATTACK_CD + PerksBonus.getInstance().getBonusCooldown();
-        double equipmentBonus = InventoryBonus.getInstance().getCooldown() * cd;
-        cd -= equipmentBonus;
-        cooldown[Cooldown.ATTACK.ordinal()] = cd;
+        double baseCd = BalanceManager.getInstance().getPlayerBalance().getAttackCooldown();
+        double cd = (baseCd + PerksBonus.getInstance().getBonusCooldown()) * (1.0 - InventoryBonus.getInstance().getCooldown());
+        cooldown[Cooldown.ATTACK.ordinal()] = Math.max(0.1, cd);
     }
 
     public void setCurrentJumps(int currentJumps) {
@@ -902,8 +897,23 @@ public class Player extends Entity {
         return animIndex;
     }
 
+    public double getMaxHealth() {
+        double base = BalanceManager.getInstance().getPlayerBalance().getBaseHealth();
+        double perkPct = PerksBonus.getInstance().getBonusHealth() / 100.0;
+        double equipPct = InventoryBonus.getInstance().getHealth();
+        return base * (1.0 + perkPct + equipPct);
+    }
+
+    public double getMaxStamina() {
+        double base = BalanceManager.getInstance().getPlayerBalance().getBaseStamina();
+        double perkPct = PerksBonus.getInstance().getBonusPower() / 100.0;
+        double equipPct = InventoryBonus.getInstance().getStamina();
+        return base * (1.0 + perkPct + equipPct);
+    }
+
     public double getHorizontalSpeed() {
-        double currentSpeed = checkAction(PlayerAction.LAVA) ? LAVA_PLAYER_SPEED : PLAYER_SPEED;
+        boolean slowedByLava = checkAction(PlayerAction.LAVA) && !PerksBonus.getInstance().isLavaWalk();
+        double currentSpeed = slowedByLava ? LAVA_PLAYER_SPEED : PLAYER_SPEED;
         if (checkAction(PlayerAction.DASH)) currentSpeed *= DASH_SPEED;
         if (checkAction(PlayerAction.LEFT) && !checkAction(PlayerAction.RIGHT)) return -currentSpeed;
         else if (checkAction(PlayerAction.RIGHT) && !checkAction(PlayerAction.LEFT)) return currentSpeed;
@@ -915,7 +925,10 @@ public class Player extends Entity {
     }
 
     public int getAttackDmg() {
-        return checkAction(PlayerAction.TRANSFORM) ? transformAttackDmg : attackDmg;
+        var pb = BalanceManager.getInstance().getPlayerBalance();
+        int base = checkAction(PlayerAction.TRANSFORM) ? pb.getTransformedAttackDamage() : pb.getBaseAttackDamage();
+        int swordUpgradeBonus = BlacksmithRecipeManager.getInstance().getTotalSwordBonusDamage(worldMemoryManager);
+        return base + swordUpgradeBonus;
     }
 
     public double getCurrentStamina() {

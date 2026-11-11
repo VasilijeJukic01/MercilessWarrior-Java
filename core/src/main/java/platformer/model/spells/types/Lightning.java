@@ -1,6 +1,7 @@
 package platformer.model.spells.types;
 
 import platformer.animation.SpriteManager;
+import platformer.core.config.BalanceManager;
 import platformer.event.EventBus;
 import platformer.event.events.effects.ScreenShakeEvent;
 import platformer.model.entities.player.Player;
@@ -40,7 +41,7 @@ public class Lightning extends Spell {
         }
         if (!hasHitPlayer && animIndex > 0 && animIndex < 5) {
             if (hitBox.intersects(player.getHitBox())) {
-                player.changeHealth(-20, this);
+                player.changeHealth(-BalanceManager.getInstance().getCombat().getLightningSpellDamage(), this);
                 hasHitPlayer = true;
             }
         }

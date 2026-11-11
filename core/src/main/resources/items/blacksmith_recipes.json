@@ -1,0 +1,169 @@
+{
+  "swordUpgrades": [
+    {
+      "tier": 1,
+      "name": "Tempered Iron Edge (+1)",
+      "description": "Hones your blade with refined iron, permanently increasing Base Sword Damage by +2.",
+      "bonusDamage": 2,
+      "coinCost": 40,
+      "ingredients": {
+        "IRON_ORE": 3,
+        "COPPER_ORE": 2
+      }
+    },
+    {
+      "tier": 2,
+      "name": "Silver-Inlaid Blade (+2)",
+      "description": "Reinforces the core with pure silver, permanently increasing Base Sword Damage by +2 (Total +4).",
+      "bonusDamage": 2,
+      "coinCost": 90,
+      "ingredients": {
+        "IRON_INGOT": 2,
+        "SILVER_ORE": 3
+      }
+    },
+    {
+      "tier": 3,
+      "name": "Magma-Forged Steel (+3)",
+      "description": "Quenched in molten ore, permanently increasing Base Sword Damage by +3 (Total +7).",
+      "bonusDamage": 3,
+      "coinCost": 180,
+      "ingredients": {
+        "IRON_INGOT": 3,
+        "MAGMA_ORE": 2,
+        "CRIMSON_CRYSTAL": 1
+      }
+    },
+    {
+      "tier": 4,
+      "name": "Storm-Runed Greatsword (+4)",
+      "description": "Infused with Azurelite and Storm crystal, permanently increasing Base Sword Damage by +3 (Total +10).",
+      "bonusDamage": 3,
+      "coinCost": 350,
+      "ingredients": {
+        "GOLD_INGOT": 2,
+        "AZURELITE_ORE": 2,
+        "STORM_FORGED_CRYSTAL": 1
+      }
+    }
+  ],
+  "smithingRecipes": [
+    {
+      "output": "IRON_INGOT",
+      "amount": 1,
+      "coinCost": 5,
+      "ingredients": {
+        "IRON_ORE": 2
+      }
+    },
+    {
+      "output": "GOLD_INGOT",
+      "amount": 1,
+      "coinCost": 15,
+      "ingredients": {
+        "GOLD_ORE": 2
+      }
+    },
+    {
+      "output": "NAILS",
+      "amount": 10,
+      "coinCost": 5,
+      "ingredients": {
+        "IRON_INGOT": 1
+      }
+    },
+    {
+      "output": "WIRE",
+      "amount": 2,
+      "coinCost": 8,
+      "ingredients": {
+        "COPPER_ORE": 2,
+        "SILVER_ORE": 1
+      }
+    },
+    {
+      "output": "GOLD_POWDER",
+      "amount": 2,
+      "coinCost": 10,
+      "ingredients": {
+        "GOLD_INGOT": 1
+      }
+    },
+    {
+      "output": "HELMET_WARRIOR",
+      "amount": 1,
+      "coinCost": 35,
+      "ingredients": {
+        "IRON_INGOT": 2,
+        "LEATHER_STRAPS": 2
+      }
+    },
+    {
+      "output": "ARMOR_WARRIOR",
+      "amount": 1,
+      "coinCost": 50,
+      "ingredients": {
+        "IRON_INGOT": 3,
+        "LEATHER": 2
+      }
+    },
+    {
+      "output": "TROUSERS_WARRIOR",
+      "amount": 1,
+      "coinCost": 40,
+      "ingredients": {
+        "IRON_INGOT": 2,
+        "LINEN_ROLL": 2
+      }
+    },
+    {
+      "output": "BRACELETS_WARRIOR",
+      "amount": 1,
+      "coinCost": 30,
+      "ingredients": {
+        "IRON_INGOT": 1,
+        "LEATHER_STRAPS": 2
+      }
+    },
+    {
+      "output": "BOOTS_WARRIOR",
+      "amount": 1,
+      "coinCost": 30,
+      "ingredients": {
+        "IRON_INGOT": 1,
+        "LEATHER": 2
+      }
+    },
+    {
+      "output": "ARMOR_GUARDIAN",
+      "amount": 1,
+      "coinCost": 120,
+      "ingredients": {
+        "IRON_INGOT": 4,
+        "SONIC_QUARTZ_ORE": 2,
+        "MAGMA_ORE": 1
+      }
+    },
+    {
+      "output": "RING_AMETHYST",
+      "amount": 1,
+      "coinCost": 150,
+      "ingredients": {
+        "GOLD_INGOT": 1,
+        "AMETHYST_ORE": 3,
+        "SILVER_ORE": 2
+      }
+    },
+    {
+      "output": "CHARM_THUNDERBOLT",
+      "amount": 1,
+      "coinCost": 400,
+      "ingredients": {
+        "GOLD_INGOT": 2,
+        "ELECTRICITE_ORE": 1,
+        "STORM_FORGED_CRYSTAL": 1,
+        "AETHERIUM_CRYSTAL": 1
+      }
+    }
+  ]
+}

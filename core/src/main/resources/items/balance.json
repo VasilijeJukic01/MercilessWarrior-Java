@@ -1,0 +1,101 @@
+{
+  "player": {
+    "baseHealth": 100,
+    "baseStamina": 100,
+    "initialStamina": 15,
+    "baseAttackDamage": 5,
+    "transformedAttackDamage": 8,
+    "baseCritChance": 10,
+    "baseCritMultiplier": 2.0,
+    "meleeHitStaminaMin": 1,
+    "meleeHitStaminaMax": 3,
+    "parryStaminaRestore": 10,
+    "dashStaminaCost": 3.0,
+    "fireballStaminaCost": 15.0,
+    "flameStaminaDrainPerTick": 0.20,
+    "transformStaminaDrainPerTick": 0.025,
+    "attackCooldown": 0.75,
+    "blockCooldown": 1.20,
+    "dashCooldown": 1.75,
+    "spellCooldown": 2.50,
+    "xpPerLevelMultiplier": 850,
+    "tokensPerLevel": 1,
+    "levelsPerToken": 1
+  },
+  "consumables": {
+    "healthPotionRestore": 25,
+    "staminaPotionRestore": 20
+  },
+  "combat": {
+    "playerFireballDamage": 15,
+    "flameTickDamage": 0.10,
+    "flameUndeadMultiplier": 1.6,
+    "enemyProjectileToPlayerDamage": 10,
+    "trapProjectileToEnemyDamage": 8,
+    "lavaTickDamage": 0.5,
+    "trapInstantKillDamage": 500,
+    "roricTrapDamage": 10,
+    "roricTrapHealth": 10,
+    "lightningSpellDamage": 20,
+    "flashSpellDamage": 10,
+    "arrowRainSpellDamage": 10,
+    "roricBeamSpellDamage": 15,
+    "roricSkyBeamSpellDamage": 15
+  },
+  "enemies": {
+    "SKELETON": {
+      "health": 25,
+      "damage": 14,
+      "minCoins": 6,
+      "maxCoins": 10,
+      "minExp": 75,
+      "maxExp": 95,
+      "tokenReward": 0
+    },
+    "GHOUL": {
+      "health": 40,
+      "damage": 18,
+      "minCoins": 12,
+      "maxCoins": 18,
+      "minExp": 120,
+      "maxExp": 145,
+      "tokenReward": 0
+    },
+    "KNIGHT": {
+      "health": 55,
+      "damage": 25,
+      "minCoins": 18,
+      "maxCoins": 26,
+      "minExp": 165,
+      "maxExp": 195,
+      "tokenReward": 0
+    },
+    "WRAITH": {
+      "health": 50,
+      "damage": 32,
+      "minCoins": 22,
+      "maxCoins": 32,
+      "minExp": 200,
+      "maxExp": 240,
+      "tokenReward": 0
+    },
+    "LANCER": {
+      "health": 150,
+      "damage": 25,
+      "minCoins": 140,
+      "maxCoins": 160,
+      "minExp": 550,
+      "maxExp": 650,
+      "tokenReward": 1
+    },
+    "RORIC": {
+      "health": 999,
+      "damage": 30,
+      "minCoins": 250,
+      "maxCoins": 300,
+      "minExp": 1000,
+      "maxExp": 1000,
+      "tokenReward": 2
+    }
+  }
+}
