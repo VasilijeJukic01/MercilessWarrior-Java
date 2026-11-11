@@ -108,7 +108,7 @@ public class Player extends Entity {
         addAction(PlayerAction.CAN_DASH);
         initHitBox(PLAYER_HB_WID, PLAYER_HB_HEI);
         initAttackBox();
-        initManagers(context.getTimeCycleManager());
+        initManagers(context.getTimeCycleManager(), context.getGameState() == null);
         loadAnimations();
 
         attackChain.add(AttackState.ATTACK_1);
@@ -126,12 +126,12 @@ public class Player extends Entity {
         this.attackBox = new Rectangle2D.Double(xPos, yPos-1, PLAYER_AB_WID, PLAYER_AB_HEI);
     }
 
-    private void initManagers(TimeCycleManager timeCycleManager) {
+    private void initManagers(TimeCycleManager timeCycleManager, boolean isMenuDummy) {
         this.playerDataManager = new PlayerDataManager(this, minimapManager, timeCycleManager);
         this.minimapHandler = new PlayerMinimapHandler(this, minimapManager);
         this.actionHandler = new PlayerActionHandler(this, effectManager);
         this.feedbackHandler = new PlayerFeedbackHandler(this, effectManager);
-        this.inventory = new Inventory();
+        this.inventory = new Inventory(!isMenuDummy);
     }
 
     public void loadLvlData(int[][] levelData) {

@@ -34,12 +34,13 @@ public class WorldMemoryManager {
     // Long-term memory -> permanent flags saved to Account
     private final Set<String> permanentFlags = new HashSet<>();
 
-    public WorldMemoryManager() {
-        registerEvents();
-    }
+    public WorldMemoryManager() { }
 
     public void wire(GameContext context) {
         this.context = context;
+        if (context.getGameState() != null) {
+            registerEvents();
+        }
     }
 
     private void registerEvents() {

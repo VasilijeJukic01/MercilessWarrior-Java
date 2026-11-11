@@ -28,7 +28,7 @@ public class NpcMetadata {
     public boolean isConditionMet(WorldMemoryManager memory, QuestManager quests) {
         if (requiredFlag != null && !memory.hasFlag(requiredFlag)) return false;
         if (excludeFlag != null && memory.hasFlag(excludeFlag)) return false;
-        if (excludeQuestActive != null && quests.isQuestActive(excludeQuestActive)) return false;
+        if (excludeQuestActive != null && (quests.isQuestActive(excludeQuestActive) || quests.isQuestCompleted(excludeQuestActive))) return false;
         return true;
     }
 }

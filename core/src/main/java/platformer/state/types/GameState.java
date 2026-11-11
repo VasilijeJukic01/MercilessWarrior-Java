@@ -193,11 +193,12 @@ public class GameState extends AbstractState implements State {
         this.getPlayer().getPlayerDataManager().loadPlayerData();
         this.getPlayer().getInventory().fillItems(Framework.getInstance().getAccount().getItems());
         context.getPerksManager().loadUnlockedPerks(Framework.getInstance().getAccount().getPerks());
+        context.getLevelManager().resetAllCachedLevels();
         context.getWorldMemoryManager().loadFromAccount(Framework.getInstance().getAccount().getWorldFlags());
+        context.getQuestManager().loadFromAccount(Framework.getInstance().getAccount().getQuests());
         context.getLevelManager().loadSavePoint(Framework.getInstance().getAccount().getSpawn());
         context.getMinimapManager().loadExplorationData(Framework.getInstance().getAccount().getExplorationData());
         this.overlayManager.reset();
-        context.getQuestManager().loadFromAccount(Framework.getInstance().getAccount().getQuests());
         reset();
         camera.updateLevelBounds(getLevelManager().getCurrentLevel());
     }

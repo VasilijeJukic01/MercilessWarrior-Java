@@ -40,11 +40,13 @@ public class QuestManager {
     public QuestManager() {
         loadQuests(QUESTS_PATH);
         initSlots();
-        EventBus.getInstance().register(PreSaveEvent.class, e -> syncToAccount());
     }
 
     public void wire(GameContext context) {
         this.context = context;
+        if (context.getGameState() != null) {
+            EventBus.getInstance().register(PreSaveEvent.class, e -> syncToAccount());
+        }
     }
 
     public void loadQuests(String filePath) {

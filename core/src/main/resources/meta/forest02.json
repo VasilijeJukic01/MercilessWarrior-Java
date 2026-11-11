@@ -2,5 +2,12 @@
   "backgroundId": "FOREST_ROOTS",
   "ambientParticlesEnabled": true,
   "tileset": "Forest",
-  "biome": "FOREST"
+  "biome": "FOREST",
+  "npcs": [
+    {
+      "type": "ANITA",
+      "excludeQuestActive": "Helping Anita",
+      "excludeFlag": "VILLAGE_CLEARED_deepmoss02"
+    }
+  ]
 }

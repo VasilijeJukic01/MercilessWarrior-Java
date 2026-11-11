@@ -22,10 +22,16 @@ public class Inventory {
     private final String[] quickUseSlots = new String[4];
 
     public Inventory() {
+        this(true);
+    }
+
+    public Inventory(boolean registerSaveListener) {
         this.equipmentHandler = new EquipmentHandler();
         this.backpackHandler = new BackpackHandler(equipmentHandler);
         Arrays.fill(quickUseSlots, null);
-        EventBus.getInstance().register(PreSaveEvent.class, e -> syncAccount());
+        if (registerSaveListener) {
+            EventBus.getInstance().register(PreSaveEvent.class, e -> syncAccount());
+        }
     }
 
     /**

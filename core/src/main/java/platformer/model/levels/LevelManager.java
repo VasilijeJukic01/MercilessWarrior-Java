@@ -493,6 +493,12 @@ public class LevelManager {
         loadLevel();
     }
 
+    public void resetAllCachedLevels() {
+        for (Level level : levels.values()) {
+            level.gatherData();
+        }
+    }
+
     // Getters
     public DecorationMetadata getDecorationMetadata(String tilesetName, int colorValue) {
         Map<Integer, DecorationMetadata> set = decorationSets.get(tilesetName);
