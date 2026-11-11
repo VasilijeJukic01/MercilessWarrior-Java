@@ -49,7 +49,7 @@ public class LightManager {
     private static final int LIGHTMAP_SCALE = 2;
 
     private BufferedImage orangeLight, whiteRadialLight;
-    private BufferedImage playerLightTexture, enemyLightTexture, candleLightTexture, objectLightTexture;
+    private BufferedImage playerLightTexture, enemyLightTexture, candleLightTexture, objectLightTexture, shopLightTexture;
     private final BufferedImage lightColorMap;
     private final Map<String, BufferedImage> lightTextureCache = new HashMap<>();
 
@@ -95,6 +95,9 @@ public class LightManager {
      * This is a core optimization that avoids creating expensive {@link RadialGradientPaint} objects every frame, significantly improving rendering performance.
      */
     private void initLightTextures() {
+        float[] coreFractions = new float[]{0f, 0.42f, 1f};
+        Color[] coreColors = new Color[]{Color.WHITE, new Color(1.0f, 1.0f, 1.0f, 0.92f), new Color(1.0f, 1.0f, 1.0f, 0f)};
+
         int playerDiameter = (int)(PLAYER_LIGHT_RADIUS * 2.5f);
         playerLightTexture = createLightTexture(playerDiameter, new float[]{0f, 1f}, new Color[]{Color.WHITE, new Color(1.0f, 1.0f, 1.0f, 0f)});
 
@@ -102,10 +105,13 @@ public class LightManager {
         enemyLightTexture = createLightTexture(enemyDiameter, new float[]{0f, 1f}, new Color[]{Color.WHITE, new Color(1.0f, 1.0f, 1.0f, 0f)});
 
         int candleDiameter = (int)(CANDLE_LIGHT_RADIUS * 2.6f);
-        candleLightTexture = createLightTexture(candleDiameter, new float[]{0f, 1f}, new Color[]{Color.WHITE, new Color(1.0f, 1.0f, 1.0f, 0f)});
+        candleLightTexture = createLightTexture(candleDiameter, coreFractions, coreColors);
 
-        int objectDiameter = (int)(CANDLE_LIGHT_RADIUS * 1.6f);
-        objectLightTexture = createLightTexture(objectDiameter, new float[]{0f, 1f}, new Color[]{Color.WHITE, new Color(1.0f, 1.0f, 1.0f, 0f)});
+        int objectDiameter = (int)(CANDLE_LIGHT_RADIUS * 1.9f);
+        objectLightTexture = createLightTexture(objectDiameter, coreFractions, coreColors);
+
+        int shopDiameter = (int)(CANDLE_LIGHT_RADIUS * 3.2f);
+        shopLightTexture = createLightTexture(shopDiameter, coreFractions, coreColors);
     }
 
     /**
@@ -493,8 +499,9 @@ public class LightManager {
     @SuppressWarnings("unchecked")
     private void renderLightsForClass(Graphics2D g2d, Class<?> lightSourceClass, int xLevelOffset, int yLevelOffset) {
         List<GameObject> objects = (List<GameObject>) context.getObjectManager().getObjects((Class<? extends GameObject>) lightSourceClass);
+        BufferedImage tex = (lightSourceClass == Shop.class) ? shopLightTexture : objectLightTexture;
         for (GameObject obj : objects) {
-            if (obj.isAlive()) drawLightSource(g2d, objectLightTexture, obj.getHitBox(), xLevelOffset, yLevelOffset);
+            if (obj.isAlive()) drawLightSource(g2d, tex, obj.getHitBox(), xLevelOffset, yLevelOffset);
         }
     }
 
@@ -528,7 +535,6 @@ public class LightManager {
      */
     private void glowObjects(Graphics2D g2d, int xLevelOffset, int yLevelOffset) {
         candleFilter(g2d, xLevelOffset, yLevelOffset);
-        context.getObjectManager().glowingRender(g2d, xLevelOffset, yLevelOffset);
         shopFilter(g2d, xLevelOffset, yLevelOffset);
     }
 
@@ -539,22 +545,19 @@ public class LightManager {
         float glowAlpha = getSmoothGlowAlpha();
 
         for (T object : objects) {
+            if (!object.isAlive()) continue;
             int glowWidth = (int) (2.5 * CANDLE_LIGHT_RADIUS * pulseScale);
             int glowHeight = (int) (2.5 * CANDLE_LIGHT_RADIUS * pulseScale);
             int x = (int) (object.getHitBox().getCenterX() - xLevelOffset) - glowWidth / 2;
             int y = (int) (object.getHitBox().getCenterY() - yLevelOffset) - glowHeight / 2;
 
             Composite originalComposite = g2d.getComposite();
-
-            float whiteGlowAlpha = glowAlpha * 0.7f;
+            float whiteGlowAlpha = glowAlpha * 0.6f;
             g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, whiteGlowAlpha));
             g2d.drawImage(whiteRadialLight, x, y, glowWidth, glowHeight, null);
-            g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, glowAlpha));
+            g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, glowAlpha * 0.85f));
             g2d.drawImage(orangeLight, x, y, glowWidth, glowHeight, null);
             g2d.setComposite(originalComposite);
-
-            if (isCandle && object instanceof Candle candle)
-                context.getObjectManager().candleRender(g2d, xLevelOffset, yLevelOffset, candle);
         }
     }
 

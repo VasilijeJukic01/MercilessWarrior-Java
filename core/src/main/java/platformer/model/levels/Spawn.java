@@ -7,9 +7,9 @@ package platformer.model.levels;
 public enum Spawn {
     // FORMAT: ID, LevelID, TileX, TileY
     INITIAL(0, "begin", 5, 10),
-    WORKSHOP(1, "forest02", 14, 16),
+    WORKSHOP(1, "forest02", 24, 11),
     WILDERNESS(2, "forest13", 11, 25),
-    DEEPMOSS(3, "deepmoss02", 25, 9);
+    DEEPMOSS(3, "deepmoss02", 28, 15);
 
     private final int id;
     private final String levelId;

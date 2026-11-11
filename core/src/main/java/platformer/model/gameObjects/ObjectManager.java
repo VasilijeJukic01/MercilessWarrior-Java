@@ -66,10 +66,7 @@ public class ObjectManager {
             Blocker.class, Dog.class, SmashTrap.class, Loot.class, Brick.class,
             SaveTotem.class, Shop.class, Blacksmith.class, Coin.class,
             Table.class, Board.class, JumpPad.class, Herb.class, RoricTrap.class,
-            Door.class
-    };
-    Class<? extends GameObject>[] renderAbove = new Class[] {
-            Shop.class
+            Door.class, Candle.class, Shop.class
     };
     Class<? extends GameObject>[] renderBehind = new Class[] {
             Lava.class
@@ -449,15 +446,6 @@ public class ObjectManager {
         Arrays.stream(renderBehind).forEach(renderClass -> renderObjects(g, xLevelOffset, yLevelOffset, renderClass));
         renderCoins(g, xLevelOffset, yLevelOffset);
         renderNpcs(g, xLevelOffset, yLevelOffset);
-    }
-
-    public void candleRender(Graphics g, int xLevelOffset, int yLevelOffset, Candle c) {
-        BufferedImage[] animations = SpriteManager.getInstance().getObjectAnimations(c.getObjType());
-        if (animations != null) c.render(g, xLevelOffset, yLevelOffset, animations);
-    }
-
-    public void glowingRender(Graphics g, int xLevelOffset, int yLevelOffset) {
-        Arrays.stream(renderAbove).forEach(renderClass -> renderObjects(g, xLevelOffset, yLevelOffset, renderClass));
     }
 
     private void renderCoins(Graphics g, int xLevelOffset, int yLevelOffset) {

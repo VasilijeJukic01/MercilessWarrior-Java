@@ -111,8 +111,9 @@ public class GameWorld {
 
         effectManager.renderAmbientEffects(g, xLevelOffset, yLevelOffset);
         rainManager.render(g);
-        levelManager.render(g, xLevelOffset, yLevelOffset);
+        levelManager.renderBackgroundLayers(g, xLevelOffset, yLevelOffset);
         objectManager.render(g, xLevelOffset, yLevelOffset);
+        levelManager.renderForegroundTerrain(g, xLevelOffset, yLevelOffset);
         if (isDarkPhase) {
             enemyManager.render(g, xLevelOffset, yLevelOffset);
             projectileManager.render(g, xLevelOffset, yLevelOffset);

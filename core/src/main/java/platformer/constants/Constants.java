@@ -235,12 +235,12 @@ public final class Constants {
     public static final int BLACKSMITH_OFFSET_X = scale(32);
     public static final int BLACKSMITH_OFFSET_Y = scale(20);
 
-    public static final int DOG_WID = scale(64);
-    public static final int DOG_HEI = scale(64);
+    public static final int DOG_WID = scale(72);
+    public static final int DOG_HEI = scale(72);
     public static final int DOG_HB_WID = scale(32);
     public static final int DOG_HB_HEI = scale(32);
     public static final int DOG_OFFSET_X = scale(18);
-    public static final int DOG_OFFSET_Y = scale(12);
+    public static final int DOG_OFFSET_Y = scale(18);
 
     public static final int SAVE_TOTEM_WID = scale(50);
     public static final int SAVE_TOTEM_HEI = scale(49);

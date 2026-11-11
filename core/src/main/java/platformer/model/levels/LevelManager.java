@@ -460,16 +460,24 @@ public class LevelManager {
      * @param yLevelOffset The vertical offset of the level. This is used for scrolling the level vertically when the player jumps or falls.
      */
     public void render(Graphics g, int xLevelOffset, int yLevelOffset) {
-        renderDeco(g, xLevelOffset, yLevelOffset, 0);               // First deco layer
-        renderDeco(g, xLevelOffset, yLevelOffset, 1);               // Second deco layer
+        renderBackgroundLayers(g, xLevelOffset, yLevelOffset);
+        renderForegroundTerrain(g, xLevelOffset, yLevelOffset);
+    }
+
+    public void renderBackgroundLayers(Graphics g, int xLevelOffset, int yLevelOffset) {
+        renderDeco(g, xLevelOffset, yLevelOffset, 0);
+        renderDeco(g, xLevelOffset, yLevelOffset, 1);
         if (context.getInteriorManager() == null || !context.getInteriorManager().isInterior()) {
             g.setColor(new Color(1, 130, 120, 60));
-            g.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);  // Green ambient layer
+            g.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
         }
-        renderDeco(g, xLevelOffset, yLevelOffset, 2);              // Third deco layer
-        renderTerrain(g, xLevelOffset, yLevelOffset, true);       // Terrain behind layer
-        renderDeco(g, xLevelOffset, yLevelOffset, 4);              // Fourth deco layer
-        renderTerrain(g, xLevelOffset, yLevelOffset, false);      // Terrain normal layer
+        renderDeco(g, xLevelOffset, yLevelOffset, 2);
+    }
+
+    public void renderForegroundTerrain(Graphics g, int xLevelOffset, int yLevelOffset) {
+        renderTerrain(g, xLevelOffset, yLevelOffset, true);
+        renderDeco(g, xLevelOffset, yLevelOffset, 4);
+        renderTerrain(g, xLevelOffset, yLevelOffset, false);
     }
 
     public Level getCurrentLevel() {

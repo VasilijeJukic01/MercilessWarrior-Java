@@ -9,5 +9,31 @@
       "excludeQuestActive": "Helping Anita",
       "excludeFlag": "VILLAGE_CLEARED_deepmoss02"
     }
+  ],
+  "decorations": [
+    {
+      "x": 67,
+      "y": 4,
+      "layer": 2,
+      "rotation": 180.9548412538722,
+      "scaleX": 1.0,
+      "scaleY": 1.0
+    },
+    {
+      "x": 71,
+      "y": 4,
+      "layer": 2,
+      "rotation": 180.9548412538722,
+      "scaleX": 1.0,
+      "scaleY": 1.0
+    },
+    {
+      "x": 62,
+      "y": 4,
+      "layer": 2,
+      "rotation": 189.03948280335513,
+      "scaleX": 1.0,
+      "scaleY": 1.0
+    }
   ]
 }
