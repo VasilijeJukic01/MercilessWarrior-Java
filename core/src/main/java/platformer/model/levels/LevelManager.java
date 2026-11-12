@@ -46,6 +46,7 @@ public class LevelManager {
     private String currentLevelId = "level00";
     private BufferedImage currentBackground;
     private LevelMetadata currentLevelMetadata, arenaLevelMetadata;
+    private final Map<String, LevelMetadata> metadataCache = new HashMap<>();
 
     // Effects
     private final Set<Point> touchedGrassTiles = new HashSet<>();
@@ -513,6 +514,10 @@ public class LevelManager {
         return (set != null) ? set.get(colorValue) : null;
     }
 
+    public LevelMetadata getLevelMetadata(String levelName) {
+        return metadataCache.computeIfAbsent(levelName, this::loadMetadataForLevel);
+    }
+
     public LevelMetadata getCurrentLevelMetadata() {
         return currentLevelMetadata;
     }
@@ -531,5 +536,9 @@ public class LevelManager {
 
     public boolean isInArena() {
         return currentLevel == arenaLevel;
+    }
+
+    public WorldMapMetadata getWorldMap() {
+        return worldMap;
     }
 }

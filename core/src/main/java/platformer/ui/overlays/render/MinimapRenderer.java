@@ -64,7 +64,8 @@ public class MinimapRenderer {
         MinimapIcon hoveredIcon = minimapManager.getHoveredIcon();
 
         for (MinimapIcon icon : icons) {
-            if (!minimapManager.isExplored(icon.position())) continue;
+            if (icon.equals(pinnedIcon)) minimapManager.unpin();
+            if (!minimapManager.isIconVisible(icon)) continue;
             BufferedImage originalImage = minimapIcons[icon.type().ordinal()];
             if (originalImage == null) continue;
 

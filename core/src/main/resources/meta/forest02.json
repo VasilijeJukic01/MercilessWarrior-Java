@@ -10,6 +10,13 @@
       "excludeFlag": "VILLAGE_CLEARED_deepmoss02"
     }
   ],
+  "minimapIcons": [
+    {
+      "type": "NPC",
+      "excludeFlag": "VILLAGE_CLEARED_deepmoss02",
+      "excludeQuestActive": "Helping Anita"
+    }
+  ],
   "decorations": [
     {
       "x": 67,

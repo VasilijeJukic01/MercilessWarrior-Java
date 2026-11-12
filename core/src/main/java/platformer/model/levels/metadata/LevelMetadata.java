@@ -18,5 +18,6 @@ public class LevelMetadata {
     private List<LightMetadata> lights = new ArrayList<>();
     private List<NpcMetadata> npcs = new ArrayList<>();
     private List<GameObjectMetadata> objects = new ArrayList<>();
+    private List<MinimapIconMetadata> minimapIcons = new ArrayList<>();
 
 }

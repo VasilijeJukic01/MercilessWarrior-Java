@@ -158,7 +158,7 @@ public class MinimapViewController {
         double scaledPixelHeight = (double) height / map.getHeight();
 
         for (MinimapIcon icon : minimapManager.getIcons()) {
-            if (!minimapManager.isExplored(icon.position())) continue;
+            if (!minimapManager.isIconVisible(icon)) continue;
             int iconWidth = (int) (2.5 * scaledPixelWidth);
             int iconHeight = (int) (2.5 * scaledPixelHeight);
             int iconX = mapX + (int) (icon.position().x * scaledPixelWidth) - iconWidth / 2;

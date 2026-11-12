@@ -5,6 +5,9 @@ import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
 import platformer.model.levels.Level;
 import platformer.model.levels.LevelManager;
+import platformer.model.levels.metadata.LevelMetadata;
+import platformer.model.levels.metadata.MinimapIconMetadata;
+import platformer.model.levels.metadata.WorldMapMetadata;
 import platformer.model.minimap.astar.AStarPathfinding;
 import platformer.model.quests.Quest;
 import platformer.model.quests.QuestObjective;
@@ -35,6 +38,7 @@ public class MinimapManager {
 
     private BufferedImage minimapImage;
     private BufferedImage[] minimapIcons;
+    private final Map<Point, String> iconRoomCache = new HashMap<>();
 
     private BufferedImage minimap;
     private BufferedImage visualMinimap;
@@ -460,6 +464,7 @@ public class MinimapManager {
         this.playerLocation = null;
     }
 
+    // Path
     public void handlePinRequest(Point location, MinimapIcon icon) {
         if (icon != null) {
             if (icon.equals(pinnedIcon)) unpin();
@@ -510,6 +515,54 @@ public class MinimapManager {
             }
         }
         return false;
+    }
+
+    // Hide
+    /**
+     * Determines whether a minimap icon should currently be displayed based on live world, boss, and follower state.
+     */
+    public boolean isIconVisible(MinimapIcon icon) {
+        if (!isExplored(icon.position())) return false;
+        if (context == null) return true;
+        String roomId = iconRoomCache.computeIfAbsent(icon.position(), this::findOwningRoomId);
+        if (roomId == null) return true;
+
+        LevelMetadata meta = context.getLevelManager().getLevelMetadata(roomId);
+        if (meta == null || meta.getMinimapIcons() == null) return true;
+        boolean bossFightActive = context.getGameState() != null && context.getGameState().getBossInterface() != null && context.getGameState().getBossInterface().isActive() && roomId.equals(context.getLevelManager().getCurrentLevelId());
+        for (MinimapIconMetadata rule : meta.getMinimapIcons()) {
+            if (rule.getType() == icon.type()) {
+                if (!rule.isConditionMet(context.getWorldMemoryManager(), context.getQuestManager(), bossFightActive)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    private String findOwningRoomId(Point iconPos) {
+        WorldMapMetadata worldMap = context.getLevelManager().getWorldMap();
+        if (worldMap == null || worldMap.getRooms() == null) return null;
+
+        String bestRoom = null;
+        int bestDistSq = Integer.MAX_VALUE;
+        for (var entry : worldMap.getRooms().entrySet()) {
+            String levelId = entry.getKey();
+            Point roomPos = getOrFindLevelPosition(levelId);
+            if (roomPos == null) continue;
+            Level lvl = context.getLevelManager().getLevel(levelId);
+            int w = (lvl != null) ? lvl.getLevelTilesWidth() : 45, h = (lvl != null) ? lvl.getLevelTilesHeight() : 30;
+            if (iconPos.x >= roomPos.x && iconPos.x < roomPos.x + w && iconPos.y >= roomPos.y && iconPos.y < roomPos.y + h) {
+                int cx = roomPos.x + w / 2;
+                int cy = roomPos.y + h / 2;
+                int distSq = (iconPos.x - cx) * (iconPos.x - cx) + (iconPos.y - cy) * (iconPos.y - cy);
+                if (distSq < bestDistSq) {
+                    bestDistSq = distSq;
+                    bestRoom = levelId;
+                }
+            }
+        }
+        return bestRoom;
     }
 
     public void reset() {

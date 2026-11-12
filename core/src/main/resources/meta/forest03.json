@@ -3,6 +3,13 @@
   "ambientParticlesEnabled": true,
   "tileset": "Forest",
   "biome": "FOREST",
+  "minimapIcons": [
+    {
+      "type": "BOSS",
+      "excludeFlag": "BOSS_LANCER_forest03",
+      "hideInCombat": true
+    }
+  ],
   "decorations": [
     {
       "x": 5,
