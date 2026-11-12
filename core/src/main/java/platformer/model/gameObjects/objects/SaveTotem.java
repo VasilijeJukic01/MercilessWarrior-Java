@@ -4,6 +4,7 @@ import platformer.model.entities.player.Player;
 import platformer.model.gameObjects.GameObject;
 import platformer.model.gameObjects.Interactable;
 import platformer.model.gameObjects.ObjType;
+import platformer.ui.buttons.UIButtonRenderer;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -47,17 +48,6 @@ public class SaveTotem extends GameObject implements Interactable {
         int y = (int)hitBox.y - yOffset - yLevelOffset;
         g.drawImage(animations[animIndex], x, y, SAVE_TOTEM_WID, SAVE_TOTEM_HEI, null);
         hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.MAGENTA);
-        renderText(g, xLevelOffset, yLevelOffset);
-    }
-
-    private void renderText(Graphics g, int xLevelOffset, int yLevelOffset) {
-        if (active) {
-            g.setColor(Color.WHITE);
-            g.setFont(new Font("Arial", Font.BOLD, FONT_MEDIUM));
-            int infoX = (int)(hitBox.x - hitBox.width / 3 - xLevelOffset);
-            int infoY = (int)(hitBox.y - yLevelOffset - 5 * SCALE);
-            g.drawString("SAVE GAME", infoX, infoY);
-        }
     }
 
     @Override
@@ -78,6 +68,12 @@ public class SaveTotem extends GameObject implements Interactable {
     @Override
     public String getInteractionPrompt() {
         return "SaveTotem";
+    }
+
+    @Override
+    public void renderInteractionUI(Graphics g, int xLevelOffset, int yLevelOffset) {
+        if (!active) return;
+        UIButtonRenderer.drawInteractionPrompt(g, "SAVE", (int) (hitBox.getCenterX() - xLevelOffset), (int) (hitBox.y - yLevelOffset - 6 * SCALE));
     }
 
     public void setActive(boolean active) {

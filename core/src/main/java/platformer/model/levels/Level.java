@@ -134,7 +134,7 @@ public class Level {
                 addGameObject(new Candle(ObjType.values()[valueB], i*TILES_SIZE, j*TILES_SIZE));
                 break;
             case TABLE:
-                addGameObject(new Table(ObjType.values()[valueB], i*TILES_SIZE, j*TILES_SIZE));
+                addGameObject(new Table(ObjType.values()[valueB], i*TILES_SIZE, (j + 1)*TILES_SIZE));
                 break;
             case BOARD:
                 addGameObject(new Board(ObjType.values()[valueB], i*TILES_SIZE, j*TILES_SIZE));

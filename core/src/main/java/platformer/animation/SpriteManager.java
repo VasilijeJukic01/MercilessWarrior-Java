@@ -294,7 +294,7 @@ public class SpriteManager {
         objectAnimations.put(ObjType.SPIKE_LEFT, new BufferedImage[]{ImageUtils.rotateImage(spikes[0], 270)});
         objectAnimations.put(ObjType.SPIKE_RIGHT, new BufferedImage[]{ImageUtils.rotateImage(spikes[0], 90)});
         // Interactive Objects
-        objectAnimations.put(ObjType.SHOP, loadFromSprite(SHOP_SHEET, 6, 0, SHOP_WID, SHOP_HEI, 0, SHOP_W, SHOP_H));
+        objectAnimations.put(ObjType.SHOP, loadFromSprite(SHOP_SHEET, 1, 0, SHOP_WID, SHOP_HEI, 0, SHOP_W, SHOP_H));
         objectAnimations.put(ObjType.BLOCKER, loadFromSprite(BLOCKER_SHEET, 12, 0, BLOCKER_WID, BLOCKER_HEI, 0, BLOCKER_W, BLOCKER_H));
         objectAnimations.put(ObjType.BLACKSMITH, loadFromSprite(BS_SHEET, 8, 0, BLACKSMITH_WID, BLACKSMITH_HEI, 0, BLACKSMITH_W, BLACKSMITH_H));
         objectAnimations.put(ObjType.DOG, loadFromSprite(DOG_SHEET, 8, 0, DOG_WID, DOG_HEI, 0, DOG_W, DOG_H));

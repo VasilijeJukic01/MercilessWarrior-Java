@@ -1,5 +1,7 @@
 package platformer.ui.buttons;
 
+import platformer.core.Framework;
+
 import java.awt.*;
 import java.awt.geom.Arc2D;
 import java.awt.geom.Path2D;
@@ -415,6 +417,80 @@ public final class UIButtonRenderer {
         Polygon diamond = new Polygon(new int[]{centerX, centerX + diamondR, centerX, centerX - diamondR}, new int[]{lineY - diamondR, lineY, lineY + diamondR, lineY}, 4);
         g2d.setColor(new Color(70, 245, 235, 220));
         g2d.fillPolygon(diamond);
+
+        g2d.dispose();
+    }
+
+    /**
+     * Renders a floating, bobbing runic interaction badge with a downward pointer arrow.
+     */
+    public static void drawInteractionPrompt(Graphics g, String actionLabel, int centerX, int baseY) {
+        if (actionLabel == null || actionLabel.isEmpty()) return;
+        Graphics2D g2d = (Graphics2D) g.create();
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+
+        String keyText = "F";
+        try {
+            keyText = Framework.getInstance().getKeyboardController().getKeyName("Interact").toUpperCase();
+        } catch (Exception ignored) {}
+
+        double time = System.currentTimeMillis() * 0.0055;
+        int bobOffset = (int) Math.round(Math.sin(time) * (2.5 * SCALE));
+        float pulse = (float) (0.75 + 0.25 * Math.sin(time * 1.3));
+
+        Font keyFont = getFont(8.5f * SCALE);
+        Font labelFont = getFont(9.5f * SCALE);
+        FontMetrics fmKey = g2d.getFontMetrics(keyFont);
+        FontMetrics fmLabel = g2d.getFontMetrics(labelFont);
+
+        int keyBoxSize = Math.max((int) (13 * SCALE), fmKey.stringWidth(keyText) + (int) (6 * SCALE));
+        int gap = (int) (5 * SCALE);
+        int padX = (int) (7 * SCALE);
+        int padY = (int) (4 * SCALE);
+
+        int labelW = fmLabel.stringWidth(actionLabel);
+        int totalW = padX * 2 + keyBoxSize + gap + labelW;
+        int totalH = keyBoxSize + padY * 2;
+
+        int boxX = centerX - totalW / 2;
+        int boxY = baseY - totalH + bobOffset;
+        int arc = (int) (6 * SCALE);
+
+        g2d.setColor(new Color(12, 20, 24, 225));
+        g2d.fillRoundRect(boxX, boxY, totalW, totalH, arc, arc);
+        g2d.setColor(new Color(55, 235, 225, (int) (185 * pulse)));
+        g2d.setStroke(new BasicStroke(1.2f * SCALE));
+        g2d.drawRoundRect(boxX, boxY, totalW, totalH, arc, arc);
+
+        int triW = (int) (4 * SCALE);
+        int triH = (int) (3.5 * SCALE);
+        int triTopY = boxY + totalH;
+        Polygon pointer = new Polygon(new int[]{centerX - triW, centerX + triW, centerX}, new int[]{triTopY, triTopY, triTopY + triH}, 3);
+        g2d.setColor(new Color(55, 235, 225, (int) (185 * pulse)));
+        g2d.fillPolygon(pointer);
+
+        int keyX = boxX + padX;
+        int keyY = boxY + padY;
+        g2d.setColor(new Color(28, 46, 52, 240));
+        g2d.fillRoundRect(keyX, keyY, keyBoxSize, keyBoxSize, (int) (4 * SCALE), (int) (4 * SCALE));
+        g2d.setColor(new Color(140, 185, 190, 200));
+        g2d.setStroke(new BasicStroke(1.0f));
+        g2d.drawRoundRect(keyX, keyY, keyBoxSize, keyBoxSize, (int) (4 * SCALE), (int) (4 * SCALE));
+
+        g2d.setFont(keyFont);
+        g2d.setColor(new Color(80, 250, 240));
+        int keyTextX = keyX + (keyBoxSize - fmKey.stringWidth(keyText)) / 2;
+        int keyTextY = keyY + (keyBoxSize + (int) (fmKey.getAscent() * 0.72f)) / 2;
+        g2d.drawString(keyText, keyTextX, keyTextY);
+
+        g2d.setFont(labelFont);
+        int labelX = keyX + keyBoxSize + gap;
+        int labelY = boxY + (totalH + (int) (fmLabel.getAscent() * 0.72f)) / 2;
+        g2d.setColor(SHADOW_COLOR);
+        g2d.drawString(actionLabel, labelX + 1, labelY + 1);
+        g2d.setColor(NORMAL_COLOR);
+        g2d.drawString(actionLabel, labelX, labelY);
 
         g2d.dispose();
     }

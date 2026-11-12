@@ -5,6 +5,7 @@ import platformer.model.entities.player.Player;
 import platformer.model.gameObjects.GameObject;
 import platformer.model.gameObjects.Interactable;
 import platformer.model.gameObjects.ObjType;
+import platformer.ui.buttons.UIButtonRenderer;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
@@ -15,6 +16,7 @@ import static platformer.constants.Constants.*;
 
 public class Npc extends GameObject implements Interactable {
 
+    private boolean active = false;
     private final NpcType npcType;
     private int progression = 1;
     private int dialogueIndicator = 0;
@@ -98,7 +100,7 @@ public class Npc extends GameObject implements Interactable {
 
     @Override
     public void onEnter(Player player) {
-        // No specific action on enter
+        this.active = true;
     }
 
     @Override
@@ -120,7 +122,7 @@ public class Npc extends GameObject implements Interactable {
 
     @Override
     public void onExit(Player player) {
-
+        this.active = false;
     }
 
     @Override
@@ -132,6 +134,14 @@ public class Npc extends GameObject implements Interactable {
                     .append(part.substring(1).toLowerCase());
         }
         return "Npc" + pascalCaseName;
+    }
+
+    @Override
+    public void renderInteractionUI(Graphics g, int xLevelOffset, int yLevelOffset) {
+        if (!active || !alive) return;
+        int centerX = (int) (hitBox.getCenterX() - xLevelOffset);
+        int promptY = (int) (hitBox.y - yLevelOffset - 12 * SCALE);
+        UIButtonRenderer.drawInteractionPrompt(g, "TALK", centerX, promptY);
     }
 
     public DialogueBehavior getDialogueBehavior() {
@@ -149,10 +159,6 @@ public class Npc extends GameObject implements Interactable {
     public void increaseDialogueIndicator() {
         if (dialogueIndicator + 1 > progression) return;
         this.dialogueIndicator++;
-    }
-
-    public int getProgression() {
-        return progression;
     }
 
     public void setDirection(Direction direction) {

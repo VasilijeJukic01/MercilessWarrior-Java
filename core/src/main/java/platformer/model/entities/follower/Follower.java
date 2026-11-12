@@ -14,6 +14,7 @@ import platformer.model.gameObjects.Interactable;
 import platformer.model.gameObjects.ObjectManager;
 import platformer.model.gameObjects.npc.NpcType;
 import platformer.physics.CollisionDetector;
+import platformer.ui.buttons.UIButtonRenderer;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
@@ -55,6 +56,7 @@ public class Follower extends Entity implements Interactable {
     private final double walkSpeed = 0.6 * SCALE;
     private final int teleportDist = TILES_SIZE * 20;
     private int animTick, animIndex;
+    private boolean active = false;
 
     // Physics
     private final double gravity = 0.04 * SCALE;
@@ -578,6 +580,14 @@ public class Follower extends Entity implements Interactable {
     }
 
     @Override
+    public void renderInteractionUI(Graphics g, int xLevelOffset, int yLevelOffset) {
+        if (!combatManager.isKnockedDown()) return;
+        int centerX = (int) (hitBox.getCenterX() - xLevelOffset);
+        int promptY = (int) (hitBox.y - yLevelOffset - 8 * SCALE);
+        UIButtonRenderer.drawInteractionPrompt(g, "REVIVE", centerX, promptY);
+    }
+
+    @Override
     public void hitBoxRenderer(Graphics g, int xLevelOffset, int yLevelOffset, Color color) {
         renderHitBox(g, xLevelOffset, yLevelOffset, color);
     }
@@ -589,7 +599,7 @@ public class Follower extends Entity implements Interactable {
 
     @Override
     public void onEnter(Player player) {
-
+        this.active = true;
     }
 
     @Override
@@ -599,7 +609,7 @@ public class Follower extends Entity implements Interactable {
 
     @Override
     public void onExit(Player player) {
-
+        this.active = false;
     }
 
     @Override

@@ -5,6 +5,7 @@ import platformer.model.gameObjects.GameObject;
 import platformer.model.gameObjects.Interactable;
 import platformer.model.gameObjects.ObjType;
 import platformer.model.inventory.item.InventoryItem;
+import platformer.ui.buttons.UIButtonRenderer;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -80,6 +81,14 @@ public class Container extends GameObject implements Interactable {
     @Override
     public String getInteractionPrompt() {
         return "Container";
+    }
+
+    @Override
+    public void renderInteractionUI(Graphics g, int xLevelOffset, int yLevelOffset) {
+        if (!active || !alive || animate) return;
+        int centerX = (int) (hitBox.getCenterX() - xLevelOffset);
+        int promptY = (int) (hitBox.y - yLevelOffset - 4 * SCALE);
+        UIButtonRenderer.drawInteractionPrompt(g, "OPEN", centerX, promptY);
     }
 
     public List<InventoryItem> getItems() {

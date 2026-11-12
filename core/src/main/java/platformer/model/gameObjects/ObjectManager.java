@@ -446,6 +446,7 @@ public class ObjectManager {
         Arrays.stream(renderBehind).forEach(renderClass -> renderObjects(g, xLevelOffset, yLevelOffset, renderClass));
         renderCoins(g, xLevelOffset, yLevelOffset);
         renderNpcs(g, xLevelOffset, yLevelOffset);
+        if (intersection != null) intersection.renderInteractionUI(g, xLevelOffset, yLevelOffset);
     }
 
     private void renderCoins(Graphics g, int xLevelOffset, int yLevelOffset) {

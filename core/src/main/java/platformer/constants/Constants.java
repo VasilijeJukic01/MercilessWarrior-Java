@@ -214,12 +214,12 @@ public final class Constants {
     public static final int COIN_OFFSET = scale(3);
     public static final double COIN_GRAVITY = dScale(0.045);
 
-    public static final int SHOP_WID = scale(154);
-    public static final int SHOP_HEI = scale(132);
-    public static final int SHOP_HB_WID = scale(154);
-    public static final int SHOP_HB_HEI = scale(132);
+    public static final int SHOP_WID = scale(143);
+    public static final int SHOP_HEI = scale(105);
+    public static final int SHOP_HB_WID = scale(135);
+    public static final int SHOP_HB_HEI = scale(100);
     public static final int SHOP_OFFSET_X = scale(1);
-    public static final int SHOP_OFFSET_Y = scale(1);
+    public static final int SHOP_OFFSET_Y = scale(7);
 
     public static final int BLOCKER_WID = scale(96);
     public static final int BLOCKER_HEI = scale(128);
@@ -243,11 +243,11 @@ public final class Constants {
     public static final int DOG_OFFSET_Y = scale(18);
 
     public static final int SAVE_TOTEM_WID = scale(50);
-    public static final int SAVE_TOTEM_HEI = scale(49);
+    public static final int SAVE_TOTEM_HEI = scale(55);
     public static final int SAVE_TOTEM_HB_WID = scale(32);
     public static final int SAVE_TOTEM_HB_HEI = scale(32);
     public static final int SAVE_TOTEM_OFFSET_X = scale(10);
-    public static final int SAVE_TOTEM_OFFSET_Y = scale(9);
+    public static final int SAVE_TOTEM_OFFSET_Y = scale(16);
 
     public static final int SMASH_TRAP_WID = scale(50);
     public static final int SMASH_TRAP_HEI = scale(76);
@@ -270,12 +270,12 @@ public final class Constants {
     public static final int LOOT_OFFSET_X = scale(1);
     public static final int LOOT_OFFSET_Y = scale(-2);
 
-    public static final int TABLE_WID = scale(48);
-    public static final int TABLE_HEI = scale(32);
+    public static final int TABLE_WID = scale(67);
+    public static final int TABLE_HEI = scale(72);
     public static final int TABLE_HB_WID = scale(40);
     public static final int TABLE_HB_HEI = scale(32);
-    public static final int TABLE_OFFSET_X = scale(5);
-    public static final int TABLE_OFFSET_Y = scale(-5);
+    public static final int TABLE_OFFSET_X = scale(12);
+    public static final int TABLE_OFFSET_Y = scale(20);
 
     public static final int BOARD_WID = scale(64);
     public static final int BOARD_HEI = scale(64);
@@ -396,7 +396,6 @@ public final class Constants {
     public static final int FONT_LIGHT = scale(8);
     public static final int FONT_SMALL = scale(7);
     public static final int SHOP_SLOT_MAX_ROW = 4, SHOP_SLOT_MAX_COL = 5;
-    public static final int PERK_SLOT_MAX_ROW = 5, PERK_SLOT_MAX_COL = 7;
     public static final int INVENTORY_SLOT_MAX_ROW = 5, INVENTORY_SLOT_MAX_COL = 5;
     public static final int EQUIPMENT_SLOT_MAX_ROW = 2, EQUIPMENT_SLOT_MAX_COL = 3;
     public static final int SLOT_SPACING = scale(40);

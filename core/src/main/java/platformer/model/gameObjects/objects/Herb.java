@@ -4,6 +4,7 @@ import platformer.model.entities.player.Player;
 import platformer.model.gameObjects.GameObject;
 import platformer.model.gameObjects.Interactable;
 import platformer.model.gameObjects.ObjType;
+import platformer.ui.buttons.UIButtonRenderer;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -33,18 +34,7 @@ public class Herb extends GameObject implements Interactable {
         int drawY = (int) (hitBox.y - yOffset - yLevelOffset);
 
         g.drawImage(animations[0], drawX, drawY, HERB_WID, HERB_HEI, null);
-        renderText(g, xLevelOffset, yLevelOffset);
         hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.GREEN);
-    }
-
-    private void renderText(Graphics g, int xLevelOffset, int yLevelOffset) {
-        if (active) {
-            g.setColor(Color.WHITE);
-            g.setFont(new Font("Arial", Font.BOLD, FONT_MEDIUM));
-            int infoX = (int)(hitBox.x - xLevelOffset - 8 * SCALE);
-            int infoY = (int)(hitBox.y - yLevelOffset - 5 * SCALE);
-            g.drawString("HARVEST", infoX, infoY);
-        }
     }
 
     public void setActive(boolean active) {
@@ -79,5 +69,13 @@ public class Herb extends GameObject implements Interactable {
     @Override
     public String getInteractionPrompt() {
         return "Herb";
+    }
+
+    @Override
+    public void renderInteractionUI(Graphics g, int xLevelOffset, int yLevelOffset) {
+        if (!active) return;
+        int centerX = (int) (hitBox.getCenterX() - xLevelOffset);
+        int promptY = (int) (hitBox.y - yLevelOffset - 4 * SCALE);
+        UIButtonRenderer.drawInteractionPrompt(g, "HARVEST", centerX, promptY);
     }
 }
