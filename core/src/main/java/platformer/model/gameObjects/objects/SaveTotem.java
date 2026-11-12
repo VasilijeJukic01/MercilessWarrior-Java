@@ -73,7 +73,7 @@ public class SaveTotem extends GameObject implements Interactable {
     @Override
     public void renderInteractionUI(Graphics g, int xLevelOffset, int yLevelOffset) {
         if (!active) return;
-        UIButtonRenderer.drawInteractionPrompt(g, "SAVE", (int) (hitBox.getCenterX() - xLevelOffset), (int) (hitBox.y - yLevelOffset - 6 * SCALE));
+        UIButtonRenderer.drawInteractionPrompt(g, "SAVE", (int) (hitBox.getCenterX() - xLevelOffset), (int) (hitBox.y - yLevelOffset - 10 * SCALE));
     }
 
     public void setActive(boolean active) {

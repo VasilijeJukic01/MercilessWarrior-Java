@@ -26,7 +26,8 @@ public interface FollowerBehavior {
      * The behavior is responsible for checking hitboxes and applying damage.
      *
      * @param host The physical entity
+     * @param animIndex The index of the animation frame that triggered this call
      * @param enemies List of potential targets
      */
-    void onAttackFrame(Follower host, List<Enemy> enemies);
+    void onAttackFrame(Follower host, int animIndex, List<Enemy> enemies);
 }

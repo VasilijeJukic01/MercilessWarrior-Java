@@ -51,8 +51,15 @@ public class FollowerCombatManager {
         if (isKnockedDown || iFrameTick > 0) return;
 
         follower.changeHealth(-damage);
-        Audio.getInstance().getAudioPlayer().playHitSound();
         iFrameTick = IFRAME_THRESHOLD;
+
+        if (follower.getCurrentHealth() <= 0) {
+            follower.getAudioHandler().playKnockdown();
+            knockDown();
+            return;
+        }
+
+        follower.getAudioHandler().playHit();
 
         // If attacking, damage reduces poise instead of stun
         if (follower.isAttacking() && currentPoise > 0) {
@@ -71,11 +78,7 @@ public class FollowerCombatManager {
             currentPoise = MAX_POISE;
         }
 
-        if (follower.getCurrentHealth() <= 0) {
-            knockDown();
-        } else {
-            triggerHitState(attacker);
-        }
+        triggerHitState(attacker);
     }
 
     private void triggerHitState(Entity attacker) {
@@ -115,6 +118,7 @@ public class FollowerCombatManager {
 
     public void revive() {
         if (!isKnockedDown) return;
+        follower.getAudioHandler().playRevive();
         isKnockedDown = false;
         follower.healFully();
         follower.setEntityState(Anim.IDLE);

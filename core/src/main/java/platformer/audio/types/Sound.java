@@ -50,7 +50,16 @@ public enum Sound implements ValueEnum<String> {
     LANCER_ORB_LAUNCH("LancerOrbLaunch"),       // 40
     LANCER_SLASH_1("LancerSlash1"),             // 41
     LANCER_SLASH_2("LancerSlash2"),             // 42
-    LANCER_TRANSFORMING("LancerTransforming");  // 43
+    LANCER_TRANSFORMING("LancerTransforming"),  // 43
+    ANITA_ATTACK_1("AnitaAttack1"),             // 44
+    ANITA_ATTACK_2("AnitaAttack2"),             // 45
+    ANITA_HIT_1("AnitaHit1"),                   // 46
+    ANITA_HIT_2("AnitaHit2"),                   // 47
+    ANITA_KNOCKDOWN("AnitaKnockdown"),         // 48
+    ANITA_REVIVE("AnitaRevive"),                // 49
+    ANITA_SLASH_1("AnitaSlash1"),               // 50
+    ANITA_SLASH_2("AnitaSlash2"),               // 51
+    ANITA_WIND_SPELL("AnitaWindSpell");         // 52
 
     private static final String PREFIX = "sfx/";
     private final String value;
