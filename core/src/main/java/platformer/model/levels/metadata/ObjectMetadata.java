@@ -5,7 +5,8 @@ public class ObjectMetadata {
     private int x, y;
     private int layer;
     private double rotation;
-    private double scaleX, scaleY;
+    private double scaleX = 1.0, scaleY = 1.0;
+    private int offsetX = 0, offsetY = 0;
 
     public int getX() {
         return x;
@@ -53,5 +54,21 @@ public class ObjectMetadata {
 
     public void setScaleY(double scaleY) {
         this.scaleY = scaleY;
+    }
+
+    public int getOffsetX() {
+        return offsetX;
+    }
+
+    public void setOffsetX(int offsetX) {
+        this.offsetX = offsetX;
+    }
+
+    public int getOffsetY() {
+        return offsetY;
+    }
+
+    public void setOffsetY(int offsetY) {
+        this.offsetY = offsetY;
     }
 }

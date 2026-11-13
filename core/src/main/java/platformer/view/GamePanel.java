@@ -89,7 +89,6 @@ public class GamePanel extends JPanel {
      */
     @Override
     protected void paintComponent(Graphics g) {
-        this.requestFocus(true);
         super.paintComponent(g);
         renderGame(g);
         renderInfo(g);

@@ -115,12 +115,14 @@ public class LevelManager {
                 BufferedImage img = ImageUtils.importImage(meta.getSpritePath(), -1, -1);
                 if (img == null) continue;
 
+                int targetTileSize = TILES_SIZE + 1;
                 BufferedImage[] sprites = new BufferedImage[meta.getTileCount()];
                 for (int i = 0; i < meta.getRows(); i++) {
                     for (int j = 0; j < meta.getColumns(); j++) {
                         int index = j * meta.getRows() + i;
                         if (index >= meta.getTileCount()) break;
-                        sprites[index] = img.getSubimage(i * meta.getTileSizeInSprite(), j * meta.getTileSizeInSprite(), meta.getTileSizeInSprite(), meta.getTileSizeInSprite());
+                        BufferedImage sub = img.getSubimage(i * meta.getTileSizeInSprite(), j * meta.getTileSizeInSprite(), meta.getTileSizeInSprite(), meta.getTileSizeInSprite());
+                        sprites[index] = ImageUtils.resizeImage(sub, targetTileSize, targetTileSize);
                     }
                 }
                 tilesetSprites.put(meta.getName(), sprites);
@@ -435,8 +437,7 @@ public class LevelManager {
                 if (!behind) tileIndex -= 255;
                 int x = TILES_SIZE * i - xLevelOffset;
                 int y = TILES_SIZE * j - yLevelOffset;
-                int size = TILES_SIZE+1;
-                g.drawImage(currentTileset[tileIndex], x, y, size, size, null);
+                g.drawImage(currentTileset[tileIndex], x, y, null);
             }
         }
     }
@@ -512,6 +513,10 @@ public class LevelManager {
     public DecorationMetadata getDecorationMetadata(String tilesetName, int colorValue) {
         Map<Integer, DecorationMetadata> set = decorationSets.get(tilesetName);
         return (set != null) ? set.get(colorValue) : null;
+    }
+
+    public ObjectMetadata getObjectMetadataAt(int tileX, int tileY) {
+        return decorationMetadata.get(new Point(tileX, tileY));
     }
 
     public LevelMetadata getLevelMetadata(String levelName) {

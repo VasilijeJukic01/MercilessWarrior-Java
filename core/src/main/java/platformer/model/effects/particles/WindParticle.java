@@ -106,18 +106,17 @@ public class WindParticle {
 
         int renderX = (int) (this.x - (xLevelOffset * parallaxFactor));
         int renderY = (int) (this.y - (yLevelOffset * parallaxFactor));
+        if (renderX < -32 || renderX > GAME_WIDTH + 32 || renderY < -32 || renderY > GAME_HEIGHT + 32) return;
 
-        Composite originalComposite = g2d.getComposite();
         if (stormPeakMode && size >= 2 * SCALE) {
-            g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, Math.min(1.0f, finalAlpha * 0.35f)));
-            g2d.setColor(this.color);
+            int glowAlpha = Math.min(255, (int) (finalAlpha * 0.35f * 255));
+            g2d.setColor(new Color(color.getRed(), color.getGreen(), color.getBlue(), glowAlpha));
             int glowSize = size * 3;
             g2d.fillOval(renderX - glowSize / 3, renderY - glowSize / 3, glowSize, glowSize);
         }
 
-        g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, Math.min(1.0f, finalAlpha)));
-        g2d.setColor(this.color);
+        int coreAlpha = Math.min(255, (int) (finalAlpha * 255));
+        g2d.setColor(new Color(color.getRed(), color.getGreen(), color.getBlue(), coreAlpha));
         g2d.fillRect(renderX, renderY, size, size);
-        g2d.setComposite(originalComposite);
     }
 }

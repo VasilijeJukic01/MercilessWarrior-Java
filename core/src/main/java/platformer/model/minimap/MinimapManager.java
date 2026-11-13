@@ -55,6 +55,7 @@ public class MinimapManager {
     private MinimapIcon hoveredIcon = null;
     private MinimapIcon pinnedIcon = null;
 
+    private boolean fogDirty = true;
     private float[][] explorationMap;
     private BufferedImage fogImage;
     private ConvolveOp convolution;
@@ -306,8 +307,10 @@ public class MinimapManager {
 
         for (int x = startX; x <= endX; x++) {
             for (int y = startY; y <= endY; y++) {
-                if (Point2D.distance(centerX, centerY, x, y) <= MAP_FOG_RADIUS)
+                if (explorationMap[x][y] < 1.0f && Point2D.distance(centerX, centerY, x, y) <= MAP_FOG_RADIUS) {
                     explorationMap[x][y] = 1.0f;
+                    fogDirty = true;
+                }
             }
         }
     }
@@ -342,6 +345,8 @@ public class MinimapManager {
      * </ul>
      */
     public void updateFogImage() {
+        if (!fogDirty) return;
+        fogDirty = false;
         int width = minimapImage.getWidth();
         int height = minimapImage.getHeight();
         int padding = BLUR_KERNEL_SIZE;
@@ -415,6 +420,7 @@ public class MinimapManager {
                     this.explorationMap[x][y] = (data[i] & 0xFF) / 255.0f;
                 }
             }
+            fogDirty = true;
             updateFogImage();
         } catch (Exception e) {
             this.explorationMap = new float[width][height];

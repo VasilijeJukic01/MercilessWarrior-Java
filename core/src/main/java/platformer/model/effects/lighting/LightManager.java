@@ -27,31 +27,53 @@ import static platformer.constants.Constants.*;
 import static platformer.constants.FilePaths.*;
 
 /**
- * Manages all screen-wide lighting and color effects for the game.
+ * Manages all screen-wide lighting, dynamic light sources, and atmospheric color grading for the game.
  * <p>
- * This class is responsible for creating a dynamic and atmospheric environment by orchestrating several layers of visual effects:
+ * This class orchestrates several layers of visual effects to build a dynamic environment:
  * <ul>
- *     <li><b>Ambient Darkness:</b> A base layer of darkness that changes with the in-game time.</li>
- *     <li><b>Dynamic Light Sources:</b> Uses a highly optimized "lightmap" technique to render soft, feathered light from the player, candles, and other objects.</li>
- *     <li><b>Day/Night Cycle Tinting:</b> Applies a full-screen color tint that smoothly transitions between dawn, day, dusk, and night.</li>
- *     <li><b>Glow and Bloom Effects:</b> Renders cosmetic glows on top of light sources to make them feel brighter and more intense.</li>
- *     <li><b>Special Effects:</b> Handles temporary, full-screen flashes.</li>
+ *     <li><b>Ambient Darkness:</b> A base darkness layer whose opacity shifts with the in-game day/night cycle or boss fight overrides.</li>
+ *     <li><b>Dynamic Light Sources:</b> Uses an off-screen low-resolution lightmap buffer ({@code 1 / LIGHTMAP_SCALE}) where moving light sources
+ *         (the player, enemies, and interactive objects) erase darkness via {@link AlphaComposite#DstOut}.</li>
+ *     <li><b>Static Room Light Caching:</b> Pre-bakes all stationary level lights (glowing crystals, lanterns, and JSON metadata lights)
+ *         once per room into cached buffers ({@link #staticRoomWhiteMap} and {@link #staticRoomColorMap}). During gameplay, rendering
+ *         dozens of static lights requires only a single sub-region blit per frame.</li>
+ *     <li><b>Day/Night Cycle Tinting:</b> Applies a full-screen color wash that smoothly interpolates between night, dawn, day, and dusk keyframes.</li>
+ *     <li><b>Cosmetic Bloom & Glows:</b> Renders pulsing radial glow sprites over active light-emitting objects like candles and the shop wagon.</li>
+ *     <li><b>Special Flash Filters:</b> Handles temporary full-screen flashes and color washes triggered by lightning strikes or boss phases.</li>
  * </ul>
+ *
  * @see TimeCycleManager
+ * @see DecorationLightManager
  * @see GameState
  */
 public class LightManager {
 
     private GameContext context;
 
-    /** An off-screen buffer where all light sources are erased from a darkness layer before being drawn. */
+    /**
+     * Off-screen composite buffer where darkness, erased light masks, and colored light tints are assembled
+     * at {@code 1 / LIGHTMAP_SCALE} resolution before being bilinearly upscaled to the screen.
+     */
     private final BufferedImage lightmap;
-    private static final int LIGHTMAP_SCALE = 2;
+
+    /**
+     * Downscaling factor for the lightmap buffer. A factor of 4 reduces pixel fill-rate cost by 16x while preserving smooth radial gradients when drawn with bilinear interpolation.
+     */
+    private static final int LIGHTMAP_SCALE = 4;
 
     private BufferedImage orangeLight, whiteRadialLight;
     private BufferedImage playerLightTexture, enemyLightTexture, candleLightTexture, objectLightTexture, shopLightTexture;
-    private final BufferedImage lightColorMap;
     private final Map<String, BufferedImage> lightTextureCache = new HashMap<>();
+
+    /**
+     * Cached room-sized buffers holding pre-baked white cutout masks and colored glow tints for all stationary decorations and metadata lights in the current level.
+     * Rebuilt only when the active level or restoration state changes.
+     */
+    private Level cachedStaticLevel = null;
+    private boolean cachedRestoredState = false;
+    private BufferedImage staticRoomWhiteMap = null;
+    private BufferedImage staticRoomColorMap = null;
+    private boolean hasStaticColoredLights = false;
 
     private Color ambientDarkness;
     private int animTick = 0, fadeBackAnimTick = 0;
@@ -72,7 +94,6 @@ public class LightManager {
 
     public LightManager() {
         this.lightmap = new BufferedImage(GAME_WIDTH / LIGHTMAP_SCALE, GAME_HEIGHT / LIGHTMAP_SCALE, BufferedImage.TYPE_INT_ARGB);
-        this.lightColorMap = new BufferedImage(GAME_WIDTH / LIGHTMAP_SCALE, GAME_HEIGHT / LIGHTMAP_SCALE, BufferedImage.TYPE_INT_ARGB);
         this.ambientDarkness = new Color(0, 0, 0, currentAmbientAlpha);
         initLightImages();
         initLightTextures();
@@ -82,7 +103,9 @@ public class LightManager {
         this.context = context;
     }
 
-    // Init
+    /**
+     * Loads and prepares the sprite assets used for cosmetic bloom overlays on candles and shops.
+     */
     private void initLightImages() {
         this.orangeLight = ImageUtils.importImage(ORANGE_GLOW, 2 * CANDLE_LIGHT_RADIUS, 2 * CANDLE_LIGHT_RADIUS);
         BufferedImage whiteRadialGlow = ImageUtils.importImage(WHITE_RADIAL_GLOW, 2 * CANDLE_LIGHT_RADIUS, 2 * CANDLE_LIGHT_RADIUS);
@@ -91,36 +114,37 @@ public class LightManager {
     }
 
     /**
-     * Pre-renders the circular light gradients into reusable BufferedImage textures.
-     * This is a core optimization that avoids creating expensive {@link RadialGradientPaint} objects every frame, significantly improving rendering performance.
+     * Pre-renders the circular light cutout gradients into reusable {@link BufferedImage} textures at native lightmap scale.
+     * <p>
+     * Pre-baking gradients at initialization avoids constructing expensive {@link RadialGradientPaint} objects and avoids rescaling textures on the fly during the frame loop.
      */
     private void initLightTextures() {
         float[] coreFractions = new float[]{0f, 0.42f, 1f};
         Color[] coreColors = new Color[]{Color.WHITE, new Color(1.0f, 1.0f, 1.0f, 0.92f), new Color(1.0f, 1.0f, 1.0f, 0f)};
 
-        int playerDiameter = (int)(PLAYER_LIGHT_RADIUS * 2.5f);
+        int playerDiameter = Math.max(2, (int) (PLAYER_LIGHT_RADIUS * 2.5f) / LIGHTMAP_SCALE);
         playerLightTexture = createLightTexture(playerDiameter, new float[]{0f, 1f}, new Color[]{Color.WHITE, new Color(1.0f, 1.0f, 1.0f, 0f)});
 
-        int enemyDiameter = (int)(PLAYER_LIGHT_RADIUS * 2.0f);
+        int enemyDiameter = Math.max(2, (int) (PLAYER_LIGHT_RADIUS * 2.0f) / LIGHTMAP_SCALE);
         enemyLightTexture = createLightTexture(enemyDiameter, new float[]{0f, 1f}, new Color[]{Color.WHITE, new Color(1.0f, 1.0f, 1.0f, 0f)});
 
-        int candleDiameter = (int)(CANDLE_LIGHT_RADIUS * 2.6f);
+        int candleDiameter = Math.max(2, (int) (CANDLE_LIGHT_RADIUS * 2.6f) / LIGHTMAP_SCALE);
         candleLightTexture = createLightTexture(candleDiameter, coreFractions, coreColors);
 
-        int objectDiameter = (int)(CANDLE_LIGHT_RADIUS * 1.9f);
+        int objectDiameter = Math.max(2, (int) (CANDLE_LIGHT_RADIUS * 1.9f) / LIGHTMAP_SCALE);
         objectLightTexture = createLightTexture(objectDiameter, coreFractions, coreColors);
 
-        int shopDiameter = (int)(CANDLE_LIGHT_RADIUS * 3.2f);
+        int shopDiameter = Math.max(2, (int) (CANDLE_LIGHT_RADIUS * 3.2f) / LIGHTMAP_SCALE);
         shopLightTexture = createLightTexture(shopDiameter, coreFractions, coreColors);
     }
 
     /**
-     * A helper method for {@link #initLightTextures()} that creates a single circular gradient texture.
+     * Creates a single circular alpha-mask gradient texture used with {@link AlphaComposite#DstOut} to erase darkness.
      *
-     * @param diameter The diameter of the light texture.
-     * @param fractions The fractions for the gradient stops (e.g., {0f, 1f}).
-     * @param colors The colors corresponding to the gradient stops.
-     * @return A BufferedImage containing the pre-rendered light gradient.
+     * @param diameter  The diameter of the light texture in lightmap pixels.
+     * @param fractions The normalized gradient stop positions (e.g., {@code {0f, 1f}}).
+     * @param colors    The colors corresponding to each gradient stop.
+     * @return A {@link BufferedImage} containing the pre-rendered radial gradient.
      */
     private BufferedImage createLightTexture(int diameter, float[] fractions, Color[] colors) {
         BufferedImage texture = new BufferedImage(diameter, diameter, BufferedImage.TYPE_INT_ARGB);
@@ -136,11 +160,13 @@ public class LightManager {
     }
 
     /**
-     * Creates a pre-rendered circular gradient texture for a colored light source.
+     * Creates a pre-rendered circular gradient texture for a colored light source (such as glowing crystals or lanterns).
+     * <p>
+     * Uses a 3-stop falloff ({@code 0.0 -> 0.5 -> 1.0}) so adjacent overlapping lights blend without creating harsh saturation rings.
      *
-     * @param diameter The diameter of the light texture.
-     * @param color    The color of the light source.
-     * @return A BufferedImage containing the pre-rendered colored light gradient.
+     * @param diameter The diameter of the light texture in lightmap pixels.
+     * @param color    The base RGB color of the light source.
+     * @return A {@link BufferedImage} containing the pre-rendered colored light gradient.
      */
     private BufferedImage createColoredLightTexture(int diameter, Color color) {
         if (diameter <= 0) return new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
@@ -150,9 +176,11 @@ public class LightManager {
         Point2D center = new Point2D.Float(diameter / 2.0f, diameter / 2.0f);
         float radius = diameter / 2.0f;
 
+        Color centerCol = new Color(color.getRed(), color.getGreen(), color.getBlue(), 190);
+        Color midCol = new Color(color.getRed(), color.getGreen(), color.getBlue(), 75);
         Color transparentColor = new Color(color.getRed(), color.getGreen(), color.getBlue(), 0);
-        Color[] colors = {color, transparentColor};
-        float[] fractions = {0.0f, 1.0f};
+        Color[] colors = {centerCol, midCol, transparentColor};
+        float[] fractions = {0.0f, 0.5f, 1.0f};
 
         RadialGradientPaint p = new RadialGradientPaint(center, radius, fractions, colors);
         g2d.setPaint(p);
@@ -163,10 +191,10 @@ public class LightManager {
 
     // Update
     /**
-     * The main update loop for the LightManager.
-     * It synchronizes with the {@link TimeCycleManager}.
+     * Main update loop for the lighting system.
+     * Synchronizes with the {@link TimeCycleManager} and updates ambient darkness transitions, glow pulsation, and screen flashes.
      *
-     * @param timeManager The manager that provides the current in-game time.
+     * @param timeManager The manager providing the normalized in-game time of day.
      */
     public void update(TimeCycleManager timeManager) {
         this.currentTimeOfDay = timeManager.getGameTimeNormalized();
@@ -177,10 +205,10 @@ public class LightManager {
     }
 
     /**
-     * Calculates the natural, baseline color tint and ambient darkness for the current time of day.
-     * It interpolates between predefined keyframes (Night, Dawn, Day, Dusk).
+     * Calculates the baseline color tint and target ambient darkness for the current time of day.
+     * Smoothly interpolates between four keyframe periods: Night, Dawn, Day, and Dusk.
      *
-     * @param timeManager The manager providing the current time.
+     * @param timeManager The manager providing the current normalized time of day.
      */
     private void calculateTimeCycleEffects(TimeCycleManager timeManager) {
         if (ambientDarknessOverridden) return;
@@ -195,28 +223,28 @@ public class LightManager {
 
         // Night to Dawn
         if (time >= 0 && time < 0.25) {
-            float progress = (float)(time / 0.25);
+            float progress = (float) (time / 0.25);
             tint = interpolateColor(nightTint, dawnTint, progress);
             tintAlpha = interpolate(100, 35, progress);
             darknessAlpha = interpolate(220, 130, progress);
         }
         // Dawn to Day
         else if (time >= 0.25 && time < 0.50) {
-            float progress = (float)((time - 0.25) / 0.25);
+            float progress = (float) ((time - 0.25) / 0.25);
             tint = interpolateColor(dawnTint, dayTint, progress);
             tintAlpha = interpolate(35, 15, progress);
             darknessAlpha = interpolate(130, 80, progress);
         }
         // Day to Dusk
         else if (time >= 0.50 && time < 0.75) {
-            float progress = (float)((time - 0.50) / 0.25);
+            float progress = (float) ((time - 0.50) / 0.25);
             tint = interpolateColor(dayTint, duskTint, progress);
             tintAlpha = interpolate(15, 50, progress);
             darknessAlpha = interpolate(80, 160, progress);
         }
         // Dusk to Night
         else {
-            float progress = (float)((time - 0.75) / 0.25);
+            float progress = (float) ((time - 0.75) / 0.25);
             tint = interpolateColor(duskTint, nightTint, progress);
             tintAlpha = interpolate(50, 100, progress);
             darknessAlpha = interpolate(160, 220, progress);
@@ -226,7 +254,7 @@ public class LightManager {
     }
 
     /**
-     * Manages the ambient darkness, distinguishing between smooth day/night transitions, fast recovery from effects, and a persistent override state.
+     * Updates the current ambient darkness alpha, handling gradual day/night transitions, rapid recovery after lightning flashes ({@code isFadingBack}), and persistent boss/interior overrides.
      */
     private void updateAmbientDarknessAndEffects() {
         if (filterColor != null) {
@@ -243,7 +271,7 @@ public class LightManager {
                 currentAmbientAlpha = Math.min(currentAmbientAlpha + 5, targetAlpha);
             }
         }
-        // Faster recovery from effect
+        // Faster recovery from lightning/spell flash effects
         else if (isFadingBack) {
             fadeBackAnimTick++;
             if (fadeBackAnimTick >= LIGHT_ANIM_SPEED / 2) {
@@ -254,12 +282,10 @@ public class LightManager {
                     isFadingBack = false;
                 }
             }
-        }
-        else {
+        } else {
             if (currentAmbientAlpha < targetAlpha) {
                 currentAmbientAlpha = Math.min(currentAmbientAlpha + 2, targetAlpha);
-            }
-            else if (currentAmbientAlpha > targetAlpha) {
+            } else if (currentAmbientAlpha > targetAlpha) {
                 currentAmbientAlpha = Math.max(currentAmbientAlpha - 2, targetAlpha);
             }
         }
@@ -267,8 +293,7 @@ public class LightManager {
     }
 
     /**
-     * Updates the pulse timer, which drives the sine wave for the light pulsation effect.
-     * The timer increments in each frame, and resets to avoid growing indefinitely.
+     * Advances the phase timer that drives the sine-wave pulsation of candle and shop glows.
      */
     private void updatePulse() {
         pulseTimer += 0.02;
@@ -278,8 +303,7 @@ public class LightManager {
     }
 
     /**
-     * Manages the screen flash effect. If a flash is active, it rapidly decreases
-     * the flash intensity over its duration, creating a quick burst of light that fades away.
+     * Updates active screen flash effects, exponentially decaying the flash intensity until it reaches zero.
      */
     private void updateFlash() {
         if (flashDuration > 0) {
@@ -293,20 +317,22 @@ public class LightManager {
 
     // Render
     /**
-     * The main rendering method for the lighting system. It orchestrates the drawing of all lighting layers in the correct order to produce the final composite image.
+     * Renders the lighting pass over the world terrain and objects.
      * <p>
-     * The rendering order is:
+     * The rendering sequence is:
      * <ol>
-     *     <li>The dynamic lightmap (darkness with light sources "erased") is drawn.</li>
-     *     <li>The time-of-day color tint is drawn over everything.</li>
-     *     <li>Cosmetic glow effects are drawn on top of the tinted scene.</li>
-     *     <li>Finally, any full-screen flash effects are drawn on the very top.</li>
+     *     <li>Ensures the current room's stationary decoration/metadata lights are baked into {@link #staticRoomWhiteMap} and {@link #staticRoomColorMap}.</li>
+     *     <li>Assembles the per-frame {@link #lightmap} at {@code 1 / LIGHTMAP_SCALE} resolution (combining ambient darkness, dynamic entity cutouts, and the static room light maps).</li>
+     *     <li>Upscales the composite {@link #lightmap} to full screen resolution using bilinear interpolation.</li>
+     *     <li>Draws pulsing cosmetic bloom sprites ({@link #glowObjects}) on top of candles and shops.</li>
      * </ol>
-     * @param g Graphics object used for drawing the light effects.
-     * @param xLevelOffset The horizontal camera offset of the level.
-     * @param yLevelOffset The vertical camera offset of the level.
+     *
+     * @param g            The graphics context used for rendering.
+     * @param xLevelOffset The horizontal camera offset in world pixels.
+     * @param yLevelOffset The vertical camera offset in world pixels.
      */
     public void render(Graphics g, int xLevelOffset, int yLevelOffset) {
+        ensureStaticRoomLightsBuilt();
         prepareLightAndColorMaps(xLevelOffset, yLevelOffset);
 
         Graphics2D g2d = (Graphics2D) g;
@@ -314,19 +340,13 @@ public class LightManager {
         g2d.drawImage(lightmap, 0, 0, GAME_WIDTH, GAME_HEIGHT, null);
         g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
 
-        Graphics2D g2dColoredLights = (Graphics2D) g2d.create();
-        try {
-            g2dColoredLights.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.3f));
-            g2dColoredLights.drawImage(lightColorMap, 0, 0, GAME_WIDTH, GAME_HEIGHT, null);
-        } finally {
-            g2dColoredLights.dispose();
-        }
-
         glowObjects(g2d, xLevelOffset, yLevelOffset);
     }
 
     /**
-     * Renders full-screen atmospheric color grading and flash effects after all world entities are drawn.
+     * Renders full-screen atmospheric color grading (time-of-day tint) and flash overlays after all world entities are drawn.
+     *
+     * @param g The graphics context.
      */
     public void renderPostProcessing(Graphics g) {
         renderTimeCycleTint(g);
@@ -334,117 +354,151 @@ public class LightManager {
     }
 
     /**
-     * Constructs the lightmap by filling it with the current ambient darkness, then using the pre-rendered light textures
-     * with a {@link AlphaComposite#DST_OUT} composite to "erase" the areas where light sources are present.
-     * This all happens on an off-screen buffer for maximum performance.
-     *
-     * @param xLevelOffset The horizontal camera offset.
-     * @param yLevelOffset The vertical camera offset.
+     * Lazily builds and caches the full-room static light buffers ({@link #staticRoomWhiteMap} and {@link #staticRoomColorMap}) for the active level.
+     * <p>
+     * Stationary light sources (such as glowing cave crystals, bioluminescent mushrooms, village buildings, and JSON metadata lights)
+     * never move during gameplay. By baking all of them once into a pair of room-sized {@link BufferedImage}s at {@code 1 / LIGHTMAP_SCALE}
+     * resolution when the player enters the room, the engine avoids iterating the tilemap and drawing dozens of radial gradients every frame.
      */
-    private void prepareLightAndColorMaps(int xLevelOffset, int yLevelOffset) {
-        Graphics2D lightmapG2d = lightmap.createGraphics();
-        Graphics2D colorMapG2d = lightColorMap.createGraphics();
-        try {
-            lightmapG2d.scale(1.0 / LIGHTMAP_SCALE, 1.0 / LIGHTMAP_SCALE);
-            lightmapG2d.setComposite(AlphaComposite.getInstance(AlphaComposite.CLEAR));
-            lightmapG2d.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
-            lightmapG2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER));
-            lightmapG2d.setColor(ambientDarkness);
-            lightmapG2d.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
-            lightmapG2d.setComposite(AlphaComposite.getInstance(AlphaComposite.DST_OUT));
-
-            colorMapG2d.setComposite(AlphaComposite.getInstance(AlphaComposite.CLEAR));
-            colorMapG2d.fillRect(0, 0, lightColorMap.getWidth(), lightColorMap.getHeight());
-            colorMapG2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER));
-            colorMapG2d.scale(1.0 / LIGHTMAP_SCALE, 1.0 / LIGHTMAP_SCALE);
-
-            drawLightSource(lightmapG2d, playerLightTexture, context.getPlayer().getHitBox(), xLevelOffset, yLevelOffset);
-            renderAllLightSources(lightmapG2d, xLevelOffset, yLevelOffset);
-            renderDecorationLights(lightmapG2d, colorMapG2d, xLevelOffset, yLevelOffset);
-            renderMetadataLights(lightmapG2d, colorMapG2d, xLevelOffset, yLevelOffset);
-        }
-        finally {
-            lightmapG2d.dispose();
-            colorMapG2d.dispose();
-        }
-    }
-
-    private void renderDecorationLights(Graphics2D lightmapG2d, Graphics2D colorMapG2d, int xLevelOffset, int yLevelOffset) {
+    private void ensureStaticRoomLightsBuilt() {
         Level currentLevel = context.getLevelManager().getCurrentLevel();
         if (currentLevel == null) return;
-        int[][] decoData = currentLevel.getDecoData();
-        String tilesetName = currentLevel.getTilesetName();
-        for (int j = 0; j < decoData[0].length; j++) {
-            for (int i = 0; i < decoData.length; i++) {
-                int decoIndex = decoData[i][j];
-                if (decoIndex != -1) {
-                    DecorationMetadata decoMeta = context.getLevelManager().getDecorationMetadata(tilesetName, decoIndex);
-                    if (decoMeta != null) {
-                        String lookupId = decoMeta.getId();
-                        if (context.getWorldMemoryManager().hasFlag("RESTORED_" + context.getLevelManager().getCurrentLevelId()) && DecorationLightManager.getInstance().getLightData(lookupId + "_LIVELY") != null) {
-                            lookupId = lookupId + "_LIVELY";
-                        }
-                        DecorationLightData lightData = DecorationLightManager.getInstance().getLightData(lookupId);
-                        if (lightData != null) {
-                            renderSingleDecorationLight(lightmapG2d, colorMapG2d, lightData, decoMeta, i, j, xLevelOffset, yLevelOffset);
+        boolean isRestored = context.getWorldMemoryManager() != null && context.getWorldMemoryManager().hasFlag("RESTORED_" + context.getLevelManager().getCurrentLevelId());
+
+        if (currentLevel == cachedStaticLevel && isRestored == cachedRestoredState && staticRoomWhiteMap != null) {
+            return;
+        }
+
+        cachedStaticLevel = currentLevel;
+        cachedRestoredState = isRestored;
+        hasStaticColoredLights = false;
+
+        int roomLmW = Math.max(1, (currentLevel.getLevelTilesWidth() * TILES_SIZE) / LIGHTMAP_SCALE);
+        int roomLmH = Math.max(1, (currentLevel.getLevelTilesHeight() * TILES_SIZE) / LIGHTMAP_SCALE);
+        staticRoomWhiteMap = new BufferedImage(roomLmW, roomLmH, BufferedImage.TYPE_INT_ARGB);
+        staticRoomColorMap = new BufferedImage(roomLmW, roomLmH, BufferedImage.TYPE_INT_ARGB);
+
+        Graphics2D wG2d = staticRoomWhiteMap.createGraphics();
+        Graphics2D cG2d = staticRoomColorMap.createGraphics();
+        try {
+            int[][] decoData = currentLevel.getDecoData();
+            String tilesetName = currentLevel.getTilesetName();
+            for (int j = 0; j < decoData[0].length; j++) {
+                for (int i = 0; i < decoData.length; i++) {
+                    int decoIndex = decoData[i][j];
+                    if (decoIndex != -1) {
+                        DecorationMetadata decoMeta = context.getLevelManager().getDecorationMetadata(tilesetName, decoIndex);
+                        if (decoMeta != null) {
+                            String lookupId = decoMeta.getId();
+                            if (isRestored && DecorationLightManager.getInstance().getLightData(lookupId + "_LIVELY") != null) {
+                                lookupId = lookupId + "_LIVELY";
+                            }
+                            DecorationLightData lightData = DecorationLightManager.getInstance().getLightData(lookupId);
+                            if (lightData != null) {
+                                bakeSingleDecorationLight(wG2d, cG2d, lightData, decoMeta, i, j);
+                                hasStaticColoredLights = true;
+                            }
                         }
                     }
                 }
             }
+            LevelMetadata meta = context.getLevelManager().getCurrentLevelMetadata();
+            if (meta != null && meta.getLights() != null) {
+                for (LightMetadata light : meta.getLights()) {
+                    bakeMetadataLight(wG2d, cG2d, light);
+                    hasStaticColoredLights = true;
+                }
+            }
+        } finally {
+            wG2d.dispose();
+            cG2d.dispose();
         }
     }
 
-    private void renderSingleDecorationLight(Graphics2D lightmapG2d, Graphics2D colorMapG2d, DecorationLightData lightData, DecorationMetadata decoMeta, int tileX, int tileY, int xLevelOffset, int yLevelOffset) {
+    /**
+     * Bakes a single decoration's white cutout mask and colored glow gradient into the room's static light buffers,
+     * accounting for any custom sub-tile offsets or scale multipliers defined in {@link platformer.model.levels.metadata.ObjectMetadata}.
+     */
+    private void bakeSingleDecorationLight(Graphics2D wG2d, Graphics2D cG2d, DecorationLightData lightData, DecorationMetadata decoMeta, int tileX, int tileY) {
         try {
-            int baseRadius = (int) (lightData.getLightRadius() * SCALE);
-            int baseDiameter = baseRadius * 2;
-            double pulseFactor = 1.0 + 0.05 * Math.sin(pulseTimer * 0.5);
-            int pulsatingDiameter = (int) (baseDiameter * pulseFactor);
+            var objMeta = context.getLevelManager().getObjectMetadataAt(tileX, tileY);
+            double scaleMult = (objMeta != null) ? Math.max(objMeta.getScaleX(), objMeta.getScaleY()) : 1.0;
+            if (scaleMult <= 0) scaleMult = 1.0;
+
+            int lmRadius = Math.max(2, (int) (lightData.getLightRadius() * SCALE * scaleMult) / LIGHTMAP_SCALE);
+            int lmDiameter = lmRadius * 2;
+
             Color lightColor = Color.decode(lightData.getLightColor());
-            String colorCacheKey = lightColor.getRGB() + "_" + baseRadius;
-            String whiteCacheKey = "white_" + baseRadius;
-            BufferedImage coloredLightTexture = lightTextureCache.computeIfAbsent(colorCacheKey, k -> createColoredLightTexture(baseDiameter, lightColor));
-            BufferedImage whiteLightTexture = lightTextureCache.computeIfAbsent(whiteCacheKey, k -> createLightTexture(baseDiameter, new float[]{0f, 1f}, new Color[]{Color.WHITE, new Color(1.0f, 1.0f, 1.0f, 0f)}));
+            String colorCacheKey = lightColor.getRGB() + "_" + lmRadius;
+            String whiteCacheKey = "white_" + lmRadius;
+            BufferedImage coloredTex = lightTextureCache.computeIfAbsent(colorCacheKey, k -> createColoredLightTexture(lmDiameter, lightColor));
+            BufferedImage whiteTex = lightTextureCache.computeIfAbsent(whiteCacheKey, k -> createLightTexture(lmDiameter, new float[]{0f, 1f}, new Color[]{Color.WHITE, new Color(1.0f, 1.0f, 1.0f, 0f)}));
 
-            int offsetX = (int) (decoMeta.getXOffset() / 2.0 * SCALE), offsetY = (int) (decoMeta.getYOffset() / 2.0 * SCALE);
+            int customOffX = (objMeta != null) ? (int) (objMeta.getOffsetX() / 2.0 * SCALE) : 0;
+            int customOffY = (objMeta != null) ? (int) (objMeta.getOffsetY() / 2.0 * SCALE) : 0;
+            int offsetX = (int) (decoMeta.getXOffset() / 2.0 * SCALE) + customOffX, offsetY = (int) (decoMeta.getYOffset() / 2.0 * SCALE) + customOffY;
             int decoWid = (int) (decoMeta.getWid() / 2.0 * SCALE), decoHei = (int) (decoMeta.getHei() / 2.0 * SCALE);
-            int worldX = tileX * TILES_SIZE + offsetX, worldY = tileY * TILES_SIZE + offsetY;
-            int centerX = worldX + decoWid / 2, centerY = worldY + decoHei / 2;
+            int centerX = (tileX * TILES_SIZE + offsetX + decoWid / 2) / LIGHTMAP_SCALE;
+            int centerY = (tileY * TILES_SIZE + offsetY + decoHei / 2) / LIGHTMAP_SCALE;
 
-            int drawX = centerX - xLevelOffset - pulsatingDiameter / 2;
-            int drawY = centerY - yLevelOffset - pulsatingDiameter / 2;
-
-            colorMapG2d.drawImage(coloredLightTexture, drawX, drawY, pulsatingDiameter, pulsatingDiameter, null);
-            lightmapG2d.drawImage(whiteLightTexture, drawX, drawY, pulsatingDiameter, pulsatingDiameter, null);
+            cG2d.drawImage(coloredTex, centerX - lmRadius, centerY - lmRadius, null);
+            wG2d.drawImage(whiteTex, centerX - lmRadius, centerY - lmRadius, null);
         } catch (NumberFormatException ignored) {}
     }
 
-    private void renderMetadataLights(Graphics2D lightmapG2d, Graphics2D colorMapG2d, int xLevelOffset, int yLevelOffset) {
-        LevelMetadata meta = context.getLevelManager().getCurrentLevelMetadata();
-        if (meta == null || meta.getLights() == null) return;
+    /**
+     * Bakes a point light defined in the level's JSON metadata (such as interior tavern lights) into the static room buffers.
+     */
+    private void bakeMetadataLight(Graphics2D wG2d, Graphics2D cG2d, LightMetadata light) {
+        try {
+            int lmRadius = Math.max(2, (int) (light.getRadius() * SCALE) / LIGHTMAP_SCALE);
+            int lmDiameter = lmRadius * 2;
+            Color lightColor = Color.decode(light.getColor());
+            String colorCacheKey = lightColor.getRGB() + "_" + lmRadius;
+            String whiteCacheKey = "white_" + lmRadius;
+            BufferedImage coloredTex = lightTextureCache.computeIfAbsent(colorCacheKey, k -> createColoredLightTexture(lmDiameter, lightColor));
+            BufferedImage whiteTex = lightTextureCache.computeIfAbsent(whiteCacheKey, k -> createLightTexture(lmDiameter, new float[]{0f, 1f}, new Color[]{Color.WHITE, new Color(1.0f, 1.0f, 1.0f, 0f)}));
+            int centerX = (light.getX() * TILES_SIZE + TILES_SIZE / 2) / LIGHTMAP_SCALE;
+            int centerY = (light.getY() * TILES_SIZE + TILES_SIZE / 2) / LIGHTMAP_SCALE;
+            cG2d.drawImage(coloredTex, centerX - lmRadius, centerY - lmRadius, null);
+            wG2d.drawImage(whiteTex, centerX - lmRadius, centerY - lmRadius, null);
+        } catch (Exception ignored) {}
+    }
 
-        for (LightMetadata light : meta.getLights()) {
-            try {
-                int baseRadius = (int)(light.getRadius() * SCALE);
-                int baseDiameter = baseRadius * 2;
-                double pulseFactor = 1.0 + 0.05 * Math.sin(pulseTimer * 0.5);
-                int pulsatingDiameter = (int)(baseDiameter * pulseFactor);
+    /**
+     * Constructs the per-frame {@link #lightmap} on an off-screen buffer:
+     * <ol>
+     *     <li>Fills the buffer with the current {@link #ambientDarkness} using {@link AlphaComposite#Src} (replacing both clear and fill in one pass).</li>
+     *     <li>Switches to {@link AlphaComposite#DstOut} to punch out light holes for the player, dynamic objects, and the pre-baked {@link #staticRoomWhiteMap}.</li>
+     *     <li>Overlays the pre-baked {@link #staticRoomColorMap} at {@code 0.26f} opacity so colored lights softly tint the illuminated areas.</li>
+     * </ol>
+     *
+     * @param xLevelOffset The horizontal camera offset in world pixels.
+     * @param yLevelOffset The vertical camera offset in world pixels.
+     */
+    private void prepareLightAndColorMaps(int xLevelOffset, int yLevelOffset) {
+        int lmW = lightmap.getWidth();
+        int lmH = lightmap.getHeight();
+        int srcX = xLevelOffset / LIGHTMAP_SCALE;
+        int srcY = yLevelOffset / LIGHTMAP_SCALE;
 
-                Color lightColor = Color.decode(light.getColor());
-                String colorCacheKey = lightColor.getRGB() + "_" + baseRadius;
-                String whiteCacheKey = "white_" + baseRadius;
+        Graphics2D lightmapG2d = lightmap.createGraphics();
+        try {
+            lightmapG2d.setComposite(AlphaComposite.Src);
+            lightmapG2d.setColor(ambientDarkness);
+            lightmapG2d.fillRect(0, 0, lmW, lmH);
 
-                BufferedImage coloredLightTexture = lightTextureCache.computeIfAbsent(colorCacheKey, k -> createColoredLightTexture(baseDiameter, lightColor));
-                BufferedImage whiteLightTexture = lightTextureCache.computeIfAbsent(whiteCacheKey, k -> createLightTexture(baseDiameter, new float[]{0f, 1f}, new Color[]{Color.WHITE, new Color(1.0f, 1.0f, 1.0f, 0f)}));
+            lightmapG2d.setComposite(AlphaComposite.DstOut);
+            drawLightSource(lightmapG2d, playerLightTexture, context.getPlayer().getHitBox(), xLevelOffset, yLevelOffset);
+            renderAllLightSources(lightmapG2d, xLevelOffset, yLevelOffset);
 
-                int worldX = light.getX() * TILES_SIZE;
-                int worldY = light.getY() * TILES_SIZE;
-                int drawX = worldX - xLevelOffset - pulsatingDiameter / 2 + TILES_SIZE / 2;
-                int drawY = worldY - yLevelOffset - pulsatingDiameter / 2 + TILES_SIZE / 2;
-
-                colorMapG2d.drawImage(coloredLightTexture, drawX, drawY, pulsatingDiameter, pulsatingDiameter, null);
-                lightmapG2d.drawImage(whiteLightTexture, drawX, drawY, pulsatingDiameter, pulsatingDiameter, null);
-            } catch (Exception ignored) {}
+            if (hasStaticColoredLights && staticRoomWhiteMap != null) {
+                lightmapG2d.drawImage(staticRoomWhiteMap, -srcX, -srcY, null);
+                lightmapG2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.26f));
+                lightmapG2d.drawImage(staticRoomColorMap, -srcX, -srcY, null);
+            }
+        } finally {
+            lightmapG2d.dispose();
         }
     }
 
@@ -462,7 +516,7 @@ public class LightManager {
     }
 
     /**
-     * Renders any active top-layer flash effects.
+     * Renders any active top-layer flash or color filter effects.
      *
      * @param g The graphics context.
      */
@@ -512,24 +566,24 @@ public class LightManager {
     }
 
     /**
-     * A highly optimized helper method that draws a pre-rendered light texture onto the lightmap.
+     * Draws a pre-rendered light cutout texture onto the low-resolution lightmap at 1:1 scale.
      *
-     * @param g2d The graphics context (usually of the lightmap).
-     * @param texture The pre-rendered light texture to draw.
-     * @param hitbox The hitbox of the object emitting the light.
-     * @param xLevelOffset The horizontal camera offset.
-     * @param yLevelOffset The vertical camera offset.
+     * @param g2d          The graphics context of the lightmap buffer.
+     * @param texture      The pre-rendered light texture to draw.
+     * @param hitbox       The world-space hitbox of the entity or object emitting the light.
+     * @param xLevelOffset The horizontal camera offset in world pixels.
+     * @param yLevelOffset The vertical camera offset in world pixels.
      */
     private void drawLightSource(Graphics2D g2d, BufferedImage texture, Rectangle2D.Double hitbox, int xLevelOffset, int yLevelOffset) {
-        int x = (int) (hitbox.getCenterX() - xLevelOffset - texture.getWidth() / 2.0);
-        int y = (int) (hitbox.getCenterY() - yLevelOffset - texture.getHeight() / 2.0);
+        int x = (int) ((hitbox.getCenterX() - xLevelOffset) / LIGHTMAP_SCALE - texture.getWidth() / 2.0);
+        int y = (int) ((hitbox.getCenterY() - yLevelOffset) / LIGHTMAP_SCALE - texture.getHeight() / 2.0);
         g2d.drawImage(texture, x, y, null);
     }
 
     /**
-     * Renders all cosmetic "glow" effects for light-emitting objects. These are drawn on top of the main lighting pass.
+     * Renders cosmetic bloom overlays for light-emitting game objects on top of the main lighting pass.
      *
-     * @param g2d The main graphics context.
+     * @param g2d          The main screen graphics context.
      * @param xLevelOffset The horizontal camera offset.
      * @param yLevelOffset The vertical camera offset.
      */
@@ -576,21 +630,13 @@ public class LightManager {
      * <b>Flow:</b>
      * <ol>
      *     <li><b>Cosine Wave:</b> The function uses {@code Math.cos(currentTimeOfDay * 2 * Math.PI)}.
-     *     As {@code currentTimeOfDay} goes from 0.0 (midnight) to 1.0 (next midnight), the input to the cosine
-     *     function goes from 0 to 2Ï€, completing one full wave. The cosine function naturally returns a value
-     *     in the range [-1.0, 1.0]. It is at its peak (+1.0) at the start/end (midnight) and at its trough (-1.0)
-     *     in the middle (noon).</li>
-
-     *     <li><b>Normalization:</b> The cosine output of [-1.0, 1.0] is not a useful range for alpha values.
-     *     We normalize it to the range [0.0, 1.0] by using the formula {@code (cos + 1) / 2.0}.
+     *     As {@code currentTimeOfDay} goes from 0.0 (midnight) to 1.0 (next midnight), the input to the cosine function goes from 0 to 2π, completing one full wave.
+     *     The cosine function naturally returns a value in the range [-1.0, 1.0]. It is at its peak (+1.0) at the start/end (midnight) and at its trough (-1.0) in the middle (noon).</li>
+     *     <li><b>Normalization:</b> The cosine output of [-1.0, 1.0] is normalized to the range [0.0, 1.0] using the formula {@code (cos + 1) / 2.0}.
      *     This maps -1.0 to 0.0 (noon, minimum glow) and +1.0 to 1.0 (midnight, maximum glow).</li>
-     *
-     *     <li><b>Linear Interpolation (Lerp):</b> Finally, we map this normalized [0.0, 1.0] value to our desired
-     *     alpha range, which is from {@link #MIN_CANDLE_GLOW_ALPHA} to {@link #MAX_CANDLE_GLOW_ALPHA}.
-     *     The formula {@code min + normalized * (max - min)} is a standard linear interpolation, scaling the
-     *     normalized value to the final output range.</li>
+     *     <li><b>Linear Interpolation (Lerp):</b> Finally, this normalized [0.0, 1.0] value is mapped to the desired
+     *     alpha range from {@link #MIN_CANDLE_GLOW_ALPHA} to {@link #MAX_CANDLE_GLOW_ALPHA} using {@code min + normalized * (max - min)}.</li>
      * </ol>
-     * The result is a smooth, continuous alpha value that is highest at night and lowest during the day.
      *
      * @return A float alpha value between {@link #MIN_CANDLE_GLOW_ALPHA} and {@link #MAX_CANDLE_GLOW_ALPHA}.
      */
@@ -603,7 +649,7 @@ public class LightManager {
     // Ambient
     /**
      * Forces the ambient darkness to a specific level, ignoring the day-night cycle.
-     * This override will remain in effect until {@link #releaseAmbientDarkness()} is called.
+     * This override remains in effect until {@link #releaseAmbientDarkness()} is called.
      *
      * @param darkness The alpha value (0-255) to lock the ambient darkness to.
      */
@@ -623,11 +669,11 @@ public class LightManager {
 
     // Helper
     /**
-     * Linearly interpolates between two integer values. Used for smooth transitions of alpha values.
+     * Linearly interpolates between two integer values.
      *
-     * @param start The starting value.
-     * @param end The ending value.
-     * @param progress The progress of the interpolation (0.0 to 1.0).
+     * @param start    The starting value.
+     * @param end      The ending value.
+     * @param progress The interpolation progress (0.0 to 1.0).
      * @return The interpolated integer value.
      */
     private int interpolate(int start, int end, float progress) {
@@ -635,11 +681,12 @@ public class LightManager {
     }
 
     /**
-     * Linearly interpolates between two Color objects, component by component (R, G, B).
-     * @param c1 The starting color.
-     * @param c2 The ending color.
-     * @param progress The progress of the interpolation (0.0 to 1.0).
-     * @return The new, interpolated Color.
+     * Linearly interpolates between two {@link Color} objects, component by component (R, G, B).
+     *
+     * @param c1       The starting color.
+     * @param c2       The ending color.
+     * @param progress The interpolation progress (0.0 to 1.0).
+     * @return The newly interpolated {@link Color}.
      */
     private Color interpolateColor(Color c1, Color c2, float progress) {
         int r = (int) (c1.getRed() + (c2.getRed() - c1.getRed()) * progress);
@@ -649,10 +696,9 @@ public class LightManager {
     }
 
     /**
-     * Returns a list of classes that represent light sources in the game.
-     * This is used to dynamically render all light-emitting objects without hardcoding each type.
+     * Returns the list of {@link GameObject} classes that emit dynamic light cutouts in the game world.
      *
-     * @return A list of Class objects representing light sources.
+     * @return A list of light-emitting {@link GameObject} classes.
      */
     private List<Class<?>> getLightSourceClasses() {
         return List.of(
@@ -664,10 +710,11 @@ public class LightManager {
 
     // Setters
     /**
-     * Activates a full-screen color filter and sets the ambient darkness to zero.
-     * The effect will automatically fade back to normal over a short duration as handled by the updateFading() method.
+     * Activates a temporary full-screen color filter and sets the ambient darkness to the given alpha.
+     * The darkness automatically fades back to normal over a short duration via {@link #updateAmbientDarknessAndEffects()}.
      *
-     * @param color The color of the filter to apply (alpha component is used for intensity).
+     * @param alpha The temporary ambient darkness alpha (0-255).
+     * @param color The color filter to apply over the screen.
      */
     public void setAlphaWithFilter(int alpha, Color color) {
         this.currentAmbientAlpha = alpha;
@@ -696,6 +743,16 @@ public class LightManager {
         this.filterColor = null;
     }
 
+    /**
+     * Forces the static room light cache to be rebuilt on the next frame.
+     */
+    public void invalidateStaticRoomLights() {
+        this.cachedStaticLevel = null;
+    }
+
+    /**
+     * Resets all lighting states, flash timers, and cached room light maps back to their default values.
+     */
     public void reset() {
         releaseAmbientDarkness();
         this.ambientAlpha = 130;
@@ -705,12 +762,6 @@ public class LightManager {
         this.flashDuration = 0;
         this.isFadingBack = false;
         this.fadeBackAnimTick = 0;
-
-        if (lightColorMap != null) {
-            Graphics2D g2d = lightColorMap.createGraphics();
-            g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.CLEAR));
-            g2d.fillRect(0, 0, lightColorMap.getWidth(), lightColorMap.getHeight());
-            g2d.dispose();
-        }
+        this.cachedStaticLevel = null;
     }
 }

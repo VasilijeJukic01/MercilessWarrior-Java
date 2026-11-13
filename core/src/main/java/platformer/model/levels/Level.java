@@ -215,7 +215,7 @@ public class Level {
             for (int j = 0; j < levelImg.getHeight(); j++) {
                 Color color = new Color(levelImg.getRGB(i, j));
                 int value = layer ? color.getGreen() : color.getBlue();
-                if ((value >= 100 && !layer) || (value > 4 && layer)) value = -1;
+                if ((value >= 150 && !layer) || (value > 4 && layer)) value = -1;
                 data[i - panelWidth][j] = value;
             }
         }
@@ -282,6 +282,7 @@ public class Level {
     }
 
     public double getDecorationBend(int tileX, int tileY) {
+        if (decorationBends.isEmpty()) return 0.0;
         return decorationBends.getOrDefault(new Point(tileX, tileY), 0.0);
     }
 

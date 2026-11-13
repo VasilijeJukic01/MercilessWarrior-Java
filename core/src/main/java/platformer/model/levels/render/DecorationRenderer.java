@@ -6,17 +6,20 @@ import platformer.model.levels.metadata.DecorationMetadata;
 import platformer.model.levels.metadata.ObjectMetadata;
 
 import java.awt.*;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
+import java.util.HashMap;
 import java.util.Map;
 
 import static platformer.constants.Constants.*;
 
 /**
- * Handles rendering of level decorations, including viewport culling, spatial transforms, and procedural wind sway animations.
+ * Handles rendering of level decorations, including viewport culling, pre-baked high-res spatial transforms, and GPU-accelerated procedural wind sway animations.
  */
 public class DecorationRenderer {
 
     private final LevelObjectManager levelObjectManager;
+    private final Map<String, BufferedImage> transformedCache = new HashMap<>();
 
     public DecorationRenderer(LevelObjectManager levelObjectManager) {
         this.levelObjectManager = levelObjectManager;
@@ -26,52 +29,102 @@ public class DecorationRenderer {
         if (decoSet == null) return;
 
         double baseTime = System.currentTimeMillis() * 0.0022;
-        for (int i = 0; i < level.getLvlData().length; i++) {
-            for (int j = 0; j < level.getLvlData()[0].length; j++) {
+        boolean hasMetaInLevel = objMetaMap != null && !objMetaMap.isEmpty();
+
+        int marginTiles = 6;
+        int xStart = Math.max(0, (xLevelOffset / TILES_SIZE) - marginTiles);
+        int xEnd = Math.min(level.getLvlData().length, ((xLevelOffset + GAME_WIDTH) / TILES_SIZE) + marginTiles);
+        int yStart = Math.max(0, (yLevelOffset / TILES_SIZE) - marginTiles);
+        int yEnd = Math.min(level.getLvlData()[0].length, ((yLevelOffset + GAME_HEIGHT) / TILES_SIZE) + marginTiles);
+
+        for (int i = xStart; i < xEnd; i++) {
+            for (int j = yStart; j < yEnd; j++) {
                 if (level.getLayerSpriteIndex(i, j) != layer) continue;
 
                 DecorationMetadata decoMeta = decoSet.get(level.getDecoSpriteIndex(i, j));
                 if (decoMeta == null) continue;
-
-                int offsetX = (int) (decoMeta.getXOffset() / 2.0 * SCALE), offsetY = (int) (decoMeta.getYOffset() / 2.0 * SCALE);
+                ObjectMetadata objMeta = hasMetaInLevel ? objMetaMap.get(new Point(i, j)) : null;
+                int customOffX = (objMeta != null) ? (int) (objMeta.getOffsetX() / 2.0 * SCALE) : 0;
+                int customOffY = (objMeta != null) ? (int) (objMeta.getOffsetY() / 2.0 * SCALE) : 0;
+                int offsetX = (int) (decoMeta.getXOffset() / 2.0 * SCALE) + customOffX, offsetY = (int) (decoMeta.getYOffset() / 2.0 * SCALE) + customOffY;
                 int wid = (int) (decoMeta.getWid() / 2.0 * SCALE), hei = (int) (decoMeta.getHei() / 2.0 * SCALE);
                 int xPos = (TILES_SIZE * i - xLevelOffset) + offsetX, yPos = (TILES_SIZE * j - yLevelOffset) + offsetY;
 
-                if (!isVisible(xPos, yPos, wid, hei)) continue;
+                boolean hasCustomTransform = objMeta != null && (objMeta.getRotation() != 0.0 || objMeta.getScaleX() != 1.0 || objMeta.getScaleY() != 1.0);
+                double maxScale = hasCustomTransform ? Math.max(1.0, Math.max(objMeta.getScaleX(), objMeta.getScaleY())) : 1.0;
+
+                if (!isVisible(xPos, yPos, (int) (wid * maxScale), (int) (hei * maxScale))) continue;
 
                 BufferedImage model = levelObjectManager.getModel(decoMeta.getId(), level.getTilesetName(), decoMeta.getFilename(), decoMeta.isFlipped(), useLively);
                 if (model == null) continue;
+
                 if (level.isDecorationCut(i, j)) {
                     drawCutStubble(g, model, xPos, yPos, wid, hei);
                     continue;
                 }
-                ObjectMetadata objMeta = objMetaMap.get(new Point(i, j));
-                if (!requiresTransform(objMeta, decoMeta)) g.drawImage(model, xPos, yPos, wid, hei, null);
-                else drawTransformed(g, model, decoMeta, objMeta, i, j, xPos, yPos, wid, hei, xLevelOffset, yLevelOffset, baseTime, level);
+
+                if (decoMeta.getSway() != null) drawSwaying(g, model, decoMeta, objMeta, i, j, xPos, yPos, wid, hei, baseTime, level);
+                else if (hasCustomTransform) drawCachedTransformed(g, model, decoMeta, objMeta, xPos, yPos, wid, hei, useLively);
+                else g.drawImage(model, xPos, yPos, wid, hei, null);
             }
         }
     }
 
     private boolean isVisible(int x, int y, int wid, int hei) {
-        return x + wid >= -128 && x <= GAME_WIDTH + 128 && y + hei >= -128 && y <= GAME_HEIGHT + 128;
+        return x + wid >= -192 && x <= GAME_WIDTH + 192 && y + hei >= -192 && y <= GAME_HEIGHT + 192;
     }
 
-    private boolean requiresTransform(ObjectMetadata objMeta, DecorationMetadata decoMeta) {
-        if (decoMeta.getSway() != null) return true;
-        if (objMeta == null) return false;
-        return objMeta.getRotation() != 0.0 || objMeta.getScaleX() != 1.0 || objMeta.getScaleY() != 1.0;
+    /**
+     * Pre-bakes a rotated/scaled static decoration with Bicubic interpolation once and caches the resulting BufferedImage,
+     * so every frame only performs a fast hardware-accelerated drawImage call.
+     */
+    private void drawCachedTransformed(Graphics g, BufferedImage model, DecorationMetadata decoMeta, ObjectMetadata objMeta, int xPos, int yPos, int wid, int hei, boolean useLively) {
+        double rot = objMeta.getRotation();
+        double sx = objMeta.getScaleX() != 0.0 ? objMeta.getScaleX() : 1.0;
+        double sy = objMeta.getScaleY() != 0.0 ? objMeta.getScaleY() : 1.0;
+
+        String key = decoMeta.getId() + "_" + decoMeta.isFlipped() + "_" + useLively + "_" + rot + "_" + sx + "_" + sy;
+        BufferedImage baked = transformedCache.computeIfAbsent(key, k -> bakeTransformedImage(model, wid, hei, rot, sx, sy));
+
+        int centerX = xPos + wid / 2;
+        int centerY = yPos + hei / 2;
+        g.drawImage(baked, centerX - baked.getWidth() / 2, centerY - baked.getHeight() / 2, null);
     }
 
-    private void drawTransformed(Graphics g, BufferedImage model, DecorationMetadata decoMeta, ObjectMetadata objMeta, int i, int j, int xPos, int yPos, int wid, int hei, int xLevelOffset, int yLevelOffset, double baseTime, Level level) {
+    private BufferedImage bakeTransformedImage(BufferedImage model, int wid, int hei, double rotationDeg, double sx, double sy) {
+        double scaledW = wid * sx, scaledH = hei * sy;
+        double rads = Math.toRadians(rotationDeg);
+        double sin = Math.abs(Math.sin(rads));
+        double cos = Math.abs(Math.cos(rads));
+
+        int boundW = Math.max(1, (int) Math.ceil(scaledW * cos + scaledH * sin) + 4);
+        int boundH = Math.max(1, (int) Math.ceil(scaledH * cos + scaledW * sin) + 4);
+
+        BufferedImage out = new BufferedImage(boundW, boundH, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2d = out.createGraphics();
+        g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+        g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        AffineTransform at = new AffineTransform();
+        at.translate(boundW / 2.0, boundH / 2.0);
+        at.rotate(rads);
+        at.scale(sx, sy);
+        g2d.setTransform(at);
+        g2d.drawImage(model, -wid / 2, -hei / 2, wid, hei, null);
+        g2d.dispose();
+        return out;
+    }
+
+    private void drawSwaying(Graphics g, BufferedImage model, DecorationMetadata decoMeta, ObjectMetadata objMeta, int i, int j, int xPos, int yPos, int wid, int hei, double baseTime, Level level) {
         Graphics2D g2d = (Graphics2D) g.create();
+        g2d.translate(xPos + wid / 2.0, yPos + hei / 2.0);
 
-        int baseX = (objMeta != null) ? (TILES_SIZE * i - xLevelOffset) : xPos;
-        int baseY = (objMeta != null) ? (TILES_SIZE * j - yLevelOffset) : yPos;
-
-        g2d.translate(baseX + wid / 2.0, baseY + hei / 2.0);
         if (objMeta != null) {
-            g2d.rotate(Math.toRadians(objMeta.getRotation()));
-            g2d.scale(objMeta.getScaleX(), objMeta.getScaleY());
+            if (objMeta.getRotation() != 0.0) g2d.rotate(Math.toRadians(objMeta.getRotation()));
+            double sx = objMeta.getScaleX() != 0.0 ? objMeta.getScaleX() : 1.0;
+            double sy = objMeta.getScaleY() != 0.0 ? objMeta.getScaleY() : 1.0;
+            if (sx != 1.0 || sy != 1.0) g2d.scale(sx, sy);
         }
 
         double extraBend = level.getDecorationBend(i, j);
