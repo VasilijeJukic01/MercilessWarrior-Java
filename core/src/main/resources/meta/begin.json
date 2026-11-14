@@ -2,5 +2,237 @@
   "backgroundId": "FOREST_ENTRANCE",
   "ambientParticlesEnabled": true,
   "tileset": "Forest",
-  "biome": "FOREST"
+  "biome": "FOREST",
+  "decorations": [
+    {
+      "x": 4,
+      "y": 25,
+      "layer": 4,
+      "rotation": 19.66,
+      "scaleX": 1.8,
+      "scaleY": 1.72,
+      "offsetX": -27,
+      "offsetY": 12
+    },
+    {
+      "x": 4,
+      "y": 26,
+      "layer": 4,
+      "rotation": 0.0,
+      "scaleX": 2.47,
+      "scaleY": 1.45,
+      "offsetX": 181,
+      "offsetY": 45
+    },
+    {
+      "x": 5,
+      "y": 8,
+      "layer": 0,
+      "rotation": 0.0,
+      "scaleX": 2.59,
+      "scaleY": 2.78,
+      "offsetX": -49,
+      "offsetY": 233
+    },
+    {
+      "x": 6,
+      "y": 8,
+      "layer": 4,
+      "rotation": 0.0,
+      "scaleX": 1.45,
+      "scaleY": 1.0,
+      "offsetX": 86,
+      "offsetY": 0
+    },
+    {
+      "x": 10,
+      "y": 22,
+      "layer": 4,
+      "rotation": 0.0,
+      "scaleX": 1.0,
+      "scaleY": 1.0,
+      "offsetX": -15,
+      "offsetY": 0
+    },
+    {
+      "x": 15,
+      "y": 7,
+      "layer": 4,
+      "rotation": 0.0,
+      "scaleX": 1.29,
+      "scaleY": 1.0,
+      "offsetX": 83,
+      "offsetY": 0
+    },
+    {
+      "x": 16,
+      "y": 9,
+      "layer": 0,
+      "rotation": 27.74,
+      "scaleX": 3.59,
+      "scaleY": 4.0,
+      "offsetX": 11,
+      "offsetY": 202
+    },
+    {
+      "x": 16,
+      "y": 20,
+      "layer": 4,
+      "rotation": 90.06,
+      "scaleX": 1.0,
+      "scaleY": 1.0,
+      "offsetX": -102,
+      "offsetY": 26
+    },
+    {
+      "x": 22,
+      "y": 24,
+      "layer": 4,
+      "rotation": 0.0,
+      "scaleX": 2.04,
+      "scaleY": 1.84,
+      "offsetX": -40,
+      "offsetY": 46
+    },
+    {
+      "x": 29,
+      "y": 24,
+      "layer": 4,
+      "rotation": 0.0,
+      "scaleX": 2.23,
+      "scaleY": 2.35,
+      "offsetX": 69,
+      "offsetY": 48
+    },
+    {
+      "x": 30,
+      "y": 7,
+      "layer": 2,
+      "rotation": 0.0,
+      "scaleX": 2.9,
+      "scaleY": 3.57,
+      "offsetX": 92,
+      "offsetY": 273
+    },
+    {
+      "x": 52,
+      "y": 13,
+      "layer": 1,
+      "rotation": 0.0,
+      "scaleX": 1.45,
+      "scaleY": 1.76,
+      "offsetX": 43,
+      "offsetY": -93
+    },
+    {
+      "x": 71,
+      "y": 6,
+      "layer": 4,
+      "rotation": 0.0,
+      "scaleX": 2.47,
+      "scaleY": 2.51,
+      "offsetX": 18,
+      "offsetY": 38
+    },
+    {
+      "x": 75,
+      "y": 17,
+      "layer": 4,
+      "rotation": 0.0,
+      "scaleX": 1.27,
+      "scaleY": 2.38,
+      "offsetX": 16,
+      "offsetY": -45
+    },
+    {
+      "x": 6,
+      "y": 18,
+      "layer": 4,
+      "rotation": 0.0,
+      "scaleX": 1.07,
+      "scaleY": 1.0,
+      "offsetX": -8,
+      "offsetY": 0
+    },
+    {
+      "x": 9,
+      "y": 18,
+      "layer": 4,
+      "rotation": 0.0,
+      "scaleX": 1.07,
+      "scaleY": 1.0,
+      "offsetX": 9,
+      "offsetY": 0
+    },
+    {
+      "x": 15,
+      "y": 15,
+      "layer": 4,
+      "rotation": 0.0,
+      "scaleX": 1.03,
+      "scaleY": 1.0,
+      "offsetX": -3,
+      "offsetY": 0
+    },
+    {
+      "x": 21,
+      "y": 15,
+      "layer": 4,
+      "rotation": 0.0,
+      "scaleX": 1.27,
+      "scaleY": 1.0,
+      "offsetX": 35,
+      "offsetY": -4
+    },
+    {
+      "x": 26,
+      "y": 17,
+      "layer": 4,
+      "rotation": 0.0,
+      "scaleX": 1.07,
+      "scaleY": 1.0,
+      "offsetX": -9,
+      "offsetY": 0
+    },
+    {
+      "x": 49,
+      "y": 16,
+      "layer": 4,
+      "rotation": 0.0,
+      "scaleX": 1.08,
+      "scaleY": 1.0,
+      "offsetX": -10,
+      "offsetY": 0
+    },
+    {
+      "x": 58,
+      "y": 16,
+      "layer": 4,
+      "rotation": 0.0,
+      "scaleX": 1.13,
+      "scaleY": 1.0,
+      "offsetX": -17,
+      "offsetY": 0
+    },
+    {
+      "x": 62,
+      "y": 15,
+      "layer": 4,
+      "rotation": 270.61,
+      "scaleX": 0.7,
+      "scaleY": 0.78,
+      "offsetX": -30,
+      "offsetY": -30
+    },
+    {
+      "x": 66,
+      "y": 14,
+      "layer": 4,
+      "rotation": 0.0,
+      "scaleX": 1.17,
+      "scaleY": 1.0,
+      "offsetX": 23,
+      "offsetY": -3
+    }
+  ]
 }

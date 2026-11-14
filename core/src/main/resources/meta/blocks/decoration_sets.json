@@ -121,7 +121,17 @@
     { "colorValue": 118, "id": "SUNKEN_FERN_NOOK", "wid": 256, "hei": 160, "xOffset": 0, "yOffset": 35 },
     { "colorValue": 119, "id": "MOSSY_STEP_TERRACE", "wid": 292, "hei": 192, "xOffset": -20, "yOffset": 10 },
     { "colorValue": 120, "id": "DARK_THORN_NOOK", "wid": 292, "hei": 192, "xOffset": -20, "yOffset": 10 },
-    { "colorValue": 121, "id": "ANCIENT_ROOT_HOLLOW", "wid": 256, "hei": 220, "xOffset": 0, "yOffset": 10 }
+    { "colorValue": 121, "id": "ANCIENT_ROOT_HOLLOW", "wid": 256, "hei": 220, "xOffset": 0, "yOffset": 10 },
+    { "colorValue": 122, "id": "UNDER_GRASS_ROOTS", "wid": 256, "hei": 128, "xOffset": 0, "yOffset": 45 },
+    { "colorValue": 123, "id": "UNDER_GRASS_MOSS", "wid": 256, "hei": 128, "xOffset": 0, "yOffset": 45 },
+    { "colorValue": 124, "id": "UNDER_GRASS_FERNS", "wid": 256, "hei": 128, "xOffset": 0, "yOffset": 25 },
+    { "colorValue": 125, "id": "UNDER_GRASS_ROOTS_GLOW", "wid": 256, "hei": 128, "xOffset": 0, "yOffset": 20 },
+    { "colorValue": 126, "id": "UNDER_GRASS_MOSS_GLOW", "wid": 256, "hei": 128, "xOffset": 0, "yOffset": 3 },
+    { "colorValue": 127, "id": "UNDER_GRASS_FERNS_GLOW", "wid": 256, "hei": 128, "xOffset": 0, "yOffset": 20 },
+    { "colorValue": 128, "id": "UNDER_GRASS_SHROOMS1", "wid": 256, "hei": 128, "xOffset": 0, "yOffset": 20 },
+    { "colorValue": 129, "id": "UNDER_GRASS_ROCKS_GLOW", "wid": 256, "hei": 128, "xOffset": 0, "yOffset": 25 },
+    { "colorValue": 130, "id": "UNDER_GRASS_SHROOMS2", "wid": 256, "hei": 128, "xOffset": 0, "yOffset": 25 },
+    { "colorValue": 131, "id": "UNDER_GRASS_VINES_GLOW", "wid": 256, "hei": 128, "xOffset": 0, "yOffset": 25 }
   ],
   "Invisible": [
     { "colorValue": 66, "id": "AMBIENT_LIGHT", "wid": 32, "hei": 32, "xOffset": 0, "yOffset": 0 }

@@ -42,5 +42,33 @@
   "TREE_HOLLOW_GLOW": {
     "lightColor": "#00FFE5",
     "lightRadius": 90
+  },
+  "UNDER_GRASS_ROOTS_GLOW": {
+    "lightColor": "#00FFE5",
+    "lightRadius": 75
+  },
+  "UNDER_GRASS_MOSS_GLOW": {
+    "lightColor": "#00FFE5",
+    "lightRadius": 75
+  },
+  "UNDER_GRASS_FERNS_GLOW": {
+    "lightColor": "#00FFE5",
+    "lightRadius": 75
+  },
+  "UNDER_GRASS_SHROOMS1": {
+    "lightColor": "#00FFE5",
+    "lightRadius": 75
+  },
+  "UNDER_GRASS_ROCKS_GLOW": {
+    "lightColor": "#00FFE5",
+    "lightRadius": 75
+  },
+  "UNDER_GRASS_SHROOMS2": {
+    "lightColor": "#00FFE5",
+    "lightRadius": 75
+  },
+  "UNDER_GRASS_VINES_GLOW": {
+    "lightColor": "#00FFE5",
+    "lightRadius": 75
   }
 }
