@@ -166,11 +166,11 @@ public class GameWorld {
         reinitializeParticles();
     }
 
-    public void levelLoadReset(LvlTriggerType spawn) {
+    public void levelLoadReset(LvlTriggerType spawn, int spawnX, int spawnY) {
         spellManager.initBossSpells();
         enemyManager.loadEnemies(levelManager.getCurrentLevel());
         objectManager.loadObjects(levelManager.getCurrentLevel());
-        player.setSpawn(levelManager.getCurrentLevel().getPlayerSpawn(spawn));
+        player.setSpawn(levelManager.getCurrentLevel().getPlayerSpawn(spawn, spawnX, spawnY));
         checkFollowerSpawn();
         reinitializeParticles();
     }

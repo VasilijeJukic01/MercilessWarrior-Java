@@ -40,6 +40,7 @@ public class ParticleFactory {
         behaviorCache.put(DustType.RORIC_BEAM_CHARGE, new BeamChargeBehavior());
         behaviorCache.put(DustType.CELESTIAL_AURA, new CelestialAuraBehavior());
         behaviorCache.put(DustType.RORIC_SUMMON, new RoricSummonBehavior());
+        behaviorCache.put(DustType.WATER_SPLASH, new WaterSplashBehavior());
     }
 
     /**

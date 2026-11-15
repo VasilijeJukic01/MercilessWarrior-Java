@@ -29,14 +29,21 @@ public class ObjectBreakHandler {
      *
      * @param attackBox The attack box.
      * @param flame The flame.
+     * @param flipSign The flip sign of the player (1 for right, -1 for left).
      */
-    public void checkObjectBreak(Rectangle2D.Double attackBox, Flame flame) {
+    public void checkObjectBreak(Rectangle2D.Double attackBox, Flame flame, int flipSign) {
         for (Container container : getObjects(Container.class)) {
             if (!container.isAlive() || container.animate) continue;
 
             boolean isFlame = flame.getHitBox().intersects(container.getHitBox()) && flame.isActive();
             if (attackBox.intersects(container.getHitBox()) || isFlame) {
                 breakContainer(container);
+            }
+        }
+
+        for (Water water : getObjects(Water.class)) {
+            if (attackBox.intersects(water.getHitBox())) {
+                water.onAttackSlash(attackBox, flipSign);
             }
         }
 
@@ -58,6 +65,12 @@ public class ObjectBreakHandler {
 
             if (attackBox.intersects(container.getHitBox())) {
                 breakContainerByEnemy(container);
+            }
+        }
+
+        for (Water water : getObjects(Water.class)) {
+            if (attackBox.intersects(water.getHitBox())) {
+                water.onAttackSlash(attackBox, 0);
             }
         }
     }

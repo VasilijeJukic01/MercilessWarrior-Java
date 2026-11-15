@@ -58,7 +58,7 @@ public class ObjectManager {
             Coin.class, Container.class, Potion.class, Spike.class,
             Shop.class, Blocker.class, Blacksmith.class, Dog.class,
             SaveTotem.class, SmashTrap.class, Candle.class, Loot.class,
-            Table.class, Board.class, Npc.class, Lava.class, Brick.class,
+            Table.class, Board.class, Npc.class, Lava.class, Water.class, Brick.class,
             JumpPad.class, Herb.class, RoricTrap.class, Door.class
     };
     Class<? extends GameObject>[] renderBelow = new Class[] {
@@ -69,7 +69,7 @@ public class ObjectManager {
             Door.class, Candle.class, Shop.class
     };
     Class<? extends GameObject>[] renderBehind = new Class[] {
-            Lava.class
+            Lava.class, Water.class
     };
 
     private Map<ObjType, List<GameObject>> objectsMap = new HashMap<>();
@@ -106,6 +106,7 @@ public class ObjectManager {
                 shop.getShopItems().addAll(inventory);
             }
         });
+        getObjects(Water.class).forEach(w -> w.setEffectManager(context.getEffectManager()));
     }
 
     private void applyNpcMetadata() {
@@ -315,7 +316,7 @@ public class ObjectManager {
      */
     public void checkObjectBreak(Rectangle2D.Double attackBox) {
         SpellManager spellManager = context.getSpellManager();
-        objectBreakHandler.checkObjectBreak(attackBox, spellManager.getFlames());
+        objectBreakHandler.checkObjectBreak(attackBox, spellManager.getFlames(), context.getPlayer().getFlipSign());
     }
 
     /**
@@ -415,7 +416,7 @@ public class ObjectManager {
                     .filter(GameObject::isAlive)
                     .forEach(obj -> {
                         BufferedImage[] animations = SpriteManager.getInstance().getObjectAnimations(obj.getObjType());
-                        if (animations != null || obj.getObjType() == ObjType.DOOR) {
+                        if (animations != null || obj.getObjType() == ObjType.DOOR || obj.getObjType() == ObjType.WATER) {
                             obj.render(g, xLevelOffset, yLevelOffset, animations);
                         }
                     });
@@ -425,6 +426,7 @@ public class ObjectManager {
 
     public void update(int[][] lvlData, Player player) {
         Arrays.stream(updateClasses).forEach(clazz -> updateObjects(clazz, lvlData));
+        getObjects(Water.class).forEach(w -> w.updatePlayerPhysics(player));
         updateArrowLaunchers(lvlData, player);
         handleInteractions(player);
         handleCollectibles(player);

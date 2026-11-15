@@ -37,7 +37,7 @@ public class Level {
     private final Map<Point, Double> decorationBends = new HashMap<>();
 
     private final List<Trigger> triggers = new ArrayList<>();
-    private final Map<LvlTriggerType, Point> spawnPoints = new HashMap<>();
+    private final Map<LvlTriggerType, List<Point>> spawnPoints = new HashMap<>();
 
     // Configuration
     private int levelTilesWidth, levelTilesHeight;
@@ -63,6 +63,7 @@ public class Level {
     // Level items Data
     public void gatherData() {
         int panelWidth = levelImg.getWidth() / 3;
+        boolean[][] waterGrid = new boolean[panelWidth][levelImg.getHeight()];
         reset();
         for (int i = 0; i < panelWidth; i++) {
             for (int j = 0; j < levelImg.getHeight(); j++) {
@@ -70,10 +71,11 @@ public class Level {
                 Color colorP3 = new Color(levelImg.getRGB(i + panelWidth * 2, j));
 
                 getEnemyData(i, j, colorP1.getGreen());
-                getObjectData(i, j, colorP1.getBlue(), colorP3);
+                getObjectData(i, j, colorP1.getBlue(), colorP3, waterGrid);
             }
         }
         getTriggerData(panelWidth);
+        buildMergedWaterPools(waterGrid, panelWidth, levelImg.getHeight());
         this.initialized = true;
     }
 
@@ -102,7 +104,7 @@ public class Level {
         }
     }
 
-    private void getObjectData(int i, int j, int valueB, Color colorP3) {
+    private void getObjectData(int i, int j, int valueB, Color colorP3, boolean[][] waterGrid) {
         if (valueB >= ObjType.MAX.ordinal()) return;
         switch (ObjType.values()[valueB]) {
             case HEAL_POTION:
@@ -163,6 +165,9 @@ public class Level {
                     dest = getInteriorName(colorP3.getBlue());
                 }
                 addGameObject(new Door(ObjType.DOOR, i*TILES_SIZE, j*TILES_SIZE, dest));
+                break;
+            case WATER:
+                waterGrid[i][j] = true;
                 break;
             default: break;
         }
@@ -243,7 +248,7 @@ public class Level {
                     int worldY = j * TILES_SIZE;
 
                     if (type.name().startsWith("SPAWN")) {
-                        spawnPoints.put(type, new Point(worldX, worldY));
+                        spawnPoints.computeIfAbsent(type, k -> new ArrayList<>()).add(new Point(worldX, worldY));
                     }
                     else {
                         Rectangle2D.Double bounds = new Rectangle2D.Double(worldX, worldY, TILES_SIZE, TILES_SIZE);
@@ -266,6 +271,40 @@ public class Level {
             case 10 -> "tavern";
             default -> "exit";
         };
+    }
+
+    // Water
+    private void buildMergedWaterPools(boolean[][] waterGrid, int width, int height) {
+        boolean[][] visited = new boolean[width][height];
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                if (!waterGrid[x][y] || visited[x][y]) continue;
+
+                int spanW = 1;
+                while (x + spanW < width && waterGrid[x + spanW][y] && !visited[x + spanW][y]) {
+                    spanW++;
+                }
+
+                int spanH = 1;
+                outer:
+                while (y + spanH < height) {
+                    for (int k = 0; k < spanW; k++) {
+                        if (!waterGrid[x + k][y + spanH] || visited[x + k][y + spanH]) {
+                            break outer;
+                        }
+                    }
+                    spanH++;
+                }
+
+                for (int dy = 0; dy < spanH; dy++) {
+                    for (int dx = 0; dx < spanW; dx++) {
+                        visited[x + dx][y + dy] = true;
+                    }
+                }
+
+                addGameObject(new Water(x * TILES_SIZE, y * TILES_SIZE, spanW, spanH));
+            }
+        }
     }
 
     // Cutting
@@ -305,6 +344,7 @@ public class Level {
         triggers.clear();
         cutDecorations.clear();
         decorationBends.clear();
+        spawnPoints.clear();
     }
 
     // Getters
@@ -359,11 +399,34 @@ public class Level {
      * @return The spawn point for the player.
      */
     public Point getPlayerSpawn(LvlTriggerType targetSpawn) {
-        if (spawnPoints.containsKey(targetSpawn)) {
-            return spawnPoints.get(targetSpawn);
+        return getPlayerSpawn(targetSpawn, null, null);
+    }
+
+    public Point getPlayerSpawn(LvlTriggerType targetSpawn, Integer hintTileX, Integer hintTileY) {
+        List<Point> points = spawnPoints.get(targetSpawn);
+        if (hintTileX != null && hintTileY != null) {
+            Point hintWorld = new Point(hintTileX * TILES_SIZE, hintTileY * TILES_SIZE);
+            if (points != null && !points.isEmpty()) {
+                Point closest = points.get(0);
+                double bestDist = closest.distance(hintWorld);
+                for (Point p : points) {
+                    double d = p.distance(hintWorld);
+                    if (d < bestDist) {
+                        bestDist = d;
+                        closest = p;
+                    }
+                }
+                if (bestDist <= 10 * TILES_SIZE) return closest;
+            }
+            return hintWorld;
         }
-        // Fallback
-        if (!spawnPoints.isEmpty()) return spawnPoints.values().iterator().next();
+
+        if (points != null && !points.isEmpty()) {
+            return points.get(0);
+        }
+        for (List<Point> anyList : spawnPoints.values()) {
+            if (!anyList.isEmpty()) return anyList.get(0);
+        }
         return new Point(5 * TILES_SIZE, 8 * TILES_SIZE);
     }
 

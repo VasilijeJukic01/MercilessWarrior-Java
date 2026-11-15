@@ -78,7 +78,7 @@ public class GameFlowManager {
                 RoomExitMetadata exit = levelManager.resolveExit(type, tileX, tileY);
                 if (exit != null && exit.getTargetLevel() != null) {
                     LvlTriggerType targetSpawn = exit.getTargetSpawn() != null ? exit.getTargetSpawn() : getDefaultSpawnForTrigger(type);
-                    goToLevel(exit.getTargetLevel(), type, targetSpawn);
+                    goToLevel(exit.getTargetLevel(), type, targetSpawn, exit.getSpawnX(), exit.getSpawnY());
                     return;
                 }
             }
@@ -113,7 +113,7 @@ public class GameFlowManager {
      * @param exitType      The exit trigger type that initiated the level transition.
      * @param spawn   The spawn trigger in the new level.
      */
-    private void goToLevel(String targetLevelId, LvlTriggerType exitType, LvlTriggerType spawn) {
+    private void goToLevel(String targetLevelId, LvlTriggerType exitType, LvlTriggerType spawn, int spawnX, int spawnY) {
         TransitionDirection direction = getTransitionDirection(exitType);
 
         Runnable levelLoadCallback = () -> {
@@ -123,7 +123,7 @@ public class GameFlowManager {
             gameState.flushAWTEventQueue();
             gameState.getPlayer().activateMinimap(false);
             context.getLevelManager().loadLevelById(targetLevelId);
-            gameState.getWorld().levelLoadReset(spawn);
+            gameState.getWorld().levelLoadReset(spawn, spawnX, spawnY);
             context.getMinimapManager().changeLevel();
             gameState.getPlayer().activateMinimap(true);
             gameState.getCamera().updateLevelBounds(context.getLevelManager().getCurrentLevel());

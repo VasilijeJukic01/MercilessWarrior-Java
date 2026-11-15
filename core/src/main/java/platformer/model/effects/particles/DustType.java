@@ -22,5 +22,6 @@ public enum DustType {
     RORIC_TELEPORT_IN,
     RORIC_BEAM_CHARGE,
     CELESTIAL_AURA,
-    RORIC_SUMMON
+    RORIC_SUMMON,
+    WATER_SPLASH
 }
