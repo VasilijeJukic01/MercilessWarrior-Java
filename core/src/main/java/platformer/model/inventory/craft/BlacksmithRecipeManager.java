@@ -2,6 +2,7 @@ package platformer.model.inventory.craft;
 
 import com.google.gson.Gson;
 import lombok.Getter;
+import platformer.animation.AssetManager;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
 import platformer.model.world.WorldMemoryManager;
@@ -63,7 +64,7 @@ public class BlacksmithRecipeManager {
     }
 
     private void loadData() {
-        try (InputStream is = getClass().getResourceAsStream(BLACKSMITH_RECIPES_PATH)) {
+        try (InputStream is = AssetManager.getInstance().getResourceAsStream(BLACKSMITH_RECIPES_PATH)) {
             if (is != null) {
                 try (InputStreamReader reader = new InputStreamReader(is, StandardCharsets.UTF_8)) {
                     this.data = new Gson().fromJson(reader, BlacksmithData.class);

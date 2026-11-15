@@ -41,6 +41,15 @@ public class AssetManager {
         }
     }
 
+    /**
+     * Reads files (like JSON or Configs) directly from the encrypted memory bundle.
+     */
+    public InputStream getResourceAsStream(String path) {
+        byte[] data = getAsset(path);
+        if (data != null) return new ByteArrayInputStream(data);
+        return AssetManager.getInstance().getResourceAsStream(path);
+    }
+
     public byte[] getAsset(String path) {
         return assetData.get(path);
     }

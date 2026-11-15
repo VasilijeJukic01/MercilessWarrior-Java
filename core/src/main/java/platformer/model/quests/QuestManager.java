@@ -3,6 +3,7 @@ package platformer.model.quests;
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 import lombok.Getter;
+import platformer.animation.AssetManager;
 import platformer.core.Framework;
 import platformer.core.GameContext;
 import platformer.debug.logger.Logger;
@@ -56,8 +57,8 @@ public class QuestManager {
         gsonBuilder.registerTypeAdapter(ObjectiveTarget.class, new ObjectiveTargetDeserializer());
         Gson gson = gsonBuilder.create();
 
-        try (InputStream is = getClass().getResourceAsStream(filePath);
-            InputStreamReader reader = new InputStreamReader(is, StandardCharsets.UTF_8)) {
+        try (InputStream is = AssetManager.getInstance().getResourceAsStream(filePath);
+             InputStreamReader reader = new InputStreamReader(is, StandardCharsets.UTF_8)) {
             Type questListType = new TypeToken<List<Quest>>() {}.getType();
             allQuests = gson.fromJson(reader, questListType);
             progressiveQuests = filterAndSortQuests(QuestType.PROGRESSIVE);

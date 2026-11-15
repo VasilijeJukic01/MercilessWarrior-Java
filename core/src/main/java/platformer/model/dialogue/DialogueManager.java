@@ -2,6 +2,7 @@ package platformer.model.dialogue;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import platformer.animation.AssetManager;
 import platformer.controller.KeyboardController;
 import platformer.core.Framework;
 import platformer.core.GameContext;
@@ -61,7 +62,7 @@ public class DialogueManager {
     }
 
     private void readDialogueFile() {
-        try (InputStream is = Objects.requireNonNull(getClass().getResourceAsStream(OBJECT_DIALOGUES));
+        try (InputStream is = AssetManager.getInstance().getResourceAsStream(OBJECT_DIALOGUES);
              InputStreamReader reader = new InputStreamReader(is, StandardCharsets.UTF_8)) {
             Gson gson = new Gson();
             Type dialogueFileType = new TypeToken<DialogueFile>() {}.getType();

@@ -18,6 +18,7 @@ public class RoomExitMetadata {
     // Optional tile-coordinate bounds to disambiguate multiple exits of the same trigger type in one room
     private Integer minX, maxX;
     private Integer minY, maxY;
+    private Integer spawnX, spawnY;
 
     /**
      * Checks whether a triggered tile coordinate (tileX, tileY) matches this exit rule.

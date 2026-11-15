@@ -2,6 +2,7 @@ package platformer.model.levels;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import platformer.animation.AssetManager;
 import platformer.core.GameContext;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
@@ -71,7 +72,7 @@ public class LevelManager {
     }
 
     private void loadWorldMap() {
-        try (InputStream is = getClass().getResourceAsStream(WORLD_MAP_META)) {
+        try (InputStream is = AssetManager.getInstance().getResourceAsStream(WORLD_MAP_META)) {
             if (is != null) {
                 try (InputStreamReader reader = new InputStreamReader(is, StandardCharsets.UTF_8)) {
                     this.worldMap = new Gson().fromJson(reader, WorldMapMetadata.class);
@@ -107,7 +108,7 @@ public class LevelManager {
     }
 
     private void loadTilesets() {
-        try (InputStreamReader reader = new InputStreamReader(Objects.requireNonNull(getClass().getResourceAsStream(TILESET_META)))) {
+        try (InputStreamReader reader = new InputStreamReader(AssetManager.getInstance().getResourceAsStream(TILESET_META))) {
             Type listType = new TypeToken<List<TilesetMetadata>>(){}.getType();
             List<TilesetMetadata> tilesetMetadata = new Gson().fromJson(reader, listType);
 
@@ -133,7 +134,7 @@ public class LevelManager {
     }
 
     private void loadDecorationSets() {
-        try (InputStreamReader reader = new InputStreamReader(Objects.requireNonNull(getClass().getResourceAsStream(DECORATION_META)))) {
+        try (InputStreamReader reader = new InputStreamReader(AssetManager.getInstance().getResourceAsStream(DECORATION_META))) {
             Type type = new TypeToken<Map<String, List<DecorationMetadata>>>() {}.getType();
             Map<String, List<DecorationMetadata>> loadedSets = new Gson().fromJson(reader, type);
 
@@ -237,7 +238,7 @@ public class LevelManager {
 
     private LevelMetadata loadMetadataForLevel(String levelName) {
         String jsonPath = "/meta/" + levelName + ".json";
-        try (InputStream is = getClass().getResourceAsStream(jsonPath)) {
+        try (InputStream is = AssetManager.getInstance().getResourceAsStream(jsonPath)) {
             if (is == null) return null;
             try (InputStreamReader reader = new InputStreamReader(is, StandardCharsets.UTF_8)) {
                 return new Gson().fromJson(reader, LevelMetadata.class);

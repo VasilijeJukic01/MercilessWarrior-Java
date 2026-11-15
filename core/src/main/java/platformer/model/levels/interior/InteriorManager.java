@@ -1,6 +1,7 @@
 package platformer.model.levels.interior;
 
 import com.google.gson.Gson;
+import platformer.animation.AssetManager;
 import platformer.core.GameContext;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
@@ -49,7 +50,7 @@ public class InteriorManager {
         String[] interiorNames = {"tavern"};
 
         for (String name : interiorNames) {
-            BufferedImage img = ImageUtils.importImage("/images/levels/" + name + ".png", -1, -1);
+            BufferedImage img = ImageUtils.importImage("/images/levels/rooms/" + name + ".png", -1, -1);
             if (img != null) {
                 LevelMetadata meta = loadMetadataForInterior(name);
                 String tileset = (meta != null && meta.getTileset() != null) ? meta.getTileset() : "Invisible";
@@ -61,7 +62,7 @@ public class InteriorManager {
 
     private LevelMetadata loadMetadataForInterior(String name) {
         String jsonPath = "/meta/" + name + ".json";
-        try (InputStream is = getClass().getResourceAsStream(jsonPath)) {
+        try (InputStream is = AssetManager.getInstance().getResourceAsStream(jsonPath)) {
             try (InputStreamReader reader = new InputStreamReader(is, StandardCharsets.UTF_8)) {
                 return new Gson().fromJson(reader, LevelMetadata.class);
             }

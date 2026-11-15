@@ -142,14 +142,17 @@ public class DecorationRenderer {
     private void applySwayAndDraw(Graphics2D g2d, BufferedImage model, String swayType, int wid, int hei, int tileX, int tileY, double baseTime, double extraBend) {
         if (swayType == null) {
             g2d.drawImage(model, -wid / 2, -hei / 2, wid, hei, null);
-        }
-        else if (swayType.equalsIgnoreCase("BOTTOM")) {
+        } else if (swayType.equalsIgnoreCase("BOTTOM")) {
             double sway = calculateOrganicSway(tileX, tileY, baseTime, 0.085) + extraBend;
             g2d.translate(0, hei / 2.0);
             g2d.shear(sway, 0);
             g2d.drawImage(model, -wid / 2, -hei, wid, hei, null);
-        }
-        else if (swayType.equalsIgnoreCase("TOP")) {
+        } else if (swayType.equalsIgnoreCase("BOTTOM_SLOW")) {
+            double sway = calculateOrganicSway(tileX, tileY, baseTime * 0.55, 0.032);
+            g2d.translate(0, hei / 2.0);
+            g2d.shear(sway, 0);
+            g2d.drawImage(model, -wid / 2, -hei, wid, hei, null);
+        } else if (swayType.equalsIgnoreCase("TOP")) {
             double sway = calculateOrganicSway(tileX, tileY, baseTime * 0.7, 0.045);
             g2d.translate(0, -hei / 2.0);
             g2d.shear(sway, 0);

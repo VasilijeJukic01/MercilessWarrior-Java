@@ -2,12 +2,12 @@ package platformer.model.inventory.craft;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import platformer.animation.AssetManager;
 
 import java.io.InputStreamReader;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 import static platformer.constants.FilePaths.RECIPES_PATH;
 
@@ -34,7 +34,7 @@ public class RecipeManager {
     }
 
     private void loadRecipes() {
-        try (InputStreamReader reader = new InputStreamReader(Objects.requireNonNull(getClass().getResourceAsStream(RECIPES_PATH)))) {
+        try (InputStreamReader reader = new InputStreamReader(AssetManager.getInstance().getResourceAsStream(RECIPES_PATH))) {
             Type recipeListType = new TypeToken<List<Recipe>>() {}.getType();
             recipes = new Gson().fromJson(reader, recipeListType);
         } catch (Exception e) {

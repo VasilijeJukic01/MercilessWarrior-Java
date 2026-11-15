@@ -2,6 +2,7 @@ package platformer.model.effects.lighting;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import platformer.animation.AssetManager;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
 
@@ -9,7 +10,6 @@ import java.io.InputStreamReader;
 import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 import static platformer.constants.FilePaths.LIGHT_METADATA;
 
@@ -37,7 +37,7 @@ public class DecorationLightManager {
     }
 
     private void loadDecorationLights() {
-        try (InputStreamReader reader = new InputStreamReader(Objects.requireNonNull(getClass().getResourceAsStream(LIGHT_METADATA)))) {
+        try (InputStreamReader reader = new InputStreamReader(AssetManager.getInstance().getResourceAsStream(LIGHT_METADATA))) {
             Type type = new TypeToken<Map<String, DecorationLightData>>() {}.getType();
             Map<String, DecorationLightData> loaded = new Gson().fromJson(reader, type);
             if (loaded != null) {

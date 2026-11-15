@@ -10,18 +10,18 @@ package platformer.constants;
 public final class FilePaths {
 
     // Player
-    public static final String PLAYER_SHEET = "/images/player/playerSheet.png";
-    public static final String PLAYER_TRANSFORM_SHEET = "/images/player/transformSheet.png";
-    public static final String PLAYER_ABILITY_SHEET = "/images/player/abilitiesSheet.png";
+    public static final String PLAYER_SHEET = "/images/player/PlayerSheet.png";
+    public static final String PLAYER_TRANSFORM_SHEET = "/images/player/TransformSheet.png";
+    public static final String PLAYER_ABILITY_SHEET = "/images/player/AbilitiesSheet.png";
 
     // Levels
-    public static final String LEVEL_SPRITES = "/images/levels/$.png";
+    public static final String LEVEL_SPRITES = "/images/levels/rooms/$.png";
     public static final String WORLD_MAP_META = "/meta/world_map.json";
     public static final String TILESET_META = "/meta/blocks/tilesets.json";
     public static final String DECORATION_META ="/meta/blocks/decoration_sets.json";
     public static final String DECORATION_SPRITES = "/images/levels/levelObjects/";
-    public static final String MINIMAP = "/images/levels/minimap.png";
-    public static final String MINIMAP_ICONS = "/images/levels/MapIcons.png";
+    public static final String MINIMAP = "/images/levels/minimap/minimap.png";
+    public static final String MINIMAP_ICONS = "/images/levels/minimap/MapIcons.png";
 
     public static final String FOREST_BG_1 = "/images/levels/backgrounds/forest1.png";
     public static final String FOREST_BG_2 = "/images/levels/backgrounds/forest2.png";
@@ -50,18 +50,18 @@ public final class FilePaths {
     public static final String ANITA_FOLLOWER_SHEET = "/images/followers/AnitaFollowerSprite.png";
 
     // Objects
-    public static final String POTIONS_SHEET = "/images/objs/potions_sprites.png";
-    public static final String CONTAINERS_SHEET = "/images/objs/objects_sprites.png";
+    public static final String POTIONS_SHEET = "/images/objs/PotionSprites.png";
+    public static final String CONTAINERS_SHEET = "/images/objs/CrateSprites.png";
     public static final String SPIKES_SHEET = "/images/objs/Spike.png";
-    public static final String ARROW_TRAP_SHEET = "/images/objs/arrowTrap.png";
-    public static final String SHOP_SHEET = "/images/objs/shop.png";
+    public static final String ARROW_TRAP_SHEET = "/images/objs/ArrowTrap.png";
+    public static final String SHOP_SHEET = "/images/objs/Shop.png";
     public static final String COIN_SHEET = "/images/objs/CoinSprite.png";
-    public static final String BLOCKER_SHEET = "/images/objs/blocker.png";
+    public static final String BLOCKER_SHEET = "/images/objs/Blocker.png";
     public static final String BS_SHEET = "/images/objs/BlacksmithSprite.png";
     public static final String DOG_SHEET = "/images/objs/DogSprite.png";
-    public static final String ARROW_IMG = "/images/objs/arrow.png";
+    public static final String ARROW_IMG = "/images/objs/Arrow.png";
     public static final String TOTEM_SHEET = "/images/objs/SaveTotem.png";
-    public static final String SMASH_TRAP_SHEET = "/images/objs/smashTrap.png";
+    public static final String SMASH_TRAP_SHEET = "/images/objs/SmashTrap.png";
     public static final String CANDLE_IMG = "/images/objs/Candle.png";
     public static final String LOOT_IMG = "/images/objs/Loot.png";
     public static final String TABLE_IMG = "/images/objs/Table.png";
@@ -87,10 +87,7 @@ public final class FilePaths {
 
     // Spells
     public static final String LIGHTNING_SHEET = "/images/spells/LightningSprite.png";
-    public static final String FLASH_SHEET = "/images/spells/FlashSprite.png";
-    public static final String LIGHTNING_BALL_1_SHEET = "/images/objs/lightningBall.png";
-    public static final String LIGHTNING_BALL_2_SHEET = "/images/objs/lightningBall2.png";
-    public static final String FIREBALL_SHEET = "/images/player/fireBallSheet.png";
+    public static final String FIREBALL_SHEET = "/images/player/FireBallSheet.png";
     public static final String RORIC_SPELLS_SHEET = "/images/enemies/boss/RoricProjectiles.png";
     public static final String RORIC_ARROW_IMG = "/images/enemies/boss/RoricArrow.png";
 
@@ -110,17 +107,16 @@ public final class FilePaths {
     public static final String CREDITS_BTN_SHEET = "/images/buttons/CreditsButtons.png";
 
     // UI
-    public static final String MENU_LOGO = "/images/menu/menuLogo.png";
+    public static final String MENU_LOGO = "/images/menu/Logo.png";
     public static final String LANCER_BOSS_BAR = "/images/enemies/boss/LancerBar.png";
     public static final String RORIC_BOSS_BAR = "/images/enemies/boss/RoricBar.png";
-    public static final String PLAYER_HUD = "/images/playerHUD.png";
-    public static final String PLAYER_PORTRAIT = "/images/portraitHUD.png";
+    public static final String PLAYER_HUD = "/images/PlayerHUD.png";
+    public static final String PLAYER_PORTRAIT = "/images/PortraitHUD.png";
     public static final String TIME_CYCLE_ICONS = "/images/player/hud/TimeCycleSheet.png";
-    public static final String SLOT_IMG = "/images/inventory/Slot.png";
     public static final String SLOT_INVENTORY = "/images/inventory/Slot.png";
 
-    public static final String ORANGE_GLOW = "/images/particles/orangeGlow.png";
-    public static final String WHITE_RADIAL_GLOW = "/images/particles/whiteRadialGlow.png";
+    public static final String ORANGE_GLOW = "/images/particles/OrangeGlow.png";
+    public static final String WHITE_RADIAL_GLOW = "/images/particles/WhiteRadialGlow.png";
 
     // Inventory / Shop
     public static final String BALANCE_PATH = "/items/balance.json";

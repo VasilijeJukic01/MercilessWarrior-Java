@@ -36,13 +36,10 @@ public class SpriteManager {
     private final Map<NpcType, BufferedImage[][]> followerAnimations = new HashMap<>();
     private BufferedImage[][] coinAnimations;
 
-    private BufferedImage[] lightningBallAnimations;
     private BufferedImage[] fireballAnimations;
-    private BufferedImage[] energyBallAnimations;
     private BufferedImage[][] roricProjectileAnimations;
 
     private BufferedImage[] lightningAnimations;
-    private BufferedImage[] flashAnimations;
     private BufferedImage[] skyBeamAnimations;
 
     private BufferedImage[] roricAuraAnimations;
@@ -379,10 +376,7 @@ public class SpriteManager {
     // Projectiles & Spells
     private void loadProjectileAndSpellAnimations() {
         lightningAnimations = loadFromSprite(LIGHTNING_SHEET, 8, 0, LIGHTNING_WIDTH, LIGHTNING_HEIGHT, 0, LIGHTNING_W, LIGHTNING_H);
-        flashAnimations = loadFromSprite(FLASH_SHEET, 16, 0, FLASH_WIDTH, FLASH_HEIGHT, 0, FLASH_W, FLASH_H);
-        lightningBallAnimations = loadFromSprite(LIGHTNING_BALL_1_SHEET, 9, 0, LB_WID, LB_HEI, 0, LIGHTNING_BALL_W, LIGHTNING_BALL_H);
         fireballAnimations = loadFromSprite(FIREBALL_SHEET, 9, 0, FB_WID, FB_HEI,0, FIREBALL_W, FIREBALL_H);
-        energyBallAnimations = loadFromSprite(LIGHTNING_BALL_2_SHEET, 9, 0, LB_WID, LB_HEI, 0, LIGHTNING_BALL_W, LIGHTNING_BALL_H);
 
         roricProjectileAnimations = new BufferedImage[3][];
         roricProjectileAnimations[0] = loadFromSprite(RORIC_SPELLS_SHEET, 5, 8, RORIC_BEAM_WID, RORIC_BEAM_HEI, 0, RORIC_PROJECTILE_W, RORIC_PROJECTILE_H);
@@ -431,20 +425,8 @@ public class SpriteManager {
         return coinAnimations;
     }
 
-    public BufferedImage[] getLightningBallAnimations() {
-        return lightningBallAnimations;
-    }
-
-    public BufferedImage[] getEnergyBallAnimations() {
-        return energyBallAnimations;
-    }
-
     public BufferedImage[] getLightningAnimations() {
         return lightningAnimations;
-    }
-
-    public BufferedImage[] getFlashAnimations() {
-        return flashAnimations;
     }
 
     public BufferedImage[] getRoricBeamAnimations() {

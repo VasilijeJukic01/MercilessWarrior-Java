@@ -2,13 +2,13 @@ package platformer.model.inventory.database;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import platformer.animation.AssetManager;
 import platformer.model.inventory.item.ItemData;
 
 import java.io.InputStreamReader;
 import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.Map;
-import java.util.Objects;
 
 /**
  * Class that manages the item database for the game.
@@ -40,7 +40,7 @@ public class ItemDatabase {
         }
 
         // [Offline] Fallback to local JSON file
-        try (InputStreamReader reader = new InputStreamReader(Objects.requireNonNull(getClass().getResourceAsStream("/items/items.json")))) {
+        try (InputStreamReader reader = new InputStreamReader(AssetManager.getInstance().getResourceAsStream("/items/items.json"))) {
             Type type = new TypeToken<Map<String, ItemData>>() {}.getType();
             itemData = new Gson().fromJson(reader, type);
         } catch (Exception e) {

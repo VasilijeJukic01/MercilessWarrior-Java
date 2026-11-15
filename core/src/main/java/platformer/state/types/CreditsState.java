@@ -1,6 +1,7 @@
 package platformer.state.types;
 
 import com.google.gson.reflect.TypeToken;
+import platformer.animation.AssetManager;
 import platformer.core.Game;
 import platformer.model.credits.CreditEntry;
 import platformer.model.credits.CreditSection;
@@ -19,7 +20,6 @@ import java.io.InputStreamReader;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 import static platformer.constants.Constants.*;
 import static platformer.constants.FilePaths.CREDITS_PATH;
@@ -46,7 +46,7 @@ public class CreditsState extends AbstractState implements State {
     }
 
     private void loadCreditsData() {
-        try (InputStreamReader reader = new InputStreamReader(Objects.requireNonNull(getClass().getResourceAsStream(CREDITS_PATH)))) {
+        try (InputStreamReader reader = new InputStreamReader(AssetManager.getInstance().getResourceAsStream(CREDITS_PATH))) {
             Type listType = new TypeToken<List<CreditSection>>() {}.getType();
             this.sections = new com.google.gson.Gson().fromJson(reader, listType);
         } catch (Exception e) {

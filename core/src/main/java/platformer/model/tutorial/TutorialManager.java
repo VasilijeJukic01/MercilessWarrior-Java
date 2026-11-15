@@ -2,6 +2,7 @@ package platformer.model.tutorial;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import platformer.animation.AssetManager;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
 
@@ -22,7 +23,7 @@ public class TutorialManager {
     }
 
     private void loadTips() {
-        try (InputStreamReader reader = new InputStreamReader(Objects.requireNonNull(getClass().getResourceAsStream("/tutorials.json")))) {
+        try (InputStreamReader reader = new InputStreamReader(AssetManager.getInstance().getResourceAsStream("/tutorials.json"))) {
             Type listType = new TypeToken<List<TutorialTip>>() {}.getType();
             this.tips = new Gson().fromJson(reader, listType);
         } catch (Exception e) {

@@ -9,8 +9,8 @@ public final class LauncherConstants {
     public static final int LOADING_HEI = (int) (SCENE_HEI * 1.1);
 
     // Paths
-    public static final String MAIN_ICON_PATH = "/base/icon.png";
-    public static final String LOGO_ICON_PATH = "/base/menuLogo.png";
+    public static final String MAIN_ICON_PATH = "/base/Icon.png";
+    public static final String LOGO_ICON_PATH = "/base/Logo.png";
     public static final String LOADING_STYLES_PATH = "/styles/loading-screen.css";
     public static final String LAUNCHER_STYLES_PATH = "/styles/launcher.css";
     public static final String LOADING_TIPS_PATH = "/loading-tips.json";

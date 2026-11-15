@@ -7,59 +7,75 @@ import platformer.utils.ValueEnum;
  * Implements {@link platformer.utils.ValueEnum} to associate each enum constant with its corresponding file name (without the .wav extension).
  */
 public enum Sound implements ValueEnum<String> {
-    SLASH_1("SwordSlash1"),                     // 0
-    SLASH_2("SwordSlash2"),                     // 1
-    SLASH_3("SwordSlash3"),                     // 2
-    ENEMY_HIT_1("EnemyHit1"),                   // 3
-    ENEMY_HIT_2("EnemyHit2"),                   // 4
-    GAME_OVER("GameOver"),                      // 5
-    CRATE_BREAK_1("CrateBreak1"),               // 6
-    CRATE_BREAK_2("CrateBreak2"),               // 7
-    SKELETON_DEATH_1("SkeletonDeath"),          // 8
-    DASH("Dash"),                               // 9
-    ARROW("ArrowLaunch"),                       // 10
-    ENEMY_BLOCK_1("EnemyBlock1"),               // 11
-    ENEMY_BLOCK_2("EnemyBlock2"),               // 12
-    SWORD_BLOCK_1("SwordBlock1"),               // 13
-    SWORD_BLOCK_2("SwordBlock2"),               // 14
-    SWORD_BLOCK_3("SwordBlock3"),               // 15
-    FIRE_SPELL_1("Flames"),                     // 16
-    GHOUL_HIDE("GhoulHide"),                    // 17
-    GHOUL_REVEAL("GhoulReveal"),                // 18
-    GHOUL_DEATH("GhoulDeath"),                  // 19
-    COIN_PICK("CoinPick"),                      // 20
-    SHOP_BUY("Buy"),                            // 21
-    LIGHTNING_1("Lightning1"),                  // 22
-    LIGHTNING_2("Lightning2"),                  // 23
-    LIGHTNING_3("Lightning3"),                  // 24
-    FIREBALL("FireballLaunch"),                 // 25
-    CRAFTING("Crafting"),                       // 26
-    BTN_CLICK("ButtonClick"),                   // 27
-    LANCER_CHARGE("LancerCharge"),              // 28
-    LANCER_CUT_1("LancerCut1"),                 // 29
-    LANCER_CUT_2("LancerCut2"),                 // 30
-    LANCER_GRUNT_1("LancerGrunt1"),             // 31
-    LANCER_GRUNT_2("LancerGrunt2"),             // 32
-    LANCER_GRUNT_3("LancerGrunt3"),             // 33
-    LANCER_HAH_1("LancerHah1"),                 // 34
-    LANCER_HAH_2("LancerHah2"),                 // 35
-    LANCER_HAH_3("LancerHah3"),                 // 36
-    LANCER_HAH_4("LancerHah4"),                 // 37
-    LANCER_METAL_SLASH_1("LancerMetalSlash1"),  // 38
-    LANCER_METAL_SLASH_2("LancerMetalSlash2"),  // 39
-    LANCER_ORB_LAUNCH("LancerOrbLaunch"),       // 40
-    LANCER_SLASH_1("LancerSlash1"),             // 41
-    LANCER_SLASH_2("LancerSlash2"),             // 42
-    LANCER_TRANSFORMING("LancerTransforming"),  // 43
-    ANITA_ATTACK_1("AnitaAttack1"),             // 44
-    ANITA_ATTACK_2("AnitaAttack2"),             // 45
-    ANITA_HIT_1("AnitaHit1"),                   // 46
-    ANITA_HIT_2("AnitaHit2"),                   // 47
-    ANITA_KNOCKDOWN("AnitaKnockdown"),         // 48
-    ANITA_REVIVE("AnitaRevive"),                // 49
-    ANITA_SLASH_1("AnitaSlash1"),               // 50
-    ANITA_SLASH_2("AnitaSlash2"),               // 51
-    ANITA_WIND_SPELL("AnitaWindSpell");         // 52
+    // Player
+    SLASH_1("player/SwordSlash1"),
+    SLASH_2("player/SwordSlash2"),
+    SLASH_3("player/SwordSlash3"),
+    DASH("player/Dash"),
+
+    // Combat
+    ENEMY_HIT_1("combat/EnemyHit1"),
+    ENEMY_HIT_2("combat/EnemyHit2"),
+    ENEMY_BLOCK_1("combat/EnemyBlock1"),
+    ENEMY_BLOCK_2("combat/EnemyBlock2"),
+    SWORD_BLOCK_1("combat/SwordBlock1"),
+    SWORD_BLOCK_2("combat/SwordBlock2"),
+    SWORD_BLOCK_3("combat/SwordBlock3"),
+
+    // Environment
+    CRATE_BREAK_1("env/CrateBreak1"),
+    CRATE_BREAK_2("env/CrateBreak2"),
+    ARROW("env/ArrowLaunch"),
+    COIN_PICK("env/CoinPick"),
+    CRAFTING("env/Crafting"),
+
+    // UI
+    GAME_OVER("ui/GameOver"),
+    SHOP_BUY("ui/Buy"),
+    BTN_CLICK("ui/ButtonClick"),
+
+    // Magic
+    FIRE_SPELL_1("magic/Flames"),
+    LIGHTNING_1("magic/Lightning1"),
+    LIGHTNING_2("magic/Lightning2"),
+    LIGHTNING_3("magic/Lightning3"),
+    FIREBALL("magic/FireballLaunch"),
+
+    // Enemies
+    GHOUL_HIDE("enemies/GhoulHide"),
+    GHOUL_REVEAL("enemies/GhoulReveal"),
+    GHOUL_DEATH("enemies/GhoulDeath"),
+    SKELETON_DEATH_1("enemies/SkeletonDeath"),
+
+    // Lancer
+    LANCER_CHARGE("bosses/lancer/LancerCharge"),
+    LANCER_CUT_1("bosses/lancer/LancerCut1"),
+    LANCER_CUT_2("bosses/lancer/LancerCut2"),
+    LANCER_GRUNT_1("bosses/lancer/LancerGrunt1"),
+    LANCER_GRUNT_2("bosses/lancer/LancerGrunt2"),
+    LANCER_GRUNT_3("bosses/lancer/LancerGrunt3"),
+    LANCER_HAH_1("bosses/lancer/LancerHah1"),
+    LANCER_HAH_2("bosses/lancer/LancerHah2"),
+    LANCER_HAH_3("bosses/lancer/LancerHah3"),
+    LANCER_HAH_4("bosses/lancer/LancerHah4"),
+    LANCER_METAL_SLASH_1("bosses/lancer/LancerMetalSlash1"),
+    LANCER_METAL_SLASH_2("bosses/lancer/LancerMetalSlash2"),
+    LANCER_ORB_LAUNCH("bosses/lancer/LancerOrbLaunch"),
+    LANCER_SLASH_1("bosses/lancer/LancerSlash1"),
+    LANCER_SLASH_2("bosses/lancer/LancerSlash2"),
+    LANCER_TRANSFORMING("bosses/lancer/LancerTransforming"),
+
+    // Anita
+    ANITA_ATTACK_1("followers/anita/AnitaAttack1"),
+    ANITA_ATTACK_2("followers/anita/AnitaAttack2"),
+    ANITA_HIT_1("followers/anita/AnitaHit1"),
+    ANITA_HIT_2("followers/anita/AnitaHit2"),
+    ANITA_KNOCKDOWN("followers/anita/AnitaKnockdown"),
+    ANITA_REVIVE("followers/anita/AnitaRevive"),
+    ANITA_SLASH_1("followers/anita/AnitaSlash1"),
+    ANITA_SLASH_2("followers/anita/AnitaSlash2"),
+    ANITA_WIND_SPELL("followers/anita/AnitaWindSpell");
+
 
     private static final String PREFIX = "sfx/";
     private final String value;

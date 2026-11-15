@@ -3,6 +3,7 @@ package platformer.model.gameObjects;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.reflect.TypeToken;
+import platformer.animation.AssetManager;
 import platformer.audio.Audio;
 import platformer.audio.types.Sound;
 import platformer.core.config.BalanceManager;
@@ -262,7 +263,7 @@ public class LootHandler {
      * @return A map where the key is the loot table ID and the value is the {@link LootTable} object.
      */
     private Map<String, LootTable> loadLootTables() {
-        try (InputStreamReader reader = new InputStreamReader(Objects.requireNonNull(getClass().getResourceAsStream(LOOT_TABLE_PATH)))) {
+        try (InputStreamReader reader = new InputStreamReader(AssetManager.getInstance().getResourceAsStream(LOOT_TABLE_PATH))) {
             Gson gson = new Gson();
             Type mapType = new TypeToken<Map<String, JsonElement>>() {}.getType();
             Map<String, JsonElement> rawJsonMap = gson.fromJson(reader, mapType);

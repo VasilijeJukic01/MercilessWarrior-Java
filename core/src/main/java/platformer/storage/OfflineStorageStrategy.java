@@ -2,6 +2,7 @@ package platformer.storage;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import platformer.animation.AssetManager;
 import platformer.core.Account;
 import platformer.model.BoardItem;
 import platformer.model.entities.player.Player;
@@ -44,14 +45,14 @@ public class OfflineStorageStrategy implements StorageStrategy {
     }
 
     public void loadLocalData() {
-        try (InputStreamReader reader = new InputStreamReader(Objects.requireNonNull(getClass().getResourceAsStream(ITEMS_PATH)))) {
+        try (InputStreamReader reader = new InputStreamReader(AssetManager.getInstance().getResourceAsStream(ITEMS_PATH))) {
             Type type = new TypeToken<Map<String, ItemData>>() {}.getType();
             this.masterItems = new Gson().fromJson(reader, type);
         } catch (Exception e) {
             this.masterItems = new HashMap<>();
         }
 
-        try (InputStreamReader reader = new InputStreamReader(Objects.requireNonNull(getClass().getResourceAsStream(SHOP_INV_PATH)))) {
+        try (InputStreamReader reader = new InputStreamReader(AssetManager.getInstance().getResourceAsStream(SHOP_INV_PATH))) {
             Type type = new TypeToken<Map<String, List<Map<String, Object>>>>() {}.getType();
             Map<String, List<Map<String, Object>>> allShops = new Gson().fromJson(reader, type);
 

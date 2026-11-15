@@ -2,6 +2,7 @@ package platformer.model.cutscene;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import platformer.animation.AssetManager;
 import platformer.core.GameContext;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
@@ -39,7 +40,7 @@ public class CutsceneManager {
     }
 
     private void loadCutscenes() {
-        try (InputStream is = getClass().getResourceAsStream(CUTSCENES_PATH)) {
+        try (InputStream is = AssetManager.getInstance().getResourceAsStream(CUTSCENES_PATH)) {
             if (is == null) return;
             try (InputStreamReader reader = new InputStreamReader(is, StandardCharsets.UTF_8)) {
                 Type listType = new TypeToken<List<CutsceneDefinition>>() {}.getType();

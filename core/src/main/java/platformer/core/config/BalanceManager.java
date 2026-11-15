@@ -2,6 +2,7 @@ package platformer.core.config;
 
 import com.google.gson.Gson;
 import lombok.Getter;
+import platformer.animation.AssetManager;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
 import platformer.model.entities.enemies.EnemyType;
@@ -106,7 +107,7 @@ public class BalanceManager {
     }
 
     private void loadBalance() {
-        try (InputStream is = getClass().getResourceAsStream(BALANCE_PATH)) {
+        try (InputStream is = AssetManager.getInstance().getResourceAsStream(BALANCE_PATH)) {
             if (is != null) {
                 try (InputStreamReader reader = new InputStreamReader(is, StandardCharsets.UTF_8)) {
                     this.config = new Gson().fromJson(reader, BalanceConfig.class);
