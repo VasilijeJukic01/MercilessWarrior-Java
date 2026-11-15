@@ -46,6 +46,11 @@ public class ObjectBreakHandler {
                 water.onAttackSlash(attackBox, flipSign);
             }
         }
+        for (Lava lava : getObjects(Lava.class)) {
+            if (attackBox.intersects(lava.getHitBox())) {
+                lava.onAttackSlash(attackBox, flipSign);
+            }
+        }
 
         for (RoricTrap trap : getObjects(RoricTrap.class)) {
             if (trap.isAlive() && !trap.isAnimate() && attackBox.intersects(trap.getHitBox())) {

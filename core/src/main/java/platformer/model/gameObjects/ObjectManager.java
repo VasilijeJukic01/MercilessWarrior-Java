@@ -107,6 +107,7 @@ public class ObjectManager {
             }
         });
         getObjects(Water.class).forEach(w -> w.setEffectManager(context.getEffectManager()));
+        getObjects(Lava.class).forEach(l -> l.setEffectManager(context.getEffectManager()));
     }
 
     private void applyNpcMetadata() {
@@ -416,7 +417,7 @@ public class ObjectManager {
                     .filter(GameObject::isAlive)
                     .forEach(obj -> {
                         BufferedImage[] animations = SpriteManager.getInstance().getObjectAnimations(obj.getObjType());
-                        if (animations != null || obj.getObjType() == ObjType.DOOR || obj.getObjType() == ObjType.WATER) {
+                        if (animations != null || obj.getObjType() == ObjType.DOOR || obj.getObjType() == ObjType.WATER || obj.getObjType() == ObjType.LAVA) {
                             obj.render(g, xLevelOffset, yLevelOffset, animations);
                         }
                     });
@@ -427,6 +428,7 @@ public class ObjectManager {
     public void update(int[][] lvlData, Player player) {
         Arrays.stream(updateClasses).forEach(clazz -> updateObjects(clazz, lvlData));
         getObjects(Water.class).forEach(w -> w.updatePlayerPhysics(player));
+        getObjects(Lava.class).forEach(l -> l.updatePlayerPhysics(player));
         updateArrowLaunchers(lvlData, player);
         handleInteractions(player);
         handleCollectibles(player);

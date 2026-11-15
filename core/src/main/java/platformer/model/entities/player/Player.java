@@ -92,7 +92,8 @@ public class Player extends Entity {
 
     // Effect
     private int mythicAuraTick = 0;
-
+    private int burnTick = 0;
+    private BufferedImage burnSilhouetteBuffer;
 
     public Player(int xPos, int yPos, int width, int height, GameContext context) {
         super(xPos, yPos, width, height, BalanceManager.getInstance().getPlayerBalance().getBaseHealth());
@@ -719,7 +720,17 @@ public class Player extends Entity {
 
     private void updateStatus() {
         if (checkAction(PlayerAction.LAVA) && !PerksBonus.getInstance().isLavaWalk()) {
+            burnTick = 90;
             changeHealthNoKnockback(-BalanceManager.getInstance().getCombat().getLavaTickDamage());
+        }
+        else if (burnTick > 0) {
+            burnTick--;
+            if (burnTick % 25 == 0) {
+                changeHealthNoKnockback(-BalanceManager.getInstance().getCombat().getLavaTickDamage() * 2.0);
+            }
+        }
+        if (burnTick > 0 && burnTick % 4 == 0) {
+            effectManager.spawnDustParticles(hitBox.getCenterX(), hitBox.getCenterY(), 2, DustType.PLAYER_BURN, flipSign, this);
         }
     }
 
@@ -760,16 +771,39 @@ public class Player extends Entity {
 
     public void render(Graphics g, int xLevelOffset, int yLevelOffset) {
         try {
-            int playerXPos = (int)(hitBox.x-PLAYER_HB_OFFSET_X-xLevelOffset+flipCoefficient);
-            int playerYPos = (int)(hitBox.y-PLAYER_HB_OFFSET_Y-yLevelOffset)+(int)pushOffset;
+            int playerXPos = (int) (hitBox.x - PLAYER_HB_OFFSET_X - xLevelOffset + flipCoefficient);
+            int playerYPos = (int) (hitBox.y - PLAYER_HB_OFFSET_Y - yLevelOffset) + (int) pushOffset;
 
             boolean transform = checkAction(PlayerAction.TRANSFORM);
-            if (!transform) g.drawImage(animations[entityState.ordinal()][animIndex], playerXPos, playerYPos, flipSign*width, height, null);
-            else g.drawImage(transformAnimations[entityState.ordinal()][animIndex], playerXPos, playerYPos, flipSign*width, height, null);
-        }
-        catch (Exception ignored) {}
+            BufferedImage frame = !transform ? animations[entityState.ordinal()][animIndex] : transformAnimations[entityState.ordinal()][animIndex];
+            g.drawImage(frame, playerXPos, playerYPos, flipSign * width, height, null);
+            if (burnTick > 0 && frame != null) {
+                renderBurn(g, frame, playerXPos, playerYPos);
+            }
+        } catch (Exception ignored) {}
         hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.GREEN);
         attackBoxRenderer(g, xLevelOffset, yLevelOffset);
+    }
+
+    // TODO: See about it
+    private void renderBurn(Graphics g, BufferedImage frame, int drawX, int drawY) {
+        if (burnSilhouetteBuffer == null || burnSilhouetteBuffer.getWidth() != width || burnSilhouetteBuffer.getHeight() != height) {
+            burnSilhouetteBuffer = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        }
+        Graphics2D bG2d = burnSilhouetteBuffer.createGraphics();
+        bG2d.setComposite(AlphaComposite.Clear);
+        bG2d.fillRect(0, 0, width, height);
+        bG2d.setComposite(AlphaComposite.SrcOver);
+        bG2d.drawImage(frame, 0, 0, width, height, null);
+        bG2d.setComposite(AlphaComposite.SrcAtop);
+        boolean brightFlicker = (burnTick / 5) % 2 == 0;
+        float alpha = Math.min(0.62f, 0.25f + (burnTick / 90.0f) * 0.35f);
+        Color fireTint = brightFlicker ? new Color(255, 130, 15, (int) (alpha * 255)) : new Color(235, 45, 10, (int) (alpha * 255));
+        bG2d.setColor(fireTint);
+        bG2d.fillRect(0, 0, width, height);
+        bG2d.dispose();
+
+        g.drawImage(burnSilhouetteBuffer, drawX, drawY, flipSign * width, height, null);
     }
 
     // Reset
@@ -797,6 +831,7 @@ public class Player extends Entity {
 
     private void resetFlags() {
         inAir = false;
+        burnTick = 0;
         removeActions(PlayerAction.DYING, PlayerAction.GAME_OVER, PlayerAction.LAVA);
         removeActions(PlayerAction.HIT, PlayerAction.BLOCK, PlayerAction.ATTACK, PlayerAction.MOVE, PlayerAction.DASH);
         removeActions(PlayerAction.LEFT, PlayerAction.RIGHT, PlayerAction.JUMP, PlayerAction.ON_WALL, PlayerAction.ON_OBJECT, PlayerAction.LOOK_DOWN);

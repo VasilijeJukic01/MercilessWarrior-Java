@@ -10,6 +10,7 @@ import platformer.model.levels.Level;
 import platformer.model.levels.metadata.DecorationMetadata;
 import platformer.model.levels.metadata.LevelMetadata;
 import platformer.model.levels.metadata.LightMetadata;
+import platformer.model.levels.metadata.ObjectMetadata;
 import platformer.state.types.GameState;
 import platformer.utils.ImageUtils;
 
@@ -408,6 +409,10 @@ public class LightManager {
                     bakeMetadataLight(wG2d, cG2d, light);
                     hasStaticColoredLights = true;
                 }
+                for (Lava lava : context.getObjectManager().getObjects(Lava.class)) {
+                    bakeLavaPoolLight(wG2d, cG2d, lava);
+                    hasStaticColoredLights = true;
+                }
             }
         } finally {
             wG2d.dispose();
@@ -421,7 +426,7 @@ public class LightManager {
      */
     private void bakeSingleDecorationLight(Graphics2D wG2d, Graphics2D cG2d, DecorationLightData lightData, DecorationMetadata decoMeta, int tileX, int tileY) {
         try {
-            var objMeta = context.getLevelManager().getObjectMetadataAt(tileX, tileY);
+            ObjectMetadata objMeta = context.getLevelManager().getObjectMetadataAt(tileX, tileY);
             double scaleMult = (objMeta != null) ? Math.max(objMeta.getScaleX(), objMeta.getScaleY()) : 1.0;
             if (scaleMult <= 0) scaleMult = 1.0;
 
@@ -463,6 +468,27 @@ public class LightManager {
             cG2d.drawImage(coloredTex, centerX - lmRadius, centerY - lmRadius, null);
             wG2d.drawImage(whiteTex, centerX - lmRadius, centerY - lmRadius, null);
         } catch (Exception ignored) {}
+    }
+
+    private void bakeLavaPoolLight(Graphics2D wG2d, Graphics2D cG2d, Lava lava) {
+        int lmRadius = Math.max(2, (int) (85 * SCALE) / LIGHTMAP_SCALE);
+        int lmDiameter = lmRadius * 2;
+        Color lavaGlow = new Color(255, 95, 15);
+
+        String colorKey = lavaGlow.getRGB() + "_" + lmRadius;
+        String whiteKey = "white_" + lmRadius;
+        BufferedImage coloredTex = lightTextureCache.computeIfAbsent(colorKey, k -> createColoredLightTexture(lmDiameter, lavaGlow));
+        BufferedImage whiteTex = lightTextureCache.computeIfAbsent(whiteKey, k -> createLightTexture(lmDiameter, new float[]{0f, 1f}, new Color[]{Color.WHITE, new Color(1.0f, 1.0f, 1.0f, 0f)}));
+
+        Rectangle2D.Double hb = lava.getHitBox();
+        int step = Math.max(TILES_SIZE, TILES_SIZE * 2);
+        int centerY = (int) (hb.y + TILES_SIZE * 0.4) / LIGHTMAP_SCALE;
+
+        for (double x = hb.x + TILES_SIZE * 0.5; x <= hb.getMaxX() - TILES_SIZE * 0.2; x += step) {
+            int centerX = (int) x / LIGHTMAP_SCALE;
+            cG2d.drawImage(coloredTex, centerX - lmRadius, centerY - lmRadius, null);
+            wG2d.drawImage(whiteTex, centerX - lmRadius, centerY - lmRadius, null);
+        }
     }
 
     /**

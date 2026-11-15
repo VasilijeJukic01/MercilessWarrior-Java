@@ -65,6 +65,7 @@ public class Level {
     public void gatherData() {
         int panelWidth = levelImg.getWidth() / 3;
         boolean[][] waterGrid = new boolean[panelWidth][levelImg.getHeight()];
+        boolean[][] lavaGrid = new boolean[panelWidth][levelImg.getHeight()];
         reset();
         for (int i = 0; i < panelWidth; i++) {
             for (int j = 0; j < levelImg.getHeight(); j++) {
@@ -72,11 +73,12 @@ public class Level {
                 Color colorP3 = new Color(levelImg.getRGB(i + panelWidth * 2, j));
 
                 getEnemyData(i, j, colorP1.getGreen());
-                getObjectData(i, j, colorP1.getBlue(), colorP3, waterGrid);
+                getObjectData(i, j, colorP1.getBlue(), colorP3, waterGrid, lavaGrid);
             }
         }
         getTriggerData(panelWidth);
         buildMergedWaterPools(waterGrid, panelWidth, levelImg.getHeight());
+        buildMergedLavaPools(lavaGrid, panelWidth, levelImg.getHeight());
         this.initialized = true;
     }
 
@@ -105,7 +107,7 @@ public class Level {
         }
     }
 
-    private void getObjectData(int i, int j, int valueB, Color colorP3, boolean[][] waterGrid) {
+    private void getObjectData(int i, int j, int valueB, Color colorP3, boolean[][] waterGrid, boolean[][] lavaGrid) {
         if (valueB >= ObjType.MAX.ordinal()) return;
         switch (ObjType.values()[valueB]) {
             case HEAL_POTION:
@@ -143,7 +145,7 @@ public class Level {
                 addGameObject(new Board(ObjType.values()[valueB], i*TILES_SIZE, j*TILES_SIZE));
                 break;
             case LAVA:
-                addGameObject(new Lava(ObjType.values()[valueB], i*TILES_SIZE, j*TILES_SIZE));
+                lavaGrid[i][j] = true;
                 break;
             case BRICK:
                 addGameObject(new Brick(ObjType.values()[valueB], i*TILES_SIZE, j*TILES_SIZE));
@@ -274,7 +276,7 @@ public class Level {
         };
     }
 
-    // Water
+    // Fluids
     private void buildMergedWaterPools(boolean[][] waterGrid, int width, int height) {
         boolean[][] visited = new boolean[width][height];
         for (int y = 0; y < height; y++) {
@@ -302,8 +304,39 @@ public class Level {
                         visited[x + dx][y + dy] = true;
                     }
                 }
-
                 addGameObject(new Water(x * TILES_SIZE, y * TILES_SIZE, spanW, spanH));
+            }
+        }
+    }
+
+    private void buildMergedLavaPools(boolean[][] lavaGrid, int width, int height) {
+        boolean[][] visited = new boolean[width][height];
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                if (!lavaGrid[x][y] || visited[x][y]) continue;
+
+                int spanW = 1;
+                while (x + spanW < width && lavaGrid[x + spanW][y] && !visited[x + spanW][y]) {
+                    spanW++;
+                }
+
+                int spanH = 1;
+                outer:
+                while (y + spanH < height) {
+                    for (int k = 0; k < spanW; k++) {
+                        if (!lavaGrid[x + k][y + spanH] || visited[x + k][y + spanH]) {
+                            break outer;
+                        }
+                    }
+                    spanH++;
+                }
+
+                for (int dy = 0; dy < spanH; dy++) {
+                    for (int dx = 0; dx < spanW; dx++) {
+                        visited[x + dx][y + dy] = true;
+                    }
+                }
+                addGameObject(new Lava(x * TILES_SIZE, y * TILES_SIZE, spanW, spanH));
             }
         }
     }
