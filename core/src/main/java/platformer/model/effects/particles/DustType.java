@@ -6,6 +6,7 @@ public enum DustType {
     DASH,
     WALL_SLIDE,
     WALL_JUMP,
+    DOUBLE_JUMP,
     IMPACT_SPARK,
     CRITICAL_HIT,
     PLAYER_HIT,

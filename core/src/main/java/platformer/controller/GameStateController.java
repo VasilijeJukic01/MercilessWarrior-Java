@@ -57,12 +57,8 @@ public class GameStateController {
         initAction(pressActions, "Move Left", () -> player.addAction(PlayerAction.LEFT));
         initAction(pressActions, "Move Right", () -> player.addAction(PlayerAction.RIGHT));
         initAction(pressActions, "Jump", () -> {
-            boolean onWall = player.checkAction(PlayerAction.ON_WALL);
-            if (pressedKeys.contains(kc.getKeyForCommand("Jump")) && onWall) {
-                player.removeAction(PlayerAction.JUMP);
-                return;
-            }
             player.addAction(PlayerAction.JUMP);
+            player.queueJumpBuffer();
         });
         initAction(pressActions, "Dash", () -> {
             boolean canDash = player.checkAction(PlayerAction.CAN_DASH);
@@ -105,10 +101,7 @@ public class GameStateController {
             player.removeAction(PlayerAction.RIGHT);
             player.removeAction(PlayerAction.ON_WALL);
         });
-        initAction(releaseActions, "Jump", () -> {
-            player.removeAction(PlayerAction.JUMP);
-            player.setCurrentJumps(player.getCurrentJumps()+1);
-        });
+        initAction(releaseActions, "Jump", () -> player.removeAction(PlayerAction.JUMP));
         initAction(releaseActions, "Dash", () -> player.addAction(PlayerAction.CAN_DASH));
         initAction(releaseActions, "Transform", () -> player.setCanTransform(true));
         initAction(releaseActions, "Flames", () -> {

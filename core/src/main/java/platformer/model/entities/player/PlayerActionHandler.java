@@ -34,14 +34,13 @@ public class PlayerActionHandler {
         this.hitBox = player.getHitBox();
     }
 
-    public boolean canJump(int[][] levelData, boolean left, boolean right, boolean doubleJump) {
-        if (isOnWall(hitBox, levelData, Direction.LEFT) && left && !right) return false;
-        if (isOnWall(hitBox, levelData, Direction.RIGHT) && right && !left) return false;
-        boolean onWall = player.checkAction(PlayerAction.ON_WALL);
-        if (player.isInAir() && doubleJump && onWall) return false;
-        if (player.isInAir() && player.getCurrentJumps() != 1) return false;
-        int tileX = (int)(hitBox.x / TILES_SIZE);
-        int tileY = (int)((hitBox.y - 5) / TILES_SIZE);
+    public boolean canJump(int[][] levelData, boolean left, boolean right) {
+        if (!player.checkAction(PlayerAction.ON_WALL)) {
+            if (isOnWall(hitBox, levelData, Direction.LEFT) && left && !right) return false;
+            if (isOnWall(hitBox, levelData, Direction.RIGHT) && right && !left) return false;
+        }
+        int tileX = (int) (hitBox.x / TILES_SIZE);
+        int tileY = (int) ((hitBox.y - 5) / TILES_SIZE);
         boolean onObject = player.checkAction(PlayerAction.ON_OBJECT);
         return !onObject || !isTileSolid(tileX, tileY, levelData);
     }
@@ -58,6 +57,7 @@ public class PlayerActionHandler {
 
     private void activateDash(double dashCost) {
         BalanceManager.PlayerBalance pb = BalanceManager.getInstance().getPlayerBalance();
+        player.cancelAttackForMobility();
         player.addAction(PlayerAction.DASH);
         dashCount++;
         player.addAction(PlayerAction.CAN_DASH);

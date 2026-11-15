@@ -1,138 +1,93 @@
 package platformer.model.entities.player;
 
 import platformer.animation.Anim;
-import platformer.animation.SpriteManager;
 import platformer.audio.Audio;
 import platformer.audio.types.Sound;
 import platformer.core.GameContext;
 import platformer.core.config.BalanceManager;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
+import platformer.model.effects.EffectManager;
 import platformer.model.effects.TimeCycleManager;
 import platformer.model.entities.AttackState;
-import platformer.model.entities.Cooldown;
 import platformer.model.entities.Direction;
 import platformer.model.entities.Entity;
-import platformer.model.effects.EffectManager;
-import platformer.model.effects.particles.DustType;
-import platformer.model.entities.enemies.Enemy;
-import platformer.model.entities.enemies.EnemyManager;
 import platformer.model.gameObjects.ObjectManager;
-import platformer.model.inventory.craft.BlacksmithRecipeManager;
-import platformer.model.levels.LevelManager;
-import platformer.model.levels.interior.InteriorManager;
-import platformer.model.projectiles.Projectile;
-import platformer.model.projectiles.ProjectileFactory;
-import platformer.model.projectiles.ProjectileManager;
 import platformer.model.inventory.Inventory;
 import platformer.model.inventory.InventoryBonus;
-import platformer.model.inventory.item.ItemRarity;
+import platformer.model.inventory.craft.BlacksmithRecipeManager;
+import platformer.model.levels.LevelManager;
 import platformer.model.minimap.MinimapManager;
 import platformer.model.perks.PerksBonus;
+import platformer.model.projectiles.Projectile;
+import platformer.model.projectiles.ProjectileFactory;
 import platformer.model.world.WorldMemoryManager;
-import platformer.physics.CollisionDetector;
 import platformer.physics.DamageSource;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
-import java.awt.image.BufferedImage;
-import java.util.*;
+import java.util.EnumSet;
 import java.util.List;
 
 import static platformer.constants.Constants.*;
-import static platformer.physics.CollisionDetector.*;
+import static platformer.physics.CollisionDetector.isEntityOnFloor;
 
+/**
+ * Core Player entity that coordinates movement, combat, rendering, feedback, and inventory sub-handlers.
+ */
 @SuppressWarnings("FieldCanBeLocal")
 public class Player extends Entity {
 
-    private final EnemyManager enemyManager;
     private final LevelManager levelManager;
-    private final InteriorManager interiorManager;
     private final ObjectManager objectManager;
-    private final ProjectileManager projectileManager;
     private final MinimapManager minimapManager;
     private final EffectManager effectManager;
     private final WorldMemoryManager worldMemoryManager;
     private int[][] levelData;
 
-    // Core Variables
-    private BufferedImage[][] animations, transformAnimations;
-    private int animSpeed = 20;
-    private int animTick = 0, animIndex = 0;
-    private AttackState attackState;
+    // Sub-Handlers
+    private PlayerRenderer playerRenderer;
+    private PlayerMovementHandler movementHandler;
+    private PlayerCombatHandler combatHandler;
     private PlayerActionHandler actionHandler;
     private PlayerFeedbackHandler feedbackHandler;
-    private final EnumSet<PlayerAction> actions = EnumSet.noneOf(PlayerAction.class);
-
-    // Physics
-    private final double downwardGravity = 0.03 * SCALE;
-    private final double upwardGravity = 0.022 * SCALE;
-    private final double jumpCutGravityMultiplier = 3.0;
-
-    private final double wallGravity = 0.0005 * SCALE;
-    private final double jumpSpeed = -2.25 * SCALE;
-    private final double collisionFallSpeed = 0.5 * SCALE;
-
-    private final double recoilDecay = 0.85;
-
-    // Status
-    private int currentJumps = 0;
-    private int dashTick = 0;
-    private double currentStamina = BalanceManager.getInstance().getPlayerBalance().getInitialStamina();
-    private int spellState = 0;
-    private double recoilSpeedX = 0.0;
     private PlayerDataManager playerDataManager;
     private PlayerMinimapHandler minimapHandler;
     private Inventory inventory;
 
-    private final List<AttackState> attackChain = new ArrayList<>();
-    private int currentAttackIndex = 0;
-    private long lastAttackTime = 0;
-    private final long comboResetTime = 1000;
-
-    // Effect
-    private int mythicAuraTick = 0;
-    private int burnTick = 0;
-    private BufferedImage burnSilhouetteBuffer;
+    // Core State
+    private int animSpeed = 20;
+    private int animTick = 0, animIndex = 0;
+    private final EnumSet<PlayerAction> actions = EnumSet.noneOf(PlayerAction.class);
+    private double currentStamina = BalanceManager.getInstance().getPlayerBalance().getInitialStamina();
+    private int spellState = 0;
 
     public Player(int xPos, int yPos, int width, int height, GameContext context) {
         super(xPos, yPos, width, height, BalanceManager.getInstance().getPlayerBalance().getBaseHealth());
-        this.enemyManager = context.getEnemyManager();
         this.levelManager = context.getLevelManager();
-        this.interiorManager = context.getInteriorManager();
         this.objectManager = context.getObjectManager();
-        this.projectileManager = context.getProjectileManager();
         this.minimapManager = context.getMinimapManager();
         this.effectManager = context.getEffectManager();
         this.worldMemoryManager = context.getWorldMemoryManager();
         init(context);
     }
 
-    // Init
     private void init(GameContext context) {
         this.cooldown = new double[4];
         addAction(PlayerAction.CAN_DASH);
         initHitBox(PLAYER_HB_WID, PLAYER_HB_HEI);
         initAttackBox();
-        initManagers(context.getTimeCycleManager(), context.getGameState() == null);
-        loadAnimations();
-
-        attackChain.add(AttackState.ATTACK_1);
-        attackChain.add(AttackState.ATTACK_2);
-        attackChain.add(AttackState.ATTACK_3);
-        Collections.shuffle(attackChain);
-    }
-
-    private void loadAnimations() {
-        this.animations = SpriteManager.getInstance().getPlayerAnimations(false);
-        this.transformAnimations = SpriteManager.getInstance().getPlayerAnimations(true);
+        initManagers(context, context.getTimeCycleManager(), context.getGameState() == null);
     }
 
     private void initAttackBox() {
-        this.attackBox = new Rectangle2D.Double(xPos, yPos-1, PLAYER_AB_WID, PLAYER_AB_HEI);
+        this.attackBox = new Rectangle2D.Double(xPos, yPos - 1, PLAYER_AB_WID, PLAYER_AB_HEI);
     }
 
-    private void initManagers(TimeCycleManager timeCycleManager, boolean isMenuDummy) {
+    private void initManagers(GameContext context, TimeCycleManager timeCycleManager, boolean isMenuDummy) {
+        this.playerRenderer = new PlayerRenderer(this);
+        this.movementHandler = new PlayerMovementHandler(this, context);
+        this.combatHandler = new PlayerCombatHandler(this, context);
         this.playerDataManager = new PlayerDataManager(this, minimapManager, timeCycleManager);
         this.minimapHandler = new PlayerMinimapHandler(this, minimapManager);
         this.actionHandler = new PlayerActionHandler(this, effectManager);
@@ -161,8 +116,14 @@ public class Player extends Entity {
         if (animTick >= animSpeed) {
             animTick = 0;
             animIndex++;
+            if (entityState == Anim.CROUCH && checkAction(PlayerAction.LOOK_DOWN) && animIndex > 2) {
+                animIndex = 2;
+            }
+            if (entityState == Anim.BLOCK && checkAction(PlayerAction.BLOCK) && !checkAction(PlayerAction.CAN_BLOCK) && animIndex > 2) {
+                animIndex = 2;
+            }
             updateFireballAnimation();
-            if (animIndex >= animations[entityState.ordinal()].length) {
+            if (animIndex >= playerRenderer.getFrameCount(entityState)) {
                 finishAnimation();
             }
             coolDownTickUpdate();
@@ -172,14 +133,21 @@ public class Player extends Entity {
 
     private void updateFireballAnimation() {
         boolean fireball = checkAction(PlayerAction.FIREBALL);
-        if (spellState == 1 && animIndex >= animations[entityState.ordinal()].length-5)
+        if (spellState == 1 && animIndex >= playerRenderer.getFrameCount(entityState) - 5) {
             animIndex = 2;
-        else if (fireball && animIndex == 3)
+        }
+        else if (fireball && animIndex == 3) {
             ProjectileFactory.createFireball(this);
+        }
     }
 
     private void finishAnimation() {
-        finishAttackBlock();
+        if (entityState == Anim.DASH && checkAction(PlayerAction.DASH)) {
+            animIndex = playerRenderer.getFrameCount(Anim.DASH) - 1;
+            return;
+        }
+
+        combatHandler.finishAttackBlock();
         animIndex = 0;
         removeActions(PlayerAction.ATTACK, PlayerAction.DASH_HIT, PlayerAction.BLOCK, PlayerAction.FIREBALL, PlayerAction.CAN_BLOCK);
         attackCheck = false;
@@ -193,35 +161,22 @@ public class Player extends Entity {
         setSpellState(0);
     }
 
-    private void finishAttackBlock() {
-        boolean canBlock = checkAction(PlayerAction.CAN_BLOCK);
-        if (canBlock) {
-            Logger.getInstance().notify("Damage blocked successfully!", Message.INFORMATION);
-            BalanceManager.PlayerBalance pb = BalanceManager.getInstance().getPlayerBalance();
-            double blockCooldown = pb.getBlockCooldown() * (1.0 - InventoryBonus.getInstance().getCooldown());
-            cooldown[Cooldown.BLOCK.ordinal()] = Math.max(0.1, blockCooldown);
-            if (PerksBonus.getInstance().isRestorePower()) {
-                changeStamina(pb.getParryStaminaRestore());
-                for (Enemy enemy : enemyManager.getAllEnemies()) {
-                    if (enemy.isAlive() && Math.abs(enemy.getHitBox().getCenterX() - hitBox.getCenterX()) < TILES_SIZE * 2.5) {
-                        enemy.freeze(120);
-                    }
-                }
-            }
-        }
-    }
-
     private void blockWallFlip() {
+        if (movementHandler.isWallJumpLocked() || checkAction(PlayerAction.ATTACK)) return;
         boolean left = checkAction(PlayerAction.LEFT);
         boolean right = checkAction(PlayerAction.RIGHT);
         boolean moving = checkAction(PlayerAction.MOVE);
         boolean onWall = checkAction(PlayerAction.ON_WALL);
+        if (moving && left && !onWall) setFacingDirection(-1);
+        else if (moving && right && !onWall) setFacingDirection(1);
+    }
 
-        if (moving && left && !onWall) {
-            this.flipCoefficient = (int)(width-hitBox.width-13*SCALE);
+    public void setFacingDirection(int dirSign) {
+        if (dirSign == -1) {
+            this.flipCoefficient = (int) (width - hitBox.width - 13 * SCALE);
             this.flipSign = -1;
         }
-        else if (moving && right && !onWall) {
+        else {
             this.flipCoefficient = 0;
             this.flipSign = 1;
         }
@@ -232,7 +187,8 @@ public class Player extends Entity {
         Anim previousAction = entityState;
 
         boolean moving = checkAction(PlayerAction.MOVE);
-        entityState = (moving) ? Anim.RUN : Anim.IDLE;
+        boolean crouching = checkAction(PlayerAction.LOOK_DOWN) && !inAir && !moving;
+        entityState = crouching ? Anim.CROUCH : (moving ? Anim.RUN : Anim.IDLE);
 
         if (inAir) {
             if (airSpeed < 0) entityState = Anim.JUMP;
@@ -241,9 +197,20 @@ public class Player extends Entity {
         boolean onWall = checkAction(PlayerAction.ON_WALL);
         boolean onObject = checkAction(PlayerAction.ON_OBJECT);
         if (onWall && !onObject) entityState = Anim.WALL;
+
         boolean dash = checkAction(PlayerAction.DASH);
-        if (dash && PerksBonus.getInstance().isDashSlash()) {
-            setDashAnimation();
+        if (dash) {
+            if (PerksBonus.getInstance().isDashSlash()) {
+                entityState = Anim.ATTACK_1;
+                animIndex = 1;
+                animTick = 0;
+                return;
+            }
+            entityState = Anim.DASH;
+            if (previousAction != entityState) {
+                animIndex = animTick = 0;
+                setAnimSpeedByState();
+            }
             return;
         }
         boolean attacking = checkAction(PlayerAction.ATTACK);
@@ -251,12 +218,13 @@ public class Player extends Entity {
         boolean fireball = checkAction(PlayerAction.FIREBALL);
         boolean canTransform = checkAction(PlayerAction.CAN_TRANSFORM);
         boolean canBlock = checkAction(PlayerAction.CAN_BLOCK);
+        boolean blocking = checkAction(PlayerAction.BLOCK);
 
         if (spellState == 1) entityState = Anim.SPELL_1;
         else if (fireball) entityState = Anim.SPELL_2;
-        else if (canBlock) entityState = Anim.BLOCK;
+        else if (canBlock || blocking) entityState = Anim.BLOCK;
         else if (hit) entityState = Anim.HIT;
-        else if (attacking && !onWall) setAttackAnimation();
+        else if (attacking && !onWall) entityState = combatHandler.getAttackAnim();
         else if (canTransform) entityState = Anim.TRANSFORM;
 
         if (previousAction != entityState) {
@@ -265,329 +233,121 @@ public class Player extends Entity {
         }
     }
 
-    private void setDashAnimation() {
-        entityState = Anim.ATTACK_1;
-        animIndex = 1;
-        animTick = 0;
-    }
-
-    private void setAttackAnimation() {
-        switch (attackState) {
-            case ATTACK_1:
-                entityState = Anim.ATTACK_1;
-                break;
-            case ATTACK_2:
-                entityState = Anim.ATTACK_2;
-                break;
-            case ATTACK_3:
-                entityState = Anim.ATTACK_3;
-                break;
-            default: break;
+    private void setAnimSpeedByState() {
+        switch (entityState) {
+            case RUN, DASH, CROUCH, BLOCK -> animSpeed = 12;
+            case ATTACK_1, ATTACK_2, ATTACK_3 -> animSpeed = 16;
+            case JUMP, FALL -> animSpeed = 25;
+            case TRANSFORM -> animSpeed = 15;
+            default -> animSpeed = 20;
         }
     }
 
-    // Positioning
-    private void updatePosition() {
-        if (checkTransitionUpdate()) return;
+    // Core
+    public void update() {
+        playerDataManager.update(!levelManager.isInArena());
+        if (currentHealth <= 0) {
+            updateDeath();
+            return;
+        }
+        combatHandler.updateParryWindow();
+        combatHandler.updateAttackBox();
+        setAnimation();
+        updateHitBlockMove();
+        updateMove();
+        combatHandler.updateSpells();
+        combatHandler.updateAttack();
+        updateAnimation();
+        if (checkAction(PlayerAction.HIT)) {
+            objectManager.checkObjectBreakByPush(hitBox);
+        }
+        feedbackHandler.update();
+    }
 
-        removeAction(PlayerAction.MOVE);
-        checkOnObject();
-        boolean onObject = checkAction(PlayerAction.ON_OBJECT);
-        if (!inAir && !isEntityOnFloor(hitBox, levelData) && !onObject) inAir = true;
+    private void updateDeath() {
+        if (entityState != Anim.DEATH) {
+            entityState = Anim.DEATH;
+            animIndex = animTick = 0;
+            addAction(PlayerAction.DYING);
+            Logger.getInstance().notify("Player is dead.", Message.NOTIFICATION);
+        }
+        else if (animIndex == playerRenderer.getFrameCount(entityState) - 1 && animTick >= animSpeed - 1) {
+            addAction(PlayerAction.GAME_OVER);
+            Audio.getInstance().getAudioPlayer().stopSong();
+            Audio.getInstance().getAudioPlayer().playSound(Sound.GAME_OVER);
+        }
+        else updateAnimation();
+    }
 
-        boolean canTransform = checkAction(PlayerAction.CAN_TRANSFORM);
+    private void updateHitBlockMove() {
+        boolean hit = checkAction(PlayerAction.HIT);
         boolean canBlock = checkAction(PlayerAction.CAN_BLOCK);
 
-        if (spellState != 0 || canBlock || canTransform) return;
-        boolean jump = checkAction(PlayerAction.JUMP);
-        boolean onWall = checkAction(PlayerAction.ON_WALL);
-        if (jump) doJump();
-        if (!inAir || onWall) actionHandler.setDashCount(0);
-        boolean left = checkAction(PlayerAction.LEFT);
-        boolean right = checkAction(PlayerAction.RIGHT);
-        boolean dash = checkAction(PlayerAction.DASH);
-
-        if (((!left && !right) || (left && right)) && !inAir && !dash && !checkAction(PlayerAction.ATTACK)) {
-            double slip = CollisionDetector.getLedgeSlip(hitBox, levelData);
-            if (slip == 0) return;
+        if (hit) {
+            setSpellState(0);
+            combatHandler.cancelForMobility();
+            combatHandler.clearImpulses();
+            movementHandler.clearMomentum();
+            removeActions(PlayerAction.DASH, PlayerAction.DASH_HIT, PlayerAction.BLOCK);
+            movementHandler.handlePushback(pushDirection, levelData);
+            movementHandler.inAirUpdate(levelData);
         }
-
-        double dx = 0;
-
-        if (recoilSpeedX > 0) {
-            dx += recoilSpeedX * -flipSign;
-            recoilSpeedX *= recoilDecay;
-            if (recoilSpeedX < 0.1) {
-                recoilSpeedX = 0;
+        else if (canBlock) {
+            pushOffsetDirection = Direction.DOWN;
+            pushDirection = (flipSign == 1) ? Direction.LEFT : Direction.RIGHT;
+            if (animIndex <= playerRenderer.getFrameCount(entityState)) {
+                pushBack(pushDirection, levelData, 0.1, PLAYER_SPEED);
             }
+            updatePushOffset();
         }
-
-        updateWallPosition();
-
-        boolean wallPush = checkAction(PlayerAction.WALL_PUSH);
-        if (recoilSpeedX == 0) {
-            boolean slowedByLava = checkAction(PlayerAction.LAVA) && !PerksBonus.getInstance().isLavaWalk();
-            if (left) dx -= slowedByLava ? LAVA_PLAYER_SPEED : PLAYER_SPEED;
-            if (right) dx += slowedByLava ? LAVA_PLAYER_SPEED : PLAYER_SPEED;
-            if (!left && !right && !inAir) {
-                dx += CollisionDetector.getLedgeSlip(hitBox, levelData);
-            }
-        }
-        if (right && inAir && wallPush && !dash) dx += PLAYER_BOOST;
-        if (left && inAir && wallPush && !dash) dx -= PLAYER_BOOST;
-
-        if (dash) {
-            if (((!left && !right) || (left && right)) && flipSign == -1) dx = -PLAYER_SPEED;
-            else if (((!left && !right) || (left && right)) && flipSign == 1) dx = PLAYER_SPEED;
-            dx *= DASH_SPEED;
-        }
-
-        if (inAir && !dash) inAirUpdate();
-
-        updateX(dx);
-        minimapHandler.update();
-        addAction(PlayerAction.MOVE);
+        else movementHandler.updatePosition(levelData, combatHandler, minimapHandler);
     }
 
-    private boolean checkTransitionUpdate() {
-        if (checkAction(PlayerAction.LEVEL_TRANSITION)) {
-            if (inAir) {
-                airSpeed += downwardGravity;
-                hitBox.y += airSpeed;
-            }
-            hitBox.x += getHorizontalSpeed();
-            addAction(PlayerAction.MOVE);
-            return true;
-        }
-        return false;
+    private void updateMove() {
+        playerRenderer.updateAfterimages(checkAction(PlayerAction.DASH), pushOffset);
+        movementHandler.updateDashTimer();
     }
 
-    private void inAirUpdate() {
-        boolean onWall = checkAction(PlayerAction.ON_WALL);
-
-        if (airSpeed < 0) {
-            if (checkAction(PlayerAction.JUMP)) airSpeed += upwardGravity;
-            else airSpeed += upwardGravity * jumpCutGravityMultiplier;
-        }
-        else {
-            if (onWall) airSpeed += wallGravity;
-            else airSpeed += downwardGravity;
-        }
-
-        if (canMoveHere(hitBox.x, hitBox.y + airSpeed + 1, hitBox.width, hitBox.height, levelData)) {
-            hitBox.y += airSpeed;
-        }
-        else {
-            hitBox.y = getYPosOnTheCeil(hitBox, airSpeed);
-            if (airSpeed > 0) {
-                removeAction(PlayerAction.WALL_PUSH);
-                inAir = false;
-                airSpeed = 0;
-                currentJumps = 0;
-
-                boolean isHit = checkAction(PlayerAction.HIT);
-                if (!isHit)
-                    effectManager.spawnDustParticles(hitBox.x + hitBox.width / 2, hitBox.y + hitBox.height, LAND_DUST_BURST, DustType.IMPACT, flipSign, this);
-            }
-            else {
-                airSpeed = (onWall) ? wallGravity : collisionFallSpeed;
-                removeAction(PlayerAction.DOUBLE_JUMP);
-            }
-        }
-    }
-
-    private void updateWallPosition() {
-        if (interiorManager != null && interiorManager.isInterior()) return;
-
-        boolean left = checkAction(PlayerAction.LEFT);
-        boolean right = checkAction(PlayerAction.RIGHT);
-        boolean onWall = checkAction(PlayerAction.ON_WALL);
-
-        if (onWall) removeAction(PlayerAction.ATTACK);
-
-        boolean leftSideCheck = isOnWall(hitBox, levelData, Direction.LEFT);
-        boolean rightSideCheck = isOnWall(hitBox, levelData, Direction.RIGHT);
-
-        if (!onWall && ((left && leftSideCheck) || (right && rightSideCheck)) && !isEntityOnFloor(hitBox, levelData)) {
-            if ((flipSign == -1 && rightSideCheck) || (flipSign == 1 && leftSideCheck)) return;
-            addActions(PlayerAction.ON_WALL, PlayerAction.WALL_PUSH);
-            currentJumps = 1;
-            airSpeed = 0.1;
-        }
-        if (onWall && !leftSideCheck && !rightSideCheck) {
-            currentJumps = 0;
-            removeAction(PlayerAction.ON_WALL);
-        }
-    }
-
-    private void updateX(double dx) {
-        boolean dash = checkAction(PlayerAction.DASH);
-        boolean onWall = checkAction(PlayerAction.ON_WALL);
-        boolean onObject = checkAction(PlayerAction.ON_OBJECT);
-
-        double actualDx = objectManager.checkSolidObjectCollision(hitBox, dx);
-        if (dash && actualDx != dx) {
-            removeAction(PlayerAction.DASH);
-            removeAction(PlayerAction.DASH_HIT);
-            dashTick = 0;
-        }
-
-        if (!onObject && !onWall && canMoveHere(hitBox.x + actualDx, hitBox.y, hitBox.width, hitBox.height, levelData))
-            hitBox.x += actualDx;
-        else if (dash && canMoveHere(hitBox.x + actualDx, hitBox.y, hitBox.width, hitBox.height, levelData))
-            hitBox.x += actualDx;
-        else {
-            if (onObject) hitBox.x = objectManager.getXObjectBound(hitBox, actualDx);
-            else if (!onWall) hitBox.x = getXPosOnTheWall(hitBox, actualDx);
-
-            if (dash) {
-                removeAction(PlayerAction.DASH);
-                removeAction(PlayerAction.DASH_HIT);
-                dashTick = 0;
-            }
-        }
-    }
-
-    private void updateAttackBox() {
-        if (spellState != 0) return;
-
-        boolean left = checkAction(PlayerAction.LEFT);
-        boolean right = checkAction(PlayerAction.RIGHT);
-
-        if ((right && left) || (!right && !left)) {
-            if (flipSign == 1) attackBox.x = hitBox.x + hitBox.width + (int)(10*SCALE);
-            else attackBox.x = hitBox.x - hitBox.width - (int)(10*SCALE);
-        }
-
-        boolean dash = checkAction(PlayerAction.DASH);
-        if (right || (dash && flipSign == 1)) attackBox.x = hitBox.x + hitBox.width + (int)(10*SCALE);
-        else if (left || (dash && flipSign == -1)) attackBox.x = hitBox.x - hitBox.width - (int)(10*SCALE);
-
-        attackBox.y = hitBox.y + (int)(10*SCALE);
-    }
-
-    private void updateAttack() {
-        boolean attacking = checkAction(PlayerAction.ATTACK);
-        boolean dashSlash = checkAction(PlayerAction.DASH) && PerksBonus.getInstance().isDashSlash();
-        if (attacking || dashSlash) checkAttack();
-    }
-
-    public void launch(double launchSpeed) {
-        effectManager.spawnDustParticles(hitBox.getCenterX(), hitBox.y + hitBox.height, 25, DustType.JUMP_PAD, 0, this);
-        inAir = true;
-        airSpeed = launchSpeed;
-    }
-
-    // Checks
-    private void checkAttack() {
-        boolean dash = checkAction(PlayerAction.DASH);
-        boolean dashHit = checkAction(PlayerAction.DASH_HIT);
-
-        if (attackCheck || animIndex != 1 || dashHit) return;
-        attackCheck = !dash;
-
-        HitResult hitResult = enemyManager.checkEnemyHit(attackBox, this);
-        switch (hitResult) {
-            case HIT:
-                Audio.getInstance().getAudioPlayer().playHitSound();
-                break;
-            case BLOCK:
-                // The block sound is played by the Enemy class
-                break;
-            case MISS:
-                if (!dash) Audio.getInstance().getAudioPlayer().playSlashSound();
-                break;
-        }
-
-        objectManager.checkObjectBreak(attackBox);
-        levelManager.checkDecorationCut(attackBox);
-        projectileManager.checkProjectileDeflect(attackBox);
-    }
-
-    private void checkOnObject() {
-        boolean onObject = checkAction(PlayerAction.ON_OBJECT);
-
-        if (objectManager.isPlayerTouchingObject(this) && !onObject) {
-            inAir = !objectManager.isPlayerGlitchedInObject(this);
-            removeAction(PlayerAction.WALL_PUSH);
-            airSpeed = currentJumps = 0;
-            addAction(PlayerAction.ON_OBJECT);
-        }
-        else if (onObject && !objectManager.isPlayerTouchingObject(this)) removeAction(PlayerAction.ON_OBJECT);
-
-        if (onObject) removeAction(PlayerAction.WALL_PUSH);
-    }
-
-    private void checkBreakablesOnPush() {
-        if (!checkAction(PlayerAction.HIT)) return;
-        objectManager.checkObjectBreakByPush(hitBox);
+    public void render(Graphics g, int xLevelOffset, int yLevelOffset) {
+        playerRenderer.render(g, xLevelOffset, yLevelOffset, pushOffset, feedbackHandler.getBurnTick());
+        hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.GREEN);
+        attackBoxRenderer(g, xLevelOffset, yLevelOffset);
     }
 
     // Actions
+    public void queueJumpBuffer() {
+        movementHandler.queueJumpBuffer();
+    }
+
+    public void cancelAttackForMobility() {
+        combatHandler.cancelForMobility();
+    }
+
     public void performAttack() {
-        if (cooldown[Cooldown.ATTACK.ordinal()] > 0.4) return;
-
-        long currentTime = System.currentTimeMillis();
-        if (currentTime - lastAttackTime > comboResetTime) {
-            currentAttackIndex = 0;
-            Collections.shuffle(attackChain);
-        }
-
-        AttackState nextAttack = attackChain.get(currentAttackIndex);
-        setPlayerAttackState(nextAttack);
-
-        currentAttackIndex++;
-        if (currentAttackIndex >= attackChain.size()) {
-            currentAttackIndex = 0;
-            Collections.shuffle(attackChain);
-        }
-        lastAttackTime = currentTime;
+        combatHandler.performAttack();
     }
 
     public void doJump() {
-        boolean left = checkAction(PlayerAction.LEFT);
-        boolean right = checkAction(PlayerAction.RIGHT);
-        boolean doubleJump = checkAction(PlayerAction.DOUBLE_JUMP);
-        boolean onWall = checkAction(PlayerAction.ON_WALL);
-
-        if (!actionHandler.canJump(levelData, left, right, doubleJump)) return;
-
-        if (onWall) {
-            double dustX = (flipSign == 1) ? hitBox.x + hitBox.width : hitBox.x;
-            double dustY = hitBox.y + hitBox.height / 2.0;
-            effectManager.spawnDustParticles(dustX, dustY, 6, DustType.WALL_JUMP, flipSign, this);
-            applyRecoil(3 * SCALE);
-            removeActions(PlayerAction.ON_WALL, PlayerAction.WALL_PUSH);
-        }
-
-        if (currentJumps == 1) {
-            addAction(PlayerAction.DOUBLE_JUMP);
-            animIndex = animTick = 0;
-            currentJumps++;
-        }
-
-        effectManager.spawnDustParticles(hitBox.x + hitBox.width / 2, hitBox.y + hitBox.height, JUMP_DUST_BURST, DustType.IMPACT, flipSign, this);
-
-        inAir = true;
-        airSpeed = jumpSpeed;
+        movementHandler.doJump(levelData, combatHandler);
     }
 
-    private void handlePushback() {
-        double pushForce = 1.2;
-        double basePushSpeed = (pushDirection == Direction.RIGHT) ? PLAYER_SPEED : -PLAYER_SPEED;
-        double totalPushDistance = basePushSpeed * pushForce;
-
-        double allowedObjectDx = objectManager.checkSolidObjectCollision(hitBox, totalPushDistance);
-        if (canMoveHere(hitBox.x + allowedObjectDx, hitBox.y, hitBox.width, hitBox.height, levelData)) {
-            hitBox.x += allowedObjectDx;
-        }
+    public void launch(double launchSpeed) {
+        movementHandler.launch(launchSpeed);
     }
 
     public void applyRecoil(double initialSpeed) {
-        if (!inAir) recoilSpeedX = initialSpeed;
+        combatHandler.applyRecoil(initialSpeed);
     }
 
-    // Status Changes
+    public void setPlayerAttackState(AttackState playerAttackState) {
+        combatHandler.setPlayerAttackState(playerAttackState);
+    }
+
+    public void setBlock(boolean block) {
+        combatHandler.setBlock(block);
+    }
+
+    // Status & Health
     public void changeHealth(double value) {
         if (checkAction(PlayerAction.DYING)) return;
         if (value < 0) {
@@ -604,18 +364,14 @@ public class Player extends Entity {
     public void changeHealth(double value, DamageSource source) {
         if (checkAction(PlayerAction.HIT)) return;
         if (value < 0) {
-            double actualDamage = calculateDamageAfterDefense(Math.abs(value));
+            double defenseBonus = Math.min(0.75, InventoryBonus.getInstance().getDefense() + PerksBonus.getInstance().getDefenseBonus());
+            double actualDamage = Math.abs(value) * (1.0 - defenseBonus);
             feedbackHandler.onPlayerDamaged(actualDamage);
             changeHealth(-actualDamage);
             Logger.getInstance().notify("Damage received: " + actualDamage, Message.INFORMATION);
         }
         else changeHealth(value);
         applyKnockback(source);
-    }
-
-    private double calculateDamageAfterDefense(double rawDamage) {
-        double defenseBonus = Math.min(0.75, InventoryBonus.getInstance().getDefense() + PerksBonus.getInstance().getDefenseBonus());
-        return rawDamage * (1.0 - defenseBonus);
     }
 
     private void applyKnockback(DamageSource source) {
@@ -629,7 +385,7 @@ public class Player extends Entity {
         this.airSpeed = -1.2 * SCALE;
     }
 
-    private void changeHealthNoKnockback(double value) {
+    public void applyStatusDamage(double value) {
         if (value < 0) {
             String dmgText = String.format("%.1f", -value);
             effectManager.spawnDamageNumber(dmgText, getHitBox().getCenterX(), getHitBox().y, DAMAGE_COLOR);
@@ -653,188 +409,36 @@ public class Player extends Entity {
         currentHealth = 0;
     }
 
-    // Updates
-    private void updateDeath() {
-        if (entityState != Anim.DEATH) {
-            entityState = Anim.DEATH;
-            animIndex = animTick = 0;
-            addAction(PlayerAction.DYING);
-            Logger.getInstance().notify("Player is dead.", Message.NOTIFICATION);
-        }
-        else if (animIndex == animations[entityState.ordinal()].length-1 && animTick >= animSpeed-1) {
-            addAction(PlayerAction.GAME_OVER);
-            Audio.getInstance().getAudioPlayer().stopSong();
-            Audio.getInstance().getAudioPlayer().playSound(Sound.GAME_OVER);
-        }
-        else updateAnimation();
-    }
-
-    private void updateHitBlockMove() {
-        boolean hit = checkAction(PlayerAction.HIT);
-        boolean canBlock = checkAction(PlayerAction.CAN_BLOCK);
-
-        if (hit) {
-            setSpellState(0);
-            removeActions(PlayerAction.DASH, PlayerAction.DASH_HIT);
-            handlePushback();
-            inAirUpdate();
-        }
-        else if (canBlock) {
-            pushOffsetDirection = Direction.DOWN;
-            pushDirection = (flipSign == 1) ? Direction.LEFT : Direction.RIGHT;
-            if (animIndex <= animations[entityState.ordinal()].length)
-                pushBack(pushDirection, levelData, 0.1, PLAYER_SPEED);
-            updatePushOffset();
-        }
-        else updatePosition();
-    }
-
-    private void updateMove() {
-        boolean moving = checkAction(PlayerAction.MOVE);
-        if (moving) {
-            boolean dash = checkAction(PlayerAction.DASH);
-            if (dash) {
-                dashTick++;
-                if (dashTick >= 40) {
-                    dashTick = 0;
-                    removeActions(PlayerAction.DASH, PlayerAction.DASH_HIT);
-                }
-            }
-        }
-    }
-
-    private void updateSpells() {
-        BalanceManager.PlayerBalance pb = BalanceManager.getInstance().getPlayerBalance();
-        if (spellState == 1) {
-            double drain = pb.getFlameStaminaDrainPerTick() * (1.0 - PerksBonus.getInstance().getFlameCostReduction());
-            changeStamina(-drain);
-            enemyManager.checkEnemySpellHit();
-            levelManager.checkDecorationCut(attackBox);
-            objectManager.checkObjectBreak(attackBox);
-        }
-        if (checkAction(PlayerAction.TRANSFORM)) {
-            double drain = pb.getTransformStaminaDrainPerTick() * (1.0 - PerksBonus.getInstance().getTransformCostReduction());
-            changeStamina(-drain);
-        }
-    }
-
-    private void updateStatus() {
-        if (checkAction(PlayerAction.LAVA) && !PerksBonus.getInstance().isLavaWalk()) {
-            burnTick = 90;
-            changeHealthNoKnockback(-BalanceManager.getInstance().getCombat().getLavaTickDamage());
-        }
-        else if (burnTick > 0) {
-            burnTick--;
-            if (burnTick % 25 == 0) {
-                changeHealthNoKnockback(-BalanceManager.getInstance().getCombat().getLavaTickDamage() * 2.0);
-            }
-        }
-        if (burnTick > 0 && burnTick % 4 == 0) {
-            effectManager.spawnDustParticles(hitBox.getCenterX(), hitBox.getCenterY(), 2, DustType.PLAYER_BURN, flipSign, this);
-        }
-    }
-
-    // Core
-    public void update() {
-        playerDataManager.update(!levelManager.isInArena());
-        if (currentHealth <= 0) {
-            updateDeath();
-            return;
-        }
-        updateMythicAura();
-        updateAttackBox();
-        setAnimation();
-        updateHitBlockMove();
-        updateMove();
-        updateSpells();
-        updateAttack();
-        updateAnimation();
-        updateStatus();
-        checkBreakablesOnPush();
-        feedbackHandler.update();
-    }
-
-    private void updateMythicAura() {
-        boolean hasMythic = Arrays.stream(inventory.getEquipped())
-                .anyMatch(item -> item != null && item.getData() != null && item.getData().rarity == ItemRarity.MYTHIC);
-
-        if (!hasMythic) return;
-
-        mythicAuraTick++;
-        if (mythicAuraTick >= 5) {
-            mythicAuraTick = 0;
-            double x = getHitBox().getCenterX();
-            double y = getHitBox().getCenterY();
-            effectManager.spawnDustParticles(x, y, 1, DustType.THUNDERBOLT_AURA, flipSign, this);
-        }
-    }
-
-    public void render(Graphics g, int xLevelOffset, int yLevelOffset) {
-        try {
-            int playerXPos = (int) (hitBox.x - PLAYER_HB_OFFSET_X - xLevelOffset + flipCoefficient);
-            int playerYPos = (int) (hitBox.y - PLAYER_HB_OFFSET_Y - yLevelOffset) + (int) pushOffset;
-
-            boolean transform = checkAction(PlayerAction.TRANSFORM);
-            BufferedImage frame = !transform ? animations[entityState.ordinal()][animIndex] : transformAnimations[entityState.ordinal()][animIndex];
-            g.drawImage(frame, playerXPos, playerYPos, flipSign * width, height, null);
-            if (burnTick > 0 && frame != null) {
-                renderBurn(g, frame, playerXPos, playerYPos);
-            }
-        } catch (Exception ignored) {}
-        hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.GREEN);
-        attackBoxRenderer(g, xLevelOffset, yLevelOffset);
-    }
-
-    // TODO: See about it
-    private void renderBurn(Graphics g, BufferedImage frame, int drawX, int drawY) {
-        if (burnSilhouetteBuffer == null || burnSilhouetteBuffer.getWidth() != width || burnSilhouetteBuffer.getHeight() != height) {
-            burnSilhouetteBuffer = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-        }
-        Graphics2D bG2d = burnSilhouetteBuffer.createGraphics();
-        bG2d.setComposite(AlphaComposite.Clear);
-        bG2d.fillRect(0, 0, width, height);
-        bG2d.setComposite(AlphaComposite.SrcOver);
-        bG2d.drawImage(frame, 0, 0, width, height, null);
-        bG2d.setComposite(AlphaComposite.SrcAtop);
-        boolean brightFlicker = (burnTick / 5) % 2 == 0;
-        float alpha = Math.min(0.62f, 0.25f + (burnTick / 90.0f) * 0.35f);
-        Color fireTint = brightFlicker ? new Color(255, 130, 15, (int) (alpha * 255)) : new Color(235, 45, 10, (int) (alpha * 255));
-        bG2d.setColor(fireTint);
-        bG2d.fillRect(0, 0, width, height);
-        bG2d.dispose();
-
-        g.drawImage(burnSilhouetteBuffer, drawX, drawY, flipSign * width, height, null);
-    }
-
     // Reset
     public void resetDirections() {
         removeActions(PlayerAction.LEFT, PlayerAction.RIGHT, PlayerAction.JUMP);
         animIndex = animTick = 0;
     }
 
+    public void resetAnimTickAndIndex() {
+        this.animIndex = 0;
+        this.animTick = 0;
+    }
+
     public void reset() {
-        resetFlags();
+        inAir = false;
+        movementHandler.reset();
+        combatHandler.reset();
+        playerRenderer.reset();
+        feedbackHandler.reset();
+        removeActions(PlayerAction.DYING, PlayerAction.GAME_OVER, PlayerAction.LAVA);
+        removeActions(PlayerAction.HIT, PlayerAction.BLOCK, PlayerAction.ATTACK, PlayerAction.MOVE, PlayerAction.DASH);
+        removeActions(PlayerAction.LEFT, PlayerAction.RIGHT, PlayerAction.JUMP, PlayerAction.ON_WALL, PlayerAction.ON_OBJECT, PlayerAction.LOOK_DOWN);
+
         setSpellState(0);
         animIndex = animTick = 0;
         entityState = Anim.IDLE;
-        resetHealth();
+        currentHealth = getMaxHealth();
         currentStamina = 0;
         hitBox.x = xPos;
         hitBox.y = yPos;
         initAttackBox();
         if (!isEntityOnFloor(hitBox, levelData)) inAir = true;
-    }
-
-    private void resetHealth() {
-        currentHealth = getMaxHealth();
-    }
-
-    private void resetFlags() {
-        inAir = false;
-        burnTick = 0;
-        removeActions(PlayerAction.DYING, PlayerAction.GAME_OVER, PlayerAction.LAVA);
-        removeActions(PlayerAction.HIT, PlayerAction.BLOCK, PlayerAction.ATTACK, PlayerAction.MOVE, PlayerAction.DASH);
-        removeActions(PlayerAction.LEFT, PlayerAction.RIGHT, PlayerAction.JUMP, PlayerAction.ON_WALL, PlayerAction.ON_OBJECT, PlayerAction.LOOK_DOWN);
     }
 
     // Facade
@@ -850,56 +454,11 @@ public class Player extends Entity {
         playerDataManager.changeExp(value);
     }
 
-    // Setters
-    /**
-     * Adjusts the animation speed dynamically based on what the player is currently doing.
-     * Lower = Faster !
-     */
-    private void setAnimSpeedByState() {
-        switch (entityState) {
-            case RUN:
-                animSpeed = 12;
-                break;
-            case ATTACK_1:
-            case ATTACK_2:
-            case ATTACK_3:
-                animSpeed = 16;
-                break;
-            case JUMP:
-            case FALL:
-                animSpeed = 25;
-                break;
-            case TRANSFORM:
-                animSpeed = 15;
-                break;
-            default:
-                animSpeed = 20;
-                break;
-        }
-    }
-
+    // Getters & Setters
     public void setAttacking(boolean attacking) {
         if (attacking) addAction(PlayerAction.ATTACK);
         else removeAction(PlayerAction.ATTACK);
         setSpellState(0);
-    }
-
-    public void setPlayerAttackState(AttackState playerAttackState) {
-        this.attackState = playerAttackState;
-        this.setAttacking(true);
-
-        switch (playerAttackState) {
-            case ATTACK_1, ATTACK_2 -> applyRecoil(0.6 * SCALE);
-            case ATTACK_3 -> applyRecoil(1.0 * SCALE);
-        }
-
-        double baseCd = BalanceManager.getInstance().getPlayerBalance().getAttackCooldown();
-        double cd = (baseCd + PerksBonus.getInstance().getBonusCooldown()) * (1.0 - InventoryBonus.getInstance().getCooldown());
-        cooldown[Cooldown.ATTACK.ordinal()] = Math.max(0.1, cd);
-    }
-
-    public void setCurrentJumps(int currentJumps) {
-        this.currentJumps = currentJumps;
     }
 
     public void setSpellState(int spellState) {
@@ -907,12 +466,6 @@ public class Player extends Entity {
         if (spellState == 0) Audio.getInstance().getAudioPlayer().stopSound(Sound.FIRE_SPELL_1);
         else if (spellState == 1) Audio.getInstance().getAudioPlayer().playSound(Sound.FIRE_SPELL_1);
         this.spellState = spellState;
-    }
-
-    public void setBlock(boolean block) {
-        if (cooldown[Cooldown.BLOCK.ordinal()] != 0) return;
-        if (block) addAction(PlayerAction.BLOCK);
-        else removeAction(PlayerAction.BLOCK);
     }
 
     public void setCanTransform(boolean canTransform) {
@@ -930,7 +483,22 @@ public class Player extends Entity {
         minimapHandler.activateMinimap(activateMinimap);
     }
 
-    // Getters
+    public void setInAir(boolean inAir) {
+        this.inAir = inAir;
+    }
+
+    public void setAirSpeed(double airSpeed) {
+        this.airSpeed = airSpeed;
+    }
+
+    public boolean isAttackCheck() {
+        return attackCheck;
+    }
+
+    public void setAttackCheck(boolean attackCheck) {
+        this.attackCheck = attackCheck;
+    }
+
     public int getAnimIndex() {
         return animIndex;
     }
@@ -950,12 +518,7 @@ public class Player extends Entity {
     }
 
     public double getHorizontalSpeed() {
-        boolean slowedByLava = checkAction(PlayerAction.LAVA) && !PerksBonus.getInstance().isLavaWalk();
-        double currentSpeed = slowedByLava ? LAVA_PLAYER_SPEED : PLAYER_SPEED;
-        if (checkAction(PlayerAction.DASH)) currentSpeed *= DASH_SPEED;
-        if (checkAction(PlayerAction.LEFT) && !checkAction(PlayerAction.RIGHT)) return -currentSpeed;
-        else if (checkAction(PlayerAction.RIGHT) && !checkAction(PlayerAction.LEFT)) return currentSpeed;
-        return 0;
+        return movementHandler.getHorizontalSpeed();
     }
 
     public double getAirSpeed() {
@@ -971,10 +534,6 @@ public class Player extends Entity {
 
     public double getCurrentStamina() {
         return currentStamina;
-    }
-
-    public int getCurrentJumps() {
-        return currentJumps;
     }
 
     public int getSpellState() {
@@ -1009,12 +568,11 @@ public class Player extends Entity {
         return inventory;
     }
 
-    // Action Controller
     public void addAction(PlayerAction action) {
         actions.add(action);
     }
 
-    public void addActions(PlayerAction ... stream) {
+    public void addActions(PlayerAction... stream) {
         actions.addAll(List.of(stream));
     }
 
@@ -1022,7 +580,7 @@ public class Player extends Entity {
         actions.remove(action);
     }
 
-    public void removeActions(PlayerAction ... stream) {
+    public void removeActions(PlayerAction... stream) {
         List.of(stream).forEach(actions::remove);
     }
 

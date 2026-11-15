@@ -21,6 +21,7 @@ public class ParticleFactory {
         behaviorCache.put(DustType.IMPACT, new ImpactBehavior());
         behaviorCache.put(DustType.RUNNING, new RunningBehavior());
         behaviorCache.put(DustType.DASH, new DashBehavior());
+        behaviorCache.put(DustType.DOUBLE_JUMP, new DoubleJumpBehavior());
         behaviorCache.put(DustType.WALL_SLIDE, new WallSlideBehavior());
         behaviorCache.put(DustType.WALL_JUMP, new WallJumpBehavior());
         behaviorCache.put(DustType.IMPACT_SPARK, new ImpactSparkBehavior());
