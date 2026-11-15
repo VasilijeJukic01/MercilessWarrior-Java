@@ -648,6 +648,19 @@ public class LightManager {
 
     // Ambient
     /**
+     * Immediately synchronizes ambient darkness and tint with the current time of day.
+     * Used after a time-skip when resting.
+     */
+    public void snapToTimeCycle(TimeCycleManager timeManager) {
+        this.currentTimeOfDay = timeManager.getGameTimeNormalized();
+        calculateTimeCycleEffects(timeManager);
+        if (!ambientDarknessOverridden) {
+            this.currentAmbientAlpha = this.ambientAlpha;
+            this.ambientDarkness = new Color(0, 0, 0, currentAmbientAlpha);
+        }
+    }
+
+    /**
      * Forces the ambient darkness to a specific level, ignoring the day-night cycle.
      * This override remains in effect until {@link #releaseAmbientDarkness()} is called.
      *

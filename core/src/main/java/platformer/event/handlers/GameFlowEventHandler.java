@@ -11,12 +11,9 @@ import platformer.event.events.FightInitiatedEvent;
 import platformer.model.entities.enemies.EnemyType;
 import platformer.model.levels.Level;
 import platformer.model.levels.LvlTriggerType;
-import platformer.model.levels.Spawn;
 import platformer.event.EventHandler;
 
 import java.awt.*;
-
-import static platformer.constants.Constants.TILES_SIZE;
 
 public class GameFlowEventHandler implements EventHandler {
 
@@ -61,15 +58,11 @@ public class GameFlowEventHandler implements EventHandler {
         Level originalLevel = context.getLevelManager().getCurrentLevel();
 
         int spawnId = Framework.getInstance().getAccount().getSpawn();
-        Point playerSpawn = null;
-        for (Spawn spawn : Spawn.values()) {
-            if (spawn.getId() == spawnId) {
-                playerSpawn = new Point(spawn.getX() * TILES_SIZE, spawn.getY() * TILES_SIZE);
-                break;
-            }
-        }
+        Point playerSpawn = context.getLevelManager().getTotemSpawnPoint(spawnId);
         // Fallback
-        if (playerSpawn == null) playerSpawn = originalLevel.getPlayerSpawn(LvlTriggerType.SPAWN_A);
+        if (playerSpawn == null) {
+            playerSpawn = originalLevel.getPlayerSpawn(LvlTriggerType.SPAWN_A);
+        }
 
         levelTransition(originalLevel, playerSpawn);
         context.getGameState().getPlayer().activateMinimap(true);

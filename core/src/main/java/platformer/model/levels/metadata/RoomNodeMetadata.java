@@ -15,6 +15,8 @@ import java.util.List;
 public class RoomNodeMetadata {
 
     private Integer mapX, mapY;
+    private Integer totemId;
+    private String totemName;
     private List<RoomExitMetadata> exits = new ArrayList<>();
 
     /**

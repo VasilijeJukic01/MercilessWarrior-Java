@@ -38,7 +38,7 @@ public class OverlayManager {
         this.overlays.put(PlayingState.SHOP, new ShopOverlay(gameState));
         this.overlays.put(PlayingState.BLACKSMITH, new BlacksmithOverlay(context));
         this.overlays.put(PlayingState.DIALOGUE, new DialogueOverlay());
-        this.overlays.put(PlayingState.SAVE, new SaveGameOverlay());
+        this.overlays.put(PlayingState.SAVE, new SaveGameOverlay(context));
         this.overlays.put(PlayingState.INVENTORY, new InventoryOverlay(gameState));
         this.overlays.put(PlayingState.PERKS, new PerksOverlay(context));
         this.overlays.put(PlayingState.CRAFTING, new CraftingOverlay(gameState));
@@ -121,6 +121,7 @@ public class OverlayManager {
         overlays.get(PlayingState.SHOP).reset();
         overlays.get(PlayingState.CRAFTING).reset();
         overlays.get(PlayingState.DIALOGUE).reset();
+        overlays.get(PlayingState.SAVE).reset();
     }
 
     public void refreshCurrentOverlay() {

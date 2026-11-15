@@ -190,17 +190,27 @@ public class GameState extends AbstractState implements State {
         getPlayer().activateMinimap(false);
         PerksBonus.getInstance().reset();
         context.getPerksManager().reset();
-        this.getPlayer().getPlayerDataManager().loadPlayerData();
-        this.getPlayer().getInventory().fillItems(Framework.getInstance().getAccount().getItems());
-        context.getPerksManager().loadUnlockedPerks(Framework.getInstance().getAccount().getPerks());
+
         context.getLevelManager().resetAllCachedLevels();
         context.getWorldMemoryManager().loadFromAccount(Framework.getInstance().getAccount().getWorldFlags());
         context.getQuestManager().loadFromAccount(Framework.getInstance().getAccount().getQuests());
-        context.getLevelManager().loadSavePoint(Framework.getInstance().getAccount().getSpawn());
+
+        int savedSpawn = Framework.getInstance().getAccount().getSpawn();
+        if (savedSpawn >= 0) {
+            context.getWorldMemoryManager().unlockTotem(savedSpawn);
+        }
+
+        context.getLevelManager().loadSavePoint(savedSpawn);
+        getPlayer().getPlayerDataManager().loadPlayerData();
+        getPlayer().getInventory().fillItems(Framework.getInstance().getAccount().getItems());
+        context.getPerksManager().loadUnlockedPerks(Framework.getInstance().getAccount().getPerks());
         context.getMinimapManager().loadExplorationData(Framework.getInstance().getAccount().getExplorationData());
         this.overlayManager.reset();
         reset();
+        getPlayer().activateMinimap(true);
+        context.getMinimapManager().updatePlayerPosition(getPlayer().getHitBox().getCenterX(), getPlayer().getHitBox().getCenterY());
         camera.updateLevelBounds(getLevelManager().getCurrentLevel());
+        camera.snapToPlayer(getPlayer());
     }
 
     public void refreshPlayerDataFromAccount() {
@@ -210,13 +220,22 @@ public class GameState extends AbstractState implements State {
 
     public void refreshAllFromAccount() {
         if (world == null || world.getPlayer() == null) return;
+        context.getWorldMemoryManager().loadFromAccount(Framework.getInstance().getAccount().getWorldFlags());
+        context.getQuestManager().loadFromAccount(Framework.getInstance().getAccount().getQuests());
+        int savedSpawn = Framework.getInstance().getAccount().getSpawn();
+        if (savedSpawn >= 0) {
+            context.getWorldMemoryManager().unlockTotem(savedSpawn);
+        }
+        context.getLevelManager().loadSavePoint(savedSpawn);
         getPlayer().getPlayerDataManager().loadPlayerData();
         context.getPerksManager().reset();
         context.getPerksManager().loadUnlockedPerks(Framework.getInstance().getAccount().getPerks());
         context.getMinimapManager().loadExplorationData(Framework.getInstance().getAccount().getExplorationData());
-        context.getWorldMemoryManager().loadFromAccount(Framework.getInstance().getAccount().getWorldFlags());
-        context.getQuestManager().loadFromAccount(Framework.getInstance().getAccount().getQuests());
         getPlayer().getInventory().fillItems(Framework.getInstance().getAccount().getItems());
+        getPlayer().activateMinimap(true);
+        context.getMinimapManager().updatePlayerPosition(getPlayer().getHitBox().getCenterX(), getPlayer().getHitBox().getCenterY());
+        camera.updateLevelBounds(getLevelManager().getCurrentLevel());
+        camera.snapToPlayer(getPlayer());
         Logger.getInstance().notify("Player data fully refreshed from loaded save.", Message.INFORMATION);
     }
 

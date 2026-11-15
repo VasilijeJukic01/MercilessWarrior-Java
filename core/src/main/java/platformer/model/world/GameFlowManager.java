@@ -138,14 +138,11 @@ public class GameFlowManager {
 
     private void configureSpawnPoint() {
         String currentLevelId = context.getLevelManager().getCurrentLevelId();
-        int currentSpawnId = -1;
-        for (Spawn s : Spawn.values()) {
-            if (s.getLevelId().equals(currentLevelId)) {
-                currentSpawnId = s.getId();
-                break;
-            }
+        int currentSpawnId = context.getLevelManager().getTotemIdForLevel(currentLevelId);
+        if (currentSpawnId >= 0) {
+            context.getWorldMemoryManager().unlockTotem(currentSpawnId);
+            Framework.getInstance().getAccount().setSpawn(currentSpawnId);
         }
-        Framework.getInstance().getAccount().setSpawn(currentSpawnId);
     }
 
     private void saveMinimapData() {

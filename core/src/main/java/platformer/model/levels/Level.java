@@ -9,6 +9,7 @@ import platformer.model.gameObjects.npc.Npc;
 import platformer.model.gameObjects.npc.NpcType;
 import platformer.model.gameObjects.objects.Container;
 import platformer.model.gameObjects.objects.*;
+import platformer.physics.CollisionDetector;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
@@ -390,6 +391,27 @@ public class Level {
 
     public Map<Point, Double> getDecorationBends() {
         return decorationBends;
+    }
+
+
+    /**
+     * Finds the SaveTotem object in this level and returns the ground spawn position for the player.
+     * Falls back to SPAWN_A if no SaveTotem object is present in the room.
+     */
+    public Point getSaveTotemSpawnPoint() {
+        List<GameObject> totems = objectsMap.get(ObjType.SAVE_TOTEM);
+        if (totems != null && !totems.isEmpty()) {
+            GameObject totem = totems.get(0);
+            int spawnX = (int) totem.getHitBox().x;
+            double groundY = CollisionDetector.getGroundY(
+                    totem.getHitBox().getCenterX(),
+                    totem.getHitBox().y,
+                    lvlData
+            );
+            int spawnY = (int) (groundY - PLAYER_HB_HEI - 1);
+            return new Point(spawnX, spawnY);
+        }
+        return getPlayerSpawn(LvlTriggerType.SPAWN_A);
     }
 
     /**

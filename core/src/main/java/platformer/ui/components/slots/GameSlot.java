@@ -1,16 +1,15 @@
 package platformer.ui.components.slots;
 
 import platformer.core.Account;
+import platformer.ui.buttons.UIButtonRenderer;
 
 import java.awt.*;
 
-import static platformer.constants.Constants.FONT_MEDIUM;
-import static platformer.constants.Constants.SCALE;
+import static platformer.constants.Constants.*;
 import static platformer.constants.UI.*;
 
 /**
- * The GameSlot class represents a save slot in the game where a player's account information is stored.
- * It can be either a local save slot or a database slot.
+ * Represents a styled runic save slot card for either a cloud save or a local save slot.
  */
 public class GameSlot {
 
@@ -30,65 +29,149 @@ public class GameSlot {
     }
 
     public void render(Graphics g) {
-        Graphics2D g2d = (Graphics2D) g;
-        renderSlotRectangle(g2d);
-        renderSelectionBorder(g2d);
-
-        if (!databaseSlot) renderSlotInfo(g);
-        else renderDatabaseSlotInfo(g);
-
-        g2d.setColor(Color.WHITE);
-        g2d.setStroke(new BasicStroke(1));
-        g2d.drawRoundRect(xPos, yPos, GAME_SLOT_WID, GAME_SLOT_HEI, 10, 10);
+        renderAt(g, xPos, yPos, GAME_SLOT_WID, GAME_SLOT_HEI);
     }
 
-    private void renderSlotRectangle(Graphics2D g2d) {
+    /**
+     * Renders this save slot at custom coordinates and dimensions so it can adapt to different overlays.
+     */
+    public void renderAt(Graphics g, int x, int y, int width, int height) {
+        Graphics2D g2d = (Graphics2D) g.create();
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+
+        int arc = scale(6);
         GradientPaint gp;
-        if (databaseSlot)
-            gp = new GradientPaint(xPos, yPos, DATABASE_SLOT_BG_START, xPos, yPos + GAME_SLOT_HEI, DATABASE_SLOT_BG_END);
-        else if (account != null)
-            gp = new GradientPaint(xPos, yPos, SAVE_SLOT_BG_START, xPos, yPos + GAME_SLOT_HEI, SAVE_SLOT_BG_END);
-        else
-            gp = new GradientPaint(xPos, yPos, EMPTY_SLOT_BG_START, xPos, yPos + GAME_SLOT_HEI, EMPTY_SLOT_BG_END);
+        if (databaseSlot) {
+            gp = new GradientPaint(x, y, new Color(16, 36, 48, 235), x, y + height, new Color(22, 52, 68, 240));
+        }
+        else if (account != null) {
+            gp = new GradientPaint(x, y, new Color(16, 28, 34, 235), x, y + height, new Color(24, 42, 48, 240));
+        }
+        else {
+            gp = new GradientPaint(x, y, new Color(12, 18, 22, 215), x, y + height, new Color(18, 26, 30, 220));
+        }
         g2d.setPaint(gp);
-        g2d.fillRoundRect(xPos, yPos, GAME_SLOT_WID, GAME_SLOT_HEI, 10, 10);
-    }
+        g2d.fillRoundRect(x, y, width, height, arc, arc);
 
-    private void renderSelectionBorder(Graphics2D g2d) {
+        // Border
         if (selected) {
-            g2d.setColor(QUEST_SELECTED_GLOW_COLOR);
-            g2d.setStroke(new BasicStroke(3));
-            g2d.drawRoundRect(xPos - 1, yPos - 1, GAME_SLOT_WID + 2, GAME_SLOT_HEI + 2, 12, 12);
+            float pulse = (float) (0.7 + 0.3 * Math.sin(System.currentTimeMillis() / 180.0));
+            g2d.setColor(new Color(45, 240, 230, (int) (90 * pulse)));
+            g2d.setStroke(new BasicStroke(scale(2.6)));
+            g2d.drawRoundRect(x - 1, y - 1, width + 2, height + 2, arc + 2, arc + 2);
+            g2d.setColor(new Color(160, 255, 250, 245));
+            g2d.setStroke(new BasicStroke(scale(1.3)));
+            g2d.drawRoundRect(x, y, width, height, arc, arc);
         }
+        else {
+            g2d.setColor(account != null ? new Color(85, 118, 124, 200) : new Color(55, 72, 76, 160));
+            g2d.setStroke(new BasicStroke(1.2f));
+            g2d.drawRoundRect(x, y, width, height, arc, arc);
+        }
+
+        if (databaseSlot) renderDatabaseInfo(g2d, x, y, width, height);
+        else renderLocalSlotInfo(g2d, x, y, width, height);
+        g2d.dispose();
     }
 
-    private void renderSlotInfo(Graphics g) {
-        g.setFont(new Font("Arial", Font.BOLD, FONT_MEDIUM));
+    private void renderLocalSlotInfo(Graphics2D g2d, int x, int y, int width, int height) {
+        int badgeSize = height - scale(12);
+        int badgeX = x + scale(6);
+        int badgeY = y + scale(6);
+
+        Color fillCol = account != null ? new Color(35, 110, 120) : null;
+        Color borderCol = account != null ? new Color(80, 215, 210) : new Color(65, 85, 90);
+        UIButtonRenderer.drawRunicSlot(g2d, badgeX, badgeY, badgeSize, fillCol, borderCol, false);
+
+        g2d.setFont(UIButtonRenderer.getFont(11f * SCALE));
+        String slotNum = String.valueOf(index - 1);
+        FontMetrics fmNum = g2d.getFontMetrics();
+        g2d.setColor(account != null ? new Color(215, 250, 248) : new Color(110, 125, 130));
+        g2d.drawString(slotNum, badgeX + (badgeSize - fmNum.stringWidth(slotNum)) / 2, badgeY + (badgeSize + (int) (fmNum.getAscent() * 0.72f)) / 2);
+
+        int textLeft = badgeX + badgeSize + scale(10);
+        int rightX = x + width - scale(10);
+
         if (account == null) {
-            g.setColor(Color.GRAY);
-            g.drawString("Empty", xPos + (int)(GAME_SLOT_WID / 2.3), yPos + (int)(GAME_SLOT_HEI / 1.75));
+            g2d.setFont(new Font("Arial", Font.ITALIC, FONT_MEDIUM));
+            g2d.setColor(new Color(125, 145, 150));
+            g2d.drawString("Empty Save Slot", textLeft, y + height / 2 + scale(4));
+            return;
         }
-        else {
-            g.setColor(Color.WHITE);
-            g.drawString("Lvl: "+account.getLevel(), xPos + (int)(SCALE * 130), yPos + (int)(SCALE * 15));
-            g.drawString("Exp: "+account.getExp(), xPos + (int)(SCALE * 130), yPos + (int)(SCALE * 30));
-            g.drawString("Playtime: "+(account.getPlaytime()/3600)+"h", xPos + (int)(SCALE * 10), yPos + (int)(SCALE * 15));
-            g.drawString(account.getLastTimeSaved(), xPos + (int)(SCALE * 10), yPos + (int)(SCALE * 30));
-        }
+
+        g2d.setFont(new Font("Arial", Font.BOLD, FONT_MEDIUM));
+        g2d.setColor(Color.WHITE);
+        g2d.drawString("Slot " + (index - 1) + "  •  " + formatPlaytime(account.getPlaytime()), textLeft, y + scale(16));
+
+        String lvlBadge = "LVL " + account.getLevel();
+        g2d.setFont(new Font("Arial", Font.BOLD, FONT_SMALL));
+        int badgeW = g2d.getFontMetrics().stringWidth(lvlBadge) + scale(10);
+        Color lvlCol = new Color(90, 245, 235);
+        UIButtonRenderer.drawBadge(g2d, lvlBadge, rightX - badgeW, y + scale(15), lvlCol, lvlCol);
+
+        g2d.setFont(new Font("Arial", Font.PLAIN, FONT_LIGHT));
+        g2d.setColor(new Color(170, 195, 200));
+        String dateStr = account.getLastTimeSaved() != null ? account.getLastTimeSaved() : "Saved";
+        g2d.drawString(dateStr, textLeft, y + height - scale(8));
+
+        String coinStr = account.getCoins() + " Gold";
+        g2d.setFont(new Font("Arial", Font.BOLD, FONT_LIGHT));
+        g2d.setColor(SHOP_TEXT_GOLD);
+        g2d.drawString(coinStr, rightX - g2d.getFontMetrics().stringWidth(coinStr), y + height - scale(8));
     }
 
-    private void renderDatabaseSlotInfo(Graphics g) {
-        g.setFont(new Font("Arial", Font.BOLD, FONT_MEDIUM));
-        if (account.getName().equalsIgnoreCase("Default")) {
-            g.setColor(Color.GRAY);
-            g.drawString("Unregistered", xPos + (int)(GAME_SLOT_WID / 2.8), yPos + (int)(GAME_SLOT_HEI / 1.75));
+    private void renderDatabaseInfo(Graphics2D g2d, int x, int y, int width, int height) {
+        int badgeSize = height - scale(12);
+        int badgeX = x + scale(6);
+        int badgeY = y + scale(6);
+
+        boolean registered = account != null && !account.getName().equalsIgnoreCase("Default");
+        Color fillCol = registered ? new Color(30, 95, 145) : null;
+        Color borderCol = registered ? new Color(95, 195, 255) : new Color(65, 85, 90);
+        UIButtonRenderer.drawRunicSlot(g2d, badgeX, badgeY, badgeSize, fillCol, borderCol, false);
+
+        g2d.setFont(UIButtonRenderer.getFont(10f * SCALE));
+        String cloudSymbol = "C";
+        FontMetrics fmSym = g2d.getFontMetrics();
+        g2d.setColor(registered ? new Color(180, 235, 255) : new Color(110, 125, 130));
+        g2d.drawString(cloudSymbol, badgeX + (badgeSize - fmSym.stringWidth(cloudSymbol)) / 2, badgeY + (badgeSize + (int) (fmSym.getAscent() * 0.72f)) / 2);
+
+        int textLeft = badgeX + badgeSize + scale(10);
+        int rightX = x + width - scale(10);
+
+        if (!registered) {
+            g2d.setFont(new Font("Arial", Font.ITALIC, FONT_MEDIUM));
+            g2d.setColor(new Color(130, 150, 160));
+            g2d.drawString("Cloud Slot (Offline)", textLeft, y + height / 2 + scale(4));
+            return;
         }
-        else {
-            g.setColor(Color.WHITE);
-            g.drawString("Cloud Save", xPos + (int)(SCALE * 10), yPos + (int)(SCALE * 15));
-            g.drawString("Lvl: "+account.getLevel(), xPos + (int)(SCALE * 130), yPos + (int)(SCALE * 15));
-            g.drawString("Exp: "+account.getExp(), xPos + (int)(SCALE * 130), yPos + (int)(SCALE * 30));
-        }
+
+        g2d.setFont(new Font("Arial", Font.BOLD, FONT_MEDIUM));
+        g2d.setColor(new Color(185, 235, 255));
+        g2d.drawString("Cloud Save (" + account.getName() + ")", textLeft, y + scale(16));
+
+        String lvlBadge = "LVL " + account.getLevel();
+        g2d.setFont(new Font("Arial", Font.BOLD, FONT_SMALL));
+        int badgeW = g2d.getFontMetrics().stringWidth(lvlBadge) + scale(10);
+        Color lvlCol = new Color(110, 215, 255);
+        UIButtonRenderer.drawBadge(g2d, lvlBadge, rightX - badgeW, y + scale(15), lvlCol, lvlCol);
+
+        g2d.setFont(new Font("Arial", Font.PLAIN, FONT_LIGHT));
+        g2d.setColor(new Color(165, 195, 210));
+        g2d.drawString("XP: " + account.getExp(), textLeft, y + height - scale(8));
+
+        String coinStr = account.getCoins() + " Gold";
+        g2d.setFont(new Font("Arial", Font.BOLD, FONT_LIGHT));
+        g2d.setColor(SHOP_TEXT_GOLD);
+        g2d.drawString(coinStr, rightX - g2d.getFontMetrics().stringWidth(coinStr), y + height - scale(8));
+    }
+
+    private String formatPlaytime(long totalSeconds) {
+        long hours = totalSeconds / 3600;
+        long minutes = (totalSeconds % 3600) / 60;
+        if (hours > 0) return hours + "h " + minutes + "m";
+        return minutes + "m";
     }
 
     public boolean isPointInSlot(int x, int y) {

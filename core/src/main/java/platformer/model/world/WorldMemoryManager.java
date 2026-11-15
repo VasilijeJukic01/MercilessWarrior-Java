@@ -157,6 +157,26 @@ public class WorldMemoryManager {
         return "BOSS_" + type.name() + "_" + levelId;
     }
 
+    // Spawns
+    public void unlockTotem(int totemId) {
+        if (totemId >= 0) {
+            addFlag("TOTEM_UNLOCKED_" + totemId);
+        }
+    }
+
+    public boolean isTotemUnlocked(int totemId) {
+        if (totemId < 0) return false;
+        return hasFlag("TOTEM_UNLOCKED_" + totemId);
+    }
+
+    public void unlockCurrentRoomTotem() {
+        if (context == null || context.getLevelManager() == null) return;
+        int totemId = context.getLevelManager().getTotemIdForLevel(context.getLevelManager().getCurrentLevelId());
+        if (totemId >= 0) {
+            unlockTotem(totemId);
+        }
+    }
+
     // Flag Management
     public boolean hasFlag(String flag) {
         return permanentFlags.contains(flag);

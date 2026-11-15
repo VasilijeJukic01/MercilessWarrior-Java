@@ -57,7 +57,7 @@ public class GameWorld {
 
         this.player = new Player(PLAYER_X, PLAYER_Y, PLAYER_WIDTH, PLAYER_HEIGHT, context);
         this.player.loadLvlData(levelManager.getCurrentLevel().getLvlData());
-        this.player.setSpawn(levelManager.getCurrentLevel().getPlayerSpawn(LvlTriggerType.SPAWN_A));
+        this.player.setSpawn(levelManager.getCurrentLevel().getPlayerSpawn(LvlTriggerType.SPAWN_B));
 
         loadStartLevel();
     }

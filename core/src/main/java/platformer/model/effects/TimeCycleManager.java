@@ -87,6 +87,16 @@ public class TimeCycleManager {
         }
     }
 
+    /**
+     * Advances the in-game clock by a fraction of a full day (e.g., 0.5 for 12 in-game hours).
+     *
+     * @param normalizedDelta Fraction of a day to skip forward (0.0 to 1.0).
+     */
+    public void advanceTime(double normalizedDelta) {
+        if (lockedToNight) return;
+        gameTime = (gameTime + normalizedDelta * SECONDS_PER_GAME_DAY) % SECONDS_PER_GAME_DAY;
+    }
+
     public void reset() {
         this.lockedToNight = false;
     }

@@ -149,6 +149,9 @@ public class Player extends Entity {
         this.yPos = p.y;
         hitBox.x = xPos;
         hitBox.y = yPos;
+        if (minimapHandler != null) {
+            minimapHandler.update();
+        }
     }
 
     // Animation

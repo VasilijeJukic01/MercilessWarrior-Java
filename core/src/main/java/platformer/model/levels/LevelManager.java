@@ -9,6 +9,8 @@ import platformer.debug.logger.Message;
 import platformer.model.effects.particles.DustType;
 import platformer.model.entities.player.Player;
 import platformer.model.entities.player.PlayerAction;
+import platformer.model.gameObjects.GameObject;
+import platformer.model.gameObjects.ObjType;
 import platformer.model.levels.metadata.*;
 import platformer.model.levels.render.DecorationRenderer;
 import platformer.utils.ImageUtils;
@@ -51,6 +53,8 @@ public class LevelManager {
 
     // Effects
     private final Set<Point> touchedGrassTiles = new HashSet<>();
+
+    public record TotemNode(int totemId, String levelId, String totemName) { }
 
     public LevelManager() {
         this.decorationMetadata = new HashMap<>();
@@ -487,20 +491,92 @@ public class LevelManager {
         return currentLevel;
     }
 
+    // Spawns
     /**
-     * Loads the correct level and sets the current level indices based on a spawn ID.
-     * @param spawnId the spawn number from the player's account.
+     * Returns a sorted list of all Save Totems that the player has discovered.
      */
-    public void loadSavePoint(int spawnId) {
-        for (Spawn spawn : Spawn.values()) {
-            if (spawn.getId() == spawnId) {
-                this.currentLevelId = spawn.getLevelId();
-                loadLevel();
-                return;
+    public List<TotemNode> getUnlockedTotemNodes() {
+        List<TotemNode> result = new ArrayList<>();
+        if (worldMap == null || worldMap.getRooms() == null || context == null) return result;
+
+        for (Map.Entry<String, RoomNodeMetadata> entry : worldMap.getRooms().entrySet()) {
+            RoomNodeMetadata node = entry.getValue();
+            if (node.getTotemId() != null && context.getWorldMemoryManager().isTotemUnlocked(node.getTotemId())) {
+                String name = (node.getTotemName() != null && !node.getTotemName().isEmpty()) ? node.getTotemName() : entry.getKey();
+                result.add(new TotemNode(node.getTotemId(), entry.getKey(), name));
+            }
+        }
+        result.sort(Comparator.comparingInt(TotemNode::totemId));
+        return result;
+    }
+
+    public String getLevelIdForTotem(int totemId) {
+        if (totemId < 0 || worldMap == null || worldMap.getRooms() == null) return null;
+        for (Map.Entry<String, RoomNodeMetadata> entry : worldMap.getRooms().entrySet()) {
+            Integer id = entry.getValue().getTotemId();
+            if (id != null && id == totemId) {
+                return entry.getKey();
+            }
+        }
+        return null;
+    }
+
+    public int getTotemIdForLevel(String levelId) {
+        if (worldMap == null || worldMap.getRooms() == null || levelId == null) return -1;
+        RoomNodeMetadata node = worldMap.getRooms().get(levelId);
+        if (node != null && node.getTotemId() != null) {
+            Level effectiveLevel = getOrLoadLevel(resolveEffectiveFileId(levelId));
+            if (effectiveLevel != null) {
+                List<GameObject> totems = effectiveLevel.getObjectsMap().get(ObjType.SAVE_TOTEM);
+                if (totems != null && !totems.isEmpty()) {
+                    return node.getTotemId();
+                }
+            }
+        }
+        return -1;
+    }
+
+    public Point getTotemSpawnPoint(int totemId) {
+        if (totemId >= 0) {
+            String levelId = getLevelIdForTotem(totemId);
+            if (levelId != null) {
+                String effectiveId = resolveEffectiveFileId(levelId);
+                Level lvl = getOrLoadLevel(effectiveId);
+                if (lvl != null) {
+                    List<GameObject> totems = lvl.getObjectsMap().get(ObjType.SAVE_TOTEM);
+                    if ((totems == null || totems.isEmpty()) && !effectiveId.endsWith("_restored")) {
+                        Level restoredVariant = getOrLoadLevel(levelId + "_restored");
+                        if (restoredVariant != null) {
+                            lvl = restoredVariant;
+                        }
+                    }
+                    return lvl.getSaveTotemSpawnPoint();
+                }
             }
         }
 
-        this.currentLevelId = Spawn.INITIAL.getLevelId();
+        String startId = (worldMap != null && worldMap.getStartLevel() != null) ? worldMap.getStartLevel() : "begin";
+        Level startLevel = getOrLoadLevel(resolveEffectiveFileId(startId));
+        if (startLevel != null) {
+            return startLevel.getPlayerSpawn(LvlTriggerType.SPAWN_B);
+        }
+        return new Point(5 * TILES_SIZE, 10 * TILES_SIZE);
+    }
+
+    /**
+     * Loads the correct level based on a saved totem ID from the player's account.
+     *
+     * @param spawnId The totem ID stored in the player's account (-1 for a fresh save).
+     */
+    public void loadSavePoint(int spawnId) {
+        String targetLevelId = getLevelIdForTotem(spawnId);
+        if (targetLevelId != null) {
+            this.currentLevelId = targetLevelId;
+            loadLevel();
+            return;
+        }
+
+        this.currentLevelId = (worldMap != null && worldMap.getStartLevel() != null) ? worldMap.getStartLevel() : "begin";
         loadLevel();
     }
 

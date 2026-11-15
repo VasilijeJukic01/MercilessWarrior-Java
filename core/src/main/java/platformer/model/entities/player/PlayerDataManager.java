@@ -4,9 +4,9 @@ import platformer.core.Account;
 import platformer.core.Framework;
 import platformer.core.config.BalanceManager;
 import platformer.model.effects.TimeCycleManager;
-import platformer.model.levels.Spawn;
 import platformer.model.minimap.MinimapManager;
 import platformer.model.perks.PerksBonus;
+import platformer.state.types.GameState;
 import platformer.ui.overlays.hud.UserInterface;
 
 import java.awt.*;
@@ -71,15 +71,12 @@ public class PlayerDataManager {
     // Actions
     private void loadSpawnPoint(Account account) {
         int spawnId = account.getSpawn();
-
-        for (Spawn spawn : Spawn.values()) {
-            if (spawn.getId() == spawnId) {
-                setPlayerCoordinates(spawn.getX(), spawn.getY());
-                return;
-            }
+        if (Framework.getInstance().getGame() != null && Framework.getInstance().getGame().getCurrentState() instanceof GameState gameState) {
+            Point totemSpawn = gameState.getLevelManager().getTotemSpawnPoint(spawnId);
+            player.setSpawn(totemSpawn);
+            return;
         }
-
-        setPlayerCoordinates(Spawn.INITIAL.getX(), Spawn.INITIAL.getY());
+        setPlayerCoordinates(5, 10);
     }
 
     private void setPlayerCoordinates(int x, int y) {
@@ -87,7 +84,7 @@ public class PlayerDataManager {
     }
 
     public void changeExp(double value) {
-        var pb = BalanceManager.getInstance().getPlayerBalance();
+        BalanceManager.PlayerBalance pb = BalanceManager.getInstance().getPlayerBalance();
         int xpCapForLevel = pb.getXpPerLevelMultiplier() * level;
 
         double bonusPct = PerksBonus.getInstance().getBonusExp() / 100.0;
