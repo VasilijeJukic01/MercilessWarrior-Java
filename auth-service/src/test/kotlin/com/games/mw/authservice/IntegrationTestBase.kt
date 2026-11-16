@@ -1,11 +1,13 @@
 package com.games.mw.authservice
 
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
 import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.containers.GenericContainer
 import org.testcontainers.containers.KafkaContainer
+import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
 import org.testcontainers.utility.DockerImageName
 
@@ -16,7 +18,8 @@ import org.testcontainers.utility.DockerImageName
  * Kafka container is pointed itself as the schema registry for tests!
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@Testcontainers
+@Testcontainers(disabledWithoutDocker = true)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 abstract class IntegrationTestBase {
 
     companion object {
@@ -24,21 +27,21 @@ abstract class IntegrationTestBase {
         private val redisImage = DockerImageName.parse("redis:7-alpine")
         private val kafkaImage = DockerImageName.parse("confluentinc/cp-kafka:7.6.0")
 
-        internal  val postgresContainer: PostgreSQLContainer<*> = PostgreSQLContainer(postgresImage)
+        @Container
+        @JvmField
+        internal val postgresContainer: PostgreSQLContainer<*> = PostgreSQLContainer(postgresImage)
             .withDatabaseName("mw-user-service-test")
             .withUsername("test")
             .withPassword("test")
 
-        internal  val redisContainer: GenericContainer<*> = GenericContainer(redisImage)
+        @Container
+        @JvmField
+        internal val redisContainer: GenericContainer<*> = GenericContainer(redisImage)
             .withExposedPorts(6379)
 
-        internal  val kafkaContainer = KafkaContainer(kafkaImage)
-
-        init {
-            postgresContainer.start()
-            redisContainer.start()
-            kafkaContainer.start()
-        }
+        @Container
+        @JvmField
+        internal val kafkaContainer = KafkaContainer(kafkaImage)
 
         @DynamicPropertySource
         @JvmStatic
