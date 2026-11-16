@@ -4,6 +4,7 @@ import platformer.audio.Audio;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
 import platformer.event.EventBus;
+import platformer.event.events.BrickDestroyedEvent;
 import platformer.event.events.CrateDestroyedEvent;
 import platformer.model.gameObjects.objects.*;
 import platformer.model.projectiles.Projectile;
@@ -28,14 +29,26 @@ public class ObjectBreakHandler {
      *
      * @param attackBox The attack box.
      * @param flame The flame.
+     * @param flipSign The flip sign of the player (1 for right, -1 for left).
      */
-    public void checkObjectBreak(Rectangle2D.Double attackBox, Flame flame) {
+    public void checkObjectBreak(Rectangle2D.Double attackBox, Flame flame, int flipSign) {
         for (Container container : getObjects(Container.class)) {
             if (!container.isAlive() || container.animate) continue;
 
             boolean isFlame = flame.getHitBox().intersects(container.getHitBox()) && flame.isActive();
             if (attackBox.intersects(container.getHitBox()) || isFlame) {
                 breakContainer(container);
+            }
+        }
+
+        for (Water water : getObjects(Water.class)) {
+            if (attackBox.intersects(water.getHitBox())) {
+                water.onAttackSlash(attackBox, flipSign);
+            }
+        }
+        for (Lava lava : getObjects(Lava.class)) {
+            if (attackBox.intersects(lava.getHitBox())) {
+                lava.onAttackSlash(attackBox, flipSign);
             }
         }
 
@@ -57,6 +70,12 @@ public class ObjectBreakHandler {
 
             if (attackBox.intersects(container.getHitBox())) {
                 breakContainerByEnemy(container);
+            }
+        }
+
+        for (Water water : getObjects(Water.class)) {
+            if (attackBox.intersects(water.getHitBox())) {
+                water.onAttackSlash(attackBox, 0);
             }
         }
     }
@@ -116,6 +135,7 @@ public class ObjectBreakHandler {
     private void breakBrick(Brick brick) {
         brick.setAnimate(true);
         Logger.getInstance().notify("Player breaks brick.", Message.NOTIFICATION);
+        EventBus.getInstance().publish(new BrickDestroyedEvent(brick));
     }
 
     private <T extends GameObject> List<T> getObjects(Class<T> objectType) {

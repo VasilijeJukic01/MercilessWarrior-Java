@@ -2,6 +2,7 @@ package platformer.core;
 
 import lombok.Getter;
 import lombok.Setter;
+import platformer.model.cutscene.CutsceneManager;
 import platformer.model.dialogue.DialogueManager;
 import platformer.model.effects.EffectManager;
 import platformer.model.effects.ScreenEffectsManager;
@@ -12,12 +13,14 @@ import platformer.model.entities.enemies.EnemyManager;
 import platformer.model.entities.player.Player;
 import platformer.model.gameObjects.ObjectManager;
 import platformer.model.levels.LevelManager;
+import platformer.model.levels.interior.InteriorManager;
 import platformer.model.minimap.MinimapManager;
 import platformer.model.perks.PerksManager;
 import platformer.model.projectiles.ProjectileManager;
 import platformer.model.quests.QuestManager;
 import platformer.model.spells.SpellManager;
 import platformer.model.tutorial.TutorialManager;
+import platformer.model.world.WorldMemoryManager;
 import platformer.service.multiplayer.MultiplayerManager;
 import platformer.state.types.GameState;
 import platformer.ui.overlays.OverlayManager;
@@ -32,6 +35,7 @@ import platformer.view.Camera;
 public final class GameContext {
     private GameState gameState;
     private LevelManager levelManager;
+    private InteriorManager interiorManager;
     private EffectManager effectManager;
     private RainManager rainManager;
     private EnemyManager enemyManager;
@@ -48,6 +52,8 @@ public final class GameContext {
     private DialogueManager dialogueManager;
     private OverlayManager overlayManager;
     private MultiplayerManager multiplayerManager;
+    private WorldMemoryManager worldMemoryManager;
     private Camera camera;
+    private CutsceneManager cutsceneManager;
     private Player player;
 }

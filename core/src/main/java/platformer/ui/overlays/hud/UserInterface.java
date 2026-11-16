@@ -27,6 +27,7 @@ public class UserInterface {
     private final MinimapPanel minimapPanel;
     private final TimeCycleManager timeCycleManager;
     private boolean minimapVisible = true;
+    private boolean isInterior = false;
 
     private BufferedImage statusBar, portrait;
     private int healthWidth;
@@ -101,13 +102,14 @@ public class UserInterface {
         renderStatusBar(g);
         renderCoinsInfo(g);
         renderTimeCycle(g);
-        renderCooldown(g);
         renderLevelInfo(g);
         g.drawImage(portrait, PORT_X, PORT_Y, PORT_WID, PORT_HEI, null);
-        renderCooldown(g);
-        quickUsePanel.render(g);
-        if (!minimapVisible) renderUnknownLocation(g);
-        else minimapPanel.render(g);
+        if (!isInterior) {
+            renderCooldown(g);
+            quickUsePanel.render(g);
+            if (!minimapVisible) renderUnknownLocation(g);
+            else minimapPanel.render(g);
+        }
     }
 
     private void renderStatusBar(Graphics g) {
@@ -171,6 +173,10 @@ public class UserInterface {
 
     public void setMinimapVisible(boolean visible) {
         this.minimapVisible = visible;
+    }
+
+    public void setInterior(boolean interior) {
+        this.isInterior = interior;
     }
 
 }

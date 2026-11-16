@@ -14,14 +14,14 @@ import platformer.model.entities.player.Player;
 import platformer.model.entities.player.PlayerAction;
 import platformer.service.multiplayer.MultiplayerManager;
 import platformer.service.multiplayer.requests.*;
+import platformer.state.types.GameState;
+import platformer.ui.overlays.hud.MultiplayerInfoDisplay;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
-
-import platformer.state.types.GameState;
-import platformer.ui.overlays.hud.MultiplayerInfoDisplay;
 
 import static platformer.constants.Constants.*;
 
@@ -80,16 +80,14 @@ public class MultiplayerHandler {
         Player localPlayer = context.getPlayer();
         String clientId = multiplayerManager.getClientId();
         String username = Framework.getInstance().getAccount().getName();
-        int currentLevelI = context.getLevelManager().getLevelIndexI();
-        int currentLevelJ = context.getLevelManager().getLevelIndexJ();
+        String currentLevelId = context.getLevelManager().getCurrentLevelId();
 
         PlayerStateDTO localPlayerState = new PlayerStateDTO(
                 clientId,
                 username,
                 localPlayer.getHitBox().x,
                 localPlayer.getHitBox().y,
-                currentLevelI,
-                currentLevelJ,
+                currentLevelId,
                 localPlayer.getEntityState().ordinal(),
                 localPlayer.getAnimIndex(),
                 localPlayer.getFlipSign(),
@@ -166,10 +164,9 @@ public class MultiplayerHandler {
     }
 
     public void render(Graphics g, int xLevelOffset, int yLevelOffset) {
-        int localLevelI = context.getLevelManager().getLevelIndexI();
-        int localLevelJ = context.getLevelManager().getLevelIndexJ();
+        String localLevelId = context.getLevelManager().getCurrentLevelId();
         for (PlayerStateDTO remotePlayer : players.values()) {
-            if (remotePlayer.levelI == localLevelI && remotePlayer.levelJ == localLevelJ) {
+            if (Objects.equals(remotePlayer.levelId, localLevelId)) {
                 renderRemotePlayer(g, remotePlayer, xLevelOffset, yLevelOffset);
             }
         }

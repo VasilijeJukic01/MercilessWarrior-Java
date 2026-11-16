@@ -2,71 +2,117 @@ package platformer.model.levels;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import platformer.animation.AssetManager;
 import platformer.core.GameContext;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
-import platformer.model.levels.metadata.DecorationMetadata;
-import platformer.model.levels.metadata.LevelMetadata;
-import platformer.model.levels.metadata.ObjectMetadata;
-import platformer.model.levels.metadata.TilesetMetadata;
-import platformer.state.types.GameState;
+import platformer.model.effects.particles.DustType;
+import platformer.model.entities.player.Player;
+import platformer.model.entities.player.PlayerAction;
+import platformer.model.gameObjects.GameObject;
+import platformer.model.gameObjects.ObjType;
+import platformer.model.levels.metadata.*;
+import platformer.model.levels.render.DecorationRenderer;
 import platformer.utils.ImageUtils;
 
 import java.awt.*;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 
 import static platformer.constants.Constants.*;
 import static platformer.constants.FilePaths.*;
 
 /**
- * This class is managing the levels in the game.
- * It holds references to all the levels and provides methods for loading and rendering them.
- * <p>
- * It uses the Flyweight pattern for managing Particle objects to save memory.
- * The ParticleFactory class is used to create and manage Particle objects.
+ * Manages loading, caching, and rendering of levels in the world graph.
  */
 public class LevelManager {
 
     private GameContext context;
     private final LevelObjectManager levelObjectManager;
+    private final DecorationRenderer decorationRenderer;
     private final BackgroundManager backgroundManager;
     private final Map<Point, ObjectMetadata> decorationMetadata;
 
     private final Map<String, BufferedImage[]> tilesetSprites = new HashMap<>();
     private final Map<String, Map<Integer, DecorationMetadata>> decorationSets = new HashMap<>();
-    private final Level[][] levels = new Level[MAX_LEVELS][MAX_LEVELS];
+    private final Map<String, Level> levels = new HashMap<>();
+    private WorldMapMetadata worldMap;
+
     private Level arenaLevel;
     private Level currentLevel;
-    private int levelIndexI = 0, levelIndexJ = 0;
+    private String currentLevelId = "level00";
     private BufferedImage currentBackground;
     private LevelMetadata currentLevelMetadata, arenaLevelMetadata;
+    private final Map<String, LevelMetadata> metadataCache = new HashMap<>();
+
+    // Effects
+    private final Set<Point> touchedGrassTiles = new HashSet<>();
+
+    public record TotemNode(int totemId, String levelId, String totemName) { }
 
     public LevelManager() {
         this.decorationMetadata = new HashMap<>();
         this.backgroundManager = new BackgroundManager();
         this.currentBackground = backgroundManager.getDefaultBackground();
         this.levelObjectManager = new LevelObjectManager();
+        this.decorationRenderer = new DecorationRenderer(levelObjectManager);
+        loadWorldMap();
         loadTilesets();
         loadDecorationSets();
-        buildLevels();
+        buildArenaLevels();
     }
 
     public void wire(GameContext context) {
         this.context = context;
-        this.currentLevel = levels[levelIndexI][levelIndexJ];
+        this.currentLevel = getOrLoadLevel(currentLevelId);
+        loadMetadata();
+        loadBackground();
     }
 
-    // Init
+    private void loadWorldMap() {
+        try (InputStream is = AssetManager.getInstance().getResourceAsStream(WORLD_MAP_META)) {
+            if (is != null) {
+                try (InputStreamReader reader = new InputStreamReader(is, StandardCharsets.UTF_8)) {
+                    this.worldMap = new Gson().fromJson(reader, WorldMapMetadata.class);
+                    if (worldMap != null && worldMap.getStartLevel() != null) {
+                        this.currentLevelId = worldMap.getStartLevel();
+                    }
+                }
+            }
+        } catch (Exception e) {
+            Logger.getInstance().notify("Failed to load world_map.json: " + e.getMessage(), Message.ERROR);
+        }
+        if (this.worldMap == null) this.worldMap = new WorldMapMetadata();
+    }
+
+    /**
+     * Lazily loads a level by its string ID if it hasn't been loaded yet, and caches it.
+     */
+    private Level getOrLoadLevel(String levelId) {
+        if (levels.containsKey(levelId)) return levels.get(levelId);
+
+        BufferedImage levelImg = ImageUtils.importImage(LEVEL_SPRITES.replace("$", levelId), -1, -1);
+        if (levelImg == null) {
+            Logger.getInstance().notify("Level image not found for ID: " + levelId, Message.WARNING);
+            return null;
+        }
+
+        LevelMetadata meta = loadMetadataForLevel(levelId);
+        String tileset = (meta != null && meta.getTileset() != null) ? meta.getTileset() : "Forest";
+
+        Level level = new Level(levelImg, tileset);
+        levels.put(levelId, level);
+        return level;
+    }
+
     private void loadTilesets() {
-        try (InputStreamReader reader = new InputStreamReader(Objects.requireNonNull(getClass().getResourceAsStream(TILESET_META)))) {
+        try (InputStreamReader reader = new InputStreamReader(AssetManager.getInstance().getResourceAsStream(TILESET_META))) {
             Type listType = new TypeToken<List<TilesetMetadata>>(){}.getType();
             List<TilesetMetadata> tilesetMetadata = new Gson().fromJson(reader, listType);
 
@@ -74,12 +120,14 @@ public class LevelManager {
                 BufferedImage img = ImageUtils.importImage(meta.getSpritePath(), -1, -1);
                 if (img == null) continue;
 
+                int targetTileSize = TILES_SIZE + 1;
                 BufferedImage[] sprites = new BufferedImage[meta.getTileCount()];
                 for (int i = 0; i < meta.getRows(); i++) {
                     for (int j = 0; j < meta.getColumns(); j++) {
                         int index = j * meta.getRows() + i;
                         if (index >= meta.getTileCount()) break;
-                        sprites[index] = img.getSubimage(i * meta.getTileSizeInSprite(), j * meta.getTileSizeInSprite(), meta.getTileSizeInSprite(), meta.getTileSizeInSprite());
+                        BufferedImage sub = img.getSubimage(i * meta.getTileSizeInSprite(), j * meta.getTileSizeInSprite(), meta.getTileSizeInSprite(), meta.getTileSizeInSprite());
+                        sprites[index] = ImageUtils.resizeImage(sub, targetTileSize, targetTileSize);
                     }
                 }
                 tilesetSprites.put(meta.getName(), sprites);
@@ -90,7 +138,7 @@ public class LevelManager {
     }
 
     private void loadDecorationSets() {
-        try (InputStreamReader reader = new InputStreamReader(Objects.requireNonNull(getClass().getResourceAsStream(DECORATION_META)))) {
+        try (InputStreamReader reader = new InputStreamReader(AssetManager.getInstance().getResourceAsStream(DECORATION_META))) {
             Type type = new TypeToken<Map<String, List<DecorationMetadata>>>() {}.getType();
             Map<String, List<DecorationMetadata>> loadedSets = new Gson().fromJson(reader, type);
 
@@ -107,73 +155,82 @@ public class LevelManager {
     }
 
     /**
-     * This method builds all the levels in the game.
-     * It loads the images for each level and creates a new Level object for each one.
-     * The Level objects are stored in a 2D array.
-     */
-    private void buildLevels() {
-        BufferedImage[][] levelsImg = getAllLevels();
-        for (int i = 0; i < 3; i++) {
-            for (int j = 0; j < levelsImg.length; j++) {
-                if (levelsImg[i][j] != null) {
-                    String levelName = "level" + i + j;
-                    LevelMetadata meta = loadMetadataForLevel(levelName);
-                    String tileset = (meta != null && meta.getTileset() != null) ? meta.getTileset() : "Forest";
-                    levels[i][j] = new Level(levelName, levelsImg[i][j], tileset);
-                }
-            }
-        }
-        buildArenaLevels();
-        Logger.getInstance().notify("Levels built successfully!", Message.NOTIFICATION);
-    }
-
-    /**
      * This method builds the arena levels.
      * It loads the arena level image and creates a new Level object for it.
      */
     private void buildArenaLevels() {
-        BufferedImage arenaImg = ImageUtils.importImage(LEVEL_SPRITES.replace("$", "arena1"), -1, -1);
+        BufferedImage arenaImg = ImageUtils.importImage(LEVEL_SPRITES.replace("$", "levelarena1"), -1, -1);
         if (arenaImg != null) {
             arenaLevelMetadata = loadMetadataForLevel("levelarena1");
             String tileset = (arenaLevelMetadata != null && arenaLevelMetadata.getTileset() != null) ? arenaLevelMetadata.getTileset() : "Forest";
-            arenaLevel = new Level("arena1", arenaImg, tileset);
+            arenaLevel = new Level(arenaImg, tileset);
         }
-    }
-
-    private BufferedImage[][] getAllLevels() {
-        BufferedImage[][] levels = new BufferedImage[MAX_LEVELS][MAX_LEVELS];
-        for (int i = 0; i < 3; i++) {
-            for (int j = 0; j < levels.length; j++) {
-                BufferedImage levelImg = ImageUtils.importImage(LEVEL_SPRITES.replace("$", i+""+j), -1, -1);
-                if (levelImg == null) continue;
-                levels[i][j] = levelImg;
-            }
-        }
-        return levels;
     }
 
     // Level flow
+    /**
+     * Resolves the underlying filename for a logical room ID. If a room has been restored, loads <levelId>_restored instead.
+     */
+    private String resolveEffectiveFileId(String levelId) {
+        if (context != null && context.getWorldMemoryManager() != null) {
+            if (context.getWorldMemoryManager().hasFlag("RESTORED_" + levelId)) {
+                return levelId + "_restored";
+            }
+        }
+        return levelId;
+    }
+
     private void loadLevel() {
-        Level newLevel = levels[levelIndexI][levelIndexJ];
+        String effectiveId = resolveEffectiveFileId(currentLevelId);
+        Level newLevel = getOrLoadLevel(effectiveId);
+        if (newLevel == null) {
+            if (context.getGameState() != null) context.getGameState().getGame().startMenuState();
+            return;
+        }
+        loadMetadata();
+        context.getWorldMemoryManager().onRoomEntered(currentLevelId, newLevel);
         this.currentLevel = newLevel;
-        context.getGameState().getPlayer().loadLvlData(newLevel.getLvlData());
+        context.getPlayer().loadLvlData(newLevel.getLvlData());
         context.getEnemyManager().loadEnemies(newLevel);
         context.getObjectManager().loadObjects(newLevel);
-        loadMetadata();
         context.getSpellManager().initBossSpells();
         context.getMinimapManager().changeLevel();
-        context.getGameState().getPlayer().activateMinimap(true);
+        context.getPlayer().activateMinimap(true);
         loadBackground();
     }
 
-    public void loadNextLevel(int dI, int dJ) {
-        GameState gameState = context.getGameState();
-        levelIndexI += dI;
-        levelIndexJ += dJ;
-        if (levelIndexI < 0 || levelIndexI >= levels.length || levelIndexJ < 0 || levelIndexJ >= levels[0].length) {
-            gameState.getGame().startMenuState();
+    /**
+     * Transitions to the specified target level ID in the world graph.
+     */
+    public void loadLevelById(String targetLevelId) {
+        Level next = getOrLoadLevel(targetLevelId);
+        if (next == null) context.getGameState().getGame().startMenuState();
+        else {
+            this.currentLevelId = targetLevelId;
+            loadLevel();
         }
-        else loadLevel();
+    }
+
+    /**
+     * Resolves the exit transition rule for the current room given a trigger type and tile coordinates.
+     */
+    public RoomExitMetadata resolveExit(LvlTriggerType triggerType, int tileX, int tileY) {
+        if (worldMap == null || worldMap.getRooms() == null) return null;
+        RoomNodeMetadata node = worldMap.getRooms().get(currentLevelId);
+        if (node == null) return null;
+        return node.findExit(triggerType, tileX, tileY);
+    }
+
+    /**
+     * Returns the minimap top-left coordinates (mapX, mapY) for a level ID if configured in world_map.json.
+     */
+    public Point getConfiguredMinimapPosition(String levelId) {
+        if (worldMap == null || worldMap.getRooms() == null) return null;
+        RoomNodeMetadata node = worldMap.getRooms().get(levelId);
+        if (node != null && node.getMapX() != null && node.getMapY() != null) {
+            return new Point(node.getMapX(), node.getMapY());
+        }
+        return null;
     }
 
     private void loadBackground() {
@@ -185,7 +242,7 @@ public class LevelManager {
 
     private LevelMetadata loadMetadataForLevel(String levelName) {
         String jsonPath = "/meta/" + levelName + ".json";
-        try (InputStream is = getClass().getResourceAsStream(jsonPath)) {
+        try (InputStream is = AssetManager.getInstance().getResourceAsStream(jsonPath)) {
             if (is == null) return null;
             try (InputStreamReader reader = new InputStreamReader(is, StandardCharsets.UTF_8)) {
                 return new Gson().fromJson(reader, LevelMetadata.class);
@@ -197,9 +254,13 @@ public class LevelManager {
     }
 
     private void loadMetadata() {
+        String effectiveId = resolveEffectiveFileId(currentLevelId);
+        this.currentLevelMetadata = loadMetadataForLevel(effectiveId);
+        loadMetadataDecorations();
+    }
+
+    private void loadMetadataDecorations() {
         decorationMetadata.clear();
-        String levelName = "level" + levelIndexI + levelIndexJ;
-        this.currentLevelMetadata = loadMetadataForLevel(levelName);
         if (currentLevelMetadata != null && currentLevelMetadata.getDecorations() != null) {
             for (ObjectMetadata meta : currentLevelMetadata.getDecorations()) {
                 decorationMetadata.put(new Point(meta.getX(), meta.getY()), meta);
@@ -216,54 +277,147 @@ public class LevelManager {
         else Logger.getInstance().notify("Arena level is not loaded!", Message.ERROR);
     }
 
-    public void returnToMainMap() {
-        this.currentLevel = levels[levelIndexI][levelIndexJ];
-        loadMetadata();
+    public void setInteriorLevel(Level interiorLevel, LevelMetadata meta) {
+        this.currentLevel = interiorLevel;
+        this.currentLevelMetadata = meta;
+        loadMetadataDecorations();
         loadBackground();
     }
 
-    // Render
-    private void renderDeco(Graphics g, int xLevelOffset, int yLevelOffset, int layer) {
+    public void restoreMainMap() {
+        String effectiveId = resolveEffectiveFileId(currentLevelId);
+        this.currentLevel = getOrLoadLevel(effectiveId);
+        loadMetadata();
+        loadBackground();
+
+        context.getLightManager().releaseAmbientDarkness();
+        boolean particles = currentLevelMetadata == null || currentLevelMetadata.getAmbientParticlesEnabled() == null || currentLevelMetadata.getAmbientParticlesEnabled();
+        context.getEffectManager().setAmbientEffectsActive(particles);
+    }
+
+    /**
+     * Hot-swaps the current room to its restored variant during a fade-to-black cutscene, loading all newly placed objects, NPCs, and metadata.
+     */
+    public void reloadCurrentLevelVariant() {
+        String effectiveId = resolveEffectiveFileId(currentLevelId);
+        Level variantLevel = getOrLoadLevel(effectiveId);
+        if (variantLevel == null) return;
+
+        this.currentLevel = variantLevel;
+        loadMetadata();
+        loadBackground();
+
+        context.getPlayer().loadLvlData(variantLevel.getLvlData());
+        context.getEnemyManager().loadEnemies(variantLevel);
+        context.getObjectManager().loadObjects(variantLevel);
+        context.getSpellManager().initBossSpells();
+        context.getCamera().updateLevelBounds(variantLevel);
+
+        boolean particles = currentLevelMetadata == null || currentLevelMetadata.getAmbientParticlesEnabled() == null || currentLevelMetadata.getAmbientParticlesEnabled();
+        context.getEffectManager().setAmbientEffectsActive(particles);
+    }
+
+    public void checkDecorationCut(java.awt.geom.Rectangle2D.Double attackBox) {
         Level level = currentLevel;
         Map<Integer, DecorationMetadata> currentDecoSet = decorationSets.get(level.getTilesetName());
         if (currentDecoSet == null) return;
 
-        for (int i = 0; i < level.getLvlData().length; i++) {
-            for (int j = 0; j < level.getLvlData()[0].length; j++) {
-                int decorationIndex = level.getDecoSpriteIndex(i, j);
-                int layerIndex = level.getLayerSpriteIndex(i, j);
-                if (decorationIndex == -1 || layerIndex != layer) continue;
+        int startX = Math.max(0, (int) (attackBox.x / TILES_SIZE) - 2);
+        int endX = Math.min(level.getLvlData().length - 1, (int) ((attackBox.x + attackBox.width) / TILES_SIZE) + 2);
+        int startY = Math.max(0, (int) (attackBox.y / TILES_SIZE) - 2);
+        int endY = Math.min(level.getLvlData()[0].length - 1, (int) ((attackBox.y + attackBox.height) / TILES_SIZE) + 2);
+        for (int i = startX; i <= endX; i++) {
+            for (int j = startY; j <= endY; j++) {
+                if (level.isDecorationCut(i, j)) continue;
+                DecorationMetadata decoMeta = currentDecoSet.get(level.getDecoSpriteIndex(i, j));
+                if (decoMeta == null || !decoMeta.isCuttable()) continue;
 
-                DecorationMetadata decoMeta = currentDecoSet.get(decorationIndex);
-                if (decoMeta == null) continue;
-                BufferedImage model = levelObjectManager.getModel(decoMeta.getId(), level.getTilesetName(), decoMeta.getFilename(), decoMeta.isFlipped());
-                if (model == null) continue;
-
-                ObjectMetadata meta = decorationMetadata.get(new Point(i, j));
-                double rotation = (meta != null) ? meta.getRotation() : 0.0;
-                double scaleX = (meta != null) ? meta.getScaleX() : 1.0;
-                double scaleY = (meta != null) ? meta.getScaleY() : 1.0;
-                int xPos = (TILES_SIZE * i - xLevelOffset) + (int) (decoMeta.getYOffset() * SCALE);
-                int yPos = (TILES_SIZE * j - yLevelOffset) + (int) (decoMeta.getXOffset() * SCALE);
-
-                if (rotation == 0.0 && scaleX == 1.0 && scaleY == 1.0) {
-                    g.drawImage(model, xPos, yPos, decoMeta.getWid(), decoMeta.getHei(), null);
-                }
-                else {
-                    Graphics2D g2d = (Graphics2D) g.create();
-                    int drawX = TILES_SIZE * i - xLevelOffset;
-                    int drawY = TILES_SIZE * j - yLevelOffset;
-                    int centerX = drawX + decoMeta.getWid() / 2;
-                    int centerY = drawY + decoMeta.getHei() / 2;
-
-                    g2d.translate(centerX, centerY);
-                    g2d.rotate(Math.toRadians(rotation));
-                    g2d.scale(scaleX, scaleY);
-                    g2d.drawImage(model, -decoMeta.getWid() / 2, -decoMeta.getHei() / 2, decoMeta.getWid(), decoMeta.getHei(), null);
-                    g2d.dispose();
+                int offsetX = (int) (decoMeta.getXOffset() / 2.0 * SCALE), offsetY = (int) (decoMeta.getYOffset() / 2.0 * SCALE);
+                int decoWid = (int) (decoMeta.getWid() / 2.0 * SCALE), decoHei = (int) (decoMeta.getHei() / 2.0 * SCALE);
+                int worldX = (TILES_SIZE * i) + offsetX, worldY = (TILES_SIZE * j) + offsetY;
+                Rectangle2D.Double decoBounds = new Rectangle2D.Double(worldX, worldY, decoWid, decoHei);
+                if (attackBox.intersects(decoBounds)) {
+                    level.markDecorationCut(i, j);
+                    int slashDir = context.getPlayer() != null ? context.getPlayer().getFlipSign() : 0;
+                    context.getEffectManager().spawnDustParticles(decoBounds.getCenterX(), decoBounds.getCenterY(), 14, DustType.HERB_CUT, slashDir, null);
                 }
             }
         }
+    }
+
+    /**
+     * Updates interactive grass bending and spawns rustle particles when the player moves through foliage.
+     */
+    public void updateGrassInteraction(Player player) {
+        Level level = currentLevel;
+        if (level == null || player == null) return;
+
+        Map<Integer, DecorationMetadata> currentDecoSet = decorationSets.get(level.getTilesetName());
+        if (currentDecoSet == null) return;
+
+        Rectangle2D.Double pBox = player.getHitBox();
+        boolean isMoving = Math.abs(player.getHorizontalSpeed()) > 0.1;
+        boolean isDashing = player.checkAction(PlayerAction.DASH);
+        int startX = Math.max(0, (int) (pBox.x / TILES_SIZE) - 1);
+        int endX = Math.min(level.getLvlData().length - 1, (int) ((pBox.x + pBox.width) / TILES_SIZE) + 1);
+        int startY = Math.max(0, (int) (pBox.y / TILES_SIZE) - 1);
+        int endY = Math.min(level.getLvlData()[0].length - 1, (int) ((pBox.y + pBox.height) / TILES_SIZE) + 1);
+
+        Set<Point> currentlyIntersecting = new HashSet<>();
+        Set<Point> activelyPushedTiles = new HashSet<>();
+
+        for (int i = startX; i <= endX; i++) {
+            for (int j = startY; j <= endY; j++) {
+                if (level.isDecorationCut(i, j)) continue;
+                DecorationMetadata decoMeta = currentDecoSet.get(level.getDecoSpriteIndex(i, j));
+                if (decoMeta == null || !"BOTTOM".equalsIgnoreCase(decoMeta.getSway())) continue;
+
+                int offsetX = (int) (decoMeta.getXOffset() / 2.0 * SCALE), offsetY = (int) (decoMeta.getYOffset() / 2.0 * SCALE);
+                int decoWid = (int) (decoMeta.getWid() / 2.0 * SCALE);
+                int decoHei = (int) (decoMeta.getHei() / 2.0 * SCALE);
+
+                int worldX = (TILES_SIZE * i) + offsetX;
+                int worldY = (TILES_SIZE * j) + offsetY;
+                Rectangle2D.Double decoBounds = new Rectangle2D.Double(worldX, worldY, decoWid, decoHei);
+
+                if (pBox.intersects(decoBounds)) {
+                    Point pt = new Point(i, j);
+                    currentlyIntersecting.add(pt);
+                    if (isMoving) {
+                        activelyPushedTiles.add(pt);
+                        double heightFactor = Math.min(1.0, (double) TILES_SIZE / Math.max(1, decoHei));
+                        double maxBend = (isDashing ? 0.32 : 0.20) * heightFactor;
+                        double targetBend = -player.getFlipSign() * maxBend;
+
+                        double currentBend = level.getDecorationBend(i, j);
+                        double smoothedBend = currentBend + (targetBend - currentBend) * 0.08;
+                        level.setDecorationBend(pt, smoothedBend);
+                        if (!touchedGrassTiles.contains(pt) && decoMeta.isCuttable()) {
+                            int leafCount = isDashing ? 4 : 2;
+                            context.getEffectManager().spawnDustParticles(decoBounds.getCenterX(), decoBounds.getCenterY(), leafCount, DustType.HERB_CUT, player.getFlipSign(), null);
+                        }
+                    }
+                }
+            }
+        }
+
+        level.getDecorationBends().entrySet().removeIf(entry -> {
+            if (activelyPushedTiles.contains(entry.getKey())) return false;
+            double decayed = entry.getValue() * 0.93;
+            if (Math.abs(decayed) < 0.004) return true;
+            entry.setValue(decayed);
+            return false;
+        });
+
+        touchedGrassTiles.clear();
+        touchedGrassTiles.addAll(currentlyIntersecting);
+    }
+
+    // Render
+    private void renderDeco(Graphics g, int xLevelOffset, int yLevelOffset, int layer) {
+        Map<Integer, DecorationMetadata> currentDecoSet = decorationSets.get(currentLevel.getTilesetName());
+        boolean useLively = context.getWorldMemoryManager() != null && context.getWorldMemoryManager().hasFlag("RESTORED_" + currentLevelId);
+        decorationRenderer.renderLayer(g, currentLevel, currentDecoSet, decorationMetadata, xLevelOffset, yLevelOffset, layer, useLively);
     }
 
     private void renderTerrain(Graphics g, int xLevelOffset, int yLevelOffset, boolean behind) {
@@ -288,8 +442,7 @@ public class LevelManager {
                 if (!behind) tileIndex -= 255;
                 int x = TILES_SIZE * i - xLevelOffset;
                 int y = TILES_SIZE * j - yLevelOffset;
-                int size = TILES_SIZE+1;
-                g.drawImage(currentTileset[tileIndex], x, y, size, size, null);
+                g.drawImage(currentTileset[tileIndex], x, y, null);
             }
         }
     }
@@ -314,51 +467,149 @@ public class LevelManager {
      * @param yLevelOffset The vertical offset of the level. This is used for scrolling the level vertically when the player jumps or falls.
      */
     public void render(Graphics g, int xLevelOffset, int yLevelOffset) {
-        renderDeco(g, xLevelOffset, yLevelOffset, 0);               // First deco layer
-        renderDeco(g, xLevelOffset, yLevelOffset, 1);               // Second deco layer
-        g.setColor(new Color(1, 130, 120, 60));
-        g.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);                 // Green ambient layer
-        renderDeco(g, xLevelOffset, yLevelOffset, 2);              // Third deco layer
-        renderTerrain(g, xLevelOffset, yLevelOffset, true);       // Terrain behind layer
-        renderDeco(g, xLevelOffset, yLevelOffset, 4);              // Fourth deco layer
-        renderTerrain(g, xLevelOffset, yLevelOffset, false);      // Terrain normal layer
+        renderBackgroundLayers(g, xLevelOffset, yLevelOffset);
+        renderForegroundTerrain(g, xLevelOffset, yLevelOffset);
+    }
+
+    public void renderBackgroundLayers(Graphics g, int xLevelOffset, int yLevelOffset) {
+        renderDeco(g, xLevelOffset, yLevelOffset, 0);
+        renderDeco(g, xLevelOffset, yLevelOffset, 1);
+        if (context.getInteriorManager() == null || !context.getInteriorManager().isInterior()) {
+            g.setColor(new Color(1, 130, 120, 60));
+            g.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+        }
+        renderDeco(g, xLevelOffset, yLevelOffset, 2);
+    }
+
+    public void renderForegroundTerrain(Graphics g, int xLevelOffset, int yLevelOffset) {
+        renderTerrain(g, xLevelOffset, yLevelOffset, true);
+        renderDeco(g, xLevelOffset, yLevelOffset, 4);
+        renderTerrain(g, xLevelOffset, yLevelOffset, false);
     }
 
     public Level getCurrentLevel() {
         return currentLevel;
     }
 
+    // Spawns
     /**
-     * Loads the correct level and sets the current level indices based on a spawn ID.
-     * @param spawnId the spawn number from the player's account.
+     * Returns a sorted list of all Save Totems that the player has discovered.
      */
-    public void loadSavePoint(int spawnId) {
-        for (Spawn spawn : Spawn.values()) {
-            if (spawn.getId() == spawnId) {
-                this.levelIndexI = spawn.getLevelI();
-                this.levelIndexJ = spawn.getLevelJ();
-                this.currentLevel = levels[levelIndexI][levelIndexJ];
-                loadLevel();
-                return;
+    public List<TotemNode> getUnlockedTotemNodes() {
+        List<TotemNode> result = new ArrayList<>();
+        if (worldMap == null || worldMap.getRooms() == null || context == null) return result;
+
+        for (Map.Entry<String, RoomNodeMetadata> entry : worldMap.getRooms().entrySet()) {
+            RoomNodeMetadata node = entry.getValue();
+            if (node.getTotemId() != null && context.getWorldMemoryManager().isTotemUnlocked(node.getTotemId())) {
+                String name = (node.getTotemName() != null && !node.getTotemName().isEmpty()) ? node.getTotemName() : entry.getKey();
+                result.add(new TotemNode(node.getTotemId(), entry.getKey(), name));
+            }
+        }
+        result.sort(Comparator.comparingInt(TotemNode::totemId));
+        return result;
+    }
+
+    public String getLevelIdForTotem(int totemId) {
+        if (totemId < 0 || worldMap == null || worldMap.getRooms() == null) return null;
+        for (Map.Entry<String, RoomNodeMetadata> entry : worldMap.getRooms().entrySet()) {
+            Integer id = entry.getValue().getTotemId();
+            if (id != null && id == totemId) {
+                return entry.getKey();
+            }
+        }
+        return null;
+    }
+
+    public int getTotemIdForLevel(String levelId) {
+        if (worldMap == null || worldMap.getRooms() == null || levelId == null) return -1;
+        RoomNodeMetadata node = worldMap.getRooms().get(levelId);
+        if (node != null && node.getTotemId() != null) {
+            Level effectiveLevel = getOrLoadLevel(resolveEffectiveFileId(levelId));
+            if (effectiveLevel != null) {
+                List<GameObject> totems = effectiveLevel.getObjectsMap().get(ObjType.SAVE_TOTEM);
+                if (totems != null && !totems.isEmpty()) {
+                    return node.getTotemId();
+                }
+            }
+        }
+        return -1;
+    }
+
+    public Point getTotemSpawnPoint(int totemId) {
+        if (totemId >= 0) {
+            String levelId = getLevelIdForTotem(totemId);
+            if (levelId != null) {
+                String effectiveId = resolveEffectiveFileId(levelId);
+                Level lvl = getOrLoadLevel(effectiveId);
+                if (lvl != null) {
+                    List<GameObject> totems = lvl.getObjectsMap().get(ObjType.SAVE_TOTEM);
+                    if ((totems == null || totems.isEmpty()) && !effectiveId.endsWith("_restored")) {
+                        Level restoredVariant = getOrLoadLevel(levelId + "_restored");
+                        if (restoredVariant != null) {
+                            lvl = restoredVariant;
+                        }
+                    }
+                    return lvl.getSaveTotemSpawnPoint();
+                }
             }
         }
 
-        this.levelIndexI = Spawn.INITIAL.getLevelI();
-        this.levelIndexJ = Spawn.INITIAL.getLevelJ();
+        String startId = (worldMap != null && worldMap.getStartLevel() != null) ? worldMap.getStartLevel() : "begin";
+        Level startLevel = getOrLoadLevel(resolveEffectiveFileId(startId));
+        if (startLevel != null) {
+            return startLevel.getPlayerSpawn(LvlTriggerType.SPAWN_B);
+        }
+        return new Point(5 * TILES_SIZE, 10 * TILES_SIZE);
+    }
+
+    /**
+     * Loads the correct level based on a saved totem ID from the player's account.
+     *
+     * @param spawnId The totem ID stored in the player's account (-1 for a fresh save).
+     */
+    public void loadSavePoint(int spawnId) {
+        String targetLevelId = getLevelIdForTotem(spawnId);
+        if (targetLevelId != null) {
+            this.currentLevelId = targetLevelId;
+            loadLevel();
+            return;
+        }
+
+        this.currentLevelId = (worldMap != null && worldMap.getStartLevel() != null) ? worldMap.getStartLevel() : "begin";
         loadLevel();
     }
 
+    public void resetAllCachedLevels() {
+        for (Level level : levels.values()) {
+            level.gatherData();
+        }
+    }
+
     // Getters
+    public DecorationMetadata getDecorationMetadata(String tilesetName, int colorValue) {
+        Map<Integer, DecorationMetadata> set = decorationSets.get(tilesetName);
+        return (set != null) ? set.get(colorValue) : null;
+    }
+
+    public ObjectMetadata getObjectMetadataAt(int tileX, int tileY) {
+        return decorationMetadata.get(new Point(tileX, tileY));
+    }
+
+    public LevelMetadata getLevelMetadata(String levelName) {
+        return metadataCache.computeIfAbsent(levelName, this::loadMetadataForLevel);
+    }
+
     public LevelMetadata getCurrentLevelMetadata() {
         return currentLevelMetadata;
     }
 
-    public int getLevelIndexI() {
-        return levelIndexI;
+    public Level getLevel(String levelId) {
+        return levels.get(levelId);
     }
 
-    public int getLevelIndexJ() {
-        return levelIndexJ;
+    public String getCurrentLevelId() {
+        return currentLevelId;
     }
 
     public BufferedImage getCurrentBackground() {
@@ -367,5 +618,9 @@ public class LevelManager {
 
     public boolean isInArena() {
         return currentLevel == arenaLevel;
+    }
+
+    public WorldMapMetadata getWorldMap() {
+        return worldMap;
     }
 }

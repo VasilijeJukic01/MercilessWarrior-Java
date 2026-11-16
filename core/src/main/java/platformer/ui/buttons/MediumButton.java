@@ -7,9 +7,7 @@ import java.awt.image.BufferedImage;
 
 import static platformer.constants.AnimConstants.BTN_H;
 import static platformer.constants.AnimConstants.BTN_W;
-import static platformer.constants.Constants.MEDIUM_BTN_HEI;
-import static platformer.constants.Constants.MEDIUM_BTN_WID;
-import static platformer.constants.FilePaths.*;
+import static platformer.constants.FilePaths.RUNIC_RECT_BTN_SHEET;
 
 /**
  * Represents a medium-sized button used for a variety of actions within UI overlays.
@@ -27,59 +25,7 @@ public class MediumButton extends AbstractButton {
 
     @Override
     protected void loadButtons() {
-        String sheet = "";
-        int frames = 3;
-        int row = 0;
-
-        switch (buttonType) {
-            case BUY:
-                sheet = BTN_BUY_SHEET; break;
-            case SELL:
-                sheet = BTN_SELL_SHEET; break;
-            case LEAVE:
-                sheet = BTN_LEAVE_SHEET; break;
-            case SAVE:
-                sheet = SAVE_BTN_SHEET; break;
-            case LOAD:
-                sheet = SAVE_BTN_SHEET;
-                row = 1;
-                break;
-            case DELETE:
-                sheet = SAVE_BTN_SHEET;
-                row = 2;
-                break;
-            case USE:
-                sheet = INVENTORY_BTN_SHEET; break;
-            case EQUIP:
-                sheet = INVENTORY_BTN_SHEET;
-                row = 1;
-                break;
-            case DROP:
-                sheet = INVENTORY_BTN_SHEET;
-                row = 2;
-                break;
-            case UNEQUIP:
-                sheet = INVENTORY_BTN_SHEET;
-                row = 3;
-                break;
-            case TAKE:
-                sheet = LOOT_BTN_SHEET;
-                break;
-            case TAKE_ALL:
-                sheet = LOOT_BTN_SHEET;
-                row = 1;
-                break;
-            case CLOSE:
-                sheet = LOOT_BTN_SHEET;
-                row = 2;
-                break;
-            case CRAFT:
-                sheet = CRAFT_BTN_SHEET;
-                break;
-            default: break;
-        }
-        if (!sheet.isEmpty())
-            images = SpriteManager.getInstance().loadFromSprite(sheet, frames, row, MEDIUM_BTN_WID, MEDIUM_BTN_HEI, 0, BTN_W, BTN_H);
+        images = SpriteManager.getInstance().loadFromSprite(RUNIC_RECT_BTN_SHEET, 3, 0, width, height, 0, BTN_W, BTN_H);
     }
 
     @Override
@@ -92,6 +38,8 @@ public class MediumButton extends AbstractButton {
     @Override
     public void render(Graphics g) {
         g.drawImage(images[imageIndex], xPos, yPos, width, height, null);
+        String label = buttonType == ButtonType.TAKE_ALL ? "TAKE ALL" : buttonType.name();
+        UIButtonRenderer.drawButtonLabel(g, label, xPos, yPos, width, height, mouseOver, mousePressed);
     }
 
 }

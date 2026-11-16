@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import platformer.model.gameObjects.npc.NpcType;
 
 import java.util.List;
 import java.util.Map;
@@ -25,6 +26,7 @@ public class Quest {
     private int coinReward, expReward;
     private int levelRequirement;
     private int npcRequest;
+    private NpcType follower;
     private int activeObjectiveIndex = 0;
 
     private boolean completed = false;

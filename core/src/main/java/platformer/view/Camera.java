@@ -4,6 +4,7 @@ import platformer.model.entities.player.Player;
 import platformer.model.entities.player.PlayerAction;
 import platformer.model.levels.Level;
 
+import java.awt.*;
 import java.awt.geom.Rectangle2D;
 
 import static platformer.constants.Constants.*;
@@ -11,12 +12,18 @@ import static platformer.constants.Constants.*;
 /**
  * Manages the game's viewport, including its position, offsets, and smooth following of a target.
  * The camera ensures that the view stays within the boundaries of the current level.
+ * It also supports cutscene targets, allowing the camera to focus on specific points in the level.
  */
 public class Camera {
 
     private double cameraX, cameraY;
     private int xLevelOffset, yLevelOffset;
     private int xMaxLevelOffset, yMaxLevelOffset;
+
+    private double focusX, focusY;
+    private Point cutsceneTarget = null;
+    private static final double SMOOTH_SPEED_X = 0.02;
+    private static final double SMOOTH_SPEED_Y = 0.03;
 
     public Camera(double initialX, double initialY) {
         this.cameraX = initialX;
@@ -30,22 +37,45 @@ public class Camera {
      * @param player The player the camera should follow.
      */
     public void update(Player player) {
-        Rectangle2D.Double target = player.getHitBox();
-        float targetX = (float)target.x - (GAME_WIDTH / 2.0f);
-        float targetY = (float)target.y - (GAME_HEIGHT / 2.0f);
+        if (cutsceneTarget != null) {
+            focusX = cutsceneTarget.x;
+            focusY = cutsceneTarget.y;
+        }
+        else {
+            Rectangle2D.Double target = player.getHitBox();
+            if (target.x < focusX - DEADZONE_X) focusX = target.x + DEADZONE_X;
+            else if (target.x > focusX + DEADZONE_X) focusX = target.x - DEADZONE_X;
+            if (target.y < focusY - DEADZONE_Y) focusY = target.y + DEADZONE_Y;
+            else if (target.y > focusY + DEADZONE_Y) focusY = target.y - DEADZONE_Y;
+        }
 
-        if (player.checkAction(PlayerAction.LOOK_DOWN)) {
+        double targetX = focusX - (GAME_WIDTH / 2.0);
+        double targetY = focusY - (GAME_HEIGHT / 2.0);
+        if (cutsceneTarget == null && player.checkAction(PlayerAction.LOOK_DOWN)) {
             targetY += CAMERA_LOOK_DOWN_OFFSET;
         }
 
-        cameraX += (targetX - cameraX) * CAMERA_LERP_FACTOR_X;
-        cameraY += (targetY - cameraY) * CAMERA_LERP_FACTOR_Y;
+        cameraX += (targetX - cameraX) * SMOOTH_SPEED_X;
+        cameraY += (targetY - cameraY) * SMOOTH_SPEED_Y;
 
-        xLevelOffset = (int)cameraX;
-        yLevelOffset = (int)cameraY;
-
+        xLevelOffset = (int) Math.round(cameraX);
+        yLevelOffset = (int) Math.round(cameraY);
         xLevelOffset = Math.max(0, Math.min(xLevelOffset, xMaxLevelOffset));
         yLevelOffset = Math.max(0, Math.min(yLevelOffset, yMaxLevelOffset));
+    }
+
+    /**
+     * Instantly snaps the camera to the player.
+     * Used when teleporting or loading a new level to prevent the camera from aggressively sweeping across the entire map.
+     */
+    public void snapToPlayer(Player player) {
+        Rectangle2D.Double target = player.getHitBox();
+        this.focusX = target.x;
+        this.focusY = target.y;
+        this.cameraX = target.x - (GAME_WIDTH / 2.0);
+        this.cameraY = target.y - (GAME_HEIGHT / 2.0);
+        xLevelOffset = Math.max(0, Math.min((int) cameraX, xMaxLevelOffset));
+        yLevelOffset = Math.max(0, Math.min((int) cameraY, yMaxLevelOffset));
     }
 
     /**
@@ -59,7 +89,22 @@ public class Camera {
         this.yMaxLevelOffset = level.getYMaxLevelOffset();
     }
 
-    // Getters
+    public void setCutsceneTarget(Point target) {
+        this.cutsceneTarget = target;
+    }
+
+    public void clearCutsceneTarget() {
+        this.cutsceneTarget = null;
+    }
+
+    public double getFocusX() {
+        return focusX;
+    }
+
+    public double getFocusY() {
+        return focusY;
+    }
+
     public int getXOffset() {
         return xLevelOffset;
     }

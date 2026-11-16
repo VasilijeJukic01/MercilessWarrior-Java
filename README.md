@@ -1,29 +1,32 @@
-# Merciless Warrior: Java Swing 2D Platformer Game
+<p align="center">
+  <img src="images/Logo.png" alt="Merciless Warrior Logo" width="50%">
+</p>
 
-![Java Badge](https://img.shields.io/badge/Java-17-orange.svg?style=for-the-badge&logo=java)
-![Kotlin Badge](https://img.shields.io/badge/Kotlin-1.9-blue.svg?style=for-the-badge&logo=kotlin)
-![Java Swing](https://img.shields.io/badge/2D%20Engine-Swing-purple.svg?style=for-the-badge)
-![Spring Badge](https://img.shields.io/badge/Spring-Boot-green.svg?style=for-the-badge&logo=spring)
-![Docker Badge](https://img.shields.io/badge/Docker-Compose-blue.svg?style=for-the-badge&logo=docker)
-![PostgreSQL Badge](https://img.shields.io/badge/PostgreSQL-darkblue.svg?style=for-the-badge&logo=postgresql)
-![Redis Badge](https://img.shields.io/badge/Redis-red.svg?style=for-the-badge&logo=redis)
-![Kafka Badge](https://img.shields.io/badge/Apache-Kafka-black.svg?style=for-the-badge&logo=apachekafka)
-![Spark Badge](https://img.shields.io/badge/Apache-Spark-orange.svg?style=for-the-badge&logo=apachespark)
-
-<p float="left">
-<img src="images/example.gif" alt="Gif1" width="60%">
+<p align="center">
+  <img src="https://img.shields.io/badge/Java-17-orange.svg?style=for-the-badge&logo=java" alt="Java Badge">
+  <img src="https://img.shields.io/badge/Kotlin-1.9-blue.svg?style=for-the-badge&logo=kotlin" alt="Kotlin Badge">
+  <img src="https://img.shields.io/badge/2D%20Engine-Swing-purple.svg?style=for-the-badge" alt="Java Swing">
+  <img src="https://img.shields.io/badge/Spring-Boot-green.svg?style=for-the-badge&logo=spring" alt="Spring Badge">
+  <img src="https://img.shields.io/badge/Docker-Compose-blue.svg?style=for-the-badge&logo=docker" alt="Docker Badge">
+  <img src="https://img.shields.io/badge/PostgreSQL-darkblue.svg?style=for-the-badge&logo=postgresql" alt="PostgreSQL Badge">
+  <img src="https://img.shields.io/badge/Redis-red.svg?style=for-the-badge&logo=redis" alt="Redis Badge">
+  <img src="https://img.shields.io/badge/Apache-Kafka-black.svg?style=for-the-badge&logo=apachekafka" alt="Kafka Badge">
+  <img src="https://img.shields.io/badge/Apache-Spark-orange.svg?style=for-the-badge&logo=apachespark" alt="Spark Badge">
 </p>
 
 ## Table of Contents
 
 - [About The Project](#about-the-project)
+- [Gameplay & Engine Showcase](#gameplay--engine-showcase)
 - [Key Features](#key-features)
-  - [Gameplay Features](#gameplay-features)
-  - [Technical Features](#technical-features)
+    - [Gameplay Features](#gameplay-features)
+    - [Custom 2D Engine Features](#custom-2d-engine-features)
+    - [Technical & Backend Features](#technical--backend-features)
 - [Architecture Overview](#architecture-overview)
+- [Companion Level Editor](#companion-level-editor)
 - [Getting Started](#getting-started)
-  - [Prerequisites](#prerequisites)
-  - [Installation & Launch](#installation--launch)
+    - [Prerequisites](#prerequisites)
+    - [Installation & Launch](#installation--launch)
 - [Acknowledgements](#acknowledgements)
 - [License](#license)
 
@@ -31,28 +34,49 @@
 
 As a developer, my goal was to create a complete, end-to-end gaming experience that combines the nostalgia of 2D platformers with the power of modern backend technologies. "Merciless Warrior" was born out of a passion for both game development and software engineering.
 
-The game client is intentionally built using **Java Swing**, to explore the challenges of creating a game engine from scratch.
+The game client is intentionally built using **Java Swing**, to explore the challenges of creating a game engine from scratch. It runs on a custom loop with custom physics, procedural fluid simulations, dynamic lighting, and particle systems.
 
 The backend is a powerful, event-driven system designed for scalability and separation of concerns. It features a microservices architecture for core gameplay logic and a complete data pipeline using Kafka and Apache Spark for real-time analytics. This demonstrates an approach to modern application development, from the user interface to data processing.
 
 This project is a personal journey into the depths of game creation, backend architecture, and data engineering.
+
+## Gameplay & Engine Showcase
+
+<p align="center">
+  <img src="images/1.gif" alt="Combat, Parrying and Movement" width="48%">
+  <img src="images/2.gif" alt="Boss Encounters" width="48%">
+</p>
+<p align="center">
+  <img src="images/3.gif" alt="Skill Tree, Blacksmith and Minimap" width="48%">
+  <img src="images/4.gif" alt="Procedural Water, Lava and Day/Night Lighting" width="48%">
+</p>
 
 ## Key Features
 
 ### Gameplay Features
 
 - **Engaging 2D Platformer Gameplay:** Navigate through diverse levels, battling a variety of enemies with unique attack patterns.
-- **Rich Combat System:** Combine melee attacks, special abilities, and powerful spells to overcome foes.
-- **Deep Itemization:** Buy, sell, craft, and collect a wide array of items.
-- **Character Progression:** Upgrade your character by collecting coins and tokens, unlocking new perks and enhancing your abilities.
-- **Open-World Structure:** Explore a connected world, with the ability to backtrack to previous levels.
-- **Challenging Boss Fights:** Test your skills against formidable bosses.
-- **Interactive World:** Talk to various NPCs, embark on quests, and destroy objects.
-- **Dynamic Soundscapes:** Experience a rich soundscape powered by the **OpenAL** library for high-quality audio processing.
+- **Responsive Movement & Physics:** Includes coyote time, jump input buffering, wall-jumping, dashing and more.
+- **Rich Combat System:** Combine a 3-hit melee combo chain, forward slash lunges, active shield parrying, transformations, and powerful spells to overcome foes.
+- **Deep Itemization:** Buy, sell, craft, and collect a wide array of items. Visit the blacksmith to temper sword across multiple tiers or forge new armor sets, rings, and charms.
+- **Character Progression:** Upgrade your character by collecting coins and tokens, unlocking new perks across a 3-branch constellation skill tree (Blademaster, Bulwark, Pyromancer) and enhancing your abilities.
+- **Open-World Structure & Fast Travel:** Explore a connected world with minimap. Visit sanctuaries that allow resting and fast-traveling between discovered locations.
+- **Companion Follower AI:** Fight alongside AI companions powered by a hybrid AI system.
+- **Challenging Boss Fights:** Test your skills against bosses featuring multi-phase state-machine AI.
+- **Interactive World & Cutscenes:** Talk to various NPCs with branching dialogue questions, embark on quests that permanently alter the world, and experience cutscenes.
+- **Dynamic Soundscapes:** Experience a soundscape powered by the **OpenAL** library for high-quality audio processing.
 - **Save & Load System:** Save your progress locally on your computer or in the cloud to continue your adventure from anywhere.
 - **Competitive Leaderboard:** Compete with other players and climb the ranks on the global leaderboard.
 
-### Technical Features
+### Custom 2D Engine Features
+
+- **144+ FPS Java2D Rendering Pipeline:** Pre-bakes rotated/scaled decoration sprites and static room lightmaps into cached buffers on level load to avoid per-frame CPU bottlenecks.
+- **Procedural 2D Water & Lava Pools:** Contiguous fluid tiles merge into unified pools driven by 1D wave physics, featuring impact craters, outward-rolling waves, subsurface magma veins, popping blisters.
+- **Dynamic Lighting & Day/Night Cycle:** Features a continuous 24-minute in-game day/night cycle that interpolates atmospheric color grading and combines dynamic entity light cutouts with colored environment lights.
+- **Physics-Driven Screen Effects:** Spring-damper camera shake (Hooke's law), FOV zoom-punches, rotational micro-roll, radial shockwaves, lightning strobes, and hit-stop freeze frames.
+- **Interactive Foliage & Weather:** Procedural wind sway on trees and grass, player-reactive grass bending and cutting, falling daytime leaves, night fireflies, and rain storms.
+
+### Technical & Backend Features
 
 - **Custom Game Engine:** Built entirely from scratch using Java Swing.
 - **Microservices Architecture:** The backend is composed of several containerized services:
@@ -253,6 +277,14 @@ flowchart TD
     style RestApiClient fill:#A3E4D7,stroke:#16A085,stroke-width:1px,color:#333
     style DtoMappers fill:#A3E4D7,stroke:#16A085,stroke-width:1px,color:#333
 ```
+
+## Companion Level Editor
+
+All rooms, decorations, triggers, and world routing in Merciless Warrior are built using a custom level editor (**[MercilessWarrior-LevelEditor](https://github.com/VasilijeJukic01/MercilessWarrior-LevelEditor)**) created specifically for this engine:
+- **3-Panel RGB Pixel Format & JSON Metadata:** Exports levels as compact 3-panel composite PNGs alongside JSON metadata for decorations (custom rotation, scale, and sub-tile offsets).
+- **Smart Auto-Tiling & Procedural Generation:** Features 8-neighbor bitmask auto-tiling, offline procedural room generation with BFS jump-arc playability validation, and an interactive Mini-Paint level sketcher.
+- **Asynchronous Co-Op AI Inpainting:** Integrates with the Gemini API to generate or remodel selected regions of a level in the background while you continue editing.
+- **Visual World Map & Routing Assembler:** Stitches rooms together onto a global grid, auto-wires multi-entrance room exits, and exports the global `minimap.png` and `world_map.json`.
 
 ## Getting Started
 

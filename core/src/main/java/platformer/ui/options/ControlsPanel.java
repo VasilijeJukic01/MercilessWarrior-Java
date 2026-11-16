@@ -139,6 +139,7 @@ public class ControlsPanel {
         commands.put("Shield", "Shield");
         commands.put("Interact", "Interact");
         commands.put("Inventory", "Inventory");
+        commands.put("Perks", "Perks");
         commands.put("Quests", "Quest");
         commands.put("Minimap", "Minimap");
         commands.put("Flames Spell", "Flames");

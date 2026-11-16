@@ -7,6 +7,7 @@ import platformer.model.inventory.database.ItemDatabase;
 import platformer.model.quests.Quest;
 import platformer.model.quests.QuestManager;
 import platformer.model.quests.QuestObjective;
+import platformer.ui.buttons.UIButtonRenderer;
 import platformer.ui.components.slots.QuestSlot;
 import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.MediumButton;
@@ -42,7 +43,7 @@ public class QuestOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
     private final SmallButton[] smallButtons;
 
     private Rectangle2D overlay, questListPanel;
-    private BufferedImage questsText, coinIcon, expIcon;
+    private BufferedImage coinIcon, expIcon;
 
     private final Font titleFont = new Font("Arial", Font.BOLD, FONT_BIG);
     private final Font headerFont = new Font("Arial", Font.BOLD, FONT_DIALOGUE);
@@ -64,7 +65,6 @@ public class QuestOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
     }
 
     private void loadImages() {
-        this.questsText = ImageUtils.importImage(QUESTS_TXT, QUEST_TXT_WID, QUEST_TXT_HEI);
         this.overlay = new Rectangle2D.Double(INV_OVERLAY_X, INV_OVERLAY_Y, INV_OVERLAY_WID, INV_OVERLAY_HEI);
         this.questListPanel = new Rectangle2D.Double(BACKPACK_X, BACKPACK_Y, BACKPACK_WID, BACKPACK_HEI);
         this.coinIcon = SpriteManager.getInstance().loadFromSprite(QUEST_COIN_PATH, 1, 0, QUEST_ICON_SIZE, QUEST_ICON_SIZE, 0, COIN_W, COIN_H)[0];
@@ -74,7 +74,7 @@ public class QuestOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
     private void loadButtons() {
         smallButtons[0] = new SmallButton(QUEST_BTN_PREV_X, QUEST_BTN_Y, SMALL_BTN_SIZE, SMALL_BTN_SIZE, ButtonType.PREV);
         smallButtons[1] = new SmallButton(QUEST_BTN_NEXT_X, QUEST_BTN_Y, SMALL_BTN_SIZE, SMALL_BTN_SIZE, ButtonType.NEXT);
-        mediumButtons[0] = new MediumButton(QUEST_BTN_X, QUEST_BTN_Y + (int)(2 * SCALE) , TINY_BTN_WID, TINY_BTN_HEI, ButtonType.CLOSE);
+        mediumButtons[0] = new MediumButton(QUEST_BTN_X, QUEST_BTN_Y + (int)(1 * SCALE) , TINY_BTN_WID, TINY_BTN_HEI, ButtonType.CLOSE);
     }
 
     // Core
@@ -97,13 +97,8 @@ public class QuestOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
     }
 
     private void renderOverlay(Graphics g) {
-        Graphics2D g2d = (Graphics2D) g;
-        g2d.setColor(OVERLAY_COLOR);
-        g2d.fill(overlay);
-        g2d.setColor(Color.WHITE);
-        g2d.setStroke(new BasicStroke(2));
-        g2d.draw(overlay);
-        g.drawImage(questsText, QUEST_TEXT_X, QUEST_TEXT_Y, questsText.getWidth(), questsText.getHeight(), null);
+        UIButtonRenderer.drawRunicPanel(g, overlay);
+        UIButtonRenderer.drawRunicHeader(g, "QUESTS", INV_OVERLAY_X + INV_OVERLAY_WID / 2, QUEST_TEXT_Y);
     }
 
     private void renderQuestListPanel(Graphics2D g2d) {

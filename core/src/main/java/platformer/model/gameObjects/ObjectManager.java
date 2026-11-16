@@ -4,10 +4,17 @@ import platformer.animation.SpriteManager;
 import platformer.audio.Audio;
 import platformer.audio.types.Sound;
 import platformer.core.GameContext;
+import platformer.core.config.BalanceManager;
 import platformer.model.entities.follower.Follower;
 import platformer.model.gameObjects.npc.NpcType;
+import platformer.model.levels.metadata.GameObjectMetadata;
+import platformer.model.levels.metadata.LevelMetadata;
+import platformer.model.levels.metadata.NpcMetadata;
 import platformer.model.projectiles.ProjectileFactory;
+import platformer.model.quests.QuestManager;
 import platformer.model.spells.SpellManager;
+import platformer.model.world.WorldMemoryManager;
+import platformer.physics.CollisionDetector;
 import platformer.storage.StorageStrategy;
 import platformer.core.Framework;
 import platformer.model.entities.Direction;
@@ -51,20 +58,18 @@ public class ObjectManager {
             Coin.class, Container.class, Potion.class, Spike.class,
             Shop.class, Blocker.class, Blacksmith.class, Dog.class,
             SaveTotem.class, SmashTrap.class, Candle.class, Loot.class,
-            Table.class, Board.class, Npc.class, Lava.class, Brick.class,
-            JumpPad.class, Herb.class, RoricTrap.class
+            Table.class, Board.class, Npc.class, Lava.class, Water.class, Brick.class,
+            JumpPad.class, Herb.class, RoricTrap.class, Door.class
     };
     Class<? extends GameObject>[] renderBelow = new Class[] {
             Container.class, Potion.class, Spike.class,
             Blocker.class, Dog.class, SmashTrap.class, Loot.class, Brick.class,
             SaveTotem.class, Shop.class, Blacksmith.class, Coin.class,
-            Table.class, Board.class, JumpPad.class, Herb.class, RoricTrap.class
-    };
-    Class<? extends GameObject>[] renderAbove = new Class[] {
-            Shop.class
+            Table.class, Board.class, JumpPad.class, Herb.class, RoricTrap.class,
+            Door.class, Candle.class, Shop.class
     };
     Class<? extends GameObject>[] renderBehind = new Class[] {
-            Lava.class
+            Lava.class, Water.class
     };
 
     private Map<ObjType, List<GameObject>> objectsMap = new HashMap<>();
@@ -80,16 +85,19 @@ public class ObjectManager {
     }
 
     public void loadObjects(Level level) {
-        level.gatherData();
+        if (!level.isInitialized()) level.gatherData();
         this.objectsMap = level.getObjectsMap();
         this.classCache.clear();
         configureObjects();
-        configureNpcs();
+        applyNpcMetadata();
+        applyObjectMetadata();
     }
 
     private void configureObjects() {
         if (lootHandler == null) return;
-        getObjects(Container.class).forEach(container -> lootHandler.generateCrateLoot(container));
+        getObjects(Container.class).forEach(container -> {
+            if (container.getItems().isEmpty()) lootHandler.generateCrateLoot(container);
+        });
         StorageStrategy storageStrategy = Framework.getInstance().getStorageStrategy();
         getObjects(Shop.class).forEach(shop -> {
             List<ShopItem> inventory = storageStrategy.getShopInventory("DEFAULT_SHOP");
@@ -98,14 +106,62 @@ public class ObjectManager {
                 shop.getShopItems().addAll(inventory);
             }
         });
+        getObjects(Water.class).forEach(w -> w.setEffectManager(context.getEffectManager()));
+        getObjects(Lava.class).forEach(l -> l.setEffectManager(context.getEffectManager()));
     }
 
-    private void configureNpcs() {
-        for (Npc npc : getObjects(Npc.class)) {
-            if (npc.getNpcType() == NpcType.ANITA && context.getQuestManager().isQuestActive("Helping Anita")) {
-                npc.setAlive(false);
+    private void applyNpcMetadata() {
+        LevelMetadata meta = context.getLevelManager().getCurrentLevelMetadata();
+        if (meta == null || meta.getNpcs() == null) return;
+
+        WorldMemoryManager memory = context.getWorldMemoryManager();
+        QuestManager quests = context.getQuestManager();
+        int[][] lvlData = context.getLevelManager().getCurrentLevel().getLvlData();
+        for (NpcMetadata npcMeta : meta.getNpcs()) {
+            Npc existing = getNpcByType(npcMeta.getType());
+            if (!npcMeta.isConditionMet(memory, quests)) {
+                if (existing != null) existing.setAlive(false);
+                continue;
+            }
+            if (existing == null && npcMeta.getX() != null && npcMeta.getY() != null) {
+                spawnNpcFromMetadata(npcMeta, lvlData);
             }
         }
+    }
+
+    /**
+     * Evaluates conditional visibility rules for game objects defined in the current level's metadata.
+     */
+    public void applyObjectMetadata() {
+        LevelMetadata meta = context.getLevelManager().getCurrentLevelMetadata();
+        if (meta == null || meta.getObjects() == null) return;
+
+        WorldMemoryManager memory = context.getWorldMemoryManager();
+        QuestManager quests = context.getQuestManager();
+        for (GameObjectMetadata objMeta : meta.getObjects()) {
+            List<GameObject> matchingObjects = objectsMap.get(objMeta.getType());
+            if (matchingObjects == null) continue;
+
+            boolean shouldBeActive = objMeta.isConditionMet(memory, quests);
+            for (GameObject obj : matchingObjects) {
+                int objTileX = (int) (obj.getHitBox().x / TILES_SIZE);
+                int objTileY = (int) (obj.getHitBox().y / TILES_SIZE);
+                if (objMeta.matchesObject(objTileX, objTileY)) {
+                    obj.setAlive(shouldBeActive);
+                }
+            }
+        }
+    }
+
+    private void spawnNpcFromMetadata(NpcMetadata npcMeta, int[][] lvlData) {
+        int px = npcMeta.getX() * TILES_SIZE;
+        int py = npcMeta.getY() * TILES_SIZE;
+        Npc npc = new Npc(ObjType.NPC, px, py, npcMeta.getType());
+        double groundY = CollisionDetector.getGroundY(px, py, lvlData);
+        npc.getHitBox().x = px;
+        npc.getHitBox().y = groundY - npc.getHitBox().height;
+        if (npcMeta.getDirection() != null) npc.setDirection(npcMeta.getDirection());
+        addGameObject(npc);
     }
 
     // Intersection Handler
@@ -169,7 +225,7 @@ public class ObjectManager {
         }
         for (RoricTrap trap : getObjects(RoricTrap.class)) {
             if (trap.isAlive() && !trap.isAnimate() && trap.getHitBox().intersects(player.getHitBox())) {
-                player.changeHealth(-RoricTrap.TRAP_DAMAGE, trap);
+                player.changeHealth(-BalanceManager.getInstance().getCombat().getRoricTrapDamage(), trap);
             }
         }
     }
@@ -261,7 +317,7 @@ public class ObjectManager {
      */
     public void checkObjectBreak(Rectangle2D.Double attackBox) {
         SpellManager spellManager = context.getSpellManager();
-        objectBreakHandler.checkObjectBreak(attackBox, spellManager.getFlames());
+        objectBreakHandler.checkObjectBreak(attackBox, spellManager.getFlames(), context.getPlayer().getFlipSign());
     }
 
     /**
@@ -361,7 +417,9 @@ public class ObjectManager {
                     .filter(GameObject::isAlive)
                     .forEach(obj -> {
                         BufferedImage[] animations = SpriteManager.getInstance().getObjectAnimations(obj.getObjType());
-                        if (animations != null) obj.render(g, xLevelOffset, yLevelOffset, animations);
+                        if (animations != null || obj.getObjType() == ObjType.DOOR || obj.getObjType() == ObjType.WATER || obj.getObjType() == ObjType.LAVA) {
+                            obj.render(g, xLevelOffset, yLevelOffset, animations);
+                        }
                     });
         }
         catch (Exception ignored) {}
@@ -369,6 +427,8 @@ public class ObjectManager {
 
     public void update(int[][] lvlData, Player player) {
         Arrays.stream(updateClasses).forEach(clazz -> updateObjects(clazz, lvlData));
+        getObjects(Water.class).forEach(w -> w.updatePlayerPhysics(player));
+        getObjects(Lava.class).forEach(l -> l.updatePlayerPhysics(player));
         updateArrowLaunchers(lvlData, player);
         handleInteractions(player);
         handleCollectibles(player);
@@ -390,15 +450,7 @@ public class ObjectManager {
         Arrays.stream(renderBehind).forEach(renderClass -> renderObjects(g, xLevelOffset, yLevelOffset, renderClass));
         renderCoins(g, xLevelOffset, yLevelOffset);
         renderNpcs(g, xLevelOffset, yLevelOffset);
-    }
-
-    public void candleRender(Graphics g, int xLevelOffset, int yLevelOffset, Candle c) {
-        BufferedImage[] animations = SpriteManager.getInstance().getObjectAnimations(c.getObjType());
-        if (animations != null) c.render(g, xLevelOffset, yLevelOffset, animations);
-    }
-
-    public void glowingRender(Graphics g, int xLevelOffset, int yLevelOffset) {
-        Arrays.stream(renderAbove).forEach(renderClass -> renderObjects(g, xLevelOffset, yLevelOffset, renderClass));
+        if (intersection != null) intersection.renderInteractionUI(g, xLevelOffset, yLevelOffset);
     }
 
     private void renderCoins(Graphics g, int xLevelOffset, int yLevelOffset) {
@@ -458,6 +510,10 @@ public class ObjectManager {
         this.activeFollower = new Follower(x, y, type, context.getEffectManager(), this);
     }
 
+    public void despawnFollower() {
+        this.activeFollower = null;
+    }
+
     public Npc getNpcByType(NpcType type) {
         List<Npc> npcs = getObjects(Npc.class);
         for (Npc npc : npcs) {
@@ -468,9 +524,15 @@ public class ObjectManager {
 
     // Reset
     public void reset() {
-        objectsMap.clear();
-        classCache.clear();
-        loadObjects(context.getLevelManager().getCurrentLevel());
+        this.intersection = null;
+        this.classCache.clear();
+        Level level = context.getLevelManager().getCurrentLevel();
+        level.gatherData();
+        if (!context.getLevelManager().isInArena() && !context.getInteriorManager().isInterior()) {
+            context.getWorldMemoryManager().applyPermMemory(context.getLevelManager().getCurrentLevelId(), level);
+        }
+        loadObjects(level);
+        resetFollowers();
     }
 
     public void refreshShopData() {
@@ -482,6 +544,15 @@ public class ObjectManager {
                 shop.getShopItems().addAll(inventory);
             }
         });
+    }
+
+    private void resetFollowers() {
+        NpcType followerType = context.getQuestManager().getActiveFollowerType();
+        if (followerType != null && !context.getWorldMemoryManager().hasFlag("VILLAGE_CLEARED_deepmoss02")) {
+            Player player = context.getPlayer();
+            spawnFollower(followerType, (int) player.getHitBox().x, (int) player.getHitBox().y);
+        }
+        else despawnFollower();
     }
 
     // Hashmap operations

@@ -7,15 +7,13 @@ import platformer.state.types.GameState;
 import platformer.ui.buttons.AbstractButton;
 import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.SmallButton;
-import platformer.utils.ImageUtils;
+import platformer.ui.buttons.UIButtonRenderer;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
-import java.awt.image.BufferedImage;
 
 import static platformer.constants.Constants.*;
-import static platformer.constants.FilePaths.*;
 import static platformer.constants.UI.*;
 
 /**
@@ -24,19 +22,11 @@ import static platformer.constants.UI.*;
 public class GameOverOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
 
     private final Game game;
-    private BufferedImage deadText, menuText, respawnText;
     private SmallButton retryBtn, menuBtn;
 
     public GameOverOverlay(Game game) {
         this.game = game;
-        loadImages();
         loadButtons();
-    }
-
-    private void loadImages() {
-        this.deadText = ImageUtils.importImage(DEAD_TXT, DEAD_TEXT_WID, DEAD_TEXT_HEI);
-        this.respawnText = ImageUtils.importImage(RESPAWN_TXT, RESPAWN_TEXT_WID, RESPAWN_TEXT_HEI);
-        this.menuText = ImageUtils.importImage(MENU_TXT, MENU_TEXT_WID, MENU_TEXT_HEI);
     }
 
     private void loadButtons() {
@@ -61,9 +51,15 @@ public class GameOverOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
     }
 
     private void renderTexts(Graphics g) {
-        g.drawImage(deadText, DEAD_TEXT_X, DEAD_TEXT_Y, deadText.getWidth(), deadText.getHeight(), null);
-        g.drawImage(respawnText, RESPAWN_TEXT_X, RESPAWN_TEXT_Y, respawnText.getWidth(), respawnText.getHeight(), null);
-        g.drawImage(menuText, MENU_TEXT_X, MENU_TEXT_Y, menuText.getWidth(), menuText.getHeight(), null);
+        UIButtonRenderer.drawRunicHeader(g, "YOU DIED", OVERLAY_X + OVERLAY_WID / 2, DEAD_TEXT_Y);
+        Graphics2D g2d = (Graphics2D) g.create();
+        g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        g2d.setFont(UIButtonRenderer.getFont(14f * SCALE));
+        g2d.setColor(new Color(218, 226, 224));
+        FontMetrics fm = g2d.getFontMetrics();
+        g2d.drawString("RESPAWN", RETRY_X + (CRE_BTN_SIZE - fm.stringWidth("RESPAWN")) / 2, RESPAWN_TEXT_Y + (int) (18 * SCALE));
+        g2d.drawString("MENU", MENU_X + (CRE_BTN_SIZE - fm.stringWidth("MENU")) / 2, MENU_TEXT_Y + (int) (18 * SCALE));
+        g2d.dispose();
     }
 
     private void renderButtons(Graphics g) {

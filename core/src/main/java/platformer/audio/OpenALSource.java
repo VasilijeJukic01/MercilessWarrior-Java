@@ -46,10 +46,9 @@ public class OpenALSource {
      * @param byteOffset The byte offset to start playing from.
      */
     public void play(int buffer, boolean varyPitch, int byteOffset) {
+        AL10.alSourceStop(sourceID);
         AL10.alSourcei(sourceID, AL10.AL_BUFFER, buffer);
-        if (byteOffset > 0) {
-            AL11.alSourcei(sourceID, AL11.AL_BYTE_OFFSET, byteOffset);
-        }
+        AL11.alSourcei(sourceID, AL11.AL_BYTE_OFFSET, Math.max(0, byteOffset));
         // Audio Fatigue
         if (varyPitch) {
             float pitch = 0.95f + (random.nextFloat() * 0.1f);
@@ -77,7 +76,7 @@ public class OpenALSource {
      * Stops playback on this source if it is currently playing.
      */
     public void stop() {
-        if (isPlaying()) AL10.alSourceStop(sourceID);
+        AL10.alSourceStop(sourceID);
     }
 
     /**

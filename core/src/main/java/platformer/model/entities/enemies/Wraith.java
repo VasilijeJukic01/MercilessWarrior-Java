@@ -86,7 +86,6 @@ public class Wraith extends Enemy {
     // Behavior
     private void idleAction() {
         setEnemyAction(Anim.WALK);
-        animSpeed = 25;
     }
 
     private void moveAction(int[][] levelData, Entity target) {
@@ -95,7 +94,6 @@ public class Wraith extends Enemy {
             Random rand = new Random();
             boolean x = rand.nextBoolean();
             setEnemyAction(x ? Anim.ATTACK_1 : Anim.ATTACK_2);
-            animSpeed = 20;
         }
         double enemyXSpeed = (direction == Direction.LEFT) ? -enemySpeed : enemySpeed;
         if (canMoveHere(hitBox.x + enemyXSpeed, hitBox.y, hitBox.width, hitBox.height, levelData)) {

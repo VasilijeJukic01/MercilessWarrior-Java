@@ -4,6 +4,7 @@ import platformer.model.entities.player.Player;
 import platformer.model.gameObjects.GameObject;
 import platformer.model.gameObjects.Interactable;
 import platformer.model.gameObjects.ObjType;
+import platformer.ui.buttons.UIButtonRenderer;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -38,17 +39,6 @@ public class Blacksmith extends GameObject implements Interactable {
         int y = (int)hitBox.y - yOffset - yLevelOffset + (int)(1 * SCALE);
         g.drawImage(animations[animIndex], x, y, BLACKSMITH_WID, BLACKSMITH_HEI, null);
         hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.MAGENTA);
-        renderText(g, xLevelOffset, yLevelOffset);
-    }
-
-    private void renderText(Graphics g, int xLevelOffset, int yLevelOffset) {
-        if (active) {
-            g.setColor(Color.WHITE);
-            g.setFont(new Font("Arial", Font.BOLD, FONT_BIG));
-            int infoX = (int)(hitBox.x - hitBox.width / 8 - xLevelOffset);
-            int infoY = (int)(hitBox.y - yLevelOffset - 5 * SCALE);
-            g.drawString("SHOP", infoX, infoY);
-        }
     }
 
     @Override
@@ -79,6 +69,12 @@ public class Blacksmith extends GameObject implements Interactable {
     @Override
     public String getInteractionPrompt() {
         return "Blacksmith";
+    }
+
+    @Override
+    public void renderInteractionUI(Graphics g, int xLevelOffset, int yLevelOffset) {
+        if (!active) return;
+        UIButtonRenderer.drawInteractionPrompt(g, "UPGRADE", (int) (hitBox.getCenterX() - xLevelOffset), (int) (hitBox.y - yLevelOffset - 6 * SCALE));
     }
 
     public void setActive(boolean active) {

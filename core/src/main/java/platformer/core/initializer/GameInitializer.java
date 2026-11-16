@@ -5,6 +5,7 @@ import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
 import platformer.event.EventBus;
 import platformer.event.events.*;
+import platformer.event.events.effects.HitStopEvent;
 import platformer.event.events.effects.ScreenShakeEvent;
 import platformer.event.events.lancer.LancerAuraEvent;
 import platformer.event.events.lancer.LancerDashSlashEvent;
@@ -20,6 +21,7 @@ import platformer.event.handlers.GameFlowEventHandler;
 import platformer.event.handlers.LancerEventHandler;
 import platformer.event.handlers.RoricEventHandler;
 import platformer.event.listeners.QuestSystemListener;
+import platformer.model.cutscene.CutsceneManager;
 import platformer.model.dialogue.DialogueManager;
 import platformer.model.effects.EffectManager;
 import platformer.model.effects.RainManager;
@@ -29,6 +31,7 @@ import platformer.model.effects.lighting.LightManager;
 import platformer.model.entities.enemies.EnemyManager;
 import platformer.model.gameObjects.ObjectManager;
 import platformer.model.levels.LevelManager;
+import platformer.model.levels.interior.InteriorManager;
 import platformer.model.minimap.MinimapManager;
 import platformer.model.perks.PerksManager;
 import platformer.model.projectiles.ProjectileFactory;
@@ -36,6 +39,7 @@ import platformer.model.projectiles.ProjectileManager;
 import platformer.model.quests.QuestManager;
 import platformer.model.spells.SpellManager;
 import platformer.model.tutorial.TutorialManager;
+import platformer.model.world.WorldMemoryManager;
 import platformer.service.multiplayer.MultiplayerManager;
 import platformer.state.types.GameState;
 
@@ -69,6 +73,7 @@ public class GameInitializer {
         context.setTutorialManager(new TutorialManager());
         context.setDialogueManager(new DialogueManager());
         context.setLevelManager(new LevelManager());
+        context.setInteriorManager(new InteriorManager());
         context.setEffectManager(new EffectManager());
         context.setRainManager(new RainManager());
         context.setEnemyManager(new EnemyManager());
@@ -80,6 +85,8 @@ public class GameInitializer {
         context.setMinimapManager(new MinimapManager());
         context.setOverlayManager(gameState.getOverlayManager());
         context.setMultiplayerManager(new MultiplayerManager());
+        context.setWorldMemoryManager(new WorldMemoryManager());
+        context.setCutsceneManager(new CutsceneManager());
         context.setCamera(gameState.getCamera());
         context.setScreenEffectsManager(screenEffectsManager);
 
@@ -88,16 +95,19 @@ public class GameInitializer {
         context.getQuestManager().wire(context);
         context.getDialogueManager().wire(context);
         context.getLevelManager().wire(context);
+        context.getInteriorManager().wire(context);
         context.getMinimapManager().wire(context);
         context.getObjectManager().wire(context);
         context.getEnemyManager().wire(context);
         context.getProjectileManager().wire(context);
         context.getSpellManager().wire(context);
         context.getLightManager().wire(context);
+        context.getWorldMemoryManager().wire(context);
+        context.getCutsceneManager().wire(context);
 
         ProjectileFactory.init(context.getProjectileManager());
         context.getEnemyManager().injectScreenEffectsManager(screenEffectsManager);
-        initEventListeners(context, gameState);
+        initEventListeners(context, gameState, screenEffectsManager);
 
         Logger.getInstance().notify("Game systems initialized successfully.", Message.INFORMATION);
         return context;
@@ -109,8 +119,9 @@ public class GameInitializer {
      *
      * @param context The {@link GameContext} containing the manager instances that need to listen to events.
      * @param gameState The {@link GameState} which holds the list of continuous update handlers.
+     * @param screenEffectsManager The {@link ScreenEffectsManager} responsible for visual effects, which needs to respond to certain events.
      */
-    private static void initEventListeners(GameContext context, GameState gameState) {
+    private static void initEventListeners(GameContext context, GameState gameState, ScreenEffectsManager screenEffectsManager) {
         EventBus eventBus = EventBus.getInstance();
 
         // UI & Overlay Listeners
@@ -147,6 +158,9 @@ public class GameInitializer {
         GameFlowEventHandler gameFlowManager = new GameFlowEventHandler(context);
         eventBus.register(FightInitiatedEvent.class, gameFlowManager::onFightInitiated);
         eventBus.register(BossDefeatedEvent.class, gameFlowManager::onBossDefeated);
+
+        // Effects
+        eventBus.register(HitStopEvent.class, e -> screenEffectsManager.triggerHitStop(e.frames()));
 
         // Register handlers for continuous updates
         gameState.getEventHandlers().add(roricHandler);

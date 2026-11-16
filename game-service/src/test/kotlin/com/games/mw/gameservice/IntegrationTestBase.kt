@@ -16,24 +16,28 @@ import org.testcontainers.utility.DockerImageName
  * Kafka container is pointed itself as the schema registry for tests!
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@Testcontainers
+@Testcontainers(disabledWithoutDocker = true)
 abstract class IntegrationTestBase {
 
     companion object {
-        internal val postgresContainer: PostgreSQLContainer<*> = PostgreSQLContainer("postgres:15.3")
-            .withDatabaseName("mw-game-service-test")
-            .withUsername("test")
-            .withPassword("test")
 
-        internal val redisContainer: GenericContainer<*> = GenericContainer("redis:7-alpine")
-            .withExposedPorts(6379)
+        val postgresContainer: PostgreSQLContainer<*> by lazy {
+            PostgreSQLContainer("postgres:15.3")
+                .withDatabaseName("mw-game-service-test")
+                .withUsername("test")
+                .withPassword("test")
+                .apply { start() }
+        }
 
-        internal val kafkaContainer = KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.6.0"))
+        val redisContainer: GenericContainer<*> by lazy {
+            GenericContainer("redis:7-alpine")
+                .withExposedPorts(6379)
+                .apply { start() }
+        }
 
-        init {
-            postgresContainer.start()
-            redisContainer.start()
-            kafkaContainer.start()
+        val kafkaContainer: KafkaContainer by lazy {
+            KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.6.0"))
+                .apply { start() }
         }
 
         @DynamicPropertySource

@@ -8,6 +8,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.image.ImageView;
 import javafx.util.Duration;
+import platformer.animation.AssetManager;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -67,7 +68,7 @@ public class FXStyler implements Styler{
     public List<String> loadTipsFromResource(String resourcePath) {
         List<String> tips = new ArrayList<>();
         try {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(Objects.requireNonNull(getClass().getResourceAsStream(resourcePath))));
+            BufferedReader reader = new BufferedReader(new InputStreamReader(AssetManager.getInstance().getResourceAsStream(resourcePath)));
 
             StringBuilder jsonContent = new StringBuilder();
             String line;

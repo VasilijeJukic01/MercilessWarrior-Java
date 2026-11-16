@@ -45,7 +45,8 @@ public class MinimapViewController {
             if (isWithinOverlay(e.getPoint())) {
                 MinimapIcon foundIcon = findIconAtScreenPos(e.getX(), e.getY());
                 Point minimapCoords = screenToMinimap(e.getX(), e.getY());
-                if (isValid(minimapManager.getMinimap(), minimapCoords) && minimapManager.isExplored(minimapCoords)) {
+                boolean isQuestTarget = minimapManager.getActiveQuestMinimapTargets().stream().anyMatch(qt -> qt.distance(minimapCoords) <= 4.0);
+                if (isValid(minimapManager.getMinimap(), minimapCoords) && (minimapManager.isExplored(minimapCoords) || isQuestTarget)) {
                     minimapManager.handlePinRequest(minimapCoords, foundIcon);
                 }
             }
@@ -157,6 +158,7 @@ public class MinimapViewController {
         double scaledPixelHeight = (double) height / map.getHeight();
 
         for (MinimapIcon icon : minimapManager.getIcons()) {
+            if (!minimapManager.isIconVisible(icon)) continue;
             int iconWidth = (int) (2.5 * scaledPixelWidth);
             int iconHeight = (int) (2.5 * scaledPixelHeight);
             int iconX = mapX + (int) (icon.position().x * scaledPixelWidth) - iconWidth / 2;
@@ -170,8 +172,10 @@ public class MinimapViewController {
 
     private boolean isValid(BufferedImage image, Point point) {
         if (point.x >= 0 && point.y >= 0 && point.x < image.getWidth() && point.y < image.getHeight()) {
-            int rgb = image.getRGB(point.x, point.y);
-            return (rgb & 0xFFFFFF) == (MINIMAP_WALKABLE.getRGB() & 0xFFFFFF);
+            int argb = image.getRGB(point.x, point.y);
+            int alpha = (argb >>> 24) & 0xFF;
+            int rgb = argb & 0xFFFFFF;
+            return (alpha == 254) || (rgb == (MINIMAP_WALKABLE.getRGB() & 0xFFFFFF));
         }
         return false;
     }

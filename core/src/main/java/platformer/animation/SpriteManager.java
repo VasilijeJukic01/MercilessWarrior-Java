@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static platformer.constants.AnimConstants.*;
@@ -27,26 +28,26 @@ public class SpriteManager {
     private static volatile SpriteManager instance;
 
     // Caches
+    private final Map<String, BufferedImage> rawSheets = new ConcurrentHashMap<>();
     private BufferedImage[][] playerAnimations, playerTransformAnimations;
-    private final Map<EnemyType, BufferedImage[][]> enemyAnimations = new HashMap<>();
-    private final Map<ObjType, BufferedImage[]> objectAnimations = new HashMap<>();
-    private final Map<NpcType, BufferedImage[]> npcAnimations = new HashMap<>();
+    private final Map<EnemyType, BufferedImage[][]> enemyAnimations = new ConcurrentHashMap<>();
+    private final Map<ObjType, BufferedImage[]> objectAnimations = new ConcurrentHashMap<>();
+    private final Map<NpcType, BufferedImage[]> npcAnimations = new ConcurrentHashMap<>();
     private final Map<NpcType, BufferedImage[][]> followerAnimations = new HashMap<>();
     private BufferedImage[][] coinAnimations;
 
-    private BufferedImage[] lightningBallAnimations;
     private BufferedImage[] fireballAnimations;
-    private BufferedImage[] energyBallAnimations;
     private BufferedImage[][] roricProjectileAnimations;
 
     private BufferedImage[] lightningAnimations;
-    private BufferedImage[] flashAnimations;
     private BufferedImage[] skyBeamAnimations;
 
     private BufferedImage[] roricAuraAnimations;
 
     private BufferedImage arrowImage;
     private BufferedImage roricArrowImage;
+
+    private final Map<NpcType, BufferedImage> npcIcons = new HashMap<>();
 
     private SpriteManager() {}
 
@@ -68,7 +69,12 @@ public class SpriteManager {
         Runnable[] loadTasks = {
                 () -> playerAnimations = loadPlayerSpriteSheet(PLAYER_SHEET),
                 () -> playerTransformAnimations = loadPlayerSpriteSheet(PLAYER_TRANSFORM_SHEET),
-                this::loadEnemyAnimations,
+                this::loadSkeletonAnimations,
+                this::loadGhoulAnimations,
+                this::loadKnightAnimations,
+                this::loadWraithAnimations,
+                this::loadLancerAnimations,
+                this::loadRoricAnimations,
                 this::loadObjectAnimations,
                 this::loadNpcAnimations,
                 this::loadFollowerAnimations,
@@ -78,10 +84,11 @@ public class SpriteManager {
 
         AtomicInteger completedTasks = new AtomicInteger(0);
         double startProgress = 0.05;
-        double totalProgressAllocated = 0.50;
+        double totalProgressAllocated = 0.90;
 
         CompletableFuture<?>[] futures = Arrays.stream(loadTasks).map(task ->
                 CompletableFuture.runAsync(() -> {
+                    long tStart = System.currentTimeMillis();
                     task.run();
                     int done = completedTasks.incrementAndGet();
                     double progress = startProgress + ((double) done / loadTasks.length) * totalProgressAllocated;
@@ -90,6 +97,7 @@ public class SpriteManager {
         ).toArray(CompletableFuture[]::new);
 
         CompletableFuture.allOf(futures).join();
+        rawSheets.clear();
     }
 
     // Animation loader
@@ -108,11 +116,11 @@ public class SpriteManager {
      * @return animation
      */
     public BufferedImage[] loadFromSprite(String basePath, int frames, int row, int width, int height, int offset, int x, int y) {
-        BufferedImage sprite = ImageUtils.importImage(basePath, -1, -1);
+        BufferedImage sprite = rawSheets.computeIfAbsent(basePath, path -> ImageUtils.importImage(path, -1, -1));
         BufferedImage[] animation = new BufferedImage[frames];
         int yOffset = y * row;
-        for (int i = offset; i < frames+offset; i++) {
-            animation[i-offset] = ImageUtils.resizeImage(sprite.getSubimage(i * x, yOffset, x, y), width, height);
+        for (int i = offset; i < frames + offset; i++) {
+            animation[i - offset] = ImageUtils.resizeImage(sprite.getSubimage(i * x, yOffset, x, y), width, height);
         }
         return animation;
     }
@@ -135,17 +143,19 @@ public class SpriteManager {
 
     // Player
     private BufferedImage[][] loadPlayerSpriteSheet(String sheet) {
-        BufferedImage[][] anim = new BufferedImage[18][18];
+        BufferedImage[][] anim = new BufferedImage[24][18];
         int w = PLAYER_WIDTH, h = PLAYER_HEIGHT;
 
         anim[Anim.IDLE.ordinal()] = loadFromSprite(sheet, 8, 0, w, h, 0, PLAYER_W, PLAYER_H);
         anim[Anim.RUN.ordinal()] = loadFromSprite(sheet, 8, 1, w, h, 0, PLAYER_W, PLAYER_H);
+        anim[Anim.DASH.ordinal()] = loadFromSprite(sheet, 7, 4, w, h, 0, PLAYER_W, PLAYER_H);
         anim[Anim.JUMP.ordinal()] = loadFromSprite(sheet, 3, 6, w, h, 0, PLAYER_W, PLAYER_H);
         anim[Anim.FALL.ordinal()] = loadFromSprite(sheet, 3, 8, w, h, 0, PLAYER_W, PLAYER_H);
         anim[Anim.ATTACK_1.ordinal()] = loadFromSprite(sheet, 4, 10, w, h, 0, PLAYER_W, PLAYER_H);
         anim[Anim.ATTACK_2.ordinal()] = loadFromSprite(sheet, 4, 11, w, h, 0, PLAYER_W, PLAYER_H);
         anim[Anim.ATTACK_3.ordinal()] = loadFromSprite(sheet, 5, 12, w, h, 0, PLAYER_W, PLAYER_H);
         anim[Anim.BLOCK.ordinal()] = loadFromSprite(sheet, 6, 14, w, h, 0, PLAYER_W, PLAYER_H);
+        anim[Anim.CROUCH.ordinal()] = loadFromSprite(sheet, 5, 15, w, h, 0, PLAYER_W, PLAYER_H);
         anim[Anim.HIT.ordinal()] = loadFromSprite(sheet, 4, 23, w, h, 0, PLAYER_W, PLAYER_H);
         anim[Anim.DEATH.ordinal()] = loadFromSprite(sheet, 11, 24, w, h, 0, PLAYER_W, PLAYER_H);
         anim[Anim.WALL.ordinal()] = loadFromSprite(sheet, 4, 21, w, h, 0, PLAYER_W, PLAYER_H);
@@ -157,15 +167,6 @@ public class SpriteManager {
     }
 
     // Enemy
-    private void loadEnemyAnimations() {
-        loadSkeletonAnimations();
-        loadGhoulAnimations();
-        loadKnightAnimations();
-        loadWraithAnimations();
-        loadLancerAnimations();
-        loadRoricAnimations();
-    }
-
     private void loadSkeletonAnimations() {
         BufferedImage[][] anim = new BufferedImage[13][13];
 
@@ -277,15 +278,13 @@ public class SpriteManager {
         objectAnimations.put(ObjType.SMASH_TRAP, loadFromSprite(SMASH_TRAP_SHEET, 14, 0, SMASH_TRAP_WID, SMASH_TRAP_HEI, 0, ST_W, ST_H));
         objectAnimations.put(ObjType.RORIC_TRAP, loadFromSprite(RORIC_SPELLS_SHEET, 8, 6, RORIC_TRAP_WID, RORIC_TRAP_HEI, 0, RORIC_PROJECTILE_W, RORIC_PROJECTILE_H));
         // Spikes
-        BufferedImage[] spikeUpFrames = loadFromSprite(SPIKES_SHEET, 10, 0, SPIKE_WID, SPIKE_HEI, 0, SPIKES_W, SPIKES_H);
-        objectAnimations.put(ObjType.SPIKE_UP, spikeUpFrames);
-        if (spikeUpFrames.length > 5) {
-            objectAnimations.put(ObjType.SPIKE_DOWN, new BufferedImage[]{ImageUtils.rotateImage(spikeUpFrames[5], 180)});
-            objectAnimations.put(ObjType.SPIKE_LEFT, new BufferedImage[]{ImageUtils.rotateImage(spikeUpFrames[5], 270)});
-            objectAnimations.put(ObjType.SPIKE_RIGHT, new BufferedImage[]{ImageUtils.rotateImage(spikeUpFrames[5], 90)});
-        }
+        BufferedImage[] spikes = loadFromSprite(SPIKES_SHEET, 1, 0, SPIKE_WID, SPIKE_HEI, 0, SPIKES_W, SPIKES_H);
+        objectAnimations.put(ObjType.SPIKE_UP, spikes);
+        objectAnimations.put(ObjType.SPIKE_DOWN, new BufferedImage[]{ImageUtils.rotateImage(spikes[0], 180)});
+        objectAnimations.put(ObjType.SPIKE_LEFT, new BufferedImage[]{ImageUtils.rotateImage(spikes[0], 270)});
+        objectAnimations.put(ObjType.SPIKE_RIGHT, new BufferedImage[]{ImageUtils.rotateImage(spikes[0], 90)});
         // Interactive Objects
-        objectAnimations.put(ObjType.SHOP, loadFromSprite(SHOP_SHEET, 6, 0, SHOP_WID, SHOP_HEI, 0, SHOP_W, SHOP_H));
+        objectAnimations.put(ObjType.SHOP, loadFromSprite(SHOP_SHEET, 1, 0, SHOP_WID, SHOP_HEI, 0, SHOP_W, SHOP_H));
         objectAnimations.put(ObjType.BLOCKER, loadFromSprite(BLOCKER_SHEET, 12, 0, BLOCKER_WID, BLOCKER_HEI, 0, BLOCKER_W, BLOCKER_H));
         objectAnimations.put(ObjType.BLACKSMITH, loadFromSprite(BS_SHEET, 8, 0, BLACKSMITH_WID, BLACKSMITH_HEI, 0, BLACKSMITH_W, BLACKSMITH_H));
         objectAnimations.put(ObjType.DOG, loadFromSprite(DOG_SHEET, 8, 0, DOG_WID, DOG_HEI, 0, DOG_W, DOG_H));
@@ -317,11 +316,20 @@ public class SpriteManager {
 
     // NPC
     private void loadNpcAnimations() {
-        npcAnimations.put(NpcType.ANITA,         loadSingleNpcAnimation(ANITA_SHEET, 4, 0, NpcType.ANITA));
-        npcAnimations.put(NpcType.NIKOLAS,       loadSingleNpcAnimation(NIKOLAS_SHEET, 4, 0, NpcType.NIKOLAS));
-        npcAnimations.put(NpcType.SIR_DEJANOVIC, loadSingleNpcAnimation(SIR_DEJANOVIC_SHEET, 4, 0, NpcType.SIR_DEJANOVIC));
-        npcAnimations.put(NpcType.KRYSANTHE,     loadSingleNpcAnimation(KRYSANTHE_SHEET, 8, 0, NpcType.KRYSANTHE));
-        npcAnimations.put(NpcType.RORIC,         loadFromSprite(RORIC_SHEET, 12, 0, NpcType.RORIC.getWid(), NpcType.RORIC.getHei(), 0, RORIC_W, RORIC_H));
+        npcAnimations.put(NpcType.ANITA,         	loadSingleNpcAnimation(ANITA_SHEET, 4, 0, NpcType.ANITA));
+        npcAnimations.put(NpcType.NIKOLAS,       	loadSingleNpcAnimation(NIKOLAS_SHEET, 4, 0, NpcType.NIKOLAS));
+        npcAnimations.put(NpcType.SIR_DEJANOVIC, 	loadSingleNpcAnimation(SIR_DEJANOVIC_SHEET, 4, 0, NpcType.SIR_DEJANOVIC));
+        npcAnimations.put(NpcType.KRYSANTHE,     	loadSingleNpcAnimation(KRYSANTHE_SHEET, 8, 0, NpcType.KRYSANTHE));
+        npcAnimations.put(NpcType.RORIC,         	loadFromSprite(RORIC_SHEET, 12, 0, NpcType.RORIC.getWid(), NpcType.RORIC.getHei(), 0, RORIC_W, RORIC_H));
+        npcAnimations.put(NpcType.MITCH_OF_ASSIS,   loadSingleNpcAnimation(MITCH_SHEET, 5, 0, NpcType.MITCH_OF_ASSIS));
+        npcAnimations.put(NpcType.ANDELLIA,      	loadSingleNpcAnimation(ANDELLIA_SHEET, 4, 0, NpcType.ANDELLIA));
+        npcAnimations.put(NpcType.EERYN,         	loadSingleNpcAnimation(EERYN_SHEET, 4, 0, NpcType.EERYN));
+
+        for (NpcType type : NpcType.values()) {
+            String path = AVATAR_PATH.replace("$", type.name());
+            BufferedImage portrait = ImageUtils.importImage(path, -1, -1);
+            npcIcons.put(type, portrait);
+        }
     }
 
     /**
@@ -350,7 +358,7 @@ public class SpriteManager {
         anim[Anim.FALL.ordinal()] = loadFromSprite(ANITA_FOLLOWER_SHEET, 3, 3, FLW_WIDTH, FLW_HEIGHT, 0, ANITA_FOLLOWER_W, ANITA_FOLLOWER_H);
         anim[Anim.ATTACK_1.ordinal()] = loadFromSprite(ANITA_FOLLOWER_SHEET, 5, 9, FLW_WIDTH, FLW_HEIGHT, 0, ANITA_FOLLOWER_W, ANITA_FOLLOWER_H);
         anim[Anim.ATTACK_2.ordinal()] = loadFromSprite(ANITA_FOLLOWER_SHEET, 7, 10, FLW_WIDTH, FLW_HEIGHT, 0, ANITA_FOLLOWER_W, ANITA_FOLLOWER_H);
-        anim[Anim.SPELL_1.ordinal()]  = loadFromSprite(ANITA_FOLLOWER_SHEET, 17, 11, FLW_WIDTH, FLW_HEIGHT, 0, ANITA_FOLLOWER_W, ANITA_FOLLOWER_H);
+        anim[Anim.SPELL_1.ordinal()]  = loadFromSprite(ANITA_FOLLOWER_SHEET, 18, 11, FLW_WIDTH, FLW_HEIGHT, 0, ANITA_FOLLOWER_W, ANITA_FOLLOWER_H);
         anim[Anim.HIT.ordinal()]  = loadFromSprite(ANITA_FOLLOWER_SHEET, 5, 14, FLW_WIDTH, FLW_HEIGHT, 0, ANITA_FOLLOWER_W, ANITA_FOLLOWER_H);
         anim[Anim.BLOCK.ordinal()]  = loadFromSprite(ANITA_FOLLOWER_SHEET, 10, 13, FLW_WIDTH, FLW_HEIGHT, 1, ANITA_FOLLOWER_W, ANITA_FOLLOWER_H);
         anim[Anim.DEATH.ordinal()]  = loadFromSprite(ANITA_FOLLOWER_SHEET, 10, 15, FLW_WIDTH, FLW_HEIGHT, 0, ANITA_FOLLOWER_W, ANITA_FOLLOWER_H);
@@ -361,10 +369,7 @@ public class SpriteManager {
     // Projectiles & Spells
     private void loadProjectileAndSpellAnimations() {
         lightningAnimations = loadFromSprite(LIGHTNING_SHEET, 8, 0, LIGHTNING_WIDTH, LIGHTNING_HEIGHT, 0, LIGHTNING_W, LIGHTNING_H);
-        flashAnimations = loadFromSprite(FLASH_SHEET, 16, 0, FLASH_WIDTH, FLASH_HEIGHT, 0, FLASH_W, FLASH_H);
-        lightningBallAnimations = loadFromSprite(LIGHTNING_BALL_1_SHEET, 9, 0, LB_WID, LB_HEI, 0, LIGHTNING_BALL_W, LIGHTNING_BALL_H);
         fireballAnimations = loadFromSprite(FIREBALL_SHEET, 9, 0, FB_WID, FB_HEI,0, FIREBALL_W, FIREBALL_H);
-        energyBallAnimations = loadFromSprite(LIGHTNING_BALL_2_SHEET, 9, 0, LB_WID, LB_HEI, 0, LIGHTNING_BALL_W, LIGHTNING_BALL_H);
 
         roricProjectileAnimations = new BufferedImage[3][];
         roricProjectileAnimations[0] = loadFromSprite(RORIC_SPELLS_SHEET, 5, 8, RORIC_BEAM_WID, RORIC_BEAM_HEI, 0, RORIC_PROJECTILE_W, RORIC_PROJECTILE_H);
@@ -413,20 +418,8 @@ public class SpriteManager {
         return coinAnimations;
     }
 
-    public BufferedImage[] getLightningBallAnimations() {
-        return lightningBallAnimations;
-    }
-
-    public BufferedImage[] getEnergyBallAnimations() {
-        return energyBallAnimations;
-    }
-
     public BufferedImage[] getLightningAnimations() {
         return lightningAnimations;
-    }
-
-    public BufferedImage[] getFlashAnimations() {
-        return flashAnimations;
     }
 
     public BufferedImage[] getRoricBeamAnimations() {
@@ -459,6 +452,10 @@ public class SpriteManager {
 
     public BufferedImage getRoricArrowImage() {
         return roricArrowImage;
+    }
+
+    public BufferedImage getNpcPortrait(NpcType type) {
+        return npcIcons.get(type);
     }
 
 }

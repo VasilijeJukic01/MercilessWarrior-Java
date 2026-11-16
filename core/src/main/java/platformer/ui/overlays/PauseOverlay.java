@@ -11,6 +11,7 @@ import platformer.state.types.GameState;
 import platformer.ui.buttons.AbstractButton;
 import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.SmallButton;
+import platformer.ui.buttons.UIButtonRenderer;
 import platformer.ui.options.ControlsPanel;
 import platformer.ui.options.GameSettingsPanel;
 import platformer.utils.ImageUtils;
@@ -27,7 +28,6 @@ import java.util.List;
 import java.util.Map;
 
 import static platformer.constants.Constants.*;
-import static platformer.constants.FilePaths.*;
 import static platformer.constants.UI.*;
 
 /**
@@ -39,7 +39,6 @@ public class PauseOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
     private final GameState gameState;
     private final GameSettingsPanel settingsPanel;
     private final ControlsPanel controlsPanel;
-    private BufferedImage pauseText;
 
     private int currentPage = 0;
     private final Rectangle2D.Double[] tabs = new Rectangle2D.Double[4];
@@ -60,13 +59,8 @@ public class PauseOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
         this.gameState = gameState;
         this.settingsPanel = new GameSettingsPanel(gameState.getGame());
         this.controlsPanel = new ControlsPanel(this.getClass());
-        loadImages();
         loadButtons();
         loadTips();
-    }
-
-    private void loadImages() {
-        this.pauseText = ImageUtils.importImage(PAUSE_TXT, PAUSE_TEXT_WID, PAUSE_TEXT_HEI);
     }
 
     private void loadTips() {
@@ -147,7 +141,7 @@ public class PauseOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
     private void renderPageTabs(Graphics g) {
         g.setColor(Color.WHITE);
         g.setFont(new Font("Arial", Font.BOLD, FONT_MEDIUM));
-        g.drawImage(pauseText, PAUSE_TEXT_X, PAUSE_TEXT_Y, pauseText.getWidth(), pauseText.getHeight(), null);
+        UIButtonRenderer.drawRunicHeader(g, "PAUSED", OVERLAY_X + OVERLAY_WID / 2, PAUSE_TEXT_Y);
         g.drawString("Menu", scale(318), scale(147));
         g.drawString("Audio", scale(377), scale(147));
         g.drawString("Gameplay", scale(425), scale(147));

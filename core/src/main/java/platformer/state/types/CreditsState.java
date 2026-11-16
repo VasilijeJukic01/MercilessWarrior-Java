@@ -1,6 +1,7 @@
 package platformer.state.types;
 
 import com.google.gson.reflect.TypeToken;
+import platformer.animation.AssetManager;
 import platformer.core.Game;
 import platformer.model.credits.CreditEntry;
 import platformer.model.credits.CreditSection;
@@ -8,23 +9,20 @@ import platformer.state.AbstractState;
 import platformer.state.State;
 import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.SmallButton;
+import platformer.ui.buttons.UIButtonRenderer;
 import platformer.ui.overlays.OverlayLayer;
-import platformer.utils.ImageUtils;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
-import java.awt.image.BufferedImage;
 import java.io.InputStreamReader;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 import static platformer.constants.Constants.*;
 import static platformer.constants.FilePaths.CREDITS_PATH;
-import static platformer.constants.FilePaths.CREDITS_TXT;
 import static platformer.constants.UI.*;
 
 /**
@@ -33,20 +31,14 @@ import static platformer.constants.UI.*;
  */
 public class CreditsState extends AbstractState implements State {
 
-    private BufferedImage creditsText;
     private SmallButton exitBtn;
 
     private List<CreditSection> sections;
 
     public CreditsState(Game game) {
         super(game);
-        loadImages();
         loadButtons();
         loadCreditsData();
-    }
-
-    private void loadImages() {
-        this.creditsText = ImageUtils.importImage(CREDITS_TXT, CREDITS_TXT_WID, CREDITS_TXT_HEI);
     }
 
     private void loadButtons() {
@@ -54,7 +46,7 @@ public class CreditsState extends AbstractState implements State {
     }
 
     private void loadCreditsData() {
-        try (InputStreamReader reader = new InputStreamReader(Objects.requireNonNull(getClass().getResourceAsStream(CREDITS_PATH)))) {
+        try (InputStreamReader reader = new InputStreamReader(AssetManager.getInstance().getResourceAsStream(CREDITS_PATH))) {
             Type listType = new TypeToken<List<CreditSection>>() {}.getType();
             this.sections = new com.google.gson.Gson().fromJson(reader, listType);
         } catch (Exception e) {
@@ -72,7 +64,7 @@ public class CreditsState extends AbstractState implements State {
     @Override
     public void render(Graphics g) {
         OverlayLayer.getInstance().render(g);
-        g.drawImage(creditsText, CREDITS_TXT_X, CREDITS_TXT_Y, creditsText.getWidth(), creditsText.getHeight(), null);
+        UIButtonRenderer.drawRunicHeader(g, "CREDITS", OVERLAY_X + OVERLAY_WID / 2, CREDITS_TXT_Y);
         exitBtn.render(g);
         renderInformation(g);
     }

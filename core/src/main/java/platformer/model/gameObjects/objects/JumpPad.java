@@ -56,7 +56,7 @@ public class JumpPad extends GameObject implements Interactable {
     @Override
     public void render(Graphics g, int xLevelOffset, int yLevelOffset, BufferedImage[] animations) {
         int x = (int)hitBox.x - xOffset - xLevelOffset - (int) (15 * SCALE);
-        int y = (int)hitBox.y - yOffset - yLevelOffset - (int) (2 * SCALE);
+        int y = (int)hitBox.y - yOffset - yLevelOffset - (int) (5 * SCALE);
         g.drawImage(animations[animIndex], x, y, JUMP_PAD_WID, JUMP_PAD_HEI, null);
         hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.BLUE);
     }

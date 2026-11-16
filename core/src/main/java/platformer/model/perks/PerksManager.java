@@ -2,6 +2,7 @@ package platformer.model.perks;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import platformer.animation.AssetManager;
 import platformer.core.Framework;
 import platformer.core.GameContext;
 import platformer.debug.logger.Logger;
@@ -35,7 +36,7 @@ public class PerksManager {
     }
 
     private void loadPerksFromFile() {
-        try (InputStreamReader reader = new InputStreamReader(Objects.requireNonNull(getClass().getResourceAsStream(PERKS_PATH)))) {
+        try (InputStreamReader reader = new InputStreamReader(AssetManager.getInstance().getResourceAsStream(PERKS_PATH))) {
             Type listType = new TypeToken<List<Perk>>() {}.getType();
             List<Perk> loaded = new Gson().fromJson(reader, listType);
             if (loaded != null) {

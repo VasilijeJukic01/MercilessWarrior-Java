@@ -10,22 +10,33 @@ package platformer.constants;
 public final class FilePaths {
 
     // Player
-    public static final String PLAYER_SHEET = "/images/player/playerSheet.png";
-    public static final String PLAYER_TRANSFORM_SHEET = "/images/player/transformSheet.png";
-    public static final String PLAYER_ABILITY_SHEET = "/images/player/abilitiesSheet.png";
+    public static final String PLAYER_SHEET = "/images/player/PlayerSheet.png";
+    public static final String PLAYER_TRANSFORM_SHEET = "/images/player/TransformSheet.png";
+    public static final String PLAYER_ABILITY_SHEET = "/images/player/AbilitiesSheet.png";
 
     // Levels
-    public static final String LEVEL_SPRITES = "/images/levels/level$.png";
+    public static final String LEVEL_SPRITES = "/images/levels/rooms/$.png";
+    public static final String WORLD_MAP_META = "/meta/world_map.json";
     public static final String TILESET_META = "/meta/blocks/tilesets.json";
     public static final String DECORATION_META ="/meta/blocks/decoration_sets.json";
     public static final String DECORATION_SPRITES = "/images/levels/levelObjects/";
-    public static final String MINIMAP = "/images/levels/minimap.png";
-    public static final String MINIMAP_ICONS = "/images/levels/mapIcons.png";
+    public static final String MINIMAP = "/images/levels/minimap/minimap.png";
+    public static final String MINIMAP_ICONS = "/images/levels/minimap/MapIcons.png";
 
     public static final String FOREST_BG_1 = "/images/levels/backgrounds/forest1.png";
     public static final String FOREST_BG_2 = "/images/levels/backgrounds/forest2.png";
     public static final String FOREST_BG_3 = "/images/levels/backgrounds/forest3.png";
     public static final String FOREST_BG_4 = "/images/levels/backgrounds/forest4.png";
+    public static final String FOREST_ENTRANCE_BG = "/images/levels/backgrounds/FOREST_ENTRANCE.png";
+    public static final String FOREST_ROOTS_BG = "/images/levels/backgrounds/FOREST_ROOTS.png";
+    public static final String FOREST_DEEP_BG = "/images/levels/backgrounds/FOREST_DEEP.png";
+    public static final String FOREST_STORM_PEAK_BG = "/images/levels/backgrounds/FOREST_STORM_PEAK.png";
+    public static final String FOREST_VILLAGE_BG = "/images/levels/backgrounds/FOREST_VILLAGE.png";
+    public static final String FOREST_VILLAGE_ENTRANCE_BG = "/images/levels/backgrounds/FOREST_VILLAGE_ENTRANCE.png";
+    public static final String RORIC_ARENA_BG = "/images/levels/backgrounds/RORIC_ARENA.png";
+    public static final String FOREST_THORNS_BG = "/images/levels/backgrounds/FOREST_THORNS.png";
+
+    public static final String TAVERN_BG = "/images/levels/backgrounds/tavern.png";
 
     // Enemy
     public static final String SKELETON_SHEET = "/images/enemies/SkeletonSprite.png";
@@ -39,18 +50,18 @@ public final class FilePaths {
     public static final String ANITA_FOLLOWER_SHEET = "/images/followers/AnitaFollowerSprite.png";
 
     // Objects
-    public static final String POTIONS_SHEET = "/images/objs/potions_sprites.png";
-    public static final String CONTAINERS_SHEET = "/images/objs/objects_sprites.png";
-    public static final String SPIKES_SHEET = "/images/objs/spikes.png";
-    public static final String ARROW_TRAP_SHEET = "/images/objs/arrowTrap.png";
-    public static final String SHOP_SHEET = "/images/objs/shop.png";
+    public static final String POTIONS_SHEET = "/images/objs/PotionSprites.png";
+    public static final String CONTAINERS_SHEET = "/images/objs/CrateSprites.png";
+    public static final String SPIKES_SHEET = "/images/objs/Spike.png";
+    public static final String ARROW_TRAP_SHEET = "/images/objs/ArrowTrap.png";
+    public static final String SHOP_SHEET = "/images/objs/Shop.png";
     public static final String COIN_SHEET = "/images/objs/CoinSprite.png";
-    public static final String BLOCKER_SHEET = "/images/objs/blocker.png";
+    public static final String BLOCKER_SHEET = "/images/objs/Blocker.png";
     public static final String BS_SHEET = "/images/objs/BlacksmithSprite.png";
     public static final String DOG_SHEET = "/images/objs/DogSprite.png";
-    public static final String ARROW_IMG = "/images/objs/arrow.png";
+    public static final String ARROW_IMG = "/images/objs/Arrow.png";
     public static final String TOTEM_SHEET = "/images/objs/SaveTotem.png";
-    public static final String SMASH_TRAP_SHEET = "/images/objs/smashTrap.png";
+    public static final String SMASH_TRAP_SHEET = "/images/objs/SmashTrap.png";
     public static final String CANDLE_IMG = "/images/objs/Candle.png";
     public static final String LOOT_IMG = "/images/objs/Loot.png";
     public static final String TABLE_IMG = "/images/objs/Table.png";
@@ -66,75 +77,54 @@ public final class FilePaths {
     public static final String NIKOLAS_SHEET = "/images/objs/npc/NikolasSprite.png";
     public static final String SIR_DEJANOVIC_SHEET = "/images/objs/npc/SirDejanovicSprite.png";
     public static final String KRYSANTHE_SHEET = "/images/objs/npc/KrysantheSprite.png";
+    public static final String MITCH_SHEET = "/images/objs/npc/MitchSprite.png";
+    public static final String ANDELLIA_SHEET = "/images/objs/npc/AndelliaSprite.png";
+    public static final String EERYN_SHEET = "/images/objs/npc/EerynSprite.png";
+    public static final String AVATAR_PATH= "/images/avatars/$.png";
 
     // Dialogue
     public static final String OBJECT_DIALOGUES = "/dialogues/dialogues.json";
 
     // Spells
     public static final String LIGHTNING_SHEET = "/images/spells/LightningSprite.png";
-    public static final String FLASH_SHEET = "/images/spells/FlashSprite.png";
-    public static final String LIGHTNING_BALL_1_SHEET = "/images/objs/lightningBall.png";
-    public static final String LIGHTNING_BALL_2_SHEET = "/images/objs/lightningBall2.png";
-    public static final String FIREBALL_SHEET = "/images/player/fireBallSheet.png";
+    public static final String FIREBALL_SHEET = "/images/player/FireBallSheet.png";
     public static final String RORIC_SPELLS_SHEET = "/images/enemies/boss/RoricProjectiles.png";
     public static final String RORIC_ARROW_IMG = "/images/enemies/boss/RoricArrow.png";
 
     // Effects
+    public static final String CUTSCENES_PATH = "/cutscenes/cutscenes.json";
     public static final String PARTICLE_SHEET = "/images/particles/ParticleSprite.png";
     public static final String SMOKE_SHEET = "/images/particles/Smoke.png";
     public static final String RORIC_AURA_SHEET = "/images/particles/RoricAuraEffect.png";
     public static final String LIGHT_METADATA = "/light/decoration_lights.json";
 
     // Buttons
-    public static final String BTN_BUY_SHEET = "/images/buttons/BuyButton.png";
-    public static final String BTN_SELL_SHEET = "/images/buttons/SellButton.png";
-    public static final String BTN_LEAVE_SHEET = "/images/buttons/LeaveButton.png";
-    public static final String CRE_BTN_SHEET = "/images/buttons/CREButtons.png";
-    public static final String MENU_BTN_SHEET = "/images/buttons/MenuButtons.png";
-    public static final String AUDIO_BTN_SHEET = "/images/buttons/AudioButtons.png";
+    public static final String RUNIC_RECT_BTN_SHEET = "/images/buttons/RunicRectButton.png";
+    public static final String RUNIC_SQUARE_BTN_SHEET = "/images/buttons/RunicSquareButton.png";
     public static final String SLIDE_BTN_SHEET = "/images/buttons/SliderButton.png";
     public static final String SLIDER_IMG = "/images/buttons/Slider.png";
     public static final String LEADERBOARD_BTN_SHEET = "/images/buttons/LeaderboardButtons.png";
     public static final String CREDITS_BTN_SHEET = "/images/buttons/CreditsButtons.png";
-    public static final String INVENTORY_BTN_SHEET = "/images/buttons/InventoryButtons.png";
-    public static final String LOOT_BTN_SHEET = "/images/buttons/LootButtons.png";
-    public static final String CRAFT_BTN_SHEET = "/images/buttons/CraftButton.png";
-    public static final String SAVE_BTN_SHEET = "/images/buttons/SaveButtons.png";
 
     // UI
-    public static final String MENU_SPRITES = "/images/menu/background/Background$.png";
-    public static final String MENU_LOGO = "/images/menu/menuLogo.png";
+    public static final String MENU_LOGO = "/images/menu/Logo.png";
     public static final String LANCER_BOSS_BAR = "/images/enemies/boss/LancerBar.png";
     public static final String RORIC_BOSS_BAR = "/images/enemies/boss/RoricBar.png";
-    public static final String PLAYER_HUD = "/images/playerHUD.png";
-    public static final String PLAYER_PORTRAIT = "/images/portraitHUD.png";
+    public static final String PLAYER_HUD = "/images/PlayerHUD.png";
+    public static final String PLAYER_PORTRAIT = "/images/PortraitHUD.png";
     public static final String TIME_CYCLE_ICONS = "/images/player/hud/TimeCycleSheet.png";
-    public static final String PAUSE_TXT = "/images/buttons/PauseText.png";
-    public static final String DEAD_TXT = "/images/buttons/DeadText.png";
-    public static final String RESPAWN_TXT = "/images/buttons/RespawnText.png";
-    public static final String MENU_TXT = "/images/buttons/MenuText.png";
-    public static final String SHOP_TXT = "/images/buttons/ShopText.png";
-    public static final String SLOT_IMG = "/images/inventory/Slot.png";
     public static final String SLOT_INVENTORY = "/images/inventory/Slot.png";
-    public static final String PERKS_TXT_IMG = "/images/buttons/PerksText.png";
-    public static final String CONTROLS_TXT = "/images/buttons/ControlsText.png";
-    public static final String OPTIONS_TXT = "/images/buttons/OptionsText.png";
-    public static final String BOARD_TXT = "/images/buttons/BoardText.png";
-    public static final String INVENTORY_TXT = "/images/buttons/InventoryText.png";
-    public static final String CRAFTING_TXT = "/images/buttons/CraftingText.png";
-    public static final String QUESTS_TXT = "/images/buttons/QuestsText.png";
-    public static final String LOAD_TXT = "/images/buttons/LoadText.png";
-    public static final String SAVE_TXT = "/images/buttons/SaveText.png";
-    public static final String CREDITS_TXT = "/images/buttons/CreditsText.png";
 
-    public static final String ORANGE_GLOW = "/images/particles/orangeGlow.png";
-    public static final String WHITE_RADIAL_GLOW = "/images/particles/whiteRadialGlow.png";
+    public static final String ORANGE_GLOW = "/images/particles/OrangeGlow.png";
+    public static final String WHITE_RADIAL_GLOW = "/images/particles/WhiteRadialGlow.png";
 
     // Inventory / Shop
+    public static final String BALANCE_PATH = "/items/balance.json";
     public static final String ITEMS_PATH = "/items/items.json";
     public static final String RECIPES_PATH = "/items/recipes.json";
     public static final String SHOP_INV_PATH = "/items/shop_inventory.json";
     public static final String LOOT_TABLE_PATH = "/items/loot_tables.json";
+    public static final String BLACKSMITH_RECIPES_PATH = "/items/blacksmith_recipes.json";
 
     public static final String PERKS_PATH = "/items/perks.json";
     public static final String EQUIPMENT_PLACEHOLDERS_PATH = "/images/inventory/EquipmentPlaceholders.png";

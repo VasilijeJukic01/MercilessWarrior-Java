@@ -12,11 +12,16 @@ public class TimeCycleManager {
     public static final double SECONDS_PER_GAME_DAY = 1440.0; // 24 minutes
     private static final int UPS = 200;
     private double gameTime = 0;
+    private boolean lockedToNight = false;
 
     /**
      * Advances the game clock by one tick. This should be called once per frame from the main game loop.
      */
     public void update() {
+        if (lockedToNight) {
+            gameTime = 0;
+            return;
+        }
         gameTime += 1.0 / UPS;
         if (gameTime >= SECONDS_PER_GAME_DAY) {
             gameTime = 0;
@@ -73,6 +78,27 @@ public class TimeCycleManager {
     public boolean isDusk() {
         double time = getGameTimeNormalized();
         return time >= 0.70 && time < 0.80;
+    }
+
+    public void setLockedToNight(boolean locked) {
+        this.lockedToNight = locked;
+        if (locked) {
+            this.gameTime = 0;
+        }
+    }
+
+    /**
+     * Advances the in-game clock by a fraction of a full day (e.g., 0.5 for 12 in-game hours).
+     *
+     * @param normalizedDelta Fraction of a day to skip forward (0.0 to 1.0).
+     */
+    public void advanceTime(double normalizedDelta) {
+        if (lockedToNight) return;
+        gameTime = (gameTime + normalizedDelta * SECONDS_PER_GAME_DAY) % SECONDS_PER_GAME_DAY;
+    }
+
+    public void reset() {
+        this.lockedToNight = false;
     }
 
 }

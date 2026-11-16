@@ -1,5 +1,6 @@
 package platformer.model.levels;
 
+import platformer.animation.AssetManager;
 import platformer.utils.ImageUtils;
 
 import java.awt.image.BufferedImage;
@@ -30,12 +31,18 @@ public class LevelObjectManager {
      * @param isFlipped If true, the loaded image will be flipped horizontally.
      * @return The BufferedImage for the decoration, or null if it cannot be loaded.
      */
-    public BufferedImage getModel(String id, String tilesetName, String filename, boolean isFlipped) {
-        String cacheKey = tilesetName + ":" + id + (isFlipped ? ":flipped" : "");
-        if (models.containsKey(cacheKey)) return models.get(cacheKey);
+    public BufferedImage getModel(String id, String tilesetName, String filename, boolean isFlipped, boolean useLivelyVariant) {
+        String baseFile = (filename != null && !filename.isEmpty()) ? filename : id;
+        String targetFile = baseFile;
 
-        String fileToLoad = (filename != null && !filename.isEmpty()) ? filename : id;
-        String imagePath = DECORATION_SPRITES + tilesetName.toLowerCase() + "/" + fileToLoad + ".png";
+        if (useLivelyVariant) {
+            String livelyPath = DECORATION_SPRITES + tilesetName.toLowerCase() + "/" + baseFile + "_LIVELY.png";
+            if (AssetManager.getInstance().getAsset(livelyPath) != null) targetFile = baseFile + "_LIVELY";
+        }
+
+        String cacheKey = tilesetName + ":" + targetFile + (isFlipped ? ":flipped" : "");
+        if (models.containsKey(cacheKey)) return models.get(cacheKey);
+        String imagePath = DECORATION_SPRITES + tilesetName.toLowerCase() + "/" + targetFile + ".png";
         BufferedImage image = ImageUtils.importImage(imagePath, -1, -1);
 
         if (image != null) {

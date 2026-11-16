@@ -4,6 +4,7 @@ import platformer.model.entities.Direction;
 import platformer.model.projectiles.types.LightningBall;
 import platformer.model.projectiles.Projectile;
 
+import java.awt.*;
 import java.awt.geom.Rectangle2D;
 
 import static platformer.constants.Constants.*;
@@ -173,6 +174,20 @@ public final class CollisionDetector {
     }
 
     /**
+     * Detects if the player's center of gravity is off the edge of a cliff.
+     * If they are teetering, it returns a velocity to gently slide them off.
+     */
+    public static double getLedgeSlip(Rectangle2D.Double hitBox, int[][] levelData) {
+        boolean centerSolid = isSolid(hitBox.getCenterX(), hitBox.y + hitBox.height + 2, levelData);
+        if (centerSolid) return 0;
+        boolean leftSolid = isSolid(hitBox.x, hitBox.y + hitBox.height + 2, levelData);
+        boolean rightSolid = isSolid(hitBox.x + hitBox.width, hitBox.y + hitBox.height + 2, levelData);
+        if (leftSolid && !rightSolid) return 1.0 * SCALE;
+        if (rightSolid && !leftSolid) return -1.0 * SCALE;
+        return 0;
+    }
+
+    /**
      * Checks if there is a solid floor ahead of an entity, used for basic AI pathing.
      * It checks the solidity of the tiles at the corners of the entity's hitbox at the new location.
      * If any of the tiles are solid, the floor is considered to be present.
@@ -297,10 +312,15 @@ public final class CollisionDetector {
      * @return {@code true} if the projectile is hitting a solid tile, {@code false} otherwise.
      */
     public static boolean isProjectileHitLevel(int[][] lvlData, Projectile projectile) {
-        double wid = projectile.getShapeBounds().getBounds().width;
-        double hei = projectile.getShapeBounds().getBounds().height;
-        if (projectile instanceof LightningBall) hei = ARROW_HEI;
-        return isSolid(projectile.getShapeBounds().getBounds().x + wid, projectile.getShapeBounds().getBounds().y + hei, lvlData);
+        Rectangle bounds = projectile.getShapeBounds().getBounds();
+        if (projectile instanceof LightningBall) {
+            double centerX = bounds.getCenterX(), centerY = bounds.getCenterY();
+            if (centerX <= TILES_SIZE * 2 || centerX >= (lvlData.length - 2) * TILES_SIZE) {
+                return isSolid(centerX, centerY, lvlData);
+            }
+            return centerY >= (lvlData[0].length - 1) * TILES_SIZE;
+        }
+        return isSolid(bounds.x + bounds.width, bounds.y + bounds.height, lvlData);
     }
 
     /**

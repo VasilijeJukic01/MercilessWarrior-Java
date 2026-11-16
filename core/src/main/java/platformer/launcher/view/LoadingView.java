@@ -73,7 +73,6 @@ public class LoadingView extends BaseView {
 
         root.setCenter(contentBox);
         root.setBottom(bottomBox);
-        root.setBackground(getLauncherBackground());
 
         progressBar.progressProperty().bind(LoadingProgressTracker.getInstance().progressProperty());
         statusLabel.textProperty().bind(LoadingProgressTracker.getInstance().statusProperty());

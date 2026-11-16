@@ -43,7 +43,13 @@ public final class CollectionUtils {
      */
     public static <T> List<T> getAllItems(Map<?, List<T>> itemMap) {
         List<T> allItems = new ArrayList<>();
-        itemMap.values().forEach(allItems::addAll);
+        try {
+            Object[] keys = itemMap.keySet().toArray();
+            for (Object key : keys) {
+                List<T> list = itemMap.get(key);
+                if (list != null) allItems.addAll(list);
+            }
+        } catch (Exception ignored) {}
         return allItems;
     }
 }

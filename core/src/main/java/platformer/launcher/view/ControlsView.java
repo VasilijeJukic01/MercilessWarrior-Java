@@ -37,7 +37,7 @@ public class ControlsView extends BaseView {
     private void init() {
         initCommandComponents();
         configureTextFields();
-        super.initScene(root, 590, 560, "Controls");
+        super.initScene(root, 590, 570, "Controls");
         initRoot();
         initButtons();
         initStyles(super.getScene());

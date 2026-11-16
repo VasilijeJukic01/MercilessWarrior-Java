@@ -5,19 +5,17 @@ import platformer.state.AbstractState;
 import platformer.state.State;
 import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.SmallButton;
+import platformer.ui.buttons.UIButtonRenderer;
 import platformer.ui.options.GameSettingsPanel;
 import platformer.ui.overlays.OverlayLayer;
-import platformer.utils.ImageUtils;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
 import java.awt.geom.Rectangle2D;
-import java.awt.image.BufferedImage;
 
 import static platformer.constants.Constants.*;
-import static platformer.constants.FilePaths.*;
 import static platformer.constants.UI.*;
 
 /**
@@ -28,9 +26,6 @@ import static platformer.constants.UI.*;
 public class OptionsState extends AbstractState implements State {
 
     private int currentPage = 0;
-
-    private BufferedImage optionsText;
-
     private final Rectangle2D.Double[] tabs = new Rectangle2D.Double[2];
 
     private SmallButton exitBtn;
@@ -40,12 +35,7 @@ public class OptionsState extends AbstractState implements State {
     public OptionsState(Game game) {
         super(game);
         this.settingsPanel = new GameSettingsPanel(game);
-        loadImages();
         loadButtons();
-    }
-
-    private void loadImages() {
-        this.optionsText = ImageUtils.importImage(OPTIONS_TXT, OPTIONS_TEXT_WID, OPTIONS_TEXT_HEI);
     }
 
     private void loadButtons() {
@@ -65,7 +55,7 @@ public class OptionsState extends AbstractState implements State {
     @Override
     public void render(Graphics g) {
         OverlayLayer.getInstance().render(g);
-        g.drawImage(optionsText, OPTIONS_TEXT_X, OPTIONS_TEXT_Y, optionsText.getWidth(), optionsText.getHeight(), null);
+        UIButtonRenderer.drawRunicHeader(g, "OPTIONS", OVERLAY_X + OVERLAY_WID / 2, OPTIONS_TEXT_Y);
         exitBtn.render(g);
         renderPageTabs(g);
 

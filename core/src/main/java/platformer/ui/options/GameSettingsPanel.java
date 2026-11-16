@@ -177,16 +177,19 @@ public class GameSettingsPanel {
             default -> 1.0;
         };
         game.getSettings().setParticleDensity(density);
+        game.getSettings().save();
     }
 
     private void toggleScreenShake() {
         boolean currentSetting = game.getSettings().isScreenShake();
         game.getSettings().setScreenShake(!currentSetting);
+        game.getSettings().save();
     }
 
     private void toggleDamageCounters() {
         boolean currentSetting = game.getSettings().isShowDamageCounters();
         game.getSettings().setShowDamageCounters(!currentSetting);
+        game.getSettings().save();
     }
 
     private void toggleFullScreen() {

@@ -74,6 +74,9 @@ public abstract class Enemy extends Entity implements DamageSource, Debug<Graphi
             if (isAttacking()) {
                 cooldown[Cooldown.ATTACK.ordinal()] = 2.8 + rand.nextDouble() * 1.5;
             }
+            if (entityState == Anim.HIT) {
+                enemySpeed = ENEMY_SPEED_SLOW;
+            }
             entityState = Anim.IDLE;
         }
         else if (entityState == Anim.HIDE) entityState = Anim.REVEAL;
@@ -204,16 +207,45 @@ public abstract class Enemy extends Entity implements DamageSource, Debug<Graphi
         return true;
     }
 
+    /**
+     * Dynamically adjusts the animation speed based on the enemy's current state.
+     * Lower = Faster !
+     */
+    protected void setAnimSpeedByState() {
+        if (enemyType == EnemyType.LANCER || enemyType == EnemyType.RORIC) return;
+
+        switch (entityState) {
+            case RUN:
+                animSpeed = 15;
+                break;
+            case WALK:
+                animSpeed = 23;
+                break;
+            case ATTACK_1:
+            case ATTACK_2:
+                animSpeed = 18;
+                break;
+            case HIT:
+                animSpeed = 12;
+                break;
+            default:
+                animSpeed = originalAnimSpeed;
+                break;
+        }
+    }
+
     public void setEnemyAction(Anim enemyAction) {
         this.entityState = enemyAction;
         this.animIndex = 0;
         this.animTick = 0;
         criticalHit = false;
+        setAnimSpeedByState();
     }
 
     public void setEnemyActionNoReset(Anim enemyAction) {
         this.entityState = enemyAction;
         criticalHit = false;
+        setAnimSpeedByState();
     }
 
     public void setDirection(Direction direction) {

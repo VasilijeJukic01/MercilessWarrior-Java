@@ -14,6 +14,7 @@ import platformer.model.gameObjects.Interactable;
 import platformer.model.gameObjects.ObjectManager;
 import platformer.model.gameObjects.npc.NpcType;
 import platformer.physics.CollisionDetector;
+import platformer.ui.buttons.UIButtonRenderer;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
@@ -55,11 +56,15 @@ public class Follower extends Entity implements Interactable {
     private final double walkSpeed = 0.6 * SCALE;
     private final int teleportDist = TILES_SIZE * 20;
     private int animTick, animIndex;
+    private boolean active = false;
 
     // Physics
     private final double gravity = 0.04 * SCALE;
     private final double collisionFallSpeed = 0.5 * SCALE;
     private final double jumpSpeed = -2.25 * SCALE;
+
+    // Audio
+    private final FollowerAudioHandler audioHandler;
 
     /**
      * If true, standard movement logic is suspended, and the NPC follows a calculated ballistic arc.
@@ -99,6 +104,7 @@ public class Follower extends Entity implements Interactable {
         this.behavior = (type == NpcType.ANITA) ? new AnitaBehavior() : new PassiveBehavior();
         this.jumpTracker = new JumpHistoryTracker();
         this.trajectoryCalculator = new TrajectoryCalculator(objectManager, gravity, jumpSpeed, walkSpeed);
+        this.audioHandler = new FollowerAudioHandler(type);
         this.combatManager = new FollowerCombatManager(this);
     }
 
@@ -137,6 +143,7 @@ public class Follower extends Entity implements Interactable {
         updateMovement(levelData, player, targetX);
         updateAttackBox();
         updatePhysics(levelData);
+        audioHandler.update();
     }
 
     /**
@@ -388,13 +395,19 @@ public class Follower extends Entity implements Interactable {
 
     private void updateAnimation() {
         animTick++;
-        if (animTick >= animSpeed) {
+        int currentAnimSpeed = switch (entityState) {
+            case SPELL_1 -> 11;
+            case ATTACK_1, ATTACK_2 -> 15;
+            default -> animSpeed;
+        };
+
+        if (animTick >= currentAnimSpeed) {
             animTick = 0;
             animIndex++;
 
             // Handle Attack Frame Events
-            if (isAttacking && animIndex == 2 && behavior != null) {
-                behavior.onAttackFrame(this, enemyContext);
+            if (isAttacking && behavior != null) {
+                behavior.onAttackFrame(this, animIndex, enemyContext);
             }
 
             BufferedImage[][] anims = SpriteManager.getInstance().getFollowerAnimations(type);
@@ -443,6 +456,7 @@ public class Follower extends Entity implements Interactable {
     }
 
     private void updateAttackBox() {
+        attackBox.width = (entityState == Anim.SPELL_1) ? FOLLOWER_HB_WID + (38 * SCALE) : FOLLOWER_HB_WID + (22 * SCALE);
         if (flipSign == 1) attackBox.x = hitBox.x + hitBox.width;
         else attackBox.x = hitBox.x - attackBox.width;
         attackBox.y = hitBox.y;
@@ -550,6 +564,19 @@ public class Follower extends Entity implements Interactable {
         combatManager.revive();
     }
 
+    public void performAttackLunge(double stepDist, boolean spawnWindSlash) {
+        double dx = stepDist * flipSign;
+        if (currentLevelData != null && canMoveHere(hitBox.x + dx, hitBox.y, hitBox.width, hitBox.height, currentLevelData)) {
+            hitBox.x += dx;
+        }
+        if (spawnWindSlash && effectManager != null) {
+            double slashX = hitBox.getCenterX() + flipSign * (22 * SCALE);
+            double slashY = hitBox.getCenterY();
+            effectManager.spawnDustParticles(slashX, slashY, 3, DustType.ETHEREAL_DASH, flipSign, this);
+            effectManager.spawnDustParticles(slashX, slashY, 4, DustType.SW_AURA_CRACKLE, flipSign, null);
+        }
+    }
+
     public void render(Graphics g, int xLvlOffset, int yLvlOffset) {
         BufferedImage[][] anims = SpriteManager.getInstance().getFollowerAnimations(type);
         if (anims == null) return;
@@ -578,6 +605,14 @@ public class Follower extends Entity implements Interactable {
     }
 
     @Override
+    public void renderInteractionUI(Graphics g, int xLevelOffset, int yLevelOffset) {
+        if (!combatManager.isKnockedDown()) return;
+        int centerX = (int) (hitBox.getCenterX() - xLevelOffset);
+        int promptY = (int) (hitBox.y - yLevelOffset - 8 * SCALE);
+        UIButtonRenderer.drawInteractionPrompt(g, "REVIVE", centerX, promptY);
+    }
+
+    @Override
     public void hitBoxRenderer(Graphics g, int xLevelOffset, int yLevelOffset, Color color) {
         renderHitBox(g, xLevelOffset, yLevelOffset, color);
     }
@@ -589,7 +624,7 @@ public class Follower extends Entity implements Interactable {
 
     @Override
     public void onEnter(Player player) {
-
+        this.active = true;
     }
 
     @Override
@@ -599,13 +634,17 @@ public class Follower extends Entity implements Interactable {
 
     @Override
     public void onExit(Player player) {
-
+        this.active = false;
     }
 
     @Override
     public String getInteractionPrompt() {
         if (combatManager.isKnockedDown()) return "Revive";
         return null;
+    }
+
+    public FollowerAudioHandler getAudioHandler() {
+        return audioHandler;
     }
 
     // Fallback behavior
@@ -615,6 +654,6 @@ public class Follower extends Entity implements Interactable {
             host.setMoveTarget(player.getHitBox().x);
         }
         @Override
-        public void onAttackFrame(Follower host, List<Enemy> enemies) {}
+        public void onAttackFrame(Follower host, int animIndex, List<Enemy> enemies) {}
     }
 }

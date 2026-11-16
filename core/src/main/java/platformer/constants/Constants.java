@@ -59,8 +59,6 @@ public final class Constants {
     public static final int PLAYER_HB_OFFSET_Y = scale(16);
 
     public static final int XP_CAP = 10000;
-    public static final int PLAYER_MAX_HP = 100;
-    public static final int PLAYER_MAX_ST = 100;
     public static final double PLAYER_SPEED = dScale(0.65);
     public static final double LAVA_PLAYER_SPEED = dScale(0.3);
     public static final double PLAYER_BOOST = dScale(0.65);
@@ -69,20 +67,15 @@ public final class Constants {
     public static final double PUSH_LIMIT = -30;
     public static final double PUSH_SPEED = 0.95;
     public static final double DASH_SPEED = 6;
-    public static final double FLAME_COST = -0.20;
-    public static final double TRANSFORM_COST = -0.025;
-
-    public static final double LAVA_DMG = 0.5;
 
     // Minimap Constants
     public static final double MIN_ZOOM = 1.0;
     public static final double MAX_ZOOM = 2.0;
-    public static final double MINIMAP_ZOOM = 6.5;
+    public static final double MINIMAP_ZOOM = 4.5;
 
-    public static final int MINIMAP_ICONS_COUNT = 7;
+    public static final int MINIMAP_ICONS_COUNT = 10;
 
     public static final Color MINIMAP_WALKABLE = new Color(78, 105, 80);
-    public static final Color MINIMAP_UNWALKABLE =  new Color(41, 59, 41);
     public static final Color MINIMAP_HOVER =  new Color(255, 180, 40);
     public static final Color MINIMAP_PINNED =  new Color(80, 200, 255);
 
@@ -92,18 +85,10 @@ public final class Constants {
 
     // Cooldown Constants
     public static final double COOLDOWN_TICK = 0.1;
-    public static final double PLAYER_ATTACK_CD = 0.75;
-    public static final double PLAYER_BLOCK_CD = 1.2;
-    public static final double PLAYER_DASH_CD = 1.75;
-    public static final double PLAYER_SPELL_CD = 2.5;
-
-    public static final double GHOUL_ATT_CD = 10;
-    public static final double GHOUL_DASH_CD = 6;
 
     public static final double RORIC_IDLE_COOLDOWN = 10.0;
 
     // Level Constants
-    public static final int MAX_LEVELS = 4;
     public static final int EMPTY_TILE = -1;
     public static final int MAX_TILE_VALUE = 49;
     public static final int PARTICLES_CAP = 50;
@@ -193,9 +178,6 @@ public final class Constants {
     public static final int FOLLOWER_Y_OFFSET = (int)(88 * SCALE);
 
     // Object Constants
-    public static final int HEAL_POTION_VAL = 15;
-    public static final int STAMINA_POTION_VAL = 10;
-
     public static final int CONTAINER_WID = scale(40);
     public static final int CONTAINER_HEI = scale(30);
     public static final int BOX_HB_WID = scale(25);
@@ -214,17 +196,17 @@ public final class Constants {
     public static final int POTION_OFFSET_X = scale(3);
     public static final int POTION_OFFSET_Y = scale(2);
 
-    public static final int SPIKE_WID = scale(32);
-    public static final int SPIKE_HEI = scale(36);
+    public static final int SPIKE_WID = scale(40);
+    public static final int SPIKE_HEI = scale(30);
     public static final int SPIKE_HB_WID = scale(32);
     public static final int SPIKE_HB_HEI = scale(18);
-    public static final int SPIKE_OFFSET_X = scale(20);
-    public static final int SPIKE_OFFSET_Y = scale(16);
+    public static final int SPIKE_OFFSET_X = scale(12);
+    public static final int SPIKE_OFFSET_Y = scale(10);
 
     public static final int ARROW_TRAP_WID = scale(96);
     public static final int ARROW_TRAP_HEI = scale(32);
     public static final int ARROW_TRAP_HB_SIZE = scale(32);
-    public static final int ARROW_TRAP_OFFSET = scale(6);
+    public static final int ARROW_TRAP_OFFSET = scale(0);
 
     public static final int COIN_WID = scale(15);
     public static final int COIN_HEI = scale(15);
@@ -232,12 +214,12 @@ public final class Constants {
     public static final int COIN_OFFSET = scale(3);
     public static final double COIN_GRAVITY = dScale(0.045);
 
-    public static final int SHOP_WID = scale(154);
-    public static final int SHOP_HEI = scale(132);
-    public static final int SHOP_HB_WID = scale(154);
-    public static final int SHOP_HB_HEI = scale(132);
+    public static final int SHOP_WID = scale(143);
+    public static final int SHOP_HEI = scale(105);
+    public static final int SHOP_HB_WID = scale(135);
+    public static final int SHOP_HB_HEI = scale(100);
     public static final int SHOP_OFFSET_X = scale(1);
-    public static final int SHOP_OFFSET_Y = scale(1);
+    public static final int SHOP_OFFSET_Y = scale(7);
 
     public static final int BLOCKER_WID = scale(96);
     public static final int BLOCKER_HEI = scale(128);
@@ -253,19 +235,19 @@ public final class Constants {
     public static final int BLACKSMITH_OFFSET_X = scale(32);
     public static final int BLACKSMITH_OFFSET_Y = scale(20);
 
-    public static final int DOG_WID = scale(64);
-    public static final int DOG_HEI = scale(64);
+    public static final int DOG_WID = scale(72);
+    public static final int DOG_HEI = scale(72);
     public static final int DOG_HB_WID = scale(32);
     public static final int DOG_HB_HEI = scale(32);
     public static final int DOG_OFFSET_X = scale(18);
-    public static final int DOG_OFFSET_Y = scale(12);
+    public static final int DOG_OFFSET_Y = scale(18);
 
     public static final int SAVE_TOTEM_WID = scale(50);
-    public static final int SAVE_TOTEM_HEI = scale(49);
+    public static final int SAVE_TOTEM_HEI = scale(55);
     public static final int SAVE_TOTEM_HB_WID = scale(32);
     public static final int SAVE_TOTEM_HB_HEI = scale(32);
     public static final int SAVE_TOTEM_OFFSET_X = scale(10);
-    public static final int SAVE_TOTEM_OFFSET_Y = scale(9);
+    public static final int SAVE_TOTEM_OFFSET_Y = scale(16);
 
     public static final int SMASH_TRAP_WID = scale(50);
     public static final int SMASH_TRAP_HEI = scale(76);
@@ -282,18 +264,18 @@ public final class Constants {
     public static final int CANDLE_OFFSET_Y = scale(12);
 
     public static final int LOOT_WID = scale(40);
-    public static final int LOOT_HEI = scale(13);
+    public static final int LOOT_HEI = scale(32);
     public static final int LOOT_HB_WID = scale(36);
     public static final int LOOT_HB_HEI = scale(27);
     public static final int LOOT_OFFSET_X = scale(1);
-    public static final int LOOT_OFFSET_Y = scale(-15);
+    public static final int LOOT_OFFSET_Y = scale(-2);
 
-    public static final int TABLE_WID = scale(48);
-    public static final int TABLE_HEI = scale(32);
+    public static final int TABLE_WID = scale(67);
+    public static final int TABLE_HEI = scale(72);
     public static final int TABLE_HB_WID = scale(40);
     public static final int TABLE_HB_HEI = scale(32);
-    public static final int TABLE_OFFSET_X = scale(5);
-    public static final int TABLE_OFFSET_Y = scale(-5);
+    public static final int TABLE_OFFSET_X = scale(12);
+    public static final int TABLE_OFFSET_Y = scale(20);
 
     public static final int BOARD_WID = scale(64);
     public static final int BOARD_HEI = scale(64);
@@ -342,12 +324,6 @@ public final class Constants {
     public static final int LB_HEI = scale(60);
     public static final double LB_SPEED_FAST = dScale(1);
     public static final double LB_SPEED_SLOW = dScale(0.5);
-    public static final int LB_OFFSET_X = scale(40);
-    public static final int LB_OFFSET_Y = scale(15);
-
-    public static final int LB_PERIOD = scale(50);
-    public static final double LB_T = dScale(1);
-    public static final int LB_D = scale(25);
 
     public static final int FB_WID = scale(50);
     public static final int FB_HEI = scale(50);
@@ -356,9 +332,6 @@ public final class Constants {
     public static final double FIREBALL_SPEED = dScale(1.5);
 
     public static final int TRACKING_PROJECTILE_DISTANCE = scale(50);
-    public static final int ENEMY_PROJECTILE_DMG = 5;
-    public static final int FIREBALL_PROJECTILE_DMG = 10;
-    public static final int PLAYER_PROJECTILE_DMG = 10;
 
     public static final int RORIC_BEAM_WID = scale(800);
     public static final int RORIC_BEAM_HEI = scale(148);
@@ -398,17 +371,16 @@ public final class Constants {
 
     public static final int FLASH_WIDTH = scale(48);
     public static final int FLASH_HEIGHT = scale(192);
-    public static final int FLASH_OFFSET_X = (int)(FLASH_WIDTH / 2.4);
 
     // Button Constants
-    public static final int BIG_BTN_WID = scale(120);
+    public static final int BIG_BTN_WID = scale(136);
     public static final int BIG_BTN_HEI = scale(42);
-    public static final int MEDIUM_BTN_WID = scale(94);
+    public static final int MEDIUM_BTN_WID = scale(96);
     public static final int MEDIUM_BTN_HEI = scale(34);
-    public static final int SMALL_BTN_WID = scale(65);
-    public static final int SMALL_BTN_HEI = scale(25);
-    public static final int TINY_BTN_WID = scale(50);
-    public static final int TINY_BTN_HEI = scale(20);
+    public static final int SMALL_BTN_WID = scale(68);
+    public static final int SMALL_BTN_HEI = scale(26);
+    public static final int TINY_BTN_WID = scale(52);
+    public static final int TINY_BTN_HEI = scale(23);
     public static final int SOUND_BTN_SIZE = scale(30);
     public static final int CRE_BTN_SIZE = scale(30);
     public static final int SMALL_BTN_SIZE = scale(25);
@@ -416,7 +388,6 @@ public final class Constants {
     public static final int SLIDER_BTN_SIZE = scale(15);
     public static final int SLIDER_WID = scale(150);
     public static final int SLIDER_HEI = scale(30);
-    public static final int SLIDER_LEN = scale(144);
 
     // UI
     public static final int FONT_BIG = scale(20);
@@ -425,7 +396,6 @@ public final class Constants {
     public static final int FONT_LIGHT = scale(8);
     public static final int FONT_SMALL = scale(7);
     public static final int SHOP_SLOT_MAX_ROW = 4, SHOP_SLOT_MAX_COL = 5;
-    public static final int PERK_SLOT_MAX_ROW = 4, PERK_SLOT_MAX_COL = 7;
     public static final int INVENTORY_SLOT_MAX_ROW = 5, INVENTORY_SLOT_MAX_COL = 5;
     public static final int EQUIPMENT_SLOT_MAX_ROW = 2, EQUIPMENT_SLOT_MAX_COL = 3;
     public static final int SLOT_SPACING = scale(40);
@@ -456,8 +426,8 @@ public final class Constants {
     public static final int RORIC_AURA_HEI = scale(100);
 
     // Camera Constants
-    public static final double CAMERA_LERP_FACTOR_X = 0.08;
-    public static final double CAMERA_LERP_FACTOR_Y = 0.08;
+    public static final int DEADZONE_X = scale(80);
+    public static final int DEADZONE_Y = scale(50);
     public static final int CAMERA_LOOK_DOWN_OFFSET = scale(100);
 
     public static int scale(double value) {

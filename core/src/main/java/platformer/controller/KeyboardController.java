@@ -1,5 +1,6 @@
 package platformer.controller;
 
+import platformer.animation.AssetManager;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
 import platformer.core.loading.PathManager;
@@ -34,8 +35,8 @@ public class KeyboardController {
             }
         }
 
-        try (InputStream is = getClass().getResourceAsStream("/keyboard.config");
-            BufferedReader reader = new BufferedReader(new InputStreamReader(is))) {
+        try (InputStream is = AssetManager.getInstance().getResourceAsStream("/keyboard.config");
+             BufferedReader reader = new BufferedReader(new InputStreamReader(is))) {
             loadConfigFromReader(reader);
         } catch (IOException | NullPointerException e) {
             Logger.getInstance().notify("Failed to load default keyboard config.", Message.ERROR);

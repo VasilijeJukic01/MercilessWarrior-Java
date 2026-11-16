@@ -7,19 +7,17 @@ import platformer.state.AbstractState;
 import platformer.state.State;
 import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.SmallButton;
+import platformer.ui.buttons.UIButtonRenderer;
 import platformer.ui.overlays.OverlayLayer;
-import platformer.utils.ImageUtils;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
-import java.awt.image.BufferedImage;
 import java.util.List;
 
 import static platformer.constants.Constants.CRE_BTN_SIZE;
 import static platformer.constants.Constants.FONT_MEDIUM;
-import static platformer.constants.FilePaths.BOARD_TXT;
 import static platformer.constants.UI.*;
 
 /**
@@ -28,17 +26,11 @@ import static platformer.constants.UI.*;
  */
 public class LeaderboardState extends AbstractState implements State {
 
-    private BufferedImage leaderboardText;
     private SmallButton exitBtn;
 
     public LeaderboardState(Game game) {
         super(game);
-        loadImages();
         loadButtons();
-    }
-
-    private void loadImages() {
-        this.leaderboardText = ImageUtils.importImage(BOARD_TXT, BOARD_TXT_WID, BOARD_TXT_HEI);
     }
 
     private void loadButtons() {
@@ -55,7 +47,7 @@ public class LeaderboardState extends AbstractState implements State {
     @Override
     public void render(Graphics g) {
         OverlayLayer.getInstance().render(g);
-        g.drawImage(leaderboardText, BOARD_TXT_X, BOARD_TXT_Y, leaderboardText.getWidth(), leaderboardText.getHeight(), null);
+        UIButtonRenderer.drawRunicHeader(g, "LEADERBOARD", OVERLAY_X + OVERLAY_WID / 2, BOARD_TXT_Y);
         exitBtn.render(g);
         renderLeaderboard(g);
     }

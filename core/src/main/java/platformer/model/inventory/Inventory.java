@@ -22,10 +22,16 @@ public class Inventory {
     private final String[] quickUseSlots = new String[4];
 
     public Inventory() {
+        this(true);
+    }
+
+    public Inventory(boolean registerSaveListener) {
         this.equipmentHandler = new EquipmentHandler();
         this.backpackHandler = new BackpackHandler(equipmentHandler);
         Arrays.fill(quickUseSlots, null);
-        EventBus.getInstance().register(PreSaveEvent.class, e -> syncAccount());
+        if (registerSaveListener) {
+            EventBus.getInstance().register(PreSaveEvent.class, e -> syncAccount());
+        }
     }
 
     /**
@@ -50,6 +56,7 @@ public class Inventory {
         String itemId = quickUseSlots[slotIndex];
         if (itemId == null) return;
         Optional<InventoryItem> itemToUse = backpackHandler.getBackpack().stream()
+                .filter(Objects::nonNull)
                 .filter(item -> item.getItemId().equals(itemId))
                 .findFirst();
 
@@ -63,9 +70,9 @@ public class Inventory {
      * @param quickSlotIndex The index of the quick-use slot (0-3).
      */
     public void assignToQuickSlot(int backpackIndex, int quickSlotIndex) {
-        if (backpackIndex >= backpackHandler.getBackpack().size() || quickSlotIndex >= quickUseSlots.length) return;
+        if (backpackIndex < 0 || backpackIndex >= backpackHandler.getBackpack().size() || quickSlotIndex >= quickUseSlots.length) return;
         InventoryItem item = backpackHandler.getBackpack().get(backpackIndex);
-        if (item.getItemId().contains("POTION")) {
+        if (item != null && item.getItemId().contains("POTION")) {
             quickUseSlots[quickSlotIndex] = item.getItemId();
         }
     }
@@ -255,6 +262,13 @@ public class Inventory {
                 if (!itemExists) quickUseSlots[i] = null;
             }
         }
+    }
+
+    public boolean hasAndConsumeResources(Map<String, Integer> requiredItems, int requiredCoins, Player player) {
+        if (player.getCoins() < requiredCoins) return false;
+        if (!backpackHandler.consumeResourcesIfPresent(requiredItems)) return false;
+        if (requiredCoins > 0) player.changeCoins(-requiredCoins);
+        return true;
     }
 
     public void syncAccount() {

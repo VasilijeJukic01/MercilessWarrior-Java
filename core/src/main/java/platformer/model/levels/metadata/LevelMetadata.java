@@ -13,6 +13,11 @@ public class LevelMetadata {
     private String backgroundId;
     private Boolean ambientParticlesEnabled;
     private String tileset;
+    private String clearEnemiesFlag;
     private List<ObjectMetadata> decorations = new ArrayList<>();
+    private List<LightMetadata> lights = new ArrayList<>();
+    private List<NpcMetadata> npcs = new ArrayList<>();
+    private List<GameObjectMetadata> objects = new ArrayList<>();
+    private List<MinimapIconMetadata> minimapIcons = new ArrayList<>();
 
 }

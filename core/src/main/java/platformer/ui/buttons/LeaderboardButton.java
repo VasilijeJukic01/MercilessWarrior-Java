@@ -9,6 +9,7 @@ import static platformer.constants.AnimConstants.SMALL_BTN_H;
 import static platformer.constants.AnimConstants.SMALL_BTN_W;
 import static platformer.constants.Constants.CRE_BTN_SIZE;
 import static platformer.constants.FilePaths.LEADERBOARD_BTN_SHEET;
+import static platformer.constants.FilePaths.RUNIC_SQUARE_BTN_SHEET;
 
 /**
  * A specific button used to navigate to the game's leaderboard screen.
@@ -26,7 +27,7 @@ public class LeaderboardButton extends AbstractButton {
 
     @Override
     protected void loadButtons() {
-        images = SpriteManager.getInstance().loadFromSprite(LEADERBOARD_BTN_SHEET, 3, 0, CRE_BTN_SIZE, CRE_BTN_SIZE, 0, SMALL_BTN_W, SMALL_BTN_H);
+        images = SpriteManager.getInstance().loadFromSprite(RUNIC_SQUARE_BTN_SHEET, 3, 0, CRE_BTN_SIZE, CRE_BTN_SIZE, 0, SMALL_BTN_W, SMALL_BTN_H);
     }
 
     @Override
@@ -39,6 +40,7 @@ public class LeaderboardButton extends AbstractButton {
     @Override
     public void render(Graphics g) {
         g.drawImage(images[imageIndex], xPos, yPos, CRE_BTN_SIZE, CRE_BTN_SIZE, null);
+        UIButtonRenderer.drawSquareIcon(g, buttonType, false, xPos, yPos, CRE_BTN_SIZE, CRE_BTN_SIZE, mouseOver, mousePressed);
     }
 
 }

@@ -5,60 +5,57 @@ import platformer.audio.types.Sound;
 import platformer.core.GameContext;
 import platformer.event.EventBus;
 import platformer.event.events.ui.OverlayChangeEvent;
-import platformer.model.perks.Perk;
+import platformer.model.entities.player.Player;
+import platformer.model.inventory.craft.BlacksmithRecipeManager;
+import platformer.model.inventory.craft.BlacksmithRecipeManager.SmithingRecipe;
+import platformer.model.inventory.craft.BlacksmithRecipeManager.SwordUpgradeTier;
+import platformer.model.inventory.item.InventoryItem;
+import platformer.model.quests.ObjectiveTarget;
+import platformer.model.quests.QuestObjectiveType;
 import platformer.ui.buttons.AbstractButton;
 import platformer.ui.overlays.BlacksmithOverlay;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 
-import static platformer.constants.Constants.PERK_SLOT_MAX_COL;
-import static platformer.constants.UI.*;
+import static platformer.constants.UI.SLOT_SIZE;
+import static platformer.ui.overlays.BlacksmithOverlay.*;
 
 /**
- * Handles user interactions with the blacksmith overlay.
- * It manages the selection of perk slots, upgrades, and button actions.
+ * Handles user interaction for the Blacksmith Forge (Weapon Tempering & Equipment Smithing).
  */
 public class BlacksmithViewController {
 
     private final GameContext context;
     private final BlacksmithOverlay blacksmithOverlay;
-    private int selectedSlotNumber = 0;
+
+    private boolean anvilSelected = true;
+    private int selectedRecipeIndex = 0;
 
     public BlacksmithViewController(GameContext context, BlacksmithOverlay blacksmithOverlay) {
         this.context = context;
         this.blacksmithOverlay = blacksmithOverlay;
-        findFirstAvailablePerk();
-    }
-
-    private void findFirstAvailablePerk() {
-        context.getPerksManager().getPerks().stream()
-                .min(Comparator.comparingInt(Perk::getSlot))
-                .ifPresent(p -> this.selectedSlotNumber = p.getSlot());
     }
 
     public void mousePressed(MouseEvent e) {
         setMousePressed(e, blacksmithOverlay.getButtons());
-        changeSlot(e);
+        if (checkSelection(e) && SwingUtilities.isRightMouseButton(e)) {
+            forgeSelected();
+        }
     }
 
     public void mouseReleased(MouseEvent e) {
+        if (SwingUtilities.isRightMouseButton(e)) return;
         for (AbstractButton button : blacksmithOverlay.getButtons()) {
             if (isMouseInButton(e, button) && button.isMousePressed()) {
                 switch (button.getButtonType()) {
-                    case BUY:
-                        upgrade();
-                        break;
-                    case LEAVE:
-                        EventBus.getInstance().publish(new OverlayChangeEvent(null));
-                        break;
-                    default: break;
+                    case CRAFT, BUY -> forgeSelected();
+                    case LEAVE, CLOSE -> EventBus.getInstance().publish(new OverlayChangeEvent(null));
+                    default -> {}
                 }
                 break;
             }
@@ -71,80 +68,91 @@ public class BlacksmithViewController {
     }
 
     public void keyPressed(KeyEvent e) {
-        switch (e.getKeyCode()) {
-            case KeyEvent.VK_ENTER -> upgrade();
+        if (e.getKeyCode() == KeyEvent.VK_ENTER || e.getKeyCode() == KeyEvent.VK_C) {
+            forgeSelected();
         }
     }
 
     public void keyReleased(KeyEvent e) {
+        int maxRecipes = BlacksmithRecipeManager.getInstance().getSmithingRecipes().size();
         switch (e.getKeyCode()) {
-            case KeyEvent.VK_UP -> navigate(-PERK_SLOT_MAX_COL);
-            case KeyEvent.VK_DOWN -> navigate(PERK_SLOT_MAX_COL);
-            case KeyEvent.VK_LEFT -> navigate(-1);
-            case KeyEvent.VK_RIGHT -> navigate(1);
-        }
-    }
-
-    /**
-     * Navigates the perk selection based on a delta value. Finds the nearest valid perk in the given direction.
-     *
-     * @param delta Change in slot number (-1 for left, 1 for right, -PERK_SLOT_MAX_COL for up, PERK_SLOT_MAX_COL for down).
-     */
-    private void navigate(int delta) {
-        List<Perk> perks = new ArrayList<>(context.getPerksManager().getPerks());
-        perks.sort(Comparator.comparingInt(Perk::getSlot));
-        int currentIndex = -1;
-        for (int i = 0; i < perks.size(); i++) {
-            if (perks.get(i).getSlot() == selectedSlotNumber) {
-                currentIndex = i;
-                break;
+            case KeyEvent.VK_UP -> {
+                if (!anvilSelected) {
+                    if (selectedRecipeIndex < FORGE_GRID_COLS) anvilSelected = true;
+                    else selectedRecipeIndex -= FORGE_GRID_COLS;
+                }
             }
-        }
-        if (currentIndex == -1) return;
-
-        if (Math.abs(delta) == 1) {
-            int newIndex = (currentIndex + delta + perks.size()) % perks.size();
-            selectedSlotNumber = perks.get(newIndex).getSlot();
-        }
-        else {
-            int currentCol = selectedSlotNumber % PERK_SLOT_MAX_COL;
-            Optional<Perk> nextPerk;
-            if (delta > 0) {
-                nextPerk = perks.stream()
-                        .filter(p -> p.getSlot() > selectedSlotNumber && p.getSlot() % PERK_SLOT_MAX_COL == currentCol)
-                        .min(Comparator.comparingInt(Perk::getSlot));
+            case KeyEvent.VK_DOWN -> {
+                if (anvilSelected) anvilSelected = false;
+                else if (selectedRecipeIndex + FORGE_GRID_COLS < maxRecipes) {
+                    selectedRecipeIndex += FORGE_GRID_COLS;
+                }
             }
-            else {
-                nextPerk = perks.stream()
-                        .filter(p -> p.getSlot() < selectedSlotNumber && p.getSlot() % PERK_SLOT_MAX_COL == currentCol)
-                        .max(Comparator.comparingInt(Perk::getSlot));
+            case KeyEvent.VK_LEFT -> {
+                if (!anvilSelected) selectedRecipeIndex = Math.max(0, selectedRecipeIndex - 1);
             }
-            nextPerk.ifPresent(perk -> selectedSlotNumber = perk.getSlot());
-        }
-        blacksmithOverlay.updateSelectedSlot();
-    }
-
-
-    private void changeSlot(MouseEvent e) {
-        for (Perk perk : context.getPerksManager().getPerks()) {
-            int slot = perk.getSlot();
-            int xPos = (slot % PERK_SLOT_MAX_COL) * PERK_SLOT_SPACING + PERK_SLOT_X;
-            int yPos = (slot / PERK_SLOT_MAX_COL) * PERK_SLOT_SPACING + PERK_SLOT_Y;
-            Rectangle slotBounds = new Rectangle(xPos, yPos, SLOT_SIZE, SLOT_SIZE);
-            if (slotBounds.contains(e.getPoint())) {
-                this.selectedSlotNumber = slot;
-                blacksmithOverlay.updateSelectedSlot();
-                return;
+            case KeyEvent.VK_RIGHT -> {
+                if (!anvilSelected) selectedRecipeIndex = Math.min(maxRecipes - 1, selectedRecipeIndex + 1);
             }
         }
     }
 
-    private void upgrade() {
-        Audio.getInstance().getAudioPlayer().playSound(Sound.SHOP_BUY);
-        context.getPerksManager().upgrade(selectedSlotNumber);
+    private boolean checkSelection(MouseEvent e) {
+        Rectangle anvilBounds = new Rectangle(ANVIL_CARD_X, ANVIL_CARD_Y, ANVIL_CARD_W, ANVIL_CARD_H);
+        if (anvilBounds.contains(e.getPoint())) {
+            anvilSelected = true;
+            return true;
+        }
+
+        List<SmithingRecipe> recipes = BlacksmithRecipeManager.getInstance().getSmithingRecipes();
+        for (int r = 0; r < FORGE_GRID_ROWS; r++) {
+            for (int c = 0; c < FORGE_GRID_COLS; c++) {
+                int idx = r * FORGE_GRID_COLS + c;
+                if (idx >= recipes.size()) continue;
+                int xPos = FORGE_GRID_X + c * FORGE_SLOT_SPACING;
+                int yPos = FORGE_GRID_Y + r * FORGE_SLOT_SPACING;
+                Rectangle slotBounds = new Rectangle(xPos, yPos, SLOT_SIZE, SLOT_SIZE);
+                if (slotBounds.contains(e.getPoint())) {
+                    anvilSelected = false;
+                    selectedRecipeIndex = idx;
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
-    // Helpers
+    private void forgeSelected() {
+        Player player = context.getPlayer();
+        if (anvilSelected) temperSword(player);
+        else smithItem(player);
+    }
+
+    private void temperSword(Player player) {
+        BlacksmithRecipeManager brm = BlacksmithRecipeManager.getInstance();
+        int currentTier = brm.getCurrentSwordTier(context.getWorldMemoryManager());
+        List<SwordUpgradeTier> tiers = brm.getSwordUpgrades();
+        if (currentTier >= tiers.size()) return;
+
+        SwordUpgradeTier nextTier = tiers.get(currentTier);
+        if (player.getInventory().hasAndConsumeResources(nextTier.getIngredients(), nextTier.getCoinCost(), player)) {
+            Audio.getInstance().getAudioPlayer().playSound(Sound.CRAFTING);
+            context.getWorldMemoryManager().addFlag("SWORD_TIER_" + nextTier.getTier());
+            context.getQuestManager().updateQuestProgress(QuestObjectiveType.UPGRADE, ObjectiveTarget.SWORD_UPGRADE);
+        }
+    }
+
+    private void smithItem(Player player) {
+        List<SmithingRecipe> recipes = BlacksmithRecipeManager.getInstance().getSmithingRecipes();
+        if (selectedRecipeIndex < 0 || selectedRecipeIndex >= recipes.size()) return;
+
+        SmithingRecipe recipe = recipes.get(selectedRecipeIndex);
+        if (player.getInventory().hasAndConsumeResources(recipe.getIngredients(), recipe.getCoinCost(), player)) {
+            Audio.getInstance().getAudioPlayer().playSound(Sound.CRAFTING);
+            player.getInventory().addItemToBackpack(new InventoryItem(recipe.getOutput(), recipe.getAmount()));
+        }
+    }
+
     private void setMousePressed(MouseEvent e, AbstractButton[] buttons) {
         Arrays.stream(buttons)
                 .filter(button -> isMouseInButton(e, button))
@@ -164,8 +172,11 @@ public class BlacksmithViewController {
         return button.getButtonHitBox().contains(e.getPoint());
     }
 
-    // Getters
-    public int getSlotNumber() {
-        return selectedSlotNumber;
+    public boolean isAnvilSelected() {
+        return anvilSelected;
+    }
+
+    public int getSelectedRecipeIndex() {
+        return selectedRecipeIndex;
     }
 }

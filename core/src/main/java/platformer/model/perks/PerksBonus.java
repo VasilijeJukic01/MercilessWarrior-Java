@@ -4,8 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 /**
- * Singleton that holds the bonuses provided by the perks.
- * It includes bonuses to attack, health, power, experience, and coins, as well as special abilities.
+ * Singleton that holds the cumulative bonuses and active mechanics unlocked via the Mastery Perk Tree.
  */
 @Getter
 @Setter
@@ -15,7 +14,9 @@ public class PerksBonus {
 
     private int bonusAttack, bonusHealth, bonusPower, bonusExp, bonusCoin, criticalHitChance;
     private double bonusCooldown, dashCooldown;
-    private boolean fireball, transform, restorePower, deflect, lavaWalk, dashSlash;
+    private double critMultiplierBonus, spellDamageBonus, defenseBonus, vampiricHealPct;
+    private double flameCostReduction, transformCostReduction;
+    private boolean fireball, transform, restorePower, deflect, lavaWalk, dashSlash, piercingFireball;
 
     private PerksBonus() {}
 
@@ -39,11 +40,18 @@ public class PerksBonus {
         criticalHitChance = 0;
         bonusCooldown = 0;
         dashCooldown = 0;
+        critMultiplierBonus = 0;
+        spellDamageBonus = 0;
+        defenseBonus = 0;
+        vampiricHealPct = 0;
+        flameCostReduction = 0;
+        transformCostReduction = 0;
         fireball = false;
         transform = false;
         restorePower = false;
         deflect = false;
         lavaWalk = false;
         dashSlash = false;
+        piercingFireball = false;
     }
 }

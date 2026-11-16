@@ -6,6 +6,7 @@ public enum DustType {
     DASH,
     WALL_SLIDE,
     WALL_JUMP,
+    DOUBLE_JUMP,
     IMPACT_SPARK,
     CRITICAL_HIT,
     PLAYER_HIT,
@@ -22,5 +23,7 @@ public enum DustType {
     RORIC_TELEPORT_IN,
     RORIC_BEAM_CHARGE,
     CELESTIAL_AURA,
-    RORIC_SUMMON
+    RORIC_SUMMON,
+    WATER_SPLASH,
+    PLAYER_BURN
 }

@@ -18,6 +18,7 @@ import platformer.state.types.GameState;
 import platformer.ui.buttons.AbstractButton;
 import platformer.ui.overlays.ShopOverlay;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
@@ -54,6 +55,15 @@ public class ShopViewController {
 
     // Event Handlers
     public void mousePressed(MouseEvent e) {
+        if (SwingUtilities.isRightMouseButton(e)) {
+            changeSlot(e);
+            int prevQty = quantityToTrade;
+            quantityToTrade = 1;
+            if (isSelling) sellItem();
+            else buyItem();
+            quantityToTrade = prevQty;
+            return;
+        }
         if (sliderActive && isMouseInButton(e, shopOverlay.getSlider())) shopOverlay.getSlider().setMousePressed(true);
         else {
             setMousePressed(e, shopOverlay.getSmallButtons());
@@ -321,6 +331,42 @@ public class ShopViewController {
         }
         quantityToTrade = 1 + (int) (shopOverlay.getSlider().getValue() * (maxQuantity - 1));
         quantityToTrade = Math.max(1, quantityToTrade);
+    }
+
+    public java.awt.image.BufferedImage getSelectedItemModel() {
+        int itemsPerPage = SHOP_SLOT_MAX_ROW * SHOP_SLOT_MAX_COL;
+        if (isSelling) {
+            Inventory inventory = gameState.getPlayer().getInventory();
+            int absoluteIndex = sellSlotNumber + (sellSelectedSlot * itemsPerPage);
+            if (absoluteIndex < inventory.getBackpack().size() && inventory.getBackpack().get(absoluteIndex) != null)
+                return inventory.getBackpack().get(absoluteIndex).getModel();
+        }
+        else {
+            Optional<Shop> activeShop = getActiveShop();
+            if (activeShop.isPresent()) {
+                int absoluteIndex = buySlotNumber + (buySelectedSlot * itemsPerPage);
+                if (absoluteIndex < activeShop.get().getShopItems().size())
+                    return activeShop.get().getShopItems().get(absoluteIndex).getModel();
+            }
+        }
+        return null;
+    }
+
+    public int getSelectedItemUnitValue() {
+        int itemsPerPage = SHOP_SLOT_MAX_ROW * SHOP_SLOT_MAX_COL;
+        if (isSelling) {
+            ItemData data = getSelectedItemData();
+            return data != null ? data.sellValue : 0;
+        }
+        else {
+            Optional<Shop> activeShop = getActiveShop();
+            if (activeShop.isPresent()) {
+                int absoluteIndex = buySlotNumber + (buySelectedSlot * itemsPerPage);
+                if (absoluteIndex < activeShop.get().getShopItems().size())
+                    return activeShop.get().getShopItems().get(absoluteIndex).getCost();
+            }
+        }
+        return 0;
     }
 
     private void setMousePressed(MouseEvent e, AbstractButton[] buttons) {

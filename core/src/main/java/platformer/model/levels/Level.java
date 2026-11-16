@@ -9,20 +9,13 @@ import platformer.model.gameObjects.npc.Npc;
 import platformer.model.gameObjects.npc.NpcType;
 import platformer.model.gameObjects.objects.Container;
 import platformer.model.gameObjects.objects.*;
-import platformer.model.spells.types.Flash;
-import platformer.model.spells.types.Lightning;
-import platformer.model.spells.Spell;
-import platformer.model.spells.SpellType;
-import platformer.utils.CollectionUtils;
+import platformer.physics.CollisionDetector;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 import static platformer.constants.Constants.*;
 
@@ -33,35 +26,26 @@ import static platformer.constants.Constants.*;
 public class Level {
 
     // Data
-    private final String name;
     private final String tilesetName;
-    private int npcIndicator = 0;
     private final BufferedImage levelImg;
     private int[][] lvlData, decoData, layerData;
+    private boolean initialized = false;
 
     // Items
     private final Map<EnemyType, List<Enemy>> enemiesMap = new HashMap<>();
     private final Map<ObjType, List<GameObject>> objectsMap = new HashMap<>();
-    private final Map<SpellType, List<Spell>> spellsMap = new HashMap<>();
-    private static final Map<String, List<NpcType>> npcMap = new HashMap<>();
+    private final Set<Point> cutDecorations = new HashSet<>();
+    private final Map<Point, Double> decorationBends = new HashMap<>();
 
     private final List<Trigger> triggers = new ArrayList<>();
-    private final Map<LvlTriggerType, Point> spawnPoints = new HashMap<>();
+    private final Map<LvlTriggerType, List<Point>> spawnPoints = new HashMap<>();
 
     // Configuration
     private int levelTilesWidth, levelTilesHeight;
     private int xMaxTilesOffset, xMaxLevelOffset;
     private int yMaxTilesOffset, yMaxLevelOffset;
 
-    static {
-        npcMap.put("level02", List.of(NpcType.ANITA));
-        npcMap.put("level11", List.of(NpcType.NIKOLAS));
-        npcMap.put("level10", List.of(NpcType.SIR_DEJANOVIC));
-        npcMap.put("level13", List.of(NpcType.RORIC));
-    }
-
-    public Level(String name, BufferedImage levelImg, String tilesetName) {
-        this.name = name;
+    public Level(BufferedImage levelImg, String tilesetName) {
         this.levelImg = levelImg;
         this.tilesetName = tilesetName;
         init();
@@ -80,16 +64,22 @@ public class Level {
     // Level items Data
     public void gatherData() {
         int panelWidth = levelImg.getWidth() / 3;
+        boolean[][] waterGrid = new boolean[panelWidth][levelImg.getHeight()];
+        boolean[][] lavaGrid = new boolean[panelWidth][levelImg.getHeight()];
         reset();
         for (int i = 0; i < panelWidth; i++) {
             for (int j = 0; j < levelImg.getHeight(); j++) {
-                Color color = new Color(levelImg.getRGB(i, j));
-                getEnemyData(i, j, color.getGreen());
-                getObjectData(i, j, color.getBlue());
-                getSpellData(i, j, color.getGreen(), color.getBlue());
+                Color colorP1 = new Color(levelImg.getRGB(i, j));
+                Color colorP3 = new Color(levelImg.getRGB(i + panelWidth * 2, j));
+
+                getEnemyData(i, j, colorP1.getGreen());
+                getObjectData(i, j, colorP1.getBlue(), colorP3, waterGrid, lavaGrid);
             }
         }
         getTriggerData(panelWidth);
+        buildMergedWaterPools(waterGrid, panelWidth, levelImg.getHeight());
+        buildMergedLavaPools(lavaGrid, panelWidth, levelImg.getHeight());
+        this.initialized = true;
     }
 
     private void getEnemyData(int i, int j, int valueG) {
@@ -117,7 +107,7 @@ public class Level {
         }
     }
 
-    private void getObjectData(int i, int j, int valueB) {
+    private void getObjectData(int i, int j, int valueB, Color colorP3, boolean[][] waterGrid, boolean[][] lavaGrid) {
         if (valueB >= ObjType.MAX.ordinal()) return;
         switch (ObjType.values()[valueB]) {
             case HEAL_POTION:
@@ -149,19 +139,13 @@ public class Level {
                 addGameObject(new Candle(ObjType.values()[valueB], i*TILES_SIZE, j*TILES_SIZE));
                 break;
             case TABLE:
-                addGameObject(new Table(ObjType.values()[valueB], i*TILES_SIZE, j*TILES_SIZE));
+                addGameObject(new Table(ObjType.values()[valueB], i*TILES_SIZE, (j + 1)*TILES_SIZE));
                 break;
             case BOARD:
                 addGameObject(new Board(ObjType.values()[valueB], i*TILES_SIZE, j*TILES_SIZE));
                 break;
-            case NPC:
-                if (npcMap.containsKey(name)) {
-                    List<NpcType> npcTypes = npcMap.get(name);
-                    addGameObject(new Npc(ObjType.values()[valueB], i*TILES_SIZE, j*TILES_SIZE, npcTypes.get(npcIndicator++)));
-                }
-                break;
             case LAVA:
-                addGameObject(new Lava(ObjType.values()[valueB], i*TILES_SIZE, j*TILES_SIZE));
+                lavaGrid[i][j] = true;
                 break;
             case BRICK:
                 addGameObject(new Brick(ObjType.values()[valueB], i*TILES_SIZE, j*TILES_SIZE));
@@ -178,17 +162,17 @@ public class Level {
             case HERB:
                 addGameObject(new Herb(ObjType.HERB, i * TILES_SIZE, j * TILES_SIZE));
                 break;
+            case DOOR:
+                String dest = "exit";
+                if (colorP3.getRed() == 254 && colorP3.getGreen() == 254) {
+                    dest = getInteriorName(colorP3.getBlue());
+                }
+                addGameObject(new Door(ObjType.DOOR, i*TILES_SIZE, j*TILES_SIZE, dest));
+                break;
+            case WATER:
+                waterGrid[i][j] = true;
+                break;
             default: break;
-        }
-    }
-
-    private void getSpellData(int i, int j, int valueG, int valueB) {
-        // 100 : >100 Rule
-        if (valueG == 100 && valueB == 101) {
-            addSpell(new Lightning(SpellType.LIGHTNING, i*TILES_SIZE, j*TILES_SIZE));
-        }
-        else if (valueG == 100 && valueB == 102) {
-            addSpell(new Flash(SpellType.FLASH, i*TILES_SIZE, (j+1)*TILES_SIZE));
         }
     }
 
@@ -200,11 +184,6 @@ public class Level {
     private void addEnemy(Enemy enemy) {
         EnemyType type = enemy.getEnemyType();
         enemiesMap.computeIfAbsent(type, k -> new ArrayList<>()).add(enemy);
-    }
-
-    private void addSpell(Spell spell) {
-        SpellType type = spell.getSpellType();
-        spellsMap.computeIfAbsent(type, k -> new ArrayList<>()).add(spell);
     }
 
     // Data Gatherer
@@ -244,7 +223,7 @@ public class Level {
             for (int j = 0; j < levelImg.getHeight(); j++) {
                 Color color = new Color(levelImg.getRGB(i, j));
                 int value = layer ? color.getGreen() : color.getBlue();
-                if ((value >= 80 && !layer) || (value > 4 && layer)) value = -1;
+                if ((value >= 150 && !layer) || (value > 4 && layer)) value = -1;
                 data[i - panelWidth][j] = value;
             }
         }
@@ -261,22 +240,123 @@ public class Level {
         for (int i = panelWidth * 2; i < levelImg.getWidth(); i++) {
             for (int j = 0; j < levelImg.getHeight(); j++) {
                 Color color = new Color(levelImg.getRGB(i, j));
-                int triggerValue = color.getBlue();
+                int r = color.getRed();
+                int g = color.getGreen();
+                int b = color.getBlue();
 
-                if (triggerValue < LvlTriggerType.MAX.ordinal() && color.getRed() == 254 && color.getGreen() == 254) {
-                    LvlTriggerType type = LvlTriggerType.values()[triggerValue];
+                // Standard Triggers (R=254, G=254)
+                if (b < LvlTriggerType.MAX.ordinal() && r == 254 && g == 254) {
+                    LvlTriggerType type = LvlTriggerType.values()[b];
                     int worldX = (i - (panelWidth * 2)) * TILES_SIZE;
                     int worldY = j * TILES_SIZE;
+
                     if (type.name().startsWith("SPAWN")) {
-                        spawnPoints.put(type, new Point(worldX, worldY));
+                        spawnPoints.computeIfAbsent(type, k -> new ArrayList<>()).add(new Point(worldX, worldY));
                     }
                     else {
                         Rectangle2D.Double bounds = new Rectangle2D.Double(worldX, worldY, TILES_SIZE, TILES_SIZE);
                         triggers.add(new Trigger(bounds, type));
                     }
                 }
+                // NPC Triggers (R=0, G=0)
+                else if (r == 0 && g == 0 && b < NpcType.values().length) {
+                    int worldX = (i - (panelWidth * 2)) * TILES_SIZE;
+                    int worldY = j * TILES_SIZE;
+                    NpcType type = NpcType.values()[b];
+                    addGameObject(new Npc(ObjType.NPC, worldX, worldY, type));
+                }
             }
         }
+    }
+
+    private String getInteriorName(int blueValue) {
+        return switch (blueValue) {
+            case 10 -> "tavern";
+            default -> "exit";
+        };
+    }
+
+    // Fluids
+    private void buildMergedWaterPools(boolean[][] waterGrid, int width, int height) {
+        boolean[][] visited = new boolean[width][height];
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                if (!waterGrid[x][y] || visited[x][y]) continue;
+
+                int spanW = 1;
+                while (x + spanW < width && waterGrid[x + spanW][y] && !visited[x + spanW][y]) {
+                    spanW++;
+                }
+
+                int spanH = 1;
+                outer:
+                while (y + spanH < height) {
+                    for (int k = 0; k < spanW; k++) {
+                        if (!waterGrid[x + k][y + spanH] || visited[x + k][y + spanH]) {
+                            break outer;
+                        }
+                    }
+                    spanH++;
+                }
+
+                for (int dy = 0; dy < spanH; dy++) {
+                    for (int dx = 0; dx < spanW; dx++) {
+                        visited[x + dx][y + dy] = true;
+                    }
+                }
+                addGameObject(new Water(x * TILES_SIZE, y * TILES_SIZE, spanW, spanH));
+            }
+        }
+    }
+
+    private void buildMergedLavaPools(boolean[][] lavaGrid, int width, int height) {
+        boolean[][] visited = new boolean[width][height];
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                if (!lavaGrid[x][y] || visited[x][y]) continue;
+
+                int spanW = 1;
+                while (x + spanW < width && lavaGrid[x + spanW][y] && !visited[x + spanW][y]) {
+                    spanW++;
+                }
+
+                int spanH = 1;
+                outer:
+                while (y + spanH < height) {
+                    for (int k = 0; k < spanW; k++) {
+                        if (!lavaGrid[x + k][y + spanH] || visited[x + k][y + spanH]) {
+                            break outer;
+                        }
+                    }
+                    spanH++;
+                }
+
+                for (int dy = 0; dy < spanH; dy++) {
+                    for (int dx = 0; dx < spanW; dx++) {
+                        visited[x + dx][y + dy] = true;
+                    }
+                }
+                addGameObject(new Lava(x * TILES_SIZE, y * TILES_SIZE, spanW, spanH));
+            }
+        }
+    }
+
+    // Cutting
+    public void markDecorationCut(int tileX, int tileY) {
+        cutDecorations.add(new Point(tileX, tileY));
+    }
+
+    public boolean isDecorationCut(int tileX, int tileY) {
+        return cutDecorations.contains(new Point(tileX, tileY));
+    }
+
+    public void setDecorationBend(Point pt, double bend) {
+        decorationBends.put(pt, bend);
+    }
+
+    public double getDecorationBend(int tileX, int tileY) {
+        if (decorationBends.isEmpty()) return 0.0;
+        return decorationBends.getOrDefault(new Point(tileX, tileY), 0.0);
     }
 
     // Other
@@ -293,11 +373,12 @@ public class Level {
     }
 
     private void reset() {
-        this.npcIndicator = 0;
         enemiesMap.clear();
         objectsMap.clear();
-        spellsMap.clear();
         triggers.clear();
+        cutDecorations.clear();
+        decorationBends.clear();
+        spawnPoints.clear();
     }
 
     // Getters
@@ -341,6 +422,31 @@ public class Level {
         return levelTilesHeight;
     }
 
+    public Map<Point, Double> getDecorationBends() {
+        return decorationBends;
+    }
+
+
+    /**
+     * Finds the SaveTotem object in this level and returns the ground spawn position for the player.
+     * Falls back to SPAWN_A if no SaveTotem object is present in the room.
+     */
+    public Point getSaveTotemSpawnPoint() {
+        List<GameObject> totems = objectsMap.get(ObjType.SAVE_TOTEM);
+        if (totems != null && !totems.isEmpty()) {
+            GameObject totem = totems.get(0);
+            int spawnX = (int) totem.getHitBox().x;
+            double groundY = CollisionDetector.getGroundY(
+                    totem.getHitBox().getCenterX(),
+                    totem.getHitBox().y,
+                    lvlData
+            );
+            int spawnY = (int) (groundY - PLAYER_HB_HEI - 1);
+            return new Point(spawnX, spawnY);
+        }
+        return getPlayerSpawn(LvlTriggerType.SPAWN_A);
+    }
+
     /**
      * Returns the spawn point for the player based on the given location.
      *
@@ -348,23 +454,35 @@ public class Level {
      * @return The spawn point for the player.
      */
     public Point getPlayerSpawn(LvlTriggerType targetSpawn) {
-        if (spawnPoints.containsKey(targetSpawn)) {
-            return spawnPoints.get(targetSpawn);
+        return getPlayerSpawn(targetSpawn, null, null);
+    }
+
+    public Point getPlayerSpawn(LvlTriggerType targetSpawn, Integer hintTileX, Integer hintTileY) {
+        List<Point> points = spawnPoints.get(targetSpawn);
+        if (hintTileX != null && hintTileY != null) {
+            Point hintWorld = new Point(hintTileX * TILES_SIZE, hintTileY * TILES_SIZE);
+            if (points != null && !points.isEmpty()) {
+                Point closest = points.get(0);
+                double bestDist = closest.distance(hintWorld);
+                for (Point p : points) {
+                    double d = p.distance(hintWorld);
+                    if (d < bestDist) {
+                        bestDist = d;
+                        closest = p;
+                    }
+                }
+                if (bestDist <= 10 * TILES_SIZE) return closest;
+            }
+            return hintWorld;
         }
-        // Fallback
-        if (!spawnPoints.isEmpty()) return spawnPoints.values().iterator().next();
+
+        if (points != null && !points.isEmpty()) {
+            return points.get(0);
+        }
+        for (List<Point> anyList : spawnPoints.values()) {
+            if (!anyList.isEmpty()) return anyList.get(0);
+        }
         return new Point(5 * TILES_SIZE, 8 * TILES_SIZE);
-    }
-
-    private List<Spell> getAllSpells() {
-        return CollectionUtils.getAllItems(spellsMap);
-    }
-
-    public <T> List<T> getSpells(Class<T> spellType) {
-        return getAllSpells().stream()
-                .filter(spellType::isInstance)
-                .map(spellType::cast)
-                .collect(Collectors.toList());
     }
 
     public Map<EnemyType, List<Enemy>> getEnemiesMap() {
@@ -377,5 +495,9 @@ public class Level {
 
     public List<Trigger> getTriggers() {
         return triggers;
+    }
+
+    public boolean isInitialized() {
+        return initialized;
     }
 }

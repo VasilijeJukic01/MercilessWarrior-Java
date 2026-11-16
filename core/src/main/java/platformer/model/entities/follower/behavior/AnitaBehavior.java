@@ -10,13 +10,14 @@ import platformer.physics.CollisionDetector;
 import java.util.List;
 import java.util.Random;
 
+import static platformer.constants.Constants.SCALE;
 import static platformer.constants.Constants.TILES_SIZE;
 
 public class AnitaBehavior implements FollowerBehavior {
 
     private final int AGGRO_RANGE = TILES_SIZE * 5;
-    private final int ATTACK_RANGE = (int)(TILES_SIZE * 1.5);
-    private final int COOLDOWN_TIME = 260;
+    private final int ATTACK_RANGE = (int) (TILES_SIZE * 1.6);
+    private final int COOLDOWN_TIME = 240;
     private final int LEASH_RANGE = TILES_SIZE * 10;
 
     // State
@@ -61,7 +62,7 @@ public class AnitaBehavior implements FollowerBehavior {
                 host.setMoveTarget(host.getHitBox().x);
                 host.requestAttack();
                 setRandomAttackAnim(host);
-                cooldownTick = COOLDOWN_TIME + rand.nextInt(65);
+                cooldownTick = COOLDOWN_TIME + rand.nextInt(55);
             }
             // Chase Enemy
             else host.setMoveTarget(currentTarget.getHitBox().x);
@@ -73,19 +74,49 @@ public class AnitaBehavior implements FollowerBehavior {
     }
 
     @Override
-    public void onAttackFrame(Follower host, List<Enemy> enemies) {
-        boolean isWindAttack = host.getEntityState() == Anim.SPELL_1;
+    public void onAttackFrame(Follower host, int animIndex, List<Enemy> enemies) {
+        if (host.getEntityState() == Anim.SPELL_1) {
+            handleWindFlurryFrame(host, animIndex, enemies);
+        }
+        else if (animIndex == 2) {
+            host.getAudioHandler().playMeleeAttack();
+            host.performAttackLunge(4 * SCALE, false);
+            applyDamageToEnemies(host, enemies, 2.0, false);
+        }
+    }
 
+    /**
+     * Executes Anita's 5-slash Wind Flurry.
+     */
+    private void handleWindFlurryFrame(Follower host, int animIndex, List<Enemy> enemies) {
+        if (animIndex == 1 || animIndex == 12) {
+            host.getAudioHandler().playSpellAttack();
+            host.performAttackLunge(7 * SCALE, true);
+            applyDamageToEnemies(host, enemies, 1.5, true);
+        }
+        else if (animIndex == 4 || animIndex == 8) {
+            host.getAudioHandler().playMeleeAttack();
+            host.performAttackLunge(6 * SCALE, true);
+            applyDamageToEnemies(host, enemies, 1.5, false);
+        }
+        else if (animIndex == 15) {
+            host.getAudioHandler().playMeleeAttack();
+            host.performAttackLunge(8 * SCALE, true);
+            applyDamageToEnemies(host, enemies, 2.5, true);
+        }
+    }
+
+    private void applyDamageToEnemies(Follower host, List<Enemy> enemies, double damage, boolean applyWindFreeze) {
+        if (enemies == null) return;
         for (Enemy e : enemies) {
             if (e.isAlive() && e.getEnemyAction() != Anim.DEATH && host.getAttackBox().intersects(e.getHitBox())) {
                 if (e.getEnemyAction() == Anim.BLOCK) continue;
-                e.hit(1, false, true);
+                e.hit(damage, false, false);
 
                 // Pushback
                 if (e.getHitBox().x > host.getHitBox().x) e.setPushDirection(Direction.RIGHT);
                 else e.setPushDirection(Direction.LEFT);
-
-                if (isWindAttack) e.freeze(40);
+                if (applyWindFreeze) e.freeze(80);
             }
         }
     }
@@ -140,8 +171,8 @@ public class AnitaBehavior implements FollowerBehavior {
 
     private void setRandomAttackAnim(Follower host) {
         int r = rand.nextInt(20);
-        if (r < 9) host.setEnemyActionNoReset(Anim.ATTACK_1);
-        else if (r < 18) host.setEnemyActionNoReset(Anim.ATTACK_2);
+        if (r < 7) host.setEnemyActionNoReset(Anim.ATTACK_1);
+        else if (r < 14) host.setEnemyActionNoReset(Anim.ATTACK_2);
         else host.setEnemyActionNoReset(Anim.SPELL_1);
     }
 }

@@ -21,6 +21,7 @@ public class ParticleFactory {
         behaviorCache.put(DustType.IMPACT, new ImpactBehavior());
         behaviorCache.put(DustType.RUNNING, new RunningBehavior());
         behaviorCache.put(DustType.DASH, new DashBehavior());
+        behaviorCache.put(DustType.DOUBLE_JUMP, new DoubleJumpBehavior());
         behaviorCache.put(DustType.WALL_SLIDE, new WallSlideBehavior());
         behaviorCache.put(DustType.WALL_JUMP, new WallJumpBehavior());
         behaviorCache.put(DustType.IMPACT_SPARK, new ImpactSparkBehavior());
@@ -40,6 +41,7 @@ public class ParticleFactory {
         behaviorCache.put(DustType.RORIC_BEAM_CHARGE, new BeamChargeBehavior());
         behaviorCache.put(DustType.CELESTIAL_AURA, new CelestialAuraBehavior());
         behaviorCache.put(DustType.RORIC_SUMMON, new RoricSummonBehavior());
+        behaviorCache.put(DustType.WATER_SPLASH, new WaterSplashBehavior());
     }
 
     /**

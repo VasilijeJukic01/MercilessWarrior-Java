@@ -2,9 +2,6 @@ package platformer.model.entities.enemies.boss;
 
 import platformer.animation.Anim;
 import platformer.animation.SpriteManager;
-import platformer.audio.Audio;
-import platformer.audio.types.Song;
-import platformer.audio.types.Sound;
 import platformer.event.EventBus;
 import platformer.event.events.effects.ScreenShakeEvent;
 import platformer.event.events.lancer.LancerAuraEvent;
@@ -14,6 +11,8 @@ import platformer.model.entities.Direction;
 import platformer.model.entities.Entity;
 import platformer.model.entities.enemies.Enemy;
 import platformer.model.entities.enemies.EnemyType;
+import platformer.model.entities.enemies.boss.lancer.LancerAttackHandler;
+import platformer.model.entities.enemies.boss.lancer.LancerAudioHandler;
 import platformer.model.entities.player.Player;
 import platformer.model.gameObjects.ObjectManager;
 import platformer.model.projectiles.ProjectileFactory;
@@ -23,9 +22,6 @@ import platformer.ui.overlays.hud.BossInterface;
 import java.awt.*;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
 
 import static platformer.constants.Constants.*;
 import static platformer.physics.CollisionDetector.*;
@@ -33,19 +29,20 @@ import static platformer.physics.CollisionDetector.*;
 public class Lancer extends Enemy {
 
     private final LancerAttackHandler handler;
+    private final LancerAudioHandler audioHandler;
 
     private int attackOffset;
-    private Anim prevAnim = Anim.IDLE;
+    private boolean start = false;
+    private boolean shooting = false;
+    private boolean canFlash = true;
+    private boolean slamTriggered = false;
 
-    // Flags
-    private boolean start, shooting, canFlash = true;
     private int multiShootFlag = 0;
-    private int shootCount = 0, multiShootCount = 0;
-    private int slashCount = 0, rapidSlashCount = 0;
-    private int specialAttackIndex;
-
-    private final List<Anim> actions =
-            new ArrayList<>(List.of(Anim.ATTACK_1, Anim.ATTACK_2, Anim.ATTACK_3, Anim.SPELL_1, Anim.SPELL_2, Anim.SPELL_3, Anim.SPELL_4));
+    private int shootCount = 0;
+    private int multiShootCount = 0;
+    private int slashCount = 0;
+    private int rapidSlashCount = 0;
+    private int specialAttackIndex = 0;
 
     // Physics
     private final double gravity = 0.1 * SCALE;
@@ -57,93 +54,90 @@ public class Lancer extends Enemy {
         initHitBox(LANCER_HB_WID, LANCER_HB_HEI);
         initAttackBox();
         super.cooldown = new double[1];
-        this.handler = new LancerAttackHandler(this, actions);
+        this.audioHandler = new LancerAudioHandler();
+        this.handler = new LancerAttackHandler(this, audioHandler);
     }
 
     // Init
     private void initAttackBox() {
-        this.attackBox = new Rectangle2D.Double(xPos, yPos-1, LANCER_AB_WID, LANCER_AB_HEI);
-        this.attackOffset = (int)(33 * SCALE);
+        this.attackBox = new Rectangle2D.Double(xPos, yPos - 1, LANCER_AB_WID, LANCER_AB_HEI);
+        this.attackOffset = (int) (33 * SCALE);
     }
 
     // Checkers
     private boolean isAirFreeze() {
-        if (entityState == Anim.SPELL_3 && animIndex < 2) return true;
-        return (entityState == Anim.SPELL_4);
+        if (entityState == Anim.SPELL_3 && animIndex < 5) return true;
+        return entityState == Anim.SPELL_4;
+    }
+
+    public void engageFight(ObjectManager objectManager) {
+        if (start || !alive) return;
+        setStart(true);
+        objectManager.activateBlockers(true);
+        EventBus.getInstance().publish(new ScreenShakeEvent(25, 10.0));
+        handler.startThunderSlam();
     }
 
     // Hit
     @Override
     public boolean hit(double damage, boolean block, boolean hitSound) {
+        if (entityState == Anim.DEATH || !alive) return false;
         currentHealth -= damage;
         slashCount = 0;
-        if (currentHealth <= 0) setEnemyAction(Anim.DEATH);
-        else {
-            if (entityState != Anim.IDLE) prevAnim = entityState;
-            setEnemyAction(Anim.HIT);
+        audioHandler.playHitGrunt();
+        if (currentHealth <= 0) {
+            EventBus.getInstance().publish(new LancerAuraEvent(this, false));
+            setEnemyAction(Anim.DEATH);
         }
+        else setEnemyAction(Anim.HIT);
         return true;
     }
 
     @Override
     public void spellHit(double damage) {
-
+        hit(damage, false, false);
     }
 
     // Core
     private void updateBehavior(int[][] levelData, Player player, SpellManager spellManager, ObjectManager objectManager) {
-        if (cooldown[Cooldown.ATTACK.ordinal()] != 0) return;
-        switch (entityState) {
-            case IDLE:
-                idleAction(levelData, player, objectManager); break;
-            case ATTACK_1:
-            case ATTACK_2:
-                classicAttackAction(levelData, player); break;
-            case ATTACK_3:
-                dashSlashAction(levelData, player); break;
-            case SPELL_1:
-                rapidSlashAction(levelData, player); break;
-            case SPELL_2:
-                lightningBallAction(); break;
-            case SPELL_3:
-                thunderSlamAction(player, spellManager); break;
-            case SPELL_4:
-                multiLightningBallAction(spellManager);
-                break;
-            case DEATH:
-                objectManager.activateBlockers(false);
-                break;
-            case HIT:
-                startFight(objectManager);
-                break;
-            default: break;
-        }
-    }
-
-    private void startFight(ObjectManager objectManager) {
         if (!start) {
-            setStart(true);
-            objectManager.activateBlockers(true);
-            setEnemyAction(Anim.SPELL_3);
-        }
-    }
-
-    // Behavior
-    private void idleAction(int[][] levelData, Player player, ObjectManager objectManager) {
-        if (!start && isEntityCloseForAttack(player)) {
-            startFight(objectManager);
+            if (player.getHitBox().x > 7.5 * TILES_SIZE && isEntityInSight(player)) {
+                engageFight(objectManager);
+            }
             return;
         }
-        if (start && cooldown[Cooldown.ATTACK.ordinal()] == 0)
-            handler.attack(levelData, player, prevAnim);
+        if (cooldown[Cooldown.ATTACK.ordinal()] != 0) return;
+
+        switch (entityState) {
+            case IDLE -> idleAction(levelData, player);
+            case ATTACK_1, ATTACK_2 -> classicAttackAction(levelData, player);
+            case ATTACK_3 -> dashSlashAction(levelData, player);
+            case SPELL_1 -> rapidSlashAction(levelData, player);
+            case SPELL_2 -> lightningBallAction();
+            case SPELL_3 -> thunderSlamAction(player, spellManager);
+            case SPELL_4 -> multiLightningBallAction(spellManager);
+            case DEATH -> objectManager.activateBlockers(false);
+            default -> {}
+        }
+    }
+
+    private void idleAction(int[][] levelData, Player player) {
+        if (cooldown[Cooldown.ATTACK.ordinal()] == 0) handler.attack(levelData, player);
     }
 
     private void classicAttackAction(int[][] levelData, Player player) {
-        if (animIndex == 0) {
-            Audio.getInstance().getAudioPlayer().playSound(Sound.LANCER_ROAR_2);
+        if (animIndex == 0 && animTick == 0) {
+            audioHandler.playBattleCry();
             attackCheck = false;
         }
-        if (animIndex == 2) movingAttack(levelData, 30);
+        if (animIndex == 2) {
+            if (animTick == 0) {
+                audioHandler.playClassicSwing();
+                EventBus.getInstance().publish(new ScreenShakeEvent(7, 4.5));
+                EventBus.getInstance().publish(new LancerAuraEvent(this, LancerAuraEvent.EffectType.BLADE_SWING));
+            }
+            movingAttack(levelData, 30);
+        }
         if ((animIndex == 3 || animIndex == 2) && !attackCheck) checkEntityHit(attackBox, player);
     }
 
@@ -151,176 +145,214 @@ public class Lancer extends Enemy {
         if (animIndex == 0) attackCheck = false;
         if (slashCount == 0) dashSlash(levelData);
         else if (animIndex == 2) {
+            if (animTick == 0) {
+                audioHandler.playFollowUpSwing();
+                EventBus.getInstance().publish(new ScreenShakeEvent(7, 4.5));
+                EventBus.getInstance().publish(new LancerAuraEvent(this, LancerAuraEvent.EffectType.BLADE_SWING));
+            }
             movingAttack(levelData, 30);
-            Audio.getInstance().getAudioPlayer().playSound(Sound.LANCER_ROAR_1);
         }
         if (!attackCheck) checkEntityHit(attackBox, player);
     }
 
+    private void dashSlash(int[][] levelData) {
+        if (animIndex == 0) attackCheck = false;
+        if (animIndex == 2 && !attackCheck) {
+            if (animTick == 0) audioHandler.playDashSlash();
+            Point2D.Double startPos = new Point2D.Double(hitBox.getCenterX(), hitBox.y);
+            double xSpeed = (direction == Direction.LEFT) ? -enemySpeed : enemySpeed;
+            if (canMoveHere(hitBox.x + xSpeed * 80, hitBox.y, hitBox.width, hitBox.height, levelData)) {
+                if (isFloor(hitBox, xSpeed * 80, levelData, direction)) {
+                    hitBox.x += xSpeed * 80;
+                }
+            }
+            Point2D.Double endPos = new Point2D.Double(hitBox.getCenterX(), hitBox.y);
+            EventBus.getInstance().publish(new LancerDashSlashEvent(startPos, endPos, hitBox.height));
+        }
+    }
+
+    private void movingAttack(int[][] levelData, int speed) {
+        double xSpeed = (direction == Direction.LEFT) ? -enemySpeed : enemySpeed;
+        if (canMoveHere(hitBox.x + xSpeed * speed, hitBox.y, hitBox.width, hitBox.height, levelData)) {
+            if (isFloor(hitBox, xSpeed * speed, levelData, direction)) {
+                hitBox.x += xSpeed * speed;
+            }
+        }
+    }
+
+    private void rapidSlashAction(int[][] levelData, Player player) {
+        if (animIndex == 0 && animTick == 0) {
+            facePlayer(player);
+            audioHandler.playRapidFlurryStart();
+        }
+        else if (animIndex == 12 && rapidSlashCount < 1) {
+            rapidSlashCount++;
+            animIndex = 2;
+            facePlayer(player);
+            audioHandler.playBattleCry();
+        }
+        if (animIndex >= 2 && animIndex <= 11 && animTick == 0 && animIndex % 2 == 0) {
+            audioHandler.playRapidCut(animIndex);
+            EventBus.getInstance().publish(new LancerAuraEvent(this, LancerAuraEvent.EffectType.RAPID_THRUST));
+            if (animIndex % 4 == 0) {
+                EventBus.getInstance().publish(new ScreenShakeEvent(6, 4.0));
+            }
+        }
+        movingAttack(levelData, 15);
+        if (animIndex >= 2 && animIndex <= 11) checkEntityHit(attackBox, player);
+    }
+
     private void lightningBallAction() {
+        if (animIndex == 2 && animTick == 0) audioHandler.playCharge();
         if (animIndex == 7 && !shooting) {
-            ProjectileFactory.createLightningBall(this);
-            Audio.getInstance().getAudioPlayer().playSound(Sound.LIGHTNING_2);
+            ProjectileFactory.createLightningBall(this, shootCount);
+            audioHandler.playOrbCast();
+            EventBus.getInstance().publish(new ScreenShakeEvent(9, 6.0));
+            EventBus.getInstance().publish(new LancerAuraEvent(this, LancerAuraEvent.EffectType.ORB_CAST));
             shooting = true;
         }
-        else if (animIndex == 9 && shootCount < 3) {
+        else if (animIndex == 9 && shootCount < 2) {
             animIndex = 2;
             shootCount++;
             shooting = false;
         }
     }
 
-    private void rapidSlashAction(int[][] levelData, Player player) {
-        if (animIndex == 0) Audio.getInstance().getAudioPlayer().playSound(Sound.LANCER_ROAR_3);
-        else if (animIndex == 12 && rapidSlashCount < 1) {
-            rapidSlashCount++;
-            animIndex = 2;
-        }
-        movingAttack(levelData, 10);
-        if (animIndex % 2 == 0) setDirection(Direction.LEFT);
-        else setDirection(Direction.RIGHT);
-        if (animIndex >= 2 && animIndex <= 11) checkEntityHit(attackBox, player);
-    }
-
     private void thunderSlamAction(Player player, SpellManager spellManager) {
-        if (animIndex > 5 && animIndex < 16) checkEntityHit(attackBox, player);
-        if (animIndex == 11) Audio.getInstance().getAudioPlayer().playSound(Sound.LANCER_ROAR_2);
-        else if (animIndex == 13) {
+        if (animIndex == 0) {
+            slamTriggered = false;
+            attackCheck = false;
+        }
+        if (animIndex == 1 && animTick == 0) audioHandler.playCharge();
+        if (animIndex >= 12 && animIndex <= 15 && !attackCheck) {
+            checkEntityHit(attackBox, player);
+        }
+        if (animIndex == 11 && animTick == 0) audioHandler.playBattleCry();
+        else if (animIndex >= 13 && !slamTriggered) {
+            slamTriggered = true;
+            audioHandler.playThunderSlamImpact();
             spellManager.activateLightnings();
-            EventBus.getInstance().publish(new ScreenShakeEvent(30, 15.0));
+            EventBus.getInstance().publish(new LancerAuraEvent(this, LancerAuraEvent.EffectType.THUNDER_SLAM_IMPACT));
+            EventBus.getInstance().publish(new ScreenShakeEvent(30, 14.0));
         }
     }
 
     private void multiLightningBallAction(SpellManager spellManager) {
-        EventBus.getInstance().publish(new LancerAuraEvent(this, true));
+        if (multiShootCount == 0 && multiShootFlag == 0 && animIndex == 0 && animTick == 0) {
+            audioHandler.playCharge();
+            EventBus.getInstance().publish(new LancerAuraEvent(this, true));
+        }
         if (specialAttackIndex == 1) oscillationProjectiles();
         else trackingProjectiles(spellManager);
     }
 
-    private void dashSlash(int[][] levelData) {
-        if (animIndex == 0) attackCheck = false;
-        if (animIndex == 2 && !attackCheck) {
-            Point2D.Double startPos = new Point2D.Double(hitBox.getCenterX(), hitBox.y);
-            double xSpeed;
-
-            if (direction == Direction.LEFT) xSpeed = -enemySpeed;
-            else xSpeed = enemySpeed;
-
-            if (canMoveHere(hitBox.x + xSpeed * 80, hitBox.y, hitBox.width, hitBox.height, levelData))
-                if (isFloor(hitBox, xSpeed * 80, levelData, direction))
-                    hitBox.x += xSpeed * 80;
-
-            Point2D.Double endPos = new Point2D.Double(hitBox.getCenterX(), hitBox.y);
-            EventBus.getInstance().publish(new LancerDashSlashEvent(startPos, endPos, hitBox.height));
-
-        }
-    }
-
-    private void movingAttack(int[][] levelData, int speed) {
-        double xSpeed;
-
-        if (direction == Direction.LEFT) xSpeed = -enemySpeed;
-        else xSpeed = enemySpeed;
-
-        if (canMoveHere(hitBox.x + xSpeed * speed, hitBox.y, hitBox.width, hitBox.height, levelData))
-            if (isFloor(hitBox, xSpeed * speed, levelData, direction))
-                hitBox.x += xSpeed * speed;
-    }
-
-    // Update animation
     @Override
     protected void updateAnimation() {
-        if (cooldown != null) {             // Pre-Attack cooldown check
+        if (cooldown != null) {
             coolDownTickUpdate();
-            if ((entityState != Anim.IDLE && entityState != Anim.HIT) && cooldown[Cooldown.ATTACK.ordinal()] != 0) return;
+            if ((entityState != Anim.IDLE && entityState != Anim.HIT) && cooldown[Cooldown.ATTACK.ordinal()] != 0) {
+                return;
+            }
         }
         animTick++;
         if (animTick >= animSpeed) {
             animTick = 0;
             animIndex++;
-            if (animIndex >= SpriteManager.getInstance().getAnimFrames(getEnemyType(), entityState)) finishAnimation();
+            if (animIndex >= SpriteManager.getInstance().getAnimFrames(getEnemyType(), entityState)) {
+                finishAnimation();
+            }
         }
     }
 
     private void finishAnimation() {
         animIndex = 0;
-        if (actions.contains(entityState) || entityState == Anim.HIT) {
+        shooting = false;
 
-            // Hit finish
-            if (entityState == Anim.HIT) {
-                shootCount = 0;
-                setEnemyAction(Anim.IDLE);
-                return;
-            }
-            if (shootCount >= 2) shootCount = 0;
-
-            // Multi shoot finish
-            if (entityState == Anim.SPELL_4) finishMultiShoot();
-
-            // Attack finish
-            else if (entityState == Anim.ATTACK_1 || entityState == Anim.ATTACK_2 || (entityState == Anim.ATTACK_3 && slashCount != 0)) {
-                // Slash count check
-                if (slashCount == 2) slashCount = 0;
-                // Change attacks
-                else {
-                    if (slashCount == 0) setEnemyAction(Anim.ATTACK_3);
-                    else if (slashCount == 1) setEnemyAction(Anim.ATTACK_2);
-                    slashCount++;
-                    return;
-                }
-            }
-            if (multiShootCount == 0 && entityState != Anim.IDLE) {
-                Objects.requireNonNull(cooldown)[Cooldown.ATTACK.ordinal()] = 14;
-                if (entityState == Anim.ATTACK_1 || entityState == Anim.ATTACK_2) prevAnim = Anim.ATTACK_1;
-                else prevAnim = entityState;
-                animSpeed = 18;
-                setEnemyAction(Anim.IDLE);
-            }
-        }
-        else if (entityState == Anim.DEATH) {
+        if (entityState == Anim.DEATH) {
             setStart(false);
             alive = false;
+            return;
         }
-        shooting = false;
+
+        if (entityState == Anim.HIT) {
+            shootCount = 0;
+            setEnemyAction(Anim.IDLE);
+            return;
+        }
+
+        if (shootCount >= 2) shootCount = 0;
+
+        if (entityState == Anim.SPELL_4) {
+            finishMultiShoot();
+        }
+        else if (entityState == Anim.ATTACK_1 || entityState == Anim.ATTACK_2 || (entityState == Anim.ATTACK_3 && slashCount != 0)) {
+            if (slashCount == 2) slashCount = 0;
+            else {
+                if (slashCount == 0) setEnemyAction(Anim.ATTACK_3);
+                else if (slashCount == 1) setEnemyAction(Anim.ATTACK_2);
+                slashCount++;
+                return;
+            }
+        }
+
+        if (multiShootCount == 0 && entityState != Anim.IDLE) {
+            cooldown[Cooldown.ATTACK.ordinal()] = 14;
+            animSpeed = 18;
+            setEnemyAction(Anim.IDLE);
+        }
     }
 
     private void finishMultiShoot() {
         multiShootCount++;
-        if (multiShootCount == 16) {
+        if (multiShootCount >= 12) {
             multiShootCount = 0;
+            multiShootFlag = 0;
             canFlash = true;
+            EventBus.getInstance().publish(new LancerAuraEvent(this, false));
         }
-        EventBus.getInstance().publish(new LancerAuraEvent(this, false));
     }
 
 
     // Projectiles
     private void oscillationProjectiles() {
         if (animIndex == 1 && !shooting) {
-            if (multiShootFlag == 1) ProjectileFactory.createMultiLightningBallVariation1(this);
-            if (multiShootFlag == 4) ProjectileFactory.createMultiLightningBallVariation2(this);
-            multiShootFlag = (multiShootFlag + 1) % 5;
+            if (multiShootFlag == 1) {
+                ProjectileFactory.createMultiLightningBallVariation1(this);
+                audioHandler.playOrbVolley();
+            }
+            else if (multiShootFlag == 5) {
+                ProjectileFactory.createMultiLightningBallVariation2(this);
+                audioHandler.playOrbVolley();
+            }
+            multiShootFlag = (multiShootFlag + 1) % 8;
             shooting = true;
         }
     }
 
     private void trackingProjectiles(SpellManager spellManager) {
         if (animIndex == 1 && !shooting) {
-            if (multiShootFlag == 1) ProjectileFactory.createTrackingLightningBall(this);
+            if (multiShootFlag == 2) {
+                ProjectileFactory.createTrackingLightningBall(this);
+                audioHandler.playOrbVolley();
+            }
             if (multiShootFlag == 0) {
                 if (canFlash) spellManager.activateFlashes();
                 canFlash = !canFlash;
             }
-            multiShootFlag = (multiShootFlag + 1) % 5;
+            multiShootFlag = (multiShootFlag + 1) % 6;
             shooting = true;
         }
     }
 
-    // Update
+    public void facePlayer(Player player) {
+        setDirection(player.getHitBox().getCenterX() < hitBox.getCenterX() ? Direction.LEFT : Direction.RIGHT);
+    }
+
     @Override
     public void update(int[][] levelData, Player player, Entity follower) {}
 
     public void update(int[][] levelData, Player player, SpellManager spellManager, ObjectManager objectManager, BossInterface bossInterface) {
+        audioHandler.update();
         updateMove(levelData, player, spellManager, objectManager);
         updateAnimation();
         updateAttackBox();
@@ -330,16 +362,29 @@ public class Lancer extends Enemy {
 
     public void updateMove(int[][] levelData, Player player, SpellManager spellManager, ObjectManager objectManager) {
         if (!isEntityOnFloor(hitBox, levelData) && !isAirFreeze()) inAir = true;
-        if (inAir) updateInAir(levelData, gravity, collisionFallSpeed);
+        if (inAir) {
+            updateInAir(levelData, gravity, collisionFallSpeed);
+            if (entityState == Anim.SPELL_3) {
+                thunderSlamAction(player, spellManager);
+            }
+        }
         else updateBehavior(levelData, player, spellManager, objectManager);
     }
 
     private void updateAttackBox() {
         if (entityState == Anim.ATTACK_1 || entityState == Anim.ATTACK_2 || entityState == Anim.ATTACK_3) {
-            if (direction == Direction.RIGHT) attackBox.x = hitBox.x-hitBox.width + attackOffset * 1.3;
+            if (direction == Direction.RIGHT) attackBox.x = hitBox.x - hitBox.width + attackOffset * 1.3;
             else attackBox.x = hitBox.x - attackOffset * 1.3;
         }
-        else attackBox.x = hitBox.x - attackOffset;
+        else if (entityState == Anim.SPELL_1) {
+            attackBox.width = LANCER_AB_WID_REDUCE;
+            if (direction == Direction.RIGHT) attackBox.x = hitBox.x + hitBox.width * 0.4;
+            else attackBox.x = hitBox.x - attackBox.width + hitBox.width * 0.6;
+        }
+        else {
+            attackBox.width = LANCER_AB_WID;
+            attackBox.x = hitBox.x - attackOffset;
+        }
         attackBox.y = hitBox.y;
     }
 
@@ -347,7 +392,7 @@ public class Lancer extends Enemy {
     public void prepareForClassicAttack() {
         rapidSlashCount = 0;
         changeAttackBox();
-        animSpeed = 18;
+        animSpeed = (entityState == Anim.SPELL_1) ? 12 : 18;
     }
 
     public void changeAttackBox() {
@@ -361,13 +406,18 @@ public class Lancer extends Enemy {
         attackBox.width = LANCER_AB_WID;
         attackBox.x = xPos;
         shootCount = 0;
+        rapidSlashCount = 0;
+        slamTriggered = false;
     }
 
     @Override
     public void reset() {
         super.reset();
-        setStart(false);
-        multiShootCount = shootCount  = 0;
+        if (start) setStart(false);
+        audioHandler.reset();
+        EventBus.getInstance().publish(new LancerAuraEvent(this, false));
+        slamTriggered = false;
+        multiShootCount = shootCount = 0;
         shooting = false;
         multiShootFlag = 0;
         slashCount = 0;
@@ -388,8 +438,7 @@ public class Lancer extends Enemy {
     // Setters
     public void setStart(boolean start) {
         this.start = start;
-        if (start) Audio.getInstance().getAudioPlayer().playSong(Song.BOSS_1);
-        else Audio.getInstance().getAudioPlayer().playSong(Song.FOREST_1);
+        audioHandler.playBossTheme(start);
     }
 
     public void setAttackCooldown(double value) {

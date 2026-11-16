@@ -5,6 +5,7 @@ import platformer.model.gameObjects.GameObject;
 import platformer.model.gameObjects.Interactable;
 import platformer.model.gameObjects.ObjType;
 import platformer.model.inventory.item.InventoryItem;
+import platformer.ui.buttons.UIButtonRenderer;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -41,17 +42,6 @@ public class Loot extends GameObject implements Interactable {
         int y = (int) hitBox.y - yOffset - yLevelOffset;
         g.drawImage(animations[animIndex], x, y, LOOT_WID, LOOT_HEI, null);
         hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.ORANGE);
-        renderText(g, xLevelOffset, yLevelOffset);
-    }
-
-    private void renderText(Graphics g, int xLevelOffset, int yLevelOffset) {
-        if (active) {
-            g.setColor(Color.WHITE);
-            g.setFont(new Font("Arial", Font.BOLD, FONT_MEDIUM));
-            int infoX = (int)(hitBox.x - xLevelOffset + 2 * SCALE);
-            int infoY = (int)(hitBox.y - yLevelOffset);
-            g.drawString("LOOT", infoX, infoY);
-        }
     }
 
     @Override
@@ -82,6 +72,14 @@ public class Loot extends GameObject implements Interactable {
     @Override
     public String getInteractionPrompt() {
         return "Loot";
+    }
+
+    @Override
+    public void renderInteractionUI(Graphics g, int xLevelOffset, int yLevelOffset) {
+        if (!active) return;
+        int centerX = (int) (hitBox.getCenterX() - xLevelOffset);
+        int promptY = (int) (hitBox.y - yLevelOffset - 4 * SCALE);
+        UIButtonRenderer.drawInteractionPrompt(g, "LOOT", centerX, promptY);
     }
 
     public void setActive(boolean active) {

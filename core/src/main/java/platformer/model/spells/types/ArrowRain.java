@@ -1,6 +1,7 @@
 package platformer.model.spells.types;
 
 import platformer.animation.SpriteManager;
+import platformer.core.config.BalanceManager;
 import platformer.model.entities.player.Player;
 import platformer.model.spells.Spell;
 import platformer.model.spells.SpellType;
@@ -29,7 +30,7 @@ public class ArrowRain extends Spell {
         if (!active) return;
         if (currentDamageCooldown > 0) currentDamageCooldown--;
         if (currentDamageCooldown == 0 && hitBox.intersects(player.getHitBox())) {
-            player.changeHealth(-10, this);
+            player.changeHealth(-BalanceManager.getInstance().getCombat().getArrowRainSpellDamage(), this);
             currentDamageCooldown = DAMAGE_COOLDOWN;
         }
         updateAnimation();

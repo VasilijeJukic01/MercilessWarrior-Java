@@ -10,14 +10,18 @@ import platformer.event.events.ui.OverlayChangeEvent;
 import platformer.model.entities.player.Player;
 import platformer.model.entities.player.PlayerAction;
 import platformer.model.levels.*;
+import platformer.model.levels.metadata.RoomExitMetadata;
 import platformer.state.types.GameState;
 import platformer.state.types.PlayingState;
 import platformer.ui.transition.TransitionDirection;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import static platformer.constants.Constants.TILES_SIZE;
+
 /**
- * Manages high-level game flow, such as level transitions and player death.
+ * Manages high-level game flow, such as graph-based level transitions and player death.
  */
 public class GameFlowManager {
 
@@ -54,77 +58,91 @@ public class GameFlowManager {
 
     /**
      * Scans the current level's spatial triggers to see if the player has entered a level transition zone.
-     * If an intersection with a LOAD trigger is detected, it orchestrates the screen-wipe transition and loads the adjacent map.
+     * Resolves the destination level and spawn point via the world map graph using the trigger's tile coordinates.
      */
     private void checkLevelExit() {
         Player player = gameState.getPlayer();
         if (player.checkAction(PlayerAction.DASH)) return;
 
-        List<Trigger> triggers = context.getLevelManager().getCurrentLevel().getTriggers();
+        LevelManager levelManager = context.getLevelManager();
+        List<Trigger> triggers = new ArrayList<>(levelManager.getCurrentLevel().getTriggers());
         for (Trigger trigger : triggers) {
+            LvlTriggerType type = trigger.type();
+            if (type != LvlTriggerType.LOAD_LEFT_LEVEL && type != LvlTriggerType.LOAD_RIGHT_LEVEL && type != LvlTriggerType.LOAD_UP_LEVEL && type != LvlTriggerType.LOAD_DOWN_LEVEL) {
+                continue;
+            }
+
             if (player.getHitBox().intersects(trigger.bounds())) {
-                switch (trigger.type()) {
-                    case LOAD_LEFT_LEVEL:
-                        goToLevel(0, -1, LvlTriggerType.SPAWN_A, "Left level loaded.");
-                        return;
-                    case LOAD_RIGHT_LEVEL:
-                        goToLevel(0, 1, LvlTriggerType.SPAWN_B, "Right level loaded.");
-                        return;
-                    case LOAD_UP_LEVEL:
-                        goToLevel(-1, 0, LvlTriggerType.SPAWN_C, "Upper level loaded.");
-                        return;
-                    case LOAD_DOWN_LEVEL:
-                        goToLevel(1, 0, LvlTriggerType.SPAWN_D, "Bottom level loaded.");
-                        return;
+                int tileX = (int) (trigger.bounds().x / TILES_SIZE);
+                int tileY = (int) (trigger.bounds().y / TILES_SIZE);
+                RoomExitMetadata exit = levelManager.resolveExit(type, tileX, tileY);
+                if (exit != null && exit.getTargetLevel() != null) {
+                    LvlTriggerType targetSpawn = exit.getTargetSpawn() != null ? exit.getTargetSpawn() : getDefaultSpawnForTrigger(type);
+                    goToLevel(exit.getTargetLevel(), type, targetSpawn, exit.getSpawnX(), exit.getSpawnY());
+                    return;
                 }
             }
         }
+    }
+
+    private LvlTriggerType getDefaultSpawnForTrigger(LvlTriggerType triggerType) {
+        return switch (triggerType) {
+            case LOAD_LEFT_LEVEL -> LvlTriggerType.SPAWN_A;
+            case LOAD_RIGHT_LEVEL -> LvlTriggerType.SPAWN_B;
+            case LOAD_UP_LEVEL -> LvlTriggerType.SPAWN_C;
+            case LOAD_DOWN_LEVEL -> LvlTriggerType.SPAWN_D;
+            default -> LvlTriggerType.SPAWN_A;
+        };
+    }
+
+    private TransitionDirection getTransitionDirection(LvlTriggerType triggerType) {
+        return switch (triggerType) {
+            case LOAD_RIGHT_LEVEL -> TransitionDirection.FROM_LEFT;
+            case LOAD_LEFT_LEVEL -> TransitionDirection.FROM_RIGHT;
+            case LOAD_UP_LEVEL -> TransitionDirection.FROM_BOTTOM;
+            case LOAD_DOWN_LEVEL -> TransitionDirection.FROM_TOP;
+            default -> TransitionDirection.FROM_LEFT;
+        };
     }
 
     /**
      * Orchestrates the process of changing levels.
      * This involves loading the next level's data and resetting the world's component.
      *
-     * @param dI      The change in the level grid's row index.
-     * @param dJ      The change in the level grid's column index.
+     * @param targetLevelId The ID of the level to load.
+     * @param exitType      The exit trigger type that initiated the level transition.
      * @param spawn   The spawn trigger in the new level.
-     * @param message A message to log upon successful level transition.
      */
-    private void goToLevel(int dI, int dJ, LvlTriggerType spawn, String message) {
-        TransitionDirection direction = TransitionDirection.FROM_LEFT;
-        if (dI == 0 && dJ == 1) direction = TransitionDirection.FROM_LEFT;
-        else if (dI == 0 && dJ == -1) direction = TransitionDirection.FROM_RIGHT;
-        else if (dI == -1 && dJ == 0) direction = TransitionDirection.FROM_BOTTOM;
-        else if (dI == 1 && dJ == 0) direction = TransitionDirection.FROM_TOP;
+    private void goToLevel(String targetLevelId, LvlTriggerType exitType, LvlTriggerType spawn, int spawnX, int spawnY) {
+        TransitionDirection direction = getTransitionDirection(exitType);
 
         Runnable levelLoadCallback = () -> {
+            gameState.getPlayer().removeAction(PlayerAction.LEVEL_TRANSITION);
             gameState.getPlayer().resetDirections();
             gameState.getStateController().resetKeys();
             gameState.flushAWTEventQueue();
             gameState.getPlayer().activateMinimap(false);
-            context.getLevelManager().loadNextLevel(dI, dJ);
-            gameState.getWorld().levelLoadReset(spawn);
+            context.getLevelManager().loadLevelById(targetLevelId);
+            gameState.getWorld().levelLoadReset(spawn, spawnX, spawnY);
             context.getMinimapManager().changeLevel();
             gameState.getPlayer().activateMinimap(true);
             gameState.getCamera().updateLevelBounds(context.getLevelManager().getCurrentLevel());
+            gameState.getCamera().snapToPlayer(gameState.getPlayer());
             gameState.getOverlayManager().reset();
-            context.getQuestManager().reset();
-            Logger.getInstance().notify(message, Message.NOTIFICATION);
+            Logger.getInstance().notify("Loaded level: " + targetLevelId + " at " + spawn, Message.NOTIFICATION);
         };
 
+        gameState.getPlayer().addAction(PlayerAction.LEVEL_TRANSITION);
         gameState.getTransitionManager().startTransition(direction, levelLoadCallback);
     }
 
     private void configureSpawnPoint() {
-        LevelManager levelManager = context.getLevelManager();
-        int currentSpawnId = -1;
-        for (Spawn s : Spawn.values()) {
-            if (s.getLevelI() == levelManager.getLevelIndexI() && s.getLevelJ() == levelManager.getLevelIndexJ()) {
-                currentSpawnId = s.getId();
-                break;
-            }
+        String currentLevelId = context.getLevelManager().getCurrentLevelId();
+        int currentSpawnId = context.getLevelManager().getTotemIdForLevel(currentLevelId);
+        if (currentSpawnId >= 0) {
+            context.getWorldMemoryManager().unlockTotem(currentSpawnId);
+            Framework.getInstance().getAccount().setSpawn(currentSpawnId);
         }
-        Framework.getInstance().getAccount().setSpawn(currentSpawnId);
     }
 
     private void saveMinimapData() {

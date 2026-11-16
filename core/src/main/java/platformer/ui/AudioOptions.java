@@ -1,6 +1,7 @@
 package platformer.ui;
 
 import platformer.audio.Audio;
+import platformer.core.Settings;
 import platformer.ui.buttons.AbstractButton;
 import platformer.ui.buttons.AudioButton;
 import platformer.ui.buttons.ButtonType;
@@ -43,6 +44,12 @@ public class AudioOptions {
         this.musicBtn = new AudioButton(MUSIC_X, MUSIC_Y, SOUND_BTN_SIZE, SOUND_BTN_SIZE, ButtonType.MUSIC);
         this.musicSliderButton = new SliderButton(MUSIC_SLIDER_BTN_X, MUSIC_SLIDER_BTN_Y, SOUND_BTN_SIZE, SOUND_BTN_SIZE);
         this.sfxSliderButton = new SliderButton(SFX_SLIDER_BTN_X, SFX_SLIDER_BTN_Y, SOUND_BTN_SIZE, SOUND_BTN_SIZE);
+
+        Settings settings = Settings.getInstance();
+        sfxBtn.setMuted(settings.isSfxMute());
+        musicBtn.setMuted(settings.isMusicMute());
+        sfxSliderButton.setSliderValue(settings.getSfxVolume());
+        musicSliderButton.setSliderValue(settings.getMusicVolume());
     }
 
     public void update() {
@@ -90,6 +97,9 @@ public class AudioOptions {
         else if(isMouseInButton(e, musicBtn) && musicBtn.isMousePressed()) {
             musicBtn.setMuted(!musicBtn.isMuted());
             Audio.getInstance().getAudioPlayer().songMute();
+        }
+        if (musicSliderButton.isMousePressed() || sfxSliderButton.isMousePressed()) {
+            Settings.getInstance().save();
         }
         resetButtons();
     }

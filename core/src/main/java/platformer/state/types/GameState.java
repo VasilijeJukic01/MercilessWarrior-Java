@@ -118,7 +118,9 @@ public class GameState extends AbstractState implements State {
             context.getEffectManager().update();
         }
         else {
-            handleGameState();
+            if (!screenEffectsManager.isHitStopActive()) {
+                handleGameState();
+            }
         }
         if (state == PlayingState.DIALOGUE) overlayManager.update(PlayingState.DIALOGUE);
     }
@@ -130,6 +132,7 @@ public class GameState extends AbstractState implements State {
             context.getMinimapManager().update();
             camera.update(getPlayer());
             overlayManager.update(state);
+            context.getCutsceneManager().update();
         } catch (Exception ignored) {}
     }
 
@@ -140,8 +143,11 @@ public class GameState extends AbstractState implements State {
         world.render(g2d, camera.getXOffset(), camera.getYOffset(), isDarkPhase);
         if (isMultiplayer) multiplayerHandler.render(g, camera.getXOffset(), camera.getYOffset());
         screenEffectsManager.renderFlash(g2d);
-        getPlayer().getPlayerStatusManager().getUserInterface().render(g);
-        bossInterface.render(g);
+        if (!context.getCutsceneManager().isActive()) {
+            getPlayer().getPlayerStatusManager().getUserInterface().render(g);
+            bossInterface.render(g);
+        }
+        screenEffectsManager.renderCutsceneEffects(g2d);
         overlayManager.render(g);
         transitionManager.render(g);
     }
@@ -184,15 +190,27 @@ public class GameState extends AbstractState implements State {
         getPlayer().activateMinimap(false);
         PerksBonus.getInstance().reset();
         context.getPerksManager().reset();
-        this.getPlayer().getPlayerDataManager().loadPlayerData();
-        this.getPlayer().getInventory().fillItems(Framework.getInstance().getAccount().getItems());
+
+        context.getLevelManager().resetAllCachedLevels();
+        context.getWorldMemoryManager().loadFromAccount(Framework.getInstance().getAccount().getWorldFlags());
+        context.getQuestManager().loadFromAccount(Framework.getInstance().getAccount().getQuests());
+
+        int savedSpawn = Framework.getInstance().getAccount().getSpawn();
+        if (savedSpawn >= 0) {
+            context.getWorldMemoryManager().unlockTotem(savedSpawn);
+        }
+
+        context.getLevelManager().loadSavePoint(savedSpawn);
+        getPlayer().getPlayerDataManager().loadPlayerData();
+        getPlayer().getInventory().fillItems(Framework.getInstance().getAccount().getItems());
         context.getPerksManager().loadUnlockedPerks(Framework.getInstance().getAccount().getPerks());
-        context.getLevelManager().loadSavePoint(Framework.getInstance().getAccount().getSpawn());
         context.getMinimapManager().loadExplorationData(Framework.getInstance().getAccount().getExplorationData());
         this.overlayManager.reset();
-        context.getQuestManager().reset();
         reset();
+        getPlayer().activateMinimap(true);
+        context.getMinimapManager().updatePlayerPosition(getPlayer().getHitBox().getCenterX(), getPlayer().getHitBox().getCenterY());
         camera.updateLevelBounds(getLevelManager().getCurrentLevel());
+        camera.snapToPlayer(getPlayer());
     }
 
     public void refreshPlayerDataFromAccount() {
@@ -202,11 +220,22 @@ public class GameState extends AbstractState implements State {
 
     public void refreshAllFromAccount() {
         if (world == null || world.getPlayer() == null) return;
+        context.getWorldMemoryManager().loadFromAccount(Framework.getInstance().getAccount().getWorldFlags());
+        context.getQuestManager().loadFromAccount(Framework.getInstance().getAccount().getQuests());
+        int savedSpawn = Framework.getInstance().getAccount().getSpawn();
+        if (savedSpawn >= 0) {
+            context.getWorldMemoryManager().unlockTotem(savedSpawn);
+        }
+        context.getLevelManager().loadSavePoint(savedSpawn);
         getPlayer().getPlayerDataManager().loadPlayerData();
         context.getPerksManager().reset();
         context.getPerksManager().loadUnlockedPerks(Framework.getInstance().getAccount().getPerks());
         context.getMinimapManager().loadExplorationData(Framework.getInstance().getAccount().getExplorationData());
         getPlayer().getInventory().fillItems(Framework.getInstance().getAccount().getItems());
+        getPlayer().activateMinimap(true);
+        context.getMinimapManager().updatePlayerPosition(getPlayer().getHitBox().getCenterX(), getPlayer().getHitBox().getCenterY());
+        camera.updateLevelBounds(getLevelManager().getCurrentLevel());
+        camera.snapToPlayer(getPlayer());
         Logger.getInstance().notify("Player data fully refreshed from loaded save.", Message.INFORMATION);
     }
 
@@ -220,6 +249,7 @@ public class GameState extends AbstractState implements State {
         if (!isRespawning) context.getMinimapManager().reset();
         isRespawning = false;
         isDarkPhase = false;
+        context.getCutsceneManager().reset();
     }
 
     @Override
@@ -250,6 +280,7 @@ public class GameState extends AbstractState implements State {
     @Override
     public void keyPressed(KeyEvent e) {
         if (transitionManager.isActive()) return;
+        if (context.getCutsceneManager().isActive() && state != PlayingState.DIALOGUE) return;
         if (isMultiplayer && overlayManager.getChatOverlay().isActive()) {
             overlayManager.getChatOverlay().keyPressed(e);
             return;
@@ -261,6 +292,7 @@ public class GameState extends AbstractState implements State {
     @Override
     public void keyReleased(KeyEvent e) {
         if (transitionManager.isActive()) return;
+        if (context.getCutsceneManager().isActive() && state != PlayingState.DIALOGUE) return;
         if (isMultiplayer && e.getKeyCode() == KeyEvent.VK_BACK_QUOTE) {
             overlayManager.getChatOverlay().toggle();
             return;

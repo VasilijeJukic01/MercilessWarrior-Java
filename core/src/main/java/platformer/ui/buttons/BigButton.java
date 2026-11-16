@@ -9,7 +9,7 @@ import static platformer.constants.AnimConstants.BTN_H;
 import static platformer.constants.AnimConstants.BTN_W;
 import static platformer.constants.Constants.BIG_BTN_HEI;
 import static platformer.constants.Constants.BIG_BTN_WID;
-import static platformer.constants.FilePaths.MENU_BTN_SHEET;
+import static platformer.constants.FilePaths.RUNIC_RECT_BTN_SHEET;
 
 /**
  * Represents a large-sized button, typically used for primary actions in the main menu.
@@ -27,23 +27,7 @@ public class BigButton extends AbstractButton {
 
     @Override
     protected void loadButtons() {
-        int r = -1;
-        switch (buttonType) {
-            case PLAY:
-                r = 0;
-                break;
-            case OPTIONS:
-                r = 1;
-                break;
-            case CONTROLS:
-                r = 2;
-                break;
-            case QUIT:
-                r = 3;
-                break;
-            default: break;
-        }
-        images = SpriteManager.getInstance().loadFromSprite(MENU_BTN_SHEET, 3, r, BIG_BTN_WID, BIG_BTN_HEI, 0, BTN_W, BTN_H);
+        images = SpriteManager.getInstance().loadFromSprite(RUNIC_RECT_BTN_SHEET, 3, 0, BIG_BTN_WID, BIG_BTN_HEI, 0, BTN_W, BTN_H);
     }
 
     @Override
@@ -56,6 +40,6 @@ public class BigButton extends AbstractButton {
     @Override
     public void render(Graphics g) {
         g.drawImage(images[imageIndex], xPos, yPos, BIG_BTN_WID, BIG_BTN_HEI, null);
+        UIButtonRenderer.drawButtonLabel(g, buttonType.name(), xPos, yPos, BIG_BTN_WID, BIG_BTN_HEI, mouseOver, mousePressed);
     }
-
 }

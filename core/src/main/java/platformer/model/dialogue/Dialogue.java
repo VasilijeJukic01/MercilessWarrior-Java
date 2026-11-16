@@ -13,6 +13,10 @@ public class Dialogue {
 
     private String object;
     private String id;
+    private String location;
+    private String requiredFlag;
+    private String excludeFlag;
+    private boolean cutsceneOnly;
     private boolean once;
     private List<String> lines;
     private Question question;

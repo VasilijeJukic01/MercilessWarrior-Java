@@ -22,4 +22,6 @@ public enum Anim {
     SPELL_3,    // 18
     SPELL_4,    // 19
     JUMP_FALL,  // 20
+    DASH,       // 21
+    CROUCH      // 22
 }

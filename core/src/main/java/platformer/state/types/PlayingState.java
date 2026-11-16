@@ -10,6 +10,7 @@ public enum PlayingState {
     GAME_OVER,
     SHOP,
     BLACKSMITH,
+    PERKS,
     DIALOGUE,
     DYING,
     SAVE,
