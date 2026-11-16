@@ -7,6 +7,7 @@ import platformer.model.entities.Direction;
 import platformer.model.gameObjects.ObjectManager;
 import platformer.model.levels.interior.InteriorManager;
 import platformer.model.perks.PerksBonus;
+import platformer.model.spells.SpellManager;
 import platformer.physics.CollisionDetector;
 
 import java.awt.geom.Rectangle2D;
@@ -27,6 +28,7 @@ public class PlayerMovementHandler {
     private static final double POST_DASH_MOMENTUM_DECAY = 0.88;
 
     private final Player player;
+    private final SpellManager spellManager;
     private final ObjectManager objectManager;
     private final InteriorManager interiorManager;
     private final EffectManager effectManager;
@@ -60,6 +62,7 @@ public class PlayerMovementHandler {
 
     public PlayerMovementHandler(Player player, GameContext context) {
         this.player = player;
+        this.spellManager = context.getSpellManager();
         this.objectManager = context.getObjectManager();
         this.interiorManager = context.getInteriorManager();
         this.effectManager = context.getEffectManager();
@@ -405,6 +408,11 @@ public class PlayerMovementHandler {
     public void updateDashTimer() {
         if (player.checkAction(PlayerAction.DASH)) {
             dashTick++;
+            if (player.checkAction(PlayerAction.TRANSFORM) && dashTick == 1 && spellManager != null) {
+                int centerX = (int) player.getHitBox().getCenterX(), centerY = (int) player.getHitBox().getCenterY();
+                int feetY = (int) player.getHitBox().getMaxY();
+                spellManager.spawnDashFireTrail(centerX, centerY, feetY, player.isInAir(), player.getFlipSign());
+            }
             if (dashTick >= 40) {
                 dashTick = 0;
                 player.removeActions(PlayerAction.DASH, PlayerAction.DASH_HIT);

@@ -49,7 +49,9 @@ public class SpellManager {
     // Core
     public void update() {
         flame.update(context.getGameState().getPlayer());
-        for (Spell spell : activeSpells) {
+        activeSpells.removeIf(spell -> !spell.isActive());
+        List<Spell> snapshot = new ArrayList<>(activeSpells);
+        for (Spell spell : snapshot) {
             spell.update(context.getGameState().getPlayer());
         }
     }
@@ -87,6 +89,15 @@ public class SpellManager {
     }
 
     // Activators
+    public void spawnDashFireTrail(int centerX, int centerY, int feetY, boolean inAir, int flipSign) {
+        int[][] lvlData = context.getLevelManager().getCurrentLevel().getLvlData();
+        if (!inAir) {
+            double groundY = getGroundY(centerX, feetY - 4, lvlData);
+            activeSpells.add(new DashFireTrail(centerX, (int) groundY, false, flipSign, context));
+        }
+        else activeSpells.add(new DashFireTrail(centerX, centerY, true, flipSign, context));
+    }
+
     public void activateLightnings() {
         int[][] lvlData = context.getLevelManager().getCurrentLevel().getLvlData();
         double[] tileColumns = alternateLightningPattern ? new double[]{4.5, 8.0, 11.5, 15.0, 18.5, 22.0} : new double[]{6.0, 9.5, 13.0, 16.5, 20.0};
