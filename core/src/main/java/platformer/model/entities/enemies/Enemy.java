@@ -32,6 +32,7 @@ public abstract class Enemy extends Entity implements DamageSource, Debug<Graphi
     protected boolean alive = true;
     private boolean criticalHit;
     protected int freezeTick = 0;
+    protected int stunImmunityTick = 0;
     protected Random rand = new Random();
 
     public Enemy(int xPos, int yPos, int width, int height, EnemyType enemyType, int animSpeed) {
@@ -70,8 +71,7 @@ public abstract class Enemy extends Entity implements DamageSource, Debug<Graphi
             cooldown[Cooldown.ATTACK.ordinal()] = 8 + rand.nextDouble() * 4;
             entityState = Anim.IDLE;
         }
-        else if (entityState == Anim.ATTACK_1 || entityState == Anim.ATTACK_2 || entityState == Anim.HIT || entityState == Anim.BLOCK || entityState == Anim.REVEAL) {
-            if (isAttacking()) {
+        else if (entityState == Anim.ATTACK_1 || entityState == Anim.ATTACK_2 || entityState == Anim.SPELL_1 || entityState == Anim.HIT || entityState == Anim.BLOCK || entityState == Anim.REVEAL) {     if (isAttacking()) {
                 cooldown[Cooldown.ATTACK.ordinal()] = 2.8 + rand.nextDouble() * 1.5;
             }
             if (entityState == Anim.HIT) {
@@ -162,11 +162,47 @@ public abstract class Enemy extends Entity implements DamageSource, Debug<Graphi
     }
 
     public boolean isAttacking() {
-        return entityState == Anim.ATTACK_1 || entityState == Anim.ATTACK_2 || entityState == Anim.ATTACK_3 || entityState == Anim.SPELL_3;
+        return entityState == Anim.ATTACK_1 || entityState == Anim.ATTACK_2 || entityState == Anim.ATTACK_3 || entityState == Anim.SPELL_1 || entityState == Anim.SPELL_3;
     }
 
     public void freeze(int ticks) {
-        this.freezeTick = ticks;
+        if (entityState == Anim.DEATH || !alive || stunImmunityTick > 0) return;
+        this.freezeTick = Math.max(this.freezeTick, ticks);
+        this.attackCheck = true;
+        if (entityState != Anim.HIT && enemyType != EnemyType.LANCER && enemyType != EnemyType.RORIC) {
+            this.entityState = Anim.HIT;
+            this.animIndex = 0;
+            this.animTick = 0;
+        }
+    }
+
+    /**
+     * Immediately breaks a stun when the enemy takes a wake-up hit and grants brief stun immunity.
+     */
+    public void wakeUp() {
+        if (freezeTick > 0) {
+            this.freezeTick = 0;
+            this.stunImmunityTick = 260;
+        }
+    }
+
+    protected boolean handleStunTick(int[][] levelData, double gravity, double collisionFallSpeed) {
+        if (stunImmunityTick > 0) stunImmunityTick--;
+        if (freezeTick > 0) {
+            freezeTick--;
+            if (!platformer.physics.CollisionDetector.isEntityOnFloor(hitBox, levelData)) {
+                inAir = true;
+            }
+            if (inAir) {
+                updateInAir(levelData, gravity, collisionFallSpeed);
+            }
+            if (freezeTick == 0 && entityState == Anim.HIT) {
+                this.stunImmunityTick = 200;
+                setEnemyAction(Anim.IDLE);
+            }
+            return true;
+        }
+        return false;
     }
 
     public abstract boolean hit(double damage, boolean special, boolean hitSound);
@@ -184,6 +220,8 @@ public abstract class Enemy extends Entity implements DamageSource, Debug<Graphi
         animSpeed = originalAnimSpeed;
         enemySpeed = ENEMY_SPEED_SLOW;
         pushOffset = 0;
+        freezeTick = 0;
+        stunImmunityTick = 0;
     }
 
     // Getters & Setters
@@ -276,5 +314,13 @@ public abstract class Enemy extends Entity implements DamageSource, Debug<Graphi
 
     public boolean isCriticalHit() {
         return criticalHit;
+    }
+
+    public boolean isStunned() {
+        return alive && entityState != Anim.DEATH && freezeTick > 0;
+    }
+
+    public int getFreezeTick() {
+        return freezeTick;
     }
 }

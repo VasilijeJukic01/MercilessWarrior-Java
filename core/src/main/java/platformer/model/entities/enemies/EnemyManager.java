@@ -92,6 +92,7 @@ public class EnemyManager {
             if (enemy.isAlive()) {
                 EnemyRenderer<T> renderer = (EnemyRenderer<T>) enemyRenderers.get(enemyClass);
                 renderer.render(g, enemy, xLevelOffset, yLevelOffset);
+                renderer.renderStunStars(g, enemy, xLevelOffset, yLevelOffset);
             }
         }
     }
@@ -152,7 +153,8 @@ public class EnemyManager {
         double baseDmg = player.getAttackDmg();
         double perkBonusPct = PerksBonus.getInstance().getBonusAttack() / 100.0;
         double equipBonusPct = InventoryBonus.getInstance().getAttack();
-        double dmg = baseDmg * (1.0 + perkBonusPct + equipBonusPct);
+        double comboMult = (player.getCombatHandler() != null && !player.checkAction(PlayerAction.DASH)) ? player.getCombatHandler().getComboDamageMultiplier() : 1.0;
+        double dmg = baseDmg * (1.0 + perkBonusPct + equipBonusPct) * comboMult;
 
         double totalCritChance = pb.getBaseCritChance() + PerksBonus.getInstance().getCriticalHitChance() + (InventoryBonus.getInstance().getCritical() * 100.0);
         if (new Random().nextDouble() * 100.0 < totalCritChance) {
@@ -190,16 +192,19 @@ public class EnemyManager {
         if (intersectingEnemies.isEmpty()) return HitResult.MISS;
         if (intersectingEnemies.stream().anyMatch(e -> e instanceof Roric)) return HitResult.MISS;
 
-        intersectingEnemies.sort(Comparator.comparingDouble(e -> e.getHitBox().getCenterX() - player.getHitBox().getCenterX()));
+        intersectingEnemies.sort(Comparator.comparingDouble(e -> Math.abs(e.getHitBox().getCenterX() - player.getHitBox().getCenterX())));
+        boolean isFinisher = player.getCombatHandler() != null && !player.checkAction(PlayerAction.DASH) && player.getCombatHandler().isComboFinisher();
 
         double damageModifier = 1.0;
         for (Enemy enemy : intersectingEnemies) {
             double[] dmg = damage(player);
-            double finalDamage = dmg[0] * damageModifier;
+            boolean wasStunned = enemy.isStunned();
+            double staggerMult = wasStunned ? 1.25 : 1.0;
+            double finalDamage = dmg[0] * damageModifier * staggerMult;
             boolean isCritical = (dmg[1] == 1);
 
             Rectangle2D intersection = attackBox.createIntersection(enemy.getHitBox());
-            spawnParticles((Rectangle2D.Double) intersection, player, enemy, isCritical);
+            spawnParticles((Rectangle2D.Double) intersection, player, enemy, isCritical, isFinisher);
 
             enemy.setPushDirection(enemy.getHitBox().getCenterX() >= player.getHitBox().getCenterX() ? Direction.RIGHT : Direction.LEFT);
             if (enemy.hit(finalDamage, true, false)) {
@@ -208,11 +213,17 @@ public class EnemyManager {
                 }
                 else {
                     result = HitResult.HIT;
-                    int stopFrames = isCritical ? 10 : 6;
+                    int stopFrames = isCritical ? 11 : (isFinisher ? 8 : 6);
                     EventBus.getInstance().publish(new HitStopEvent(stopFrames));
 
+                    if (wasStunned) enemy.wakeUp();
+                    else if (isFinisher && enemy.isAlive() && enemy.getEnemyAction() != Anim.DEATH && !(enemy instanceof Lancer)) {
+                        if (new Random().nextDouble() < 0.40) {
+                            enemy.freeze(150);
+                        }
+                    }
                     double displayDmg = Math.round(finalDamage * 10.0) / 10.0;
-                    String dmgText = String.valueOf(displayDmg);
+                    String dmgText = isCritical ? displayDmg + "!" : String.valueOf(displayDmg);
                     Color dmgColor = isCritical ? CRITICAL_COLOR : DAMAGE_COLOR;
                     context.getEffectManager().spawnDamageNumber(dmgText, enemy.getHitBox().getCenterX(), enemy.getHitBox().y, dmgColor);
                     if (damageModifier > 0.1) damageModifier *= 0.75;
@@ -230,22 +241,21 @@ public class EnemyManager {
         return result;
     }
 
-    /**
-     * Spawns particles at the intersection of the attack box and the enemy's hitbox.
-     * This method is called when an enemy is hit by the player's attack.
-     *
-     * @param box The intersection rectangle where the particles will be spawned.
-     * @param player The Player object representing the player in the game.
-     * @param enemy The Enemy object that was hit.
-     * @param isCritical Indicates if the hit was a critical hit.
-     */
-    private void spawnParticles(Rectangle2D.Double box, Player player, Enemy enemy, boolean isCritical) {
+    private void spawnParticles(Rectangle2D.Double box, Player player, Enemy enemy, boolean isCritical, boolean isFinisher) {
+        int screenX = (int) box.getCenterX() - context.getCamera().getXOffset();
+        int screenY = (int) box.getCenterY() - context.getCamera().getYOffset();
         if (isCritical) {
             screenEffectsManager.triggerFlash();
+            screenEffectsManager.triggerShake(14, 7.5);
+            screenEffectsManager.triggerShockwave(screenX, screenY, scale(65), 18, CRITICAL_COLOR);
             context.getEffectManager().spawnDustParticles(box.getCenterX(), box.getCenterY(), 25, DustType.CRITICAL_HIT, player.getFlipSign(), null);
         }
         else if (enemy.getEnemyAction() != Anim.BLOCK) {
-            context.getEffectManager().spawnDustParticles(box.getCenterX(), box.getCenterY(), 10, DustType.IMPACT_SPARK, player.getFlipSign(), null);
+            if (isFinisher) {
+                screenEffectsManager.triggerShake(8, 4.2);
+                screenEffectsManager.triggerShockwave(screenX, screenY, scale(42), 14, new Color(255, 210, 120));
+            }
+            context.getEffectManager().spawnDustParticles(box.getCenterX(), box.getCenterY(), isFinisher ? 16 : 10, DustType.IMPACT_SPARK, player.getFlipSign(), null);
         }
     }
 

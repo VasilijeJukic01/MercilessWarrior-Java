@@ -18,9 +18,6 @@ import platformer.model.perks.PerksBonus;
 import platformer.model.projectiles.ProjectileManager;
 
 import java.awt.geom.Rectangle2D;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 import static platformer.constants.Constants.SCALE;
 import static platformer.constants.Constants.TILES_SIZE;
@@ -32,9 +29,15 @@ import static platformer.physics.CollisionDetector.isFloor;
 public class PlayerCombatHandler {
 
     private static final int PARRY_WINDOW_TICKS = 45;
-    private static final long COMBO_RESET_TIME = 1000;
+    private static final long COMBO_RESET_TIME_MS = 1500;
     private static final double RECOIL_DECAY = 0.85;
     private static final double LUNGE_DECAY = 0.86;
+
+    private static final AttackState[] COMBO_SEQUENCE = {
+            AttackState.ATTACK_1,
+            AttackState.ATTACK_2,
+            AttackState.ATTACK_3
+    };
 
     private final Player player;
     private final EnemyManager enemyManager;
@@ -42,10 +45,11 @@ public class PlayerCombatHandler {
     private final LevelManager levelManager;
     private final ProjectileManager projectileManager;
 
-    private final List<AttackState> attackChain = new ArrayList<>();
-    private int currentAttackIndex = 0;
-    private long lastAttackTime = 0;
-    private AttackState attackState;
+    private int comboStep = 0;
+    private int activeComboIndex = 0;
+    private long lastAttackEndTime = 0;
+    private boolean attackBuffered = false;
+    private AttackState attackState = AttackState.ATTACK_1;
 
     private int blockWindowTimer = 0;
     private double recoilSpeedX = 0.0;
@@ -57,17 +61,13 @@ public class PlayerCombatHandler {
         this.objectManager = context.getObjectManager();
         this.levelManager = context.getLevelManager();
         this.projectileManager = context.getProjectileManager();
-
-        attackChain.add(AttackState.ATTACK_1);
-        attackChain.add(AttackState.ATTACK_2);
-        attackChain.add(AttackState.ATTACK_3);
-        Collections.shuffle(attackChain);
     }
 
     /**
      * Cancels any active melee swing or parry stance so the player can immediately dash or jump.
      */
     public void cancelForMobility() {
+        attackBuffered = false;
         if (player.checkAction(PlayerAction.ATTACK)) {
             player.removeAction(PlayerAction.ATTACK);
             player.setAttackCheck(false);
@@ -81,46 +81,103 @@ public class PlayerCombatHandler {
     }
 
     public void performAttack() {
-        if (player.getCooldown()[Cooldown.ATTACK.ordinal()] > 0.4) return;
+        if (player.checkAction(PlayerAction.ATTACK)) {
+            if (activeComboIndex < 2 && player.getAnimIndex() >= 1) {
+                attackBuffered = true;
+            }
+            return;
+        }
+
+        double currentCd = player.getCooldown()[Cooldown.ATTACK.ordinal()];
+        long now = System.currentTimeMillis();
+        boolean comboExpired = (now - lastAttackEndTime) > COMBO_RESET_TIME_MS;
+        if (comboExpired) {
+            comboStep = 0;
+        }
+
+        if (comboStep == 0) {
+            if (currentCd > 0) return;
+        }
+        else {
+            if (currentCd > 0.35) {
+                attackBuffered = true;
+                return;
+            }
+        }
+        executeNextComboSwing();
+    }
+
+    private void executeNextComboSwing() {
+        attackBuffered = false;
         if (player.checkAction(PlayerAction.BLOCK)) {
             player.removeAction(PlayerAction.BLOCK);
             blockWindowTimer = 0;
         }
 
-        long currentTime = System.currentTimeMillis();
-        if (currentTime - lastAttackTime > COMBO_RESET_TIME) {
-            currentAttackIndex = 0;
-            Collections.shuffle(attackChain);
+        long now = System.currentTimeMillis();
+        if (now - lastAttackEndTime > COMBO_RESET_TIME_MS) {
+            comboStep = 0;
         }
 
-        AttackState nextAttack = attackChain.get(currentAttackIndex);
+        activeComboIndex = comboStep;
+        AttackState nextAttack = COMBO_SEQUENCE[activeComboIndex];
         setPlayerAttackState(nextAttack);
 
-        currentAttackIndex++;
-        if (currentAttackIndex >= attackChain.size()) {
-            currentAttackIndex = 0;
-            Collections.shuffle(attackChain);
-        }
-        lastAttackTime = currentTime;
+        comboStep = (comboStep + 1) % COMBO_SEQUENCE.length;
+        lastAttackEndTime = now;
     }
 
     public void setPlayerAttackState(AttackState state) {
         this.attackState = state;
         player.setAttacking(true);
+        player.setAttackCheck(false);
+        player.resetAnimTickAndIndex();
 
         int flipSign = player.getFlipSign();
         boolean movingIntoSlash = (flipSign == 1 && player.checkAction(PlayerAction.RIGHT)) || (flipSign == -1 && player.checkAction(PlayerAction.LEFT));
-        if (!player.isInAir() && !movingIntoSlash) {
+        if (!player.isInAir()) {
+            double lungeMult = movingIntoSlash ? 0.55 : 1.0;
             switch (state) {
-                case ATTACK_1, ATTACK_2 -> this.attackLungeSpeedX = 0.55 * SCALE;
-                case ATTACK_3 -> this.attackLungeSpeedX = 0.85 * SCALE;
+                case ATTACK_1 -> this.attackLungeSpeedX = 0.55 * SCALE * lungeMult;
+                case ATTACK_2 -> this.attackLungeSpeedX = 0.72 * SCALE * lungeMult;
+                case ATTACK_3 -> this.attackLungeSpeedX = 1.05 * SCALE * lungeMult;
                 default -> {}
             }
         }
 
         double baseCd = BalanceManager.getInstance().getPlayerBalance().getAttackCooldown();
-        double cd = (baseCd + PerksBonus.getInstance().getBonusCooldown()) * (1.0 - InventoryBonus.getInstance().getCooldown());
-        player.getCooldown()[Cooldown.ATTACK.ordinal()] = Math.max(0.1, cd);
+        double stepFactor = (state == AttackState.ATTACK_3) ? 1.45 : 0.45;
+        double cd = ((baseCd * stepFactor) + PerksBonus.getInstance().getBonusCooldown()) * (1.0 - InventoryBonus.getInstance().getCooldown());
+        player.getCooldown()[Cooldown.ATTACK.ordinal()] = Math.max(0.15, cd);
+    }
+
+
+    /**
+     * Returns the damage multiplier for the current step of the 3-hit combo chain.
+     */
+    public double getComboDamageMultiplier() {
+        return switch (activeComboIndex) {
+            case 1 -> 1.15;
+            case 2 -> 1.40;
+            default -> 1.0;
+        };
+    }
+
+    public boolean isComboFinisher() {
+        return activeComboIndex == 2;
+    }
+
+    public boolean consumeBufferedAttack() {
+        lastAttackEndTime = System.currentTimeMillis();
+        if (activeComboIndex >= 2) {
+            attackBuffered = false;
+            return false;
+        }
+        if (attackBuffered && !player.checkAction(PlayerAction.HIT) && !player.checkAction(PlayerAction.DYING)) {
+            executeNextComboSwing();
+            return true;
+        }
+        return false;
     }
 
     public void setBlock(boolean block) {
@@ -161,12 +218,15 @@ public class PlayerCombatHandler {
             BalanceManager.PlayerBalance pb = BalanceManager.getInstance().getPlayerBalance();
             double blockCooldown = (pb.getBlockCooldown() * 0.45) * (1.0 - InventoryBonus.getInstance().getCooldown());
             player.getCooldown()[Cooldown.BLOCK.ordinal()] = Math.max(0.1, blockCooldown);
-            if (PerksBonus.getInstance().isRestorePower()) {
+
+            boolean hasRipostePerk = PerksBonus.getInstance().isRestorePower();
+            if (hasRipostePerk) {
                 player.changeStamina(pb.getParryStaminaRestore());
-                for (Enemy enemy : enemyManager.getAllEnemies()) {
-                    if (enemy.isAlive() && Math.abs(enemy.getHitBox().getCenterX() - player.getHitBox().getCenterX()) < TILES_SIZE * 2.5) {
-                        enemy.freeze(120);
-                    }
+            }
+            int stunTicks = hasRipostePerk ? 220 : 150;
+            for (Enemy enemy : enemyManager.getAllEnemies()) {
+                if (enemy.isAlive() && Math.abs(enemy.getHitBox().getCenterX() - player.getHitBox().getCenterX()) < TILES_SIZE * 2.5) {
+                    enemy.freeze(stunTicks);
                 }
             }
         }
@@ -310,5 +370,8 @@ public class PlayerCombatHandler {
         blockWindowTimer = 0;
         recoilSpeedX = 0.0;
         attackLungeSpeedX = 0.0;
+        comboStep = 0;
+        activeComboIndex = 0;
+        attackBuffered = false;
     }
 }

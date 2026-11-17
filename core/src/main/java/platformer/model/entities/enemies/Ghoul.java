@@ -261,10 +261,7 @@ public class Ghoul extends Enemy {
 
     @Override
     public void update(int[][] levelData, Player player, Entity follower) {
-        if (freezeTick > 0) {
-            freezeTick--;
-            return;
-        }
+        if (handleStunTick(levelData, gravity, collisionFallSpeed)) return;
         Entity target = getCloseTarget(player, follower);
         updateMove(levelData, target);
         updateAnimation();

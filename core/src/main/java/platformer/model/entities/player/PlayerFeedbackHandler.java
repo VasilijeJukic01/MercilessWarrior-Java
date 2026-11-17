@@ -1,42 +1,48 @@
 package platformer.model.entities.player;
 
+import platformer.audio.Audio;
 import platformer.constants.Constants;
+import platformer.core.GameContext;
 import platformer.core.config.BalanceManager;
 import platformer.event.EventBus;
 import platformer.event.events.effects.HitStopEvent;
 import platformer.model.effects.EffectManager;
+import platformer.model.effects.ScreenEffectsManager;
 import platformer.model.effects.particles.DustType;
 import platformer.model.inventory.item.ItemRarity;
 import platformer.model.perks.PerksBonus;
 
+import java.awt.*;
 import java.util.Arrays;
 import java.util.Random;
 
-import static platformer.constants.Constants.RUN_DUST_BURST;
-
 /**
- * Manages all visual, particle, and status-effect feedback related to the Player.
+ * Manages all visual, audio, particle, and status-effect feedback related to the Player.
  */
 public class PlayerFeedbackHandler {
 
     private final Player player;
     private final EffectManager effectManager;
+    private final ScreenEffectsManager screenEffectsManager;
     private final Random rand = new Random();
 
     private int runDustTick = 0;
     private int wallSlideDustTick = 0;
     private int mythicAuraTick = 0;
     private int burnTick = 0;
+    private int hitFlashTick = 0;
 
-    public PlayerFeedbackHandler(Player player, EffectManager effectManager) {
+    public PlayerFeedbackHandler(Player player, GameContext context) {
         this.player = player;
-        this.effectManager = effectManager;
+        this.effectManager = context.getEffectManager();
+        this.screenEffectsManager = context.getScreenEffectsManager();
     }
 
     /**
      * Called every frame from the Player's update loop to handle ongoing effects and status ticks.
      */
     public void update() {
+        if (hitFlashTick > 0) hitFlashTick--;
         updateMythicAura();
         updateBurnStatus();
         updateRunningEffects();
@@ -90,7 +96,9 @@ public class PlayerFeedbackHandler {
         if (isMovingOnGround) {
             runDustTick++;
             if (runDustTick >= 11) {
-                double dustX = (player.getFlipSign() == 1) ? player.getHitBox().x + player.getHitBox().width * 0.25 : player.getHitBox().x + player.getHitBox().width * 0.75;
+                double dustX = (player.getFlipSign() == 1)
+                        ? player.getHitBox().x + player.getHitBox().width * 0.25
+                        : player.getHitBox().x + player.getHitBox().width * 0.75;
                 effectManager.spawnDustParticles(dustX, player.getHitBox().y + player.getHitBox().height, 2, DustType.RUNNING, player.getFlipSign(), player);
                 runDustTick = 0;
             }
@@ -122,12 +130,21 @@ public class PlayerFeedbackHandler {
     }
 
     /**
-     * Handles all visual and audio feedback when the player takes damage.
+     * Handles all visual, camera, and audio feedback when the player takes damage.
      */
     public void onPlayerDamaged(double damageValue) {
-        EventBus.getInstance().publish(new HitStopEvent(8));
-        effectManager.spawnDustParticles(player.getHitBox().getCenterX(), player.getHitBox().getCenterY(), 15 + rand.nextInt(6), DustType.PLAYER_HIT, player.getFlipSign(), player);
-        String dmgText = String.format("%.1f", damageValue);
+        this.hitFlashTick = 18;
+        Audio.getInstance().getAudioPlayer().playHitSound();
+        EventBus.getInstance().publish(new HitStopEvent(9));
+
+        if (screenEffectsManager != null) {
+            double intensity = Math.min(12.0, 6.5 + (damageValue * 0.15));
+            screenEffectsManager.triggerShake(16, intensity);
+            screenEffectsManager.triggerLightningStrobe(new Color(220, 20, 35), 130, false);
+        }
+
+        effectManager.spawnDustParticles(player.getHitBox().getCenterX(), player.getHitBox().getCenterY(), 20 + rand.nextInt(6), DustType.PLAYER_HIT, player.getFlipSign(), player);
+        String dmgText = String.format("-%.1f", damageValue);
         effectManager.spawnDamageNumber(dmgText, player.getHitBox().getCenterX(), player.getHitBox().y, Constants.DAMAGE_COLOR);
     }
 
@@ -135,10 +152,15 @@ public class PlayerFeedbackHandler {
         return burnTick;
     }
 
+    public int getHitFlashTick() {
+        return hitFlashTick;
+    }
+
     public void reset() {
         runDustTick = 0;
         wallSlideDustTick = 0;
         mythicAuraTick = 0;
         burnTick = 0;
+        hitFlashTick = 0;
     }
 }

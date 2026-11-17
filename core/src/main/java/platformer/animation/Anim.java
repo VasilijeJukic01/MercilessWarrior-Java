@@ -23,5 +23,6 @@ public enum Anim {
     SPELL_4,    // 19
     JUMP_FALL,  // 20
     DASH,       // 21
-    CROUCH      // 22
+    CROUCH,     // 22
+    PARRY       // 23
 }

@@ -154,7 +154,8 @@ public class SpriteManager {
         anim[Anim.ATTACK_1.ordinal()] = loadFromSprite(sheet, 4, 10, w, h, 0, PLAYER_W, PLAYER_H);
         anim[Anim.ATTACK_2.ordinal()] = loadFromSprite(sheet, 4, 11, w, h, 0, PLAYER_W, PLAYER_H);
         anim[Anim.ATTACK_3.ordinal()] = loadFromSprite(sheet, 5, 12, w, h, 0, PLAYER_W, PLAYER_H);
-        anim[Anim.BLOCK.ordinal()] = loadFromSprite(sheet, 6, 14, w, h, 0, PLAYER_W, PLAYER_H);
+        anim[Anim.BLOCK.ordinal()] = loadFromSprite(sheet, 8, 13, w, h, 0, PLAYER_W, PLAYER_H);
+        anim[Anim.PARRY.ordinal()] = loadFromSprite(sheet, 4, 14, w, h, 2, PLAYER_W, PLAYER_H);
         anim[Anim.CROUCH.ordinal()] = loadFromSprite(sheet, 5, 15, w, h, 0, PLAYER_W, PLAYER_H);
         anim[Anim.HIT.ordinal()] = loadFromSprite(sheet, 4, 23, w, h, 0, PLAYER_W, PLAYER_H);
         anim[Anim.DEATH.ordinal()] = loadFromSprite(sheet, 11, 24, w, h, 0, PLAYER_W, PLAYER_H);
@@ -203,24 +204,26 @@ public class SpriteManager {
 
         anim[Anim.IDLE.ordinal()] = loadFromSprite(KNIGHT_SHEET,     8, 0, KNIGHT_WIDTH, KNIGHT_HEIGHT, 0, KNIGHT_W, KNIGHT_H);
         anim[Anim.RUN.ordinal()] = loadFromSprite(KNIGHT_SHEET,      8, 2, KNIGHT_WIDTH, KNIGHT_HEIGHT, 0, KNIGHT_W, KNIGHT_H);
-        anim[Anim.ATTACK_1.ordinal()] = loadFromSprite(KNIGHT_SHEET, 7, 3, KNIGHT_WIDTH, KNIGHT_HEIGHT, 0, KNIGHT_W, KNIGHT_H);
-        anim[Anim.HIT.ordinal()] = loadFromSprite(KNIGHT_SHEET,      3, 5, KNIGHT_WIDTH, KNIGHT_HEIGHT, 0, KNIGHT_W, KNIGHT_H);
-        anim[Anim.DEATH.ordinal()] = loadFromSprite(KNIGHT_SHEET,    12,6, KNIGHT_WIDTH, KNIGHT_HEIGHT, 0, KNIGHT_W, KNIGHT_H);
+        anim[Anim.ATTACK_1.ordinal()] = loadFromSprite(KNIGHT_SHEET, 8, 3, KNIGHT_WIDTH, KNIGHT_HEIGHT, 0, KNIGHT_W, KNIGHT_H);
+        anim[Anim.ATTACK_2.ordinal()] = loadFromSprite(KNIGHT_SHEET, 8, 4, KNIGHT_WIDTH, KNIGHT_HEIGHT, 0, KNIGHT_W, KNIGHT_H);
+        anim[Anim.HIT.ordinal()] = loadFromSprite(KNIGHT_SHEET,      5, 5, KNIGHT_WIDTH, KNIGHT_HEIGHT, 0, KNIGHT_W, KNIGHT_H);
+        anim[Anim.DEATH.ordinal()] = loadFromSprite(KNIGHT_SHEET,    12, 6, KNIGHT_WIDTH, KNIGHT_HEIGHT, 0, KNIGHT_W, KNIGHT_H);
         anim[Anim.WALK.ordinal()] = loadFromSprite(KNIGHT_SHEET,     8, 1, KNIGHT_WIDTH, KNIGHT_HEIGHT, 0, KNIGHT_W, KNIGHT_H);
 
         enemyAnimations.put(EnemyType.KNIGHT, anim);
     }
 
     private void loadWraithAnimations() {
-        BufferedImage[][] anim = new BufferedImage[13][17];
+        BufferedImage[][] anim = new BufferedImage[20][17];
 
         anim[Anim.IDLE.ordinal()] = loadFromSprite(WRAITH_SHEET,     10, 0, WRAITH_WIDTH, WRAITH_HEIGHT, 0, WRAITH_W, WRAITH_H);
         anim[Anim.RUN.ordinal()] = loadFromSprite(WRAITH_SHEET,      8,  1, WRAITH_WIDTH, WRAITH_HEIGHT, 0, WRAITH_W, WRAITH_H);
         anim[Anim.ATTACK_1.ordinal()] = loadFromSprite(WRAITH_SHEET, 10, 2, WRAITH_WIDTH, WRAITH_HEIGHT, 0, WRAITH_W, WRAITH_H);
         anim[Anim.ATTACK_2.ordinal()] = loadFromSprite(WRAITH_SHEET, 10, 3, WRAITH_WIDTH, WRAITH_HEIGHT, 0, WRAITH_W, WRAITH_H);
+        anim[Anim.SPELL_1.ordinal()] = anim[Anim.ATTACK_2.ordinal()];
         anim[Anim.HIT.ordinal()] = loadFromSprite(WRAITH_SHEET,      5,  4, WRAITH_WIDTH, WRAITH_HEIGHT, 0, WRAITH_W, WRAITH_H);
         anim[Anim.DEATH.ordinal()] = loadFromSprite(WRAITH_SHEET,    16, 5, WRAITH_WIDTH, WRAITH_HEIGHT, 0, WRAITH_W, WRAITH_H);
-        anim[Anim.WALK.ordinal()] =  anim[Anim.IDLE.ordinal()];
+        anim[Anim.WALK.ordinal()] = anim[Anim.IDLE.ordinal()];
 
         enemyAnimations.put(EnemyType.WRAITH, anim);
     }

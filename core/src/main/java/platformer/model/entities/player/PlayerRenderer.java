@@ -66,7 +66,7 @@ public class PlayerRenderer {
     /**
      * Renders the player sprite, active dash afterimages, and burn overlay.
      */
-    public void render(Graphics g, int xLevelOffset, int yLevelOffset, double pushOffset, int burnTick) {
+    public void render(Graphics g, int xLevelOffset, int yLevelOffset, double pushOffset, int burnTick, int hitFlashTick) {
         int width = PLAYER_WIDTH;
         int height = PLAYER_HEIGHT;
 
@@ -79,10 +79,33 @@ public class PlayerRenderer {
             int animIndex = player.getAnimIndex();
             BufferedImage frame = (!transform) ? animations[stateOrd][animIndex] : transformAnimations[stateOrd][animIndex];
             g.drawImage(frame, playerXPos, playerYPos, player.getFlipSign() * width, height, null);
-            if (burnTick > 0 && frame != null) {
+            if (hitFlashTick > 0 && frame != null) {
+                renderHitFlashOverlay(g, frame, playerXPos, playerYPos, width, height, hitFlashTick);
+            }
+            else if (burnTick > 0 && frame != null) {
                 renderBurnOverlay(g, frame, playerXPos, playerYPos, width, height, burnTick);
             }
         } catch (Exception ignored) {}
+    }
+
+    private void renderHitFlashOverlay(Graphics g, BufferedImage frame, int drawX, int drawY, int width, int height, int hitFlashTick) {
+        if (burnSilhouetteBuffer == null || burnSilhouetteBuffer.getWidth() != width || burnSilhouetteBuffer.getHeight() != height) {
+            burnSilhouetteBuffer = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        }
+
+        Graphics2D bG2d = burnSilhouetteBuffer.createGraphics();
+        bG2d.setComposite(AlphaComposite.Clear);
+        bG2d.fillRect(0, 0, width, height);
+        bG2d.setComposite(AlphaComposite.SrcOver);
+        bG2d.drawImage(frame, 0, 0, width, height, null);
+
+        bG2d.setComposite(AlphaComposite.SrcAtop);
+        Color flashTint = (hitFlashTick > 11) ? new Color(255, 255, 255, 210) : new Color(255, 35, 45, (int) ((hitFlashTick / 11.0f) * 185));
+        bG2d.setColor(flashTint);
+        bG2d.fillRect(0, 0, width, height);
+        bG2d.dispose();
+
+        g.drawImage(burnSilhouetteBuffer, drawX, drawY, player.getFlipSign() * width, height, null);
     }
 
     private void renderDashAfterimages(Graphics g, int xLevelOffset, int yLevelOffset, int width, int height) {

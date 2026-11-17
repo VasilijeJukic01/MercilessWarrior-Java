@@ -138,4 +138,11 @@ public final class ProjectileFactory {
         addProjectiles(volley);
     }
 
+    public static void createWraithBolt(Enemy wraith) {
+        int dirSign = (wraith.getDirection() == Direction.LEFT) ? -1 : 1;
+        int spawnX = (int) (wraith.getHitBox().getCenterX() + dirSign * (18 * SCALE));
+        int spawnY = (int) (wraith.getHitBox().getCenterY() - 2 * SCALE);
+        addProjectile(new WraithBolt(spawnX, spawnY, wraith.getDirection()));
+    }
+
 }

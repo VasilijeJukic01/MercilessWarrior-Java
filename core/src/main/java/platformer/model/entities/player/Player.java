@@ -91,7 +91,7 @@ public class Player extends Entity {
         this.playerDataManager = new PlayerDataManager(this, minimapManager, timeCycleManager);
         this.minimapHandler = new PlayerMinimapHandler(this, minimapManager);
         this.actionHandler = new PlayerActionHandler(this, effectManager);
-        this.feedbackHandler = new PlayerFeedbackHandler(this, effectManager);
+        this.feedbackHandler = new PlayerFeedbackHandler(this, context);
         this.inventory = new Inventory(!isMenuDummy);
     }
 
@@ -119,8 +119,8 @@ public class Player extends Entity {
             if (entityState == Anim.CROUCH && checkAction(PlayerAction.LOOK_DOWN) && animIndex > 2) {
                 animIndex = 2;
             }
-            if (entityState == Anim.BLOCK && checkAction(PlayerAction.BLOCK) && !checkAction(PlayerAction.CAN_BLOCK) && animIndex > 2) {
-                animIndex = 2;
+            if (entityState == Anim.BLOCK && checkAction(PlayerAction.BLOCK) && !checkAction(PlayerAction.CAN_BLOCK) && animIndex > 3) {
+                animIndex = 3;
             }
             updateFireballAnimation();
             if (animIndex >= playerRenderer.getFrameCount(entityState)) {
@@ -147,6 +147,7 @@ public class Player extends Entity {
             return;
         }
 
+        boolean wasAttacking = checkAction(PlayerAction.ATTACK);
         combatHandler.finishAttackBlock();
         animIndex = 0;
         removeActions(PlayerAction.ATTACK, PlayerAction.DASH_HIT, PlayerAction.BLOCK, PlayerAction.FIREBALL, PlayerAction.CAN_BLOCK);
@@ -159,6 +160,10 @@ public class Player extends Entity {
         boolean hit = checkAction(PlayerAction.HIT);
         if (hit) removeAction(PlayerAction.HIT);
         setSpellState(0);
+
+        if (wasAttacking && combatHandler.consumeBufferedAttack()) {
+            setAnimation();
+        }
     }
 
     private void blockWallFlip() {
@@ -222,7 +227,8 @@ public class Player extends Entity {
 
         if (spellState == 1) entityState = Anim.SPELL_1;
         else if (fireball) entityState = Anim.SPELL_2;
-        else if (canBlock || blocking) entityState = Anim.BLOCK;
+        else if (canBlock) entityState = Anim.PARRY;
+        else if (blocking) entityState = Anim.BLOCK;
         else if (hit) entityState = Anim.HIT;
         else if (attacking && !onWall) entityState = combatHandler.getAttackAnim();
         else if (canTransform) entityState = Anim.TRANSFORM;
@@ -235,7 +241,7 @@ public class Player extends Entity {
 
     private void setAnimSpeedByState() {
         switch (entityState) {
-            case RUN, DASH, CROUCH, BLOCK -> animSpeed = 12;
+            case RUN, DASH, CROUCH, BLOCK, PARRY -> animSpeed = 12;
             case ATTACK_1, ATTACK_2, ATTACK_3 -> animSpeed = 16;
             case JUMP, FALL -> animSpeed = 25;
             case TRANSFORM -> animSpeed = 15;
@@ -311,7 +317,7 @@ public class Player extends Entity {
     }
 
     public void render(Graphics g, int xLevelOffset, int yLevelOffset) {
-        playerRenderer.render(g, xLevelOffset, yLevelOffset, pushOffset, feedbackHandler.getBurnTick());
+        playerRenderer.render(g, xLevelOffset, yLevelOffset, pushOffset, feedbackHandler.getBurnTick(), feedbackHandler.getHitFlashTick());
         hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.GREEN);
         attackBoxRenderer(g, xLevelOffset, yLevelOffset);
     }
@@ -565,6 +571,10 @@ public class Player extends Entity {
 
     public PlayerDataManager getPlayerDataManager() {
         return playerDataManager;
+    }
+
+    public PlayerCombatHandler getCombatHandler() {
+        return combatHandler;
     }
 
     public Inventory getInventory() {
