@@ -48,11 +48,16 @@ public class GameFlowManager {
      */
     private void checkPlayerDeath() {
         Player player = gameState.getPlayer();
-        if (player.checkAction(PlayerAction.DYING)) {
-            EventBus.getInstance().publish(new OverlayChangeEvent(PlayingState.DYING));
-        }
+        PlayingState currentOverlay = gameState.getState();
         if (player.checkAction(PlayerAction.GAME_OVER)) {
-            EventBus.getInstance().publish(new OverlayChangeEvent(PlayingState.GAME_OVER));
+            if (currentOverlay != PlayingState.GAME_OVER) {
+                EventBus.getInstance().publish(new OverlayChangeEvent(PlayingState.GAME_OVER));
+            }
+        }
+        else if (player.checkAction(PlayerAction.DYING)) {
+            if (currentOverlay != PlayingState.DYING) {
+                EventBus.getInstance().publish(new OverlayChangeEvent(PlayingState.DYING));
+            }
         }
     }
 

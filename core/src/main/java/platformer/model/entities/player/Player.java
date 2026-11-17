@@ -265,6 +265,7 @@ public class Player extends Entity {
     }
 
     private void updateDeath() {
+        if (checkAction(PlayerAction.GAME_OVER)) return;
         if (entityState != Anim.DEATH) {
             entityState = Anim.DEATH;
             animIndex = animTick = 0;
@@ -272,6 +273,7 @@ public class Player extends Entity {
             Logger.getInstance().notify("Player is dead.", Message.NOTIFICATION);
         }
         else if (animIndex == playerRenderer.getFrameCount(entityState) - 1 && animTick >= animSpeed - 1) {
+            removeAction(PlayerAction.DYING);
             addAction(PlayerAction.GAME_OVER);
             Audio.getInstance().getAudioPlayer().stopSong();
             Audio.getInstance().getAudioPlayer().playSound(Sound.GAME_OVER);
@@ -439,6 +441,7 @@ public class Player extends Entity {
         hitBox.y = yPos;
         initAttackBox();
         if (!isEntityOnFloor(hitBox, levelData)) inAir = true;
+        if (minimapHandler != null) minimapHandler.update();
     }
 
     // Facade

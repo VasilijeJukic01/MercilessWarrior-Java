@@ -103,7 +103,7 @@ public class GameState extends AbstractState implements State {
     }
 
     @Override
-    public void update() {
+    public synchronized void update() {
         screenEffectsManager.update();
         flowManager.update();
         transitionManager.update();
@@ -240,7 +240,7 @@ public class GameState extends AbstractState implements State {
     }
 
     @Override
-    public void reset() {
+    public synchronized void reset() {
         state = null;
         world.reset();
         overlayManager.reset();
@@ -250,6 +250,7 @@ public class GameState extends AbstractState implements State {
         isRespawning = false;
         isDarkPhase = false;
         context.getCutsceneManager().reset();
+        camera.snapToPlayer(getPlayer());
     }
 
     @Override
