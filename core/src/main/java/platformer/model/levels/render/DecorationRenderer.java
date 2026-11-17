@@ -7,6 +7,7 @@ import platformer.model.levels.metadata.ObjectMetadata;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.util.HashMap;
 import java.util.Map;
@@ -20,9 +21,28 @@ public class DecorationRenderer {
 
     private final LevelObjectManager levelObjectManager;
     private final Map<String, BufferedImage> transformedCache = new HashMap<>();
+    private final BufferedImage underGlowTexture;
 
     public DecorationRenderer(LevelObjectManager levelObjectManager) {
         this.levelObjectManager = levelObjectManager;
+        this.underGlowTexture = createUnderGlowTexture(scale(96));
+    }
+
+    private BufferedImage createUnderGlowTexture(int diameter) {
+        int d = Math.max(4, diameter);
+        BufferedImage tex = new BufferedImage(d, d, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2d = tex.createGraphics();
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        RadialGradientPaint paint = new RadialGradientPaint(
+                new Point2D.Float(d / 2.0f, d / 2.0f),
+                d / 2.0f,
+                new float[]{0.0f, 0.55f, 1.0f},
+                new Color[]{new Color(0, 255, 230, 140), new Color(0, 200, 210, 55), new Color(0, 160, 190, 0)}
+        );
+        g2d.setPaint(paint);
+        g2d.fillOval(0, 0, d, d);
+        g2d.dispose();
+        return tex;
     }
 
     public void renderLayer(Graphics g, Level level, Map<Integer, DecorationMetadata> decoSet, Map<Point, ObjectMetadata> objMetaMap, int xLevelOffset, int yLevelOffset, int layer, boolean useLively) {
@@ -128,7 +148,7 @@ public class DecorationRenderer {
         }
 
         double extraBend = level.getDecorationBend(i, j);
-        applySwayAndDraw(g2d, model, decoMeta.getSway(), wid, hei, i, j, baseTime, extraBend);
+        applySwayAndDraw(g2d, model, decoMeta, wid, hei, i, j, baseTime, extraBend);
         g2d.dispose();
     }
 
@@ -139,24 +159,64 @@ public class DecorationRenderer {
         g.drawImage(model, xPos, stubDrawY, xPos + wid, yPos + hei, 0, stubSrcY, model.getWidth(), srcH, null);
     }
 
-    private void applySwayAndDraw(Graphics2D g2d, BufferedImage model, String swayType, int wid, int hei, int tileX, int tileY, double baseTime, double extraBend) {
+    private void applySwayAndDraw(Graphics2D g2d, BufferedImage model, DecorationMetadata decoMeta, int wid, int hei, int tileX, int tileY, double baseTime, double extraBend) {
+        String swayType = decoMeta.getSway();
         if (swayType == null) {
             g2d.drawImage(model, -wid / 2, -hei / 2, wid, hei, null);
-        } else if (swayType.equalsIgnoreCase("BOTTOM")) {
+        }
+        else if (swayType.equalsIgnoreCase("BOTTOM")) {
             double sway = calculateOrganicSway(tileX, tileY, baseTime, 0.085) + extraBend;
             g2d.translate(0, hei / 2.0);
             g2d.shear(sway, 0);
             g2d.drawImage(model, -wid / 2, -hei, wid, hei, null);
-        } else if (swayType.equalsIgnoreCase("BOTTOM_SLOW")) {
+        }
+        else if (swayType.equalsIgnoreCase("BOTTOM_SLOW")) {
             double sway = calculateOrganicSway(tileX, tileY, baseTime * 0.55, 0.032);
             g2d.translate(0, hei / 2.0);
             g2d.shear(sway, 0);
             g2d.drawImage(model, -wid / 2, -hei, wid, hei, null);
-        } else if (swayType.equalsIgnoreCase("TOP")) {
-            double sway = calculateOrganicSway(tileX, tileY, baseTime * 0.7, 0.045);
+        }
+        else if (swayType.equalsIgnoreCase("TOP")) {
+            double sway = calculateOrganicSway(tileX, tileY, baseTime * 0.7, 0.045) + extraBend;
             g2d.translate(0, -hei / 2.0);
             g2d.shear(sway, 0);
             g2d.drawImage(model, -wid / 2, 0, wid, hei, null);
+        }
+        else if (swayType.equalsIgnoreCase("UNDER_FRINGE")) {
+            drawUnderGrassFringe(g2d, model, decoMeta.getId(), wid, hei, tileX, tileY, baseTime, extraBend);
+        }
+    }
+
+    /**
+     * Renders UNDER_GRASS decorations by keeping the upper 45% (soil and embedded rocks) anchored still,
+     * while gently swaying the lower 55% (hanging roots, ferns, and moss) and pulsing bioluminescent nodes.
+     */
+    private void drawUnderGrassFringe(Graphics2D g2d, BufferedImage model, String id, int wid, int hei, int tileX, int tileY, double baseTime, double extraBend) {
+        int srcW = model.getWidth();
+        int srcH = model.getHeight();
+        double anchorRatio = 0.45;
+        int splitSrcY = (int) Math.round(srcH * anchorRatio);
+        int splitDstY = (int) Math.round(-hei / 2.0 + hei * anchorRatio);
+
+        g2d.drawImage(model, -wid / 2, -hei / 2, wid / 2, splitDstY, 0, 0, srcW, splitSrcY, null);
+
+        double sway = calculateOrganicSway(tileX, tileY, baseTime * 0.65, 0.065);
+        AffineTransform oldTransform = g2d.getTransform();
+        g2d.translate(0, splitDstY);
+        g2d.shear(sway, 0);
+        g2d.drawImage(model, -wid / 2, 0, wid / 2, hei / 2 - splitDstY, 0, splitSrcY, srcW, srcH, null);
+        g2d.setTransform(oldTransform);
+
+        if (id != null && (id.contains("GLOW") || id.contains("SHROOM"))) {
+            int hash = (tileX * 73856093) ^ (tileY * 19349663);
+            double phase = ((hash & 0xFFFF) / 65535.0) * Math.PI * 2.0;
+            float pulse = (float) (0.18 + 0.22 * (0.5 + 0.5 * Math.sin(baseTime * 0.9 + phase)));
+            Composite oldComp = g2d.getComposite();
+            g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, pulse));
+            int glowW = (int) (wid * 0.85);
+            int glowH = (int) (hei * 0.85);
+            g2d.drawImage(underGlowTexture, -glowW / 2, -glowH / 2, glowW, glowH, null);
+            g2d.setComposite(oldComp);
         }
     }
 
