@@ -53,6 +53,23 @@ public class OpenAL implements AudioPlayer<Song, Sound, Ambience>  {
     private static final double SOUNDS_PROGRESS = 0.3;
     private static final double AMBIENCE_PROGRESS = 0.2;
 
+    // Sounds
+    private static final Sound[] SLASH_SOUNDS = {
+            Sound.SLASH_1, Sound.SLASH_2, Sound.SLASH_3
+    };
+    private static final Sound[] HIT_SOUNDS = {
+            Sound.ENEMY_HIT_1, Sound.ENEMY_HIT_2
+    };
+    private static final Sound[] ENEMY_BLOCK_SOUNDS = {
+            Sound.ENEMY_BLOCK_1, Sound.ENEMY_BLOCK_2
+    };
+    private static final Sound[] PLAYER_BLOCK_SOUNDS = {
+            Sound.SWORD_BLOCK_1, Sound.SWORD_BLOCK_2, Sound.SWORD_BLOCK_3
+    };
+    private static final Sound[] CRATE_BREAK_SOUNDS = {
+            Sound.CRATE_BREAK_1, Sound.CRATE_BREAK_2
+    };
+
     /**
      * Initializes the OpenAL audio system. This involves setting up the audio device and context,
      * and loading all songs, sound effects, and ambient sounds from files into OpenAL buffers.
@@ -277,37 +294,27 @@ public class OpenAL implements AudioPlayer<Song, Sound, Ambience>  {
 
     @Override
     public void playSlashSound() {
-        int start = 0;
-        start += rand.nextInt(3);
-        playSound(Sound.values()[start]);
+        playSound(SLASH_SOUNDS[rand.nextInt(SLASH_SOUNDS.length)]);
     }
 
     @Override
     public void playHitSound() {
-        int start = 3;
-        start += rand.nextInt(2);
-        playSound(Sound.values()[start]);
+        playSound(HIT_SOUNDS[rand.nextInt(HIT_SOUNDS.length)]);
     }
 
     @Override
     public void playBlockSound(String type) {
-        int start = 0;
-        if (type.equals("Enemy")) {
-            start = 11;
-            start += rand.nextInt(2);
+        if ("Enemy".equals(type)) {
+            playSound(ENEMY_BLOCK_SOUNDS[rand.nextInt(ENEMY_BLOCK_SOUNDS.length)]);
         }
-        else if (type.equals("Player")) {
-            start = 13;
-            start += rand.nextInt(3);
+        else if ("Player".equals(type)) {
+            playSound(PLAYER_BLOCK_SOUNDS[rand.nextInt(PLAYER_BLOCK_SOUNDS.length)]);
         }
-        playSound(Sound.values()[start]);
     }
 
     @Override
     public void playCrateSound() {
-        int start = 6;
-        start += rand.nextInt(2);
-        playSound(Sound.values()[start]);
+        playSound(CRATE_BREAK_SOUNDS[rand.nextInt(CRATE_BREAK_SOUNDS.length)]);
     }
 
     // Volume
