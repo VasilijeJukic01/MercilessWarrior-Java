@@ -29,17 +29,16 @@ public class Game implements Runnable {
 
     private final int FPS_LOCK = 144;
     private final int UPS_LOCK = 200;
-    private int currentFps = 0;
+    private volatile int currentFps = 0;
     private int frameCountForDisplay = 0;
-    private int currentUpdates = 0;
+    private volatile int currentUpdates = 0;
 
     private int originalGameWidth;
     private int originalGameHeight;
 
     public Game() {
         init();
-        this.gameThread = new Thread(this);
-        this.gameThread.start();
+        this.gameThread = new Thread(this, "MW-GameLoop");
     }
 
     private void init() {
@@ -48,14 +47,17 @@ public class Game implements Runnable {
         this.gameFrame = new GameFrame(this);
         this.audioOptions = new AudioOptions();
         this.stateManager = new StateManager(this);
-        OverlayLayer.getInstance().update(); // Prepare instance
+        OverlayLayer.getInstance().update();
     }
 
     public void start() {
         this.gameFrame.setVisible(true);
+        if (!this.gameThread.isAlive()) {
+            this.gameThread.start();
+        }
     }
 
-    public void update() {
+    public synchronized void update() {
         stateManager.getCurrentState().update();
     }
 
@@ -66,7 +68,7 @@ public class Game implements Runnable {
      *
      * @param g the Graphics object used for rendering
      */
-    public void render(Graphics g) {
+    public synchronized void render(Graphics g) {
         if (isFullScreen()) {
             Graphics2D g2d = (Graphics2D) g;
             Dimension currentSize = gameFrame.getGamePanel().getCurrentSize();
@@ -108,8 +110,8 @@ public class Game implements Runnable {
      */
     @Override
     public void run() {
-        final double timePerFrame = 1000000000.0 / FPS_LOCK;
-        final double timePerUpdate = 1000000000.0 / UPS_LOCK;
+        final double timePerFrame = 1_000_000_000.0 / FPS_LOCK;
+        final double timePerUpdate = 1_000_000_000.0 / UPS_LOCK;
         long previousTime = System.nanoTime();
         long lastCheck = System.currentTimeMillis();
         int updates = 0;
@@ -117,11 +119,16 @@ public class Game implements Runnable {
 
         while (true) {
             long currentTime = System.nanoTime();
-
-            dU += (currentTime - previousTime) / timePerUpdate;
-            dF += (currentTime - previousTime) / timePerFrame;
-
+            long elapsedNs = currentTime - previousTime;
             previousTime = currentTime;
+
+            // Clamp large OS pauses (dragging window or alt-tab) to prevent spiral-of-death catch-up
+            if (elapsedNs > 250_000_000L) {
+                elapsedNs = 250_000_000L;
+            }
+
+            dU += elapsedNs / timePerUpdate;
+            dF += elapsedNs / timePerFrame;
 
             while (dU >= 1) {
                 this.update();
@@ -131,7 +138,7 @@ public class Game implements Runnable {
 
             if (dF >= 1) {
                 this.gameFrame.getGamePanel().repaint();
-                dF--;
+                dF -= Math.floor(dF);
             }
 
             if (System.currentTimeMillis() - lastCheck >= 1000) {
@@ -157,7 +164,7 @@ public class Game implements Runnable {
     }
 
     // Mediator
-    public void keyPressed(KeyEvent e) {
+    public synchronized void keyPressed(KeyEvent e) {
         if (e.getKeyCode() == KeyEvent.VK_F11) {
             toggleFullScreen();
             return;
@@ -165,67 +172,67 @@ public class Game implements Runnable {
         stateManager.getCurrentState().keyPressed(e);
     }
 
-    public void keyReleased(KeyEvent e) {
+    public synchronized void keyReleased(KeyEvent e) {
         stateManager.getCurrentState().keyReleased(e);
     }
 
-    public void mouseClicked(MouseEvent e) {
+    public synchronized void mouseClicked(MouseEvent e) {
         stateManager.getCurrentState().mouseClicked(e);
     }
 
-    public void mousePressed(MouseEvent e) {
+    public synchronized void mousePressed(MouseEvent e) {
         stateManager.getCurrentState().mousePressed(e);
     }
 
-    public void mouseReleased(MouseEvent e) {
+    public synchronized void mouseReleased(MouseEvent e) {
         stateManager.getCurrentState().mouseReleased(e);
     }
 
-    public void mouseMoved(MouseEvent e) {
+    public synchronized void mouseMoved(MouseEvent e) {
         stateManager.getCurrentState().mouseMoved(e);
     }
 
-    public void mouseDragged(MouseEvent e) {
+    public synchronized void mouseDragged(MouseEvent e) {
         stateManager.getCurrentState().mouseDragged(e);
     }
 
-    public void windowFocusLost(WindowEvent e) {
+    public synchronized void windowFocusLost(WindowEvent e) {
         stateManager.getCurrentState().windowFocusLost(e);
     }
 
-    public void reset() {
+    public synchronized void reset() {
         stateManager.getCurrentState().reset();
     }
 
-    public void startMenuState() {
+    public synchronized void startMenuState() {
         stateManager.setState(StateType.MENU);
     }
 
-    public void startPlayingState() {
+    public synchronized void startPlayingState() {
         stateManager.setState(StateType.PLAYING);
     }
 
-    public void startOptionsState() {
+    public synchronized void startOptionsState() {
         stateManager.setState(StateType.OPTIONS);
     }
 
-    public void startControlsState() {
+    public synchronized void startControlsState() {
         stateManager.setState(StateType.CONTROLS);
     }
 
-    public void startLeaderboardState() {
+    public synchronized void startLeaderboardState() {
         stateManager.setState(StateType.LEADERBOARD);
     }
 
-    public void startChoseGameState() {
+    public synchronized void startChoseGameState() {
         stateManager.setState(StateType.CHOOSE_GAME);
     }
 
-    public void startCreditsState() {
+    public synchronized void startCreditsState() {
         stateManager.setState(StateType.CREDITS);
     }
 
-    public void startQuitState() {
+    public synchronized void startQuitState() {
         stateManager.setState(StateType.QUIT);
     }
 

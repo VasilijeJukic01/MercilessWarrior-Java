@@ -1,5 +1,7 @@
 package platformer.model.effects;
 
+import platformer.core.Framework;
+
 /**
  * Manages the in-game day-night cycle and provides smooth cosine-interpolated daylight and night factors.
  */
@@ -16,12 +18,21 @@ public class TimeCycleManager {
     public static final double DUSK_END = 0.82;
 
     private double gameTime = 0;
+    private int playtimeTick = 0;
     private boolean lockedToNight = false;
 
     /**
      * Advances the game clock by one tick. This should be called once per frame from the main game loop.
      */
     public void update() {
+        playtimeTick++;
+        if (playtimeTick >= UPS) {
+            playtimeTick = 0;
+            if (Framework.getInstance().getAccount() != null) {
+                Framework.getInstance().getAccount().incrementPlaytime();
+            }
+        }
+
         if (lockedToNight) {
             gameTime = 0;
             return;

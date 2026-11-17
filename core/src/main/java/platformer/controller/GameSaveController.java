@@ -117,8 +117,6 @@ public class GameSaveController {
         if (game.getCurrentState() instanceof GameState gameState) {
             gameState.refreshAllFromAccount();
         }
-
-        Framework.getInstance().getAccount().startGameTimer();
     }
 
     public void checkSlotSelection(MouseEvent e) {

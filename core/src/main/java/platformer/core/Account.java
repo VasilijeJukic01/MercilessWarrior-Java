@@ -3,7 +3,6 @@ package platformer.core;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.swing.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,8 +22,7 @@ public class Account {
     private String explorationData;
 
     private String lastTimeSaved;
-    private long playtime;
-    private transient Timer timer;
+    private volatile long playtime;
 
     private transient boolean enableCheats;
 
@@ -91,16 +89,8 @@ public class Account {
         setQuests(slotData.getQuests() != null ? new ArrayList<>(slotData.getQuests()) : new ArrayList<>());
     }
 
-    // Timer
-    public void startGameTimer() {
-        if (timer == null) {
-            timer = new Timer(1000, e -> playtime += 1);
-            timer.start();
-        }
-    }
-
-    public void stopGameTimer() {
-        if (timer != null) timer.stop();
+    public void incrementPlaytime() {
+        this.playtime += 1;
     }
 
     // Unload save file
@@ -112,7 +102,6 @@ public class Account {
         this.items = new ArrayList<>();
         this.worldFlags = new ArrayList<>();
         this.quests = new ArrayList<>();
-        stopGameTimer();
         this.playtime = 0;
     }
 }
