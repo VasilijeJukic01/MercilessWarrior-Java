@@ -37,6 +37,8 @@ public class EffectManager {
     private SmokeParticle[] smokeParticles;
     private WindParticle[] windParticles;
     private FallingLeafParticle[] fallingLeafParticles;
+    private SunbeamParticle[] sunbeamParticles;
+
     private final AmbientParticleFactory ambientParticleFactory;
     private boolean ambientEffectsActive = true;
     private float dayFactor = 0.0f;
@@ -55,6 +57,7 @@ public class EffectManager {
         this.smokeParticles = new SmokeParticle[0];
         this.windParticles = new WindParticle[0];
         this.fallingLeafParticles = new FallingLeafParticle[0];
+        this.sunbeamParticles = new SunbeamParticle[0];
         preloadAmbientParticleAssets();
     }
 
@@ -116,11 +119,21 @@ public class EffectManager {
         return leaves;
     }
 
+    private SunbeamParticle[] loadSunbeamParticles(int levelWidth, int levelHeight) {
+        int beamCount = Math.max(6, (levelWidth / (TILES_SIZE * 5)));
+        SunbeamParticle[] beams = new SunbeamParticle[beamCount];
+        for (int i = 0; i < beams.length; i++) {
+            beams[i] = new SunbeamParticle(levelWidth, levelHeight, i, beamCount);
+        }
+        return beams;
+    }
+
     public void reinitializeAmbientParticles(int levelWidth, int levelHeight) {
         this.ambientParticles = loadDustParticles();
         this.smokeParticles = loadSmokeParticles();
         this.windParticles = loadWindParticles(levelWidth, levelHeight);
         this.fallingLeafParticles = loadFallingLeafParticles(levelWidth, levelHeight);
+        this.sunbeamParticles = loadSunbeamParticles(levelWidth, levelHeight);
     }
 
     public void spawnDustParticles(double x, double y, int count, DustType type, int flipSign, Entity target) {
@@ -201,6 +214,7 @@ public class EffectManager {
                 }
                 if (dayFactor > 0.02f) {
                     Arrays.stream(fallingLeafParticles).forEach(FallingLeafParticle::update);
+                    Arrays.stream(sunbeamParticles).forEach(SunbeamParticle::update);
                 }
             }
         }
@@ -241,6 +255,8 @@ public class EffectManager {
 
     public void updateTimeOfDay(TimeCycleManager timeCycleManager) {
         if (timeCycleManager == null) return;
+        this.dayFactor = timeCycleManager.getDaylightFactor();
+        this.nightFactor = timeCycleManager.getNightFactor();
         double time = timeCycleManager.getGameTimeNormalized();
 
         if (time >= 0.30 && time < 0.70) {
@@ -275,7 +291,10 @@ public class EffectManager {
             return;
         }
         if (nightFactor > 0.02f) Arrays.stream(windParticles).forEach(p -> p.render(g2d, xLevelOffset, yLevelOffset, nightFactor));
-        if (dayFactor > 0.02f) Arrays.stream(fallingLeafParticles).forEach(p -> p.render(g2d, xLevelOffset, yLevelOffset, dayFactor));
+        if (dayFactor > 0.02f) {
+            Arrays.stream(sunbeamParticles).forEach(p -> p.render(g2d, xLevelOffset, yLevelOffset, dayFactor));
+            Arrays.stream(fallingLeafParticles).forEach(p -> p.render(g2d, xLevelOffset, yLevelOffset, dayFactor));
+        }
     }
 
     public void renderAmbientEffects(Graphics g, int xLevelOffset, int yLevelOffset) {

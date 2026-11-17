@@ -1,16 +1,20 @@
 package platformer.model.effects;
 
 /**
- * Manages the in-game day-night cycle.
- * <p>
- * This class acts as the central clock for the game world. It tracks the current time,
- * handles its progression, and provides utility methods to query the current period of the day.
+ * Manages the in-game day-night cycle and provides smooth cosine-interpolated daylight and night factors.
  */
 public class TimeCycleManager {
 
     /* The duration of a full in-game day in real-world seconds. */
     public static final double SECONDS_PER_GAME_DAY = 1440.0; // 24 minutes
     private static final int UPS = 200;
+
+    // Dawn: 0.18 -> 0.30 | Day: 0.30 -> 0.68 | Dusk: 0.68 -> 0.82 | Night: 0.82 -> 0.18
+    public static final double DAWN_START = 0.18;
+    public static final double DAWN_END = 0.30;
+    public static final double DUSK_START = 0.68;
+    public static final double DUSK_END = 0.82;
+
     private double gameTime = 0;
     private boolean lockedToNight = false;
 
@@ -38,14 +42,40 @@ public class TimeCycleManager {
     }
 
     /**
-     * Checks if it is currently daytime.
-     * Day is defined as the period from 25% to 75% of the cycle.
-     *
-     * @return true if it is daytime, false otherwise.
+     * Returns a smoothly interpolated daylight factor from 0.0 (full night) to 1.0 (full day).
      */
+    public float getDaylightFactor() {
+        if (lockedToNight) return 0.0f;
+        double t = getGameTimeNormalized();
+        if (t >= DAWN_END && t < DUSK_START) {
+            return 1.0f;
+        }
+        else if (t >= DAWN_START && t < DAWN_END) {
+            double progress = (t - DAWN_START) / (DAWN_END - DAWN_START);
+            return cosineEase(progress);
+        }
+        else if (t >= DUSK_START && t < DUSK_END) {
+            double progress = (t - DUSK_START) / (DUSK_END - DUSK_START);
+            return 1.0f - cosineEase(progress);
+        }
+        return 0.0f;
+    }
+
+    /**
+     * Returns a smoothly interpolated night factor from 0.0 (full day) to 1.0 (full night).
+     */
+    public float getNightFactor() {
+        return 1.0f - getDaylightFactor();
+    }
+
+    private float cosineEase(double t) {
+        double clamped = Math.max(0.0, Math.min(1.0, t));
+        return (float) ((1.0 - Math.cos(clamped * Math.PI)) * 0.5);
+    }
+
     public boolean isDay() {
         double time = getGameTimeNormalized();
-        return time >= 0.25 && time < 0.75;
+        return time >= DAWN_END && time < DUSK_START;
     }
 
     /**
@@ -55,7 +85,8 @@ public class TimeCycleManager {
      * @return true if it is nighttime, false otherwise.
      */
     public boolean isNight() {
-        return !isDay();
+        double time = getGameTimeNormalized();
+        return time < DAWN_START || time >= DUSK_END;
     }
 
     /**
@@ -66,7 +97,7 @@ public class TimeCycleManager {
      */
     public boolean isDawn() {
         double time = getGameTimeNormalized();
-        return time >= 0.20 && time < 0.30;
+        return time >= DAWN_START && time < DAWN_END;
     }
 
     /**
@@ -77,7 +108,7 @@ public class TimeCycleManager {
      */
     public boolean isDusk() {
         double time = getGameTimeNormalized();
-        return time >= 0.70 && time < 0.80;
+        return time >= DUSK_START && time < DUSK_END;
     }
 
     public void setLockedToNight(boolean locked) {

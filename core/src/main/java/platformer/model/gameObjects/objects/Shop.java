@@ -62,17 +62,6 @@ public class Shop extends GameObject implements Interactable {
     private void renderAmbientShopLife(Graphics g, int shopX, int shopY) {
         Graphics2D g2d = (Graphics2D) g.create();
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-        float flicker1 = (float) (0.85 + 0.15 * Math.sin(animPhase * 0.6 + Math.cos(animPhase * 0.3)));
-        float flicker2 = (float) (0.85 + 0.15 * Math.sin(animPhase * 0.5 + 1.2));
-        int lanternR = (int) (20 * SCALE);
-
-        int leftLanternX = shopX + (int) (12 * SCALE), rightLanternX = shopX + (int) (139 * SCALE);
-        int lanternY = shopY + (int) (51 * SCALE);
-
-        drawSoftGlow(g2d, leftLanternX, lanternY, (int) (lanternR * flicker1), new Color(255, 175, 55, (int) (125 * flicker1)));
-        drawSoftGlow(g2d, rightLanternX, lanternY, (int) (lanternR * flicker2), new Color(255, 175, 55, (int) (125 * flicker2)));
-
         float potionPulse = (float) (0.75 + 0.25 * Math.sin(animPhase * 0.6));
         int cyanPotionX = shopX + (int) (43 * SCALE);
         int redPotionX = shopX + (int) (101 * SCALE);

@@ -25,8 +25,8 @@ public class Candle extends GameObject {
 
     @Override
     public void render(Graphics g, int xLevelOffset, int yLevelOffset, BufferedImage[] animations) {
-        int x = (int)hitBox.x - xOffset - xLevelOffset;
-        int y = (int)hitBox.y - yOffset - yLevelOffset;
+        int x = (int) hitBox.x - xOffset - xLevelOffset;
+        int y = (int) hitBox.y - yOffset - yLevelOffset;
         g.drawImage(animations[0], x, y, CANDLE_WID, CANDLE_HEI, null);
         hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.ORANGE);
     }
@@ -41,4 +41,3 @@ public class Candle extends GameObject {
 
     }
 }
-

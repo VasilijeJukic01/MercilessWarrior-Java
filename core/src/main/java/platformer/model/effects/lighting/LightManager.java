@@ -63,7 +63,7 @@ public class LightManager {
     private static final int LIGHTMAP_SCALE = 4;
 
     private BufferedImage orangeLight, whiteRadialLight;
-    private BufferedImage playerLightTexture, enemyLightTexture, candleLightTexture, objectLightTexture, shopLightTexture;
+    private BufferedImage playerLightTexture, enemyLightTexture, objectLightTexture, shopLightTexture, lanternHaloTexture;
     private final Map<String, BufferedImage> lightTextureCache = new HashMap<>();
 
     /**
@@ -88,9 +88,8 @@ public class LightManager {
     private Color filterColor = null;
 
     // TimeCycle
-    private double currentTimeOfDay = 0.5;
     private Color timeCycleTintColor = new Color(0, 0, 0, 0);
-    private static final float MIN_CANDLE_GLOW_ALPHA = 0.2f;
+    private static final float MIN_CANDLE_GLOW_ALPHA = 0.0f;
     private static final float MAX_CANDLE_GLOW_ALPHA = 1.0f;
 
     public LightManager() {
@@ -123,20 +122,60 @@ public class LightManager {
         float[] coreFractions = new float[]{0f, 0.42f, 1f};
         Color[] coreColors = new Color[]{Color.WHITE, new Color(1.0f, 1.0f, 1.0f, 0.92f), new Color(1.0f, 1.0f, 1.0f, 0f)};
 
+        this.lanternHaloTexture = createLanternHaloTexture((int) (88 * SCALE));
+
         int playerDiameter = Math.max(2, (int) (PLAYER_LIGHT_RADIUS * 2.5f) / LIGHTMAP_SCALE);
         playerLightTexture = createLightTexture(playerDiameter, new float[]{0f, 1f}, new Color[]{Color.WHITE, new Color(1.0f, 1.0f, 1.0f, 0f)});
 
         int enemyDiameter = Math.max(2, (int) (PLAYER_LIGHT_RADIUS * 2.0f) / LIGHTMAP_SCALE);
         enemyLightTexture = createLightTexture(enemyDiameter, new float[]{0f, 1f}, new Color[]{Color.WHITE, new Color(1.0f, 1.0f, 1.0f, 0f)});
 
-        int candleDiameter = Math.max(2, (int) (CANDLE_LIGHT_RADIUS * 2.6f) / LIGHTMAP_SCALE);
-        candleLightTexture = createLightTexture(candleDiameter, coreFractions, coreColors);
-
         int objectDiameter = Math.max(2, (int) (CANDLE_LIGHT_RADIUS * 1.9f) / LIGHTMAP_SCALE);
         objectLightTexture = createLightTexture(objectDiameter, coreFractions, coreColors);
 
         int shopDiameter = Math.max(2, (int) (CANDLE_LIGHT_RADIUS * 3.2f) / LIGHTMAP_SCALE);
         shopLightTexture = createLightTexture(shopDiameter, coreFractions, coreColors);
+    }
+
+    private BufferedImage createLanternHaloTexture(int diameter) {
+        int d = Math.max(4, diameter);
+        BufferedImage tex = new BufferedImage(d, d, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2d = tex.createGraphics();
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        float cx = d / 2.0f;
+        float cy = d / 2.0f;
+        float outerRadius = d / 2.0f;
+
+        RadialGradientPaint outerHalo = new RadialGradientPaint(
+                new Point2D.Float(cx, cy),
+                outerRadius,
+                new float[]{0.0f, 0.45f, 1.0f},
+                new Color[]{
+                        new Color(255, 160, 40, 135),
+                        new Color(245, 95, 15, 65),
+                        new Color(200, 50, 0, 0)
+                }
+        );
+        g2d.setPaint(outerHalo);
+        g2d.fillOval(0, 0, d, d);
+
+        float coreRadius = outerRadius * (14.0f / 44.0f);
+        RadialGradientPaint coreGlow = new RadialGradientPaint(
+                new Point2D.Float(cx, cy),
+                coreRadius,
+                new float[]{0.0f, 1.0f},
+                new Color[]{
+                        new Color(255, 235, 150, 175),
+                        new Color(255, 160, 40, 0)
+                }
+        );
+        g2d.setPaint(coreGlow);
+        int coreD = Math.round(coreRadius * 2);
+        g2d.fillOval(Math.round(cx - coreRadius), Math.round(cy - coreRadius), coreD, coreD);
+
+        g2d.dispose();
+        return tex;
     }
 
     /**
@@ -198,7 +237,6 @@ public class LightManager {
      * @param timeManager The manager providing the normalized in-game time of day.
      */
     public void update(TimeCycleManager timeManager) {
-        this.currentTimeOfDay = timeManager.getGameTimeNormalized();
         calculateTimeCycleEffects(timeManager);
         updateAmbientDarknessAndEffects();
         updatePulse();
@@ -207,51 +245,81 @@ public class LightManager {
 
     /**
      * Calculates the baseline color tint and target ambient darkness for the current time of day.
-     * Smoothly interpolates between four keyframe periods: Night, Dawn, Day, and Dusk.
-     *
-     * @param timeManager The manager providing the current normalized time of day.
+     * Uses cosine easing across Night, Dawn, Day, and Dusk so transitions have zero harsh seams.
      */
     private void calculateTimeCycleEffects(TimeCycleManager timeManager) {
         if (ambientDarknessOverridden) return;
-        double time = timeManager.getGameTimeNormalized();
-        int tintAlpha, darknessAlpha;
+        double t = timeManager.getGameTimeNormalized();
+
+        Color nightTint = new Color(5, 10, 42);
+        Color dawnTint = new Color(165, 135, 195);
+        Color dayTint = new Color(255, 250, 225);
+        Color duskTint = new Color(255, 150, 95);
+
+        int nightTintAlpha = 95, dawnTintAlpha = 42, dayTintAlpha = 14, duskTintAlpha = 55;
+        int nightDarkness = 215, dawnDarkness = 145, dayDarkness = 75, duskDarkness = 155;
+
         Color tint;
-
-        Color nightTint = new Color(0, 5, 40, 10);
-        Color dawnTint = new Color(130, 140, 200);
-        Color dayTint = new Color(255, 255, 230);
-        Color duskTint = new Color(251, 169, 111);
-
-        // Night to Dawn
-        if (time >= 0 && time < 0.25) {
-            float progress = (float) (time / 0.25);
-            tint = interpolateColor(nightTint, dawnTint, progress);
-            tintAlpha = interpolate(100, 35, progress);
-            darknessAlpha = interpolate(220, 130, progress);
+        int tintAlpha, darknessAlpha;
+        if (t >= TimeCycleManager.DAWN_START && t < TimeCycleManager.DAWN_END) {
+            double p = (t - TimeCycleManager.DAWN_START) / (TimeCycleManager.DAWN_END - TimeCycleManager.DAWN_START);
+            if (p < 0.5) {
+                float ease = cosineEase(p * 2.0);
+                tint = interpolateColor(nightTint, dawnTint, ease);
+                tintAlpha = interpolate(nightTintAlpha, dawnTintAlpha, ease);
+                darknessAlpha = interpolate(nightDarkness, dawnDarkness, ease);
+            }
+            else {
+                float ease = cosineEase((p - 0.5) * 2.0);
+                tint = interpolateColor(dawnTint, dayTint, ease);
+                tintAlpha = interpolate(dawnTintAlpha, dayTintAlpha, ease);
+                darknessAlpha = interpolate(dawnDarkness, dayDarkness, ease);
+            }
         }
-        // Dawn to Day
-        else if (time >= 0.25 && time < 0.50) {
-            float progress = (float) ((time - 0.25) / 0.25);
-            tint = interpolateColor(dawnTint, dayTint, progress);
-            tintAlpha = interpolate(35, 15, progress);
-            darknessAlpha = interpolate(130, 80, progress);
+        else if (t >= TimeCycleManager.DAWN_END && t < TimeCycleManager.DUSK_START) {
+            tint = dayTint;
+            tintAlpha = dayTintAlpha;
+            darknessAlpha = dayDarkness;
         }
-        // Day to Dusk
-        else if (time >= 0.50 && time < 0.75) {
-            float progress = (float) ((time - 0.50) / 0.25);
-            tint = interpolateColor(dayTint, duskTint, progress);
-            tintAlpha = interpolate(15, 50, progress);
-            darknessAlpha = interpolate(80, 160, progress);
+        else if (t >= TimeCycleManager.DUSK_START && t < TimeCycleManager.DUSK_END) {
+            double p = (t - TimeCycleManager.DUSK_START) / (TimeCycleManager.DUSK_END - TimeCycleManager.DUSK_START);
+            if (p < 0.5) {
+                float ease = cosineEase(p * 2.0);
+                tint = interpolateColor(dayTint, duskTint, ease);
+                tintAlpha = interpolate(dayTintAlpha, duskTintAlpha, ease);
+                darknessAlpha = interpolate(dayDarkness, duskDarkness, ease);
+            }
+            else {
+                float ease = cosineEase((p - 0.5) * 2.0);
+                tint = interpolateColor(duskTint, nightTint, ease);
+                tintAlpha = interpolate(duskTintAlpha, nightTintAlpha, ease);
+                darknessAlpha = interpolate(duskDarkness, nightDarkness, ease);
+            }
         }
-        // Dusk to Night
         else {
-            float progress = (float) ((time - 0.75) / 0.25);
-            tint = interpolateColor(duskTint, nightTint, progress);
-            tintAlpha = interpolate(50, 100, progress);
-            darknessAlpha = interpolate(160, 220, progress);
+            tint = nightTint;
+            tintAlpha = nightTintAlpha;
+            darknessAlpha = nightDarkness;
         }
+
         this.timeCycleTintColor = new Color(tint.getRed(), tint.getGreen(), tint.getBlue(), tintAlpha);
         this.ambientAlpha = darknessAlpha;
+    }
+
+    private float cosineEase(double t) {
+        double clamped = Math.max(0.0, Math.min(1.0, t));
+        return (float) ((1.0 - Math.cos(clamped * Math.PI)) * 0.5);
+    }
+
+    /**
+     * Returns a smooth [0.0 .. 1.0] intensity multiplier for candles, shops, and artificial light sources
+     * based on current ambient darkness, so lights fade out gently at dawn and fade in gently at dusk.
+     */
+    private float getArtificialLightIntensity() {
+        if (ambientDarknessOverridden) return 1.0f;
+        float norm = (currentAmbientAlpha - 80.0f) / (215.0f - 80.0f);
+        float clamped = Math.max(0.0f, Math.min(1.0f, norm));
+        return clamped * clamped * (3.0f - 2.0f * clamped);
     }
 
     /**
@@ -409,10 +477,14 @@ public class LightManager {
                     bakeMetadataLight(wG2d, cG2d, light);
                     hasStaticColoredLights = true;
                 }
-                for (Lava lava : context.getObjectManager().getObjects(Lava.class)) {
-                    bakeLavaPoolLight(wG2d, cG2d, lava);
-                    hasStaticColoredLights = true;
-                }
+            }
+            for (Lava lava : context.getObjectManager().getObjects(Lava.class)) {
+                bakeLavaPoolLight(wG2d, cG2d, lava);
+                hasStaticColoredLights = true;
+            }
+            for (Candle candle : context.getObjectManager().getObjects(Candle.class)) {
+                bakeCandleLight(wG2d, cG2d, candle);
+                hasStaticColoredLights = true;
             }
         } finally {
             wG2d.dispose();
@@ -470,6 +542,24 @@ public class LightManager {
         } catch (Exception ignored) {}
     }
 
+    private void bakeCandleLight(Graphics2D wG2d, Graphics2D cG2d, Candle candle) {
+        int lmRadius = Math.max(2, (int) (95 * SCALE) / LIGHTMAP_SCALE);
+        int lmDiameter = lmRadius * 2;
+        Color lanternColor = new Color(255, 145, 25);
+
+        String colorKey = lanternColor.getRGB() + "_" + lmRadius;
+        String whiteKey = "white_" + lmRadius;
+        BufferedImage coloredTex = lightTextureCache.computeIfAbsent(colorKey, k -> createColoredLightTexture(lmDiameter, lanternColor));
+        BufferedImage whiteTex = lightTextureCache.computeIfAbsent(whiteKey, k -> createLightTexture(lmDiameter, new float[]{0f, 1f}, new Color[]{Color.WHITE, new Color(1.0f, 1.0f, 1.0f, 0f)}));
+
+        int lanternWorldX = (int) (candle.getHitBox().x - candle.getXOffset() + 7.5 * SCALE);
+        int lanternWorldY = (int) (candle.getHitBox().y - candle.getYOffset() + 31.0 * SCALE);
+        int centerX = lanternWorldX / LIGHTMAP_SCALE;
+        int centerY = lanternWorldY / LIGHTMAP_SCALE;
+        cG2d.drawImage(coloredTex, centerX - lmRadius, centerY - lmRadius, null);
+        wG2d.drawImage(whiteTex, centerX - lmRadius, centerY - lmRadius, null);
+    }
+
     private void bakeLavaPoolLight(Graphics2D wG2d, Graphics2D cG2d, Lava lava) {
         int lmRadius = Math.max(2, (int) (85 * SCALE) / LIGHTMAP_SCALE);
         int lmDiameter = lmRadius * 2;
@@ -508,19 +598,24 @@ public class LightManager {
         int srcX = xLevelOffset / LIGHTMAP_SCALE;
         int srcY = yLevelOffset / LIGHTMAP_SCALE;
 
+        float lightStrength = getArtificialLightIntensity();
         Graphics2D lightmapG2d = lightmap.createGraphics();
         try {
             lightmapG2d.setComposite(AlphaComposite.Src);
             lightmapG2d.setColor(ambientDarkness);
             lightmapG2d.fillRect(0, 0, lmW, lmH);
 
-            lightmapG2d.setComposite(AlphaComposite.DstOut);
+            lightmapG2d.setComposite(AlphaComposite.getInstance(AlphaComposite.DST_OUT, Math.max(0.35f, lightStrength)));
             drawLightSource(lightmapG2d, playerLightTexture, context.getPlayer().getHitBox(), xLevelOffset, yLevelOffset);
-            renderAllLightSources(lightmapG2d, xLevelOffset, yLevelOffset);
+            if (lightStrength > 0.02f) {
+                lightmapG2d.setComposite(AlphaComposite.getInstance(AlphaComposite.DST_OUT, lightStrength));
+                renderAllLightSources(lightmapG2d, xLevelOffset, yLevelOffset);
+            }
 
-            if (hasStaticColoredLights && staticRoomWhiteMap != null) {
+            if (hasStaticColoredLights && staticRoomWhiteMap != null && lightStrength > 0.02f) {
+                lightmapG2d.setComposite(AlphaComposite.getInstance(AlphaComposite.DST_OUT, lightStrength));
                 lightmapG2d.drawImage(staticRoomWhiteMap, -srcX, -srcY, null);
-                lightmapG2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.26f));
+                lightmapG2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.26f * lightStrength));
                 lightmapG2d.drawImage(staticRoomColorMap, -srcX, -srcY, null);
             }
         } finally {
@@ -558,17 +653,8 @@ public class LightManager {
     }
 
     private void renderAllLightSources(Graphics2D g2d, int xLevelOffset, int yLevelOffset) {
-        if (ambientDarkness.getAlpha() > 100) {
-            renderCandleLights(g2d, xLevelOffset, yLevelOffset);
-            renderGameObjectLights(g2d, xLevelOffset, yLevelOffset);
-            renderEnemyLights(g2d, xLevelOffset, yLevelOffset);
-        }
-    }
-
-    private void renderCandleLights(Graphics2D g2d, int xLevelOffset, int yLevelOffset) {
-        for (Candle candle : context.getObjectManager().getObjects(Candle.class)) {
-            if (candle.isAlive()) drawLightSource(g2d, candleLightTexture, candle.getHitBox(), xLevelOffset, yLevelOffset);
-        }
+        renderGameObjectLights(g2d, xLevelOffset, yLevelOffset);
+        renderEnemyLights(g2d, xLevelOffset, yLevelOffset);
     }
 
     private void renderGameObjectLights(Graphics2D g2d, int xLevelOffset, int yLevelOffset) {
@@ -615,38 +701,78 @@ public class LightManager {
      */
     private void glowObjects(Graphics2D g2d, int xLevelOffset, int yLevelOffset) {
         candleFilter(g2d, xLevelOffset, yLevelOffset);
+        tableFilter(g2d, xLevelOffset, yLevelOffset);
         shopFilter(g2d, xLevelOffset, yLevelOffset);
     }
 
     // Filters
-    private <T extends GameObject> void glowFilter(Graphics2D g2d, int xLevelOffset, int yLevelOffset, Class<T> clazz, boolean isCandle) {
-        double pulseScale = 0.975 + 0.025 * Math.sin(pulseTimer);
-        List<T> objects = context.getObjectManager().getObjects(clazz);
+    private void candleFilter(Graphics2D g2d, int xLevelOffset, int yLevelOffset) {
         float glowAlpha = getSmoothGlowAlpha();
+        if (glowAlpha <= 0.01f) return;
 
-        for (T object : objects) {
-            if (!object.isAlive()) continue;
-            int glowWidth = (int) (2.5 * CANDLE_LIGHT_RADIUS * pulseScale);
-            int glowHeight = (int) (2.5 * CANDLE_LIGHT_RADIUS * pulseScale);
-            int x = (int) (object.getHitBox().getCenterX() - xLevelOffset) - glowWidth / 2;
-            int y = (int) (object.getHitBox().getCenterY() - yLevelOffset) - glowHeight / 2;
+        float breath = (float) (0.93 + 0.07 * Math.sin(pulseTimer));
+        int diameter = (int) (88 * SCALE);
+        List<Candle> candles = context.getObjectManager().getObjects(Candle.class);
+        Composite originalComposite = g2d.getComposite();
+        g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, glowAlpha * breath));
 
-            Composite originalComposite = g2d.getComposite();
-            float whiteGlowAlpha = glowAlpha * 0.6f;
-            g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, whiteGlowAlpha));
-            g2d.drawImage(whiteRadialLight, x, y, glowWidth, glowHeight, null);
-            g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, glowAlpha * 0.85f));
-            g2d.drawImage(orangeLight, x, y, glowWidth, glowHeight, null);
-            g2d.setComposite(originalComposite);
+        for (Candle candle : candles) {
+            if (!candle.isAlive()) continue;
+            int spriteX = (int) candle.getHitBox().x - candle.getXOffset() - xLevelOffset;
+            int spriteY = (int) candle.getHitBox().y - candle.getYOffset() - yLevelOffset;
+            int lanternX = spriteX + (int) (7.5 * SCALE);
+            int lanternY = spriteY + (int) (31.0 * SCALE);
+
+            g2d.drawImage(lanternHaloTexture, lanternX - diameter / 2, lanternY - diameter / 2, diameter, diameter, null);
         }
+        g2d.setComposite(originalComposite);
     }
 
-    private void candleFilter(Graphics2D g2d, int xLevelOffset, int yLevelOffset) {
-        glowFilter(g2d, xLevelOffset, yLevelOffset, Candle.class, true);
+    private void tableFilter(Graphics2D g2d, int xLevelOffset, int yLevelOffset) {
+        float glowAlpha = getSmoothGlowAlpha();
+        if (glowAlpha <= 0.01f) return;
+
+        float breath = (float) (0.93 + 0.07 * Math.sin(pulseTimer));
+        int diameter = (int) (52 * SCALE);
+        List<Table> tables = context.getObjectManager().getObjects(Table.class);
+        Composite originalComposite = g2d.getComposite();
+        g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, glowAlpha * breath));
+
+        for (Table table : tables) {
+            if (!table.isAlive()) continue;
+            int spriteX = (int) table.getHitBox().x - table.getXOffset() - xLevelOffset;
+            int spriteY = (int) table.getHitBox().y - table.getYOffset() - yLevelOffset + (int) (1 * SCALE);
+            int lanternX = spriteX + (int) (52.5 * SCALE);
+            int lanternY = spriteY + (int) (23.0 * SCALE);
+
+            g2d.drawImage(lanternHaloTexture, lanternX - diameter / 2, lanternY - diameter / 2, diameter, diameter, null);
+        }
+        g2d.setComposite(originalComposite);
     }
 
     private void shopFilter(Graphics2D g2d, int xLevelOffset, int yLevelOffset) {
-        glowFilter(g2d, xLevelOffset, yLevelOffset, Shop.class, false);
+        float glowAlpha = getSmoothGlowAlpha();
+        if (glowAlpha <= 0.01f) return;
+
+        float breath = (float) (0.93 + 0.07 * Math.sin(pulseTimer));
+        int lanternDiameter = (int) (44 * SCALE);
+        List<Shop> shops = context.getObjectManager().getObjects(Shop.class);
+        Composite originalComposite = g2d.getComposite();
+        g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, glowAlpha * breath));
+
+        for (Shop shop : shops) {
+            if (!shop.isAlive()) continue;
+            int shopX = (int) shop.getHitBox().x - shop.getXOffset() - xLevelOffset;
+            int shopY = (int) shop.getHitBox().y - shop.getYOffset() - yLevelOffset + (int) (5 * SCALE);
+
+            int leftLanternX = shopX + (int) (9 * SCALE);
+            int rightLanternX = shopX + (int) (136 * SCALE);
+            int lanternY = shopY + (int) (53 * SCALE);
+
+            g2d.drawImage(lanternHaloTexture, leftLanternX - lanternDiameter / 2, lanternY - lanternDiameter / 2, lanternDiameter, lanternDiameter, null);
+            g2d.drawImage(lanternHaloTexture, rightLanternX - lanternDiameter / 2, lanternY - lanternDiameter / 2, lanternDiameter, lanternDiameter, null);
+        }
+        g2d.setComposite(originalComposite);
     }
 
     /**
@@ -667,9 +793,8 @@ public class LightManager {
      * @return A float alpha value between {@link #MIN_CANDLE_GLOW_ALPHA} and {@link #MAX_CANDLE_GLOW_ALPHA}.
      */
     private float getSmoothGlowAlpha() {
-        double cos = Math.cos(currentTimeOfDay * 2 * Math.PI);
-        double normalized = (cos + 1) / 2.0;
-        return (float) (MIN_CANDLE_GLOW_ALPHA + normalized * (MAX_CANDLE_GLOW_ALPHA - MIN_CANDLE_GLOW_ALPHA));
+        float intensity = getArtificialLightIntensity();
+        return MIN_CANDLE_GLOW_ALPHA + intensity * (MAX_CANDLE_GLOW_ALPHA - MIN_CANDLE_GLOW_ALPHA);
     }
 
     // Ambient
@@ -678,7 +803,6 @@ public class LightManager {
      * Used after a time-skip when resting.
      */
     public void snapToTimeCycle(TimeCycleManager timeManager) {
-        this.currentTimeOfDay = timeManager.getGameTimeNormalized();
         calculateTimeCycleEffects(timeManager);
         if (!ambientDarknessOverridden) {
             this.currentAmbientAlpha = this.ambientAlpha;
