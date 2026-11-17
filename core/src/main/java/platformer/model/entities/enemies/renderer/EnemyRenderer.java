@@ -114,4 +114,66 @@ public interface EnemyRenderer<T extends Enemy> {
 
         g2d.dispose();
     }
+
+    /**
+     * Renders a sharp 4-point telegraph glint during the enemy's parryable windup frames.
+     */
+    default void renderParryGlint(Graphics g, T enemy, int xLevelOffset, int yLevelOffset) {
+        if (!enemy.isParryWindup()) return;
+
+        Graphics2D g2d = (Graphics2D) g.create();
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        int dirSign = enemy.getFlipSign();
+        double cx = enemy.getHitBox().getCenterX() - xLevelOffset + dirSign;
+        double cy = enemy.getHitBox().y - yLevelOffset - (8 * SCALE);
+
+        double pulse = 0.75 + 0.35 * Math.sin(System.currentTimeMillis() * 0.035);
+        double longRay = 13.0 * SCALE * pulse;
+        double shortRay = 7.5 * SCALE * pulse;
+        double thickness = 2.4 * SCALE * pulse;
+
+        int glowR = (int) (11 * SCALE * pulse);
+        g2d.setColor(new Color(255, 210, 65, 95));
+        g2d.fillOval((int) cx - glowR, (int) cy - glowR, glowR * 2, glowR * 2);
+
+        Path2D.Double primaryStar = new Path2D.Double();
+        primaryStar.moveTo(cx, cy - longRay);
+        primaryStar.lineTo(cx + thickness, cy - thickness);
+        primaryStar.lineTo(cx + longRay, cy);
+        primaryStar.lineTo(cx + thickness, cy + thickness);
+        primaryStar.lineTo(cx, cy + longRay);
+        primaryStar.lineTo(cx - thickness, cy + thickness);
+        primaryStar.moveTo(cx - thickness, cy + thickness);
+        primaryStar.lineTo(cx - longRay, cy);
+        primaryStar.lineTo(cx - thickness, cy - thickness);
+        primaryStar.closePath();
+
+        g2d.setColor(new Color(255, 220, 75, 235));
+        g2d.fill(primaryStar);
+
+        AffineTransform old = g2d.getTransform();
+        g2d.translate(cx, cy);
+        g2d.rotate(Math.PI / 4.0);
+        Path2D.Double diagStar = new Path2D.Double();
+        double dThick = thickness * 0.65;
+        diagStar.moveTo(0, -shortRay);
+        diagStar.lineTo(dThick, -dThick);
+        diagStar.lineTo(shortRay, 0);
+        diagStar.lineTo(dThick, dThick);
+        diagStar.lineTo(0, shortRay);
+        diagStar.lineTo(-dThick, dThick);
+        diagStar.lineTo(-shortRay, 0);
+        diagStar.lineTo(-dThick, -dThick);
+        diagStar.closePath();
+        g2d.setColor(new Color(180, 250, 255, 210));
+        g2d.fill(diagStar);
+        g2d.setTransform(old);
+
+        int coreR = Math.max(2, (int) (3.0 * SCALE * pulse));
+        g2d.setColor(Color.WHITE);
+        g2d.fillOval((int) cx - coreR, (int) cy - coreR, coreR * 2, coreR * 2);
+
+        g2d.dispose();
+    }
 }

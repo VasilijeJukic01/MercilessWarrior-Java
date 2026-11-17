@@ -93,6 +93,7 @@ public class EnemyManager {
                 EnemyRenderer<T> renderer = (EnemyRenderer<T>) enemyRenderers.get(enemyClass);
                 renderer.render(g, enemy, xLevelOffset, yLevelOffset);
                 renderer.renderStunStars(g, enemy, xLevelOffset, yLevelOffset);
+                renderer.renderParryGlint(g, enemy, xLevelOffset, yLevelOffset);
             }
         }
     }

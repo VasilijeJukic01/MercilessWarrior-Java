@@ -205,6 +205,18 @@ public abstract class Enemy extends Entity implements DamageSource, Debug<Graphi
         return false;
     }
 
+    /**
+     * Returns true during the exact windup animation frames when the player can parry this enemy's attack.
+     */
+    public boolean isParryWindup() {
+        if (!alive || freezeTick > 0 || attackCheck) return false;
+        return switch (enemyType) {
+            case SKELETON, GHOUL -> entityState == Anim.ATTACK_1 && (animIndex == 1 || animIndex == 2);
+            case KNIGHT, WRAITH -> (entityState == Anim.ATTACK_1 || entityState == Anim.ATTACK_2) && (animIndex == 2 || animIndex == 3);
+            default -> false;
+        };
+    }
+
     public abstract boolean hit(double damage, boolean special, boolean hitSound);
 
     public abstract void spellHit(double damage);
@@ -322,5 +334,13 @@ public abstract class Enemy extends Entity implements DamageSource, Debug<Graphi
 
     public int getFreezeTick() {
         return freezeTick;
+    }
+
+    public int getAnimTick() {
+        return animTick;
+    }
+
+    public int getAnimSpeed() {
+        return animSpeed;
     }
 }
