@@ -89,9 +89,9 @@ public class PlayerFeedbackHandler {
         boolean isMovingOnGround = player.checkAction(PlayerAction.MOVE) && !player.isInAir();
         if (isMovingOnGround) {
             runDustTick++;
-            if (runDustTick >= 15) {
-                double dustX = (player.getFlipSign() == 1) ? player.getHitBox().x : player.getHitBox().x + player.getHitBox().width;
-                effectManager.spawnDustParticles(dustX, player.getHitBox().y + player.getHitBox().height, RUN_DUST_BURST, DustType.RUNNING, player.getFlipSign(), player);
+            if (runDustTick >= 11) {
+                double dustX = (player.getFlipSign() == 1) ? player.getHitBox().x + player.getHitBox().width * 0.25 : player.getHitBox().x + player.getHitBox().width * 0.75;
+                effectManager.spawnDustParticles(dustX, player.getHitBox().y + player.getHitBox().height, 2, DustType.RUNNING, player.getFlipSign(), player);
                 runDustTick = 0;
             }
         }
