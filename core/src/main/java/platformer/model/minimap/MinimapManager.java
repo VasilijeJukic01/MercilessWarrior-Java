@@ -318,7 +318,7 @@ public class MinimapManager {
     private void updatePinnedLocation() {
         if (pinnedLocation == null) return;
         Point playerIntLocation = getPlayerIntegerLocation();
-        if (playerIntLocation != null && playerIntLocation.equals(pinnedLocation)) {
+        if (playerIntLocation != null && playerIntLocation.distance(pinnedLocation) <= 2.0) {
             unpin();
             return;
         }
@@ -476,13 +476,13 @@ public class MinimapManager {
             if (icon.equals(pinnedIcon)) unpin();
             else {
                 pinnedIcon = icon;
-                pinnedLocation = icon.position();
+                pinnedLocation = location;
                 findPath();
                 Logger.getInstance().notify("Minimap icon pinned: " + icon.type(), Message.NOTIFICATION);
             }
         }
         else {
-            if (location.equals(pinnedLocation)) unpin();
+            if (pinnedLocation != null && location.distance(pinnedLocation) <= 2.0) unpin();
             else {
                 pinnedIcon = null;
                 pinnedLocation = location;

@@ -29,7 +29,12 @@ public class AStarPathfinding {
      */
     public List<Point> findPath(BufferedImage minimap, Point start, Point end) {
         boolean[][] walkable = preprocessWalkability(minimap);
+        Point validStart = findClosestWalkable(walkable, start);
+        Point validEnd = findClosestWalkable(walkable, end);
+        if (validStart == null || validEnd == null) return Collections.emptyList();
 
+        start = validStart;
+        end = validEnd;
         if (!isWalkableAndValid(walkable, start) || !isWalkableAndValid(walkable, end)) {
             return Collections.emptyList();
         }
@@ -141,5 +146,18 @@ public class AStarPathfinding {
         path.add(current);
         Collections.reverse(path);
         return path;
+    }
+
+    private Point findClosestWalkable(boolean[][] walkable, Point pt) {
+        if (isWalkableAndValid(walkable, pt)) return pt;
+        for (int r = 1; r <= 5; r++) {
+            for (int dx = -r; dx <= r; dx++) {
+                for (int dy = -r; dy <= r; dy++) {
+                    Point candidate = new Point(pt.x + dx, pt.y + dy);
+                    if (isWalkableAndValid(walkable, candidate)) return candidate;
+                }
+            }
+        }
+        return null;
     }
 }

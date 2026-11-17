@@ -41,16 +41,7 @@ public class MinimapViewController {
     }
 
     public void mouseClicked(MouseEvent e) {
-        if (e.getButton() == MouseEvent.BUTTON2) {
-            if (isWithinOverlay(e.getPoint())) {
-                MinimapIcon foundIcon = findIconAtScreenPos(e.getX(), e.getY());
-                Point minimapCoords = screenToMinimap(e.getX(), e.getY());
-                boolean isQuestTarget = minimapManager.getActiveQuestMinimapTargets().stream().anyMatch(qt -> qt.distance(minimapCoords) <= 4.0);
-                if (isValid(minimapManager.getMinimap(), minimapCoords) && (minimapManager.isExplored(minimapCoords) || isQuestTarget)) {
-                    minimapManager.handlePinRequest(minimapCoords, foundIcon);
-                }
-            }
-        }
+
     }
 
     public void mouseDragged(MouseEvent e) {
@@ -66,7 +57,23 @@ public class MinimapViewController {
     }
 
     public void mousePressed(MouseEvent e) {
-        if (isWithinOverlay(e.getPoint()) && zoomFactor > MIN_ZOOM) {
+        if (!isWithinOverlay(e.getPoint())) return;
+
+        if (e.getButton() == MouseEvent.BUTTON2 || e.getButton() == MouseEvent.BUTTON3) {
+            MinimapIcon foundIcon = findIconAtScreenPos(e.getX(), e.getY());
+            Point targetCoords = (foundIcon != null) ? foundIcon.position() : screenToMinimap(e.getX(), e.getY());
+            Point walkableCoords = findNearestWalkablePoint(minimapManager.getMinimap(), targetCoords, 4);
+            if (walkableCoords != null) {
+                boolean isQuestTarget = minimapManager.getActiveQuestMinimapTargets().stream()
+                        .anyMatch(qt -> qt.distance(targetCoords) <= 5.0);
+                if (minimapManager.isExplored(targetCoords) || isQuestTarget) {
+                    minimapManager.handlePinRequest(walkableCoords, foundIcon);
+                }
+            }
+            return;
+        }
+
+        if (e.getButton() == MouseEvent.BUTTON1 && zoomFactor > MIN_ZOOM) {
             drag = true;
             lastMouseX = e.getX();
             lastMouseY = e.getY();
@@ -145,6 +152,28 @@ public class MinimapViewController {
         int minimapY = (int) ((screenY - mapY) / scaledPixelHeight);
 
         return new Point(minimapX, minimapY);
+    }
+
+    private Point findNearestWalkablePoint(BufferedImage image, Point origin, int maxRadius) {
+        if (isValid(image, origin)) return origin;
+        Point bestPoint = null;
+        double minDist = Double.MAX_VALUE;
+        for (int r = 1; r <= maxRadius; r++) {
+            for (int dx = -r; dx <= r; dx++) {
+                for (int dy = -r; dy <= r; dy++) {
+                    Point candidate = new Point(origin.x + dx, origin.y + dy);
+                    if (isValid(image, candidate)) {
+                        double dist = origin.distanceSq(candidate);
+                        if (dist < minDist) {
+                            minDist = dist;
+                            bestPoint = candidate;
+                        }
+                    }
+                }
+            }
+            if (bestPoint != null) return bestPoint;
+        }
+        return null;
     }
 
     private MinimapIcon findIconAtScreenPos(int screenX, int screenY) {
