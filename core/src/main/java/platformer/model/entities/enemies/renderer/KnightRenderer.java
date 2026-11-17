@@ -22,7 +22,7 @@ public class KnightRenderer implements EnemyRenderer<Knight> {
         int fC = k.getFlipCoefficient(), fS = k.getFlipSign();
         int x = (int) k.getHitBox().x - KNIGHT_X_OFFSET - xLevelOffset + fC;
         int y = (int) k.getHitBox().y - KNIGHT_Y_OFFSET - yLevelOffset + (int)k.getPushOffset() + 1;
-        g.drawImage(animations[k.getEnemyAction().ordinal()][k.getAnimIndex()], x, y, KNIGHT_WIDTH * fS, KNIGHT_HEIGHT, null);
+        drawEnemySprite(g, k, animations[k.getEnemyAction().ordinal()][k.getAnimIndex()], x, y, KNIGHT_WIDTH * fS, KNIGHT_HEIGHT);
         k.hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.BLUE);
         k.attackBoxRenderer(g, xLevelOffset, yLevelOffset);
     }

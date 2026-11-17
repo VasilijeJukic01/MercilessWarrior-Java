@@ -231,6 +231,7 @@ public class EnemyManager {
                     BalanceManager.PlayerBalance pb = BalanceManager.getInstance().getPlayerBalance();
                     int stRange = Math.max(1, pb.getMeleeHitStaminaMax() - pb.getMeleeHitStaminaMin() + 1);
                     player.changeStamina(pb.getMeleeHitStaminaMin() + new Random().nextInt(stRange));
+                    player.getUltimateHandler().addChargeFromHit(isCritical);
                 }
             }
 
@@ -360,6 +361,35 @@ public class EnemyManager {
         else if (enemy instanceof Wraith && animIndex == 3) isAttackFrame = true;
 
         if (isAttackFrame) context.getObjectManager().checkObjectBreakByEnemy(enemy.getAttackBox());
+    }
+
+    /**
+     * Applies damage, visual feedback, and death/loot checks for a single strike of the Player's Ultimate ability.
+     *
+     * @param enemy      The target enemy.
+     * @param damage     The calculated damage for this slash mark.
+     * @param isCritical True if the slash was judged PERFECT.
+     * @param player     The player entity.
+     */
+    public void applyUltimateStrike(Enemy enemy, double damage, boolean isCritical, Player player) {
+        if (enemy == null || !enemy.isAlive() || enemy.getEnemyAction() == Anim.DEATH || enemy instanceof Roric) return;
+
+        enemy.wakeUp();
+        enemy.setPushDirection(enemy.getHitBox().getCenterX() >= player.getHitBox().getCenterX() ? Direction.RIGHT : Direction.LEFT);
+        if (enemy.hit(damage, false, false)) {
+            double displayDmg = Math.round(damage * 10.0) / 10.0;
+            String dmgText = isCritical ? displayDmg + "!" : String.valueOf(displayDmg);
+            Color dmgColor = isCritical ? CRITICAL_COLOR : DAMAGE_COLOR;
+            context.getEffectManager().spawnDamageNumber(dmgText, enemy.getHitBox().getCenterX(), enemy.getHitBox().y, dmgColor);
+        }
+
+        int particleCount = isCritical ? 22 : 12;
+        DustType particleType = isCritical ? DustType.CRITICAL_HIT : DustType.IMPACT_SPARK;
+        context.getEffectManager().spawnDustParticles(enemy.getHitBox().getCenterX(), enemy.getHitBox().getCenterY(), particleCount, particleType, player.getFlipSign(), null);
+        context.getEffectManager().spawnDustParticles(enemy.getHitBox().getCenterX(), enemy.getHitBox().getCenterY(), 8, DustType.SW_DASH_SLASH, player.getFlipSign(), null);
+
+        enemy.setCriticalHit(isCritical);
+        checkEnemyDying(enemy);
     }
 
     // Core

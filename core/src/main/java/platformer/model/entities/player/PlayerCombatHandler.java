@@ -215,6 +215,7 @@ public class PlayerCombatHandler {
         boolean canBlock = player.checkAction(PlayerAction.CAN_BLOCK);
         if (canBlock) {
             Logger.getInstance().notify("Damage blocked successfully!", Message.INFORMATION);
+            player.getUltimateHandler().addChargeFromParry();
             BalanceManager.PlayerBalance pb = BalanceManager.getInstance().getPlayerBalance();
             double blockCooldown = (pb.getBlockCooldown() * 0.45) * (1.0 - InventoryBonus.getInstance().getCooldown());
             player.getCooldown()[Cooldown.BLOCK.ordinal()] = Math.max(0.1, blockCooldown);

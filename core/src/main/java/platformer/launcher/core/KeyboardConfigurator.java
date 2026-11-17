@@ -38,6 +38,7 @@ public class KeyboardConfigurator {
         commandKeyMap.put("Flames",     KeyCode.C);
         commandKeyMap.put("Fireball",   KeyCode.Z);
         commandKeyMap.put("Shield",     KeyCode.S);
+        commandKeyMap.put("Ultimate",   KeyCode.R);
         commandKeyMap.put("Interact",   KeyCode.F);
         commandKeyMap.put("Quest",      KeyCode.O);
         commandKeyMap.put("Transform",  KeyCode.Q);

@@ -137,6 +137,7 @@ public class ControlsPanel {
         commands.put("Dash", "Dash");
         commands.put("Attack", "Attack");
         commands.put("Shield", "Shield");
+        commands.put("Ultimate", "Ultimate");
         commands.put("Interact", "Interact");
         commands.put("Inventory", "Inventory");
         commands.put("Perks", "Perks");

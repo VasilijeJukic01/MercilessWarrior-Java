@@ -5,6 +5,7 @@ import platformer.model.entities.enemies.Enemy;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Path2D;
+import java.awt.image.BufferedImage;
 
 import static platformer.constants.Constants.SCALE;
 
@@ -25,6 +26,48 @@ public interface EnemyRenderer<T extends Enemy> {
      * @param yLevelOffset The y offset for rendering.
      */
     void render(Graphics g, T enemy, int xLevelOffset, int yLevelOffset);
+
+    /**
+     * Draws the enemy sprite frame and, if the enemy is in its parryable windup frames, applies aN outline and pulsing flash directly to the sprite's pixels.
+     */
+    default void drawEnemySprite(Graphics g, T enemy, BufferedImage frame, int x, int y, int width, int height) {
+        if (frame == null) return;
+        if (!enemy.isParryWindup()) {
+            g.drawImage(frame, x, y, width, height, null);
+            return;
+        }
+
+        int absW = Math.abs(width);
+        int absH = Math.abs(height);
+        BufferedImage flashBuf = new BufferedImage(absW, absH, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D bG2d = flashBuf.createGraphics();
+
+        double progress = (double) enemy.getAnimTick() / Math.max(1, enemy.getAnimSpeed());
+        float pulse = (float) Math.sin(progress * Math.PI);
+
+        bG2d.drawImage(frame, 0, 0, absW, absH, null);
+        bG2d.setComposite(AlphaComposite.SrcAtop);
+        bG2d.setColor(new Color(255, 70, 55, 235));
+        bG2d.fillRect(0, 0, absW, absH);
+        bG2d.dispose();
+
+        int rimStep = Math.max(1, (int) Math.round(SCALE));
+        g.drawImage(flashBuf, x - rimStep, y, width, height, null);
+        g.drawImage(flashBuf, x + rimStep, y, width, height, null);
+        g.drawImage(flashBuf, x, y - rimStep, width, height, null);
+        g.drawImage(flashBuf, x, y + rimStep, width, height, null);
+
+        BufferedImage bodyBuf = new BufferedImage(absW, absH, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D bodyG2d = bodyBuf.createGraphics();
+        bodyG2d.drawImage(frame, 0, 0, absW, absH, null);
+        bodyG2d.setComposite(AlphaComposite.SrcAtop);
+        int flashAlpha = (int) (75 + 95 * pulse);
+        bodyG2d.setColor(new Color(255, 230, 140, flashAlpha));
+        bodyG2d.fillRect(0, 0, absW, absH);
+        bodyG2d.dispose();
+
+        g.drawImage(bodyBuf, x, y, width, height, null);
+    }
 
     /**
      * Renders golden 4-point stars and comet-tail arcs orbiting along two intersecting, tilted 3D ellipses above a stunned enemy's head.
@@ -115,65 +158,7 @@ public interface EnemyRenderer<T extends Enemy> {
         g2d.dispose();
     }
 
-    /**
-     * Renders a sharp 4-point telegraph glint during the enemy's parryable windup frames.
-     */
     default void renderParryGlint(Graphics g, T enemy, int xLevelOffset, int yLevelOffset) {
-        if (!enemy.isParryWindup()) return;
-
-        Graphics2D g2d = (Graphics2D) g.create();
-        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-        int dirSign = enemy.getFlipSign();
-        double cx = enemy.getHitBox().getCenterX() - xLevelOffset + dirSign;
-        double cy = enemy.getHitBox().y - yLevelOffset - (8 * SCALE);
-
-        double pulse = 0.75 + 0.35 * Math.sin(System.currentTimeMillis() * 0.035);
-        double longRay = 13.0 * SCALE * pulse;
-        double shortRay = 7.5 * SCALE * pulse;
-        double thickness = 2.4 * SCALE * pulse;
-
-        int glowR = (int) (11 * SCALE * pulse);
-        g2d.setColor(new Color(255, 210, 65, 95));
-        g2d.fillOval((int) cx - glowR, (int) cy - glowR, glowR * 2, glowR * 2);
-
-        Path2D.Double primaryStar = new Path2D.Double();
-        primaryStar.moveTo(cx, cy - longRay);
-        primaryStar.lineTo(cx + thickness, cy - thickness);
-        primaryStar.lineTo(cx + longRay, cy);
-        primaryStar.lineTo(cx + thickness, cy + thickness);
-        primaryStar.lineTo(cx, cy + longRay);
-        primaryStar.lineTo(cx - thickness, cy + thickness);
-        primaryStar.moveTo(cx - thickness, cy + thickness);
-        primaryStar.lineTo(cx - longRay, cy);
-        primaryStar.lineTo(cx - thickness, cy - thickness);
-        primaryStar.closePath();
-
-        g2d.setColor(new Color(255, 220, 75, 235));
-        g2d.fill(primaryStar);
-
-        AffineTransform old = g2d.getTransform();
-        g2d.translate(cx, cy);
-        g2d.rotate(Math.PI / 4.0);
-        Path2D.Double diagStar = new Path2D.Double();
-        double dThick = thickness * 0.65;
-        diagStar.moveTo(0, -shortRay);
-        diagStar.lineTo(dThick, -dThick);
-        diagStar.lineTo(shortRay, 0);
-        diagStar.lineTo(dThick, dThick);
-        diagStar.lineTo(0, shortRay);
-        diagStar.lineTo(-dThick, dThick);
-        diagStar.lineTo(-shortRay, 0);
-        diagStar.lineTo(-dThick, -dThick);
-        diagStar.closePath();
-        g2d.setColor(new Color(180, 250, 255, 210));
-        g2d.fill(diagStar);
-        g2d.setTransform(old);
-
-        int coreR = Math.max(2, (int) (3.0 * SCALE * pulse));
-        g2d.setColor(Color.WHITE);
-        g2d.fillOval((int) cx - coreR, (int) cy - coreR, coreR * 2, coreR * 2);
-
-        g2d.dispose();
+        // Replaced by pixel-accurate drawEnemySprite rim-flash
     }
 }

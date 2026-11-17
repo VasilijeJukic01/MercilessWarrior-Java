@@ -169,6 +169,19 @@ public class PlayerRenderer {
         g.drawImage(burnSilhouetteBuffer, drawX, drawY, player.getFlipSign() * width, height, null);
     }
 
+    /**
+     * Immediately records an afterimage ghost snapshot for the Ultimate Blitz dash.
+     */
+    public void recordInstantSnapshot(double pushOffset) {
+        ghostX[ghostHead] = (int) (player.getHitBox().x - PLAYER_HB_OFFSET_X + player.getFlipCoefficient());
+        ghostY[ghostHead] = (int) (player.getHitBox().y - PLAYER_HB_OFFSET_Y + pushOffset);
+        ghostFlipSign[ghostHead] = player.getFlipSign();
+        ghostState[ghostHead] = player.getEntityState().ordinal();
+        ghostFrame[ghostHead] = player.getAnimIndex();
+        ghostHead = (ghostHead + 1) % DASH_GHOST_COUNT;
+        if (ghostSize < DASH_GHOST_COUNT) ghostSize++;
+    }
+
     public int getFrameCount(Anim state) {
         return animations[state.ordinal()].length;
     }

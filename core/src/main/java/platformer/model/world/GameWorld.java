@@ -92,6 +92,12 @@ public class GameWorld {
     // Core
     public void update() {
         player.update();
+        if (player.getUltimateHandler().isActive()) {
+            lightManager.update(timeCycleManager);
+            effectManager.update();
+            rainManager.update();
+            return;
+        }
         levelManager.updateGrassInteraction(player);
         enemyManager.update(levelManager.getCurrentLevel().getLvlData(), player, objectManager.getActiveFollower());
         objectManager.update(levelManager.getCurrentLevel().getLvlData(), player);
@@ -128,6 +134,7 @@ public class GameWorld {
         if (!isDarkPhase) projectileManager.render(g, xLevelOffset, yLevelOffset);
         spellManager.render(g, xLevelOffset, yLevelOffset);
         effectManager.renderForegroundEffects(g, xLevelOffset, yLevelOffset);
+        player.getUltimateHandler().render(g, xLevelOffset, yLevelOffset);
     }
 
     private void renderBackground(int xLevelOffset, int yLevelOffset, Graphics g) {

@@ -65,8 +65,17 @@ public class GameStateController {
             if (canDash) player.getActionHandler().doDash();
         });
         initAction(pressActions, "Attack", () -> {
-            if (context.getGameState().getActiveState() != PlayingState.DIALOGUE)
+            if (player.getUltimateHandler().isActive()) {
+                player.getUltimateHandler().handleRhythmInput();
+            }
+            else if (context.getGameState().getActiveState() != PlayingState.DIALOGUE) {
                 player.performAttack();
+            }
+        });
+        initAction(pressActions, "Ultimate", () -> {
+            if (context.getGameState().getActiveState() == null) {
+                player.getUltimateHandler().tryActivate();
+            }
         });
         initAction(pressActions, "Flames", () -> {
             if (pressedKeys.contains(kc.getKeyForCommand("Flames")) && player.getSpellState() != 0) return;
@@ -258,7 +267,8 @@ public class GameStateController {
     private void activateStaminaCheat() {
         if (!Framework.getInstance().getAccount().isEnableCheats()) return;
         player.changeStamina(100);
-        Logger.getInstance().notify("Stamina cheat activated.", Message.WARNING);
+        player.getUltimateHandler().addCharge(100);
+        Logger.getInstance().notify("Stamina & Ultimate cheat activated.", Message.WARNING);
     }
 
     private void activateCoinsCheat() {

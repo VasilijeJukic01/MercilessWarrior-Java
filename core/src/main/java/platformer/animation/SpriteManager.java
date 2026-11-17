@@ -143,7 +143,7 @@ public class SpriteManager {
 
     // Player
     private BufferedImage[][] loadPlayerSpriteSheet(String sheet) {
-        BufferedImage[][] anim = new BufferedImage[24][18];
+        BufferedImage[][] anim = new BufferedImage[26][18];
         int w = PLAYER_WIDTH, h = PLAYER_HEIGHT;
 
         anim[Anim.IDLE.ordinal()] = loadFromSprite(sheet, 8, 0, w, h, 0, PLAYER_W, PLAYER_H);
@@ -151,12 +151,14 @@ public class SpriteManager {
         anim[Anim.DASH.ordinal()] = loadFromSprite(sheet, 7, 4, w, h, 0, PLAYER_W, PLAYER_H);
         anim[Anim.JUMP.ordinal()] = loadFromSprite(sheet, 3, 6, w, h, 0, PLAYER_W, PLAYER_H);
         anim[Anim.FALL.ordinal()] = loadFromSprite(sheet, 3, 8, w, h, 0, PLAYER_W, PLAYER_H);
+        anim[Anim.AIR_ATTACK.ordinal()] = loadFromSprite(sheet, 5, 9, w, h, 0, PLAYER_W, PLAYER_H);
         anim[Anim.ATTACK_1.ordinal()] = loadFromSprite(sheet, 4, 10, w, h, 0, PLAYER_W, PLAYER_H);
         anim[Anim.ATTACK_2.ordinal()] = loadFromSprite(sheet, 4, 11, w, h, 0, PLAYER_W, PLAYER_H);
         anim[Anim.ATTACK_3.ordinal()] = loadFromSprite(sheet, 5, 12, w, h, 0, PLAYER_W, PLAYER_H);
         anim[Anim.BLOCK.ordinal()] = loadFromSprite(sheet, 8, 13, w, h, 0, PLAYER_W, PLAYER_H);
         anim[Anim.PARRY.ordinal()] = loadFromSprite(sheet, 4, 14, w, h, 2, PLAYER_W, PLAYER_H);
         anim[Anim.CROUCH.ordinal()] = loadFromSprite(sheet, 5, 15, w, h, 0, PLAYER_W, PLAYER_H);
+        anim[Anim.CROUCH_ATTACK.ordinal()] = loadFromSprite(sheet, 5, 16, w, h, 0, PLAYER_W, PLAYER_H);
         anim[Anim.HIT.ordinal()] = loadFromSprite(sheet, 4, 23, w, h, 0, PLAYER_W, PLAYER_H);
         anim[Anim.DEATH.ordinal()] = loadFromSprite(sheet, 11, 24, w, h, 0, PLAYER_W, PLAYER_H);
         anim[Anim.WALL.ordinal()] = loadFromSprite(sheet, 4, 21, w, h, 0, PLAYER_W, PLAYER_H);

@@ -54,6 +54,14 @@ public class BalanceManager {
         private int xpPerLevelMultiplier = 850;
         private int tokensPerLevel = 1;
         private int levelsPerToken = 1;
+        private double ultimateMaxCharge = 100.0;
+        private double ultimateHitCharge = 12.0;
+        private double ultimateCritCharge = 20.0;
+        private double ultimateParryCharge = 25.0;
+        private int ultimateCircleShrinkTicks = 85;
+        private double ultimatePerfectDamageMult = 2.4;
+        private double ultimateGoodDamageMult = 1.4;
+        private double ultimateMissDamageMult = 0.35;
     }
 
     @Getter

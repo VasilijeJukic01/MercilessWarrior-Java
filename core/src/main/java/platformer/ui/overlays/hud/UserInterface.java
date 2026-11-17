@@ -1,9 +1,11 @@
 package platformer.ui.overlays.hud;
 
+import platformer.core.Framework;
 import platformer.model.effects.TimeCycleManager;
 import platformer.model.entities.Cooldown;
 import platformer.model.entities.player.Player;
 import platformer.model.minimap.MinimapManager;
+import platformer.ui.buttons.UIButtonRenderer;
 import platformer.utils.ImageUtils;
 
 import java.awt.*;
@@ -147,7 +149,78 @@ public class UserInterface {
     }
 
     private void renderCooldown(Graphics g) {
-        abilities.forEach(ability -> ability.render(g, player));
+        Graphics2D g2d = (Graphics2D) g.create();
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+
+        int pad = scale(4);
+        int barW = 3 * COOLDOWN_SLOT_SPACING + COOLDOWN_SLOT_SIZE + pad * 2;
+        int barH = COOLDOWN_SLOT_SIZE + pad * 2;
+        UIButtonRenderer.drawRunicSubPanel(g2d, COOLDOWN_SLOT_X - pad, COOLDOWN_SLOT_Y - pad, barW, barH);
+
+        abilities.forEach(ability -> ability.render(g2d, player));
+        renderUltimateGauge(g2d, COOLDOWN_SLOT_X - pad, COOLDOWN_SLOT_Y + COOLDOWN_SLOT_SIZE + pad + scale(4), barW);
+
+        g2d.dispose();
+    }
+
+    private void renderUltimateGauge(Graphics2D g2d, int x, int y, int width) {
+        if (player.getUltimateHandler() == null) return;
+
+        double current = player.getUltimateHandler().getCurrentCharge();
+        double max = Math.max(1.0, player.getUltimateHandler().getMaxCharge());
+        double ratio = Math.min(1.0, current / max);
+        boolean ready = player.getUltimateHandler().isReady();
+
+        int height = scale(14);
+        UIButtonRenderer.drawRunicSubPanel(g2d, x, y, width, height);
+
+        int barInsetX = x + scale(18);
+        int barInsetY = y + scale(3);
+        int barMaxW = width - scale(22);
+        int barH = height - scale(6);
+        int fillW = (int) Math.round(barMaxW * ratio);
+
+        g2d.setColor(new Color(8, 14, 18, 220));
+        g2d.fillRoundRect(barInsetX, barInsetY, barMaxW, barH, scale(3), scale(3));
+
+        if (fillW > 0) {
+            Color cStart = ready ? new Color(255, 175, 25) : new Color(0, 155, 180);
+            Color cEnd = ready ? new Color(255, 240, 110) : new Color(65, 245, 240);
+            GradientPaint gp = new GradientPaint(barInsetX, barInsetY, cStart, barInsetX + fillW, barInsetY, cEnd);
+            g2d.setPaint(gp);
+            g2d.fillRoundRect(barInsetX, barInsetY, fillW, barH, scale(3), scale(3));
+        }
+
+        if (ready) {
+            float pulse = (float) (0.65 + 0.35 * Math.sin(System.currentTimeMillis() * 0.012));
+            g2d.setColor(new Color(255, 220, 75, (int) (185 * pulse)));
+            g2d.setStroke(new BasicStroke(1.4f * SCALE));
+            g2d.drawRoundRect(x - 1, y - 1, width + 2, height + 2, scale(6), scale(6));
+        }
+
+        int emblemCx = x + scale(9);
+        int emblemCy = y + height / 2;
+        int r = scale(4);
+        Polygon diamond = new Polygon(
+                new int[]{emblemCx, emblemCx + r, emblemCx, emblemCx - r},
+                new int[]{emblemCy - r, emblemCy, emblemCy + r, emblemCy},
+                4
+        );
+        g2d.setColor(ready ? new Color(255, 220, 75) : new Color(55, 225, 220));
+        g2d.fillPolygon(diamond);
+
+        String ultKey = Framework.getInstance().getKeyboardController().getKeyName("Ultimate").toUpperCase();
+        String label = ready ? "ULTIMATE [" + ultKey + "]" : (int) Math.round(ratio * 100) + "%";
+        g2d.setFont(UIButtonRenderer.getFont(6.5f * SCALE));
+        FontMetrics fm = g2d.getFontMetrics();
+        int tx = barInsetX + (barMaxW - fm.stringWidth(label)) / 2;
+        int ty = barInsetY + (barH + (int) (fm.getAscent() * 0.72f)) / 2;
+
+        g2d.setColor(new Color(8, 12, 14, 230));
+        g2d.drawString(label, tx + 1, ty + 1);
+        g2d.setColor(ready ? new Color(255, 250, 200) : new Color(215, 245, 245));
+        g2d.drawString(label, tx, ty);
     }
 
     private void renderUnknownLocation(Graphics g) {

@@ -49,6 +49,7 @@ public class Player extends Entity {
     private PlayerRenderer playerRenderer;
     private PlayerMovementHandler movementHandler;
     private PlayerCombatHandler combatHandler;
+    private PlayerUltimateHandler ultimateHandler;
     private PlayerActionHandler actionHandler;
     private PlayerFeedbackHandler feedbackHandler;
     private PlayerDataManager playerDataManager;
@@ -91,6 +92,7 @@ public class Player extends Entity {
         this.playerDataManager = new PlayerDataManager(this, minimapManager, timeCycleManager);
         this.minimapHandler = new PlayerMinimapHandler(this, minimapManager);
         this.actionHandler = new PlayerActionHandler(this, effectManager);
+        this.ultimateHandler = new PlayerUltimateHandler(this, context);
         this.feedbackHandler = new PlayerFeedbackHandler(this, context);
         this.inventory = new Inventory(!isMenuDummy);
     }
@@ -253,9 +255,11 @@ public class Player extends Entity {
     public void update() {
         playerDataManager.update(!levelManager.isInArena());
         if (currentHealth <= 0) {
+            if (ultimateHandler.isActive()) ultimateHandler.reset();
             updateDeath();
             return;
         }
+        if (updateUltimate()) return;
         combatHandler.updateParryWindow();
         combatHandler.updateAttackBox();
         setAnimation();
@@ -268,6 +272,16 @@ public class Player extends Entity {
             objectManager.checkObjectBreakByPush(hitBox);
         }
         feedbackHandler.update();
+    }
+
+    private boolean updateUltimate() {
+        if (ultimateHandler.isActive()) {
+            ultimateHandler.update();
+            playerRenderer.updateAfterimages(ultimateHandler.getState() == PlayerUltimateHandler.State.BLITZ, pushOffset);
+            feedbackHandler.update();
+            return true;
+        }
+        return false;
     }
 
     private void updateDeath() {
@@ -370,7 +384,7 @@ public class Player extends Entity {
     }
 
     public void changeHealth(double value, DamageSource source) {
-        if (checkAction(PlayerAction.HIT)) return;
+        if (checkAction(PlayerAction.HIT) || (ultimateHandler != null && ultimateHandler.isActive())) return;
         if (value < 0) {
             double defenseBonus = Math.min(0.75, InventoryBonus.getInstance().getDefense() + PerksBonus.getInstance().getDefenseBonus());
             double actualDamage = Math.abs(value) * (1.0 - defenseBonus);
@@ -432,6 +446,7 @@ public class Player extends Entity {
         inAir = false;
         movementHandler.reset();
         combatHandler.reset();
+        ultimateHandler.reset();
         playerRenderer.reset();
         feedbackHandler.reset();
         removeActions(PlayerAction.DYING, PlayerAction.GAME_OVER, PlayerAction.LAVA);
@@ -599,6 +614,20 @@ public class Player extends Entity {
 
     public boolean checkAction(PlayerAction action) {
         return actions.contains(action);
+    }
+
+    public void setUltimateAnimation(Anim state, int frameIndex) {
+        this.entityState = state;
+        this.animIndex = frameIndex;
+        this.animTick = 0;
+    }
+
+    public void recordUltimateAfterimage() {
+        playerRenderer.recordInstantSnapshot(pushOffset);
+    }
+
+    public PlayerUltimateHandler getUltimateHandler() {
+        return ultimateHandler;
     }
 
     @Override

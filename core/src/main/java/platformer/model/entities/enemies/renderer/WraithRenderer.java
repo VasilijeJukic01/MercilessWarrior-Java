@@ -72,7 +72,7 @@ public class WraithRenderer implements EnemyRenderer<Wraith> {
         if (alpha < 0.99f) {
             g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, Math.max(0.15f, alpha)));
         }
-        g2d.drawImage(animations[state.ordinal()][w.getAnimIndex()], screenX, screenY, WRAITH_WIDTH * fS, WRAITH_HEIGHT, null);
+        drawEnemySprite(g2d, w, animations[state.ordinal()][w.getAnimIndex()], screenX, screenY, WRAITH_WIDTH * fS, WRAITH_HEIGHT);
         g2d.dispose();
 
         if (state != Anim.DEATH) {
