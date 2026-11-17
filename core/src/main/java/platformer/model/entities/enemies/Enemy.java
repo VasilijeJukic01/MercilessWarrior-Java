@@ -196,9 +196,9 @@ public abstract class Enemy extends Entity implements DamageSource, Debug<Graphi
             if (inAir) {
                 updateInAir(levelData, gravity, collisionFallSpeed);
             }
-            if (freezeTick == 0 && entityState == Anim.HIT) {
-                this.stunImmunityTick = 200;
-                setEnemyAction(Anim.IDLE);
+            updateAnimation();
+            if (freezeTick == 0) {
+                this.stunImmunityTick = 260;
             }
             return true;
         }
