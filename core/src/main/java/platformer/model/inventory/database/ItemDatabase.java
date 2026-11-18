@@ -3,11 +3,12 @@ package platformer.model.inventory.database;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import platformer.animation.AssetManager;
+import platformer.constants.FilePaths;
 import platformer.model.inventory.item.ItemData;
 
 import java.io.InputStreamReader;
 import java.lang.reflect.Type;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -40,11 +41,16 @@ public class ItemDatabase {
         }
 
         // [Offline] Fallback to local JSON file
-        try (InputStreamReader reader = new InputStreamReader(AssetManager.getInstance().getResourceAsStream("/items/items.json"))) {
-            Type type = new TypeToken<Map<String, ItemData>>() {}.getType();
-            itemData = new Gson().fromJson(reader, type);
-        } catch (Exception e) {
-            itemData = Collections.emptyMap();
+        this.itemData = new HashMap<>();
+        Gson gson = new Gson();
+        Type type = new TypeToken<Map<String, ItemData>>() {}.getType();
+        for (String path : FilePaths.ITEM_CATALOG_PATHS) {
+            try (InputStreamReader reader = new InputStreamReader(AssetManager.getInstance().getResourceAsStream(path))) {
+                Map<String, ItemData> partial = gson.fromJson(reader, type);
+                if (partial != null) {
+                    this.itemData.putAll(partial);
+                }
+            } catch (Exception ignored) {}
         }
     }
 

@@ -120,7 +120,13 @@ public final class FilePaths {
 
     // Inventory / Shop
     public static final String BALANCE_PATH = "/items/balance.json";
-    public static final String ITEMS_PATH = "/items/items.json";
+    public static final String[] ITEM_CATALOG_PATHS = {
+            "/items/consumables.json",
+            "/items/ores_and_gems.json",
+            "/items/materials.json",
+            "/items/herbs_and_berries.json",
+            "/items/equipment.json"
+    };
     public static final String RECIPES_PATH = "/items/recipes.json";
     public static final String SHOP_INV_PATH = "/items/shop_inventory.json";
     public static final String LOOT_TABLE_PATH = "/items/loot_tables.json";

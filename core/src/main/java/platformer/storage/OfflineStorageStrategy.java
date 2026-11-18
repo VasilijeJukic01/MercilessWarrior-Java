@@ -16,8 +16,7 @@ import java.io.InputStreamReader;
 import java.lang.reflect.Type;
 import java.util.*;
 
-import static platformer.constants.FilePaths.ITEMS_PATH;
-import static platformer.constants.FilePaths.SHOP_INV_PATH;
+import static platformer.constants.FilePaths.*;
 
 /**
  * An implementation of {@link StorageStrategy} for playing the game in offline mode.
@@ -45,16 +44,21 @@ public class OfflineStorageStrategy implements StorageStrategy {
     }
 
     public void loadLocalData() {
-        try (InputStreamReader reader = new InputStreamReader(AssetManager.getInstance().getResourceAsStream(ITEMS_PATH))) {
-            Type type = new TypeToken<Map<String, ItemData>>() {}.getType();
-            this.masterItems = new Gson().fromJson(reader, type);
-        } catch (Exception e) {
-            this.masterItems = new HashMap<>();
+        this.masterItems = new HashMap<>();
+        Gson gson = new Gson();
+        Type itemMapType = new TypeToken<Map<String, ItemData>>() {}.getType();
+        for (String path : ITEM_CATALOG_PATHS) {
+            try (InputStreamReader reader = new InputStreamReader(AssetManager.getInstance().getResourceAsStream(path))) {
+                Map<String, ItemData> partial = gson.fromJson(reader, itemMapType);
+                if (partial != null) {
+                    this.masterItems.putAll(partial);
+                }
+            } catch (Exception ignored) {}
         }
 
         try (InputStreamReader reader = new InputStreamReader(AssetManager.getInstance().getResourceAsStream(SHOP_INV_PATH))) {
             Type type = new TypeToken<Map<String, List<Map<String, Object>>>>() {}.getType();
-            Map<String, List<Map<String, Object>>> allShops = new Gson().fromJson(reader, type);
+            Map<String, List<Map<String, Object>>> allShops = gson.fromJson(reader, type);
 
             List<Map<String, Object>> itemsForShop = allShops.get("DEFAULT_SHOP");
             this.shopInventory = new ArrayList<>();
