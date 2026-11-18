@@ -11,6 +11,7 @@ import platformer.model.inventory.item.InventoryItem;
 import platformer.model.inventory.item.ItemData;
 import platformer.ui.buttons.ButtonType;
 import platformer.ui.buttons.MediumButton;
+import platformer.ui.buttons.SmallButton;
 import platformer.ui.buttons.UIButtonRenderer;
 import platformer.ui.overlays.controller.BlacksmithViewController;
 import platformer.utils.ImageUtils;
@@ -30,26 +31,30 @@ import static platformer.constants.FilePaths.COIN_SHEET;
 import static platformer.constants.UI.*;
 
 /**
- * Renders the Blacksmith Forge overlay where the player can temper their sword and smelt/forge.
+ * Renders the Blacksmith Forge overlay where the player can temper their sword and smelt/forge equipment with category filtering and sorting.
  */
 public class BlacksmithOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
 
-    public static final int FORGE_GRID_COLS = 7;
-    public static final int FORGE_GRID_ROWS = 2;
-    public static final int FORGE_GRID_X = scale(104);
-    public static final int FORGE_GRID_Y = scale(232);
-    public static final int FORGE_SLOT_SPACING = scale(42);
+    public static final int FORGE_GRID_COLS = 5;
+    public static final int FORGE_GRID_ROWS = 3;
+    public static final int FORGE_SLOT_SPACING = scale(48);
+    public static final int FORGE_GRID_X = scale(133);
+    public static final int FORGE_GRID_Y = scale(216);
 
     public static final int ANVIL_CARD_X = scale(104);
-    public static final int ANVIL_CARD_Y = scale(122);
+    public static final int ANVIL_CARD_Y = scale(104);
     public static final int ANVIL_CARD_W = scale(290);
-    public static final int ANVIL_CARD_H = scale(68);
+    public static final int ANVIL_CARD_H = scale(66);
 
     private final GameContext context;
     private final BlacksmithViewController controller;
 
     private Rectangle2D.Double overlay, anvilPanel, smithingPanel, inspectorPanel;
+    private final Rectangle[] filterTabBounds = new Rectangle[4];
+    private Rectangle sortButtonBounds;
+
     private final MediumButton[] buttons;
+    private final SmallButton[] smallButtons;
     private BufferedImage coinIcon, swordIcon;
 
     private final Map<String, InventoryItem> renderCache = new HashMap<>();
@@ -59,6 +64,7 @@ public class BlacksmithOverlay implements Overlay<MouseEvent, KeyEvent, Graphics
     public BlacksmithOverlay(GameContext context) {
         this.context = context;
         this.buttons = new MediumButton[2];
+        this.smallButtons = new SmallButton[2];
         initPanels();
         loadImages();
         loadButtons();
@@ -68,9 +74,18 @@ public class BlacksmithOverlay implements Overlay<MouseEvent, KeyEvent, Graphics
     // Init
     private void initPanels() {
         this.overlay = new Rectangle2D.Double(PERKS_OVERLAY_X, PERKS_OVERLAY_Y, PERKS_OVERLAY_WID, PERKS_OVERLAY_HEI);
-        this.anvilPanel = new Rectangle2D.Double(scale(92), scale(108), scale(314), scale(94));
-        this.smithingPanel = new Rectangle2D.Double(scale(92), scale(216), scale(314), scale(150));
-        this.inspectorPanel = new Rectangle2D.Double(scale(418), scale(108), scale(328), scale(258));
+        this.anvilPanel = new Rectangle2D.Double(scale(92), scale(94), scale(314), scale(88));
+        this.smithingPanel = new Rectangle2D.Double(scale(92), scale(206), scale(314), scale(162));
+        this.inspectorPanel = new Rectangle2D.Double(scale(418), scale(94), scale(328), scale(274));
+
+        int tabY = scale(189);
+        int tabH = scale(14);
+        int tabW = scale(46);
+        int gap = scale(4);
+        for (int i = 0; i < 4; i++) {
+            filterTabBounds[i] = new Rectangle(scale(94) + i * (tabW + gap), tabY, tabW, tabH);
+        }
+        this.sortButtonBounds = new Rectangle(scale(326), tabY, scale(78), tabH);
     }
 
     private void loadImages() {
@@ -79,8 +94,11 @@ public class BlacksmithOverlay implements Overlay<MouseEvent, KeyEvent, Graphics
     }
 
     private void loadButtons() {
-        buttons[0] = new MediumButton(BUY_PERK_BTN_X, BUY_PERK_BTN_Y, MEDIUM_BTN_WID, MEDIUM_BTN_HEI, ButtonType.CRAFT);
-        buttons[1] = new MediumButton(LEAVE_PERK_BTN_X, LEAVE_PERK_BTN_Y, MEDIUM_BTN_WID, MEDIUM_BTN_HEI, ButtonType.LEAVE);
+        buttons[0] = new MediumButton(scale(475), BUY_PERK_BTN_Y, MEDIUM_BTN_WID, MEDIUM_BTN_HEI, ButtonType.CRAFT);
+        buttons[1] = new MediumButton(scale(595), LEAVE_PERK_BTN_Y, MEDIUM_BTN_WID, MEDIUM_BTN_HEI, ButtonType.CLOSE);
+
+        smallButtons[0] = new SmallButton(scale(175), scale(382), SMALL_BTN_SIZE, SMALL_BTN_SIZE, ButtonType.PREV);
+        smallButtons[1] = new SmallButton(scale(298), scale(382), SMALL_BTN_SIZE, SMALL_BTN_SIZE, ButtonType.NEXT);
     }
 
     public Map<String, Integer> getPlayerMaterialCounts() {
@@ -105,6 +123,7 @@ public class BlacksmithOverlay implements Overlay<MouseEvent, KeyEvent, Graphics
     @Override
     public void update() {
         Arrays.stream(buttons).forEach(MediumButton::update);
+        Arrays.stream(smallButtons).forEach(SmallButton::update);
     }
 
     @Override
@@ -132,8 +151,67 @@ public class BlacksmithOverlay implements Overlay<MouseEvent, KeyEvent, Graphics
         g2d.setFont(UIButtonRenderer.getFont(10.0f * SCALE));
         g2d.setColor(new Color(210, 228, 230));
         g2d.drawString("WEAPON TEMPERING", (int) anvilPanel.x + scale(6), (int) anvilPanel.y - scale(4));
-        g2d.drawString("SMELTING & ARMOR SMITHING", (int) smithingPanel.x + scale(6), (int) smithingPanel.y - scale(4));
         g2d.drawString("FORGE BLUEPRINT", (int) inspectorPanel.x + scale(6), (int) inspectorPanel.y - scale(4));
+
+        renderFilterAndSortBar(g2d);
+
+        for (int r = 0; r < FORGE_GRID_ROWS; r++) {
+            int rowBgX = FORGE_GRID_X - scale(8);
+            int rowBgY = FORGE_GRID_Y + r * FORGE_SLOT_SPACING - scale(3);
+            int rowBgW = (FORGE_GRID_COLS - 1) * FORGE_SLOT_SPACING + SLOT_SIZE + scale(16);
+            int rowBgH = SLOT_SIZE + scale(6);
+            g2d.setColor(new Color(8, 14, 18, 115));
+            g2d.fillRoundRect(rowBgX, rowBgY, rowBgW, rowBgH, scale(6), scale(6));
+            g2d.setColor(new Color(55, 195, 190, 35));
+            g2d.drawRoundRect(rowBgX, rowBgY, rowBgW, rowBgH, scale(6), scale(6));
+        }
+
+        g2d.setFont(UIButtonRenderer.getFont(10.0f * SCALE));
+        g2d.setColor(new Color(210, 228, 230));
+        int itemsPerPage = FORGE_GRID_ROWS * FORGE_GRID_COLS;
+        int maxPages = Math.max(1, (int) Math.ceil((double) controller.getFilteredRecipes().size() / itemsPerPage));
+        String pageText = "PAGE " + (controller.getPageIndex() + 1) + " / " + maxPages;
+        FontMetrics fm = g2d.getFontMetrics();
+        int centerX = (int) (smithingPanel.x + smithingPanel.width / 2);
+        int pageY = scale(382) + (SMALL_BTN_SIZE + (int) (fm.getAscent() * 0.72f)) / 2;
+        g2d.drawString(pageText, centerX - fm.stringWidth(pageText) / 2, pageY);
+    }
+
+    private void renderFilterAndSortBar(Graphics2D g2d) {
+        Graphics2D gBar = (Graphics2D) g2d.create();
+        gBar.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        gBar.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        gBar.setFont(new Font("Arial", Font.BOLD, FONT_SMALL));
+        FontMetrics fm = gBar.getFontMetrics();
+
+        BlacksmithViewController.FilterCategory[] cats = BlacksmithViewController.FilterCategory.values();
+        for (int i = 0; i < cats.length; i++) {
+            Rectangle r = filterTabBounds[i];
+            boolean active = controller.getActiveFilter() == cats[i];
+            gBar.setColor(active ? new Color(30, 85, 92, 235) : new Color(14, 24, 28, 200));
+            gBar.fillRoundRect(r.x, r.y, r.width, r.height, scale(4), scale(4));
+            gBar.setColor(active ? new Color(75, 245, 235, 220) : new Color(70, 95, 100, 150));
+            gBar.drawRoundRect(r.x, r.y, r.width, r.height, scale(4), scale(4));
+
+            String label = cats[i].getLabel();
+            gBar.setColor(active ? new Color(185, 255, 250) : new Color(155, 175, 180));
+            int tx = r.x + (r.width - fm.stringWidth(label)) / 2;
+            int ty = r.y + (r.height + fm.getAscent() - fm.getDescent()) / 2;
+            gBar.drawString(label, tx, ty);
+        }
+
+        Rectangle sr = sortButtonBounds;
+        gBar.setColor(new Color(18, 34, 40, 220));
+        gBar.fillRoundRect(sr.x, sr.y, sr.width, sr.height, scale(4), scale(4));
+        gBar.setColor(new Color(215, 175, 70, 180));
+        gBar.drawRoundRect(sr.x, sr.y, sr.width, sr.height, scale(4), scale(4));
+
+        String sortLabel = "SORT: " + controller.getActiveSort().getLabel();
+        gBar.setColor(new Color(255, 220, 120));
+        int stx = sr.x + (sr.width - fm.stringWidth(sortLabel)) / 2;
+        int sty = sr.y + (sr.height + fm.getAscent() - fm.getDescent()) / 2;
+        gBar.drawString(sortLabel, stx, sty);
+        gBar.dispose();
     }
 
     private void renderAnvilSection(Graphics2D g2d, Map<String, Integer> playerMats) {
@@ -153,7 +231,7 @@ public class BlacksmithOverlay implements Overlay<MouseEvent, KeyEvent, Graphics
         if (selected) UIButtonRenderer.drawSelectedSlotFrame(g2d, ANVIL_CARD_X, ANVIL_CARD_Y, ANVIL_CARD_H);
 
         int textX = ANVIL_CARD_X + ANVIL_CARD_H + scale(12);
-        int textY = ANVIL_CARD_Y + scale(18);
+        int textY = ANVIL_CARD_Y + scale(17);
 
         g2d.setFont(new Font("Arial", Font.BOLD, FONT_DIALOGUE));
         g2d.setColor(new Color(255, 220, 110));
@@ -167,11 +245,11 @@ public class BlacksmithOverlay implements Overlay<MouseEvent, KeyEvent, Graphics
         String dmgLine = nextTier != null
                 ? "Sword Damage: " + currentBaseDmg + "  ->  " + (currentBaseDmg + nextTier.getBonusDamage()) + " (+" + (totalBonus + nextTier.getBonusDamage()) + ")"
                 : "Current Base Sword Damage: " + currentBaseDmg + " (+" + totalBonus + " Tempered)";
-        g2d.drawString(dmgLine, textX, textY + scale(16));
+        g2d.drawString(dmgLine, textX, textY + scale(15));
 
         // Tier progress pips
         int pipX = textX;
-        int pipY = textY + scale(26);
+        int pipY = textY + scale(24);
         int pipW = scale(26);
         int pipH = scale(7);
         for (int i = 0; i < tiers.size(); i++) {
@@ -190,15 +268,17 @@ public class BlacksmithOverlay implements Overlay<MouseEvent, KeyEvent, Graphics
     }
 
     private void renderSmithingGrid(Graphics2D g2d, Map<String, Integer> playerMats) {
-        List<SmithingRecipe> recipes = BlacksmithRecipeManager.getInstance().getSmithingRecipes();
+        List<SmithingRecipe> recipes = controller.getFilteredRecipes();
+        int pageOffset = controller.getPageIndex() * (FORGE_GRID_ROWS * FORGE_GRID_COLS);
 
         for (int r = 0; r < FORGE_GRID_ROWS; r++) {
             for (int c = 0; c < FORGE_GRID_COLS; c++) {
-                int idx = r * FORGE_GRID_COLS + c;
+                int slotIdx = r * FORGE_GRID_COLS + c;
+                int absIdx = pageOffset + slotIdx;
                 int xPos = FORGE_GRID_X + c * FORGE_SLOT_SPACING;
                 int yPos = FORGE_GRID_Y + r * FORGE_SLOT_SPACING;
 
-                SmithingRecipe recipe = idx < recipes.size() ? recipes.get(idx) : null;
+                SmithingRecipe recipe = absIdx < recipes.size() ? recipes.get(absIdx) : null;
                 InventoryItem item = null;
                 if (recipe != null) {
                     item = renderCache.computeIfAbsent(recipe.getOutput() + ":" + recipe.getAmount(), k -> new InventoryItem(recipe.getOutput(), recipe.getAmount()));
@@ -224,7 +304,7 @@ public class BlacksmithOverlay implements Overlay<MouseEvent, KeyEvent, Graphics
                         g2d.fillOval(xPos + scale(3), yPos + scale(3), dotS, dotS);
                     }
                 }
-                if (!controller.isAnvilSelected() && controller.getSelectedRecipeIndex() == idx) {
+                if (!controller.isAnvilSelected() && controller.getSelectedRecipeIndex() == absIdx) {
                     UIButtonRenderer.drawSelectedSlotFrame(g2d, xPos, yPos, SLOT_SIZE);
                 }
             }
@@ -301,7 +381,7 @@ public class BlacksmithOverlay implements Overlay<MouseEvent, KeyEvent, Graphics
     }
 
     private void renderSmithingRecipeDetails(Graphics2D g2d, int leftX, int rightX, int topY, int playerCoins, Map<String, Integer> playerMats) {
-        List<SmithingRecipe> recipes = BlacksmithRecipeManager.getInstance().getSmithingRecipes();
+        List<SmithingRecipe> recipes = controller.getFilteredRecipes();
         int idx = controller.getSelectedRecipeIndex();
         if (idx < 0 || idx >= recipes.size()) return;
 
@@ -390,6 +470,7 @@ public class BlacksmithOverlay implements Overlay<MouseEvent, KeyEvent, Graphics
 
     private void renderButtons(Graphics g) {
         Arrays.stream(buttons).forEach(mediumButton -> mediumButton.render(g));
+        Arrays.stream(smallButtons).forEach(smallButton -> smallButton.render(g));
     }
 
     private List<String> wrapText(String text, int maxWidth, FontMetrics fm) {
@@ -451,5 +532,17 @@ public class BlacksmithOverlay implements Overlay<MouseEvent, KeyEvent, Graphics
 
     public MediumButton[] getButtons() {
         return buttons;
+    }
+
+    public SmallButton[] getSmallButtons() {
+        return smallButtons;
+    }
+
+    public Rectangle[] getFilterTabBounds() {
+        return filterTabBounds;
+    }
+
+    public Rectangle getSortButtonBounds() {
+        return sortButtonBounds;
     }
 }

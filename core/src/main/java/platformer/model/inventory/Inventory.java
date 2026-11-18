@@ -109,7 +109,7 @@ public class Inventory {
         if (itemInBackpackSlot != null) {
             if (equipmentHandler.canEquipItem(itemInBackpackSlot, equipIndex)) {
                 equipmentHandler.getEquipped()[equipIndex] = itemInBackpackSlot;
-                equipmentHandler.applyBonus(itemInBackpackSlot);
+                equipmentHandler.updateBonuses();
                 for (int i=0; i < backpackHandler.getBackpack().size(); i++) {
                     if (backpackHandler.getBackpack().get(i) == itemInBackpackSlot) {
                         backpackHandler.setItemAt(i, null);
@@ -233,13 +233,13 @@ public class Inventory {
                 InventoryItem item = new InventoryItem(itemId, amount);
                 if (isEquipped) {
                     equipmentHandler.getEquipped()[slotIndex] = item;
-                    equipmentHandler.applyBonus(item);
                 }
                 else backpackHandler.setItemAt(slotIndex, item);
             } catch (Exception e) {
                 Logger.getInstance().notify("Reading items from save file failed!", Message.ERROR);
             }
         }
+        equipmentHandler.updateBonuses();
     }
 
     public void completeQuestFill(Map<String, Integer> itemRewards) {

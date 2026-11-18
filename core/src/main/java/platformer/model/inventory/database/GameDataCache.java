@@ -83,6 +83,7 @@ public class GameDataCache {
             ItemData.EquipmentData equipData = new ItemData.EquipmentData();
             equipData.canEquip = dto.getEquip().isCanEquip();
             equipData.slot = dto.getEquip().getSlot();
+            equipData.setName = dto.getEquip().getSetName();
             equipData.bonuses = dto.getEquip().getBonuses();
             data.equip = equipData;
         }

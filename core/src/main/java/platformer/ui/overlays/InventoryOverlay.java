@@ -235,6 +235,29 @@ public class InventoryOverlay implements Overlay<MouseEvent, KeyEvent, Graphics>
         g2d.setColor(new Color(210, 228, 230));
         g2d.drawString("EQUIPMENT", (int) equipPanel.getX() + scale(4), (int) equipPanel.getY() - scale(5));
 
+        String activeSet = InventoryBonus.getInstance().getActiveSetName();
+        if (activeSet != null) {
+            float pulse = (float) (0.75 + 0.25 * Math.sin(System.currentTimeMillis() / 220.0));
+            int cx = INV_PLAYER_X + INV_PLAYER_WID / 2 - scale(18);
+            int cy = INV_PLAYER_Y + INV_PLAYER_HEI / 2 + scale(3);
+            int r = scale(45);
+            RadialGradientPaint setAura = new RadialGradientPaint(
+                    new Point(cx, cy), r,
+                    new float[]{0.0f, 1.0f},
+                    new Color[]{new Color(255, 200, 55, (int) (75 * pulse)), new Color(255, 160, 20, 0)}
+            );
+            g2d.setPaint(setAura);
+            g2d.fillOval(cx - r, cy - r, r * 2, r * 2);
+
+            String badgeText = activeSet + " SET";
+            g2d.setFont(new Font("Arial", Font.BOLD, FONT_SMALL));
+            int textW = g2d.getFontMetrics().stringWidth(badgeText) + scale(10);
+            int badgeX = (int) (equipPanel.getX() + equipPanel.getWidth() - textW - scale(2));
+            int badgeY = (int) equipPanel.getY() - scale(5);
+            Color goldCol = new Color(255, 215, 75);
+            UIButtonRenderer.drawBadge(g2d, badgeText, badgeX, badgeY, goldCol, goldCol);
+        }
+
         g2d.drawImage(playerAnim[playerAnimIndex], INV_PLAYER_X, INV_PLAYER_Y, INV_PLAYER_WID, INV_PLAYER_HEI, null);
     }
 
@@ -426,17 +449,25 @@ public class InventoryOverlay implements Overlay<MouseEvent, KeyEvent, Graphics>
         int descMaxW = rightEdge - textStartX;
         List<String> lines = wrapText(data.description, descMaxW, g2d.getFontMetrics());
         int descY = titleY + scale(14);
-        for (int i = 0; i < Math.min(lines.size(), 3); i++) {
+        for (int i = 0; i < Math.min(lines.size(), 2); i++) {
             g2d.drawString(lines.get(i), textStartX, descY);
             descY += g2d.getFontMetrics().getHeight();
         }
 
-        g2d.setFont(new Font("Arial", Font.ITALIC, FONT_SMALL));
-        g2d.setColor(new Color(120, 175, 180));
-        String hint = item.getItemId().contains("POTION")
-                ? "Tip: Press 1-4 or drag to Quick Potion bar  |  Right-Click: Drink"
-                : (data.equip != null && data.equip.canEquip ? "Tip: Right-Click to Equip / Unequip  |  Shift+Drag: Split Stack" : "Tip: Shift+Drag to Split Stack");
-        g2d.drawString(hint, previewX, (int) (inspectorPanel.getY() + inspectorPanel.getHeight() - scale(5)));
+        if (data.equip != null && data.equip.setName != null && !data.equip.setName.isEmpty()) {
+            String setName = data.equip.setName;
+            int count = InventoryBonus.getInstance().getEquippedSetCount(setName);
+            boolean fullSet = count >= 5;
+            Map<String, Double> setBonuses = platformer.core.config.BalanceManager.getInstance().getSetBonus(setName);
+            if (setBonuses != null && !setBonuses.isEmpty()) {
+                StringBuilder sb = new StringBuilder(setName).append(" SET (").append(count).append("/5): ");
+                setBonuses.forEach((stat, val) -> sb.append("+").append(val.intValue()).append("% ").append(stat.toUpperCase()).append("  "));
+
+                g2d.setFont(new Font("Arial", Font.BOLD, FONT_SMALL));
+                g2d.setColor(fullSet ? new Color(255, 215, 75) : new Color(135, 155, 160));
+                g2d.drawString(sb.toString().trim(), textStartX, descY + scale(2));
+            }
+        }
     }
 
     private void renderButtons(Graphics g) {

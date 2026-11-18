@@ -11,6 +11,8 @@ public class InventoryBonus {
 
     private static volatile InventoryBonus instance = null;
     private final Map<String, Double> bonuses = new HashMap<>();
+    private String activeSetName = null;
+    private final Map<String, Integer> equippedSetCounts = new HashMap<>();
 
     private InventoryBonus() {}
 
@@ -80,8 +82,27 @@ public class InventoryBonus {
         return getBonus("cooldown");
     }
 
+    public void setActiveSetName(String activeSetName) {
+        this.activeSetName = activeSetName;
+    }
+
+    public String getActiveSetName() {
+        return activeSetName;
+    }
+
+    public void setEquippedSetCount(String setName, int count) {
+        equippedSetCounts.put(setName, count);
+    }
+
+    public int getEquippedSetCount(String setName) {
+        if (setName == null) return 0;
+        return equippedSetCounts.getOrDefault(setName, 0);
+    }
+
     public void reset() {
         bonuses.clear();
+        activeSetName = null;
+        equippedSetCounts.clear();
     }
 
 }

@@ -14,5 +14,6 @@ import java.util.Map;
 public class EquipmentDataDTO {
     private boolean canEquip;
     private String slot;
+    private String setName;
     private Map<String, Double> bonuses;
 }

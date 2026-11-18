@@ -18,6 +18,7 @@ public class ItemData {
     public static class EquipmentData {
         public boolean canEquip;
         public String slot;
+        public String setName;
         public Map<String, Double> bonuses;
     }
 

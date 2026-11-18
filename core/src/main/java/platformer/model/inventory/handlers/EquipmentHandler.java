@@ -1,5 +1,6 @@
 package platformer.model.inventory.handlers;
 
+import platformer.core.config.BalanceManager;
 import platformer.model.inventory.InventoryBonus;
 import platformer.model.inventory.item.InventoryItem;
 import platformer.model.inventory.item.ItemData;
@@ -69,7 +70,7 @@ public class EquipmentHandler {
         }
 
         equipped[slotIndex] = itemToEquip;
-        applyBonus(itemToEquip);
+        updateBonuses();
         backpackHandler.removeItemFromSlot(index);
     }
 
@@ -84,8 +85,8 @@ public class EquipmentHandler {
     public InventoryItem unequipItem(int index) {
         if (index >= equipped.length || equipped[index] == null) return null;
         InventoryItem itemToUnequip = equipped[index];
-        removeBonus(itemToUnequip);
         equipped[index] = null;
+        updateBonuses();
         return itemToUnequip;
     }
 
@@ -120,21 +121,36 @@ public class EquipmentHandler {
         }
         equipped[index1] = item2;
         equipped[index2] = item1;
+        updateBonuses();
 
         return true;
     }
 
-    public void applyBonus(InventoryItem item) {
-        ItemData.EquipmentData equipData = item.getData().equip;
-        if (equipData != null && equipData.bonuses != null) {
-            equipData.bonuses.forEach(InventoryBonus.getInstance()::addBonus);
-        }
-    }
+    public void updateBonuses() {
+        InventoryBonus bonusManager = InventoryBonus.getInstance();
+        bonusManager.reset();
+        Map<String, Integer> setCounts = new HashMap<>();
 
-    private void removeBonus(InventoryItem item) {
-        ItemData.EquipmentData equipData = item.getData().equip;
-        if (equipData != null && equipData.bonuses != null) {
-            equipData.bonuses.forEach(InventoryBonus.getInstance()::removeBonus);
+        for (int i = 0; i < equipped.length; i++) {
+            InventoryItem item = equipped[i];
+            if (item != null && item.getData() != null && item.getData().equip != null) {
+                if (item.getData().equip.bonuses != null) {
+                    item.getData().equip.bonuses.forEach(bonusManager::addBonus);
+                }
+                String setName = item.getData().equip.setName;
+                if (setName != null && !setName.isEmpty()) {
+                    setCounts.put(setName, setCounts.getOrDefault(setName, 0) + 1);
+                }
+            }
+        }
+
+        setCounts.forEach(bonusManager::setEquippedSetCount);
+        for (Map.Entry<String, Integer> entry : setCounts.entrySet()) {
+            if (entry.getValue() >= 5) {
+                bonusManager.setActiveSetName(entry.getKey());
+                Map<String, Double> setBonus = BalanceManager.getInstance().getSetBonus(entry.getKey());
+                if (setBonus != null) setBonus.forEach(bonusManager::addBonus);
+            }
         }
     }
 
@@ -166,7 +182,7 @@ public class EquipmentHandler {
     public void reset() {
         for (int i = 0; i < equipped.length; i++) {
             if (equipped[i] != null) {
-                removeBonus(equipped[i]);
+                updateBonuses();
                 equipped[i] = null;
             }
         }

@@ -29,6 +29,7 @@ public class BalanceManager {
         private ConsumableBalance consumables = new ConsumableBalance();
         private CombatBalance combat = new CombatBalance();
         private Map<String, EnemyBalance> enemies = Collections.emptyMap();
+        private Map<String, Map<String, Double>> equipmentSets = Collections.emptyMap();
     }
 
     @Getter
@@ -144,5 +145,10 @@ public class BalanceManager {
     public EnemyBalance getEnemyBalance(EnemyType type) {
         if (type == null || config.getEnemies() == null) return new EnemyBalance();
         return config.getEnemies().getOrDefault(type.name(), new EnemyBalance());
+    }
+
+    public Map<String, Double> getSetBonus(String setName) {
+        if (config.getEquipmentSets() == null) return null;
+        return config.getEquipmentSets().get(setName);
     }
 }
