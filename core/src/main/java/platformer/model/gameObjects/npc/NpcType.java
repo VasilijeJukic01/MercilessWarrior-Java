@@ -33,6 +33,12 @@ public enum NpcType {
     ),
     LANCER(1, new Color(0x4EE8FF), "Lancer", DialogueBehavior.SEQUENTIAL,
             scale(40), scale(52), scale(80), scale(45), scale(-20), scale(4), 32, 32
+    ),
+    BLACKSMITH(8, new Color(0xE89846), "Forgemaster", DialogueBehavior.RANDOM,
+            scale(110), scale(85), scale(70), scale(45), scale(20), scale(20), 220, 160
+    ),                      // 9
+    DOG(8, new Color(0xD4B07B), "Loyal Hound", DialogueBehavior.RANDOM,
+            scale(72), scale(72), scale(50), scale(32), scale(11), scale(18), 220, 128
     );
 
     private final int sprites;

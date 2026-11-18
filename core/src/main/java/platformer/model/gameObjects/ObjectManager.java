@@ -56,16 +56,16 @@ public class ObjectManager {
 
     Class<? extends GameObject>[] updateClasses = new Class[]{
             Coin.class, Container.class, Potion.class, Spike.class,
-            Shop.class, Blocker.class, Blacksmith.class, Dog.class,
-            SaveTotem.class, SmashTrap.class, Candle.class, Loot.class,
-            Table.class, Board.class, Npc.class, Lava.class, Water.class, Brick.class,
-            JumpPad.class, Herb.class, RoricTrap.class, Door.class
+            Shop.class, Blocker.class, SaveTotem.class, SmashTrap.class,
+            Candle.class, Loot.class, Table.class, Board.class, Npc.class,
+            Lava.class, Water.class, Brick.class, JumpPad.class,
+            Herb.class, RoricTrap.class, Door.class
     };
     Class<? extends GameObject>[] renderBelow = new Class[] {
             Container.class, Potion.class, Spike.class,
-            Blocker.class, Dog.class, SmashTrap.class, Loot.class, Brick.class,
-            SaveTotem.class, Shop.class, Blacksmith.class, Coin.class,
-            Table.class, Board.class, JumpPad.class, Herb.class, RoricTrap.class,
+            Blocker.class, SmashTrap.class, Loot.class, Brick.class,
+            SaveTotem.class, Shop.class, Coin.class, Table.class,
+            Board.class, JumpPad.class, Herb.class, RoricTrap.class,
             Door.class, Candle.class, Shop.class
     };
     Class<? extends GameObject>[] renderBehind = new Class[] {
@@ -95,6 +95,8 @@ public class ObjectManager {
 
     private void configureObjects() {
         if (lootHandler == null) return;
+        int[][] lvlData = context.getLevelManager().getCurrentLevel().getLvlData();
+
         getObjects(Container.class).forEach(container -> {
             if (container.getItems().isEmpty()) lootHandler.generateCrateLoot(container);
         });
@@ -106,6 +108,12 @@ public class ObjectManager {
                 shop.getShopItems().addAll(inventory);
             }
         });
+        for (Npc npc : getObjects(Npc.class)) {
+            if (npc.getNpcType() == NpcType.BLACKSMITH) {
+                double groundY = CollisionDetector.getGroundY(npc.getHitBox().getCenterX(), npc.getHitBox().y, lvlData);
+                npc.getHitBox().y = groundY - npc.getHitBox().height + (int) (2 * SCALE);
+            }
+        }
         getObjects(Water.class).forEach(w -> w.setEffectManager(context.getEffectManager()));
         getObjects(Lava.class).forEach(l -> l.setEffectManager(context.getEffectManager()));
     }

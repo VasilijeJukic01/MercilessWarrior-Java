@@ -40,13 +40,26 @@ public class Npc extends GameObject implements Interactable {
     }
 
     private void configureAnimSpeed() {
-        if (npcType == NpcType.RORIC) super.animSpeed = 20;
+        if (npcType == NpcType.RORIC || npcType == NpcType.BLACKSMITH || npcType == NpcType.DOG) {
+            super.animSpeed = 20;
+        }
         else super.animSpeed = 34;
     }
 
     private void configureHitboxOffsets() {
-        if (npcType != NpcType.RORIC) return;
-        hitBox.y -= (int)(100 * SCALE);
+        if (npcType == NpcType.RORIC) {
+            hitBox.y -= (int) (100 * SCALE);
+        }
+        else if (npcType == NpcType.BLACKSMITH) {
+            this.direction = Direction.LEFT;
+            hitBox.x = xPos + (int) (25 * SCALE) + (int) (18 * SCALE);
+            hitBox.y = yPos - npcType.getHei() + TILES_SIZE;
+        }
+        else if (npcType == NpcType.DOG) {
+            this.direction = Direction.LEFT;
+            hitBox.x = xPos + (int) (25 * SCALE) + (int) (11 * SCALE);
+            hitBox.y = yPos - npcType.getHei() + TILES_SIZE;
+        }
     }
 
     @Override
@@ -140,8 +153,13 @@ public class Npc extends GameObject implements Interactable {
     public void renderInteractionUI(Graphics g, int xLevelOffset, int yLevelOffset) {
         if (!active || !alive) return;
         int centerX = (int) (hitBox.getCenterX() - xLevelOffset);
-        int promptY = (int) (hitBox.y - yLevelOffset - 12 * SCALE);
-        UIButtonRenderer.drawInteractionPrompt(g, "TALK", centerX, promptY);
+        int promptY = (int) (hitBox.y - yLevelOffset - 10 * SCALE);
+        String label = switch (npcType) {
+            case BLACKSMITH -> "UPGRADE";
+            case DOG -> "PET";
+            default -> "TALK";
+        };
+        UIButtonRenderer.drawInteractionPrompt(g, label, centerX, promptY);
     }
 
     public DialogueBehavior getDialogueBehavior() {

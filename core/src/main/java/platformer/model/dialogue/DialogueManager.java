@@ -207,12 +207,16 @@ public class DialogueManager {
             getOverlay().skipLetterAnim();
             return;
         }
-        if(!getOverlay().next()) {
+        if (!getOverlay().next()) {
             ObjectManager objectManager = context.getGameState().getObjectManager();
             String intersect = objectManager.getIntersectingObject();
 
-            if ("Blacksmith".equals(intersect))
+            if ("Blacksmith".equals(intersect) || "NpcBlacksmith".equals(intersect)) {
+                if (objectManager.getIntersection() instanceof Npc npc) {
+                    npc.increaseDialogueIndicator();
+                }
                 EventBus.getInstance().publish(new OverlayChangeEvent(PlayingState.BLACKSMITH));
+            }
             else if ("Shop".equals(intersect))
                 EventBus.getInstance().publish(new OverlayChangeEvent(PlayingState.SHOP));
             else if ("SaveTotem".equals(intersect))
@@ -258,10 +262,14 @@ public class DialogueManager {
     }
 
     private List<Dialogue> getDialogues(String id) {
-        if (!dialogues.containsKey(id)) return Collections.emptyList();
+        String lookupId = id;
+        if (!dialogues.containsKey(lookupId) && lookupId.startsWith("Npc")) {
+            lookupId = lookupId.substring(3);
+        }
+        if (!dialogues.containsKey(lookupId)) return Collections.emptyList();
         String currentLocation = context.getInteriorManager().isInterior() ? context.getInteriorManager().getCurrentInteriorId() : "main_map";
 
-        return dialogues.get(id).stream()
+        return dialogues.get(lookupId).stream()
                 .filter(d -> !d.isActivated())
                 .filter(d -> !d.isCutsceneOnly())
                 .filter(d -> d.getLocation() == null || d.getLocation().equals(currentLocation))

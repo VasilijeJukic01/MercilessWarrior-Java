@@ -4,6 +4,7 @@ import platformer.core.GameContext;
 import platformer.model.effects.TimeCycleManager;
 import platformer.model.entities.enemies.Enemy;
 import platformer.model.gameObjects.GameObject;
+import platformer.model.gameObjects.npc.Npc;
 import platformer.model.gameObjects.objects.*;
 import platformer.model.gameObjects.objects.Container;
 import platformer.model.levels.Level;
@@ -865,8 +866,8 @@ public class LightManager {
      */
     private List<Class<?>> getLightSourceClasses() {
         return List.of(
-                Container.class, Blocker.class, Dog.class, SmashTrap.class,
-                SaveTotem.class, Shop.class, Blacksmith.class, Table.class,
+                Container.class, Blocker.class, SmashTrap.class,
+                SaveTotem.class, Shop.class, Table.class, Npc.class,
                 Board.class, JumpPad.class, Herb.class, RoricTrap.class
         );
     }

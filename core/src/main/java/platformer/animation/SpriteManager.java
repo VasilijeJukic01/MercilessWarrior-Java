@@ -291,8 +291,6 @@ public class SpriteManager {
         // Interactive Objects
         objectAnimations.put(ObjType.SHOP, loadFromSprite(SHOP_SHEET, 1, 0, SHOP_WID, SHOP_HEI, 0, SHOP_W, SHOP_H));
         objectAnimations.put(ObjType.BLOCKER, loadFromSprite(BLOCKER_SHEET, 12, 0, BLOCKER_WID, BLOCKER_HEI, 0, BLOCKER_W, BLOCKER_H));
-        objectAnimations.put(ObjType.BLACKSMITH, loadFromSprite(BS_SHEET, 8, 0, BLACKSMITH_WID, BLACKSMITH_HEI, 0, BLACKSMITH_W, BLACKSMITH_H));
-        objectAnimations.put(ObjType.DOG, loadFromSprite(DOG_SHEET, 8, 0, DOG_WID, DOG_HEI, 0, DOG_W, DOG_H));
         objectAnimations.put(ObjType.SAVE_TOTEM, loadFromSprite(TOTEM_SHEET, 1, 0, SAVE_TOTEM_WID, SAVE_TOTEM_HEI, 0, TOTEM_W, TOTEM_H));
         objectAnimations.put(ObjType.JUMP_PAD, loadFromSprite(JUMP_PAD_SHEET, 20, 0, JUMP_PAD_WID, JUMP_PAD_HEI, 0, JUMP_PAD_W, JUMP_PAD_H));
         objectAnimations.put(ObjType.LOOT, loadFromSprite(LOOT_IMG, 1, 0, LOOT_WID, LOOT_HEI, 0, LOOT_W, LOOT_H));
@@ -329,6 +327,8 @@ public class SpriteManager {
         npcAnimations.put(NpcType.MITCH_OF_ASSIS,   loadSingleNpcAnimation(MITCH_SHEET, 5, 0, NpcType.MITCH_OF_ASSIS));
         npcAnimations.put(NpcType.ANDELLIA,      	loadSingleNpcAnimation(ANDELLIA_SHEET, 4, 0, NpcType.ANDELLIA));
         npcAnimations.put(NpcType.EERYN,         	loadSingleNpcAnimation(EERYN_SHEET, 4, 0, NpcType.EERYN));
+        npcAnimations.put(NpcType.BLACKSMITH,     loadSingleNpcAnimation(BS_SHEET, 8, 0, NpcType.BLACKSMITH));
+        npcAnimations.put(NpcType.DOG,            loadSingleNpcAnimation(DOG_SHEET, 8, 0, NpcType.DOG));
 
         for (NpcType type : NpcType.values()) {
             String path = AVATAR_PATH.replace("$", type.name());

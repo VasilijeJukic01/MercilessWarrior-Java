@@ -5,14 +5,14 @@ public enum ObjType {
     HEAL_POTION(7),                 // 1
     BOX(8),                         // 2
     BARREL(8),                      // 3
-    SPIKE_UP(1),                       // 4
+    SPIKE_UP(1),                    // 4
     ARROW_TRAP_LEFT(16),            // 5
     ARROW_TRAP_RIGHT(16),           // 6
     COIN(4),                        // 7
     SHOP(6),                        // 8
     BLOCKER(10),                    // 9
-    BLACKSMITH(8),                  // 10
-    DOG(8),                         // 11
+    WATER(1),                       // 10
+    WATERFALL(1),                   // 11
     SAVE_TOTEM(1),                  // 12
     SMASH_TRAP(14),                 // 13
     CANDLE(1),                      // 14
@@ -22,15 +22,14 @@ public enum ObjType {
     NPC(4),                         // 18
     LAVA(16),                       // 19
     BRICK(8),                       // 20
-    JUMP_PAD(20),                	// 21
+    JUMP_PAD(20),                   // 21
     SPIKE_DOWN(1),                  // 22
-    SPIKE_RIGHT(1),					// 23
+    SPIKE_RIGHT(1),                 // 23
     SPIKE_LEFT(1),                  // 24
-    HERB(1),						// 25
-    RORIC_TRAP(8),					// 26
-    DOOR(1),                 // 27
-    WATER(1),                       // 28
-    MAX(0);                         // 29
+    HERB(1),                        // 25
+    RORIC_TRAP(8),                  // 26
+    DOOR(1),                        // 27
+    MAX(0);                         // 28
 
     private final int sprites;
 
