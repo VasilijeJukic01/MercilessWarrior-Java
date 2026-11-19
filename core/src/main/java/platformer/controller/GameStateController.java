@@ -293,7 +293,6 @@ public class GameStateController {
                 PlayingState.CRAFTING,
                 PlayingState.LOOTING,
                 PlayingState.MINIMAP,
-                PlayingState.TUTORIAL,
         };
 
         return Arrays.stream(breakableStates).anyMatch(breakableState -> breakableState == state);

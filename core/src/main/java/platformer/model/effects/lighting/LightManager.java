@@ -79,8 +79,6 @@ public class LightManager {
     private boolean ambientDarknessOverridden = false;
     private boolean isFadingBack = false;
 
-    private int flashDuration = 0;
-    private float flashIntensity = 0.0f;
     private Color filterColor = null;
 
     // TimeCycle
@@ -225,7 +223,6 @@ public class LightManager {
         calculateTimeCycleEffects(timeManager);
         updateAmbientDarknessAndEffects();
         updatePulse();
-        updateFlash();
     }
 
     /**
@@ -356,19 +353,6 @@ public class LightManager {
         }
     }
 
-    /**
-     * Updates active screen flash effects, exponentially decaying the flash intensity until it reaches zero.
-     */
-    private void updateFlash() {
-        if (flashDuration > 0) {
-            flashDuration--;
-            flashIntensity *= 0.85f;
-            if (flashDuration == 0) {
-                flashIntensity = 0.0f;
-            }
-        }
-    }
-
     // Render
     /**
      * Renders the lighting pass over the world terrain and objects.
@@ -404,7 +388,6 @@ public class LightManager {
      */
     public void renderPostProcessing(Graphics g) {
         renderTimeCycleTint(g);
-        renderFlashEffects(g);
     }
 
     /**
@@ -617,22 +600,6 @@ public class LightManager {
         if (ambientDarknessOverridden) return;
         if (timeCycleTintColor.getAlpha() > 0) {
             g.setColor(timeCycleTintColor);
-            g.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
-        }
-    }
-
-    /**
-     * Renders any active top-layer flash or color filter effects.
-     *
-     * @param g The graphics context.
-     */
-    private void renderFlashEffects(Graphics g) {
-        if (filterColor != null) {
-            g.setColor(filterColor);
-            g.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
-        }
-        if (flashIntensity > 0) {
-            g.setColor(new Color(1.0f, 1.0f, 1.0f, flashIntensity));
             g.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
         }
     }
@@ -913,8 +880,6 @@ public class LightManager {
             this.currentAmbientAlpha = 130;
         }
         this.filterColor = null;
-        this.flashIntensity = 0;
-        this.flashDuration = 0;
         this.isFadingBack = false;
         this.fadeBackAnimTick = 0;
         this.cachedStaticLevel = null;

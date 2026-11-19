@@ -164,6 +164,5 @@ public class GameInitializer {
 
         // Register handlers for continuous updates
         gameState.getEventHandlers().add(roricHandler);
-        gameState.getEventHandlers().add(gameFlowManager);
     }
 }

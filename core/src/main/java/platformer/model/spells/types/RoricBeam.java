@@ -83,8 +83,4 @@ public class RoricBeam extends Spell {
     public void attackBoxRenderer(Graphics g, int xLevelOffset, int yLevelOffset) {
 
     }
-
-    public Direction getDirection() {
-        return direction;
-    }
 }

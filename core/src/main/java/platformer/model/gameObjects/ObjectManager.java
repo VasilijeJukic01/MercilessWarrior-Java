@@ -66,9 +66,9 @@ public class ObjectManager {
     Class<? extends GameObject>[] renderBelow = new Class[] {
             Container.class, Potion.class, Spike.class,
             Blocker.class, SmashTrap.class, Loot.class, Brick.class,
-            SaveTotem.class, Shop.class, Coin.class, Table.class,
+            SaveTotem.class, Shop.class, Table.class,
             Board.class, JumpPad.class, Herb.class, RoricTrap.class,
-            Door.class, Candle.class, Shop.class
+            Door.class, Candle.class
     };
     Class<? extends GameObject>[] renderBehind = new Class[] {
             Lava.class, Water.class

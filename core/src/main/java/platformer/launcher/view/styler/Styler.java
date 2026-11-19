@@ -47,9 +47,4 @@ public interface Styler {
      * Applies a style class to a node
      */
     void applyStyleClass(Node node, String styleClass);
-
-    /**
-     * Applies a style class to multiple nodes
-     */
-    void applyStyleClass(String styleClass, Node... nodes);
 }

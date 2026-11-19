@@ -18,6 +18,5 @@ public enum PlayingState {
     CRAFTING,
     LOOTING,
     QUEST,
-    MINIMAP,
-    TUTORIAL
+    MINIMAP
 }

@@ -106,11 +106,4 @@ public class OpenALSource {
         return AL10.alGetSourcei(sourceID, AL_SOURCE_STATE) == AL10.AL_PLAYING;
     }
 
-    /**
-     * Deletes the OpenAL source to free up resources.
-     */
-    public void delete() {
-        AL10.alDeleteSources(sourceID);
-    }
-
 }

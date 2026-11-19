@@ -102,11 +102,4 @@ public class FXStyler implements Styler{
     public void applyStyleClass(Node node, String styleClass) {
         node.getStyleClass().add(styleClass);
     }
-
-    @Override
-    public void applyStyleClass(String styleClass, Node... nodes) {
-        for (Node node : nodes) {
-            node.getStyleClass().add(styleClass);
-        }
-    }
 }

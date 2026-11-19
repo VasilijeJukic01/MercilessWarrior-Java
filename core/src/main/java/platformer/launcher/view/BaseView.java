@@ -13,7 +13,6 @@ public abstract class BaseView extends Stage {
 
     // Images
     protected Image launcherIcon;
-    protected Background launcherBackground;
     private Image logo;
 
     protected void loadImages() {
@@ -27,10 +26,6 @@ public abstract class BaseView extends Stage {
         super.getIcons().add(launcherIcon);
         super.setResizable(false);
         super.setScene(scene);
-    }
-
-    public Background getLauncherBackground() {
-        return launcherBackground;
     }
 
     public Image getLogo() {

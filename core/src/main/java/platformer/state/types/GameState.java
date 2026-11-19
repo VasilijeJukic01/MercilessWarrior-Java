@@ -20,7 +20,6 @@ import platformer.model.effects.ScreenEffectsManager;
 import platformer.model.entities.player.Player;
 import platformer.model.gameObjects.ObjectManager;
 import platformer.model.levels.LevelManager;
-import platformer.model.perks.PerksBonus;
 import platformer.model.world.GameFlowManager;
 import platformer.model.world.GameWorld;
 import platformer.event.EventHandler;

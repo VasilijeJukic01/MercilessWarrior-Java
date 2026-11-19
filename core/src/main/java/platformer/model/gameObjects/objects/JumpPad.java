@@ -90,8 +90,4 @@ public class JumpPad extends GameObject implements Interactable {
     public String getInteractionPrompt() {
         return null;
     }
-
-    public boolean isUsed() {
-        return used;
-    }
 }

@@ -12,11 +12,10 @@ import platformer.model.entities.enemies.EnemyType;
 import platformer.model.gameObjects.GameObject;
 import platformer.model.levels.Level;
 import platformer.model.levels.LvlTriggerType;
-import platformer.event.EventHandler;
 
 import java.awt.*;
 
-public class GameFlowEventHandler implements EventHandler {
+public class GameFlowEventHandler {
 
     private final GameContext context;
 
@@ -82,15 +81,5 @@ public class GameFlowEventHandler implements EventHandler {
 
         context.getGameState().getPlayer().setSpawn(playerSpawn);
         context.getGameState().getPlayer().resetDirections();
-    }
-
-    @Override
-    public void continuousUpdate() {
-
-    }
-
-    @Override
-    public void reset() {
-
     }
 }
