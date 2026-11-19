@@ -25,21 +25,20 @@ public class KeyboardController {
     }
 
     private void loadKeyConfig() {
-        File userConfigFile = new File(PathManager.getConfigPath());
-        if (userConfigFile.exists()) {
-            try (BufferedReader reader = new BufferedReader(new FileReader(userConfigFile))) {
-                loadConfigFromReader(reader);
-                return;
-            } catch (IOException e) {
-                Logger.getInstance().notify("Failed to load user keyboard config.", Message.WARNING);
-            }
-        }
-
         try (InputStream is = AssetManager.getInstance().getResourceAsStream("/keyboard.config");
              BufferedReader reader = new BufferedReader(new InputStreamReader(is))) {
             loadConfigFromReader(reader);
         } catch (IOException | NullPointerException e) {
             Logger.getInstance().notify("Failed to load default keyboard config.", Message.ERROR);
+        }
+
+        File userConfigFile = new File(PathManager.getConfigPath());
+        if (userConfigFile.exists()) {
+            try (BufferedReader reader = new BufferedReader(new FileReader(userConfigFile))) {
+                loadConfigFromReader(reader);
+            } catch (IOException e) {
+                Logger.getInstance().notify("Failed to load user keyboard config.", Message.WARNING);
+            }
         }
     }
 
@@ -63,11 +62,12 @@ public class KeyboardController {
     }
 
     public int getKeyForCommand(String command) {
-        return keyConfig.get(command);
+        return keyConfig.getOrDefault(command, -1);
     }
 
-    public String getKeyName(String keycode) {
-        return KeyEvent.getKeyText(keyConfig.get(keycode));
+    public String getKeyName(String command) {
+        Integer keyCode = keyConfig.get(command);
+        return keyCode != null ? KeyEvent.getKeyText(keyCode) : "?";
     }
 
 }

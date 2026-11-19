@@ -4,6 +4,7 @@ import platformer.serialization.GameEncryptor;
 import java.io.*;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class AssetManager {
 
@@ -35,7 +36,7 @@ public class AssetManager {
 
             ByteArrayInputStream bais = new ByteArrayInputStream(decryptedData);
             try (ObjectInputStream ois = new ObjectInputStream(bais)) {
-                assetData = (Map<String, byte[]>) ois.readObject();
+                assetData = new ConcurrentHashMap<>((Map<String, byte[]>) ois.readObject());
             }
         } catch (Exception e) {
             throw new RuntimeException("Failed to load or decrypt assets", e);
@@ -62,6 +63,15 @@ public class AssetManager {
         byte[] data = getAsset(path);
         if (data != null) return new ByteArrayInputStream(data);
         return AssetManager.class.getResourceAsStream(path);
+    }
+
+    /**
+     * Evicts raw asset bytes matching the given path prefix to reclaim heap memory after a subsystem has uploaded them to its own buffers.
+     */
+    public void evictByPrefix(String prefix) {
+        if (assetData != null) {
+            assetData.keySet().removeIf(path -> path.startsWith(prefix));
+        }
     }
 
     public byte[] getAsset(String path) {

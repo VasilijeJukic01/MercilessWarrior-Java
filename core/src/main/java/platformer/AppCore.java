@@ -30,6 +30,7 @@ public class AppCore {
                 SpriteManager.getInstance().loadAllAssets();
             });
             CompletableFuture.allOf(audioFuture, spritesFuture).join();
+            AssetManager.getInstance().evictByPrefix("/audio/");
 
             tracker.update(0.90, "Initializing Game World...");
             Framework.getInstance().init(config);

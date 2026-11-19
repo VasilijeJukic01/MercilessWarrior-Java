@@ -184,9 +184,7 @@ public class SaveViewController {
             Point spawnPoint = context.getLevelManager().getTotemSpawnPoint(target.totemId());
             context.getPlayer().setSpawn(spawnPoint);
             NpcType followerType = context.getQuestManager().getActiveFollowerType();
-            if (followerType != null && !context.getWorldMemoryManager().hasFlag("VILLAGE_CLEARED_deepmoss02")) {
-                context.getObjectManager().spawnFollower(followerType, spawnPoint.x, spawnPoint.y);
-            }
+            if (followerType != null) context.getObjectManager().spawnFollower(followerType, spawnPoint.x, spawnPoint.y);
             else context.getObjectManager().despawnFollower();
             context.getMinimapManager().changeLevel();
             context.getPlayer().activateMinimap(true);

@@ -6,6 +6,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import platformer.launcher.controller.controls.ApplyControlsController;
+import platformer.launcher.controller.controls.CommandFieldsInitializer;
 import platformer.launcher.controller.controls.ResetControlsController;
 import platformer.launcher.controller.controls.UniqueKeyController;
 import platformer.launcher.core.KeyboardConfigurator;
@@ -37,20 +38,18 @@ public class ControlsView extends BaseView {
     private void init() {
         initCommandComponents();
         configureTextFields();
-        super.initScene(root, 590, 570, "Controls");
+        super.initScene(root, 750, 700, "Controls");
         initRoot();
         initButtons();
         initStyles(super.getScene());
     }
 
     private void initCommandComponents() {
-        String[] commands = {"Move Left", "Move Right", "Jump", "Dash", "Attack", "Flames", "Fireball", "Shield", "Interact",
-                "Quest", "Transform", "Inventory", "Accept", "Decline", "Minimap", "Pause", "QuickUse1", "QuickUse2", "QuickUse3", "QuickUse4"};
         KeyboardConfigurator configurator = KeyboardConfigurator.getInstance();
-
-        for (String command : commands) {
+        for (String command : CommandFieldsInitializer.COMMANDS) {
             TextField textField = new TextField();
-            textField.setText(configurator.getKeyForCommand(command).getName());
+            javafx.scene.input.KeyCode keyCode = configurator.getKeyForCommand(command);
+            textField.setText(keyCode != null ? keyCode.getName() : "");
             commandFields.put(command, textField);
 
             Label label = new Label(command + ":");

@@ -81,7 +81,6 @@ public class GameStateController {
             if (pressedKeys.contains(kc.getKeyForCommand("Flames")) && player.getSpellState() != 0) return;
             player.getActionHandler().doSpell();
         });
-        initAction(pressActions, "Fireball", () -> player.getActionHandler().doFireBall());
         initAction(pressActions, "Shield", () -> {
             boolean block = player.checkAction(PlayerAction.BLOCK);
             if (block) return;

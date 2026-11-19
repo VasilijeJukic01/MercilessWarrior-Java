@@ -66,18 +66,19 @@ public class Account {
         this.tokens = account.tokens;
         this.level = account.level;
         this.exp = account.exp;
-        this.perks = account.getPerks();
-        this.items = account.getItems();
+        this.perks = account.getPerks() != null ? new ArrayList<>(account.getPerks()) : new ArrayList<>();
+        this.items = account.getItems() != null ? new ArrayList<>(account.getItems()) : new ArrayList<>();
         this.worldFlags = account.getWorldFlags() != null ? new ArrayList<>(account.getWorldFlags()) : new ArrayList<>();
         this.quests = account.getQuests() != null ? new ArrayList<>(account.getQuests()) : new ArrayList<>();
+        this.explorationData = account.explorationData;
         this.enableCheats = account.enableCheats;
         this.playtime = account.playtime;
     }
 
     public void copyFromSlot(Account slotData) {
         if (slotData == null) return;
-        setPerks(slotData.getPerks());
-        setItems(slotData.getItems());
+        setPerks(slotData.getPerks() != null ? new ArrayList<>(slotData.getPerks()) : new ArrayList<>());
+        setItems(slotData.getItems() != null ? new ArrayList<>(slotData.getItems()) : new ArrayList<>());
         setLevel(slotData.getLevel());
         setExp(slotData.getExp());
         setCoins(slotData.getCoins());
@@ -102,6 +103,7 @@ public class Account {
         this.items = new ArrayList<>();
         this.worldFlags = new ArrayList<>();
         this.quests = new ArrayList<>();
+        this.explorationData = null;
         this.playtime = 0;
     }
 }

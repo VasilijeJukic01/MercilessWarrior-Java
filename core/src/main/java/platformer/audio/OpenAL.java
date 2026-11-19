@@ -226,12 +226,16 @@ public class OpenAL implements AudioPlayer<Song, Sound, Ambience>  {
 
     @Override
     public void pauseSong() {
-        songSources.get(currentSong).pause();
+        if (currentSong != -1 && currentSong < songSources.size()) {
+            songSources.get(currentSong).pause();
+        }
     }
 
     @Override
     public void unpauseSong() {
-        songSources.get(currentSong).unpause();
+        if (currentSong != -1 && currentSong < songSources.size()) {
+            songSources.get(currentSong).unpause();
+        }
     }
 
     @Override
@@ -373,6 +377,10 @@ public class OpenAL implements AudioPlayer<Song, Sound, Ambience>  {
      */
     @Override
     public void destroy() {
+        songSources.forEach(OpenALSource::delete);
+        soundSources.forEach(OpenALSource::delete);
+        ambienceSources.forEach(OpenALSource::delete);
+
         songs.forEach(AL10::alDeleteBuffers);
         sounds.forEach(AL10::alDeleteBuffers);
         ambiences.forEach(AL10::alDeleteBuffers);

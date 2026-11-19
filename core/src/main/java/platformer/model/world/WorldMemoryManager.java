@@ -20,6 +20,8 @@ import platformer.model.levels.metadata.LevelMetadata;
 
 import java.util.*;
 
+import static platformer.constants.Constants.TILES_SIZE;
+
 /**
  * Centralizes all short-term and long-term world state persistence across named rooms.
  */
@@ -169,7 +171,9 @@ public class WorldMemoryManager {
     }
 
     private String createBrickFlag(String levelId, GameObject brick) {
-        return "BRICK_" + levelId + "_" + (int) brick.getHitBox().x + "_" + (int) brick.getHitBox().y;
+        int tileX = (int) Math.round(brick.getHitBox().x / TILES_SIZE);
+        int tileY = (int) Math.round(brick.getHitBox().y / TILES_SIZE);
+        return "BRICK_" + levelId + "_" + tileX + "_" + tileY;
     }
 
     private String createBossFlag(String levelId, EnemyType type) {
