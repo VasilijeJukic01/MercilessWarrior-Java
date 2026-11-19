@@ -83,7 +83,6 @@ public class BalanceManager {
         private int roricTrapDamage = 10;
         private int roricTrapHealth = 10;
         private double lightningSpellDamage = 20;
-        private double flashSpellDamage = 10;
         private double arrowRainSpellDamage = 10;
         private double roricBeamSpellDamage = 15;
         private double roricSkyBeamSpellDamage = 15;

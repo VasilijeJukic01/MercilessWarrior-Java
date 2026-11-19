@@ -13,20 +13,17 @@ import platformer.model.levels.metadata.LevelMetadata;
 import platformer.model.levels.metadata.LightMetadata;
 import platformer.model.levels.metadata.ObjectMetadata;
 import platformer.state.types.GameState;
-import platformer.utils.ImageUtils;
 
 import java.awt.*;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
-import java.awt.image.RescaleOp;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import static platformer.constants.AnimConstants.LIGHT_ANIM_SPEED;
 import static platformer.constants.Constants.*;
-import static platformer.constants.FilePaths.*;
 
 /**
  * Manages all screen-wide lighting, dynamic light sources, and atmospheric color grading for the game.
@@ -62,8 +59,6 @@ public class LightManager {
      * Downscaling factor for the lightmap buffer. A factor of 4 reduces pixel fill-rate cost by 16x while preserving smooth radial gradients when drawn with bilinear interpolation.
      */
     private static final int LIGHTMAP_SCALE = 4;
-
-    private BufferedImage orangeLight, whiteRadialLight;
     private BufferedImage playerLightTexture, enemyLightTexture, objectLightTexture, shopLightTexture, lanternHaloTexture;
     private final Map<String, BufferedImage> lightTextureCache = new HashMap<>();
 
@@ -96,22 +91,11 @@ public class LightManager {
     public LightManager() {
         this.lightmap = new BufferedImage(GAME_WIDTH / LIGHTMAP_SCALE, GAME_HEIGHT / LIGHTMAP_SCALE, BufferedImage.TYPE_INT_ARGB);
         this.ambientDarkness = new Color(0, 0, 0, currentAmbientAlpha);
-        initLightImages();
         initLightTextures();
     }
 
     public void wire(GameContext context) {
         this.context = context;
-    }
-
-    /**
-     * Loads and prepares the sprite assets used for cosmetic bloom overlays on candles and shops.
-     */
-    private void initLightImages() {
-        this.orangeLight = ImageUtils.importImage(ORANGE_GLOW, 2 * CANDLE_LIGHT_RADIUS, 2 * CANDLE_LIGHT_RADIUS);
-        BufferedImage whiteRadialGlow = ImageUtils.importImage(WHITE_RADIAL_GLOW, 2 * CANDLE_LIGHT_RADIUS, 2 * CANDLE_LIGHT_RADIUS);
-        RescaleOp rescaleOp = new RescaleOp(new float[]{1.0f, 1.0f, 1.0f, 0.5f}, new float[4], null);
-        this.whiteRadialLight = rescaleOp.filter(whiteRadialGlow, null);
     }
 
     /**

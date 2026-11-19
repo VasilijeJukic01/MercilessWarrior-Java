@@ -228,20 +228,6 @@ public final class Constants {
     public static final int BLOCKER_OFFSET_X = scale(32);
     public static final int BLOCKER_OFFSET_Y = scale(22);
 
-    public static final int BLACKSMITH_WID = scale(110);
-    public static final int BLACKSMITH_HEI = scale(85);
-    public static final int BLACKSMITH_HB_WID = scale(43);
-    public static final int BLACKSMITH_HB_HEI = scale(45);
-    public static final int BLACKSMITH_OFFSET_X = scale(32);
-    public static final int BLACKSMITH_OFFSET_Y = scale(20);
-
-    public static final int DOG_WID = scale(72);
-    public static final int DOG_HEI = scale(72);
-    public static final int DOG_HB_WID = scale(32);
-    public static final int DOG_HB_HEI = scale(32);
-    public static final int DOG_OFFSET_X = scale(18);
-    public static final int DOG_OFFSET_Y = scale(18);
-
     public static final int SAVE_TOTEM_WID = scale(50);
     public static final int SAVE_TOTEM_HEI = scale(55);
     public static final int SAVE_TOTEM_HB_WID = scale(32);
@@ -286,10 +272,6 @@ public final class Constants {
 
     public static final int LAVA_WID = scale(32);
     public static final int LAVA_HEI = scale(32);
-    public static final int LAVA_HB_WID = scale(32);
-    public static final int LAVA_HB_HEI = scale(25);
-    public static final int LAVA_OFFSET_X = scale(0);
-    public static final int LAVA_OFFSET_Y = scale(10);
 
     public static final int BRICK_WID = scale(68);
     public static final int BRICK_HEI = scale(73);
@@ -320,18 +302,11 @@ public final class Constants {
     public static final int ARROW_OFFSET_X_LEFT = scale(10);
     public static final int ARROW_OFFSET_Y = scale(20);
 
-    public static final int LB_WID = scale(60);
-    public static final int LB_HEI = scale(60);
-    public static final double LB_SPEED_FAST = dScale(1);
-    public static final double LB_SPEED_SLOW = dScale(0.5);
-
     public static final int FB_WID = scale(50);
     public static final int FB_HEI = scale(50);
     public static final int FB_OFFSET_X = scale(40);
     public static final int FB_OFFSET_Y = scale(15);
     public static final double FIREBALL_SPEED = dScale(1.5);
-
-    public static final int TRACKING_PROJECTILE_DISTANCE = scale(50);
 
     public static final int RORIC_BEAM_WID = scale(800);
     public static final int RORIC_BEAM_HEI = scale(148);
@@ -369,9 +344,6 @@ public final class Constants {
     public static final int LIGHTNING_HEIGHT = scale(256);
     public static final int LIGHTNING_OFFSET_X = (int)(LIGHTNING_WIDTH / 3.8);
 
-    public static final int FLASH_WIDTH = scale(48);
-    public static final int FLASH_HEIGHT = scale(192);
-
     // Button Constants
     public static final int BIG_BTN_WID = scale(136);
     public static final int BIG_BTN_HEI = scale(42);
@@ -405,8 +377,6 @@ public final class Constants {
     public static final int DASH_BURST = 18;
     public static final int LAND_DUST_BURST = 6;
     public static final int JUMP_DUST_BURST = 4;
-    public static final int RUN_DUST_BURST = 1;
-    public static final Color DUST_COLOR = new Color(180, 160, 130);
     public static final Color DUST_COLOR_DASH = new Color(220, 220, 255);
     public static final float DAMAGE_TEXT_Y_SPEED = 0.5f;
     public static final float DAMAGE_TEXT_FADE_SPEED = 0.02f;

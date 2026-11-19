@@ -15,10 +15,6 @@ import java.util.concurrent.CompletableFuture;
  */
 public class AppCore {
 
-    public static void main(String[] args) {
-        LoadingProgressTracker.getInstance().update(0.0, "Game started without launcher configuration.");
-    }
-
     public static void startGame(GameLaunchConfig config) {
         LoadingProgressTracker tracker = LoadingProgressTracker.getInstance();
         tracker.update(0.05, "Decrypting assets...");

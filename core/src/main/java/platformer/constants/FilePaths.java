@@ -104,8 +104,6 @@ public final class FilePaths {
     public static final String RUNIC_SQUARE_BTN_SHEET = "/images/buttons/RunicSquareButton.png";
     public static final String SLIDE_BTN_SHEET = "/images/buttons/SliderButton.png";
     public static final String SLIDER_IMG = "/images/buttons/Slider.png";
-    public static final String LEADERBOARD_BTN_SHEET = "/images/buttons/LeaderboardButtons.png";
-    public static final String CREDITS_BTN_SHEET = "/images/buttons/CreditsButtons.png";
 
     // UI
     public static final String MENU_LOGO = "/images/menu/Logo.png";
@@ -115,9 +113,6 @@ public final class FilePaths {
     public static final String PLAYER_PORTRAIT = "/images/PortraitHUD.png";
     public static final String TIME_CYCLE_ICONS = "/images/player/hud/TimeCycleSheet.png";
     public static final String SLOT_INVENTORY = "/images/inventory/Slot.png";
-
-    public static final String ORANGE_GLOW = "/images/particles/OrangeGlow.png";
-    public static final String WHITE_RADIAL_GLOW = "/images/particles/WhiteRadialGlow.png";
 
     // Inventory / Shop
     public static final String BALANCE_PATH = "/items/balance.json";

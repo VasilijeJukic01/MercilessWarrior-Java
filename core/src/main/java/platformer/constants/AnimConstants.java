@@ -21,7 +21,6 @@ public final class AnimConstants {
     public static final int LIGHT_ANIM_SPEED = 20;
     public static final int DIALOGUE_ANIM_SPEED = 8;
     public static final int DIALOGUE_ARR_ANIM_SPEED = 20;
-    public static final int OVERLAY_ANIM_SPEED = 20;
     public static final int MINIMAP_FLASH_ANIM_SPEED = 40;
 
     // Sprite dimension
@@ -43,8 +42,6 @@ public final class AnimConstants {
     public static final int SHOP_W = 600, SHOP_H = 490;
     public static final int COIN_W = 16, COIN_H = 16;
     public static final int BLOCKER_W = 96, BLOCKER_H = 96;
-    public static final int BLACKSMITH_W = 220, BLACKSMITH_H = 160;
-    public static final int DOG_W = 220, DOG_H = 128;
     public static final int TOTEM_W = 448, TOTEM_H = 600;
     public static final int ST_W = 64, ST_H = 64;
     public static final int CANDLE_W = 23, CANDLE_H = 57;
@@ -60,8 +57,6 @@ public final class AnimConstants {
 
     // Spells & Projectiles
     public static final int LIGHTNING_W = 128, LIGHTNING_H = 512;
-    public static final int FLASH_W = 192, FLASH_H = 984;
-    public static final int LIGHTNING_BALL_W = 50, LIGHTNING_BALL_H = 50;
     public static final int FIREBALL_W = 26, FIREBALL_H = 26;
     public static final int RORIC_PROJECTILE_W = 256, RORIC_PROJECTILE_H = 128;
     public static final int CELESTIAL_PROJECTILE_W = 16, CELESTIAL_PROJECTILE_H = 16;
@@ -79,7 +74,6 @@ public final class AnimConstants {
     public static final int MINIMAP_ICON_SIZE = 64;
 
     // Frames
-    public static final int MENU_FRAMES = 24;
     public static final int DEFAULT_PARTICLE_FRAMES = 8;
 
 }

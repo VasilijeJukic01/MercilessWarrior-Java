@@ -8,7 +8,6 @@ import java.awt.image.BufferedImage;
 import static platformer.constants.AnimConstants.SMALL_BTN_H;
 import static platformer.constants.AnimConstants.SMALL_BTN_W;
 import static platformer.constants.Constants.CRE_BTN_SIZE;
-import static platformer.constants.FilePaths.CREDITS_BTN_SHEET;
 import static platformer.constants.FilePaths.RUNIC_SQUARE_BTN_SHEET;
 
 /**

@@ -48,13 +48,12 @@ public abstract class Spell implements DamageSource, Renderable<Graphics>, Debug
                 animIndex = 0;
                 finishAnimation();
             }
-            else if (spellType == SpellType.FLASH && active && animIndex == 9) Audio.getInstance().getAudioPlayer().playSound(Sound.LIGHTNING_3);
             else if (spellType == SpellType.LIGHTNING && active && animIndex == 1) Audio.getInstance().getAudioPlayer().playSound(Sound.LIGHTNING_1);
         }
     }
 
     private void finishAnimation() {
-        if (spellType == SpellType.LIGHTNING || spellType == SpellType.FLASH || spellType == SpellType.RORIC_BEAM || spellType == SpellType.ARROW_RAIN || spellType == SpellType.RORIC_SKY_BEAM) {
+        if (spellType == SpellType.LIGHTNING || spellType == SpellType.RORIC_BEAM || spellType == SpellType.ARROW_RAIN || spellType == SpellType.RORIC_SKY_BEAM) {
             active = false;
         }
     }
@@ -102,10 +101,6 @@ public abstract class Spell implements DamageSource, Renderable<Graphics>, Debug
 
     public int getAnimIndex() {
         return animIndex;
-    }
-
-    public SpellType getSpellType() {
-        return spellType;
     }
 
     public void setAnimIndex(int animIndex) {
