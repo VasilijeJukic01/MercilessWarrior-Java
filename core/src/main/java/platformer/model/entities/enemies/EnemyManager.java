@@ -27,9 +27,7 @@ import platformer.model.gameObjects.objects.SmashTrap;
 import platformer.model.gameObjects.objects.Spike;
 import platformer.model.projectiles.types.Fireball;
 import platformer.model.projectiles.Projectile;
-import platformer.model.inventory.InventoryBonus;
 import platformer.model.levels.Level;
-import platformer.model.perks.PerksBonus;
 import platformer.model.spells.types.Flame;
 import platformer.utils.CollectionUtils;
 
@@ -149,8 +147,9 @@ public class EnemyManager {
             if (eb.getTokenReward() > 0) {
                 player.changeUpgradeTokens(eb.getTokenReward());
             }
-            if (PerksBonus.getInstance().getVampiricHealPct() > 0) {
-                player.changeHealth(player.getMaxHealth() * PerksBonus.getInstance().getVampiricHealPct());
+            double vamp = player.getStats().getPerks().getVampiricHealPct();
+            if (vamp > 0) {
+                player.changeHealth(player.getMaxHealth() * vamp);
             }
             EventBus.getInstance().publish(new EnemyDefeatedEvent(e));
         }
@@ -160,14 +159,12 @@ public class EnemyManager {
         BalanceManager.PlayerBalance pb = BalanceManager.getInstance().getPlayerBalance();
         double critical = 0;
         double baseDmg = player.getAttackDmg();
-        double perkBonusPct = PerksBonus.getInstance().getBonusAttack() / 100.0;
-        double equipBonusPct = InventoryBonus.getInstance().getAttack();
         double comboMult = (player.getCombatHandler() != null && !player.checkAction(PlayerAction.DASH)) ? player.getCombatHandler().getComboDamageMultiplier() : 1.0;
-        double dmg = baseDmg * (1.0 + perkBonusPct + equipBonusPct) * comboMult;
+        double dmg = baseDmg * player.getStats().getAttackMultiplier() * comboMult;
 
-        double totalCritChance = pb.getBaseCritChance() + PerksBonus.getInstance().getCriticalHitChance() + (InventoryBonus.getInstance().getCritical() * 100.0);
+        double totalCritChance = pb.getBaseCritChance() + player.getStats().getCritChance() + (player.getStats().getCritChance() * 100.0);
         if (new Random().nextDouble() * 100.0 < totalCritChance) {
-            dmg *= (pb.getBaseCritMultiplier() + PerksBonus.getInstance().getCritMultiplierBonus());
+            dmg *= (pb.getBaseCritMultiplier() + player.getStats().getCritMultiplier());
             critical = 1;
         }
         return new double[]{dmg, critical};
@@ -293,7 +290,7 @@ public class EnemyManager {
 
     public void checkEnemySpellHit() {
         BalanceManager.CombatBalance cb = BalanceManager.getInstance().getCombat();
-        double spellMult = 1.0 + InventoryBonus.getInstance().getSpell() + (PerksBonus.getInstance().getSpellDamageBonus() / 100.0);
+        double spellMult = context.getPlayer().getStats().getSpellMultiplier();
         double baseFlame = cb.getFlameTickDamage() * spellMult;
         double undeadFlame = baseFlame * cb.getFlameUndeadMultiplier();
 
@@ -329,7 +326,7 @@ public class EnemyManager {
     public void checkEnemyProjectileHit(Projectile projectile) {
         BalanceManager.CombatBalance cb = BalanceManager.getInstance().getCombat();
         if (projectile instanceof Fireball) {
-            double spellMult = 1.0 + InventoryBonus.getInstance().getSpell() + (PerksBonus.getInstance().getSpellDamageBonus() / 100.0);
+            double spellMult = context.getPlayer().getStats().getSpellMultiplier();
             double fbDamage = cb.getPlayerFireballDamage() * spellMult;
             for (Enemy enemy : getAllEnemies()) {
                 if (enemy instanceof Roric) continue;
@@ -339,7 +336,7 @@ public class EnemyManager {
                         context.getEffectManager().spawnDamageNumber(dmgText, enemy.getHitBox().getCenterX(), enemy.getHitBox().y, DAMAGE_COLOR);
                     }
                     checkEnemyDying(enemy);
-                    if (!PerksBonus.getInstance().isPiercingFireball()) {
+                    if (!context.getPlayer().getStats().getPerks().isPiercingFireball()) {
                         projectile.setAlive(false);
                         break;
                     }

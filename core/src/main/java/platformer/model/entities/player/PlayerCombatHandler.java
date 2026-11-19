@@ -12,9 +12,7 @@ import platformer.model.entities.Direction;
 import platformer.model.entities.enemies.Enemy;
 import platformer.model.entities.enemies.EnemyManager;
 import platformer.model.gameObjects.ObjectManager;
-import platformer.model.inventory.InventoryBonus;
 import platformer.model.levels.LevelManager;
-import platformer.model.perks.PerksBonus;
 import platformer.model.projectiles.ProjectileManager;
 
 import java.awt.geom.Rectangle2D;
@@ -147,7 +145,7 @@ public class PlayerCombatHandler {
 
         double baseCd = BalanceManager.getInstance().getPlayerBalance().getAttackCooldown();
         double stepFactor = (state == AttackState.ATTACK_3) ? 1.45 : 0.45;
-        double cd = ((baseCd * stepFactor) + PerksBonus.getInstance().getBonusCooldown()) * (1.0 - InventoryBonus.getInstance().getCooldown());
+        double cd = ((baseCd * stepFactor) + player.getStats().getPerks().getBonusCooldown()) * (1.0 - player.getStats().getCooldownMultiplier());
         player.getCooldown()[Cooldown.ATTACK.ordinal()] = Math.max(0.15, cd);
     }
 
@@ -204,7 +202,7 @@ public class PlayerCombatHandler {
                 if (blockWindowTimer == 0) {
                     player.removeAction(PlayerAction.BLOCK);
                     BalanceManager.PlayerBalance pb = BalanceManager.getInstance().getPlayerBalance();
-                    double blockCooldown = pb.getBlockCooldown() * (1.0 - InventoryBonus.getInstance().getCooldown());
+                    double blockCooldown = pb.getBlockCooldown() * (1.0 - player.getStats().getCooldownMultiplier());
                     player.getCooldown()[Cooldown.BLOCK.ordinal()] = Math.max(0.1, blockCooldown);
                 }
             }
@@ -217,10 +215,10 @@ public class PlayerCombatHandler {
             Logger.getInstance().notify("Damage blocked successfully!", Message.INFORMATION);
             player.getUltimateHandler().addChargeFromParry();
             BalanceManager.PlayerBalance pb = BalanceManager.getInstance().getPlayerBalance();
-            double blockCooldown = (pb.getBlockCooldown() * 0.45) * (1.0 - InventoryBonus.getInstance().getCooldown());
+            double blockCooldown = (pb.getBlockCooldown() * 0.45) * (1.0 - player.getStats().getCooldownMultiplier());
             player.getCooldown()[Cooldown.BLOCK.ordinal()] = Math.max(0.1, blockCooldown);
 
-            boolean hasRipostePerk = PerksBonus.getInstance().isRestorePower();
+            boolean hasRipostePerk = player.getStats().getPerks().isRestorePower();
             if (hasRipostePerk) {
                 player.changeStamina(pb.getParryStaminaRestore());
             }
@@ -258,7 +256,7 @@ public class PlayerCombatHandler {
 
     public void updateAttack() {
         boolean attacking = player.checkAction(PlayerAction.ATTACK);
-        boolean dashSlash = player.checkAction(PlayerAction.DASH) && PerksBonus.getInstance().isDashSlash();
+        boolean dashSlash = player.checkAction(PlayerAction.DASH) && player.getStats().getPerks().isDashSlash();
         if (attacking || dashSlash) checkAttack();
     }
 
@@ -298,14 +296,14 @@ public class PlayerCombatHandler {
     public void updateSpells() {
         BalanceManager.PlayerBalance pb = BalanceManager.getInstance().getPlayerBalance();
         if (player.getSpellState() == 1) {
-            double drain = pb.getFlameStaminaDrainPerTick() * (1.0 - PerksBonus.getInstance().getFlameCostReduction());
+            double drain = pb.getFlameStaminaDrainPerTick() * (1.0 - player.getStats().getPerks().getFlameCostReduction());
             player.changeStamina(-drain);
             enemyManager.checkEnemySpellHit();
             levelManager.checkDecorationCut(player.getAttackBox());
             objectManager.checkObjectBreak(player.getAttackBox());
         }
         if (player.checkAction(PlayerAction.TRANSFORM)) {
-            double drain = pb.getTransformStaminaDrainPerTick() * (1.0 - PerksBonus.getInstance().getTransformCostReduction());
+            double drain = pb.getTransformStaminaDrainPerTick() * (1.0 - player.getStats().getPerks().getTransformCostReduction());
             player.changeStamina(-drain);
         }
     }

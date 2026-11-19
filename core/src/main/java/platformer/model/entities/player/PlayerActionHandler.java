@@ -9,8 +9,6 @@ import platformer.model.entities.Cooldown;
 import platformer.model.entities.Direction;
 import platformer.model.effects.EffectManager;
 import platformer.model.effects.particles.DustType;
-import platformer.model.inventory.InventoryBonus;
-import platformer.model.perks.PerksBonus;
 
 import java.awt.geom.Rectangle2D;
 
@@ -62,7 +60,7 @@ public class PlayerActionHandler {
         dashCount++;
         player.addAction(PlayerAction.CAN_DASH);
         player.changeStamina(-dashCost);
-        player.getCooldown()[Cooldown.DASH.ordinal()] = Math.max(0.2, pb.getDashCooldown() + PerksBonus.getInstance().getDashCooldown());
+        player.getCooldown()[Cooldown.DASH.ordinal()] = Math.max(0.2, pb.getDashCooldown() + player.getStats().getPerks().getDashCooldown());
         Audio.getInstance().getAudioPlayer().playSound(Sound.DASH);
 
         effectManager.spawnDustParticles(player.getHitBox().getCenterX(), player.getHitBox().getCenterY(), DASH_BURST, DustType.DASH, player.getFlipSign(), player);
@@ -77,13 +75,13 @@ public class PlayerActionHandler {
     }
 
     public void doFireBall() {
-        if (!PerksBonus.getInstance().isFireball()) return;
+        if (!player.getStats().getPerks().isFireball()) return;
         BalanceManager.PlayerBalance pb = BalanceManager.getInstance().getPlayerBalance();
         if (player.getCooldown()[Cooldown.SPELL.ordinal()] != 0 || player.getCurrentStamina() < pb.getFireballStaminaCost()) return;
         player.addAction(PlayerAction.FIREBALL);
         player.changeStamina(-pb.getFireballStaminaCost());
         Audio.getInstance().getAudioPlayer().playSound(Sound.FIREBALL);
-        player.getCooldown()[Cooldown.SPELL.ordinal()] = pb.getSpellCooldown() * (1.0 - InventoryBonus.getInstance().getCooldown());
+        player.getCooldown()[Cooldown.SPELL.ordinal()] = pb.getSpellCooldown() * (1.0 - player.getStats().getCooldownMultiplier());
     }
 
     public void setDashCount(int dashCount) {

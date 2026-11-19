@@ -2,6 +2,7 @@ package platformer.ui.overlays;
 
 import platformer.animation.Anim;
 import platformer.animation.SpriteManager;
+import platformer.core.config.BalanceManager;
 import platformer.model.inventory.Inventory;
 import platformer.model.inventory.InventoryBonus;
 import platformer.model.inventory.item.InventoryItem;
@@ -235,7 +236,8 @@ public class InventoryOverlay implements Overlay<MouseEvent, KeyEvent, Graphics>
         g2d.setColor(new Color(210, 228, 230));
         g2d.drawString("EQUIPMENT", (int) equipPanel.getX() + scale(4), (int) equipPanel.getY() - scale(5));
 
-        String activeSet = InventoryBonus.getInstance().getActiveSetName();
+        InventoryBonus equipBonus = controller.getGameState().getPlayer().getStats().getEquipment();
+        String activeSet = equipBonus.getActiveSetName();
         if (activeSet != null) {
             float pulse = (float) (0.75 + 0.25 * Math.sin(System.currentTimeMillis() / 220.0));
             int cx = INV_PLAYER_X + INV_PLAYER_WID / 2 - scale(18);
@@ -322,13 +324,14 @@ public class InventoryOverlay implements Overlay<MouseEvent, KeyEvent, Graphics>
         y += scale(13);
 
         int spacing = scale(14);
-        renderStatRow(g2d, "Health", InventoryBonus.getInstance().getHealth(), x, rightX, y);
-        renderStatRow(g2d, "Defense", InventoryBonus.getInstance().getDefense(), x, rightX, y + spacing);
-        renderStatRow(g2d, "Attack", InventoryBonus.getInstance().getAttack(), x, rightX, y + spacing * 2);
-        renderStatRow(g2d, "Stamina", InventoryBonus.getInstance().getStamina(), x, rightX, y + spacing * 3);
-        renderStatRow(g2d, "Critical", InventoryBonus.getInstance().getCritical(), x, rightX, y + spacing * 4);
-        renderStatRow(g2d, "Spell Power", InventoryBonus.getInstance().getSpell(), x, rightX, y + spacing * 5);
-        renderStatRow(g2d, "Cooldown", InventoryBonus.getInstance().getCooldown(), x, rightX, y + spacing * 6);
+        InventoryBonus equipBonus = controller.getGameState().getPlayer().getStats().getEquipment();
+        renderStatRow(g2d, "Health", equipBonus.getHealth(), x, rightX, y);
+        renderStatRow(g2d, "Defense", equipBonus.getDefense(), x, rightX, y + spacing);
+        renderStatRow(g2d, "Attack", equipBonus.getAttack(), x, rightX, y + spacing * 2);
+        renderStatRow(g2d, "Stamina", equipBonus.getStamina(), x, rightX, y + spacing * 3);
+        renderStatRow(g2d, "Critical", equipBonus.getCritical(), x, rightX, y + spacing * 4);
+        renderStatRow(g2d, "Spell Power", equipBonus.getSpell(), x, rightX, y + spacing * 5);
+        renderStatRow(g2d, "Cooldown", equipBonus.getCooldown(), x, rightX, y + spacing * 6);
     }
 
     private void renderStatRow(Graphics2D g2d, String label, double bonusValue, int leftX, int rightX, int y) {
@@ -456,9 +459,10 @@ public class InventoryOverlay implements Overlay<MouseEvent, KeyEvent, Graphics>
 
         if (data.equip != null && data.equip.setName != null && !data.equip.setName.isEmpty()) {
             String setName = data.equip.setName;
-            int count = InventoryBonus.getInstance().getEquippedSetCount(setName);
+            InventoryBonus equipBonus = controller.getGameState().getPlayer().getStats().getEquipment();
+            int count = equipBonus.getEquippedSetCount(setName);
             boolean fullSet = count >= 5;
-            Map<String, Double> setBonuses = platformer.core.config.BalanceManager.getInstance().getSetBonus(setName);
+            Map<String, Double> setBonuses = BalanceManager.getInstance().getSetBonus(setName);
             if (setBonuses != null && !setBonuses.isEmpty()) {
                 StringBuilder sb = new StringBuilder(setName).append(" SET (").append(count).append("/5): ");
                 setBonuses.forEach((stat, val) -> sb.append("+").append(val.intValue()).append("% ").append(stat.toUpperCase()).append("  "));

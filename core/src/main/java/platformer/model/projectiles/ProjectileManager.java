@@ -3,7 +3,6 @@ package platformer.model.projectiles;
 import platformer.core.GameContext;
 import platformer.core.config.BalanceManager;
 import platformer.model.entities.player.Player;
-import platformer.model.perks.PerksBonus;
 import platformer.model.projectiles.types.*;
 
 import java.awt.*;
@@ -64,7 +63,7 @@ public class ProjectileManager {
      * @param attackBox The player's attack hitbox.
      */
     public void checkProjectileDeflect(Rectangle2D.Double attackBox) {
-        if (!PerksBonus.getInstance().isDeflect()) return;
+        if (!context.getPlayer().getStats().getPerks().isDeflect()) return;
         projectiles.stream()
                 .filter(projectile -> projectile.isAlive() && !(projectile instanceof Fireball) && projectile.getShapeBounds().intersects(attackBox))
                 .forEach(projectile -> {

@@ -22,11 +22,15 @@ public class Inventory {
     private final String[] quickUseSlots = new String[4];
 
     public Inventory() {
-        this(true);
+        this(true, new InventoryBonus());
     }
 
     public Inventory(boolean registerSaveListener) {
-        this.equipmentHandler = new EquipmentHandler();
+        this(registerSaveListener, new InventoryBonus());
+    }
+
+    public Inventory(boolean registerSaveListener, InventoryBonus equipmentBonus) {
+        this.equipmentHandler = new EquipmentHandler(equipmentBonus);
         this.backpackHandler = new BackpackHandler(equipmentHandler);
         Arrays.fill(quickUseSlots, null);
         if (registerSaveListener) {

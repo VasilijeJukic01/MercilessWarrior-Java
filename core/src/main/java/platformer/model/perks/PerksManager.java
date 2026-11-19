@@ -24,15 +24,15 @@ import static platformer.constants.FilePaths.PERKS_PATH;
  */
 public class PerksManager {
 
-    private GameState gameState;
+    private GameContext context;
     private final ArrayList<Perk> perks = new ArrayList<>();
 
-    public PerksManager() {
-        loadPerksFromFile();
+    public void wire(GameContext context) {
+        this.context = context;
     }
 
-    public void wire(GameContext context) {
-        this.gameState = context.getGameState();
+    private PerksBonus getPerksBonus() {
+        return context.getPlayer().getStats().getPerks();
     }
 
     private void loadPerksFromFile() {
@@ -68,7 +68,7 @@ public class PerksManager {
             return;
         }
 
-        gameState.getPlayer().changeUpgradeTokens(-targetPerk.getCost());
+        context.getGameState().getPlayer().changeUpgradeTokens(-targetPerk.getCost());
 
         targetPerk.setUpgraded(true);
         applyPerkBonuses(targetPerk);
@@ -100,7 +100,7 @@ public class PerksManager {
      */
     private void applyPerkBonuses(Perk perk) {
         if (perk.getBonuses() == null) return;
-        PerksBonus bonusManager = PerksBonus.getInstance();
+        PerksBonus bonusManager = getPerksBonus();
 
         for (Map.Entry<String, Double> bonus : perk.getBonuses().entrySet()) {
             String key = bonus.getKey().toLowerCase();
@@ -165,7 +165,9 @@ public class PerksManager {
      * Resets all perks and bonuses to their initial state.
      */
     public void reset() {
-        PerksBonus.getInstance().reset();
+        if (context != null && context.getPlayer() != null) {
+            getPerksBonus().reset();
+        }
         perks.clear();
         loadPerksFromFile();
     }

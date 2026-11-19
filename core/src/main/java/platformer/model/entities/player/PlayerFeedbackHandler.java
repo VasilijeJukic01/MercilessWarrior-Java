@@ -10,7 +10,6 @@ import platformer.model.effects.EffectManager;
 import platformer.model.effects.ScreenEffectsManager;
 import platformer.model.effects.particles.DustType;
 import platformer.model.inventory.item.ItemRarity;
-import platformer.model.perks.PerksBonus;
 
 import java.awt.*;
 import java.util.Arrays;
@@ -65,7 +64,7 @@ public class PlayerFeedbackHandler {
     }
 
     private void updateBurnStatus() {
-        if (player.checkAction(PlayerAction.LAVA) && !PerksBonus.getInstance().isLavaWalk()) {
+        if (player.checkAction(PlayerAction.LAVA) && !player.getStats().getPerks().isLavaWalk()) {
             burnTick = 90;
             player.applyStatusDamage(-BalanceManager.getInstance().getCombat().getLavaTickDamage());
         }

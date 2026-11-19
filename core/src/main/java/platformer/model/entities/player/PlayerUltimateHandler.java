@@ -10,8 +10,6 @@ import platformer.event.events.effects.HitStopEvent;
 import platformer.model.effects.particles.DustType;
 import platformer.model.entities.enemies.Enemy;
 import platformer.model.entities.enemies.boss.Roric;
-import platformer.model.inventory.InventoryBonus;
-import platformer.model.perks.PerksBonus;
 import platformer.physics.CollisionDetector;
 import platformer.ui.buttons.UIButtonRenderer;
 
@@ -370,9 +368,7 @@ public class PlayerUltimateHandler {
     private void detonateAllMarks() {
         BalanceManager.PlayerBalance pb = BalanceManager.getInstance().getPlayerBalance();
         double baseDmg = player.getAttackDmg();
-        double perkBonusPct = PerksBonus.getInstance().getBonusAttack() / 100.0;
-        double equipBonusPct = InventoryBonus.getInstance().getAttack();
-        double rawAttack = baseDmg * (1.0 + perkBonusPct + equipBonusPct);
+        double rawAttack = baseDmg * player.getStats().getAttackMultiplier();
 
         boolean anyPerfect = false;
         for (RhythmTarget t : targets) {

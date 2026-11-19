@@ -6,6 +6,7 @@ import com.google.gson.reflect.TypeToken;
 import platformer.animation.AssetManager;
 import platformer.audio.Audio;
 import platformer.audio.types.Sound;
+import platformer.core.GameContext;
 import platformer.core.config.BalanceManager;
 import platformer.model.effects.EffectManager;
 import platformer.model.effects.particles.DustType;
@@ -16,7 +17,6 @@ import platformer.model.inventory.item.InventoryItem;
 import platformer.model.inventory.item.ItemData;
 import platformer.model.inventory.loot.LootItem;
 import platformer.model.inventory.loot.LootTable;
-import platformer.model.perks.PerksBonus;
 
 import java.awt.geom.Rectangle2D;
 import java.io.InputStreamReader;
@@ -37,14 +37,12 @@ import static platformer.constants.FilePaths.LOOT_TABLE_PATH;
  */
 public class LootHandler {
 
-    private final ObjectManager objectManager;
-    private final EffectManager effectManager;
+    private final GameContext context;
     private final Random rand = new Random();
     private final Map<String, LootTable> lootTables;
 
-    public LootHandler(ObjectManager objectManager, EffectManager effectManager) {
-        this.objectManager = objectManager;
-        this.effectManager = effectManager;
+    public LootHandler(GameContext context) {
+        this.context = context;
         this.lootTables = loadLootTables();
     }
 
@@ -80,7 +78,7 @@ public class LootHandler {
         BalanceManager.EnemyBalance eb = BalanceManager.getInstance().getEnemyBalance(enemyType);
         int range = Math.max(1, eb.getMaxCoins() - eb.getMinCoins() + 1);
         int baseCoins = eb.getMinCoins() + rand.nextInt(range);
-        int totalValue = baseCoins + PerksBonus.getInstance().getBonusCoin();
+        int totalValue = baseCoins + context.getPlayer().getStats().getPerks().getBonusCoin();
 
         while (totalValue > 0) {
             CoinType dropType;
@@ -118,7 +116,7 @@ public class LootHandler {
         double initialYSpeed = -2.0 * SCALE - (rand.nextDouble() * 1.5 * SCALE);
         double initialXSpeed = (rand.nextDouble() - 0.5) * (2.0 * SCALE);
         Coin coin = new Coin(coinType, x, y, initialXSpeed, initialYSpeed);
-        objectManager.addGameObject(coin);
+        context.getObjectManager().addGameObject(coin);
     }
 
     /**
@@ -136,7 +134,7 @@ public class LootHandler {
             int y = (int) (location.height / 2.3) + (int) location.y;
             Loot loot = new Loot(ObjType.LOOT, x, y);
             loot.getItems().addAll(collectedItems);
-            objectManager.addGameObject(loot);
+            context.getObjectManager().addGameObject(loot);
         }
     }
 
@@ -236,7 +234,7 @@ public class LootHandler {
      * @param player The player performing the harvest.
      */
     public void harvestHerb(GameObject herb, Player player) {
-        effectManager.spawnDustParticles(herb.getHitBox().getCenterX(), herb.getHitBox().getCenterY() - (10 * SCALE), 15, DustType.HERB_CUT, 0, null);
+        context.getEffectManager().spawnDustParticles(herb.getHitBox().getCenterX(), herb.getHitBox().getCenterY() - (10 * SCALE), 15, DustType.HERB_CUT, 0, null);
 
         LootTable herbTable = lootTables.get("HERB");
         if (herbTable == null) return;
@@ -249,7 +247,7 @@ public class LootHandler {
                 InventoryItem item = new InventoryItem(lootItem.getItemId(), lootItem.getQuantity());
                 player.getInventory().addItemToBackpack(item);
                 ItemData data = item.getData();
-                if (data != null) effectManager.spawnItemPickupText("+" + lootItem.getQuantity() + " " + data.name, player, ITEM_TEXT_COLOR);
+                if (data != null) context.getEffectManager().spawnItemPickupText("+" + lootItem.getQuantity() + " " + data.name, player, ITEM_TEXT_COLOR);
                 break;
             }
         }

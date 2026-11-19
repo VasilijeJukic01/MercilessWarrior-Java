@@ -14,11 +14,9 @@ import platformer.model.entities.Direction;
 import platformer.model.entities.Entity;
 import platformer.model.gameObjects.ObjectManager;
 import platformer.model.inventory.Inventory;
-import platformer.model.inventory.InventoryBonus;
 import platformer.model.inventory.craft.BlacksmithRecipeManager;
 import platformer.model.levels.LevelManager;
 import platformer.model.minimap.MinimapManager;
-import platformer.model.perks.PerksBonus;
 import platformer.model.projectiles.Projectile;
 import platformer.model.projectiles.ProjectileFactory;
 import platformer.model.world.WorldMemoryManager;
@@ -54,6 +52,7 @@ public class Player extends Entity {
     private PlayerFeedbackHandler feedbackHandler;
     private PlayerDataManager playerDataManager;
     private PlayerMinimapHandler minimapHandler;
+    private final PlayerStats stats;
     private Inventory inventory;
 
     // Core State
@@ -65,6 +64,7 @@ public class Player extends Entity {
 
     public Player(int xPos, int yPos, int width, int height, GameContext context) {
         super(xPos, yPos, width, height, BalanceManager.getInstance().getPlayerBalance().getBaseHealth());
+        this.stats = new PlayerStats();
         this.levelManager = context.getLevelManager();
         this.objectManager = context.getObjectManager();
         this.minimapManager = context.getMinimapManager();
@@ -94,7 +94,7 @@ public class Player extends Entity {
         this.actionHandler = new PlayerActionHandler(this, effectManager);
         this.ultimateHandler = new PlayerUltimateHandler(this, context);
         this.feedbackHandler = new PlayerFeedbackHandler(this, context);
-        this.inventory = new Inventory(!isMenuDummy);
+        this.inventory = new Inventory(!isMenuDummy, stats.getEquipment());
     }
 
     public void loadLvlData(int[][] levelData) {
@@ -207,7 +207,7 @@ public class Player extends Entity {
 
         boolean dash = checkAction(PlayerAction.DASH);
         if (dash) {
-            if (PerksBonus.getInstance().isDashSlash()) {
+            if (stats.getPerks().isDashSlash()) {
                 entityState = Anim.ATTACK_1;
                 animIndex = 1;
                 animTick = 0;
@@ -386,7 +386,7 @@ public class Player extends Entity {
     public void changeHealth(double value, DamageSource source) {
         if (checkAction(PlayerAction.HIT) || (ultimateHandler != null && ultimateHandler.isActive())) return;
         if (value < 0) {
-            double defenseBonus = Math.min(0.75, InventoryBonus.getInstance().getDefense() + PerksBonus.getInstance().getDefenseBonus());
+            double defenseBonus = stats.getDefenseReduction();
             double actualDamage = Math.abs(value) * (1.0 - defenseBonus);
             feedbackHandler.onPlayerDamaged(actualDamage);
             changeHealth(-actualDamage);
@@ -494,7 +494,7 @@ public class Player extends Entity {
     }
 
     public void setCanTransform(boolean canTransform) {
-        if (!PerksBonus.getInstance().isTransform()) return;
+        if (!stats.getPerks().isTransform()) return;
         boolean transform = checkAction(PlayerAction.TRANSFORM);
         if (transform) removeAction(PlayerAction.TRANSFORM);
         else {
@@ -529,17 +529,11 @@ public class Player extends Entity {
     }
 
     public double getMaxHealth() {
-        double base = BalanceManager.getInstance().getPlayerBalance().getBaseHealth();
-        double perkPct = PerksBonus.getInstance().getBonusHealth() / 100.0;
-        double equipPct = InventoryBonus.getInstance().getHealth();
-        return base * (1.0 + perkPct + equipPct);
+        return BalanceManager.getInstance().getPlayerBalance().getBaseHealth() * stats.getMaxHealthMultiplier();
     }
 
     public double getMaxStamina() {
-        double base = BalanceManager.getInstance().getPlayerBalance().getBaseStamina();
-        double perkPct = PerksBonus.getInstance().getBonusPower() / 100.0;
-        double equipPct = InventoryBonus.getInstance().getStamina();
-        return base * (1.0 + perkPct + equipPct);
+        return BalanceManager.getInstance().getPlayerBalance().getBaseStamina() * stats.getMaxStaminaMultiplier();
     }
 
     public double getHorizontalSpeed() {
@@ -575,6 +569,10 @@ public class Player extends Entity {
 
     public int getUpgradeTokens() {
         return playerDataManager.getUpgradeTokens();
+    }
+
+    public PlayerStats getStats() {
+        return stats;
     }
 
     public PlayerDataManager getPlayerStatusManager() {

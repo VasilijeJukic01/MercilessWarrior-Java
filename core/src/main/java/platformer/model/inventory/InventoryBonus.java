@@ -4,28 +4,16 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Singleton that holds the cumulative bonuses from all equipped items.
+ * Holds the cumulative bonuses from all equipped items.
  * Uses a flexible map to handle any type of bonus defined in items.json.
  */
 public class InventoryBonus {
 
-    private static volatile InventoryBonus instance = null;
     private final Map<String, Double> bonuses = new HashMap<>();
     private String activeSetName = null;
     private final Map<String, Integer> equippedSetCounts = new HashMap<>();
 
-    private InventoryBonus() {}
-
-    public static InventoryBonus getInstance() {
-        if (instance == null) {
-            synchronized (InventoryBonus.class) {
-                if (instance == null) {
-                    instance = new InventoryBonus();
-                }
-            }
-        }
-        return instance;
-    }
+    public InventoryBonus() { }
 
     /**
      * Adds a bonus value to the total.

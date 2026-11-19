@@ -85,7 +85,7 @@ public class ObjectManager {
     public void wire(GameContext context) {
         this.context = context;
         this.collisionHandler = new CollisionHandler(context.getLevelManager(), this);
-        this.lootHandler = new LootHandler(this, context.getEffectManager());
+        this.lootHandler = new LootHandler(context);
         this.objectBreakHandler = new ObjectBreakHandler(this);
     }
 

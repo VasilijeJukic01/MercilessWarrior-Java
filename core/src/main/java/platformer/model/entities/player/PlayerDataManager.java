@@ -5,7 +5,6 @@ import platformer.core.Framework;
 import platformer.core.config.BalanceManager;
 import platformer.model.effects.TimeCycleManager;
 import platformer.model.minimap.MinimapManager;
-import platformer.model.perks.PerksBonus;
 import platformer.state.types.GameState;
 import platformer.ui.overlays.hud.UserInterface;
 
@@ -87,8 +86,7 @@ public class PlayerDataManager {
         BalanceManager.PlayerBalance pb = BalanceManager.getInstance().getPlayerBalance();
         int xpCapForLevel = pb.getXpPerLevelMultiplier() * level;
 
-        double bonusPct = PerksBonus.getInstance().getBonusExp() / 100.0;
-        exp += (int) Math.round(value * (1.0 + bonusPct));
+        exp += (int) Math.round(value * player.getStats().getExpMultiplier());
         exp = Math.max(Math.min(exp, XP_CAP), 0);
 
         while (exp >= xpCapForLevel) {

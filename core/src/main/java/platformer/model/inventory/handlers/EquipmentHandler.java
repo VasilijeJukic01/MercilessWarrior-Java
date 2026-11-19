@@ -20,7 +20,10 @@ public class EquipmentHandler {
     private final Map<String, Integer> equipmentSlots;
     private final Map<Integer, String> slotIndexToName;
 
-    public EquipmentHandler() {
+    private final InventoryBonus bonusManager;
+
+    public EquipmentHandler(InventoryBonus bonusManager) {
+        this.bonusManager = bonusManager;
         this.equipmentSlots = new HashMap<>();
         this.slotIndexToName = new HashMap<>();
         initEquipmentSlots();
@@ -127,7 +130,6 @@ public class EquipmentHandler {
     }
 
     public void updateBonuses() {
-        InventoryBonus bonusManager = InventoryBonus.getInstance();
         bonusManager.reset();
         Map<String, Integer> setCounts = new HashMap<>();
 

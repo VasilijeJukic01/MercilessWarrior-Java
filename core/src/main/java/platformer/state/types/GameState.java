@@ -198,7 +198,7 @@ public class GameState extends AbstractState implements State {
             ((OfflineStorageStrategy) strategy).loadLocalData();
         }
         getPlayer().activateMinimap(false);
-        PerksBonus.getInstance().reset();
+        getPlayer().getStats().reset();
         context.getPerksManager().reset();
 
         context.getLevelManager().resetAllCachedLevels();

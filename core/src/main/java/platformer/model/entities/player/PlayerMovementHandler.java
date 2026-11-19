@@ -6,7 +6,6 @@ import platformer.model.effects.particles.DustType;
 import platformer.model.entities.Direction;
 import platformer.model.gameObjects.ObjectManager;
 import platformer.model.levels.interior.InteriorManager;
-import platformer.model.perks.PerksBonus;
 import platformer.model.spells.SpellManager;
 import platformer.physics.CollisionDetector;
 
@@ -124,7 +123,7 @@ public class PlayerMovementHandler {
             dx = wallJumpDir * wallJumpSpeedX;
         }
         else {
-            boolean slowedByLava = player.checkAction(PlayerAction.LAVA) && !PerksBonus.getInstance().isLavaWalk();
+            boolean slowedByLava = player.checkAction(PlayerAction.LAVA) && !player.getStats().getPerks().isLavaWalk();
             double baseSpeed = slowedByLava ? LAVA_PLAYER_SPEED : PLAYER_SPEED;
             if (player.isInAir() && Math.abs(player.getAirSpeed()) < apexSpeedThreshold) baseSpeed *= 1.12;
             if (blocking && !player.isInAir()) baseSpeed *= 0.35;
@@ -445,7 +444,7 @@ public class PlayerMovementHandler {
     }
 
     public double getHorizontalSpeed() {
-        boolean slowedByLava = player.checkAction(PlayerAction.LAVA) && !PerksBonus.getInstance().isLavaWalk();
+        boolean slowedByLava = player.checkAction(PlayerAction.LAVA) && !player.getStats().getPerks().isLavaWalk();
         double currentSpeed = slowedByLava ? LAVA_PLAYER_SPEED : PLAYER_SPEED;
         if (player.checkAction(PlayerAction.DASH)) currentSpeed *= DASH_SPEED;
         if (player.checkAction(PlayerAction.LEFT) && !player.checkAction(PlayerAction.RIGHT)) return -currentSpeed + dashMomentumX;

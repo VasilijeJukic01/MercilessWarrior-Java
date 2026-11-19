@@ -7,8 +7,6 @@ import platformer.model.entities.enemies.Enemy;
 import platformer.model.entities.enemies.boss.Roric;
 import platformer.model.entities.player.Player;
 import platformer.model.entities.player.PlayerAction;
-import platformer.model.inventory.InventoryBonus;
-import platformer.model.perks.PerksBonus;
 import platformer.model.spells.Spell;
 import platformer.model.spells.SpellType;
 
@@ -149,7 +147,7 @@ public class DashFireTrail extends Spell {
     }
 
     private void applyBurnToEnemies() {
-        double spellMult = 1.0 + InventoryBonus.getInstance().getSpell() + (PerksBonus.getInstance().getSpellDamageBonus() / 100.0);
+        double spellMult = context.getPlayer().getStats().getSpellMultiplier();
         double burnDmg = 4.0 * spellMult;
         for (Enemy enemy : context.getEnemyManager().getAllEnemies()) {
             if (enemy instanceof Roric) continue;
