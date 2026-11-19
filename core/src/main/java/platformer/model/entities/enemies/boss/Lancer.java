@@ -13,6 +13,7 @@ import platformer.model.entities.enemies.Enemy;
 import platformer.model.entities.enemies.EnemyType;
 import platformer.model.entities.enemies.boss.lancer.LancerAttackHandler;
 import platformer.model.entities.enemies.boss.lancer.LancerAudioHandler;
+import platformer.model.entities.enemies.renderer.AfterimageTrail;
 import platformer.model.entities.player.Player;
 import platformer.model.gameObjects.ObjectManager;
 import platformer.model.projectiles.ProjectileFactory;
@@ -47,6 +48,9 @@ public class Lancer extends Enemy {
     // Physics
     private final double gravity = 0.1 * SCALE;
     private final double collisionFallSpeed = 0.5 * SCALE;
+
+    // Effect
+    private final AfterimageTrail afterimageTrail = new AfterimageTrail(4, 3);
 
     public Lancer(int xPos, int yPos) {
         super(xPos, yPos, LANCER_WIDTH, LANCER_HEIGHT, EnemyType.LANCER, 18);
@@ -423,6 +427,7 @@ public class Lancer extends Enemy {
         slashCount = 0;
         setDirection(Direction.LEFT);
         setEnemyAction(Anim.IDLE);
+        afterimageTrail.clear();
     }
 
     @Override
@@ -435,7 +440,11 @@ public class Lancer extends Enemy {
         renderAttackBox(g, xLevelOffset, yLevelOffset);
     }
 
-    // Setters
+    // Getters & Setters
+    public AfterimageTrail getAfterimageTrail() {
+        return afterimageTrail;
+    }
+
     public void setStart(boolean start) {
         this.start = start;
         audioHandler.playBossTheme(start);

@@ -107,21 +107,28 @@ public class PerksManager {
             double value = bonus.getValue();
 
             switch (key) {
-                case "exp": bonusManager.setBonusExp(bonusManager.getBonusExp() + (int)value); break;
-                case "cooldown": bonusManager.setBonusCooldown(bonusManager.getBonusCooldown() + value); break;
-                case "fireball": bonusManager.setFireball(value > 0); break;
-                case "power": bonusManager.setBonusPower(bonusManager.getBonusPower() + (int)value); break;
-                case "coin": bonusManager.setBonusCoin(bonusManager.getBonusCoin() + (int)value); break;
-                case "attack": bonusManager.setBonusAttack(bonusManager.getBonusAttack() + (int)value); break;
-                case "transform": bonusManager.setTransform(value > 0); break;
-                case "health": bonusManager.setBonusHealth(bonusManager.getBonusHealth() + (int)value); break;
-                case "dashcooldown": bonusManager.setDashCooldown(bonusManager.getDashCooldown() + value); break;
-                case "restorepower": bonusManager.setRestorePower(value > 0); break;
-                case "deflect": bonusManager.setDeflect(value > 0); break;
-                case "lavawalk": bonusManager.setLavaWalk(value > 0); break;
-                case "criticalhitchance": bonusManager.setCriticalHitChance(bonusManager.getCriticalHitChance() + (int)value); break;
-                case "dashslash": bonusManager.setDashSlash(value > 0); break;
-                default: break;
+                case "exp" -> bonusManager.setBonusExp(bonusManager.getBonusExp() + (int) value);
+                case "cooldown" -> bonusManager.setBonusCooldown(bonusManager.getBonusCooldown() + value);
+                case "fireball" -> bonusManager.setFireball(value > 0);
+                case "power" -> bonusManager.setBonusPower(bonusManager.getBonusPower() + (int) value);
+                case "coin" -> bonusManager.setBonusCoin(bonusManager.getBonusCoin() + (int) value);
+                case "attack" -> bonusManager.setBonusAttack(bonusManager.getBonusAttack() + (int) value);
+                case "transform" -> bonusManager.setTransform(value > 0);
+                case "health" -> bonusManager.setBonusHealth(bonusManager.getBonusHealth() + (int) value);
+                case "dashcooldown" -> bonusManager.setDashCooldown(bonusManager.getDashCooldown() + value);
+                case "restorepower" -> bonusManager.setRestorePower(value > 0);
+                case "deflect" -> bonusManager.setDeflect(value > 0);
+                case "lavawalk" -> bonusManager.setLavaWalk(value > 0);
+                case "criticalhitchance" -> bonusManager.setCriticalHitChance(bonusManager.getCriticalHitChance() + (int) value);
+                case "critmultiplier" -> bonusManager.setCritMultiplierBonus(bonusManager.getCritMultiplierBonus() + value);
+                case "vampiric" -> bonusManager.setVampiricHealPct(bonusManager.getVampiricHealPct() + value);
+                case "defense" -> bonusManager.setDefenseBonus(bonusManager.getDefenseBonus() + value);
+                case "spelldamage" -> bonusManager.setSpellDamageBonus(bonusManager.getSpellDamageBonus() + value);
+                case "flamecostreduction" -> bonusManager.setFlameCostReduction(bonusManager.getFlameCostReduction() + value);
+                case "transformcostreduction" -> bonusManager.setTransformCostReduction(bonusManager.getTransformCostReduction() + value);
+                case "piercingfireball" -> bonusManager.setPiercingFireball(value > 0);
+                case "dashslash" -> bonusManager.setDashSlash(value > 0);
+                default -> Logger.getInstance().notify("Unknown perk bonus key: " + key, Message.WARNING);
             }
         }
     }

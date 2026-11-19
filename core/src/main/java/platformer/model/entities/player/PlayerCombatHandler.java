@@ -145,7 +145,7 @@ public class PlayerCombatHandler {
 
         double baseCd = BalanceManager.getInstance().getPlayerBalance().getAttackCooldown();
         double stepFactor = (state == AttackState.ATTACK_3) ? 1.45 : 0.45;
-        double cd = ((baseCd * stepFactor) + player.getStats().getPerks().getBonusCooldown()) * (1.0 - player.getStats().getCooldownMultiplier());
+        double cd = ((baseCd * stepFactor) + player.getStats().getPerks().getBonusCooldown()) * player.getStats().getCooldownMultiplier();
         player.getCooldown()[Cooldown.ATTACK.ordinal()] = Math.max(0.15, cd);
     }
 
@@ -202,7 +202,7 @@ public class PlayerCombatHandler {
                 if (blockWindowTimer == 0) {
                     player.removeAction(PlayerAction.BLOCK);
                     BalanceManager.PlayerBalance pb = BalanceManager.getInstance().getPlayerBalance();
-                    double blockCooldown = pb.getBlockCooldown() * (1.0 - player.getStats().getCooldownMultiplier());
+                    double blockCooldown = (pb.getBlockCooldown() * 0.45) * player.getStats().getCooldownMultiplier();
                     player.getCooldown()[Cooldown.BLOCK.ordinal()] = Math.max(0.1, blockCooldown);
                 }
             }

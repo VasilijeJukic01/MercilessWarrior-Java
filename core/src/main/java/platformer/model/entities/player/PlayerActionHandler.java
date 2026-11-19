@@ -81,7 +81,7 @@ public class PlayerActionHandler {
         player.addAction(PlayerAction.FIREBALL);
         player.changeStamina(-pb.getFireballStaminaCost());
         Audio.getInstance().getAudioPlayer().playSound(Sound.FIREBALL);
-        player.getCooldown()[Cooldown.SPELL.ordinal()] = pb.getSpellCooldown() * (1.0 - player.getStats().getCooldownMultiplier());
+        player.getCooldown()[Cooldown.SPELL.ordinal()] = pb.getSpellCooldown() * player.getStats().getCooldownMultiplier();
     }
 
     public void setDashCount(int dashCount) {

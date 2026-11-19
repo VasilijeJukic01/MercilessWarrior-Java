@@ -6,6 +6,7 @@ import platformer.audio.types.Sound;
 import platformer.model.entities.Cooldown;
 import platformer.model.entities.Direction;
 import platformer.model.entities.Entity;
+import platformer.model.entities.enemies.renderer.AfterimageTrail;
 import platformer.model.entities.player.Player;
 import platformer.model.entities.player.PlayerAction;
 import platformer.model.projectiles.ProjectileFactory;
@@ -35,6 +36,9 @@ public class CorruptedKnight extends Enemy {
 
     private final double gravity = 0.020 * SCALE;
     private final double collisionFallSpeed = 0.6 * SCALE;
+
+    // Effect
+    private final AfterimageTrail afterimageTrail = new AfterimageTrail(3, 3);
 
     public CorruptedKnight(int xPos, int yPos) {
         super(xPos, yPos, KNIGHT_WIDTH, KNIGHT_HEIGHT, EnemyType.CORRUPTED_KNIGHT, 19);
@@ -264,11 +268,16 @@ public class CorruptedKnight extends Enemy {
         return isShadowStepping || entityState == Anim.ATTACK_1;
     }
 
+    public AfterimageTrail getAfterimageTrail() {
+        return afterimageTrail;
+    }
+
     @Override
     protected void reset() {
         super.reset();
         shadowStepCooldown = 0;
         isShadowStepping = false;
+        afterimageTrail.clear();
     }
 
     @Override

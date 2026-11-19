@@ -6,6 +6,7 @@ import platformer.audio.types.Sound;
 import platformer.model.entities.Cooldown;
 import platformer.model.entities.Direction;
 import platformer.model.entities.Entity;
+import platformer.model.entities.enemies.renderer.AfterimageTrail;
 import platformer.model.entities.player.Player;
 import platformer.model.entities.player.PlayerAction;
 import platformer.model.projectiles.ProjectileFactory;
@@ -36,6 +37,9 @@ public class Wraith extends Enemy {
 
     private final double gravity = 0.03 * SCALE;
     private final double collisionFallSpeed = 0.2 * SCALE;
+
+    // Effect
+    private final AfterimageTrail afterimageTrail = new AfterimageTrail(3, 4);
 
     public Wraith(int xPos, int yPos) {
         super(xPos, yPos, WRAITH_WIDTH, WRAITH_HEIGHT, EnemyType.WRAITH, 20);
@@ -277,12 +281,17 @@ public class Wraith extends Enemy {
         return phaseAlpha;
     }
 
+    public AfterimageTrail getAfterimageTrail() {
+        return afterimageTrail;
+    }
+
     @Override
     protected void reset() {
         super.reset();
         blinkCooldown = 0;
         phaseAlpha = 1.0f;
         secondBoltFired = false;
+        afterimageTrail.clear();
     }
 
     @Override

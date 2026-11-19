@@ -15,17 +15,7 @@ import static platformer.constants.Constants.*;
  */
 public class CorruptedKnightRenderer implements EnemyRenderer<CorruptedKnight> {
 
-    private static final int GHOST_COUNT = 3;
-
     private final BufferedImage[][] animations;
-    private final int[] ghostX = new int[GHOST_COUNT];
-    private final int[] ghostY = new int[GHOST_COUNT];
-    private final int[] ghostFlipSign = new int[GHOST_COUNT];
-    private final int[] ghostState = new int[GHOST_COUNT];
-    private final int[] ghostFrame = new int[GHOST_COUNT];
-    private int ghostHead = 0;
-    private int ghostSize = 0;
-    private int recordTick = 0;
 
     public CorruptedKnightRenderer() {
         this.animations = SpriteManager.getInstance().getEnemyAnimations(EnemyType.CORRUPTED_KNIGHT);
@@ -37,23 +27,12 @@ public class CorruptedKnightRenderer implements EnemyRenderer<CorruptedKnight> {
         int worldX = (int) ck.getHitBox().x - KNIGHT_X_OFFSET + fC;
         int worldY = (int) ck.getHitBox().y - KNIGHT_Y_OFFSET + (int) ck.getPushOffset() + 1;
 
+        AfterimageTrail trail = ck.getAfterimageTrail();
         if (ck.isShadowStepping()) {
-            recordTick++;
-            if (recordTick >= 3) {
-                recordTick = 0;
-                ghostX[ghostHead] = worldX;
-                ghostY[ghostHead] = worldY;
-                ghostFlipSign[ghostHead] = fS;
-                ghostState[ghostHead] = ck.getEnemyAction().ordinal();
-                ghostFrame[ghostHead] = ck.getAnimIndex();
-                ghostHead = (ghostHead + 1) % GHOST_COUNT;
-                if (ghostSize < GHOST_COUNT) ghostSize++;
-            }
-            renderAfterimages(g, xLevelOffset, yLevelOffset);
+            trail.record(worldX, worldY, fS, ck.getEnemyAction().ordinal(), ck.getAnimIndex());
+            trail.render(g, animations, KNIGHT_WIDTH, KNIGHT_HEIGHT, xLevelOffset, yLevelOffset, 0.35f);
         }
-        else {
-            ghostSize = 0;
-        }
+        else trail.clear();
 
         renderVoidAura(g, ck, xLevelOffset, yLevelOffset);
 
@@ -81,18 +60,6 @@ public class CorruptedKnightRenderer implements EnemyRenderer<CorruptedKnight> {
         );
         g2d.setPaint(aura);
         g2d.fillOval(cx - r, cy - r, r * 2, r * 2);
-        g2d.dispose();
-    }
-
-    private void renderAfterimages(Graphics g, int xLevelOffset, int yLevelOffset) {
-        Graphics2D g2d = (Graphics2D) g.create();
-        for (int i = ghostSize - 1; i >= 0; i--) {
-            int idx = (ghostHead - 1 - i + GHOST_COUNT) % GHOST_COUNT;
-            float alpha = (1.0f - (float) i / GHOST_COUNT) * 0.35f;
-            g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha));
-            BufferedImage frame = animations[ghostState[idx]][ghostFrame[idx]];
-            g2d.drawImage(frame, ghostX[idx] - xLevelOffset, ghostY[idx] - yLevelOffset, KNIGHT_WIDTH * ghostFlipSign[idx], KNIGHT_HEIGHT, null);
-        }
         g2d.dispose();
     }
 }

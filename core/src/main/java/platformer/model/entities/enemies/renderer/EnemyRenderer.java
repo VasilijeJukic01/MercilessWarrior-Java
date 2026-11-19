@@ -6,6 +6,8 @@ import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Path2D;
 import java.awt.image.BufferedImage;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static platformer.constants.Constants.SCALE;
 
@@ -16,6 +18,11 @@ import static platformer.constants.Constants.SCALE;
  * @param <T> The specific type of enemy to render. This type must extend from the Enemy class.
  */
 public interface EnemyRenderer<T extends Enemy> {
+
+    Color PARRY_RIM_COLOR = new Color(255, 70, 55, 235);
+    Color PARRY_FLASH_COLOR = new Color(255, 230, 140, 255);
+    Map<BufferedImage, BufferedImage> PARRY_RIM_CACHE = new ConcurrentHashMap<>();
+    Map<BufferedImage, BufferedImage> PARRY_FLASH_CACHE = new ConcurrentHashMap<>();
 
     /**
      * Renders an enemy of type T on the screen.
@@ -28,7 +35,7 @@ public interface EnemyRenderer<T extends Enemy> {
     void render(Graphics g, T enemy, int xLevelOffset, int yLevelOffset);
 
     /**
-     * Draws the enemy sprite frame and, if the enemy is in its parryable windup frames, applies aN outline and pulsing flash directly to the sprite's pixels.
+     * Draws the enemy sprite frame and, if the enemy is in its parryable windup frames, renders cached red rim and pulsing golden flash silhouettes without per-frame allocations.
      */
     default void drawEnemySprite(Graphics g, T enemy, BufferedImage frame, int x, int y, int width, int height) {
         if (frame == null) return;
@@ -37,36 +44,36 @@ public interface EnemyRenderer<T extends Enemy> {
             return;
         }
 
-        int absW = Math.abs(width);
-        int absH = Math.abs(height);
-        BufferedImage flashBuf = new BufferedImage(absW, absH, BufferedImage.TYPE_INT_ARGB);
-        Graphics2D bG2d = flashBuf.createGraphics();
+        BufferedImage rimSilhouette = PARRY_RIM_CACHE.computeIfAbsent(frame, f -> bakeSilhouette(f, PARRY_RIM_COLOR));
+        BufferedImage flashSilhouette = PARRY_FLASH_CACHE.computeIfAbsent(frame, f -> bakeSilhouette(f, PARRY_FLASH_COLOR));
+
+        int rimStep = Math.max(1, (int) Math.round(SCALE));
+        g.drawImage(rimSilhouette, x - rimStep, y, width, height, null);
+        g.drawImage(rimSilhouette, x + rimStep, y, width, height, null);
+        g.drawImage(rimSilhouette, x, y - rimStep, width, height, null);
+        g.drawImage(rimSilhouette, x, y + rimStep, width, height, null);
+
+        g.drawImage(frame, x, y, width, height, null);
 
         double progress = (double) enemy.getAnimTick() / Math.max(1, enemy.getAnimSpeed());
         float pulse = (float) Math.sin(progress * Math.PI);
+        float flashAlpha = Math.max(0.0f, Math.min(1.0f, (75.0f + 95.0f * pulse) / 255.0f));
 
-        bG2d.drawImage(frame, 0, 0, absW, absH, null);
-        bG2d.setComposite(AlphaComposite.SrcAtop);
-        bG2d.setColor(new Color(255, 70, 55, 235));
-        bG2d.fillRect(0, 0, absW, absH);
-        bG2d.dispose();
+        Graphics2D g2d = (Graphics2D) g.create();
+        g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, flashAlpha));
+        g2d.drawImage(flashSilhouette, x, y, width, height, null);
+        g2d.dispose();
+    }
 
-        int rimStep = Math.max(1, (int) Math.round(SCALE));
-        g.drawImage(flashBuf, x - rimStep, y, width, height, null);
-        g.drawImage(flashBuf, x + rimStep, y, width, height, null);
-        g.drawImage(flashBuf, x, y - rimStep, width, height, null);
-        g.drawImage(flashBuf, x, y + rimStep, width, height, null);
-
-        BufferedImage bodyBuf = new BufferedImage(absW, absH, BufferedImage.TYPE_INT_ARGB);
-        Graphics2D bodyG2d = bodyBuf.createGraphics();
-        bodyG2d.drawImage(frame, 0, 0, absW, absH, null);
-        bodyG2d.setComposite(AlphaComposite.SrcAtop);
-        int flashAlpha = (int) (75 + 95 * pulse);
-        bodyG2d.setColor(new Color(255, 230, 140, flashAlpha));
-        bodyG2d.fillRect(0, 0, absW, absH);
-        bodyG2d.dispose();
-
-        g.drawImage(bodyBuf, x, y, width, height, null);
+    private static BufferedImage bakeSilhouette(BufferedImage src, Color tint) {
+        BufferedImage out = new BufferedImage(src.getWidth(), src.getHeight(), BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2d = out.createGraphics();
+        g2d.drawImage(src, 0, 0, null);
+        g2d.setComposite(AlphaComposite.SrcAtop);
+        g2d.setColor(tint);
+        g2d.fillRect(0, 0, src.getWidth(), src.getHeight());
+        g2d.dispose();
+        return out;
     }
 
     /**
@@ -156,9 +163,5 @@ public interface EnemyRenderer<T extends Enemy> {
         }
 
         g2d.dispose();
-    }
-
-    default void renderParryGlint(Graphics g, T enemy, int xLevelOffset, int yLevelOffset) {
-        // Replaced by pixel-accurate drawEnemySprite rim-flash
     }
 }

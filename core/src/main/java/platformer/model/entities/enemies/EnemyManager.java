@@ -52,6 +52,7 @@ public class EnemyManager {
     private final Map<Class<? extends Enemy>, EnemyRenderer<? extends Enemy>> enemyRenderers = new HashMap<>();
     private final Map<Enemy, Integer> spellHitTimers = new HashMap<>();
     private final List<RoricClone> roricClones = new ArrayList<>();
+    private final Random rand = new Random();
 
     // Debug
     private long lastRenderErrorLogMs = 0;
@@ -95,7 +96,6 @@ public class EnemyManager {
                 EnemyRenderer<T> renderer = (EnemyRenderer<T>) enemyRenderers.get(enemyClass);
                 renderer.render(g, enemy, xLevelOffset, yLevelOffset);
                 renderer.renderStunStars(g, enemy, xLevelOffset, yLevelOffset);
-                renderer.renderParryGlint(g, enemy, xLevelOffset, yLevelOffset);
             }
         }
     }
@@ -135,7 +135,6 @@ public class EnemyManager {
      * @param e The enemy to check.
      */
     private void checkEnemyDying(Enemy e) {
-        Random rand = new Random();
         if (e.getEnemyAction() == Anim.DEATH) {
             Player player = context.getPlayer();
             context.getObjectManager().generateLoot(e);
@@ -156,15 +155,13 @@ public class EnemyManager {
     }
 
     private double[] damage(Player player) {
-        BalanceManager.PlayerBalance pb = BalanceManager.getInstance().getPlayerBalance();
         double critical = 0;
         double baseDmg = player.getAttackDmg();
         double comboMult = (player.getCombatHandler() != null && !player.checkAction(PlayerAction.DASH)) ? player.getCombatHandler().getComboDamageMultiplier() : 1.0;
         double dmg = baseDmg * player.getStats().getAttackMultiplier() * comboMult;
 
-        double totalCritChance = pb.getBaseCritChance() + player.getStats().getCritChance() + (player.getStats().getCritChance() * 100.0);
-        if (new Random().nextDouble() * 100.0 < totalCritChance) {
-            dmg *= (pb.getBaseCritMultiplier() + player.getStats().getCritMultiplier());
+        if (rand.nextDouble() * 100.0 < player.getStats().getCritChance()) {
+            dmg *= player.getStats().getCritMultiplier();
             critical = 1;
         }
         return new double[]{dmg, critical};
@@ -224,7 +221,7 @@ public class EnemyManager {
 
                     if (wasStunned) enemy.wakeUp();
                     else if (isFinisher && enemy.isAlive() && enemy.getEnemyAction() != Anim.DEATH && !(enemy instanceof Lancer)) {
-                        if (new Random().nextDouble() < 0.40) {
+                        if (rand.nextDouble() < 0.40) {
                             enemy.freeze(150);
                         }
                     }
@@ -235,7 +232,7 @@ public class EnemyManager {
                     if (damageModifier > 0.1) damageModifier *= 0.75;
                     BalanceManager.PlayerBalance pb = BalanceManager.getInstance().getPlayerBalance();
                     int stRange = Math.max(1, pb.getMeleeHitStaminaMax() - pb.getMeleeHitStaminaMin() + 1);
-                    player.changeStamina(pb.getMeleeHitStaminaMin() + new Random().nextInt(stRange));
+                    player.changeStamina(pb.getMeleeHitStaminaMin() + rand.nextInt(stRange));
                     player.getUltimateHandler().addChargeFromHit(isCritical);
                 }
             }

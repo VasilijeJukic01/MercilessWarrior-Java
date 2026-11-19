@@ -16,17 +16,7 @@ import static platformer.constants.Constants.*;
  */
 public class WraithRenderer implements EnemyRenderer<Wraith> {
 
-    private static final int GHOST_COUNT = 3;
-
     private final BufferedImage[][] animations;
-    private final int[] ghostX = new int[GHOST_COUNT];
-    private final int[] ghostY = new int[GHOST_COUNT];
-    private final int[] ghostFlipSign = new int[GHOST_COUNT];
-    private final int[] ghostState = new int[GHOST_COUNT];
-    private final int[] ghostFrame = new int[GHOST_COUNT];
-    private int ghostHead = 0;
-    private int ghostSize = 0;
-    private int recordTick = 0;
 
     public WraithRenderer() {
         this.animations = SpriteManager.getInstance().getEnemyAnimations(EnemyType.WRAITH);
@@ -42,21 +32,12 @@ public class WraithRenderer implements EnemyRenderer<Wraith> {
         int worldDrawY = (int) w.getHitBox().y - WRAITH_Y_OFFSET + (int) w.getPushOffset() + hoverY + 1;
 
         boolean showTrail = (state == Anim.RUN || state == Anim.ATTACK_1 || state == Anim.ATTACK_2 || state == Anim.SPELL_1 || w.getPhaseAlpha() < 0.95f);
+        AfterimageTrail trail = w.getAfterimageTrail();
         if (showTrail && state != Anim.DEATH) {
-            recordTick++;
-            if (recordTick >= 4) {
-                recordTick = 0;
-                ghostX[ghostHead] = worldDrawX;
-                ghostY[ghostHead] = worldDrawY;
-                ghostFlipSign[ghostHead] = fS;
-                ghostState[ghostHead] = state.ordinal();
-                ghostFrame[ghostHead] = w.getAnimIndex();
-                ghostHead = (ghostHead + 1) % GHOST_COUNT;
-                if (ghostSize < GHOST_COUNT) ghostSize++;
-            }
-            renderAfterimages(g, xLevelOffset, yLevelOffset);
+            trail.record(worldDrawX, worldDrawY, fS, state.ordinal(), w.getAnimIndex());
+            trail.render(g, animations, WRAITH_WIDTH, WRAITH_HEIGHT, xLevelOffset, yLevelOffset, 0.30f);
         }
-        else ghostSize = 0;
+        else trail.clear();
 
         int cx = (int) (w.getHitBox().getCenterX() - xLevelOffset);
         int cy = (int) (w.getHitBox().getCenterY() - yLevelOffset + hoverY);
@@ -81,21 +62,6 @@ public class WraithRenderer implements EnemyRenderer<Wraith> {
 
         w.hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.BLUE);
         w.attackBoxRenderer(g, xLevelOffset, yLevelOffset);
-    }
-
-    private void renderAfterimages(Graphics g, int xLevelOffset, int yLevelOffset) {
-        Graphics2D g2d = (Graphics2D) g.create();
-        for (int i = ghostSize - 1; i >= 0; i--) {
-            int idx = (ghostHead - 1 - i + GHOST_COUNT) % GHOST_COUNT;
-            float alpha = (1.0f - (float) i / GHOST_COUNT) * 0.30f;
-            g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha));
-            BufferedImage[] stateFrames = animations[ghostState[idx]];
-            if (stateFrames != null && ghostFrame[idx] < stateFrames.length) {
-                BufferedImage frame = stateFrames[ghostFrame[idx]];
-                g2d.drawImage(frame, ghostX[idx] - xLevelOffset, ghostY[idx] - yLevelOffset, WRAITH_WIDTH * ghostFlipSign[idx], WRAITH_HEIGHT, null);
-            }
-        }
-        g2d.dispose();
     }
 
     private void renderOrbitingWisps(Graphics g, int cx, int cy, boolean casting, boolean frontPass) {
