@@ -2,6 +2,8 @@ package platformer.model.entities.player;
 
 import platformer.animation.Anim;
 import platformer.animation.SpriteManager;
+import platformer.debug.logger.Logger;
+import platformer.debug.logger.Message;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -30,6 +32,9 @@ public class PlayerRenderer {
 
     private BufferedImage dashGhostBuffer;
     private BufferedImage burnSilhouetteBuffer;
+
+    // Debug
+    private long lastRenderErrorLogMs = 0;
 
     public PlayerRenderer(Player player) {
         this.player = player;
@@ -85,7 +90,13 @@ public class PlayerRenderer {
             else if (burnTick > 0 && frame != null) {
                 renderBurnOverlay(g, frame, playerXPos, playerYPos, width, height, burnTick);
             }
-        } catch (Exception ignored) {}
+        } catch (Exception e) {
+            long now = System.currentTimeMillis();
+            if (now - lastRenderErrorLogMs >= 1000) {
+                lastRenderErrorLogMs = now;
+                Logger.getInstance().notify("Render error in " + getClass().getSimpleName() + ": " + e.getMessage(), Message.ERROR);
+            }
+        }
     }
 
     private void renderHitFlashOverlay(Graphics g, BufferedImage frame, int drawX, int drawY, int width, int height, int hitFlashTick) {

@@ -103,6 +103,7 @@ public class InteriorManager {
                 Level interiorLevel = interiors.get(targetId);
                 LevelMetadata meta = interiorsMetadata.get(targetId);
 
+                interiorLevel.gatherData();
                 if (meta != null && meta.getClearEnemiesFlag() != null && context.getWorldMemoryManager().hasFlag(meta.getClearEnemiesFlag())) {
                     interiorLevel.getEnemiesMap().clear();
                 }
@@ -185,12 +186,20 @@ public class InteriorManager {
         else context.getObjectManager().despawnFollower();
     }
 
-    public boolean isInterior() {
-        return isInterior;
+    /**
+     * Resets interior tracking state and re-parses all cached interior levels so save-specific flags are evaluated cleanly when loading a save.
+     */
+    public void resetAllCachedInteriors() {
+        this.isInterior = false;
+        this.currentInteriorId = "";
+        this.previousLocation = null;
+        for (Level interior : interiors.values()) {
+            interior.gatherData();
+        }
     }
 
-    public void setInterior(boolean interior) {
-        isInterior = interior;
+    public boolean isInterior() {
+        return isInterior;
     }
 
     public String getCurrentInteriorId() {

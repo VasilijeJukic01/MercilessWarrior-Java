@@ -433,7 +433,8 @@ public class Player extends Entity {
 
     // Reset
     public void resetDirections() {
-        removeActions(PlayerAction.LEFT, PlayerAction.RIGHT, PlayerAction.JUMP);
+        removeActions(PlayerAction.LEFT, PlayerAction.RIGHT, PlayerAction.JUMP, PlayerAction.LOOK_DOWN);
+        if (spellState == 1) setSpellState(2);
         animIndex = animTick = 0;
     }
 

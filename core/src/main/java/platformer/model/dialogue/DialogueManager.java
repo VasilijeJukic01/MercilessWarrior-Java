@@ -265,8 +265,9 @@ public class DialogueManager {
             else if ("SaveTotem".equals(intersect))
                 EventBus.getInstance().publish(new OverlayChangeEvent(PlayingState.SAVE));
             else if (intersect != null && intersect.contains("Npc")) {
-                Npc npc = (Npc) objectManager.getIntersection();
-                npc.increaseDialogueIndicator();
+                if (objectManager.getIntersection() instanceof Npc npc) {
+                    npc.increaseDialogueIndicator();
+                }
                 EventBus.getInstance().publish(new OverlayChangeEvent(null));
             }
             else EventBus.getInstance().publish(new OverlayChangeEvent(null));

@@ -9,6 +9,7 @@ import platformer.debug.logger.Message;
 import platformer.event.events.BossDefeatedEvent;
 import platformer.event.events.FightInitiatedEvent;
 import platformer.model.entities.enemies.EnemyType;
+import platformer.model.gameObjects.GameObject;
 import platformer.model.levels.Level;
 import platformer.model.levels.LvlTriggerType;
 import platformer.event.EventHandler;
@@ -44,7 +45,9 @@ public class GameFlowEventHandler implements EventHandler {
     }
 
     private void startRoricFight() {
-        context.getObjectManager().getIntersection().setAlive(false);
+        if (context.getObjectManager().getIntersection() instanceof GameObject obj) {
+            obj.setAlive(false);
+        }
         context.getLevelManager().switchToArena();
         Level arena = context.getLevelManager().getCurrentLevel();
         levelTransition(arena, arena.getPlayerSpawn(LvlTriggerType.SPAWN_A));

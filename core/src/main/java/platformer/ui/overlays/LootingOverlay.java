@@ -3,7 +3,7 @@ package platformer.ui.overlays;
 import platformer.core.GameContext;
 import platformer.event.EventBus;
 import platformer.event.events.ui.OverlayChangeEvent;
-import platformer.model.gameObjects.GameObject;
+import platformer.model.gameObjects.Interactable;
 import platformer.model.gameObjects.objects.Container;
 import platformer.model.gameObjects.objects.Loot;
 import platformer.model.inventory.Inventory;
@@ -69,9 +69,9 @@ public class LootingOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
     }
 
     private List<InventoryItem> getItemsFromSource() {
-        GameObject source = context.getObjectManager().getIntersection();
-        if (source instanceof Loot) return ((Loot) source).getItems();
-        else if (source instanceof Container) return ((Container) source).getItems();
+        Interactable source = context.getObjectManager().getIntersection();
+        if (source instanceof Loot loot) return loot.getItems();
+        else if (source instanceof Container container) return container.getItems();
         return null;
     }
 

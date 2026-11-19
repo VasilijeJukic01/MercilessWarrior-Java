@@ -76,6 +76,9 @@ public class GameState extends AbstractState implements State {
     @Setter private boolean isRespawning;
     @Setter private boolean isDarkPhase;
 
+    // Debug
+    private long lastUpdateErrorLogMs = 0;
+
     public GameState(Game game) {
         super(game);
         this.screenEffectsManager = new ScreenEffectsManager(game);
@@ -133,7 +136,14 @@ public class GameState extends AbstractState implements State {
             camera.update(getPlayer());
             overlayManager.update(state);
             context.getCutsceneManager().update();
-        } catch (Exception ignored) {}
+        }
+        catch (Exception e) {
+            long now = System.currentTimeMillis();
+            if (now - lastUpdateErrorLogMs >= 1000) {
+                lastUpdateErrorLogMs = now;
+                Logger.getInstance().notify("Game update error: " + e.getMessage(), Message.ERROR);
+            }
+        }
     }
 
     @Override
@@ -192,6 +202,8 @@ public class GameState extends AbstractState implements State {
         context.getPerksManager().reset();
 
         context.getLevelManager().resetAllCachedLevels();
+        context.getInteriorManager().resetAllCachedInteriors();
+        getPlayer().getPlayerDataManager().getUserInterface().setInterior(false);
         context.getWorldMemoryManager().loadFromAccount(Framework.getInstance().getAccount().getWorldFlags());
         context.getQuestManager().loadFromAccount(Framework.getInstance().getAccount().getQuests());
 
@@ -226,6 +238,8 @@ public class GameState extends AbstractState implements State {
         if (savedSpawn >= 0) {
             context.getWorldMemoryManager().unlockTotem(savedSpawn);
         }
+        context.getInteriorManager().resetAllCachedInteriors();
+        getPlayer().getPlayerDataManager().getUserInterface().setInterior(false);
         context.getLevelManager().loadSavePoint(savedSpawn);
         getPlayer().getPlayerDataManager().loadPlayerData();
         context.getPerksManager().reset();
@@ -312,6 +326,7 @@ public class GameState extends AbstractState implements State {
     @Override
     public void windowFocusLost(WindowEvent e) {
         getPlayer().resetDirections();
+        stateController.resetKeys();
     }
 
     // Event

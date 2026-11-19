@@ -5,6 +5,8 @@ import platformer.audio.Audio;
 import platformer.audio.types.Sound;
 import platformer.core.GameContext;
 import platformer.core.config.BalanceManager;
+import platformer.debug.logger.Logger;
+import platformer.debug.logger.Message;
 import platformer.model.entities.follower.Follower;
 import platformer.model.gameObjects.npc.NpcType;
 import platformer.model.levels.metadata.GameObjectMetadata;
@@ -76,6 +78,9 @@ public class ObjectManager {
 
     // Cache
     private final Map<Class<?>, List<? extends GameObject>> classCache = new ConcurrentHashMap<>();
+
+    // Debug
+    private long lastRenderErrorLogMs = 0;
 
     public void wire(GameContext context) {
         this.context = context;
@@ -441,7 +446,13 @@ public class ObjectManager {
                         }
                     });
         }
-        catch (Exception ignored) {}
+        catch (Exception e) {
+            long now = System.currentTimeMillis();
+            if (now - lastRenderErrorLogMs >= 1000) {
+                lastRenderErrorLogMs = now;
+                Logger.getInstance().notify("Render error in " + getClass().getSimpleName() + ": " + e.getMessage(), Message.ERROR);
+            }
+        }
     }
 
     public void update(int[][] lvlData, Player player) {
@@ -605,8 +616,8 @@ public class ObjectManager {
         return this.activeFollower;
     }
 
-    public GameObject getIntersection() {
-        return (GameObject) intersection;
+    public Interactable getIntersection() {
+        return intersection;
     }
 
     public void setIntersection(Interactable intersection) {

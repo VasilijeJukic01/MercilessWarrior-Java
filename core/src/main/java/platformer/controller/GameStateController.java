@@ -221,8 +221,9 @@ public class GameStateController {
             EventBus.getInstance().publish(new OverlayChangeEvent(PlayingState.CRAFTING));
         }
         else if (Objects.equals(id, "Herb")) {
-            GameObject herb = context.getObjectManager().getIntersection();
-            if (herb instanceof Herb) context.getObjectManager().harvestHerb((Herb)herb);
+            if (context.getObjectManager().getIntersection() instanceof Herb herb) {
+                context.getObjectManager().harvestHerb(herb);
+            }
         }
         else if (Objects.equals(id, "Revive")) {
             Follower follower = context.getObjectManager().getActiveFollower();
@@ -235,8 +236,9 @@ public class GameStateController {
     }
 
     private void activateDialogue(String id) {
-        GameObject object = context.getObjectManager().getIntersection();
-        context.getDialogueManager().activateDialogue(id, object);
+        if (context.getObjectManager().getIntersection() instanceof GameObject object) {
+            context.getDialogueManager().activateDialogue(id, object);
+        }
     }
 
     private void openInventory() {

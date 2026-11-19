@@ -55,6 +55,9 @@ public class EnemyManager {
     private final Map<Enemy, Integer> spellHitTimers = new HashMap<>();
     private final List<RoricClone> roricClones = new ArrayList<>();
 
+    // Debug
+    private long lastRenderErrorLogMs = 0;
+
     public EnemyManager() {
         initRenderers();
     }
@@ -459,7 +462,13 @@ public class EnemyManager {
             renderRoric(g, xLevelOffset, yLevelOffset);
             renderClones(g, xLevelOffset, yLevelOffset);
         }
-        catch (Exception ignored) {}
+        catch (Exception e) {
+            long now = System.currentTimeMillis();
+            if (now - lastRenderErrorLogMs >= 1000) {
+                lastRenderErrorLogMs = now;
+                Logger.getInstance().notify("Render error in " + getClass().getSimpleName() + ": " + e.getMessage(), Message.ERROR);
+            }
+        }
     }
 
     private void renderClones(Graphics g, int xLevelOffset, int yLevelOffset) {

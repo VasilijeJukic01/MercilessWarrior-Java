@@ -53,12 +53,15 @@ public class AssetManager {
     }
 
     /**
-     * Reads files (like JSON or Configs) directly from the encrypted memory bundle.
+     * Reads files (like JSON or Configs) directly from the encrypted memory bundle, falling back to the classpath resource stream if not found in the bundle.
+     *
+     * @param path The resource path (e.g., "/meta/begin.json").
+     * @return An InputStream for the resource, or null if not found.
      */
     public InputStream getResourceAsStream(String path) {
         byte[] data = getAsset(path);
         if (data != null) return new ByteArrayInputStream(data);
-        return AssetManager.getInstance().getResourceAsStream(path);
+        return AssetManager.class.getResourceAsStream(path);
     }
 
     public byte[] getAsset(String path) {
