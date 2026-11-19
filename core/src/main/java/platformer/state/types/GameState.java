@@ -221,6 +221,7 @@ public class GameState extends AbstractState implements State {
         getPlayer().activateMinimap(true);
         context.getMinimapManager().updatePlayerPosition(getPlayer().getHitBox().getCenterX(), getPlayer().getHitBox().getCenterY());
         camera.updateLevelBounds(getLevelManager().getCurrentLevel());
+        context.getDialogueManager().resetDialogues();
         camera.snapToPlayer(getPlayer());
     }
 
@@ -248,6 +249,7 @@ public class GameState extends AbstractState implements State {
         getPlayer().activateMinimap(true);
         context.getMinimapManager().updatePlayerPosition(getPlayer().getHitBox().getCenterX(), getPlayer().getHitBox().getCenterY());
         camera.updateLevelBounds(getLevelManager().getCurrentLevel());
+        context.getDialogueManager().resetDialogues();
         camera.snapToPlayer(getPlayer());
         Logger.getInstance().notify("Player data fully refreshed from loaded save.", Message.INFORMATION);
     }

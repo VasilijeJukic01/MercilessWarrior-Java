@@ -419,12 +419,14 @@ public class SpriteManager {
 
         // Sky Beam
         BufferedImage[] originalFrames = roricProjectileAnimations[0];
-        BufferedImage[] beamFrames = new BufferedImage[4];
-        System.arraycopy(originalFrames, 0, beamFrames, 0, 4);
-        BufferedImage[] reversedFrames = CollectionUtils.reverseArray(beamFrames.clone());
+        BufferedImage[] rotatedBeamFrames = new BufferedImage[4];
+        for (int i = 0; i < 4; i++) {
+            rotatedBeamFrames[i] = ImageUtils.rotateImage(originalFrames[i], 90);
+        }
+        BufferedImage[] reversedFrames = CollectionUtils.reverseArray(rotatedBeamFrames.clone());
         skyBeamAnimations = new BufferedImage[8];
         System.arraycopy(reversedFrames, 0, skyBeamAnimations, 0, 4);
-        System.arraycopy(beamFrames, 0, skyBeamAnimations, 4, 4);
+        System.arraycopy(rotatedBeamFrames, 0, skyBeamAnimations, 4, 4);
     }
 
     // Effects

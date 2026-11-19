@@ -31,4 +31,8 @@ public class Dialogue {
             this.activated = true;
         }
     }
+
+    public void resetActivated() {
+        this.activated = false;
+    }
 }

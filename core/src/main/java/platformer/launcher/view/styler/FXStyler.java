@@ -1,5 +1,7 @@
 package platformer.launcher.view.styler;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import javafx.animation.FadeTransition;
 import javafx.animation.Timeline;
 import javafx.scene.Node;
@@ -10,10 +12,10 @@ import javafx.scene.image.ImageView;
 import javafx.util.Duration;
 import platformer.animation.AssetManager;
 
-import java.io.BufferedReader;
-import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
+import java.lang.reflect.Type;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Objects;
 
@@ -66,36 +68,15 @@ public class FXStyler implements Styler{
 
     @Override
     public List<String> loadTipsFromResource(String resourcePath) {
-        List<String> tips = new ArrayList<>();
-        try {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(AssetManager.getInstance().getResourceAsStream(resourcePath)));
-
-            StringBuilder jsonContent = new StringBuilder();
-            String line;
-
-            while ((line = reader.readLine()) != null) {
-                if (!line.trim().startsWith("//")) jsonContent.append(line);
+        try (InputStream is = AssetManager.getInstance().getResourceAsStream(resourcePath);
+             InputStreamReader reader = new InputStreamReader(is, StandardCharsets.UTF_8)) {
+            Type listType = new TypeToken<List<String>>() {}.getType();
+            List<String> loaded = new Gson().fromJson(reader, listType);
+            if (loaded != null && !loaded.isEmpty()) {
+                return loaded;
             }
-
-            String content = jsonContent.toString().trim();
-
-            if (content.startsWith("[") && content.endsWith("]")) {
-                content = content.substring(1, content.length() - 1);
-                String[] entries = content.split(",");
-
-                for (String entry : entries) {
-                    String cleanEntry = entry.trim();
-                    if (cleanEntry.startsWith("\"") && cleanEntry.endsWith("\"")) {
-                        cleanEntry = cleanEntry.substring(1, cleanEntry.length() - 1);
-                        tips.add(cleanEntry);
-                    }
-                }
-            }
-
-        } catch (IOException e) {
-            tips.add("Blocking enemy attacks at the right moment can grant power!");
-        }
-        return tips;
+        } catch (Exception ignored) { }
+        return List.of("Blocking enemy attacks at the right moment can grant power!");
     }
 
     @Override

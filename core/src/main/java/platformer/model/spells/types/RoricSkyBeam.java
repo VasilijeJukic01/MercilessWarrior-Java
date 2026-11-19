@@ -5,7 +5,6 @@ import platformer.core.config.BalanceManager;
 import platformer.model.entities.player.Player;
 import platformer.model.spells.Spell;
 import platformer.model.spells.SpellType;
-import platformer.utils.ImageUtils;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -74,11 +73,10 @@ public class RoricSkyBeam extends Spell {
         }
         else {
             BufferedImage frame = getAnimations()[getAnimIndex()];
-            BufferedImage rotatedFrame = ImageUtils.rotateImage(frame, 90);
-            int drawX = x + (getWidth() - rotatedFrame.getWidth()) / 2 - offset;
-            int drawY = y + (getHeight() - rotatedFrame.getHeight()) / 2 - (int)(180 * SCALE);
+            int drawX = x + (getWidth() - frame.getWidth()) / 2 - offset;
+            int drawY = y + (getHeight() - frame.getHeight()) / 2 - (int) (180 * SCALE);
 
-            g.drawImage(rotatedFrame, drawX, drawY, renderWidth, RORIC_BEAM_WID, null);
+            g.drawImage(frame, drawX, drawY, renderWidth, RORIC_BEAM_WID, null);
             hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.CYAN);
         }
     }

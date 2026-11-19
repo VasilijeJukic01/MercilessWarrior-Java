@@ -334,4 +334,12 @@ public class DialogueManager {
                 .collect(Collectors.toList());
     }
 
+    // Reset
+    /**
+     * Resets one-time dialogue activation flags when loading a different save slot.
+     */
+    public void resetDialogues() {
+        dialogues.values().forEach(list -> list.forEach(Dialogue::resetActivated));
+    }
+
 }

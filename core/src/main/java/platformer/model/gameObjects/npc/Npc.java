@@ -8,8 +8,6 @@ import platformer.model.gameObjects.ObjType;
 import platformer.ui.buttons.UIButtonRenderer;
 
 import java.awt.*;
-import java.awt.geom.AffineTransform;
-import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 
 import static platformer.constants.Constants.*;
@@ -85,24 +83,18 @@ public class Npc extends GameObject implements Interactable {
 
     @Override
     public void render(Graphics g, int xLevelOffset, int yLevelOffset, BufferedImage[] animations) {
-        int x = (int)hitBox.x - xOffset - xLevelOffset;
-        int y = (int)hitBox.y - yOffset - yLevelOffset;
+        int x = (int) hitBox.x - xOffset - xLevelOffset, y = (int) hitBox.y - yOffset - yLevelOffset;
         BufferedImage image = animations[animIndex];
 
         if (direction == Direction.RIGHT) {
-            AffineTransform tx = AffineTransform.getScaleInstance(-1, 1);
-            tx.translate(-image.getWidth(null), 0);
-            AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
-            image = op.filter(image, null);
-
             int hitBoxCenterX = (int) (hitBox.x + hitBox.width / 2);
             x = hitBoxCenterX - (npcType.getWid() / 2) - xLevelOffset;
 
             // Bad sprite alignment fix >.<
             if (npcType == NpcType.KRYSANTHE) x += (int) (20 * SCALE);
+            g.drawImage(image, x + npcType.getWid(), y, -npcType.getWid(), npcType.getHei(), null);
         }
-
-        g.drawImage(image, x, y, npcType.getWid(), npcType.getHei(), null);
+        else g.drawImage(image, x, y, npcType.getWid(), npcType.getHei(), null);
         hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.MAGENTA);
     }
 
