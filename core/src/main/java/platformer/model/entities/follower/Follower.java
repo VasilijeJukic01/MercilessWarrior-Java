@@ -8,6 +8,7 @@ import platformer.model.entities.Direction;
 import platformer.model.entities.Entity;
 import platformer.model.entities.enemies.Enemy;
 import platformer.model.entities.follower.behavior.AnitaBehavior;
+import platformer.model.entities.follower.behavior.DejanovicBehavior;
 import platformer.model.entities.follower.behavior.FollowerBehavior;
 import platformer.model.entities.player.Player;
 import platformer.model.gameObjects.Interactable;
@@ -20,6 +21,7 @@ import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.List;
+import java.util.Map;
 
 import static platformer.constants.Constants.*;
 import static platformer.physics.CollisionDetector.canMoveHere;
@@ -38,12 +40,14 @@ import static platformer.physics.CollisionDetector.canMoveHere;
  */
 public class Follower extends Entity implements Interactable {
 
+    public record FollowerProfile(int drawWidth, int drawHeight, int offsetX, int offsetY) { }
+
     private final NpcType type;
     private final EffectManager effectManager;
     private final ObjectManager objectManager;
 
     // Components
-    private final FollowerBehavior behavior;
+    private  FollowerBehavior behavior;
     private final JumpHistoryTracker jumpTracker;
     private final TrajectoryCalculator trajectoryCalculator;
     private final FollowerCombatManager combatManager;
@@ -89,6 +93,12 @@ public class Follower extends Entity implements Interactable {
     private double targetX;
     private boolean attackRequested;
 
+    // Profiles
+    private static final Map<NpcType, FollowerProfile> PROFILES = Map.of(
+            NpcType.ANITA, new FollowerProfile(FLW_WIDTH, FLW_HEIGHT, FOLLOWER_X_OFFSET, FOLLOWER_Y_OFFSET),
+            NpcType.SIR_DEJANOVIC, new FollowerProfile(KNIGHT_WIDTH, KNIGHT_HEIGHT, KNIGHT_X_OFFSET, KNIGHT_Y_OFFSET - (int) (4 * SCALE))
+    );
+
     public Follower(int x, int y, NpcType type, EffectManager effectManager, ObjectManager objectManager) {
         super(x, y, FLW_WIDTH, FLW_HEIGHT, 100);
         this.type = type;
@@ -100,8 +110,8 @@ public class Follower extends Entity implements Interactable {
         this.inAir = true;
         this.flipSign = 1;
         this.flipCoefficient = 0;
+        configBehavior();
 
-        this.behavior = (type == NpcType.ANITA) ? new AnitaBehavior() : new PassiveBehavior();
         this.jumpTracker = new JumpHistoryTracker();
         this.trajectoryCalculator = new TrajectoryCalculator(objectManager, gravity, jumpSpeed, walkSpeed);
         this.audioHandler = new FollowerAudioHandler(type);
@@ -110,6 +120,12 @@ public class Follower extends Entity implements Interactable {
 
     private void initAttackBox() {
         this.attackBox = new Rectangle2D.Double(xPos, yPos, FOLLOWER_HB_WID + (20 * SCALE), FOLLOWER_HB_HEI);
+    }
+
+    private void configBehavior() {
+        if (type == NpcType.ANITA) this.behavior = new AnitaBehavior();
+        else if (type == NpcType.SIR_DEJANOVIC) this.behavior = new DejanovicBehavior();
+        else this.behavior = new PassiveBehavior();
     }
 
     public void update(int[][] levelData, Player player, List<Enemy> enemies) {
@@ -591,13 +607,17 @@ public class Follower extends Entity implements Interactable {
             drawX += (-6 * SCALE) * flipSign;
         }
 
-        int x = (int)drawX - FOLLOWER_X_OFFSET - xLvlOffset + flipCoefficient;
-        int y = (int)drawY - FOLLOWER_Y_OFFSET - yLvlOffset;
+        FollowerProfile profile = PROFILES.getOrDefault(type, PROFILES.get(NpcType.ANITA));
+        int drawW = profile.drawWidth(), drawH = profile.drawHeight();
+        int fC = (flipSign == -1) ? drawW : 0;
+
+        int x = (int) drawX - profile.offsetX() - xLvlOffset + fC;
+        int y = (int) drawY - profile.offsetY() - yLvlOffset + 1;
 
         int stateIdx = entityState.ordinal();
         if (stateIdx < anims.length && anims[stateIdx] != null) {
             int idx = (animIndex < anims[stateIdx].length) ? animIndex : 0;
-            g.drawImage(anims[stateIdx][idx], x, y, width * flipSign, height, null);
+            g.drawImage(anims[stateIdx][idx], x, y, drawW * flipSign, drawH, null);
         }
 
         hitBoxRenderer(g, xLvlOffset, yLvlOffset, Color.CYAN);

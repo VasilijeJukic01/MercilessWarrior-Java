@@ -5,6 +5,8 @@ import platformer.animation.AssetManager;
 import platformer.core.GameContext;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
+import platformer.model.gameObjects.ObjType;
+import platformer.model.gameObjects.npc.NpcType;
 import platformer.model.levels.Level;
 import platformer.model.levels.LvlTriggerType;
 import platformer.model.levels.metadata.LevelMetadata;
@@ -47,10 +49,12 @@ public class InteriorManager {
     }
 
     private void buildInteriors() {
-        String[] interiorNames = {"tavern"};
+        String[] interiorNames = {"tavern", "crypt1", "crypt2", "goblin_cave"};
 
         for (String name : interiorNames) {
-            BufferedImage img = ImageUtils.importImage("/images/levels/rooms/" + name + ".png", -1, -1);
+            String path = "/images/levels/rooms/" + name + ".png";
+            if (AssetManager.getInstance().getAsset(path) == null) continue;
+            BufferedImage img = ImageUtils.importImage(path, -1, -1);
             if (img != null) {
                 LevelMetadata meta = loadMetadataForInterior(name);
                 String tileset = (meta != null && meta.getTileset() != null) ? meta.getTileset() : "Invisible";
@@ -63,6 +67,7 @@ public class InteriorManager {
     private LevelMetadata loadMetadataForInterior(String name) {
         String jsonPath = "/meta/" + name + ".json";
         try (InputStream is = AssetManager.getInstance().getResourceAsStream(jsonPath)) {
+            if (is == null) return null;
             try (InputStreamReader reader = new InputStreamReader(is, StandardCharsets.UTF_8)) {
                 return new Gson().fromJson(reader, LevelMetadata.class);
             }
@@ -72,36 +77,56 @@ public class InteriorManager {
         }
     }
 
-    /**
-     * Orchestrates the transition from the overworld into an interior room.
-     * Saves the player's current location, swaps the active level data, moves the player
-     * to the interior spawn point, and adjusts lighting/effects for indoor rules.
-     *
-     * @param id The ID of the interior to load (e.g., "tavern").
-     */
-    public void loadInterior(String id) {
+    public void loadInterior(String destination) {
+        String id = destination;
+        LvlTriggerType targetSpawn = LvlTriggerType.SPAWN_A;
+        if (destination.contains(":")) {
+            String[] parts = destination.split(":");
+            id = parts[0];
+            try {
+                targetSpawn = LvlTriggerType.valueOf(parts[1]);
+            } catch (IllegalArgumentException ignored) {}
+        }
+
         if (interiors.containsKey(id)) {
+            final String targetId = id;
+            final LvlTriggerType spawnType = targetSpawn;
+
             Runnable loadCallback = () -> {
-                Rectangle2D.Double playerBox = context.getGameState().getPlayer().getHitBox();
-                this.previousLocation = new Point((int)playerBox.x, (int)playerBox.y);
+                if (!this.isInterior) {
+                    Rectangle2D.Double playerBox = context.getGameState().getPlayer().getHitBox();
+                    this.previousLocation = new Point((int) playerBox.x, (int) playerBox.y);
+                }
 
                 this.isInterior = true;
-                this.currentInteriorId = id;
-                Level interiorLevel = interiors.get(id);
-                LevelMetadata meta = interiorsMetadata.get(id);
+                this.currentInteriorId = targetId;
+                Level interiorLevel = interiors.get(targetId);
+                LevelMetadata meta = interiorsMetadata.get(targetId);
+
+                if (meta != null && meta.getClearEnemiesFlag() != null && context.getWorldMemoryManager().hasFlag(meta.getClearEnemiesFlag())) {
+                    interiorLevel.getEnemiesMap().clear();
+                }
+                if (meta != null && meta.getClearLootFlag() != null && context.getWorldMemoryManager().hasFlag(meta.getClearLootFlag())) {
+                    interiorLevel.getObjectsMap().remove(ObjType.LOOT);
+                }
 
                 context.getLevelManager().setInteriorLevel(interiorLevel, meta);
                 context.getGameState().getPlayer().loadLvlData(interiorLevel.getLvlData());
                 context.getEnemyManager().loadEnemies(interiorLevel);
                 context.getObjectManager().loadObjects(interiorLevel);
 
-                context.getGameState().getPlayer().setSpawn(interiorLevel.getPlayerSpawn(LvlTriggerType.SPAWN_A));
+                Point spawnPt = interiorLevel.getPlayerSpawn(spawnType);
+                context.getGameState().getPlayer().setSpawn(spawnPt);
+                syncFollowerInInterior(spawnPt);
+
                 context.getGameState().getCamera().updateLevelBounds(interiorLevel);
                 context.getGameState().getCamera().snapToPlayer(context.getGameState().getPlayer());
 
                 context.getEffectManager().setAmbientEffectsActive(false);
                 context.getLightManager().overrideAmbientDarkness(150);
-                context.getGameState().getPlayer().getPlayerDataManager().getUserInterface().setInterior(true);
+
+                boolean hideCombatHud = "tavern".equalsIgnoreCase(targetId);
+                context.getGameState().getPlayer().getPlayerDataManager().getUserInterface().setInterior(hideCombatHud);
 
                 context.getGameState().getPlayer().resetDirections();
                 context.getGameState().flushAWTEventQueue();
@@ -111,7 +136,8 @@ public class InteriorManager {
                     TransitionDirection.FROM_BOTTOM,
                     loadCallback
             );
-        } else {
+        }
+        else {
             Logger.getInstance().notify("Interior not found: " + id, Message.ERROR);
         }
     }
@@ -136,6 +162,7 @@ public class InteriorManager {
             if (previousLocation != null) {
                 context.getGameState().getPlayer().setSpawn(previousLocation);
                 context.getGameState().getPlayer().resetDirections();
+                syncFollowerInInterior(previousLocation);
             }
 
             context.getGameState().getCamera().updateLevelBounds(mainLevel);
@@ -148,6 +175,14 @@ public class InteriorManager {
                 TransitionDirection.FROM_TOP,
                 returnCallback
         );
+    }
+
+    private void syncFollowerInInterior(Point spawnPt) {
+        NpcType followerType = context.getQuestManager().getActiveFollowerType();
+        if (followerType != null) {
+            context.getObjectManager().spawnFollower(followerType, spawnPt.x, spawnPt.y);
+        }
+        else context.getObjectManager().despawnFollower();
     }
 
     public boolean isInterior() {

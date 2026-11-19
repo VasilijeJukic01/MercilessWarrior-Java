@@ -89,6 +89,9 @@ public class BlacksmithViewController {
         List<SmithingRecipe> filtered = new ArrayList<>();
 
         for (SmithingRecipe r : all) {
+            if (r.getRequiredFlag() != null && !r.getRequiredFlag().isEmpty() && !context.getWorldMemoryManager().hasFlag(r.getRequiredFlag())) {
+                continue;
+            }
             ItemData data = ItemDatabase.getInstance().getItemData(r.getOutput());
             if (data == null) continue;
             boolean isEquip = data.equip != null && data.equip.canEquip;

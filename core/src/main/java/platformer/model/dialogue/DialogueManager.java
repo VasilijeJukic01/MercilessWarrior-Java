@@ -19,6 +19,7 @@ import platformer.model.gameObjects.ObjectManager;
 import platformer.model.gameObjects.npc.DialogueBehavior;
 import platformer.model.gameObjects.npc.Npc;
 import platformer.model.gameObjects.npc.NpcType;
+import platformer.model.inventory.item.InventoryItem;
 import platformer.state.types.PlayingState;
 import platformer.ui.overlays.DialogueOverlay;
 import platformer.ui.overlays.OverlayManager;
@@ -29,8 +30,6 @@ import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import static platformer.constants.FilePaths.OBJECT_DIALOGUES;
 
 /**
  * This class is responsible for managing dialogues in the game.
@@ -62,20 +61,25 @@ public class DialogueManager {
     }
 
     private void readDialogueFile() {
-        try (InputStream is = AssetManager.getInstance().getResourceAsStream(OBJECT_DIALOGUES);
-             InputStreamReader reader = new InputStreamReader(is, StandardCharsets.UTF_8)) {
-            Gson gson = new Gson();
-            Type dialogueFileType = new TypeToken<DialogueFile>() {}.getType();
-            DialogueFile dialogueFile = gson.fromJson(reader, dialogueFileType);
+        Gson gson = new Gson();
+        Type dialogueFileType = new TypeToken<DialogueFile>() {}.getType();
+        List<String> dialogueFiles = AssetManager.getInstance().getAssetPaths("/dialogues/", ".json");
 
-            for (Dialogue dialogue : dialogueFile.getDialogues()) {
-                replacePlaceholders(dialogue);
-                String key = dialogue.getObject();
-                dialogues.putIfAbsent(key, new ArrayList<>());
-                dialogues.get(key).add(dialogue);
+        for (String path : dialogueFiles) {
+            try (InputStream is = AssetManager.getInstance().getResourceAsStream(path);
+                 InputStreamReader reader = new InputStreamReader(is, StandardCharsets.UTF_8)) {
+                DialogueFile dialogueFile = gson.fromJson(reader, dialogueFileType);
+                if (dialogueFile == null || dialogueFile.getDialogues() == null) continue;
+
+                for (Dialogue dialogue : dialogueFile.getDialogues()) {
+                    replacePlaceholders(dialogue);
+                    String key = dialogue.getObject();
+                    dialogues.putIfAbsent(key, new ArrayList<>());
+                    dialogues.get(key).add(dialogue);
+                }
+            } catch (Exception e) {
+                Logger.getInstance().notify("Reading dialogue file failed (" + path + "): " + e.getMessage(), Message.ERROR);
             }
-        } catch (Exception e) {
-            Logger.getInstance().notify("Reading dialogue file failed: " + e.getMessage(), Message.ERROR);
         }
     }
 
@@ -101,17 +105,22 @@ public class DialogueManager {
         List<Dialogue> availableDialogues = getDialogues(id);
         if (availableDialogues.isEmpty()) return;
 
+        List<Dialogue> priorityDialogues = availableDialogues.stream()
+                .filter(d -> d.getQuestion() != null || d.getRequiredFlag() != null || d.isOnce())
+                .collect(Collectors.toList());
+        List<Dialogue> pool = priorityDialogues.isEmpty() ? availableDialogues : priorityDialogues;
+
         if (getOverlay() != null) getOverlay().reset();
         EventBus.getInstance().publish(new OverlayChangeEvent(PlayingState.DIALOGUE));
         Random random = new Random();
-        int index = random.nextInt(availableDialogues.size());
+        int index = random.nextInt(pool.size());
         if (object instanceof Npc npc) {
             if (npc.getDialogueBehavior() == DialogueBehavior.RANDOM) {
-                index = random.nextInt(availableDialogues.size());
+                index = random.nextInt(pool.size());
             }
-            else index = Math.min(npc.getDialogueIndicator(), availableDialogues.size() - 1);
+            else index = Math.min(npc.getDialogueIndicator(), pool.size() - 1);
         }
-        Dialogue dialogue = availableDialogues.get(index);
+        Dialogue dialogue = pool.get(index);
         dialogue.setActivated();
         setDialogueObject(dialogue, object);
     }
@@ -149,20 +158,48 @@ public class DialogueManager {
     }
 
     private void executeAnswer(Answer answer, boolean isAccept) {
-        if (answer.getQuest() != null) startQuestIfNeeded(answer.getQuest());
-        else if (answer.getNext() != null && answer.getNext().startsWith("Quest: ")) {
-            startQuestIfNeeded(answer.getNext().replace("Quest: ", ""));
-        }
+        Player player = context.getPlayer();
 
         if (answer.getRequiredItems() != null || answer.getRequiredCoins() > 0) {
             Map<String, Integer> items = answer.getRequiredItems() != null ? answer.getRequiredItems() : Collections.emptyMap();
-            Player player = context.getPlayer();
             if (!player.getInventory().hasAndConsumeResources(items, answer.getRequiredCoins(), player)) {
                 NpcType speaker = (context.getObjectManager().getIntersection() instanceof Npc npc) ? npc.getNpcType() : null;
                 getOverlay().reset();
                 activateDialogueById(answer.getFailureDialogue(), speaker);
                 return;
             }
+        }
+
+        if (answer.getSetFlag() != null && !answer.getSetFlag().isEmpty()) {
+            for (String flag : answer.getSetFlag().split(",")) {
+                context.getWorldMemoryManager().addFlag(flag.trim());
+            }
+            context.getObjectManager().applyObjectMetadata();
+        }
+
+        if (answer.getRewardCoins() > 0) {
+            player.changeCoins(answer.getRewardCoins());
+        }
+        if (answer.getRewardExp() > 0) {
+            player.changeExp(answer.getRewardExp());
+        }
+        if (answer.getRewardItems() != null) {
+            answer.getRewardItems().forEach((itemId, amount) ->
+                    player.getInventory().addItemToBackpack(new InventoryItem(itemId, amount)));
+        }
+
+        if (answer.getQuest() != null) startQuestIfNeeded(answer.getQuest());
+        else if (answer.getNext() != null && answer.getNext().startsWith("Quest: ")) {
+            startQuestIfNeeded(answer.getNext().replace("Quest: ", ""));
+        }
+
+        if (answer.getObjectiveText() != null) {
+            String targetQuest = (answer.getObjectiveQuest() != null) ? answer.getObjectiveQuest() : answer.getCompleteQuest();
+            context.getQuestManager().updateActiveObjectiveText(targetQuest, answer.getObjectiveText());
+        }
+
+        if (answer.getCompleteQuest() != null) {
+            context.getQuestManager().completeQuestByName(answer.getCompleteQuest());
         }
 
         if (answer.getCutscene() != null) {
@@ -172,7 +209,13 @@ public class DialogueManager {
             return;
         }
 
-        // TODO: Temp
+        if (answer.getFollowUpDialogue() != null) {
+            NpcType speaker = (context.getObjectManager().getIntersection() instanceof Npc npc) ? npc.getNpcType() : null;
+            getOverlay().reset();
+            activateDialogueById(answer.getFollowUpDialogue(), speaker);
+            return;
+        }
+
         if ("FIGHT_RORIC".equals(answer.getNext())) {
             EventBus.getInstance().publish(new OverlayChangeEvent(null));
             getOverlay().reset();
@@ -247,11 +290,12 @@ public class DialogueManager {
                     EventBus.getInstance().publish(new OverlayChangeEvent(PlayingState.DIALOGUE));
                     d.setActivated();
 
+                    NpcType resolvedSpeaker = (speakerType != null) ? speakerType : resolveNpcTypeFromObjectKey(d.getObject());
                     GameObject speakerObj = null;
-                    if (speakerType != null) {
-                        speakerObj = context.getObjectManager().getNpcByType(speakerType);
+                    if (resolvedSpeaker != null) {
+                        speakerObj = context.getObjectManager().getNpcByType(resolvedSpeaker);
                         if (speakerObj == null) {
-                            speakerObj = new Npc(ObjType.NPC, 0, 0, speakerType);
+                            speakerObj = new Npc(ObjType.NPC, 0, 0, resolvedSpeaker);
                         }
                     }
                     setDialogueObject(d, speakerObj);
@@ -259,6 +303,17 @@ public class DialogueManager {
                 }
             }
         }
+    }
+
+    private NpcType resolveNpcTypeFromObjectKey(String objectKey) {
+        if (objectKey == null || !objectKey.startsWith("Npc")) return null;
+        String target = objectKey.substring(3);
+        for (NpcType type : NpcType.values()) {
+            if (type.name().replace("_", "").equalsIgnoreCase(target)) {
+                return type;
+            }
+        }
+        return null;
     }
 
     private List<Dialogue> getDialogues(String id) {

@@ -63,6 +63,8 @@ public final class CutsceneStepFactory {
                     data.getObjectiveType() != null ? QuestObjectiveType.valueOf(data.getObjectiveType()) : null,
                     data.getTarget() != null ? ObjectiveTarget.valueOf(data.getTarget()) : null
             );
+            case "SET_FLAG" -> new SetFlagStep(data.getFlag());
+            case "UPDATE_OBJECTIVE_TEXT" -> new UpdateObjectiveTextStep(data.getQuestName(), data.getText());
             case "RELOAD_LEVEL_VARIANT" -> new ReloadLevelVariantStep();
             case "START_BOSS_FIGHT" -> new StartBossFightStep();
             default -> new WaitStep(1);
@@ -208,6 +210,7 @@ public final class CutsceneStepFactory {
     private static class DespawnFollowerStep implements CutsceneStep {
         @Override
         public void start(GameContext context) {
+            context.getWorldMemoryManager().setActiveFollower(null);
             context.getObjectManager().despawnFollower();
         }
 
@@ -327,6 +330,46 @@ public final class CutsceneStepFactory {
             if (objectiveType != null && target != null) {
                 context.getQuestManager().updateQuestProgress(objectiveType, target);
             }
+        }
+
+        @Override
+        public boolean update(GameContext context) {
+            return true;
+        }
+    }
+
+    private static class SetFlagStep implements CutsceneStep {
+        private final String flag;
+
+        SetFlagStep(String flag) {
+            this.flag = flag;
+        }
+
+        @Override
+        public void start(GameContext context) {
+            if (flag != null && !flag.isEmpty()) {
+                context.getWorldMemoryManager().addFlag(flag);
+            }
+        }
+
+        @Override
+        public boolean update(GameContext context) {
+            return true;
+        }
+    }
+
+    private static class UpdateObjectiveTextStep implements CutsceneStep {
+        private final String questName;
+        private final String text;
+
+        UpdateObjectiveTextStep(String questName, String text) {
+            this.questName = questName;
+            this.text = text;
+        }
+
+        @Override
+        public void start(GameContext context) {
+            context.getQuestManager().updateActiveObjectiveText(questName, text);
         }
 
         @Override

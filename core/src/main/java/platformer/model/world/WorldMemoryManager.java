@@ -100,6 +100,25 @@ public class WorldMemoryManager {
         }
     }
 
+    public void setActiveFollower(NpcType type) {
+        permanentFlags.removeIf(f -> f.startsWith("ACTIVE_FOLLOWER_"));
+        if (type != null) {
+            permanentFlags.add("ACTIVE_FOLLOWER_" + type.name());
+        }
+        syncToAccount();
+    }
+
+    public NpcType getActiveFollower() {
+        for (String flag : permanentFlags) {
+            if (flag.startsWith("ACTIVE_FOLLOWER_")) {
+                try {
+                    return NpcType.valueOf(flag.substring("ACTIVE_FOLLOWER_".length()));
+                } catch (IllegalArgumentException ignored) {}
+            }
+        }
+        return null;
+    }
+
     /**
      * Records a permanently broken shortcut brick.
      */

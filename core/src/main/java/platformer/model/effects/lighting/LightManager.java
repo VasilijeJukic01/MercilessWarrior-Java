@@ -825,9 +825,14 @@ public class LightManager {
     }
 
     /**
-     * Releases the manual override on ambient darkness, allowing the day-night cycle to resume control of the lighting.
+     * Releases a temporary override on ambient darkness.
+     * If the player is currently inside an interior, restores the standard interior lighting instead of outdoor day/night tinting.
      */
     public void releaseAmbientDarkness() {
+        if (context != null && context.getInteriorManager() != null && context.getInteriorManager().isInterior()) {
+            overrideAmbientDarkness(150);
+            return;
+        }
         this.ambientDarknessOverridden = false;
     }
 
@@ -919,8 +924,10 @@ public class LightManager {
      */
     public void reset() {
         releaseAmbientDarkness();
-        this.ambientAlpha = 130;
-        this.currentAmbientAlpha = 130;
+        if (!ambientDarknessOverridden) {
+            this.ambientAlpha = 130;
+            this.currentAmbientAlpha = 130;
+        }
         this.filterColor = null;
         this.flashIntensity = 0;
         this.flashDuration = 0;

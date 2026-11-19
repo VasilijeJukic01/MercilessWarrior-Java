@@ -100,6 +100,9 @@ public class Level {
             case WRAITH:
                 addEnemy(new Wraith(i*TILES_SIZE, (j-1)*TILES_SIZE));
                 break;
+            case CORRUPTED_KNIGHT:
+                addEnemy(new CorruptedKnight(i * TILES_SIZE, (j - 1) * TILES_SIZE));
+                break;
             case RORIC:
                 addEnemy(new Roric(i*TILES_SIZE, (j-1)*TILES_SIZE));
                 break;
@@ -219,7 +222,7 @@ public class Level {
             for (int j = 0; j < levelImg.getHeight(); j++) {
                 Color color = new Color(levelImg.getRGB(i, j));
                 int value = layer ? color.getGreen() : color.getBlue();
-                if ((value >= 150 && !layer) || (value > 4 && layer)) value = -1;
+                if ((value >= 200 && !layer) || (value > 4 && layer)) value = -1;
                 data[i - panelWidth][j] = value;
             }
         }

@@ -2,6 +2,7 @@ package platformer.animation;
 
 import platformer.serialization.GameEncryptor;
 import java.io.*;
+import java.util.List;
 import java.util.Map;
 
 public class AssetManager {
@@ -39,6 +40,16 @@ public class AssetManager {
         } catch (Exception e) {
             throw new RuntimeException("Failed to load or decrypt assets", e);
         }
+    }
+
+    /**
+     * Returns all packed asset paths matching the given directory prefix and file extension.
+     */
+    public List<String> getAssetPaths(String prefix, String suffix) {
+        return assetData.keySet().stream()
+                .filter(path -> path.startsWith(prefix) && path.endsWith(suffix))
+                .sorted()
+                .toList();
     }
 
     /**

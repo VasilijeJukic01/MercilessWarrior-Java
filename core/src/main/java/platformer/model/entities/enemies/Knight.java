@@ -21,8 +21,8 @@ import static platformer.physics.CollisionDetector.*;
 public class Knight extends Enemy {
 
     private static final double ARCANE_SLASH_RANGE = KNIGHT_ATT_RANGE * 1.45;
-    private static final double CLEAVE_LUNGE_SPEED = 1.6 * SCALE;
-    private static final double ARCANE_SURGE_SPEED = 2.2 * SCALE;
+    private static final double CLEAVE_LUNGE_SPEED = 1.05 * SCALE;
+    private static final double ARCANE_SURGE_SPEED = 1.45 * SCALE;
 
     private int attackOffset;
     private boolean hasHyperArmor = true;
@@ -112,11 +112,11 @@ public class Knight extends Enemy {
             if (cooldown[Cooldown.ATTACK.ordinal()] == 0) {
                 if (dist <= KNIGHT_ATT_RANGE) {
                     hasHyperArmor = true;
-                    chainIntoArcaneSlash = rand.nextDouble() < 0.50;
+                    chainIntoArcaneSlash = rand.nextDouble() < 0.25;
                     setEnemyAction(Anim.ATTACK_1);
                     return;
                 }
-                else if (dist <= ARCANE_SLASH_RANGE && rand.nextDouble() < 0.04) {
+                else if (dist <= ARCANE_SLASH_RANGE && rand.nextDouble() < 0.012) {
                     hasHyperArmor = true;
                     chainIntoArcaneSlash = false;
                     setEnemyAction(Anim.ATTACK_2);
@@ -138,7 +138,7 @@ public class Knight extends Enemy {
         if (animIndex == 0) {
             attackCheck = false;
         }
-        else if ((animIndex == 2 || animIndex == 3) && checkPlayerParry(target)) {
+        else if ((animIndex == 1 || animIndex == 3) && checkPlayerParry(target)) {
             chainIntoArcaneSlash = false;
             attackCheck = true;
         }

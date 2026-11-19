@@ -16,6 +16,7 @@ public class GameObjectMetadata {
     private ObjType type;
     private Integer tileX;
     private Integer tileY;
+    private String destination;
     private String requiredFlag;
     private String excludeFlag;
     private String excludeQuestActive;
@@ -28,8 +29,8 @@ public class GameObjectMetadata {
     }
 
     public boolean matchesObject(int objTileX, int objTileY) {
-        if (tileX != null && tileX != objTileX) return false;
-        if (tileY != null && tileY != objTileY) return false;
+        if (tileX != null && Math.abs(tileX - objTileX) > 2) return false;
+        if (tileY != null && Math.abs(tileY - objTileY) > 2) return false;
         return true;
     }
 }

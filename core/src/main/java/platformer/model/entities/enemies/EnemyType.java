@@ -4,13 +4,14 @@ import platformer.core.config.BalanceManager;
 
 public enum EnemyType {
 
-    SKELETON(25, 15),       // 0
-    GHOUL(40, 20),          // 1
-    LANCER(120, 25),        // 2
-    KNIGHT(50, 30),         // 3
-    WRAITH(50, 40),         // 4
-    RORIC(999, 30),         // 5
-    MAX(1, 1);              // 6
+    SKELETON(25, 15),           // 0
+    GHOUL(40, 20),              // 1
+    LANCER(120, 25),            // 2
+    KNIGHT(50, 30),             // 3
+    WRAITH(50, 40),             // 4
+    RORIC(999, 30),             // 5
+    CORRUPTED_KNIGHT(80, 32),   // 6
+    MAX(1, 1);                  // 7
 
     private final int defaultHealth;
     private final int defaultDamage;

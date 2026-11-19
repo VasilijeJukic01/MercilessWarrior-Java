@@ -14,7 +14,7 @@ import static platformer.constants.Constants.*;
 public class Door extends GameObject implements Interactable {
 
     private boolean active;
-    private final String destination;
+    private String destination;
 
     public Door(ObjType objType, int xPos, int yPos, String destination) {
         super(objType, xPos, yPos);
@@ -71,5 +71,9 @@ public class Door extends GameObject implements Interactable {
         int centerX = (int) (hitBox.getCenterX() - xLevelOffset);
         int promptY = (int) (hitBox.y - yLevelOffset - 8 * SCALE);
         UIButtonRenderer.drawInteractionPrompt(g, "ENTER", centerX, promptY);
+    }
+
+    public void setDestination(String destination) {
+        this.destination = destination;
     }
 }

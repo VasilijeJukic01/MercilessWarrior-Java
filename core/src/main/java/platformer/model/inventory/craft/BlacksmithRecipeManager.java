@@ -45,6 +45,7 @@ public class BlacksmithRecipeManager {
         private String output;
         private int amount;
         private int coinCost;
+        private String requiredFlag;
         private Map<String, Integer> ingredients = Collections.emptyMap();
     }
 

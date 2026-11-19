@@ -208,7 +208,7 @@ public class GameStateController {
 
     private void handleInteraction(String id) {
         if (id.startsWith("Door:")) {
-            String destination = id.split(":")[1];
+            String destination = id.substring("Door:".length());
             if (destination.equals("exit")) {
                 context.getInteriorManager().returnToMainMap();
             }

@@ -23,4 +23,6 @@ public class CutsceneStepData {
     private String objectiveType;
     private String target;
     private Integer stepIndex;
+    private String flag;
+    private String text;
 }

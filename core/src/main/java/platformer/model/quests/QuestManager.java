@@ -106,7 +106,7 @@ public class QuestManager {
      * @param eventTarget The specific target of the objective (e.g., SKELETON, CRATE).
      */
     public void updateQuestProgress(QuestObjectiveType eventType, ObjectiveTarget eventTarget) {
-        String currentLevelId = context.getLevelManager().getCurrentLevelId();
+        String currentLevelId = context.getInteriorManager().isInterior() ? context.getInteriorManager().getCurrentInteriorId() : context.getLevelManager().getCurrentLevelId();
         for (QuestSlot slot : new ArrayList<>(slots)) {
             Quest quest = slot.getQuest();
             if (quest.isCompleted() || quest.getObjectives() == null || quest.getObjectives().isEmpty()) continue;
@@ -231,18 +231,46 @@ public class QuestManager {
         }
     }
 
-    public NpcType getActiveFollowerType() {
+    public void updateActiveObjectiveText(String questName, String newText) {
+        if (questName == null || newText == null) return;
         for (QuestSlot slot : slots) {
-            Quest q = slot.getQuest();
-            if (q != null && !q.isCompleted() && q.getFollower() != null) {
-                return q.getFollower();
+            Quest quest = slot.getQuest();
+            if (quest != null && quest.getName().equalsIgnoreCase(questName) && quest.getObjectives() != null) {
+                int idx = Math.min(quest.getActiveObjectiveIndex(), quest.getObjectives().size() - 1);
+                if (idx >= 0) {
+                    quest.getObjectives().get(idx).setDescription(newText);
+                }
+                break;
             }
         }
-        return null;
+    }
+
+    public void completeQuestByName(String questName) {
+        if (questName == null) return;
+        for (QuestSlot slot : new ArrayList<>(slots)) {
+            Quest quest = slot.getQuest();
+            if (quest != null && quest.getName().equalsIgnoreCase(questName) && !quest.isCompleted()) {
+                if (quest.getObjectives() != null) {
+                    for (QuestObjective obj : quest.getObjectives()) {
+                        obj.setCurrentAmount(obj.getRequiredAmount());
+                    }
+                }
+                quest.setCompleted(true);
+                completeQuest(quest);
+                Logger.getInstance().notify("Quest Completed: " + quest.getName(), Message.INFORMATION);
+                break;
+            }
+        }
+    }
+
+    public NpcType getActiveFollowerType() {
+        if (context == null || context.getWorldMemoryManager() == null) return null;
+        return context.getWorldMemoryManager().getActiveFollower();
     }
 
     private void launchStartSideEffect(Quest quest) {
         if (quest.getFollower() != null) {
+            context.getWorldMemoryManager().setActiveFollower(quest.getFollower());
             Npc npc = context.getObjectManager().getNpcByType(quest.getFollower());
             if (npc != null) {
                 npc.setAlive(false);

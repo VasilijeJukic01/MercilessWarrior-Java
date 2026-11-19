@@ -37,7 +37,11 @@ public class BackgroundManager {
         backgrounds.put("FOREST_VILLAGE_ENTRANCE", ImageUtils.importImage(FOREST_VILLAGE_ENTRANCE_BG, GAME_WIDTH, GAME_HEIGHT));
         backgrounds.put("RORIC_ARENA", ImageUtils.importImage(RORIC_ARENA_BG, GAME_WIDTH, GAME_HEIGHT));
         backgrounds.put("FOREST_THORNS", ImageUtils.importImage(FOREST_THORNS_BG, GAME_WIDTH, GAME_HEIGHT));
+
         backgrounds.put("TAVERN", ImageUtils.importImage(TAVERN_BG, -1, -1));
+        backgrounds.put("CRYPT1", ImageUtils.importImage(CRYPT1_BG, -1, -1));
+        backgrounds.put("CRYPT2", ImageUtils.importImage(CRYPT2_BG, -1, -1));
+        backgrounds.put("GOBLIN_CAVE", ImageUtils.importImage(GOBLIN_CAVE_BG, -1, -1));
     }
 
     /**

@@ -9,11 +9,17 @@ public enum ObjectiveTarget {
     GHOUL,
     KNIGHT,
     LANCER,
+    CORRUPTED_KNIGHT,
+    VOID_STALKER,
+    GOBLIN,
     // Objects
     CRATE,
     // Actions & Items
     SWORD_UPGRADE,
     BUY_ARMOR,
     // NPCs
-    ANITA
+    ANITA,
+    SIR_DEJANOVIC,
+    NIKOLAS,
+    ANDELLIA
 }

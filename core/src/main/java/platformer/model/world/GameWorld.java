@@ -140,7 +140,9 @@ public class GameWorld {
     private void renderBackground(int xLevelOffset, int yLevelOffset, Graphics g) {
         BufferedImage bg = levelManager.getCurrentBackground();
         if (levelManager.getCurrentLevelMetadata().getTileset().equals("Invisible")) {
-            g.drawImage(bg, -xLevelOffset, -yLevelOffset, null);
+            int levelW = levelManager.getCurrentLevel().getLevelTilesWidth() * TILES_SIZE;
+            int levelH = levelManager.getCurrentLevel().getLevelTilesHeight() * TILES_SIZE;
+            g.drawImage(bg, -xLevelOffset, -yLevelOffset, levelW, levelH, null);
         }
         else {
             double parallaxScale = 1.15;

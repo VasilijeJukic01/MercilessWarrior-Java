@@ -67,12 +67,21 @@ public abstract class Enemy extends Entity implements DamageSource, Debug<Graphi
 
     private void finishAnimation() {
         animIndex = 0;
-        if (enemyType == EnemyType.GHOUL && entityState == Anim.ATTACK_1){
-            cooldown[Cooldown.ATTACK.ordinal()] = 8 + rand.nextDouble() * 4;
+        if (enemyType == EnemyType.GHOUL && entityState == Anim.ATTACK_1) {
+            cooldown[Cooldown.ATTACK.ordinal()] = 18 + rand.nextDouble() * 8;
             entityState = Anim.IDLE;
         }
-        else if (entityState == Anim.ATTACK_1 || entityState == Anim.ATTACK_2 || entityState == Anim.SPELL_1 || entityState == Anim.HIT || entityState == Anim.BLOCK || entityState == Anim.REVEAL) {     if (isAttacking()) {
-                cooldown[Cooldown.ATTACK.ordinal()] = 2.8 + rand.nextDouble() * 1.5;
+        else if (entityState == Anim.ATTACK_1 || entityState == Anim.ATTACK_2 || entityState == Anim.SPELL_1 || entityState == Anim.HIT || entityState == Anim.BLOCK || entityState == Anim.REVEAL) {
+            if (isAttacking()) {
+                if (enemyType == EnemyType.KNIGHT) {
+                    cooldown[Cooldown.ATTACK.ordinal()] = 26.0 + rand.nextDouble() * 10.0;
+                }
+                else if (enemyType == EnemyType.CORRUPTED_KNIGHT) {
+                    cooldown[Cooldown.ATTACK.ordinal()] = 30.0 + rand.nextDouble() * 12.0;
+                }
+                else {
+                    cooldown[Cooldown.ATTACK.ordinal()] = 14.0 + rand.nextDouble() * 8.0;
+                }
             }
             if (entityState == Anim.HIT) {
                 enemySpeed = ENEMY_SPEED_SLOW;
@@ -116,15 +125,15 @@ public abstract class Enemy extends Entity implements DamageSource, Debug<Graphi
     private void configureEnemySpeed() {
         if (enemyType == EnemyType.GHOUL) enemySpeed = GHOUL_SPEED_FAST;
         else if (enemyType == EnemyType.SKELETON) enemySpeed = SKELETON_SPEED_FAST;
-        else if (enemyType == EnemyType.KNIGHT) enemySpeed = KNIGHT_SPEED_FAST;
+        else if (enemyType == EnemyType.KNIGHT || enemyType == EnemyType.CORRUPTED_KNIGHT) enemySpeed = KNIGHT_SPEED_FAST;
         else if (enemyType == EnemyType.WRAITH) enemySpeed = WRAITH_SPEED_FAST;
     }
 
     protected boolean isEntityCloseForAttack(Entity entity) {
-        int distance = (int)Math.abs(entity.getHitBox().x-hitBox.x);
+        int distance = (int) Math.abs(entity.getHitBox().x - hitBox.x);
         if (enemyType == EnemyType.SKELETON) return distance <= SKELETON_ATT_RANGE;
         else if (enemyType == EnemyType.GHOUL) return distance <= GHOUL_ATT_RANGE;
-        else if (enemyType == EnemyType.KNIGHT) return distance <= KNIGHT_ATT_RANGE;
+        else if (enemyType == EnemyType.KNIGHT || enemyType == EnemyType.CORRUPTED_KNIGHT) return distance <= KNIGHT_ATT_RANGE;
         else if (enemyType == EnemyType.WRAITH) return distance <= WRAITH_ATT_RANGE;
         else if (enemyType == EnemyType.LANCER) return distance <= LANCER_ATT_RANGE;
         else if (enemyType == EnemyType.RORIC) return distance <= RORIC_ATT_RANGE;
@@ -212,7 +221,8 @@ public abstract class Enemy extends Entity implements DamageSource, Debug<Graphi
         if (!alive || freezeTick > 0 || attackCheck) return false;
         return switch (enemyType) {
             case SKELETON, GHOUL -> entityState == Anim.ATTACK_1 && (animIndex == 1 || animIndex == 2);
-            case KNIGHT, WRAITH -> (entityState == Anim.ATTACK_1 || entityState == Anim.ATTACK_2) && (animIndex == 2 || animIndex == 3);
+            case KNIGHT, CORRUPTED_KNIGHT -> (entityState == Anim.ATTACK_1 || entityState == Anim.ATTACK_2) && (animIndex >= 1 && animIndex <= 3);
+            case WRAITH -> (entityState == Anim.ATTACK_1 || entityState == Anim.ATTACK_2) && (animIndex == 2 || animIndex == 3);
             default -> false;
         };
     }
@@ -265,22 +275,11 @@ public abstract class Enemy extends Entity implements DamageSource, Debug<Graphi
         if (enemyType == EnemyType.LANCER || enemyType == EnemyType.RORIC) return;
 
         switch (entityState) {
-            case RUN:
-                animSpeed = 15;
-                break;
-            case WALK:
-                animSpeed = 23;
-                break;
-            case ATTACK_1:
-            case ATTACK_2:
-                animSpeed = 18;
-                break;
-            case HIT:
-                animSpeed = 12;
-                break;
-            default:
-                animSpeed = originalAnimSpeed;
-                break;
+            case RUN -> animSpeed = (enemyType == EnemyType.KNIGHT || enemyType == EnemyType.CORRUPTED_KNIGHT) ? 18 : 15;
+            case WALK -> animSpeed = 23;
+            case ATTACK_1, ATTACK_2 -> animSpeed = (enemyType == EnemyType.KNIGHT || enemyType == EnemyType.CORRUPTED_KNIGHT) ? 26 : 18;
+            case HIT -> animSpeed = 14;
+            default -> animSpeed = originalAnimSpeed;
         }
     }
 

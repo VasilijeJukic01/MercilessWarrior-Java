@@ -40,7 +40,7 @@ public class Npc extends GameObject implements Interactable {
     }
 
     private void configureAnimSpeed() {
-        if (npcType == NpcType.RORIC || npcType == NpcType.BLACKSMITH || npcType == NpcType.DOG) {
+        if (npcType == NpcType.RORIC || npcType == NpcType.BLACKSMITH || npcType == NpcType.DOG || npcType == NpcType.SIR_DEJANOVIC) {
             super.animSpeed = 20;
         }
         else super.animSpeed = 34;
@@ -58,6 +58,11 @@ public class Npc extends GameObject implements Interactable {
         else if (npcType == NpcType.DOG) {
             this.direction = Direction.LEFT;
             hitBox.x = xPos + (int) (25 * SCALE) + (int) (11 * SCALE);
+            hitBox.y = yPos - npcType.getHei() + TILES_SIZE;
+        }
+        else if (npcType == NpcType.SIR_DEJANOVIC) {
+            this.direction = Direction.LEFT;
+            hitBox.x = xPos + (int) (25 * SCALE);
             hitBox.y = yPos - npcType.getHei() + TILES_SIZE;
         }
     }

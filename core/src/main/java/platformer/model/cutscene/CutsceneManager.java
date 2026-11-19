@@ -82,12 +82,14 @@ public class CutsceneManager {
     }
 
     private void evaluateTriggers() {
-        if (context.getInteriorManager().isInterior() || context.getLevelManager().isInArena()) return;
-        String currentLevelId = context.getLevelManager().getCurrentLevelId();
+        if (context.getLevelManager().isInArena()) return;
+        String currentLevelId = context.getInteriorManager().isInterior() ? context.getInteriorManager().getCurrentInteriorId() : context.getLevelManager().getCurrentLevelId();
 
         for (CutsceneDefinition def : definitions) {
             if (def.getLevelId() != null && !def.getLevelId().equalsIgnoreCase(currentLevelId)) continue;
             if (def.getOnceFlag() != null && context.getWorldMemoryManager().hasFlag(def.getOnceFlag())) continue;
+            if (def.getRequiredFlag() != null && !context.getWorldMemoryManager().hasFlag(def.getRequiredFlag())) continue;
+            if (def.getExcludeFlag() != null && context.getWorldMemoryManager().hasFlag(def.getExcludeFlag())) continue;
             if (def.getRequiredActiveQuest() != null && !context.getQuestManager().isQuestActive(def.getRequiredActiveQuest())) {
                 continue;
             }
@@ -100,7 +102,17 @@ public class CutsceneManager {
                 startCutscene(def);
                 return;
             }
+            else if ("ITEM_OWNED".equalsIgnoreCase(def.getTriggerType()) && playerHasItem(def.getRequiredItemId())) {
+                startCutscene(def);
+                return;
+            }
         }
+    }
+
+    private boolean playerHasItem(String itemId) {
+        if (itemId == null || context.getPlayer() == null) return false;
+        return context.getPlayer().getInventory().getBackpack().stream()
+                .anyMatch(item -> item != null && itemId.equals(item.getItemId()));
     }
 
     private boolean isPlayerTouchingCutsceneTrigger() {

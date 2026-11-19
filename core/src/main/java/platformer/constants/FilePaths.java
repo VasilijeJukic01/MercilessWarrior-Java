@@ -37,11 +37,15 @@ public final class FilePaths {
     public static final String FOREST_THORNS_BG = "/images/levels/backgrounds/FOREST_THORNS.png";
 
     public static final String TAVERN_BG = "/images/levels/backgrounds/tavern.png";
+    public static final String CRYPT1_BG = "/images/levels/backgrounds/CRYPT1.png";
+    public static final String CRYPT2_BG = "/images/levels/backgrounds/CRYPT2.png";
+    public static final String GOBLIN_CAVE_BG = "/images/levels/backgrounds/GOBLIN_CAVE.png";
 
     // Enemy
     public static final String SKELETON_SHEET = "/images/enemies/SkeletonSprite.png";
     public static final String GHOUL_SHEET = "/images/enemies/GhoulSprite.png";
     public static final String KNIGHT_SHEET = "/images/enemies/KnightSprite.png";
+    public static final String CORRUPTED_KNIGHT_SHEET = "/images/enemies/CorruptedKnightSprite.png";
     public static final String WRAITH_SHEET = "/images/enemies/WraithSprite.png";
     public static final String LANCER_SHEET = "/images/enemies/boss/Lancer.png";
     public static final String RORIC_SHEET = "/images/enemies/boss/Roric.png";
@@ -81,9 +85,6 @@ public final class FilePaths {
     public static final String ANDELLIA_SHEET = "/images/objs/npc/AndelliaSprite.png";
     public static final String EERYN_SHEET = "/images/objs/npc/EerynSprite.png";
     public static final String AVATAR_PATH= "/images/avatars/$.png";
-
-    // Dialogue
-    public static final String OBJECT_DIALOGUES = "/dialogues/dialogues.json";
 
     // Spells
     public static final String LIGHTNING_SHEET = "/images/spells/LightningSprite.png";

@@ -19,8 +19,16 @@ public class Answer {
     private String quest;
     private Map<String, Integer> requiredItems;
     private int requiredCoins;
+    private String setFlag;
+    private int rewardCoins;
+    private int rewardExp;
+    private Map<String, Integer> rewardItems;
+    private String completeQuest;
+    private String followUpDialogue;
     private String cutscene;
     private String failureDialogue;
+    private String objectiveQuest;
+    private String objectiveText;
 
     public Answer(String answer, String next) {
         this.answer = answer;

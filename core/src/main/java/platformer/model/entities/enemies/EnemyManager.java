@@ -71,6 +71,7 @@ public class EnemyManager {
         this.enemyRenderers.put(Wraith.class, new WraithRenderer());
         this.enemyRenderers.put(Lancer.class, new LancerRenderer());
         this.enemyRenderers.put(Roric.class, new RoricRenderer());
+        this.enemyRenderers.put(CorruptedKnight.class, new CorruptedKnightRenderer());
     }
 
     public void loadEnemies(Level level) {
@@ -120,6 +121,10 @@ public class EnemyManager {
 
     private void renderWraiths(Graphics g, int xLevelOffset, int yLevelOffset) {
         renderEnemies(Wraith.class, g, xLevelOffset, yLevelOffset);
+    }
+
+    private void renderCorruptedKnights(Graphics g, int xLevelOffset, int yLevelOffset) {
+        renderEnemies(CorruptedKnight.class, g, xLevelOffset, yLevelOffset);
     }
 
     // Enemy hit
@@ -293,6 +298,7 @@ public class EnemyManager {
         handleEnemySpellHit(Ghoul.class, undeadFlame);
         handleEnemySpellHit(Knight.class, baseFlame);
         handleEnemySpellHit(Wraith.class, undeadFlame);
+        handleEnemySpellHit(CorruptedKnight.class, baseFlame);
     }
 
     public void checkEnemyTrapHit(GameObject object) {
@@ -359,6 +365,7 @@ public class EnemyManager {
         else if (enemy instanceof Ghoul && animIndex == 3) isAttackFrame = true;
         else if (enemy instanceof Knight && animIndex == 4) isAttackFrame = true;
         else if (enemy instanceof Wraith && animIndex == 3) isAttackFrame = true;
+        else if (enemy instanceof CorruptedKnight && animIndex == 4) isAttackFrame = true;
 
         if (isAttackFrame) context.getObjectManager().checkObjectBreakByEnemy(enemy.getAttackBox());
     }
@@ -418,6 +425,7 @@ public class EnemyManager {
         updateEnemies(Ghoul.class, levelData, player, follower);
         updateEnemies(Knight.class, levelData, player, follower);
         updateEnemies(Wraith.class, levelData, player, follower);
+        updateEnemies(CorruptedKnight.class, levelData, player, follower);
 
         getEnemies(Lancer.class).stream()
                 .filter(Lancer::isAlive)
@@ -446,6 +454,7 @@ public class EnemyManager {
             renderGhouls(g, xLevelOffset, yLevelOffset);
             renderKnights(g, xLevelOffset, yLevelOffset);
             renderWraiths(g, xLevelOffset, yLevelOffset);
+            renderCorruptedKnights(g, xLevelOffset, yLevelOffset);
             renderLancer(g, xLevelOffset, yLevelOffset);
             renderRoric(g, xLevelOffset, yLevelOffset);
             renderClones(g, xLevelOffset, yLevelOffset);

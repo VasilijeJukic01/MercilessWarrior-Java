@@ -109,7 +109,7 @@ public class ObjectManager {
             }
         });
         for (Npc npc : getObjects(Npc.class)) {
-            if (npc.getNpcType() == NpcType.BLACKSMITH) {
+            if (npc.getNpcType() == NpcType.BLACKSMITH || npc.getNpcType() == NpcType.SIR_DEJANOVIC) {
                 double groundY = CollisionDetector.getGroundY(npc.getHitBox().getCenterX(), npc.getHitBox().y, lvlData);
                 npc.getHitBox().y = groundY - npc.getHitBox().height + (int) (2 * SCALE);
             }
@@ -119,6 +119,13 @@ public class ObjectManager {
     }
 
     private void applyNpcMetadata() {
+        NpcType activeFollowerType = context.getWorldMemoryManager() != null ? context.getWorldMemoryManager().getActiveFollower() : null;
+
+        for (Npc npc : getObjects(Npc.class)) {
+            if (npc.getNpcType() == NpcType.RORIC) continue;
+            npc.setAlive(npc.getNpcType() != activeFollowerType);
+        }
+
         LevelMetadata meta = context.getLevelManager().getCurrentLevelMetadata();
         if (meta == null || meta.getNpcs() == null) return;
 
@@ -127,11 +134,12 @@ public class ObjectManager {
         int[][] lvlData = context.getLevelManager().getCurrentLevel().getLvlData();
         for (NpcMetadata npcMeta : meta.getNpcs()) {
             Npc existing = getNpcByType(npcMeta.getType());
-            if (!npcMeta.isConditionMet(memory, quests)) {
+            if (!npcMeta.isConditionMet(memory, quests) || npcMeta.getType() == activeFollowerType) {
                 if (existing != null) existing.setAlive(false);
                 continue;
             }
-            if (existing == null && npcMeta.getX() != null && npcMeta.getY() != null) {
+            if (existing != null) existing.setAlive(true);
+            else if (npcMeta.getX() != null && npcMeta.getY() != null) {
                 spawnNpcFromMetadata(npcMeta, lvlData);
             }
         }
@@ -156,6 +164,9 @@ public class ObjectManager {
                 int objTileY = (int) (obj.getHitBox().y / TILES_SIZE);
                 if (objMeta.matchesObject(objTileX, objTileY)) {
                     obj.setAlive(shouldBeActive);
+                    if (obj instanceof Door door && objMeta.getDestination() != null) {
+                        door.setDestination(objMeta.getDestination());
+                    }
                 }
             }
         }
@@ -556,7 +567,7 @@ public class ObjectManager {
 
     private void resetFollowers() {
         NpcType followerType = context.getQuestManager().getActiveFollowerType();
-        if (followerType != null && !context.getWorldMemoryManager().hasFlag("VILLAGE_CLEARED_deepmoss02")) {
+        if (followerType != null) {
             Player player = context.getPlayer();
             spawnFollower(followerType, (int) player.getHitBox().x, (int) player.getHitBox().y);
         }

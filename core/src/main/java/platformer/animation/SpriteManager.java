@@ -73,6 +73,7 @@ public class SpriteManager {
                 this::loadGhoulAnimations,
                 this::loadKnightAnimations,
                 this::loadWraithAnimations,
+                this::loadCorruptedKnightAnimations,
                 this::loadLancerAnimations,
                 this::loadRoricAnimations,
                 this::loadObjectAnimations,
@@ -230,6 +231,20 @@ public class SpriteManager {
         enemyAnimations.put(EnemyType.WRAITH, anim);
     }
 
+    private void loadCorruptedKnightAnimations() {
+        BufferedImage[][] anim = new BufferedImage[13][13];
+
+        anim[Anim.IDLE.ordinal()] = loadFromSprite(CORRUPTED_KNIGHT_SHEET,     8, 0, KNIGHT_WIDTH, KNIGHT_HEIGHT, 0, KNIGHT_W, KNIGHT_H);
+        anim[Anim.WALK.ordinal()] = loadFromSprite(CORRUPTED_KNIGHT_SHEET,     8, 1, KNIGHT_WIDTH, KNIGHT_HEIGHT, 0, KNIGHT_W, KNIGHT_H);
+        anim[Anim.RUN.ordinal()] = loadFromSprite(CORRUPTED_KNIGHT_SHEET,      8, 2, KNIGHT_WIDTH, KNIGHT_HEIGHT, 0, KNIGHT_W, KNIGHT_H);
+        anim[Anim.ATTACK_1.ordinal()] = loadFromSprite(CORRUPTED_KNIGHT_SHEET, 8, 3, KNIGHT_WIDTH, KNIGHT_HEIGHT, 0, KNIGHT_W, KNIGHT_H);
+        anim[Anim.ATTACK_2.ordinal()] = loadFromSprite(CORRUPTED_KNIGHT_SHEET, 8, 4, KNIGHT_WIDTH, KNIGHT_HEIGHT, 0, KNIGHT_W, KNIGHT_H);
+        anim[Anim.HIT.ordinal()] = loadFromSprite(CORRUPTED_KNIGHT_SHEET,      5, 5, KNIGHT_WIDTH, KNIGHT_HEIGHT, 0, KNIGHT_W, KNIGHT_H);
+        anim[Anim.DEATH.ordinal()] = loadFromSprite(CORRUPTED_KNIGHT_SHEET,    12, 6, KNIGHT_WIDTH, KNIGHT_HEIGHT, 0, KNIGHT_W, KNIGHT_H);
+
+        enemyAnimations.put(EnemyType.CORRUPTED_KNIGHT, anim);
+    }
+
     private void loadLancerAnimations() {
         BufferedImage[][] anim = new BufferedImage[20][25];
 
@@ -319,14 +334,14 @@ public class SpriteManager {
 
     // NPC
     private void loadNpcAnimations() {
-        npcAnimations.put(NpcType.ANITA,         	loadSingleNpcAnimation(ANITA_SHEET, 4, 0, NpcType.ANITA));
-        npcAnimations.put(NpcType.NIKOLAS,       	loadSingleNpcAnimation(NIKOLAS_SHEET, 4, 0, NpcType.NIKOLAS));
-        npcAnimations.put(NpcType.SIR_DEJANOVIC, 	loadSingleNpcAnimation(SIR_DEJANOVIC_SHEET, 4, 0, NpcType.SIR_DEJANOVIC));
-        npcAnimations.put(NpcType.KRYSANTHE,     	loadSingleNpcAnimation(KRYSANTHE_SHEET, 8, 0, NpcType.KRYSANTHE));
-        npcAnimations.put(NpcType.RORIC,         	loadFromSprite(RORIC_SHEET, 12, 0, NpcType.RORIC.getWid(), NpcType.RORIC.getHei(), 0, RORIC_W, RORIC_H));
-        npcAnimations.put(NpcType.MITCH_OF_ASSIS,   loadSingleNpcAnimation(MITCH_SHEET, 5, 0, NpcType.MITCH_OF_ASSIS));
-        npcAnimations.put(NpcType.ANDELLIA,      	loadSingleNpcAnimation(ANDELLIA_SHEET, 4, 0, NpcType.ANDELLIA));
-        npcAnimations.put(NpcType.EERYN,         	loadSingleNpcAnimation(EERYN_SHEET, 4, 0, NpcType.EERYN));
+        npcAnimations.put(NpcType.ANITA,          loadSingleNpcAnimation(ANITA_SHEET, 4, 0, NpcType.ANITA));
+        npcAnimations.put(NpcType.NIKOLAS,        loadSingleNpcAnimation(NIKOLAS_SHEET, 4, 0, NpcType.NIKOLAS));
+        npcAnimations.put(NpcType.SIR_DEJANOVIC,  loadSingleNpcAnimation(SIR_DEJANOVIC_SHEET, 8, 0, NpcType.SIR_DEJANOVIC));
+        npcAnimations.put(NpcType.KRYSANTHE,      loadSingleNpcAnimation(KRYSANTHE_SHEET, 8, 0, NpcType.KRYSANTHE));
+        npcAnimations.put(NpcType.RORIC,          loadFromSprite(RORIC_SHEET, 12, 0, NpcType.RORIC.getWid(), NpcType.RORIC.getHei(), 0, RORIC_W, RORIC_H));
+        npcAnimations.put(NpcType.MITCH_OF_ASSIS, loadSingleNpcAnimation(MITCH_SHEET, 5, 0, NpcType.MITCH_OF_ASSIS));
+        npcAnimations.put(NpcType.ANDELLIA,       loadSingleNpcAnimation(ANDELLIA_SHEET, 4, 0, NpcType.ANDELLIA));
+        npcAnimations.put(NpcType.EERYN,          loadSingleNpcAnimation(EERYN_SHEET, 4, 0, NpcType.EERYN));
         npcAnimations.put(NpcType.BLACKSMITH,     loadSingleNpcAnimation(BS_SHEET, 8, 0, NpcType.BLACKSMITH));
         npcAnimations.put(NpcType.DOG,            loadSingleNpcAnimation(DOG_SHEET, 8, 0, NpcType.DOG));
 
@@ -353,6 +368,7 @@ public class SpriteManager {
     // Follower
     private void loadFollowerAnimations() {
         loadAnitaFollower();
+        loadDejanovicFollower();
     }
 
     private void loadAnitaFollower() {
@@ -369,6 +385,23 @@ public class SpriteManager {
         anim[Anim.DEATH.ordinal()]  = loadFromSprite(ANITA_FOLLOWER_SHEET, 10, 15, FLW_WIDTH, FLW_HEIGHT, 0, ANITA_FOLLOWER_W, ANITA_FOLLOWER_H);
 
         followerAnimations.put(NpcType.ANITA, anim);
+    }
+
+    private void loadDejanovicFollower() {
+        BufferedImage[][] anim = new BufferedImage[25][];
+        anim[Anim.IDLE.ordinal()] = loadFromSprite(SIR_DEJANOVIC_SHEET,     8, 0, KNIGHT_WIDTH, KNIGHT_HEIGHT, 0, KNIGHT_W, KNIGHT_H);
+        anim[Anim.WALK.ordinal()] = loadFromSprite(SIR_DEJANOVIC_SHEET,     8, 1, KNIGHT_WIDTH, KNIGHT_HEIGHT, 0, KNIGHT_W, KNIGHT_H);
+        anim[Anim.RUN.ordinal()] = loadFromSprite(SIR_DEJANOVIC_SHEET,      8, 2, KNIGHT_WIDTH, KNIGHT_HEIGHT, 0, KNIGHT_W, KNIGHT_H);
+        anim[Anim.JUMP.ordinal()] = anim[Anim.RUN.ordinal()];
+        anim[Anim.FALL.ordinal()] = anim[Anim.RUN.ordinal()];
+        anim[Anim.ATTACK_1.ordinal()] = loadFromSprite(SIR_DEJANOVIC_SHEET, 8, 3, KNIGHT_WIDTH, KNIGHT_HEIGHT, 0, KNIGHT_W, KNIGHT_H);
+        anim[Anim.ATTACK_2.ordinal()] = loadFromSprite(SIR_DEJANOVIC_SHEET, 8, 4, KNIGHT_WIDTH, KNIGHT_HEIGHT, 0, KNIGHT_W, KNIGHT_H);
+        anim[Anim.SPELL_1.ordinal()] = anim[Anim.ATTACK_2.ordinal()];
+        anim[Anim.HIT.ordinal()] = loadFromSprite(SIR_DEJANOVIC_SHEET,      5, 5, KNIGHT_WIDTH, KNIGHT_HEIGHT, 0, KNIGHT_W, KNIGHT_H);
+        anim[Anim.BLOCK.ordinal()] = anim[Anim.IDLE.ordinal()];
+        anim[Anim.DEATH.ordinal()] = loadFromSprite(SIR_DEJANOVIC_SHEET,    12, 6, KNIGHT_WIDTH, KNIGHT_HEIGHT, 0, KNIGHT_W, KNIGHT_H);
+
+        followerAnimations.put(NpcType.SIR_DEJANOVIC, anim);
     }
 
     // Projectiles & Spells

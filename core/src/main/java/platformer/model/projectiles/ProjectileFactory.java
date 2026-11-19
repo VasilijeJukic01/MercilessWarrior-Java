@@ -145,4 +145,11 @@ public final class ProjectileFactory {
         addProjectile(new WraithBolt(spawnX, spawnY, wraith.getDirection()));
     }
 
+    public static void createVoidSlash(Enemy caster) {
+        int dirSign = (caster.getDirection() == Direction.LEFT) ? -1 : 1;
+        int spawnX = (int) (caster.getHitBox().getCenterX() + dirSign * (16 * SCALE));
+        int spawnY = (int) (caster.getHitBox().y + 4 * SCALE);
+        addProjectile(new VoidSlashProjectile(spawnX, spawnY, caster.getDirection()));
+    }
+
 }

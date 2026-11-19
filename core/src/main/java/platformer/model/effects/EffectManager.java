@@ -257,30 +257,6 @@ public class EffectManager {
         if (timeCycleManager == null) return;
         this.dayFactor = timeCycleManager.getDaylightFactor();
         this.nightFactor = timeCycleManager.getNightFactor();
-        double time = timeCycleManager.getGameTimeNormalized();
-
-        if (time >= 0.30 && time < 0.70) {
-            // Daytime
-            this.nightFactor = 0.0f;
-            this.dayFactor = 1.0f;
-        }
-        else if (time >= 0.20 && time < 0.30) {
-            // Dawn
-            float progress = (float) ((time - 0.20) / 0.10);
-            this.nightFactor = 1.0f - progress;
-            this.dayFactor = progress;
-        }
-        else if (time >= 0.70 && time < 0.80) {
-            // Dusk
-            float progress = (float) ((time - 0.70) / 0.10);
-            this.nightFactor = progress;
-            this.dayFactor = 1.0f - progress;
-        }
-        else {
-            // Nighttime
-            this.nightFactor = 1.0f;
-            this.dayFactor = 0.0f;
-        }
     }
 
     public void renderAmbientEffectsAbove(Graphics g, int xLevelOffset, int yLevelOffset) {

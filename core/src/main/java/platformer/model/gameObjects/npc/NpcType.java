@@ -14,8 +14,8 @@ public enum NpcType {
     NIKOLAS(4, new Color(0xe06b51), "Nikolas The Red Itch", DialogueBehavior.RANDOM,
             scale(40), scale(52), scale(80), scale(45), scale(-20), scale(4), 32, 32
     ),
-    SIR_DEJANOVIC(4, new Color(0x67abeb), "Sir Dejanovic", DialogueBehavior.RANDOM,
-            scale(40), scale(52), scale(80), scale(45), scale(-20), scale(4), 32, 32
+    SIR_DEJANOVIC(8, new Color(0x67abeb), "Sir Dejanovic", DialogueBehavior.RANDOM,
+            scale(120), scale(80), scale(70), scale(42), scale(25), scale(18), 220, 160
     ),
     KRYSANTHE(8, new Color(0xFF70EE), "Krysanthe", DialogueBehavior.RANDOM,
             scale(110), scale(90), scale(80), scale(42), scale(10), scale(60), 220, 160

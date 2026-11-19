@@ -29,6 +29,8 @@ public class QuestSystemListener {
         switch (event.defeatedEnemy().getEnemyType()) {
             case SKELETON -> target = ObjectiveTarget.SKELETON;
             case GHOUL -> target = ObjectiveTarget.GHOUL;
+            case KNIGHT -> target = ObjectiveTarget.KNIGHT;
+            case CORRUPTED_KNIGHT -> target = ObjectiveTarget.CORRUPTED_KNIGHT;
             case LANCER -> target = ObjectiveTarget.LANCER;
         }
         if (target != null) questManager.updateQuestProgress(QuestObjectiveType.KILL, target);

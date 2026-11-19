@@ -16,6 +16,9 @@ public class CutsceneDefinition {
     private String triggerType;
     private String levelId;
     private String requiredActiveQuest;
+    private String requiredFlag;
+    private String excludeFlag;
+    private String requiredItemId;
     private String onceFlag;
     private List<CutsceneStepData> steps = new ArrayList<>();
 }

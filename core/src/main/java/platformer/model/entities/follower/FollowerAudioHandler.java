@@ -33,6 +33,14 @@ public class FollowerAudioHandler {
                 Sound.ANITA_KNOCKDOWN,
                 Sound.ANITA_REVIVE
         ));
+        PROFILES.put(NpcType.SIR_DEJANOVIC, new FollowerSoundProfile(
+                null,
+                null,
+                new Sound[]{Sound.SLASH_1, Sound.SLASH_2, Sound.SLASH_3},
+                Sound.FIRE_SPELL_1,
+                Sound.SWORD_BLOCK_1,
+                Sound.CRAFTING
+        ));
     }
 
     private final FollowerSoundProfile profile;
