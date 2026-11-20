@@ -6,7 +6,6 @@ import platformer.core.GameContext;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
 import platformer.model.gameObjects.ObjType;
-import platformer.model.gameObjects.npc.NpcType;
 import platformer.model.levels.Level;
 import platformer.model.levels.LvlTriggerType;
 import platformer.model.levels.metadata.LevelMetadata;
@@ -111,26 +110,8 @@ public class InteriorManager {
                     interiorLevel.getObjectsMap().remove(ObjType.LOOT);
                 }
 
-                context.getLevelManager().setInteriorLevel(interiorLevel, meta);
-                context.getGameState().getPlayer().loadLvlData(interiorLevel.getLvlData());
-                context.getEnemyManager().loadEnemies(interiorLevel);
-                context.getObjectManager().loadObjects(interiorLevel);
-
-                Point spawnPt = interiorLevel.getPlayerSpawn(spawnType);
-                context.getGameState().getPlayer().setSpawn(spawnPt);
-                syncFollowerInInterior(spawnPt);
-
-                context.getGameState().getCamera().updateLevelBounds(interiorLevel);
-                context.getGameState().getCamera().snapToPlayer(context.getGameState().getPlayer());
-
-                context.getEffectManager().setAmbientEffectsActive(false);
-                context.getLightManager().overrideAmbientDarkness(150);
-
                 boolean hideCombatHud = "tavern".equalsIgnoreCase(targetId);
-                context.getGameState().getPlayer().getPlayerDataManager().getUserInterface().setInterior(hideCombatHud);
-
-                context.getGameState().getPlayer().resetDirections();
-                context.getGameState().flushAWTEventQueue();
+                context.getWorldTransitionCoordinator().enterInterior(interiorLevel, meta, spawnType, hideCombatHud);
             };
 
             context.getGameState().getTransitionManager().startTransition(
@@ -144,46 +125,19 @@ public class InteriorManager {
     }
 
     /**
-     * Orchestrates the transition from an interior room back to the overworld.
-     * Restores the physics map, respawns the overworld entities, and teleports the
-     * player back to the exact location they were standing before they entered the building.
+     * Restores the physics map, respawns the overworld entities, and teleports the player back to the exact location they were standing before they entered the building.
      */
     public void returnToMainMap() {
         Runnable returnCallback = () -> {
             this.isInterior = false;
             this.currentInteriorId = "";
-            context.getLevelManager().restoreMainMap();
-
-            Level mainLevel = context.getLevelManager().getCurrentLevel();
-
-            context.getGameState().getPlayer().loadLvlData(mainLevel.getLvlData());
-            context.getEnemyManager().loadEnemies(mainLevel);
-            context.getObjectManager().loadObjects(mainLevel);
-
-            if (previousLocation != null) {
-                context.getGameState().getPlayer().setSpawn(previousLocation);
-                context.getGameState().getPlayer().resetDirections();
-                syncFollowerInInterior(previousLocation);
-            }
-
-            context.getGameState().getCamera().updateLevelBounds(mainLevel);
-            context.getGameState().getPlayer().getPlayerDataManager().getUserInterface().setInterior(false);
-
-            context.getGameState().flushAWTEventQueue();
+            context.getWorldTransitionCoordinator().exitInterior(previousLocation);
         };
 
         context.getGameState().getTransitionManager().startTransition(
                 TransitionDirection.FROM_TOP,
                 returnCallback
         );
-    }
-
-    private void syncFollowerInInterior(Point spawnPt) {
-        NpcType followerType = context.getQuestManager().getActiveFollowerType();
-        if (followerType != null) {
-            context.getObjectManager().spawnFollower(followerType, spawnPt.x, spawnPt.y);
-        }
-        else context.getObjectManager().despawnFollower();
     }
 
     /**

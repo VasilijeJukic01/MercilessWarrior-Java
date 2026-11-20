@@ -1,5 +1,6 @@
 package platformer.core.initializer;
 
+import platformer.core.GameClock;
 import platformer.core.GameContext;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
@@ -40,6 +41,7 @@ import platformer.model.quests.QuestManager;
 import platformer.model.spells.SpellManager;
 import platformer.model.tutorial.TutorialManager;
 import platformer.model.world.WorldMemoryManager;
+import platformer.model.world.WorldTransitionCoordinator;
 import platformer.service.multiplayer.MultiplayerManager;
 import platformer.state.types.GameState;
 
@@ -68,6 +70,7 @@ public class GameInitializer {
         context.setGameState(gameState);
 
         // Context Setup
+        context.setGameClock(new GameClock());
         context.setPerksManager(new PerksManager());
         context.setQuestManager(new QuestManager());
         context.setTutorialManager(new TutorialManager());
@@ -89,6 +92,7 @@ public class GameInitializer {
         context.setCutsceneManager(new CutsceneManager());
         context.setCamera(gameState.getCamera());
         context.setScreenEffectsManager(screenEffectsManager);
+        context.setWorldTransitionCoordinator(new WorldTransitionCoordinator());
 
         // Dependency Injection
         context.getPerksManager().wire(context);
@@ -104,6 +108,7 @@ public class GameInitializer {
         context.getLightManager().wire(context);
         context.getWorldMemoryManager().wire(context);
         context.getCutsceneManager().wire(context);
+        context.getWorldTransitionCoordinator().wire(context);
 
         ProjectileFactory.init(context.getProjectileManager());
         context.getEnemyManager().injectScreenEffectsManager(screenEffectsManager);

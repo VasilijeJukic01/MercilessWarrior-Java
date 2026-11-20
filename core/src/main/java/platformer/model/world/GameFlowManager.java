@@ -118,25 +118,10 @@ public class GameFlowManager {
      * @param exitType      The exit trigger type that initiated the level transition.
      * @param spawn   The spawn trigger in the new level.
      */
-    private void goToLevel(String targetLevelId, LvlTriggerType exitType, LvlTriggerType spawn, int spawnX, int spawnY) {
+    private void goToLevel(String targetLevelId, LvlTriggerType exitType, LvlTriggerType spawn, Integer spawnX, Integer spawnY) {
         TransitionDirection direction = getTransitionDirection(exitType);
-
-        Runnable levelLoadCallback = () -> {
-            gameState.getPlayer().removeAction(PlayerAction.LEVEL_TRANSITION);
-            gameState.getPlayer().resetDirections();
-            gameState.getStateController().resetKeys();
-            gameState.flushAWTEventQueue();
-            gameState.getPlayer().activateMinimap(false);
-            context.getLevelManager().loadLevelById(targetLevelId);
-            gameState.getWorld().levelLoadReset(spawn, spawnX, spawnY);
-            context.getMinimapManager().changeLevel();
-            gameState.getPlayer().activateMinimap(true);
-            gameState.getCamera().updateLevelBounds(context.getLevelManager().getCurrentLevel());
-            gameState.getCamera().snapToPlayer(gameState.getPlayer());
-            gameState.getOverlayManager().reset();
-            Logger.getInstance().notify("Loaded level: " + targetLevelId + " at " + spawn, Message.NOTIFICATION);
-        };
-
+        Runnable levelLoadCallback = () ->
+                context.getWorldTransitionCoordinator().enterRoom(targetLevelId, spawn, spawnX, spawnY);
         gameState.getPlayer().addAction(PlayerAction.LEVEL_TRANSITION);
         gameState.getTransitionManager().startTransition(direction, levelLoadCallback);
     }

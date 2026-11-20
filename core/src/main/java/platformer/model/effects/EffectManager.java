@@ -221,36 +221,27 @@ public class EffectManager {
     }
 
     private void updateParticleList(List<DustParticle> particles) {
-        try {
-            Iterator<DustParticle> pIterator = particles.iterator();
-            while (pIterator.hasNext()) {
-                DustParticle p = pIterator.next();
-                p.update();
-                if (!p.isActive()) pIterator.remove();
-            }
-        } catch (Exception ignored) {}
+        for (int i = particles.size() - 1; i >= 0; i--) {
+            DustParticle p = particles.get(i);
+            p.update();
+            if (!p.isActive()) particles.remove(i);
+        }
     }
 
     private void updateDamageNumbers() {
-        try {
-            Iterator<DamageNumber> iterator = damageNumbers.iterator();
-            while (iterator.hasNext()) {
-                DamageNumber dn = iterator.next();
-                dn.update();
-                if (!dn.isActive()) iterator.remove();
-            }
-        } catch (Exception ignored) {}
+        for (int i = damageNumbers.size() - 1; i >= 0; i--) {
+            DamageNumber dn = damageNumbers.get(i);
+            dn.update();
+            if (!dn.isActive()) damageNumbers.remove(i);
+        }
     }
 
     private void updateItemPickupTexts() {
-        try {
-            Iterator<ItemPickupText> iterator = itemPickupTexts.iterator();
-            while (iterator.hasNext()) {
-                ItemPickupText text = iterator.next();
-                text.update();
-                if (!text.isActive()) iterator.remove();
-            }
-        } catch (Exception ignored) {}
+        for (int i = itemPickupTexts.size() - 1; i >= 0; i--) {
+            ItemPickupText text = itemPickupTexts.get(i);
+            text.update();
+            if (!text.isActive()) itemPickupTexts.remove(i);
+        }
     }
 
     public void updateTimeOfDay(TimeCycleManager timeCycleManager) {
@@ -297,27 +288,21 @@ public class EffectManager {
     }
 
     private void renderParticleList(Graphics g, int xLevelOffset, int yLevelOffset, List<DustParticle> particles) {
-        try {
-            for (DustParticle particle : particles) {
-                particle.render(g, xLevelOffset, yLevelOffset);
-            }
-        } catch (Exception ignored) { }
+        for (DustParticle particle : particles) {
+            particle.render(g, xLevelOffset, yLevelOffset);
+        }
     }
 
     private void renderDamageNumbers(Graphics g, int xLevelOffset, int yLevelOffset) {
-        try {
-            for (DamageNumber dn : damageNumbers) {
-                dn.render(g, xLevelOffset, yLevelOffset);
-            }
-        } catch (Exception ignored) { }
+        for (DamageNumber damageNumber : damageNumbers) {
+            damageNumber.render(g, xLevelOffset, yLevelOffset);
+        }
     }
 
     private void renderItemPickupTexts(Graphics g, int xLevelOffset, int yLevelOffset) {
-        try {
-            for (ItemPickupText text : itemPickupTexts) {
-                text.render(g, xLevelOffset, yLevelOffset);
-            }
-        } catch (Exception ignored) {}
+        for (ItemPickupText itemPickupText : itemPickupTexts) {
+            itemPickupText.render(g, xLevelOffset, yLevelOffset);
+        }
     }
 
     public void reset() {

@@ -190,12 +190,6 @@ public class LevelManager {
         loadMetadata();
         context.getWorldMemoryManager().onRoomEntered(currentLevelId, newLevel);
         this.currentLevel = newLevel;
-        context.getPlayer().loadLvlData(newLevel.getLvlData());
-        context.getEnemyManager().loadEnemies(newLevel);
-        context.getObjectManager().loadObjects(newLevel);
-        context.getSpellManager().initBossSpells();
-        context.getMinimapManager().changeLevel();
-        context.getPlayer().activateMinimap(true);
         loadBackground();
     }
 
@@ -289,10 +283,6 @@ public class LevelManager {
         this.currentLevel = getOrLoadLevel(effectiveId);
         loadMetadata();
         loadBackground();
-
-        context.getLightManager().releaseAmbientDarkness();
-        boolean particles = currentLevelMetadata == null || currentLevelMetadata.getAmbientParticlesEnabled() == null || currentLevelMetadata.getAmbientParticlesEnabled();
-        context.getEffectManager().setAmbientEffectsActive(particles);
     }
 
     /**

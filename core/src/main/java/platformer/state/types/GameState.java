@@ -191,80 +191,63 @@ public class GameState extends AbstractState implements State {
         }
     }
 
-    public void reloadSave() {
-        StorageStrategy strategy = Framework.getInstance().getStorageStrategy();
-        if (strategy instanceof OfflineStorageStrategy) {
-            ((OfflineStorageStrategy) strategy).loadLocalData();
-        }
-        getPlayer().activateMinimap(false);
-        getPlayer().getStats().reset();
-        context.getPerksManager().reset();
-
-        context.getLevelManager().resetAllCachedLevels();
-        context.getInteriorManager().resetAllCachedInteriors();
-        getPlayer().getPlayerDataManager().getUserInterface().setInterior(false);
-        context.getWorldMemoryManager().loadFromAccount(Framework.getInstance().getAccount().getWorldFlags());
-        context.getQuestManager().loadFromAccount(Framework.getInstance().getAccount().getQuests());
-
-        int savedSpawn = Framework.getInstance().getAccount().getSpawn();
-        if (savedSpawn >= 0) {
-            context.getWorldMemoryManager().unlockTotem(savedSpawn);
-        }
-
-        context.getLevelManager().loadSavePoint(savedSpawn);
-        getPlayer().getPlayerDataManager().loadPlayerData();
-        getPlayer().getInventory().fillItems(Framework.getInstance().getAccount().getItems());
-        context.getPerksManager().loadUnlockedPerks(Framework.getInstance().getAccount().getPerks());
-        context.getMinimapManager().loadExplorationData(Framework.getInstance().getAccount().getExplorationData());
-        this.overlayManager.reset();
-        reset();
-        getPlayer().activateMinimap(true);
-        context.getMinimapManager().updatePlayerPosition(getPlayer().getHitBox().getCenterX(), getPlayer().getHitBox().getCenterY());
-        camera.updateLevelBounds(getLevelManager().getCurrentLevel());
-        context.getDialogueManager().resetDialogues();
-        camera.snapToPlayer(getPlayer());
-    }
-
     public void refreshPlayerDataFromAccount() {
         Account currentAccount = Framework.getInstance().getAccount();
         getPlayer().getPlayerDataManager().refreshFromAccount(currentAccount);
     }
 
-    public void refreshAllFromAccount() {
-        if (world == null || world.getPlayer() == null) return;
-        context.getWorldMemoryManager().loadFromAccount(Framework.getInstance().getAccount().getWorldFlags());
-        context.getQuestManager().loadFromAccount(Framework.getInstance().getAccount().getQuests());
-        int savedSpawn = Framework.getInstance().getAccount().getSpawn();
+    private void resetTransientUiAndHandlers() {
+        state = null;
+        isDarkPhase = false;
+        bossInterface.reset();
+        overlayManager.reset();
+        eventHandlers.forEach(EventHandler::reset);
+        context.getCutsceneManager().reset();
+    }
+
+    /**
+     * Hydrates all persistent progression from the active Account and places the player at their saved totem.
+     */
+    public synchronized void reloadSave() {
+        StorageStrategy strategy = Framework.getInstance().getStorageStrategy();
+        if (strategy instanceof OfflineStorageStrategy offlineStrategy) {
+            offlineStrategy.loadLocalData();
+        }
+
+        Account account = Framework.getInstance().getAccount();
+        getPlayer().activateMinimap(false);
+        getPlayer().getStats().reset();
+        context.getPerksManager().reset();
+        context.getDialogueManager().resetDialogues();
+        context.getLevelManager().resetAllCachedLevels();
+        context.getInteriorManager().resetAllCachedInteriors();
+
+        context.getWorldMemoryManager().loadFromAccount(account.getWorldFlags());
+        context.getQuestManager().loadFromAccount(account.getQuests());
+        getPlayer().getPlayerDataManager().loadPlayerData();
+        getPlayer().getInventory().fillItems(account.getItems());
+        context.getPerksManager().loadUnlockedPerks(account.getPerks());
+        context.getMinimapManager().loadExplorationData(account.getExplorationData());
+
+        int savedSpawn = account.getSpawn();
         if (savedSpawn >= 0) {
             context.getWorldMemoryManager().unlockTotem(savedSpawn);
         }
-        context.getInteriorManager().resetAllCachedInteriors();
-        getPlayer().getPlayerDataManager().getUserInterface().setInterior(false);
-        context.getLevelManager().loadSavePoint(savedSpawn);
-        getPlayer().getPlayerDataManager().loadPlayerData();
-        context.getPerksManager().reset();
-        context.getPerksManager().loadUnlockedPerks(Framework.getInstance().getAccount().getPerks());
-        context.getMinimapManager().loadExplorationData(Framework.getInstance().getAccount().getExplorationData());
-        getPlayer().getInventory().fillItems(Framework.getInstance().getAccount().getItems());
-        getPlayer().activateMinimap(true);
-        context.getMinimapManager().updatePlayerPosition(getPlayer().getHitBox().getCenterX(), getPlayer().getHitBox().getCenterY());
-        camera.updateLevelBounds(getLevelManager().getCurrentLevel());
-        context.getDialogueManager().resetDialogues();
-        camera.snapToPlayer(getPlayer());
-        Logger.getInstance().notify("Player data fully refreshed from loaded save.", Message.INFORMATION);
+
+        resetTransientUiAndHandlers();
+        world.clearTransientEffects();
+        context.getWorldTransitionCoordinator().loadSavedRoom(savedSpawn);
     }
 
+    /**
+     * Resets transient combat and world state for retrying or respawning in the current room.
+     */
     @Override
     public synchronized void reset() {
-        state = null;
+        resetTransientUiAndHandlers();
         world.reset();
-        overlayManager.reset();
-        bossInterface.reset();
-        eventHandlers.forEach(EventHandler::reset);
         if (!isRespawning) context.getMinimapManager().reset();
         isRespawning = false;
-        isDarkPhase = false;
-        context.getCutsceneManager().reset();
         camera.snapToPlayer(getPlayer());
     }
 

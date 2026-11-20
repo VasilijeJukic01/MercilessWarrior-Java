@@ -1,6 +1,7 @@
 package platformer.model.world;
 
 import lombok.Getter;
+import platformer.core.GameClock;
 import platformer.core.GameContext;
 import platformer.model.effects.EffectManager;
 import platformer.model.effects.lighting.LightManager;
@@ -9,7 +10,6 @@ import platformer.model.effects.TimeCycleManager;
 import platformer.model.entities.enemies.EnemyManager;
 import platformer.model.entities.player.Player;
 import platformer.model.gameObjects.ObjectManager;
-import platformer.model.gameObjects.npc.NpcType;
 import platformer.model.levels.LevelManager;
 import platformer.model.levels.LvlTriggerType;
 import platformer.model.levels.metadata.LevelMetadata;
@@ -29,6 +29,7 @@ import static platformer.constants.Constants.*;
 @Getter
 public class GameWorld {
 
+    private final GameClock gameClock;
     private final Player player;
     private final LevelManager levelManager;
     private final ObjectManager objectManager;
@@ -43,6 +44,7 @@ public class GameWorld {
     private final WorldMemoryManager worldMemoryManager;
 
     public GameWorld(GameContext context) {
+        this.gameClock = context.getGameClock();
         this.levelManager = context.getLevelManager();
         this.effectManager = context.getEffectManager();
         this.rainManager = context.getRainManager();
@@ -68,7 +70,7 @@ public class GameWorld {
         reinitializeParticles();
     }
 
-    private void reinitializeParticles() {
+    public void reinitializeParticles() {
         LevelMetadata metadata = levelManager.getCurrentLevelMetadata();
         boolean particlesEnabled = metadata == null || metadata.getAmbientParticlesEnabled() == null || metadata.getAmbientParticlesEnabled();
         effectManager.setAmbientEffectsActive(particlesEnabled);
@@ -83,14 +85,9 @@ public class GameWorld {
         }
     }
 
-    private void checkFollowerSpawn() {
-        NpcType followerType = questManager.getActiveFollowerType();
-        if (followerType != null) objectManager.spawnFollower(followerType, (int) player.getHitBox().x, (int) player.getHitBox().y);
-        else objectManager.despawnFollower();
-    }
-
     // Core
     public void update() {
+        if (gameClock != null) gameClock.tick();
         player.update();
         if (player.getUltimateHandler().isActive()) {
             lightManager.update(timeCycleManager);
@@ -161,26 +158,24 @@ public class GameWorld {
     }
 
     // Reset
-    public void reset() {
-        worldMemoryManager.reset();
-        enemyManager.reset();
-        player.reset();
-        objectManager.reset();
+    /**
+     * Resets transient combat, particle, weather, and lighting state without touching persistent progression.
+     */
+    public void clearTransientEffects() {
         projectileManager.reset();
         spellManager.reset();
         effectManager.reset();
         lightManager.reset();
         rainManager.reset();
         timeCycleManager.reset();
-        reinitializeParticles();
     }
 
-    public void levelLoadReset(LvlTriggerType spawn, int spawnX, int spawnY) {
-        spellManager.initBossSpells();
-        enemyManager.loadEnemies(levelManager.getCurrentLevel());
-        objectManager.loadObjects(levelManager.getCurrentLevel());
-        player.setSpawn(levelManager.getCurrentLevel().getPlayerSpawn(spawn, spawnX, spawnY));
-        checkFollowerSpawn();
+    public void reset() {
+        worldMemoryManager.reset();
+        enemyManager.reset();
+        player.reset();
+        objectManager.reset();
+        clearTransientEffects();
         reinitializeParticles();
     }
 }

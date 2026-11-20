@@ -10,10 +10,6 @@ import platformer.event.events.BossDefeatedEvent;
 import platformer.event.events.FightInitiatedEvent;
 import platformer.model.entities.enemies.EnemyType;
 import platformer.model.gameObjects.GameObject;
-import platformer.model.levels.Level;
-import platformer.model.levels.LvlTriggerType;
-
-import java.awt.*;
 
 public class GameFlowEventHandler {
 
@@ -47,39 +43,14 @@ public class GameFlowEventHandler {
         if (context.getObjectManager().getIntersection() instanceof GameObject obj) {
             obj.setAlive(false);
         }
-        context.getLevelManager().switchToArena();
-        Level arena = context.getLevelManager().getCurrentLevel();
-        levelTransition(arena, arena.getPlayerSpawn(LvlTriggerType.SPAWN_A));
+        context.getWorldTransitionCoordinator().enterArena();
     }
 
     private void returnFromArena() {
         Logger.getInstance().notify("Roric defeated! Returning to the main world.", Message.INFORMATION);
         Audio.getInstance().getAudioPlayer().playSong(Song.FOREST_1);
 
-        context.getLevelManager().restoreMainMap();
-        Level originalLevel = context.getLevelManager().getCurrentLevel();
-
         int spawnId = Framework.getInstance().getAccount().getSpawn();
-        Point playerSpawn = context.getLevelManager().getTotemSpawnPoint(spawnId);
-        // Fallback
-        if (playerSpawn == null) {
-            playerSpawn = originalLevel.getPlayerSpawn(LvlTriggerType.SPAWN_A);
-        }
-
-        levelTransition(originalLevel, playerSpawn);
-        context.getGameState().getPlayer().activateMinimap(true);
-    }
-
-    private void levelTransition(Level level, Point playerSpawn) {
-        context.getGameState().reset();
-        context.getGameState().getPlayer().loadLvlData(level.getLvlData());
-        context.getEnemyManager().loadEnemies(level);
-        context.getObjectManager().loadObjects(level);
-        context.getSpellManager().initBossSpells();
-        context.getMinimapManager().changeLevel();
-        context.getGameState().getCamera().updateLevelBounds(level);
-
-        context.getGameState().getPlayer().setSpawn(playerSpawn);
-        context.getGameState().getPlayer().resetDirections();
+        context.getWorldTransitionCoordinator().exitArena(spawnId);
     }
 }

@@ -115,7 +115,7 @@ public class GameSaveController {
         }
 
         if (game.getCurrentState() instanceof GameState gameState) {
-            gameState.refreshAllFromAccount();
+            gameState.reloadSave();
         }
     }
 

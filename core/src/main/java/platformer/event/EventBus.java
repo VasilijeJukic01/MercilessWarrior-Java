@@ -1,13 +1,13 @@
 package platformer.event;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
- * An application-wide Event Bus for decoupled communication between components.
- * This implementation is synchronous, meaning events are handled immediately on the publisher's thread.
+ * Application-wide Event Bus for decoupled communication between components.
+ * Synchronous and thread-safe for concurrent registration, unregistration, and dispatch.
  */
 public class EventBus {
 
@@ -28,7 +28,17 @@ public class EventBus {
      * @param <T>        The type of the event.
      */
     public <T extends Event> void register(Class<T> eventClass, EventListener<T> listener) {
-        listeners.computeIfAbsent(eventClass, k -> new ArrayList<>()).add(listener);
+        listeners.computeIfAbsent(eventClass, k -> new CopyOnWriteArrayList<>()).add(listener);
+    }
+
+    /**
+     * Unregisters a previously registered listener for a specific event type.
+     */
+    public <T extends Event> void unregister(Class<T> eventClass, EventListener<T> listener) {
+        List<EventListener<?>> eventListeners = listeners.get(eventClass);
+        if (eventListeners != null) {
+            eventListeners.remove(listener);
+        }
     }
 
     /**

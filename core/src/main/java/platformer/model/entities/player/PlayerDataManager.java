@@ -5,10 +5,7 @@ import platformer.core.Framework;
 import platformer.core.config.BalanceManager;
 import platformer.model.effects.TimeCycleManager;
 import platformer.model.minimap.MinimapManager;
-import platformer.state.types.GameState;
 import platformer.ui.overlays.hud.UserInterface;
-
-import java.awt.*;
 
 import static platformer.constants.Constants.*;
 
@@ -38,7 +35,6 @@ public class PlayerDataManager {
         this.upgradeTokens = account.getTokens();
         this.level = account.getLevel();
         this.exp = account.getExp();
-        loadSpawnPoint(account);
     }
 
     /**
@@ -68,20 +64,6 @@ public class PlayerDataManager {
     }
 
     // Actions
-    private void loadSpawnPoint(Account account) {
-        int spawnId = account.getSpawn();
-        if (Framework.getInstance().getGame() != null && Framework.getInstance().getGame().getCurrentState() instanceof GameState gameState) {
-            Point totemSpawn = gameState.getLevelManager().getTotemSpawnPoint(spawnId);
-            player.setSpawn(totemSpawn);
-            return;
-        }
-        setPlayerCoordinates(5, 10);
-    }
-
-    private void setPlayerCoordinates(int x, int y) {
-        player.setSpawn(new Point(x * TILES_SIZE, y * TILES_SIZE));
-    }
-
     public void changeExp(double value) {
         BalanceManager.PlayerBalance pb = BalanceManager.getInstance().getPlayerBalance();
         int xpCapForLevel = pb.getXpPerLevelMultiplier() * level;

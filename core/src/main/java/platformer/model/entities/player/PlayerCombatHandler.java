@@ -2,6 +2,7 @@ package platformer.model.entities.player;
 
 import platformer.animation.Anim;
 import platformer.audio.Audio;
+import platformer.core.GameClock;
 import platformer.core.GameContext;
 import platformer.core.config.BalanceManager;
 import platformer.debug.logger.Logger;
@@ -26,8 +27,8 @@ import static platformer.physics.CollisionDetector.isFloor;
  */
 public class PlayerCombatHandler {
 
+    private static final long COMBO_RESET_TICKS = GameClock.secondsToTicks(1.5);
     private static final int PARRY_WINDOW_TICKS = 45;
-    private static final long COMBO_RESET_TIME_MS = 1500;
     private static final double RECOIL_DECAY = 0.85;
     private static final double LUNGE_DECAY = 0.86;
 
@@ -38,6 +39,7 @@ public class PlayerCombatHandler {
     };
 
     private final Player player;
+    private final GameClock gameClock;
     private final EnemyManager enemyManager;
     private final ObjectManager objectManager;
     private final LevelManager levelManager;
@@ -45,7 +47,7 @@ public class PlayerCombatHandler {
 
     private int comboStep = 0;
     private int activeComboIndex = 0;
-    private long lastAttackEndTime = 0;
+    private long lastAttackEndTick = 0;
     private boolean attackBuffered = false;
     private AttackState attackState = AttackState.ATTACK_1;
 
@@ -55,6 +57,7 @@ public class PlayerCombatHandler {
 
     public PlayerCombatHandler(Player player, GameContext context) {
         this.player = player;
+        this.gameClock = context.getGameClock();
         this.enemyManager = context.getEnemyManager();
         this.objectManager = context.getObjectManager();
         this.levelManager = context.getLevelManager();
@@ -87,8 +90,8 @@ public class PlayerCombatHandler {
         }
 
         double currentCd = player.getCooldown()[Cooldown.ATTACK.ordinal()];
-        long now = System.currentTimeMillis();
-        boolean comboExpired = (now - lastAttackEndTime) > COMBO_RESET_TIME_MS;
+        long now = currentTick();
+        boolean comboExpired = (now - lastAttackEndTick) > COMBO_RESET_TICKS;
         if (comboExpired) {
             comboStep = 0;
         }
@@ -112,8 +115,8 @@ public class PlayerCombatHandler {
             blockWindowTimer = 0;
         }
 
-        long now = System.currentTimeMillis();
-        if (now - lastAttackEndTime > COMBO_RESET_TIME_MS) {
+        long now = currentTick();
+        if (now - lastAttackEndTick > COMBO_RESET_TICKS) {
             comboStep = 0;
         }
 
@@ -122,7 +125,7 @@ public class PlayerCombatHandler {
         setPlayerAttackState(nextAttack);
 
         comboStep = (comboStep + 1) % COMBO_SEQUENCE.length;
-        lastAttackEndTime = now;
+        lastAttackEndTick = now;
     }
 
     public void setPlayerAttackState(AttackState state) {
@@ -166,7 +169,7 @@ public class PlayerCombatHandler {
     }
 
     public boolean consumeBufferedAttack() {
-        lastAttackEndTime = System.currentTimeMillis();
+        lastAttackEndTick = currentTick();
         if (activeComboIndex >= 2) {
             attackBuffered = false;
             return false;
@@ -363,6 +366,10 @@ public class PlayerCombatHandler {
             case ATTACK_3 -> Anim.ATTACK_3;
             default -> Anim.ATTACK_1;
         };
+    }
+
+    private long currentTick() {
+        return gameClock != null ? gameClock.getElapsedTicks() : 0;
     }
 
     public void reset() {

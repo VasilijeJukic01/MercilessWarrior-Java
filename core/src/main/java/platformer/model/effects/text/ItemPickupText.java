@@ -40,15 +40,15 @@ public class ItemPickupText {
         if (!active) return;
         Graphics2D g2d = (Graphics2D) g.create();
         g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha));
-        g.setColor(color);
-        g.setFont(new Font("Arial", Font.BOLD, FONT_MEDIUM));
+        g2d.setColor(color);
+        g2d.setFont(new Font("Arial", Font.BOLD, FONT_MEDIUM));
 
-        FontMetrics fm = g.getFontMetrics();
+        FontMetrics fm = g2d.getFontMetrics();
         int textWidth = fm.stringWidth(text);
         int x = (int) (player.getHitBox().getCenterX() - textWidth / 2.0);
 
-        g.drawString(text, x - xLevelOffset, (int) (initialY - yLevelOffset));
-        g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
+        g2d.drawString(text, x - xLevelOffset, (int) (initialY - yLevelOffset));
+        g2d.dispose();
     }
 
     public boolean isActive() {

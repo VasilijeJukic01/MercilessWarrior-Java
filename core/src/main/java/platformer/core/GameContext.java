@@ -21,6 +21,7 @@ import platformer.model.quests.QuestManager;
 import platformer.model.spells.SpellManager;
 import platformer.model.tutorial.TutorialManager;
 import platformer.model.world.WorldMemoryManager;
+import platformer.model.world.WorldTransitionCoordinator;
 import platformer.service.multiplayer.MultiplayerManager;
 import platformer.state.types.GameState;
 import platformer.ui.overlays.OverlayManager;
@@ -33,6 +34,7 @@ import platformer.view.Camera;
 @Getter
 @Setter
 public final class GameContext {
+    private GameClock gameClock;
     private GameState gameState;
     private LevelManager levelManager;
     private InteriorManager interiorManager;
@@ -54,6 +56,7 @@ public final class GameContext {
     private MultiplayerManager multiplayerManager;
     private WorldMemoryManager worldMemoryManager;
     private Camera camera;
+    private WorldTransitionCoordinator worldTransitionCoordinator;
     private CutsceneManager cutsceneManager;
     private Player player;
 }

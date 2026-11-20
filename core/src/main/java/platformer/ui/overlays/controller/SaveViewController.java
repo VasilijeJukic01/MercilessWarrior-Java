@@ -2,13 +2,8 @@ package platformer.ui.overlays.controller;
 
 import platformer.core.Framework;
 import platformer.core.GameContext;
-import platformer.debug.logger.Logger;
-import platformer.debug.logger.Message;
 import platformer.event.EventBus;
 import platformer.event.events.ui.OverlayChangeEvent;
-import platformer.model.entities.player.Player;
-import platformer.model.gameObjects.npc.NpcType;
-import platformer.model.levels.Level;
 import platformer.model.levels.LevelManager.TotemNode;
 import platformer.ui.buttons.AbstractButton;
 import platformer.ui.buttons.MediumButton;
@@ -136,29 +131,10 @@ public class SaveViewController {
         Framework.getInstance().getSaveController().saveSlot();
         EventBus.getInstance().publish(new OverlayChangeEvent(null));
 
-        Runnable restCallback = () -> {
-            Player player = context.getPlayer();
-            player.resetDirections();
-            context.getGameState().getStateController().resetKeys();
-            context.getGameState().flushAWTEventQueue();
-            context.getTimeCycleManager().advanceTime(0.45);
-            context.getLightManager().snapToTimeCycle(context.getTimeCycleManager());
-            context.getEffectManager().updateTimeOfDay(context.getTimeCycleManager());
-            if (player.getCurrentHealth() < player.getMaxHealth()) {
-                player.changeHealth(player.getMaxHealth() - player.getCurrentHealth());
-            }
-            context.getWorldMemoryManager().reset();
-            Level currentLevel = context.getLevelManager().getCurrentLevel();
-            String currentLevelId = context.getLevelManager().getCurrentLevelId();
-            currentLevel.gatherData();
-            context.getWorldMemoryManager().onRoomEntered(currentLevelId, currentLevel);
-            context.getEnemyManager().loadEnemies(currentLevel);
-            context.getObjectManager().loadObjects(currentLevel);
-            context.getProjectileManager().reset();
-            context.getSpellManager().reset();
-        };
-
-        context.getGameState().getTransitionManager().startTransition(TransitionDirection.FROM_TOP, restCallback);
+        context.getGameState().getTransitionManager().startTransition(
+                TransitionDirection.FROM_TOP,
+                () -> context.getWorldTransitionCoordinator().restInCurrentRoom()
+        );
     }
 
     private void travelToSelectedTotem() {
@@ -170,34 +146,10 @@ public class SaveViewController {
         if (target.levelId().equalsIgnoreCase(currentLevelId)) return;
 
         EventBus.getInstance().publish(new OverlayChangeEvent(null));
-
-        Runnable travelCallback = () -> {
-            context.getPlayer().resetDirections();
-            context.getGameState().getStateController().resetKeys();
-            context.getGameState().flushAWTEventQueue();
-            context.getPlayer().activateMinimap(false);
-            context.getLevelManager().loadLevelById(target.levelId());
-            Level newLevel = context.getLevelManager().getCurrentLevel();
-            context.getSpellManager().initBossSpells();
-            context.getEnemyManager().loadEnemies(newLevel);
-            context.getObjectManager().loadObjects(newLevel);
-            Point spawnPoint = context.getLevelManager().getTotemSpawnPoint(target.totemId());
-            context.getPlayer().setSpawn(spawnPoint);
-            NpcType followerType = context.getQuestManager().getActiveFollowerType();
-            if (followerType != null) context.getObjectManager().spawnFollower(followerType, spawnPoint.x, spawnPoint.y);
-            else context.getObjectManager().despawnFollower();
-            context.getMinimapManager().changeLevel();
-            context.getPlayer().activateMinimap(true);
-            context.getMinimapManager().updatePlayerPosition(context.getPlayer().getHitBox().getCenterX(), context.getPlayer().getHitBox().getCenterY());
-            context.getCamera().updateLevelBounds(newLevel);
-            context.getCamera().snapToPlayer(context.getPlayer());
-            context.getGameState().getOverlayManager().reset();
-
-            Framework.getInstance().getAccount().setSpawn(target.totemId());
-            Logger.getInstance().notify("Fast traveled to Save Totem: " + target.totemName(), Message.INFORMATION);
-        };
-
-        context.getGameState().getTransitionManager().startTransition(TransitionDirection.FROM_BOTTOM, travelCallback);
+        context.getGameState().getTransitionManager().startTransition(
+                TransitionDirection.FROM_BOTTOM,
+                () -> context.getWorldTransitionCoordinator().travelToTotem(target.totemId(), target.levelId(), target.totemName())
+        );
     }
 
     public void reset() {

@@ -3,58 +3,59 @@ package platformer.model.levels;
 import platformer.utils.ImageUtils;
 
 import java.awt.image.BufferedImage;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static platformer.constants.Constants.GAME_HEIGHT;
 import static platformer.constants.Constants.GAME_WIDTH;
 import static platformer.constants.FilePaths.*;
 
 /**
- * BackgroundManager is responsible for loading and managing background images used in the game.
+ * Lazily loads and caches level background images on demand to minimize startup time and memory usage.
  */
 public class BackgroundManager {
 
-    private final Map<String, BufferedImage> backgrounds;
-    private final BufferedImage defaultBackground;
+    private record BackgroundSpec(String path, boolean scaleToViewport) { }
 
-    public BackgroundManager() {
-        this.backgrounds = new HashMap<>();
-        loadBackgrounds();
-        this.defaultBackground = backgrounds.getOrDefault("FOREST1", null);
-    }
+    private static final Map<String, BackgroundSpec> REGISTRY = Map.ofEntries(
+            Map.entry("FOREST1", new BackgroundSpec(FOREST_BG_1, true)),
+            Map.entry("FOREST2", new BackgroundSpec(FOREST_BG_2, true)),
+            Map.entry("FOREST3", new BackgroundSpec(FOREST_BG_3, true)),
+            Map.entry("FOREST4", new BackgroundSpec(FOREST_BG_4, true)),
+            Map.entry("FOREST_ENTRANCE", new BackgroundSpec(FOREST_ENTRANCE_BG, true)),
+            Map.entry("FOREST_ROOTS", new BackgroundSpec(FOREST_ROOTS_BG, true)),
+            Map.entry("FOREST_DEEP", new BackgroundSpec(FOREST_DEEP_BG, true)),
+            Map.entry("FOREST_STORM_PEAK", new BackgroundSpec(FOREST_STORM_PEAK_BG, true)),
+            Map.entry("FOREST_VILLAGE", new BackgroundSpec(FOREST_VILLAGE_BG, true)),
+            Map.entry("FOREST_VILLAGE_ENTRANCE", new BackgroundSpec(FOREST_VILLAGE_ENTRANCE_BG, true)),
+            Map.entry("RORIC_ARENA", new BackgroundSpec(RORIC_ARENA_BG, true)),
+            Map.entry("FOREST_THORNS", new BackgroundSpec(FOREST_THORNS_BG, true)),
+            Map.entry("TAVERN", new BackgroundSpec(TAVERN_BG, false)),
+            Map.entry("CRYPT1", new BackgroundSpec(CRYPT1_BG, false)),
+            Map.entry("CRYPT2", new BackgroundSpec(CRYPT2_BG, false)),
+            Map.entry("GOBLIN_CAVE", new BackgroundSpec(GOBLIN_CAVE_BG, false))
+    );
 
-    private void loadBackgrounds() {
-        backgrounds.put("FOREST1", ImageUtils.importImage(FOREST_BG_1, GAME_WIDTH, GAME_HEIGHT));
-        backgrounds.put("FOREST2", ImageUtils.importImage(FOREST_BG_2, GAME_WIDTH, GAME_HEIGHT));
-        backgrounds.put("FOREST3", ImageUtils.importImage(FOREST_BG_3, GAME_WIDTH, GAME_HEIGHT));
-        backgrounds.put("FOREST4", ImageUtils.importImage(FOREST_BG_4, GAME_WIDTH, GAME_HEIGHT));
-        backgrounds.put("FOREST_ENTRANCE", ImageUtils.importImage(FOREST_ENTRANCE_BG, GAME_WIDTH, GAME_HEIGHT));
-        backgrounds.put("FOREST_ROOTS", ImageUtils.importImage(FOREST_ROOTS_BG, GAME_WIDTH, GAME_HEIGHT));
-        backgrounds.put("FOREST_DEEP", ImageUtils.importImage(FOREST_DEEP_BG, GAME_WIDTH, GAME_HEIGHT));
-        backgrounds.put("FOREST_STORM_PEAK", ImageUtils.importImage(FOREST_STORM_PEAK_BG, GAME_WIDTH, GAME_HEIGHT));
-        backgrounds.put("FOREST_VILLAGE", ImageUtils.importImage(FOREST_VILLAGE_BG, GAME_WIDTH, GAME_HEIGHT));
-        backgrounds.put("FOREST_VILLAGE_ENTRANCE", ImageUtils.importImage(FOREST_VILLAGE_ENTRANCE_BG, GAME_WIDTH, GAME_HEIGHT));
-        backgrounds.put("RORIC_ARENA", ImageUtils.importImage(RORIC_ARENA_BG, GAME_WIDTH, GAME_HEIGHT));
-        backgrounds.put("FOREST_THORNS", ImageUtils.importImage(FOREST_THORNS_BG, GAME_WIDTH, GAME_HEIGHT));
-
-        backgrounds.put("TAVERN", ImageUtils.importImage(TAVERN_BG, -1, -1));
-        backgrounds.put("CRYPT1", ImageUtils.importImage(CRYPT1_BG, -1, -1));
-        backgrounds.put("CRYPT2", ImageUtils.importImage(CRYPT2_BG, -1, -1));
-        backgrounds.put("GOBLIN_CAVE", ImageUtils.importImage(GOBLIN_CAVE_BG, -1, -1));
-    }
+    private static final Map<String, BufferedImage> CACHE = new ConcurrentHashMap<>();
 
     /**
-     * Retrieves a background image by its ID.
-     *
-     * @param id The ID of the background (e.g., "FOREST", "CAVE").
-     * @return The corresponding BufferedImage, or the default background if not found.
+     * Retrieves a background image by its ID, loading and caching it on first access.
      */
     public BufferedImage getBackground(String id) {
-        return backgrounds.getOrDefault(id, defaultBackground);
+        if (id == null || !REGISTRY.containsKey(id)) return getDefaultBackground();
+        return CACHE.computeIfAbsent(id, this::loadFromSpec);
     }
 
     public BufferedImage getDefaultBackground() {
-        return defaultBackground;
+        return CACHE.computeIfAbsent("FOREST1", this::loadFromSpec);
+    }
+
+    private BufferedImage loadFromSpec(String id) {
+        BackgroundSpec spec = REGISTRY.get(id);
+        if (spec == null) return null;
+        if (spec.scaleToViewport()) {
+            return ImageUtils.importImage(spec.path(), GAME_WIDTH, GAME_HEIGHT);
+        }
+        else return ImageUtils.importImage(spec.path(), -1, -1);
     }
 }
