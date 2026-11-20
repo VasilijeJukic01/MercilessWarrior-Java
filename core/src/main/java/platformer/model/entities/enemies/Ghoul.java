@@ -4,13 +4,11 @@ import platformer.animation.Anim;
 import platformer.audio.Audio;
 import platformer.audio.types.Sound;
 import platformer.model.entities.Cooldown;
-import platformer.model.entities.Direction;
 import platformer.model.entities.Entity;
 import platformer.model.entities.player.Player;
 
 import java.awt.geom.Rectangle2D;
 
-import static platformer.constants.Constants.SCALE;
 import static platformer.constants.Constants.TILES_SIZE;
 import static platformer.physics.CollisionDetector.*;
 
@@ -23,7 +21,6 @@ public class Ghoul extends Enemy {
     private static final double LUNGE_SPEED_MULTIPLIER = 2.2;
     private static final double REVEAL_OFFSET_DIST = 2.2 * TILES_SIZE;
 
-    private int attackOffset;
     private boolean blocker;
     private boolean hasHidden = false;
 
@@ -34,10 +31,8 @@ public class Ghoul extends Enemy {
 
     private void initAttackBox() {
         this.attackBox = new Rectangle2D.Double(xPos, yPos - 1, definition.getAttackBoxWidth(), definition.getAttackBoxHeight());
-        this.attackOffset = (int) (20 * SCALE);
     }
 
-    // Attack
     @Override
     public boolean hit(double damage, boolean enableRevive, boolean hitSound) {
         if (entityState == Anim.DEATH || !alive) return false;
@@ -84,8 +79,7 @@ public class Ghoul extends Enemy {
     // Core
     private void updateBehavior(int[][] levelData, Entity target) {
         switch (entityState) {
-            case IDLE -> idleAction(target);
-            case RUN, WALK -> moveAction(levelData, target);
+            case IDLE, RUN, WALK -> moveAction(levelData, target);
             case ATTACK_1 -> attackAction(levelData, target);
             case REVEAL -> revealAction(levelData, target);
             case HIT -> pushBack(pushDirection, levelData, 1.2, enemySpeed);
@@ -93,44 +87,32 @@ public class Ghoul extends Enemy {
         }
     }
 
-    private void idleAction(Entity target) {
+    private void moveAction(int[][] levelData, Entity target) {
         if (blocker) {
             faceEntity(target);
+            setLocomotionState(Anim.IDLE);
             if (cooldown[Cooldown.DASH.ordinal()] == 0) {
                 blocker = false;
                 setEnemyAction(Anim.ATTACK_1);
             }
             return;
         }
-        if (cooldown[Cooldown.ATTACK.ordinal()] == 0) {
-            setEnemyAction(Anim.WALK);
-        }
-    }
 
-    private void moveAction(int[][] levelData, Entity entity) {
-        if (blocker || entityState == Anim.ATTACK_1) return;
-        if (canSeeEntity(levelData, entity)) {
-            directToEntity(entity);
-            if (isEntityCloseForAttack(entity) && cooldown[Cooldown.ATTACK.ordinal()] == 0) {
+        if (canSeeEntity(levelData, target)) {
+            if (isEntityCloseForAttack(target) && cooldown[Cooldown.ATTACK.ordinal()] == 0) {
+                faceEntity(target);
                 cooldown[Cooldown.DASH.ordinal()] = STALK_DASH_CD;
                 setEnemyAction(Anim.IDLE);
                 blocker = true;
                 return;
             }
+            moveWithCombatSpacing(levelData, target, definition.getScaledRunSpeed(), definition.getMinSpacing(), definition.getRetreatSpacing());
+            return;
         }
-        double enemyXSpeed = (direction == Direction.LEFT) ? -enemySpeed : enemySpeed;
-        if (canMoveHere(hitBox.x + enemyXSpeed, hitBox.y, hitBox.width, hitBox.height, levelData)) {
-            if (isFloor(hitBox, enemyXSpeed, levelData, direction)) {
-                hitBox.x += enemyXSpeed;
-                return;
-            }
-        }
-        changeDirection();
+
+        patrolStep(levelData);
     }
 
-    /**
-     * Executes a parryable, smooth-velocity lunge across frames 2..5.
-     */
     private void attackAction(int[][] levelData, Entity target) {
         if (animIndex == 0) {
             attackCheck = false;
@@ -141,18 +123,11 @@ public class Ghoul extends Enemy {
         }
 
         if (animIndex >= 2 && animIndex <= 5) {
-            performSmoothLungeStep(levelData);
+            stepForwardClamped(levelData, target, definition.getScaledRunSpeed() * LUNGE_SPEED_MULTIPLIER);
             if (animIndex >= 3 && !attackCheck && attackBox.intersects(target.getHitBox())) {
                 checkEntityHit(attackBox, target);
                 attackCheck = true;
             }
-        }
-    }
-
-    private void performSmoothLungeStep(int[][] levelData) {
-        double lungeSpeed = ((direction == Direction.LEFT) ? -enemySpeed : enemySpeed) * LUNGE_SPEED_MULTIPLIER;
-        if (canMoveHere(hitBox.x + lungeSpeed, hitBox.y, hitBox.width, hitBox.height, levelData) && isFloor(hitBox, lungeSpeed, levelData, direction)) {
-            hitBox.x += lungeSpeed;
         }
     }
 
@@ -245,18 +220,13 @@ public class Ghoul extends Enemy {
         Entity target = getCloseTarget(player, follower);
         updateMove(levelData, target);
         updateAnimation();
-        updateAttackBox();
+        updateForwardAttackBox(definition.getAttackBoxWidth());
     }
 
     public void updateMove(int[][] levelData, Entity target) {
         if (!isEntityOnFloor(hitBox, levelData)) inAir = true;
         if (inAir) updateInAir(levelData, definition.getScaledGravity(), definition.getScaledCollisionFallSpeed());
         else updateBehavior(levelData, target);
-    }
-
-    private void updateAttackBox() {
-        this.attackBox.x = hitBox.x - attackOffset;
-        this.attackBox.y = hitBox.y;
     }
 
     @Override

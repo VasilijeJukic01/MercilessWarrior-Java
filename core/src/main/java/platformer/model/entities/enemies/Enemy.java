@@ -19,9 +19,9 @@ import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.util.Random;
 
+import static platformer.constants.Constants.SCALE;
 import static platformer.constants.Constants.TILES_SIZE;
-import static platformer.physics.CollisionDetector.isEntityOnFloor;
-import static platformer.physics.CollisionDetector.isSightClear;
+import static platformer.physics.CollisionDetector.*;
 
 /**
  * Abstract base class for all enemies in the game, configured via {@link EnemyDefinition}.
@@ -135,6 +135,110 @@ public abstract class Enemy extends Entity implements DamageSource, Debug<Graphi
         else if (direction == Direction.RIGHT) setDirection(Direction.LEFT);
         entityState = Anim.WALK;
         enemySpeed = definition.getScaledWalkSpeed();
+    }
+
+    /**
+     * Switches between IDLE, WALK, and RUN without resetting the animation index if already in that state.
+     */
+    protected void setLocomotionState(Anim nextState) {
+        if (entityState != nextState) {
+            setEnemyAction(nextState);
+        }
+    }
+
+    /**
+     * Advances toward, holds ground at, or steps back from the target to maintain clean weapon-tip spacing.
+     */
+    protected void moveWithCombatSpacing(int[][] levelData, Entity target, double chaseSpeed, double minSpacing, double retreatSpacing) {
+        double dx = target.getHitBox().getCenterX() - hitBox.getCenterX();
+        double absDist = Math.abs(dx);
+        double facingDeadzone = 4.0 * SCALE;
+
+        if (absDist > facingDeadzone) {
+            faceEntity(target);
+        }
+
+        if (absDist < retreatSpacing) {
+            double awayDirSign = (dx >= 0) ? -1.0 : 1.0;
+            Direction awayDir = (awayDirSign < 0) ? Direction.LEFT : Direction.RIGHT;
+            double step = awayDirSign * definition.getScaledWalkSpeed() * 0.90;
+            if (canMoveHere(hitBox.x + step, hitBox.y, hitBox.width, hitBox.height, levelData) && isFloor(hitBox, step, levelData, awayDir)) {
+                hitBox.x += step;
+                setLocomotionState(Anim.WALK);
+            }
+            else setLocomotionState(Anim.IDLE);
+            return;
+        }
+
+        if (absDist <= minSpacing) {
+            setLocomotionState(Anim.IDLE);
+            return;
+        }
+
+        double moveDirSign = (dx >= 0) ? 1.0 : -1.0;
+        Direction moveDir = (moveDirSign > 0) ? Direction.RIGHT : Direction.LEFT;
+        double stepMagnitude = Math.min(chaseSpeed, absDist - minSpacing);
+        double step = moveDirSign * stepMagnitude;
+
+        if (stepMagnitude > 0.01 && canMoveHere(hitBox.x + step, hitBox.y, hitBox.width, hitBox.height, levelData) && isFloor(hitBox, step, levelData, moveDir)) {
+            hitBox.x += step;
+            setLocomotionState(chaseSpeed > definition.getScaledWalkSpeed() * 1.1 ? Anim.RUN : Anim.WALK);
+        }
+        else {
+            setLocomotionState(Anim.IDLE);
+        }
+    }
+
+    /**
+     * Moves the enemy along its current patrol direction, turning around at walls or ledge edges.
+     */
+    protected void patrolStep(int[][] levelData) {
+        enemySpeed = definition.getScaledWalkSpeed();
+        setLocomotionState(Anim.WALK);
+        double enemyXSpeed = (direction == Direction.LEFT) ? -enemySpeed : enemySpeed;
+        if (canMoveHere(hitBox.x + enemyXSpeed, hitBox.y, hitBox.width, hitBox.height, levelData) && isFloor(hitBox, enemyXSpeed, levelData, direction)) {
+            hitBox.x += enemyXSpeed;
+        }
+        else changeDirection();
+    }
+
+    /**
+     * Steps forward during a melee lunge while clamping movement so the enemy never slides through or overlaps the target's hitbox.
+     */
+    protected void stepForwardClamped(int[][] levelData, Entity target, double stepSpeed) {
+        double dirSign = (direction == Direction.LEFT) ? -1.0 : 1.0;
+        double dx = dirSign * stepSpeed;
+        double minBodyGap = (hitBox.width + target.getHitBox().width) * 0.5 + (6.0 * SCALE);
+
+        double targetCenterX = target.getHitBox().getCenterX();
+        double currentCenterX = hitBox.getCenterX();
+        double currentDist = Math.abs(targetCenterX - currentCenterX);
+        boolean movingTowardTarget = (targetCenterX - currentCenterX) * dirSign > 0;
+
+        if (movingTowardTarget) {
+            if (currentDist <= minBodyGap) return;
+            double allowed = currentDist - minBodyGap;
+            if (Math.abs(dx) > allowed) {
+                dx = dirSign * allowed;
+            }
+        }
+
+        if (canMoveHere(hitBox.x + dx, hitBox.y, hitBox.width, hitBox.height, levelData) && isFloor(hitBox, dx, levelData, direction)) {
+            hitBox.x += dx;
+        }
+    }
+
+    /**
+     * Anchors the enemy's attackBox forward in the direction it is facing with a slight body overlap so melee hits are readable and fair.
+     */
+    protected void updateForwardAttackBox(double width) {
+        attackBox.width = width;
+        double overlap = hitBox.width * 0.25;
+        if (direction == Direction.RIGHT) {
+            attackBox.x = hitBox.getMaxX() - overlap;
+        }
+        else attackBox.x = hitBox.x - width + overlap;
+        attackBox.y = hitBox.y;
     }
 
     // Combat Helpers

@@ -27,7 +27,6 @@ public class CorruptedKnight extends Enemy {
 
     private static final double SHADOW_STEP_SPEED = 1.35 * SCALE;
 
-    private int attackOffset;
     private int shadowStepCooldown = 0;
     private boolean isShadowStepping = false;
 
@@ -40,7 +39,6 @@ public class CorruptedKnight extends Enemy {
 
     private void initAttackBox() {
         this.attackBox = new Rectangle2D.Double(xPos, yPos - 1, definition.getAttackBoxWidth(), definition.getAttackBoxHeight());
-        this.attackOffset = (int) (20 * SCALE);
     }
 
     @Override
@@ -83,8 +81,7 @@ public class CorruptedKnight extends Enemy {
 
     private void updateBehavior(int[][] levelData, Entity target) {
         switch (entityState) {
-            case IDLE -> idleAction();
-            case RUN, WALK -> moveAction(levelData, target);
+            case IDLE, RUN, WALK -> moveAction(levelData, target);
             case ATTACK_1 -> voidCleaveAction(levelData, target);
             case ATTACK_2 -> voidCrescentWaveAction(target);
             case HIT -> hitAction(levelData, target);
@@ -92,22 +89,14 @@ public class CorruptedKnight extends Enemy {
         }
     }
 
-    private void idleAction() {
-        if (cooldown[Cooldown.ATTACK.ordinal()] == 0) {
-            setEnemyAction(Anim.WALK);
-        }
-    }
-
-    private void moveAction(int[][] levelData, Entity entity) {
-        if (canSeeEntity(levelData, entity)) {
-            directToEntity(entity);
-            enemySpeed = definition.getScaledRunSpeed() * 0.90;
-            double dist = Math.abs(entity.getHitBox().getCenterX() - hitBox.getCenterX());
+    private void moveAction(int[][] levelData, Entity target) {
+        if (canSeeEntity(levelData, target)) {
+            double dist = Math.abs(target.getHitBox().getCenterX() - hitBox.getCenterX());
             double attackRange = definition.getAttackRange();
 
             if (shadowStepCooldown == 0 && cooldown[Cooldown.ATTACK.ordinal()] == 0
                     && dist > attackRange * 1.6 && dist < TILES_SIZE * 4.5 && rand.nextDouble() < 0.005) {
-                if (performShadowStepBehind(levelData, entity)) {
+                if (performShadowStepBehind(levelData, target)) {
                     setEnemyAction(Anim.ATTACK_1);
                     return;
                 }
@@ -115,25 +104,23 @@ public class CorruptedKnight extends Enemy {
 
             if (cooldown[Cooldown.ATTACK.ordinal()] == 0) {
                 if (dist <= attackRange) {
+                    faceEntity(target);
                     isShadowStepping = true;
                     setEnemyAction(Anim.ATTACK_1);
                     return;
                 }
-                else if (dist >= attackRange * 1.15 && dist <= definition.getSightRange() * 0.90 && rand.nextDouble() < 0.008) {
+                else if (dist >= attackRange * 1.25 && dist <= definition.getSightRange() * 0.90 && rand.nextDouble() < 0.008) {
+                    faceEntity(target);
                     setEnemyAction(Anim.ATTACK_2);
                     return;
                 }
             }
+
+            moveWithCombatSpacing(levelData, target, definition.getScaledRunSpeed() * 0.90, definition.getMinSpacing(), definition.getRetreatSpacing());
+            return;
         }
 
-        double enemyXSpeed = (direction == Direction.LEFT) ? -enemySpeed : enemySpeed;
-        if (canMoveHere(hitBox.x + enemyXSpeed, hitBox.y, hitBox.width, hitBox.height, levelData)) {
-            if (isFloor(hitBox, enemyXSpeed, levelData, direction)) {
-                hitBox.x += enemyXSpeed;
-                return;
-            }
-        }
-        changeDirection();
+        patrolStep(levelData);
     }
 
     private void voidCleaveAction(int[][] levelData, Entity target) {
@@ -143,13 +130,10 @@ public class CorruptedKnight extends Enemy {
         else if ((animIndex == 1 || animIndex == 3) && checkPlayerParry(target)) {
             isShadowStepping = false;
             attackCheck = true;
+            return;
         }
         else if (animIndex == 3 || animIndex == 4) {
-            double dx = (direction == Direction.LEFT) ? -SHADOW_STEP_SPEED : SHADOW_STEP_SPEED;
-            if (animTick % 2 == 0 && canMoveHere(hitBox.x + dx, hitBox.y, hitBox.width, hitBox.height, levelData)
-                    && isFloor(hitBox, dx, levelData, direction)) {
-                hitBox.x += dx;
-            }
+            if (animTick % 2 == 0) stepForwardClamped(levelData, target, SHADOW_STEP_SPEED);
             if (animIndex == 4 && !attackCheck) {
                 checkEntityHit(attackBox, target);
             }
@@ -194,7 +178,7 @@ public class CorruptedKnight extends Enemy {
     private boolean performShadowStepBehind(int[][] levelData, Entity target) {
         double targetCenterX = target.getHitBox().getCenterX();
         double side = (hitBox.getCenterX() < targetCenterX) ? 1.0 : -1.0;
-        double destX = targetCenterX + (side * 1.4 * TILES_SIZE) - (hitBox.width / 2.0);
+        double destX = targetCenterX + (side * 1.35 * TILES_SIZE) - (hitBox.width / 2.0);
         Direction moveDir = (destX > hitBox.x) ? Direction.RIGHT : Direction.LEFT;
 
         if (canMoveHere(destX, hitBox.y, hitBox.width, hitBox.height, levelData)
@@ -216,7 +200,7 @@ public class CorruptedKnight extends Enemy {
         Entity target = getCloseTarget(player, follower);
         updateMove(levelData, target);
         updateAnimation();
-        updateAttackBox();
+        updateForwardAttackBox(definition.getAttackBoxWidth());
         if (pushOffset < 0 || pushOffsetDirection == Direction.UP) {
             updatePushOffset();
         }
@@ -226,11 +210,6 @@ public class CorruptedKnight extends Enemy {
         if (!isEntityOnFloor(hitBox, levelData)) inAir = true;
         if (inAir) updateInAir(levelData, definition.getScaledGravity(), definition.getScaledCollisionFallSpeed());
         else updateBehavior(levelData, entity);
-    }
-
-    private void updateAttackBox() {
-        this.attackBox.x = hitBox.x - attackOffset;
-        this.attackBox.y = hitBox.y;
     }
 
     public boolean isShadowStepping() {

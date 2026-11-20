@@ -41,7 +41,6 @@ public class Wraith extends Enemy {
         this.attackBox = new Rectangle2D.Double(xPos, yPos - 1, definition.getAttackBoxWidth(), definition.getAttackBoxHeight());
     }
 
-    // Attack
     @Override
     public boolean hit(double damage, boolean enableBlock, boolean hitSound) {
         if (entityState == Anim.DEATH || !alive) return false;
@@ -81,8 +80,7 @@ public class Wraith extends Enemy {
     // Core
     private void updateBehavior(int[][] levelData, Entity target) {
         switch (entityState) {
-            case IDLE -> idleAction();
-            case RUN, WALK -> moveAction(levelData, target);
+            case IDLE, RUN, WALK -> moveAction(levelData, target);
             case ATTACK_1, ATTACK_2 -> meleeAttackAction(target);
             case SPELL_1 -> spellBoltAction(target);
             case HIT -> hitAction(levelData, target);
@@ -90,19 +88,11 @@ public class Wraith extends Enemy {
         }
     }
 
-    // Behavior
-    private void idleAction() {
-        if (cooldown[Cooldown.ATTACK.ordinal()] == 0) {
-            setEnemyAction(Anim.WALK);
-        }
-    }
-
     private void moveAction(int[][] levelData, Entity target) {
         if (canSeeEntity(levelData, target)) {
-            directToEntity(target);
             double dist = Math.abs(target.getHitBox().getCenterX() - hitBox.getCenterX());
             double attackRange = definition.getAttackRange();
-            double whipRange = attackRange * 1.40;
+            double whipRange = attackRange * 1.25;
             double soulBoltMaxRange = definition.getSightRange() * 0.95;
 
             if (blinkCooldown == 0 && dist > whipRange && dist < soulBoltMaxRange && rand.nextDouble() < 0.015) {
@@ -113,30 +103,29 @@ public class Wraith extends Enemy {
             }
 
             if (cooldown[Cooldown.ATTACK.ordinal()] == 0) {
-                if (dist <= attackRange * 0.80) {
+                if (dist <= attackRange * 0.72) {
+                    faceEntity(target);
                     setEnemyAction(Anim.ATTACK_2);
                     return;
                 }
                 else if (dist <= whipRange) {
+                    faceEntity(target);
                     setEnemyAction(Anim.ATTACK_1);
                     return;
                 }
                 else if (dist <= soulBoltMaxRange && rand.nextDouble() < 0.045) {
+                    faceEntity(target);
                     secondBoltFired = false;
                     setEnemyAction(Anim.SPELL_1);
                     return;
                 }
             }
+
+            moveWithCombatSpacing(levelData, target, definition.getScaledRunSpeed(), definition.getMinSpacing(), definition.getRetreatSpacing());
+            return;
         }
 
-        double enemyXSpeed = (direction == Direction.LEFT) ? -enemySpeed : enemySpeed;
-        if (canMoveHere(hitBox.x + enemyXSpeed, hitBox.y, hitBox.width, hitBox.height, levelData)) {
-            if (isFloor(hitBox, enemyXSpeed, levelData, direction)) {
-                hitBox.x += enemyXSpeed;
-                return;
-            }
-        }
-        changeDirection();
+        patrolStep(levelData);
     }
 
     private void meleeAttackAction(Entity target) {
@@ -191,7 +180,7 @@ public class Wraith extends Enemy {
     private boolean tryPhaseBlink(int[][] levelData, Entity target, boolean behindTarget) {
         double targetCenterX = target.getHitBox().getCenterX();
         double dirFromTarget = (hitBox.getCenterX() < targetCenterX) ? -1.0 : 1.0;
-        double desiredOffset = behindTarget ? (-dirFromTarget * 1.8 * TILES_SIZE) : (dirFromTarget * 3.6 * TILES_SIZE);
+        double desiredOffset = behindTarget ? (-dirFromTarget * 1.5 * TILES_SIZE) : (dirFromTarget * 3.6 * TILES_SIZE);
         double newX = targetCenterX + desiredOffset - (hitBox.width / 2.0);
         Direction moveDir = (newX > hitBox.x) ? Direction.RIGHT : Direction.LEFT;
 
@@ -233,11 +222,7 @@ public class Wraith extends Enemy {
     private void updateAttackBox() {
         int baseWidth = definition.getAttackBoxWidth();
         if (entityState == Anim.ATTACK_1) {
-            attackBox.width = (int) (baseWidth * 0.85);
-            if (direction == Direction.RIGHT) {
-                attackBox.x = hitBox.x;
-            }
-            else attackBox.x = hitBox.x + hitBox.width - attackBox.width;
+            updateForwardAttackBox(baseWidth * 0.90);
         }
         else {
             attackBox.width = (int) (baseWidth * 1.15);

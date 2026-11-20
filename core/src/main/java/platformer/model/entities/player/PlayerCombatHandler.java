@@ -300,19 +300,20 @@ public class PlayerCombatHandler {
         Rectangle2D.Double hitBox = player.getHitBox();
         Rectangle2D.Double attackBox = player.getAttackBox();
         int flipSign = player.getFlipSign();
-
         boolean left = player.checkAction(PlayerAction.LEFT);
         boolean right = player.checkAction(PlayerAction.RIGHT);
-
-        if ((right && left) || (!right && !left)) {
-            if (flipSign == 1) attackBox.x = hitBox.x + hitBox.width + (int) (10 * SCALE);
-            else attackBox.x = hitBox.x - hitBox.width - (int) (10 * SCALE);
-        }
-
         boolean dash = player.checkAction(PlayerAction.DASH);
-        if (right || (dash && flipSign == 1)) attackBox.x = hitBox.x + hitBox.width + (int) (10 * SCALE);
-        else if (left || (dash && flipSign == -1)) attackBox.x = hitBox.x - hitBox.width - (int) (10 * SCALE);
 
+        double reachWidth = 30.0 * SCALE;
+        attackBox.width = reachWidth;
+
+        int facing = flipSign;
+        if (right && !left) facing = 1;
+        else if (left && !right) facing = -1;
+        else if (dash) facing = flipSign;
+
+        if (facing == 1) attackBox.x = hitBox.getMaxX();
+        else attackBox.x = hitBox.x - reachWidth;
         attackBox.y = hitBox.y + (int) (10 * SCALE);
     }
 
