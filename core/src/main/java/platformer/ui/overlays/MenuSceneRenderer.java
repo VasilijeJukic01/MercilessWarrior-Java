@@ -85,6 +85,7 @@ public class MenuSceneRenderer {
 
         this.player = new Player(PLAYER_X, PLAYER_Y, PLAYER_WIDTH, PLAYER_HEIGHT, menuContext);
         menuContext.setPlayer(player);
+        this.timeCycleManager.setLockedToNight(true);
 
         initMenuLevel();
     }

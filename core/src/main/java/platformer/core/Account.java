@@ -21,6 +21,7 @@ public class Account {
     private List<String> quests = new ArrayList<>();
     private String explorationData;
 
+    private double gameTime = -1;
     private String lastTimeSaved;
     private volatile long playtime;
 
@@ -73,6 +74,7 @@ public class Account {
         this.explorationData = account.explorationData;
         this.enableCheats = account.enableCheats;
         this.playtime = account.playtime;
+        this.gameTime = account.gameTime;
     }
 
     public void copyFromSlot(Account slotData) {
@@ -85,6 +87,7 @@ public class Account {
         setSpawn(slotData.getSpawn());
         setTokens(slotData.getTokens());
         setPlaytime(slotData.getPlaytime());
+        setGameTime(slotData.getGameTime());
         setExplorationData(slotData.getExplorationData());
         setWorldFlags(slotData.getWorldFlags() != null ? new ArrayList<>(slotData.getWorldFlags()) : new ArrayList<>());
         setQuests(slotData.getQuests() != null ? new ArrayList<>(slotData.getQuests()) : new ArrayList<>());
@@ -105,5 +108,6 @@ public class Account {
         this.quests = new ArrayList<>();
         this.explorationData = null;
         this.playtime = 0;
+        this.gameTime = -1;
     }
 }

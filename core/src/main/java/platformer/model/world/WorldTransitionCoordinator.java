@@ -10,8 +10,12 @@ import platformer.model.gameObjects.npc.NpcType;
 import platformer.model.levels.Level;
 import platformer.model.levels.LvlTriggerType;
 import platformer.model.levels.metadata.LevelMetadata;
+import platformer.physics.CollisionDetector;
 
 import java.awt.*;
+import java.awt.geom.Rectangle2D;
+
+import static platformer.constants.Constants.TILES_SIZE;
 
 /**
  * Centralizes all room, interior, arena, save-load, and fast-travel transitions into a single deterministic pipeline.
@@ -32,6 +36,8 @@ public class WorldTransitionCoordinator {
         Level level = context.getLevelManager().getCurrentLevel();
         Point spawnPoint = context.getLevelManager().getTotemSpawnPoint(savedSpawnId);
         bindLevel(level, spawnPoint, true, true, false, false, false);
+        context.getLightManager().snapToTimeCycle(context.getTimeCycleManager());
+        context.getEffectManager().updateTimeOfDay(context.getTimeCycleManager());
     }
 
     /**
@@ -145,11 +151,16 @@ public class WorldTransitionCoordinator {
         context.getObjectManager().loadObjects(level);
 
         player.setSpawn(spawnPoint);
+        ensureSpawnClearOfFloor(player, level.getLvlData());
         if (resetPlayer) {
             player.reset();
         }
         else {
+            player.clearTransitionMomentum();
             player.resetDirections();
+            if (!CollisionDetector.isEntityOnFloor(player.getHitBox(), level.getLvlData())) {
+                player.setInAir(true);
+            }
         }
 
         syncFollower(spawnPoint, isArena);
@@ -188,6 +199,19 @@ public class WorldTransitionCoordinator {
         }
         else {
             context.getObjectManager().despawnFollower();
+        }
+    }
+
+    private void ensureSpawnClearOfFloor(Player player, int[][] levelData) {
+        Rectangle2D.Double hb = player.getHitBox();
+        int maxLift = TILES_SIZE * 2;
+        int lifted = 0;
+        while (!CollisionDetector.canMoveHere(hb.x, hb.y, hb.width, hb.height, levelData) && lifted < maxLift) {
+            hb.y -= 2;
+            lifted += 2;
+        }
+        if (lifted > 0) {
+            player.setSpawn(new Point((int) hb.x, (int) hb.y));
         }
     }
 }

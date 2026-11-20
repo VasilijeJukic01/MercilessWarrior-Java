@@ -34,6 +34,7 @@ public class GameFlowManager {
         EventBus.getInstance().register(PreSaveEvent.class, e -> {
             configureSpawnPoint();
             saveMinimapData();
+            saveTimeCycleData();
         });
     }
 
@@ -67,6 +68,7 @@ public class GameFlowManager {
      */
     private void checkLevelExit() {
         Player player = gameState.getPlayer();
+        if (player.checkAction(PlayerAction.LEVEL_TRANSITION) || gameState.getTransitionManager().isActive()) return;
         if (player.checkAction(PlayerAction.DASH)) return;
 
         LevelManager levelManager = context.getLevelManager();
@@ -138,5 +140,9 @@ public class GameFlowManager {
     private void saveMinimapData() {
         String data = context.getMinimapManager().getExplorationDataForSave();
         Framework.getInstance().getAccount().setExplorationData(data);
+    }
+
+    private void saveTimeCycleData() {
+        Framework.getInstance().getAccount().setGameTime(context.getTimeCycleManager().getGameTime());
     }
 }

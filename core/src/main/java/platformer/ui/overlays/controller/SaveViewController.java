@@ -128,12 +128,14 @@ public class SaveViewController {
         if (!anySelected) return;
 
         context.getWorldMemoryManager().unlockCurrentRoomTotem();
-        Framework.getInstance().getSaveController().saveSlot();
         EventBus.getInstance().publish(new OverlayChangeEvent(null));
 
         context.getGameState().getTransitionManager().startTransition(
                 TransitionDirection.FROM_TOP,
-                () -> context.getWorldTransitionCoordinator().restInCurrentRoom()
+                () -> {
+                    context.getWorldTransitionCoordinator().restInCurrentRoom();
+                    Framework.getInstance().getSaveController().saveSlot();
+                }
         );
     }
 

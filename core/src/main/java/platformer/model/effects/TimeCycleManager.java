@@ -9,6 +9,7 @@ public class TimeCycleManager {
 
     /* The duration of a full in-game day in real-world seconds. */
     public static final double SECONDS_PER_GAME_DAY = 1440.0; // 24 minutes
+    public static final double DEFAULT_START_TIME = 0.32 * SECONDS_PER_GAME_DAY;
     private static final int UPS = 200;
 
     // Dawn: 0.18 -> 0.30 | Day: 0.30 -> 0.68 | Dusk: 0.68 -> 0.82 | Night: 0.82 -> 0.18
@@ -17,7 +18,7 @@ public class TimeCycleManager {
     public static final double DUSK_START = 0.68;
     public static final double DUSK_END = 0.82;
 
-    private double gameTime = 0;
+    private double gameTime = DEFAULT_START_TIME;
     private int playtimeTick = 0;
     private boolean lockedToNight = false;
 
@@ -137,6 +138,22 @@ public class TimeCycleManager {
     public void advanceTime(double normalizedDelta) {
         if (lockedToNight) return;
         gameTime = (gameTime + normalizedDelta * SECONDS_PER_GAME_DAY) % SECONDS_PER_GAME_DAY;
+    }
+
+    public double getGameTime() {
+        return gameTime;
+    }
+
+    /**
+     * Sets the in-game clock in seconds. Negative values (new or legacy saves) default to morning.
+     */
+    public void setGameTime(double seconds) {
+        if (seconds < 0) {
+            this.gameTime = DEFAULT_START_TIME;
+        }
+        else {
+            this.gameTime = ((seconds % SECONDS_PER_GAME_DAY) + SECONDS_PER_GAME_DAY) % SECONDS_PER_GAME_DAY;
+        }
     }
 
     public void reset() {

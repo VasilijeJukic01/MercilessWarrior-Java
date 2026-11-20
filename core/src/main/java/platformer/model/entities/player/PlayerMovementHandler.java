@@ -72,7 +72,7 @@ public class PlayerMovementHandler {
     }
 
     public void updatePosition(int[][] levelData, PlayerCombatHandler combatHandler, PlayerMinimapHandler minimapHandler) {
-        if (checkTransitionUpdate()) return;
+        if (checkTransitionUpdate(levelData)) return;
 
         Rectangle2D.Double hitBox = player.getHitBox();
         player.removeAction(PlayerAction.MOVE);
@@ -97,6 +97,7 @@ public class PlayerMovementHandler {
         }
 
         if (wallCoyoteTimer > 0) wallCoyoteTimer--;
+        if (isInInterior()) wallCoyoteTimer = 0;
         if (jumpBufferTimer > 0) jumpBufferTimer--;
         if (wallJumpLockTimer > 0) wallJumpLockTimer--;
 
@@ -170,13 +171,24 @@ public class PlayerMovementHandler {
         }
     }
 
-    private boolean checkTransitionUpdate() {
+    private boolean checkTransitionUpdate(int[][] levelData) {
         if (player.checkAction(PlayerAction.LEVEL_TRANSITION)) {
+            Rectangle2D.Double hitBox = player.getHitBox();
             if (player.isInAir()) {
-                player.setAirSpeed(player.getAirSpeed() + downwardGravity);
-                player.getHitBox().y += player.getAirSpeed();
+                double nextAirSpeed = Math.min(maxFallSpeed, player.getAirSpeed() + downwardGravity);
+                if (canMoveHere(hitBox.x, hitBox.y + nextAirSpeed, hitBox.width, hitBox.height, levelData)) {
+                    player.setAirSpeed(nextAirSpeed);
+                    hitBox.y += nextAirSpeed;
+                }
+                else {
+                    player.setAirSpeed(0);
+                    player.setInAir(false);
+                }
             }
-            player.getHitBox().x += getHorizontalSpeed();
+            double vx = Math.max(-PLAYER_SPEED, Math.min(PLAYER_SPEED, getHorizontalSpeed()));
+            if (canMoveHere(hitBox.x + vx, hitBox.y, hitBox.width, hitBox.height, levelData)) {
+                hitBox.x += vx;
+            }
             player.addAction(PlayerAction.MOVE);
             return true;
         }
@@ -334,9 +346,10 @@ public class PlayerMovementHandler {
         boolean doubleJump = player.checkAction(PlayerAction.DOUBLE_JUMP);
         boolean onWall = player.checkAction(PlayerAction.ON_WALL);
 
-        boolean wallLeftNow = player.isInAir() && isOnWall(hitBox, levelData, Direction.LEFT);
-        boolean wallRightNow = player.isInAir() && isOnWall(hitBox, levelData, Direction.RIGHT);
-        boolean canWallJump = onWall || wallLeftNow || wallRightNow || (player.isInAir() && wallCoyoteTimer > 0);
+        boolean inInterior = isInInterior();
+        boolean wallLeftNow = !inInterior && player.isInAir() && isOnWall(hitBox, levelData, Direction.LEFT);
+        boolean wallRightNow = !inInterior && player.isInAir() && isOnWall(hitBox, levelData, Direction.RIGHT);
+        boolean canWallJump = !inInterior && (onWall || wallLeftNow || wallRightNow || (player.isInAir() && wallCoyoteTimer > 0));
 
         if (!canWallJump && !player.getActionHandler().canJump(levelData, left, right)) return;
 
@@ -389,7 +402,7 @@ public class PlayerMovementHandler {
             return;
         }
 
-        if (currentJumps < MAX_JUMPS && !doubleJump) {
+        if (!inInterior && currentJumps < MAX_JUMPS && !doubleJump) {
             currentJumps = MAX_JUMPS;
             player.addAction(PlayerAction.DOUBLE_JUMP);
             wallJumpLockTimer = 0;
@@ -458,6 +471,10 @@ public class PlayerMovementHandler {
 
     public boolean isWallJumpLocked() {
         return wallJumpLockTimer > 0;
+    }
+
+    private boolean isInInterior() {
+        return interiorManager != null && interiorManager.isInterior();
     }
 
     public void reset() {

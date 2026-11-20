@@ -432,6 +432,17 @@ public class Player extends Entity {
     }
 
     // Reset
+    /**
+     * Clears active jump/dash momentum and wall/object flags when entering a new room.
+     */
+    public void clearTransitionMomentum() {
+        removeActions(PlayerAction.DASH, PlayerAction.DASH_HIT, PlayerAction.ON_WALL, PlayerAction.WALL_PUSH, PlayerAction.DOUBLE_JUMP, PlayerAction.ON_OBJECT);
+        inAir = false;
+        airSpeed = 0;
+        movementHandler.reset();
+        combatHandler.clearImpulses();
+    }
+
     public void resetDirections() {
         removeActions(PlayerAction.LEFT, PlayerAction.RIGHT, PlayerAction.JUMP, PlayerAction.LOOK_DOWN);
         if (spellState == 1) setSpellState(2);

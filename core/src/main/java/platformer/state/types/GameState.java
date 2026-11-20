@@ -236,6 +236,7 @@ public class GameState extends AbstractState implements State {
 
         resetTransientUiAndHandlers();
         world.clearTransientEffects();
+        context.getTimeCycleManager().setGameTime(account.getGameTime());
         context.getWorldTransitionCoordinator().loadSavedRoom(savedSpawn);
     }
 
