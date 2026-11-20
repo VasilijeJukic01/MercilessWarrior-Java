@@ -71,7 +71,7 @@ public class PlayerRenderer {
     /**
      * Renders the player sprite, active dash afterimages, and burn overlay.
      */
-    public void render(Graphics g, int xLevelOffset, int yLevelOffset, double pushOffset, int burnTick, int hitFlashTick) {
+    public void render(Graphics g, int xLevelOffset, int yLevelOffset, double pushOffset, int burnTick, int hitFlashTick, int invulnerabilityTick) {
         int width = PLAYER_WIDTH;
         int height = PLAYER_HEIGHT;
 
@@ -83,7 +83,16 @@ public class PlayerRenderer {
             int stateOrd = player.getEntityState().ordinal();
             int animIndex = player.getAnimIndex();
             BufferedImage frame = (!transform) ? animations[stateOrd][animIndex] : transformAnimations[stateOrd][animIndex];
-            g.drawImage(frame, playerXPos, playerYPos, player.getFlipSign() * width, height, null);
+
+            if (invulnerabilityTick > 0 && hitFlashTick == 0) {
+                Graphics2D g2d = (Graphics2D) g.create();
+                float blinkAlpha = ((invulnerabilityTick / 6) % 2 == 0) ? 0.42f : 0.92f;
+                g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, blinkAlpha));
+                g2d.drawImage(frame, playerXPos, playerYPos, player.getFlipSign() * width, height, null);
+                g2d.dispose();
+            }
+            else g.drawImage(frame, playerXPos, playerYPos, player.getFlipSign() * width, height, null);
+
             if (hitFlashTick > 0 && frame != null) {
                 renderHitFlashOverlay(g, frame, playerXPos, playerYPos, width, height, hitFlashTick);
             }

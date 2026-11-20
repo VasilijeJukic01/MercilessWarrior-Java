@@ -61,6 +61,7 @@ public class PlayerCombatHandler {
     private int cooldownDeniedFlashTicks = 0;
     private int readyFlashTicks = 0;
 
+    private boolean parryTriggeredThisBlock = false;
     private int blockWindowTimer = 0;
     private double recoilSpeedX = 0.0;
     private double attackLungeSpeedX = 0.0;
@@ -246,16 +247,22 @@ public class PlayerCombatHandler {
             cancelForMobility();
             player.addAction(PlayerAction.BLOCK);
             this.blockWindowTimer = PARRY_WINDOW_TICKS;
+            this.parryTriggeredThisBlock = false;
         }
         else {
             player.removeAction(PlayerAction.BLOCK);
             this.blockWindowTimer = 0;
+            this.parryTriggeredThisBlock = false;
         }
     }
 
     public void updateParryWindow() {
         if (player.checkAction(PlayerAction.CAN_BLOCK)) {
             blockWindowTimer = 0;
+            if (!parryTriggeredThisBlock) {
+                parryTriggeredThisBlock = true;
+                onParrySuccess();
+            }
             return;
         }
         if (player.checkAction(PlayerAction.BLOCK)) {
@@ -271,27 +278,31 @@ public class PlayerCombatHandler {
         }
     }
 
-    public void finishAttackBlock() {
-        boolean canBlock = player.checkAction(PlayerAction.CAN_BLOCK);
-        if (canBlock) {
-            Logger.getInstance().notify("Damage blocked successfully!", Message.INFORMATION);
-            player.getUltimateHandler().addChargeFromParry();
-            BalanceManager.PlayerBalance pb = BalanceManager.getInstance().getPlayerBalance();
-            double blockCooldown = (pb.getBlockCooldown() * 0.45) * (1.0 - player.getStats().getCooldownMultiplier());
-            player.getCooldown()[Cooldown.BLOCK.ordinal()] = Math.max(0.1, blockCooldown);
+    /**
+     * Triggers the exact frame a parry connects: stuns nearby enemies immediately, restores stamina, and charges ultimate.
+     */
+    private void onParrySuccess() {
+        Logger.getInstance().notify("Damage blocked successfully!", Message.INFORMATION);
+        player.getUltimateHandler().addChargeFromParry();
+        BalanceManager.PlayerBalance pb = BalanceManager.getInstance().getPlayerBalance();
+        double blockCooldown = (pb.getBlockCooldown() * 0.35) * player.getStats().getCooldownMultiplier();
+        player.getCooldown()[Cooldown.BLOCK.ordinal()] = Math.max(0.08, blockCooldown);
 
-            boolean hasRipostePerk = player.getStats().getPerks().isRestorePower();
-            if (hasRipostePerk) {
-                player.changeStamina(pb.getParryStaminaRestore());
-            }
-            int stunTicks = hasRipostePerk ? 220 : 150;
-            for (Enemy enemy : enemyManager.getAllEnemies()) {
-                if (enemy.isAlive() && Math.abs(enemy.getHitBox().getCenterX() - player.getHitBox().getCenterX()) < TILES_SIZE * 2.5) {
-                    enemy.freeze(stunTicks);
-                }
+        boolean hasRipostePerk = player.getStats().getPerks().isRestorePower();
+        if (hasRipostePerk) {
+            player.changeStamina(pb.getParryStaminaRestore());
+        }
+        int stunTicks = hasRipostePerk ? 230 : 165;
+        for (Enemy enemy : enemyManager.getAllEnemies()) {
+            if (enemy.isAlive() && Math.abs(enemy.getHitBox().getCenterX() - player.getHitBox().getCenterX()) < TILES_SIZE * 2.75) {
+                enemy.freeze(stunTicks);
             }
         }
+    }
+
+    public void finishAttackBlock() {
         blockWindowTimer = 0;
+        parryTriggeredThisBlock = false;
     }
 
     public void updateAttackBox() {

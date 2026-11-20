@@ -1,7 +1,7 @@
 package platformer.model.entities.enemies.renderer;
 
 import platformer.animation.SpriteManager;
-import platformer.model.entities.enemies.CorruptedKnight;
+import platformer.model.entities.enemies.types.CorruptedKnight;
 import platformer.model.entities.enemies.EnemyType;
 
 import java.awt.*;

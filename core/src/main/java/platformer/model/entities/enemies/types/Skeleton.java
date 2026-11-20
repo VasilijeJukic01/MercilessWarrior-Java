@@ -1,10 +1,12 @@
-package platformer.model.entities.enemies;
+package platformer.model.entities.enemies.types;
 
 import platformer.animation.Anim;
 import platformer.audio.Audio;
 import platformer.model.entities.Cooldown;
 import platformer.model.entities.Direction;
 import platformer.model.entities.Entity;
+import platformer.model.entities.enemies.Enemy;
+import platformer.model.entities.enemies.EnemyType;
 import platformer.model.entities.player.Player;
 
 import java.awt.geom.Rectangle2D;
@@ -69,7 +71,7 @@ public class Skeleton extends Enemy {
     // Core
     private void updateBehavior(int[][] levelData, Entity target) {
         switch (entityState) {
-            case IDLE, RUN, WALK -> moveAction(levelData, target);
+            case IDLE, RUN, WALK, BLOCK -> moveAction(levelData, target);
             case ATTACK_1 -> attackAction(target);
             case HIT -> hitAction(levelData);
             default -> {}
@@ -78,7 +80,7 @@ public class Skeleton extends Enemy {
 
     private void moveAction(int[][] levelData, Entity target) {
         if (canSeeEntity(levelData, target)) {
-            if (isEntityCloseForAttack(target) && cooldown[Cooldown.ATTACK.ordinal()] == 0) {
+            if (isEntityCloseForAttack(target) && cooldown[Cooldown.ATTACK.ordinal()] == 0 && requestMeleeToken()) {
                 faceEntity(target);
                 setEnemyAction(Anim.ATTACK_1);
                 return;

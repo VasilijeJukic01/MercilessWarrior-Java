@@ -55,6 +55,8 @@ public class EnemyManager {
     private final List<RoricClone> roricClones = new ArrayList<>();
     private final Random rand = new Random();
 
+    private final CombatDirector combatDirector = new CombatDirector();
+
     // Debug
     private long lastRenderErrorLogMs = 0;
 
@@ -79,6 +81,10 @@ public class EnemyManager {
 
     public void loadEnemies(Level level) {
         this.enemies = level.getEnemiesMap();
+        this.combatDirector.reset();
+        for (Enemy enemy : getAllEnemies()) {
+            enemy.setCombatDirector(combatDirector);
+        }
     }
 
     private <T extends Enemy> void renderEnemy(T enemy, Graphics g, int xLevelOffset, int yLevelOffset) {
@@ -363,7 +369,9 @@ public class EnemyManager {
      */
     public void update(int[][] levelData, Player player, Entity follower) {
         updateSpellHitTimers();
-        for (Enemy enemy : getAllEnemies()) {
+        List<Enemy> allEnemies = getAllEnemies();
+        combatDirector.update(allEnemies, player, follower);
+        for (Enemy enemy : allEnemies) {
             if (!enemy.isAlive()) continue;
             if (enemy instanceof Lancer lancer) {
                 lancer.update(levelData, player, context.getSpellManager(), context.getObjectManager(), context.getGameState().getBossInterface());
@@ -444,6 +452,7 @@ public class EnemyManager {
 
     // Reset
     public void reset() {
+        combatDirector.reset();
         enemies.values().stream()
                 .flatMap(List::stream)
                 .forEach(Enemy::reset);

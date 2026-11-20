@@ -344,7 +344,7 @@ public class Player extends Entity {
     }
 
     public void render(Graphics g, int xLevelOffset, int yLevelOffset) {
-        playerRenderer.render(g, xLevelOffset, yLevelOffset, pushOffset, feedbackHandler.getBurnTick(), feedbackHandler.getHitFlashTick());
+        playerRenderer.render(g, xLevelOffset, yLevelOffset, pushOffset, feedbackHandler.getBurnTick(), feedbackHandler.getHitFlashTick(), feedbackHandler.getInvulnerabilityTick());
         hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.GREEN);
         attackBoxRenderer(g, xLevelOffset, yLevelOffset);
     }
@@ -397,7 +397,7 @@ public class Player extends Entity {
     }
 
     public void changeHealth(double value, DamageSource source) {
-        if (checkAction(PlayerAction.HIT) || (ultimateHandler != null && ultimateHandler.isActive())) return;
+        if (checkAction(PlayerAction.HIT) || feedbackHandler.isInvulnerable() || (ultimateHandler != null && ultimateHandler.isActive())) return;
         if (value < 0) {
             double defenseBonus = stats.getDefenseReduction();
             double actualDamage = Math.abs(value) * (1.0 - defenseBonus);

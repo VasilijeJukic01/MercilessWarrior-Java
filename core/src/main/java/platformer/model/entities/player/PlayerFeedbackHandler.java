@@ -30,6 +30,7 @@ public class PlayerFeedbackHandler {
     private int mythicAuraTick = 0;
     private int burnTick = 0;
     private int hitFlashTick = 0;
+    private int invulnerabilityTick = 0;
 
     public PlayerFeedbackHandler(Player player, GameContext context) {
         this.player = player;
@@ -42,6 +43,7 @@ public class PlayerFeedbackHandler {
      */
     public void update() {
         if (hitFlashTick > 0) hitFlashTick--;
+        if (invulnerabilityTick > 0) invulnerabilityTick--;
         updateMythicAura();
         updateBurnStatus();
         updateRunningEffects();
@@ -133,6 +135,7 @@ public class PlayerFeedbackHandler {
      */
     public void onPlayerDamaged(double damageValue) {
         this.hitFlashTick = 18;
+        this.invulnerabilityTick = 125;
         Audio.getInstance().getAudioPlayer().playHitSound();
         EventBus.getInstance().publish(new HitStopEvent(9));
 
@@ -155,11 +158,20 @@ public class PlayerFeedbackHandler {
         return hitFlashTick;
     }
 
+    public int getInvulnerabilityTick() {
+        return invulnerabilityTick;
+    }
+
+    public boolean isInvulnerable() {
+        return invulnerabilityTick > 0;
+    }
+
     public void reset() {
         runDustTick = 0;
         wallSlideDustTick = 0;
         mythicAuraTick = 0;
         burnTick = 0;
         hitFlashTick = 0;
+        invulnerabilityTick = 0;
     }
 }

@@ -2,6 +2,7 @@ package platformer.model.entities.enemies;
 
 import platformer.model.entities.enemies.boss.Lancer;
 import platformer.model.entities.enemies.boss.Roric;
+import platformer.model.entities.enemies.types.*;
 
 import java.util.EnumMap;
 import java.util.Map;

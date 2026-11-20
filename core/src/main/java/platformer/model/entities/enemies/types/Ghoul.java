@@ -1,10 +1,13 @@
-package platformer.model.entities.enemies;
+package platformer.model.entities.enemies.types;
 
 import platformer.animation.Anim;
 import platformer.audio.Audio;
 import platformer.audio.types.Sound;
 import platformer.model.entities.Cooldown;
+import platformer.model.entities.Direction;
 import platformer.model.entities.Entity;
+import platformer.model.entities.enemies.Enemy;
+import platformer.model.entities.enemies.EnemyType;
 import platformer.model.entities.player.Player;
 
 import java.awt.geom.Rectangle2D;
@@ -13,12 +16,14 @@ import static platformer.constants.Constants.TILES_SIZE;
 import static platformer.physics.CollisionDetector.*;
 
 /**
- * Agile undead enemy that stalks the target, performs a blockable lunge attack, and can phase-shift once behind the player when wounded.
+ * Agile undead enemy that stalks the target from mid-range, maintains pounce distance by backstepping if crowded,
+ * performs a blockable lunge attack, and can phase-shift once behind the player when wounded.
  */
 public class Ghoul extends Enemy {
 
     private static final double STALK_DASH_CD = 1.6;
-    private static final double LUNGE_SPEED_MULTIPLIER = 2.2;
+    private static final double LUNGE_SPEED_MULTIPLIER = 1.85;
+    private static final double MIN_POUNCE_DIST = 1.35 * TILES_SIZE;
     private static final double REVEAL_OFFSET_DIST = 2.2 * TILES_SIZE;
 
     private boolean blocker;
@@ -42,6 +47,7 @@ public class Ghoul extends Enemy {
         }
         currentHealth -= damage;
         blocker = false;
+        releaseCombatToken();
         if (hitSound) Audio.getInstance().getAudioPlayer().playHitSound();
         if (currentHealth <= 0) checkDeath();
         else setEnemyAction(Anim.HIT);
@@ -53,6 +59,7 @@ public class Ghoul extends Enemy {
         if (entityState == Anim.DEATH || !alive || entityState == Anim.HIDE) return;
         currentHealth -= damage;
         blocker = false;
+        releaseCombatToken();
         enemySpeed = 0;
         if (currentHealth <= 0) checkDeath();
         else {
@@ -65,6 +72,7 @@ public class Ghoul extends Enemy {
         if (rand.nextDouble() < 0.25) {
             hasHidden = true;
             blocker = false;
+            releaseCombatToken();
             setEnemyAction(Anim.HIDE);
             Audio.getInstance().getAudioPlayer().playSound(Sound.GHOUL_HIDE);
         }
@@ -72,6 +80,7 @@ public class Ghoul extends Enemy {
 
     private void checkDeath() {
         blocker = false;
+        releaseCombatToken();
         playDeathSound();
         setEnemyAction(Anim.DEATH);
     }
@@ -90,7 +99,21 @@ public class Ghoul extends Enemy {
     private void moveAction(int[][] levelData, Entity target) {
         if (blocker) {
             faceEntity(target);
-            setLocomotionState(Anim.IDLE);
+            double dx = target.getHitBox().getCenterX() - hitBox.getCenterX();
+            double absDist = Math.abs(dx);
+
+            if (absDist < MIN_POUNCE_DIST) {
+                double awayDirSign = (dx >= 0) ? -1.0 : 1.0;
+                Direction awayDir = (awayDirSign < 0) ? Direction.LEFT : Direction.RIGHT;
+                double step = awayDirSign * definition.getScaledWalkSpeed() * 1.15;
+                if (canMoveHere(hitBox.x + step, hitBox.y, hitBox.width, hitBox.height, levelData) && isFloor(hitBox, step, levelData, awayDir)) {
+                    hitBox.x += step;
+                    setLocomotionState(Anim.WALK);
+                }
+                else setLocomotionState(Anim.IDLE);
+            }
+            else setLocomotionState(Anim.IDLE);
+
             if (cooldown[Cooldown.DASH.ordinal()] == 0) {
                 blocker = false;
                 setEnemyAction(Anim.ATTACK_1);
@@ -99,7 +122,8 @@ public class Ghoul extends Enemy {
         }
 
         if (canSeeEntity(levelData, target)) {
-            if (isEntityCloseForAttack(target) && cooldown[Cooldown.ATTACK.ordinal()] == 0) {
+            double dist = Math.abs(target.getHitBox().getCenterX() - hitBox.getCenterX());
+            if (dist >= MIN_POUNCE_DIST && isEntityCloseForAttack(target) && cooldown[Cooldown.ATTACK.ordinal()] == 0 && requestMeleeToken()) {
                 faceEntity(target);
                 cooldown[Cooldown.DASH.ordinal()] = STALK_DASH_CD;
                 setEnemyAction(Anim.IDLE);
@@ -145,8 +169,8 @@ public class Ghoul extends Enemy {
                     -dirSign * REVEAL_OFFSET_DIST,
                     dirSign * (REVEAL_OFFSET_DIST * 1.4),
                     -dirSign * (REVEAL_OFFSET_DIST * 1.4),
-                    dirSign * (1.5 * TILES_SIZE),
-                    -dirSign * (1.5 * TILES_SIZE)
+                    dirSign * (1.75 * TILES_SIZE),
+                    -dirSign * (1.75 * TILES_SIZE)
             };
 
             for (double offset : candidateOffsets) {
@@ -167,10 +191,6 @@ public class Ghoul extends Enemy {
         }
     }
 
-    /**
-     * Finds the Y pixel coordinate of a valid floor below (candidateX, startY) that is at least 3 tiles wide.
-     * Returns -1 if no valid 3-tile floor exists at that X coordinate.
-     */
     private double findValidThreeTileGroundY(double candidateX, double startY, int[][] levelData) {
         int tileX = (int) ((candidateX + hitBox.width / 2.0) / TILES_SIZE);
         if (tileX < 0 || tileX >= levelData.length) return -1;

@@ -30,6 +30,7 @@ public abstract class Enemy extends Entity implements DamageSource, Debug<Graphi
 
     private final EnemyType enemyType;
     protected final EnemyDefinition definition;
+    protected CombatDirector combatDirector;
     protected double enemySpeed;
     protected int originalAnimSpeed, animSpeed, animIndex, animTick = 0;
     protected Direction direction = Direction.RIGHT;
@@ -48,6 +49,7 @@ public abstract class Enemy extends Entity implements DamageSource, Debug<Graphi
         this.enemyType = enemyType;
         this.definition = definition;
         this.animSpeed = this.originalAnimSpeed = definition.getDefaultAnimSpeed();
+        this.animTick = rand.nextInt(Math.max(1, this.animSpeed));
         this.enemySpeed = definition.getScaledWalkSpeed();
         this.maxHealth = enemyType.getHealth();
         this.currentHealth = maxHealth;
@@ -79,6 +81,7 @@ public abstract class Enemy extends Entity implements DamageSource, Debug<Graphi
                 double minCd = definition.getAttackCooldownMin();
                 double range = Math.max(0.0, definition.getAttackCooldownMax() - minCd);
                 cooldown[Cooldown.ATTACK.ordinal()] = minCd + rand.nextDouble() * range;
+                releaseCombatToken();
             }
             if (entityState == Anim.HIT) {
                 enemySpeed = definition.getScaledWalkSpeed();
@@ -86,7 +89,29 @@ public abstract class Enemy extends Entity implements DamageSource, Debug<Graphi
             entityState = Anim.IDLE;
         }
         else if (entityState == Anim.HIDE) entityState = Anim.REVEAL;
-        else if (entityState == Anim.DEATH) alive = false;
+        else if (entityState == Anim.DEATH) {
+            releaseCombatToken();
+            alive = false;
+        }
+    }
+
+    // Combat Director Token Helpers
+    public void setCombatDirector(CombatDirector combatDirector) {
+        this.combatDirector = combatDirector;
+    }
+
+    protected boolean requestMeleeToken() {
+        return combatDirector == null || combatDirector.requestMeleeAttack(this);
+    }
+
+    protected boolean requestRangedToken() {
+        return combatDirector == null || combatDirector.requestRangedAttack(this);
+    }
+
+    protected void releaseCombatToken() {
+        if (combatDirector != null) {
+            combatDirector.releaseToken(this);
+        }
     }
 
     // Targeting
@@ -150,6 +175,10 @@ public abstract class Enemy extends Entity implements DamageSource, Debug<Graphi
      * Advances toward, holds ground at, or steps back from the target to maintain clean weapon-tip spacing.
      */
     protected void moveWithCombatSpacing(int[][] levelData, Entity target, double chaseSpeed, double minSpacing, double retreatSpacing) {
+        boolean waiting = (combatDirector != null) && combatDirector.isWaitingGuard(this);
+        double effectiveMin = (combatDirector != null) ? combatDirector.getAssignedMinSpacing(this, minSpacing) : minSpacing;
+        double effectiveRetreat = waiting ? Math.max(retreatSpacing, effectiveMin - (4.0 * SCALE)) : retreatSpacing;
+
         double dx = target.getHitBox().getCenterX() - hitBox.getCenterX();
         double absDist = Math.abs(dx);
         double facingDeadzone = 4.0 * SCALE;
@@ -158,11 +187,12 @@ public abstract class Enemy extends Entity implements DamageSource, Debug<Graphi
             faceEntity(target);
         }
 
-        if (absDist < retreatSpacing) {
+        if (absDist < effectiveRetreat) {
             double awayDirSign = (dx >= 0) ? -1.0 : 1.0;
             Direction awayDir = (awayDirSign < 0) ? Direction.LEFT : Direction.RIGHT;
-            double step = awayDirSign * definition.getScaledWalkSpeed() * 0.90;
-            if (canMoveHere(hitBox.x + step, hitBox.y, hitBox.width, hitBox.height, levelData) && isFloor(hitBox, step, levelData, awayDir)) {
+            double backSpeed = waiting ? definition.getScaledWalkSpeed() * 0.70 : definition.getScaledWalkSpeed() * 0.90;
+            double step = awayDirSign * Math.min(backSpeed, effectiveRetreat - absDist);
+            if (Math.abs(step) > 0.15 * SCALE && canMoveHere(hitBox.x + step, hitBox.y, hitBox.width, hitBox.height, levelData) && isFloor(hitBox, step, levelData, awayDir)) {
                 hitBox.x += step;
                 setLocomotionState(Anim.WALK);
             }
@@ -170,19 +200,21 @@ public abstract class Enemy extends Entity implements DamageSource, Debug<Graphi
             return;
         }
 
-        if (absDist <= minSpacing) {
+        if (absDist <= effectiveMin + (1.5 * SCALE)) {
             setLocomotionState(Anim.IDLE);
             return;
         }
 
         double moveDirSign = (dx >= 0) ? 1.0 : -1.0;
         Direction moveDir = (moveDirSign > 0) ? Direction.RIGHT : Direction.LEFT;
-        double stepMagnitude = Math.min(chaseSpeed, absDist - minSpacing);
+        boolean closeToWaitingBand = waiting && (absDist <= effectiveMin + (24.0 * SCALE));
+        double moveSpeed = closeToWaitingBand ? definition.getScaledWalkSpeed() * 0.75 : chaseSpeed;
+        double stepMagnitude = Math.min(moveSpeed, absDist - effectiveMin);
         double step = moveDirSign * stepMagnitude;
 
-        if (stepMagnitude > 0.01 && canMoveHere(hitBox.x + step, hitBox.y, hitBox.width, hitBox.height, levelData) && isFloor(hitBox, step, levelData, moveDir)) {
+        if (stepMagnitude > 0.15 * SCALE && canMoveHere(hitBox.x + step, hitBox.y, hitBox.width, hitBox.height, levelData) && isFloor(hitBox, step, levelData, moveDir)) {
             hitBox.x += step;
-            setLocomotionState(chaseSpeed > definition.getScaledWalkSpeed() * 1.1 ? Anim.RUN : Anim.WALK);
+            setLocomotionState((!closeToWaitingBand && moveSpeed > definition.getScaledWalkSpeed() * 1.1) ? Anim.RUN : Anim.WALK);
         }
         else {
             setLocomotionState(Anim.IDLE);
@@ -244,16 +276,23 @@ public abstract class Enemy extends Entity implements DamageSource, Debug<Graphi
     // Combat Helpers
     /**
      * Checks whether the target player successfully parried this enemy's windup attack.
+     * Supports 360-degree multi-parry protection if the player is already mid-parry (CAN_BLOCK).
      */
     protected boolean checkPlayerParry(Entity target) {
         if (target instanceof Player player) {
+            if (player.checkAction(PlayerAction.CAN_BLOCK)) {
+                releaseCombatToken();
+                return true;
+            }
             boolean block = player.checkAction(PlayerAction.BLOCK);
-            boolean canBlock = player.checkAction(PlayerAction.CAN_BLOCK);
-            if (block && !canBlock) {
-                boolean facingEnemy = (player.getHitBox().x < hitBox.x && player.getFlipSign() == 1) || (player.getHitBox().x > hitBox.x && player.getFlipSign() == -1);
+            if (block) {
+                double dx = hitBox.getCenterX() - player.getHitBox().getCenterX();
+                boolean facingEnemy = (dx >= -14.0 * SCALE && player.getFlipSign() == 1)
+                        || (dx <= 14.0 * SCALE && player.getFlipSign() == -1);
                 if (facingEnemy) {
                     player.addAction(PlayerAction.CAN_BLOCK);
                     Audio.getInstance().getAudioPlayer().playBlockSound("Player");
+                    releaseCombatToken();
                     return true;
                 }
             }
@@ -296,6 +335,7 @@ public abstract class Enemy extends Entity implements DamageSource, Debug<Graphi
         if (entityState == Anim.DEATH || !alive || stunImmunityTick > 0) return;
         this.freezeTick = Math.max(this.freezeTick, ticks);
         this.attackCheck = true;
+        releaseCombatToken();
         if (entityState != Anim.HIT && !definition.isBoss()) {
             this.entityState = Anim.HIT;
             this.animIndex = 0;
@@ -352,6 +392,7 @@ public abstract class Enemy extends Entity implements DamageSource, Debug<Graphi
 
     // Reset
     protected void reset() {
+        releaseCombatToken();
         hitBox.x = xPos;
         hitBox.y = yPos;
         currentHealth = maxHealth;

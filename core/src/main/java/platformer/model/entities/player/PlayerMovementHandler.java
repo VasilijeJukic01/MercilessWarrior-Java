@@ -1,9 +1,12 @@
 package platformer.model.entities.player;
 
+import platformer.animation.Anim;
 import platformer.core.GameContext;
 import platformer.model.effects.EffectManager;
 import platformer.model.effects.particles.DustType;
 import platformer.model.entities.Direction;
+import platformer.model.entities.enemies.Enemy;
+import platformer.model.entities.enemies.EnemyManager;
 import platformer.model.gameObjects.ObjectManager;
 import platformer.model.levels.interior.InteriorManager;
 import platformer.model.spells.SpellManager;
@@ -27,6 +30,7 @@ public class PlayerMovementHandler {
     private static final double POST_DASH_MOMENTUM_DECAY = 0.88;
 
     private final Player player;
+    private final EnemyManager enemyManager;
     private final SpellManager spellManager;
     private final ObjectManager objectManager;
     private final InteriorManager interiorManager;
@@ -61,6 +65,7 @@ public class PlayerMovementHandler {
 
     public PlayerMovementHandler(Player player, GameContext context) {
         this.player = player;
+        this.enemyManager = context.getEnemyManager();
         this.spellManager = context.getSpellManager();
         this.objectManager = context.getObjectManager();
         this.interiorManager = context.getInteriorManager();
@@ -165,6 +170,7 @@ public class PlayerMovementHandler {
 
         if (player.isInAir() && !dash) inAirUpdate(levelData);
         updateX(dx, levelData, combatHandler);
+        applyEnemyBodyRepulsion(levelData, combatHandler);
         minimapHandler.update();
         if (left || right || player.isInAir() || dash || Math.abs(dashMomentumX) >= 0.05) {
             player.addAction(PlayerAction.MOVE);
@@ -414,6 +420,54 @@ public class PlayerMovementHandler {
             double feetY = hitBox.y + hitBox.height;
             effectManager.spawnDustParticles(feetX, feetY, 1, DustType.DOUBLE_JUMP, 0, player);
             effectManager.spawnDustParticles(feetX, feetY, 8, DustType.DOUBLE_JUMP, player.getFlipSign(), player);
+        }
+    }
+
+    /**
+     * Gives living enemies physical body presence so the player cannot walk or stand inside their torso,
+     * while still allowing Dashing to phase cleanly through enemies.
+     */
+    private void applyEnemyBodyRepulsion(int[][] levelData, PlayerCombatHandler combatHandler) {
+        if (enemyManager == null) return;
+        if (player.checkAction(PlayerAction.DASH) || player.checkAction(PlayerAction.LEVEL_TRANSITION) || (player.getUltimateHandler() != null && player.getUltimateHandler().isActive())) {
+            return;
+        }
+
+        Rectangle2D.Double pBox = player.getHitBox();
+        for (Enemy enemy : enemyManager.getAllEnemies()) {
+            if (!enemy.isAlive() || !enemy.isVisible()) continue;
+            Anim eState = enemy.getEnemyAction();
+            if (eState == Anim.DEATH || eState == Anim.HIDE || eState == Anim.REVEAL) continue;
+
+            Rectangle2D.Double eBox = enemy.getHitBox();
+            if (!pBox.intersects(eBox)) continue;
+
+            double pCenter = pBox.getCenterX();
+            double eCenter = eBox.getCenterX();
+            double diffX = pCenter - eCenter;
+            double minHalfWidths = (pBox.width + eBox.width) * 0.5;
+            double overlapX = minHalfWidths - Math.abs(diffX);
+            if (overlapX <= 0) continue;
+
+            double pushDir = (Math.abs(diffX) < 0.5) ? -player.getFlipSign() : Math.signum(diffX);
+            double maxPushPerTick = player.isInAir() ? (1.85 * SCALE) : (1.45 * SCALE);
+            double pushX = pushDir * Math.min(overlapX * 0.55, maxPushPerTick);
+
+            double allowedDx = objectManager.checkSolidObjectCollision(pBox, pushX);
+            if (Math.abs(allowedDx) > 0.01 && canMoveHere(pBox.x + allowedDx, pBox.y, pBox.width, pBox.height, levelData)) {
+                pBox.x += allowedDx;
+            }
+            else if (Math.abs( overlapX ) > 2.0 * SCALE && !enemy.isBoss()) {
+                // If the player is pinned against a wall, nudge the enemy slightly back so they dont crush into the same pixel
+                double enemyPush = -pushDir * Math.min(overlapX * 0.35, 1.1 * SCALE);
+                if (canMoveHere(eBox.x + enemyPush, eBox.y, eBox.width, eBox.height, levelData)) {
+                    eBox.x += enemyPush;
+                }
+            }
+
+            if ((pushDir < 0 && player.getFlipSign() == 1) || (pushDir > 0 && player.getFlipSign() == -1)) {
+                combatHandler.clearAttackLunge();
+            }
         }
     }
 

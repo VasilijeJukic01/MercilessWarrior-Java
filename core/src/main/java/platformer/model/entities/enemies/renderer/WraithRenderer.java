@@ -3,7 +3,7 @@ package platformer.model.entities.enemies.renderer;
 import platformer.animation.Anim;
 import platformer.animation.SpriteManager;
 import platformer.model.entities.enemies.EnemyType;
-import platformer.model.entities.enemies.Wraith;
+import platformer.model.entities.enemies.types.Wraith;
 
 import java.awt.*;
 import java.awt.geom.Point2D;

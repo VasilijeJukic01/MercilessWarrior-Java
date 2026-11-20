@@ -2,7 +2,7 @@ package platformer.model.entities.enemies.renderer;
 
 import platformer.animation.SpriteManager;
 import platformer.model.entities.enemies.EnemyType;
-import platformer.model.entities.enemies.Knight;
+import platformer.model.entities.enemies.types.Knight;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;

@@ -2,7 +2,7 @@ package platformer.model.entities.enemies.renderer;
 
 import platformer.animation.SpriteManager;
 import platformer.model.entities.enemies.EnemyType;
-import platformer.model.entities.enemies.Ghoul;
+import platformer.model.entities.enemies.types.Ghoul;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;

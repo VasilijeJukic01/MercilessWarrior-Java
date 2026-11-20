@@ -1,10 +1,12 @@
-package platformer.model.entities.enemies;
+package platformer.model.entities.enemies.types;
 
 import platformer.animation.Anim;
 import platformer.audio.Audio;
 import platformer.model.entities.Cooldown;
 import platformer.model.entities.Direction;
 import platformer.model.entities.Entity;
+import platformer.model.entities.enemies.Enemy;
+import platformer.model.entities.enemies.EnemyType;
 import platformer.model.entities.player.Player;
 import platformer.model.entities.player.PlayerAction;
 
@@ -14,12 +16,13 @@ import static platformer.constants.Constants.SCALE;
 import static platformer.physics.CollisionDetector.isEntityOnFloor;
 
 /**
- * Elite armored enemy featuring hyper-armor poise during attack windups, a heavy greatsword cleave, and a mid-range arcane surge that can chain as a 2-hit combo.
+ * Elite armored enemy featuring hyper-armor poise during attack windups, a fast greatsword cleave,
+ * and an aggressive mid-range arcane surge gap-closer that frequently chains as a 2-hit combo.
  */
 public class Knight extends Enemy {
 
-    private static final double CLEAVE_LUNGE_SPEED = 1.05 * SCALE;
-    private static final double ARCANE_SURGE_SPEED = 1.45 * SCALE;
+    private static final double CLEAVE_LUNGE_SPEED = 1.25 * SCALE;
+    private static final double ARCANE_SURGE_SPEED = 1.70 * SCALE;
 
     private boolean hasHyperArmor = true;
     private boolean chainIntoArcaneSlash = false;
@@ -48,6 +51,7 @@ public class Knight extends Enemy {
             return true;
         }
         chainIntoArcaneSlash = false;
+        releaseCombatToken();
         setEnemyAction(Anim.HIT);
         if (pushOffset == 0) pushOffsetDirection = Direction.UP;
         enemySpeed = definition.getScaledWalkSpeed();
@@ -70,6 +74,7 @@ public class Knight extends Enemy {
 
     private void checkDeath() {
         chainIntoArcaneSlash = false;
+        releaseCombatToken();
         playDeathSound();
         setEnemyAction(Anim.DEATH);
     }
@@ -80,7 +85,7 @@ public class Knight extends Enemy {
             case IDLE, RUN, WALK -> moveAction(levelData, target);
             case ATTACK_1 -> cleaveAttackAction(levelData, target);
             case ATTACK_2 -> arcaneSlashAction(levelData, target);
-            case HIT -> pushBack(pushDirection, levelData, 1.1, enemySpeed);
+            case HIT -> pushBack(pushDirection, levelData, 1.0, enemySpeed);
             default -> {}
         }
     }
@@ -89,15 +94,17 @@ public class Knight extends Enemy {
         if (canSeeEntity(levelData, target)) {
             double dist = Math.abs(target.getHitBox().getCenterX() - hitBox.getCenterX());
             double attackRange = definition.getAttackRange();
+
             if (cooldown[Cooldown.ATTACK.ordinal()] == 0) {
-                hasHyperArmor = true;
-                if (dist <= attackRange) {
+                if (dist <= attackRange && requestMeleeToken()) {
+                    hasHyperArmor = true;
                     faceEntity(target);
-                    chainIntoArcaneSlash = rand.nextDouble() < 0.25;
+                    chainIntoArcaneSlash = rand.nextDouble() < 0.48;
                     setEnemyAction(Anim.ATTACK_1);
                     return;
                 }
-                else if (dist <= attackRange * 1.40 && rand.nextDouble() < 0.012) {
+                else if (dist > attackRange && dist <= attackRange * 1.75 && rand.nextDouble() < 0.08 && requestMeleeToken()) {
+                    hasHyperArmor = true;
                     faceEntity(target);
                     chainIntoArcaneSlash = false;
                     setEnemyAction(Anim.ATTACK_2);
@@ -119,14 +126,15 @@ public class Knight extends Enemy {
             chainIntoArcaneSlash = false;
             attackCheck = true;
         }
-        else if (animIndex == 4) {
+        else if (animIndex == 3 || animIndex == 4) {
             if (animTick % 2 == 0) stepForwardClamped(levelData, target, CLEAVE_LUNGE_SPEED);
-            if (!attackCheck) {
+            if (animIndex == 4 && !attackCheck) {
                 checkEntityHit(attackBox, target);
             }
         }
         else if (animIndex == 7 && chainIntoArcaneSlash) {
             chainIntoArcaneSlash = false;
+            hasHyperArmor = true;
             faceEntity(target);
             setEnemyAction(Anim.ATTACK_2);
         }
@@ -140,9 +148,9 @@ public class Knight extends Enemy {
             hasHyperArmor = false;
             attackCheck = true;
         }
-        else if (animIndex == 4 || animIndex == 5) {
+        else if (animIndex >= 3 && animIndex <= 5) {
             if (animTick % 2 == 0) stepForwardClamped(levelData, target, ARCANE_SURGE_SPEED);
-            if (!attackCheck) {
+            if ((animIndex == 4 || animIndex == 5) && !attackCheck) {
                 double damage = getEnemyType().getDamage() * 1.15;
                 if (attackBox.intersects(target.getHitBox())) {
                     if (target instanceof Player player && !player.checkAction(PlayerAction.CAN_BLOCK)) {
