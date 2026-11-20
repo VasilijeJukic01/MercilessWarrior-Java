@@ -2,10 +2,14 @@ package platformer.model.entities.enemies;
 
 import platformer.animation.Anim;
 import platformer.animation.SpriteManager;
+import platformer.audio.Audio;
+import platformer.audio.types.Sound;
 import platformer.debug.Debug;
 import platformer.model.entities.Cooldown;
 import platformer.model.entities.Direction;
 import platformer.model.entities.Entity;
+import platformer.model.entities.enemies.loader.EnemyDefinition;
+import platformer.model.entities.enemies.loader.EnemyRegistry;
 import platformer.model.entities.follower.Follower;
 import platformer.model.entities.player.Player;
 import platformer.model.entities.player.PlayerAction;
@@ -15,18 +19,18 @@ import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.util.Random;
 
-import static platformer.constants.Constants.*;
+import static platformer.constants.Constants.TILES_SIZE;
+import static platformer.physics.CollisionDetector.isEntityOnFloor;
 import static platformer.physics.CollisionDetector.isSightClear;
 
 /**
- * Abstract base class for all enemies in the game.
- * An enemy is a type of entity that can interact with the player and the game world.
+ * Abstract base class for all enemies in the game, configured via {@link EnemyDefinition}.
  */
-@SuppressWarnings("FieldCanBeLocal")
 public abstract class Enemy extends Entity implements DamageSource, Debug<Graphics> {
 
     private final EnemyType enemyType;
-    protected double enemySpeed = ENEMY_SPEED_SLOW;
+    protected final EnemyDefinition definition;
+    protected double enemySpeed;
     protected int originalAnimSpeed, animSpeed, animIndex, animTick = 0;
     protected Direction direction = Direction.RIGHT;
     protected boolean alive = true;
@@ -35,21 +39,24 @@ public abstract class Enemy extends Entity implements DamageSource, Debug<Graphi
     protected int stunImmunityTick = 0;
     protected Random rand = new Random();
 
-    public Enemy(int xPos, int yPos, int width, int height, EnemyType enemyType, int animSpeed) {
-        super(xPos, yPos, width, height);
+    public Enemy(int xPos, int yPos, EnemyType enemyType) {
+        this(xPos, yPos, enemyType, EnemyRegistry.getInstance().get(enemyType));
+    }
+
+    private Enemy(int xPos, int yPos, EnemyType enemyType, EnemyDefinition definition) {
+        super(xPos, yPos, definition.getDrawWidth(), definition.getDrawHeight());
         this.enemyType = enemyType;
-        this.animSpeed = this.originalAnimSpeed = animSpeed;
+        this.definition = definition;
+        this.animSpeed = this.originalAnimSpeed = definition.getDefaultAnimSpeed();
+        this.enemySpeed = definition.getScaledWalkSpeed();
         this.maxHealth = enemyType.getHealth();
         this.currentHealth = maxHealth;
         this.cooldown = new double[Cooldown.values().length];
+        initHitBox(definition.getHitboxWidth(), definition.getHitboxHeight());
     }
 
     /**
-     * Updates the enemy's state.
-     *
-     * @param levelData The level data.
-     * @param player The player.
-     * @param follower The follower.
+     * Updates the enemy's state for a single engine tick.
      */
     public abstract void update(int[][] levelData, Player player, Entity follower);
 
@@ -67,24 +74,14 @@ public abstract class Enemy extends Entity implements DamageSource, Debug<Graphi
 
     private void finishAnimation() {
         animIndex = 0;
-        if (enemyType == EnemyType.GHOUL && entityState == Anim.ATTACK_1) {
-            cooldown[Cooldown.ATTACK.ordinal()] = 18 + rand.nextDouble() * 8;
-            entityState = Anim.IDLE;
-        }
-        else if (entityState == Anim.ATTACK_1 || entityState == Anim.ATTACK_2 || entityState == Anim.SPELL_1 || entityState == Anim.HIT || entityState == Anim.BLOCK || entityState == Anim.REVEAL) {
+        if (entityState == Anim.ATTACK_1 || entityState == Anim.ATTACK_2 || entityState == Anim.SPELL_1 || entityState == Anim.HIT || entityState == Anim.BLOCK || entityState == Anim.REVEAL) {
             if (isAttacking()) {
-                if (enemyType == EnemyType.KNIGHT) {
-                    cooldown[Cooldown.ATTACK.ordinal()] = 26.0 + rand.nextDouble() * 10.0;
-                }
-                else if (enemyType == EnemyType.CORRUPTED_KNIGHT) {
-                    cooldown[Cooldown.ATTACK.ordinal()] = 30.0 + rand.nextDouble() * 12.0;
-                }
-                else {
-                    cooldown[Cooldown.ATTACK.ordinal()] = 14.0 + rand.nextDouble() * 8.0;
-                }
+                double minCd = definition.getAttackCooldownMin();
+                double range = Math.max(0.0, definition.getAttackCooldownMax() - minCd);
+                cooldown[Cooldown.ATTACK.ordinal()] = minCd + rand.nextDouble() * range;
             }
             if (entityState == Anim.HIT) {
-                enemySpeed = ENEMY_SPEED_SLOW;
+                enemySpeed = definition.getScaledWalkSpeed();
             }
             entityState = Anim.IDLE;
         }
@@ -95,11 +92,8 @@ public abstract class Enemy extends Entity implements DamageSource, Debug<Graphi
     // Targeting
     protected Entity getCloseTarget(Player player, Entity follower) {
         if (follower == null) return player;
-        if (follower instanceof Follower) {
-            Follower f = (Follower) follower;
-            if (f.isKnockedDown()) {
-                return player;
-            }
+        if (follower instanceof Follower f && f.isKnockedDown()) {
+            return player;
         }
 
         double distToPlayer = Math.abs(player.getHitBox().x - hitBox.x);
@@ -108,65 +102,80 @@ public abstract class Enemy extends Entity implements DamageSource, Debug<Graphi
     }
 
     protected boolean canSeeEntity(int[][] levelData, Entity entity) {
-        int yTilePlayer = (int)(entity.getHitBox().y / TILES_SIZE) + 1;
-        int yTileEnemy = (int)(hitBox.y / TILES_SIZE) + 1;
+        int yTilePlayer = (int) (entity.getHitBox().y / TILES_SIZE) + 1;
+        int yTileEnemy = (int) (hitBox.y / TILES_SIZE) + 1;
         if (yTilePlayer != yTileEnemy) return false;
         if (!isEntityInSight(entity)) return false;
-        return (isSightClear(levelData, hitBox, entity.getHitBox(), yTileEnemy));
+        return isSightClear(levelData, hitBox, entity.getHitBox(), yTileEnemy);
     }
 
     protected void directToEntity(Entity entity) {
         entityState = Anim.RUN;
-        configureEnemySpeed();
-        if (entity.getHitBox().x > hitBox.x) setDirection(Direction.RIGHT);
+        enemySpeed = definition.getScaledRunSpeed();
+        faceEntity(entity);
+    }
+
+    protected void faceEntity(Entity entity) {
+        if (entity.getHitBox().getCenterX() > hitBox.getCenterX()) setDirection(Direction.RIGHT);
         else setDirection(Direction.LEFT);
     }
 
-    private void configureEnemySpeed() {
-        if (enemyType == EnemyType.GHOUL) enemySpeed = GHOUL_SPEED_FAST;
-        else if (enemyType == EnemyType.SKELETON) enemySpeed = SKELETON_SPEED_FAST;
-        else if (enemyType == EnemyType.KNIGHT || enemyType == EnemyType.CORRUPTED_KNIGHT) enemySpeed = KNIGHT_SPEED_FAST;
-        else if (enemyType == EnemyType.WRAITH) enemySpeed = WRAITH_SPEED_FAST;
-    }
-
     protected boolean isEntityCloseForAttack(Entity entity) {
-        int distance = (int) Math.abs(entity.getHitBox().x - hitBox.x);
-        if (enemyType == EnemyType.SKELETON) return distance <= SKELETON_ATT_RANGE;
-        else if (enemyType == EnemyType.GHOUL) return distance <= GHOUL_ATT_RANGE;
-        else if (enemyType == EnemyType.KNIGHT || enemyType == EnemyType.CORRUPTED_KNIGHT) return distance <= KNIGHT_ATT_RANGE;
-        else if (enemyType == EnemyType.WRAITH) return distance <= WRAITH_ATT_RANGE;
-        else if (enemyType == EnemyType.LANCER) return distance <= LANCER_ATT_RANGE;
-        else if (enemyType == EnemyType.RORIC) return distance <= RORIC_ATT_RANGE;
-        return false;
+        double distance = Math.abs(entity.getHitBox().getCenterX() - hitBox.getCenterX());
+        return distance <= definition.getAttackRange();
     }
 
     protected boolean isEntityInSight(Entity entity) {
-        int distance = (int)Math.abs(entity.getHitBox().x - hitBox.x);
-        return distance <= SIGHT_RANGE;
+        double distance = Math.abs(entity.getHitBox().getCenterX() - hitBox.getCenterX());
+        return distance <= definition.getSightRange();
     }
 
     protected void changeDirection() {
         if (direction == Direction.LEFT) setDirection(Direction.RIGHT);
         else if (direction == Direction.RIGHT) setDirection(Direction.LEFT);
         entityState = Anim.WALK;
-        enemySpeed = ENEMY_SPEED_SLOW;
+        enemySpeed = definition.getScaledWalkSpeed();
     }
 
-    // Attack
+    // Combat Helpers
+    /**
+     * Checks whether the target player successfully parried this enemy's windup attack.
+     */
+    protected boolean checkPlayerParry(Entity target) {
+        if (target instanceof Player player) {
+            boolean block = player.checkAction(PlayerAction.BLOCK);
+            boolean canBlock = player.checkAction(PlayerAction.CAN_BLOCK);
+            if (block && !canBlock) {
+                boolean facingEnemy = (player.getHitBox().x < hitBox.x && player.getFlipSign() == 1) || (player.getHitBox().x > hitBox.x && player.getFlipSign() == -1);
+                if (facingEnemy) {
+                    player.addAction(PlayerAction.CAN_BLOCK);
+                    Audio.getInstance().getAudioPlayer().playBlockSound("Player");
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    protected void playDeathSound() {
+        Sound deathSound = definition.getDeathSoundEnum();
+        if (deathSound != null) {
+            Audio.getInstance().getAudioPlayer().playSound(deathSound);
+        }
+    }
+
     public void checkEntityHit(Rectangle2D.Double attackBox, Entity target) {
         if (attackBox.intersects(target.getHitBox())) {
-            if (target instanceof Player) {
-                Player player = (Player) target;
+            if (target instanceof Player player) {
                 boolean canBlock = player.checkAction(PlayerAction.CAN_BLOCK);
                 if (!canBlock) player.changeHealth(-enemyType.getDamage(), this);
             }
-            else if (target instanceof Follower) {
-                Follower follower = (Follower) target;
+            else if (target instanceof Follower follower) {
                 if (follower.isKnockedDown()) return;
                 follower.hit(enemyType.getDamage(), this);
             }
         }
-        else if (enemyType == EnemyType.GHOUL || enemyType == EnemyType.LANCER) return;
+        else if (definition.isMultiFrameHitCheck()) return;
         attackCheck = true;
     }
 
@@ -174,11 +183,16 @@ public abstract class Enemy extends Entity implements DamageSource, Debug<Graphi
         return entityState == Anim.ATTACK_1 || entityState == Anim.ATTACK_2 || entityState == Anim.ATTACK_3 || entityState == Anim.SPELL_1 || entityState == Anim.SPELL_3;
     }
 
+    public boolean isObjectBreakFrame() {
+        int breakFrame = definition.getAttackObjectBreakFrame();
+        return breakFrame >= 0 && animIndex == breakFrame;
+    }
+
     public void freeze(int ticks) {
         if (entityState == Anim.DEATH || !alive || stunImmunityTick > 0) return;
         this.freezeTick = Math.max(this.freezeTick, ticks);
         this.attackCheck = true;
-        if (entityState != Anim.HIT && enemyType != EnemyType.LANCER && enemyType != EnemyType.RORIC) {
+        if (entityState != Anim.HIT && !definition.isBoss()) {
             this.entityState = Anim.HIT;
             this.animIndex = 0;
             this.animTick = 0;
@@ -195,11 +209,15 @@ public abstract class Enemy extends Entity implements DamageSource, Debug<Graphi
         }
     }
 
+    protected boolean handleStunTick(int[][] levelData) {
+        return handleStunTick(levelData, definition.getScaledGravity(), definition.getScaledCollisionFallSpeed());
+    }
+
     protected boolean handleStunTick(int[][] levelData, double gravity, double collisionFallSpeed) {
         if (stunImmunityTick > 0) stunImmunityTick--;
         if (freezeTick > 0) {
             freezeTick--;
-            if (!platformer.physics.CollisionDetector.isEntityOnFloor(hitBox, levelData)) {
+            if (!isEntityOnFloor(hitBox, levelData)) {
                 inAir = true;
             }
             if (inAir) {
@@ -215,16 +233,13 @@ public abstract class Enemy extends Entity implements DamageSource, Debug<Graphi
     }
 
     /**
-     * Returns true during the exact windup animation frames when the player can parry this enemy's attack.
+     * Returns true during the windup animation frames when the player can parry this enemy's attack.
      */
     public boolean isParryWindup() {
         if (!alive || freezeTick > 0 || attackCheck) return false;
-        return switch (enemyType) {
-            case SKELETON, GHOUL -> entityState == Anim.ATTACK_1 && (animIndex == 1 || animIndex == 2);
-            case KNIGHT, CORRUPTED_KNIGHT -> (entityState == Anim.ATTACK_1 || entityState == Anim.ATTACK_2) && (animIndex >= 1 && animIndex <= 3);
-            case WRAITH -> (entityState == Anim.ATTACK_1 || entityState == Anim.ATTACK_2) && (animIndex == 2 || animIndex == 3);
-            default -> false;
-        };
+        if (definition.getParryWindupStart() < 0) return false;
+        if (entityState != Anim.ATTACK_1 && entityState != Anim.ATTACK_2) return false;
+        return animIndex >= definition.getParryWindupStart() && animIndex <= definition.getParryWindupEnd();
     }
 
     public abstract boolean hit(double damage, boolean special, boolean hitSound);
@@ -240,13 +255,36 @@ public abstract class Enemy extends Entity implements DamageSource, Debug<Graphi
         alive = true;
         animIndex = animTick = 0;
         animSpeed = originalAnimSpeed;
-        enemySpeed = ENEMY_SPEED_SLOW;
+        enemySpeed = definition.getScaledWalkSpeed();
         pushOffset = 0;
         freezeTick = 0;
         stunImmunityTick = 0;
     }
 
+    // Debug Rendering
+    @Override
+    public void hitBoxRenderer(Graphics g, int xLevelOffset, int yLevelOffset, Color color) {
+        renderHitBox(g, xLevelOffset, yLevelOffset, color);
+    }
+
+    @Override
+    public void attackBoxRenderer(Graphics g, int xLevelOffset, int yLevelOffset) {
+        renderAttackBox(g, xLevelOffset, yLevelOffset);
+    }
+
     // Getters & Setters
+    public EnemyDefinition getDefinition() {
+        return definition;
+    }
+
+    public boolean isUndead() {
+        return definition.isUndead();
+    }
+
+    public boolean isBoss() {
+        return definition.isBoss();
+    }
+
     public int getAnimIndex() {
         return animIndex;
     }
@@ -268,17 +306,16 @@ public abstract class Enemy extends Entity implements DamageSource, Debug<Graphi
     }
 
     /**
-     * Dynamically adjusts the animation speed based on the enemy's current state.
-     * Lower = Faster !
+     * Dynamically adjusts animation speed from {@link EnemyDefinition} based on the current state.
      */
     protected void setAnimSpeedByState() {
-        if (enemyType == EnemyType.LANCER || enemyType == EnemyType.RORIC) return;
+        if (definition.isBoss()) return;
 
         switch (entityState) {
-            case RUN -> animSpeed = (enemyType == EnemyType.KNIGHT || enemyType == EnemyType.CORRUPTED_KNIGHT) ? 18 : 15;
-            case WALK -> animSpeed = 23;
-            case ATTACK_1, ATTACK_2 -> animSpeed = (enemyType == EnemyType.KNIGHT || enemyType == EnemyType.CORRUPTED_KNIGHT) ? 26 : 18;
-            case HIT -> animSpeed = 14;
+            case RUN -> animSpeed = definition.getRunAnimSpeed();
+            case WALK -> animSpeed = definition.getWalkAnimSpeed();
+            case ATTACK_1, ATTACK_2 -> animSpeed = definition.getAttackAnimSpeed();
+            case HIT -> animSpeed = definition.getHitAnimSpeed();
             default -> animSpeed = originalAnimSpeed;
         }
     }

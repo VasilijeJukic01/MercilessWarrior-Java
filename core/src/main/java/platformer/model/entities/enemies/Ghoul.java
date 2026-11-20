@@ -7,12 +7,11 @@ import platformer.model.entities.Cooldown;
 import platformer.model.entities.Direction;
 import platformer.model.entities.Entity;
 import platformer.model.entities.player.Player;
-import platformer.model.entities.player.PlayerAction;
 
-import java.awt.*;
 import java.awt.geom.Rectangle2D;
 
-import static platformer.constants.Constants.*;
+import static platformer.constants.Constants.SCALE;
+import static platformer.constants.Constants.TILES_SIZE;
 import static platformer.physics.CollisionDetector.*;
 
 /**
@@ -28,18 +27,13 @@ public class Ghoul extends Enemy {
     private boolean blocker;
     private boolean hasHidden = false;
 
-    private final double gravity = 0.025 * SCALE;
-    private final double collisionFallSpeed = 0.5 * SCALE;
-
     public Ghoul(int xPos, int yPos) {
-        super(xPos, yPos, GHOUL_WIDTH, GHOUL_HEIGHT, EnemyType.GHOUL, 25);
-        initHitBox(GHOUL_HB_WID, GHOUL_HB_HEI);
+        super(xPos, yPos, EnemyType.GHOUL);
         initAttackBox();
-        super.cooldown = new double[3];
     }
 
     private void initAttackBox() {
-        this.attackBox = new Rectangle2D.Double(xPos, yPos - 1, GHOUL_AB_WID, GHOUL_AB_HEI);
+        this.attackBox = new Rectangle2D.Double(xPos, yPos - 1, definition.getAttackBoxWidth(), definition.getAttackBoxHeight());
         this.attackOffset = (int) (20 * SCALE);
     }
 
@@ -83,11 +77,11 @@ public class Ghoul extends Enemy {
 
     private void checkDeath() {
         blocker = false;
-        Audio.getInstance().getAudioPlayer().playSound(Sound.GHOUL_DEATH);
+        playDeathSound();
         setEnemyAction(Anim.DEATH);
     }
 
-    // Ghoul Core
+    // Core
     private void updateBehavior(int[][] levelData, Entity target) {
         switch (entityState) {
             case IDLE -> idleAction(target);
@@ -142,17 +136,8 @@ public class Ghoul extends Enemy {
             attackCheck = false;
             blocker = false;
         }
-        else if ((animIndex == 1 || animIndex == 2) && target instanceof Player player) {
-            boolean block = player.checkAction(PlayerAction.BLOCK);
-            boolean canBlock = player.checkAction(PlayerAction.CAN_BLOCK);
-            if (block && !canBlock) {
-                boolean facingGhoul = (player.getHitBox().x < hitBox.x && player.getFlipSign() == 1) || (player.getHitBox().x > hitBox.x && player.getFlipSign() == -1);
-                if (facingGhoul) {
-                    player.addAction(PlayerAction.CAN_BLOCK);
-                    Audio.getInstance().getAudioPlayer().playBlockSound("Player");
-                    attackCheck = true;
-                }
-            }
+        else if ((animIndex == 1 || animIndex == 2) && checkPlayerParry(target)) {
+            attackCheck = true;
         }
 
         if (animIndex >= 2 && animIndex <= 5) {
@@ -254,14 +239,9 @@ public class Ghoul extends Enemy {
         return isTileSolid(tileX, floorTileY, levelData) && !isTileSolid(tileX, floorTileY - 1, levelData);
     }
 
-    private void faceEntity(Entity entity) {
-        if (entity.getHitBox().x > hitBox.x) setDirection(Direction.RIGHT);
-        else setDirection(Direction.LEFT);
-    }
-
     @Override
     public void update(int[][] levelData, Player player, Entity follower) {
-        if (handleStunTick(levelData, gravity, collisionFallSpeed)) return;
+        if (handleStunTick(levelData)) return;
         Entity target = getCloseTarget(player, follower);
         updateMove(levelData, target);
         updateAnimation();
@@ -270,7 +250,7 @@ public class Ghoul extends Enemy {
 
     public void updateMove(int[][] levelData, Entity target) {
         if (!isEntityOnFloor(hitBox, levelData)) inAir = true;
-        if (inAir) updateInAir(levelData, gravity, collisionFallSpeed);
+        if (inAir) updateInAir(levelData, definition.getScaledGravity(), definition.getScaledCollisionFallSpeed());
         else updateBehavior(levelData, target);
     }
 
@@ -284,15 +264,5 @@ public class Ghoul extends Enemy {
         super.reset();
         this.blocker = false;
         this.hasHidden = false;
-    }
-
-    @Override
-    public void hitBoxRenderer(Graphics g, int xLevelOffset, int yLevelOffset, Color color) {
-        renderHitBox(g, xLevelOffset, yLevelOffset, color);
-    }
-
-    @Override
-    public void attackBoxRenderer(Graphics g, int xLevelOffset, int yLevelOffset) {
-        renderAttackBox(g, xLevelOffset, yLevelOffset);
     }
 }

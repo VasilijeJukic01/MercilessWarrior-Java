@@ -62,7 +62,7 @@ public class Roric extends Enemy {
     private final int attackBoxOffsetX = (int) (40 * SCALE);
 
     public Roric(int xPos, int yPos) {
-        super(xPos, yPos, RORIC_WIDTH, RORIC_HEIGHT, EnemyType.RORIC, 16);
+        super(xPos, yPos, EnemyType.RORIC);
         super.setDirection(Direction.LEFT);
         super.inAir = true;
         initHitBox();

@@ -1,6 +1,7 @@
 package platformer.model.entities.enemies.renderer;
 
 import platformer.model.entities.enemies.Enemy;
+import platformer.model.entities.enemies.loader.EnemyDefinition;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
@@ -12,10 +13,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import static platformer.constants.Constants.SCALE;
 
 /**
- * This is a Strategy interface for rendering different types of enemies in the game.
- * It defines a single method, render, which is used to draw an enemy of type T on the screen.
+ * Strategy interface for rendering different types of enemies in the game.
  *
- * @param <T> The specific type of enemy to render. This type must extend from the Enemy class.
+ * @param <T> The specific type of enemy to render.
  */
 public interface EnemyRenderer<T extends Enemy> {
 
@@ -33,6 +33,19 @@ public interface EnemyRenderer<T extends Enemy> {
      * @param yLevelOffset The y offset for rendering.
      */
     void render(Graphics g, T enemy, int xLevelOffset, int yLevelOffset);
+
+    /**
+     * Renders a standard enemy using the draw dimensions and offsets defined in its {@link EnemyDefinition}.
+     */
+    default void renderStandard(Graphics g, T enemy, BufferedImage[][] animations, int xLevelOffset, int yLevelOffset, Color hitboxColor) {
+        EnemyDefinition def = enemy.getDefinition();
+        int fC = enemy.getFlipCoefficient(), fS = enemy.getFlipSign();
+        int x = (int) enemy.getHitBox().x - def.getXOffset() - xLevelOffset + fC;
+        int y = (int) enemy.getHitBox().y - def.getYOffset() - yLevelOffset + (int) enemy.getPushOffset() + 1;
+        drawEnemySprite(g, enemy, animations[enemy.getEnemyAction().ordinal()][enemy.getAnimIndex()], x, y, def.getDrawWidth() * fS, def.getDrawHeight());
+        enemy.hitBoxRenderer(g, xLevelOffset, yLevelOffset, hitboxColor);
+        enemy.attackBoxRenderer(g, xLevelOffset, yLevelOffset);
+    }
 
     /**
      * Draws the enemy sprite frame and, if the enemy is in its parryable windup frames, renders cached red rim and pulsing golden flash silhouettes without per-frame allocations.

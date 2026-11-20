@@ -53,9 +53,8 @@ public class Lancer extends Enemy {
     private final AfterimageTrail afterimageTrail = new AfterimageTrail(4, 3);
 
     public Lancer(int xPos, int yPos) {
-        super(xPos, yPos, LANCER_WIDTH, LANCER_HEIGHT, EnemyType.LANCER, 18);
+        super(xPos, yPos, EnemyType.LANCER);
         super.setDirection(Direction.LEFT);
-        initHitBox(LANCER_HB_WID, LANCER_HB_HEI);
         initAttackBox();
         super.cooldown = new double[1];
         this.audioHandler = new LancerAudioHandler();
@@ -367,7 +366,7 @@ public class Lancer extends Enemy {
     public void updateMove(int[][] levelData, Player player, SpellManager spellManager, ObjectManager objectManager) {
         if (!isEntityOnFloor(hitBox, levelData) && !isAirFreeze()) inAir = true;
         if (inAir) {
-            updateInAir(levelData, gravity, collisionFallSpeed);
+            updateInAir(levelData, definition.getScaledGravity(), definition.getScaledCollisionFallSpeed());
             if (entityState == Anim.SPELL_3) {
                 thunderSlamAction(player, spellManager);
             }

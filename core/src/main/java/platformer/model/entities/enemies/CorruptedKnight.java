@@ -8,13 +8,12 @@ import platformer.model.entities.Direction;
 import platformer.model.entities.Entity;
 import platformer.model.entities.enemies.renderer.AfterimageTrail;
 import platformer.model.entities.player.Player;
-import platformer.model.entities.player.PlayerAction;
 import platformer.model.projectiles.ProjectileFactory;
 
-import java.awt.*;
 import java.awt.geom.Rectangle2D;
 
-import static platformer.constants.Constants.*;
+import static platformer.constants.Constants.SCALE;
+import static platformer.constants.Constants.TILES_SIZE;
 import static platformer.physics.CollisionDetector.*;
 
 /**
@@ -26,28 +25,21 @@ import static platformer.physics.CollisionDetector.*;
  */
 public class CorruptedKnight extends Enemy {
 
-    private static final double VOID_WAVE_MIN_RANGE = KNIGHT_ATT_RANGE * 1.15;
-    private static final double VOID_WAVE_MAX_RANGE = SIGHT_RANGE * 0.90;
     private static final double SHADOW_STEP_SPEED = 1.35 * SCALE;
 
     private int attackOffset;
     private int shadowStepCooldown = 0;
     private boolean isShadowStepping = false;
 
-    private final double gravity = 0.020 * SCALE;
-    private final double collisionFallSpeed = 0.6 * SCALE;
-
-    // Effect
     private final AfterimageTrail afterimageTrail = new AfterimageTrail(3, 3);
 
     public CorruptedKnight(int xPos, int yPos) {
-        super(xPos, yPos, KNIGHT_WIDTH, KNIGHT_HEIGHT, EnemyType.CORRUPTED_KNIGHT, 19);
-        initHitBox(KNIGHT_HB_WID, KNIGHT_HB_HEI);
+        super(xPos, yPos, EnemyType.CORRUPTED_KNIGHT);
         initAttackBox();
     }
 
     private void initAttackBox() {
-        this.attackBox = new Rectangle2D.Double(xPos, yPos - 1, KNIGHT_AB_WID, KNIGHT_AB_HEI);
+        this.attackBox = new Rectangle2D.Double(xPos, yPos - 1, definition.getAttackBoxWidth(), definition.getAttackBoxHeight());
         this.attackOffset = (int) (20 * SCALE);
     }
 
@@ -65,7 +57,7 @@ public class CorruptedKnight extends Enemy {
         isShadowStepping = false;
         setEnemyAction(Anim.HIT);
         if (pushOffset == 0) pushOffsetDirection = Direction.UP;
-        enemySpeed = ENEMY_SPEED_SLOW;
+        enemySpeed = definition.getScaledWalkSpeed();
         return true;
     }
 
@@ -85,7 +77,7 @@ public class CorruptedKnight extends Enemy {
 
     private void checkDeath() {
         isShadowStepping = false;
-        Audio.getInstance().getAudioPlayer().playSound(Sound.SKELETON_DEATH_1);
+        playDeathSound();
         setEnemyAction(Anim.DEATH);
     }
 
@@ -109,11 +101,12 @@ public class CorruptedKnight extends Enemy {
     private void moveAction(int[][] levelData, Entity entity) {
         if (canSeeEntity(levelData, entity)) {
             directToEntity(entity);
-            enemySpeed = KNIGHT_SPEED_FAST * 0.90;
+            enemySpeed = definition.getScaledRunSpeed() * 0.90;
             double dist = Math.abs(entity.getHitBox().getCenterX() - hitBox.getCenterX());
+            double attackRange = definition.getAttackRange();
 
             if (shadowStepCooldown == 0 && cooldown[Cooldown.ATTACK.ordinal()] == 0
-                    && dist > KNIGHT_ATT_RANGE * 1.6 && dist < TILES_SIZE * 4.5 && rand.nextDouble() < 0.005) {
+                    && dist > attackRange * 1.6 && dist < TILES_SIZE * 4.5 && rand.nextDouble() < 0.005) {
                 if (performShadowStepBehind(levelData, entity)) {
                     setEnemyAction(Anim.ATTACK_1);
                     return;
@@ -121,12 +114,12 @@ public class CorruptedKnight extends Enemy {
             }
 
             if (cooldown[Cooldown.ATTACK.ordinal()] == 0) {
-                if (dist <= KNIGHT_ATT_RANGE) {
+                if (dist <= attackRange) {
                     isShadowStepping = true;
                     setEnemyAction(Anim.ATTACK_1);
                     return;
                 }
-                else if (dist >= VOID_WAVE_MIN_RANGE && dist <= VOID_WAVE_MAX_RANGE && rand.nextDouble() < 0.008) {
+                else if (dist >= attackRange * 1.15 && dist <= definition.getSightRange() * 0.90 && rand.nextDouble() < 0.008) {
                     setEnemyAction(Anim.ATTACK_2);
                     return;
                 }
@@ -150,7 +143,6 @@ public class CorruptedKnight extends Enemy {
         else if ((animIndex == 1 || animIndex == 3) && checkPlayerParry(target)) {
             isShadowStepping = false;
             attackCheck = true;
-            return;
         }
         else if (animIndex == 3 || animIndex == 4) {
             double dx = (direction == Direction.LEFT) ? -SHADOW_STEP_SPEED : SHADOW_STEP_SPEED;
@@ -168,8 +160,7 @@ public class CorruptedKnight extends Enemy {
     }
 
     /**
-     * Row 4 (ATTACK_2): Conjures purple void fire in hand (frames 1..3) and hurls a Void Crescent projectile on frame 4,
-     * while also slashing any target standing directly in front of the blade.
+     * Conjures purple void fire in hand (frames 1..3) and hurls a Void Crescent projectile on frame 4, while also slashing any target standing directly in front of the blade.
      */
     private void voidCrescentWaveAction(Entity target) {
         if (animIndex == 0) {
@@ -218,32 +209,10 @@ public class CorruptedKnight extends Enemy {
         return false;
     }
 
-    private boolean checkPlayerParry(Entity target) {
-        if (target instanceof Player player) {
-            boolean block = player.checkAction(PlayerAction.BLOCK);
-            boolean canBlock = player.checkAction(PlayerAction.CAN_BLOCK);
-            if (block && !canBlock) {
-                boolean facingEnemy = (player.getHitBox().x < hitBox.x && player.getFlipSign() == 1)
-                        || (player.getHitBox().x > hitBox.x && player.getFlipSign() == -1);
-                if (facingEnemy) {
-                    player.addAction(PlayerAction.CAN_BLOCK);
-                    Audio.getInstance().getAudioPlayer().playBlockSound("Player");
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    private void faceEntity(Entity entity) {
-        if (entity.getHitBox().getCenterX() > hitBox.getCenterX()) setDirection(Direction.RIGHT);
-        else setDirection(Direction.LEFT);
-    }
-
     @Override
     public void update(int[][] levelData, Player player, Entity follower) {
         if (shadowStepCooldown > 0) shadowStepCooldown--;
-        if (handleStunTick(levelData, gravity, collisionFallSpeed)) return;
+        if (handleStunTick(levelData)) return;
         Entity target = getCloseTarget(player, follower);
         updateMove(levelData, target);
         updateAnimation();
@@ -255,7 +224,7 @@ public class CorruptedKnight extends Enemy {
 
     private void updateMove(int[][] levelData, Entity entity) {
         if (!isEntityOnFloor(hitBox, levelData)) inAir = true;
-        if (inAir) updateInAir(levelData, gravity, collisionFallSpeed);
+        if (inAir) updateInAir(levelData, definition.getScaledGravity(), definition.getScaledCollisionFallSpeed());
         else updateBehavior(levelData, entity);
     }
 
@@ -278,15 +247,5 @@ public class CorruptedKnight extends Enemy {
         shadowStepCooldown = 0;
         isShadowStepping = false;
         afterimageTrail.clear();
-    }
-
-    @Override
-    public void hitBoxRenderer(Graphics g, int xLevelOffset, int yLevelOffset, Color color) {
-        renderHitBox(g, xLevelOffset, yLevelOffset, color);
-    }
-
-    @Override
-    public void attackBoxRenderer(Graphics g, int xLevelOffset, int yLevelOffset) {
-        renderAttackBox(g, xLevelOffset, yLevelOffset);
     }
 }

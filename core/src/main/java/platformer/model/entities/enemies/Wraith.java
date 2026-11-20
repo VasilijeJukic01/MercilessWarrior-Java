@@ -8,13 +8,12 @@ import platformer.model.entities.Direction;
 import platformer.model.entities.Entity;
 import platformer.model.entities.enemies.renderer.AfterimageTrail;
 import platformer.model.entities.player.Player;
-import platformer.model.entities.player.PlayerAction;
 import platformer.model.projectiles.ProjectileFactory;
 
-import java.awt.*;
 import java.awt.geom.Rectangle2D;
 
-import static platformer.constants.Constants.*;
+import static platformer.constants.Constants.SCALE;
+import static platformer.constants.Constants.TILES_SIZE;
 import static platformer.physics.CollisionDetector.*;
 
 /**
@@ -26,29 +25,20 @@ import static platformer.physics.CollisionDetector.*;
  */
 public class Wraith extends Enemy {
 
-    private static final double VORTEX_CLOSE_RANGE = WRAITH_ATT_RANGE * 0.80;
-    private static final double WHIP_LASH_RANGE = WRAITH_ATT_RANGE * 1.40;
-    private static final double SOUL_BOLT_MAX_RANGE = SIGHT_RANGE * 0.95;
-
     private int blinkCooldown = 0;
     private float phaseAlpha = 1.0f;
     private double hoverPhase = Math.random() * Math.PI * 2.0;
     private boolean secondBoltFired = false;
 
-    private final double gravity = 0.03 * SCALE;
-    private final double collisionFallSpeed = 0.2 * SCALE;
-
-    // Effect
     private final AfterimageTrail afterimageTrail = new AfterimageTrail(3, 4);
 
     public Wraith(int xPos, int yPos) {
-        super(xPos, yPos, WRAITH_WIDTH, WRAITH_HEIGHT, EnemyType.WRAITH, 20);
-        initHitBox(WRAITH_HB_WID, WRAITH_HB_HEI);
+        super(xPos, yPos, EnemyType.WRAITH);
         initAttackBox();
     }
 
     private void initAttackBox() {
-        this.attackBox = new Rectangle2D.Double(xPos, yPos - 1, WRAITH_AB_WID, WRAITH_AB_HEI);
+        this.attackBox = new Rectangle2D.Double(xPos, yPos - 1, definition.getAttackBoxWidth(), definition.getAttackBoxHeight());
     }
 
     // Attack
@@ -64,7 +54,7 @@ public class Wraith extends Enemy {
             setEnemyAction(Anim.HIT);
             if (pushOffset == 0) pushOffsetDirection = Direction.UP;
         }
-        enemySpeed = ENEMY_SPEED_SLOW;
+        enemySpeed = definition.getScaledWalkSpeed();
         return true;
     }
 
@@ -84,7 +74,7 @@ public class Wraith extends Enemy {
 
     private void checkDeath() {
         phaseAlpha = 1.0f;
-        Audio.getInstance().getAudioPlayer().playSound(Sound.GHOUL_DEATH);
+        playDeathSound();
         setEnemyAction(Anim.DEATH);
     }
 
@@ -111,7 +101,11 @@ public class Wraith extends Enemy {
         if (canSeeEntity(levelData, target)) {
             directToEntity(target);
             double dist = Math.abs(target.getHitBox().getCenterX() - hitBox.getCenterX());
-            if (blinkCooldown == 0 && dist > WHIP_LASH_RANGE && dist < SOUL_BOLT_MAX_RANGE && rand.nextDouble() < 0.015) {
+            double attackRange = definition.getAttackRange();
+            double whipRange = attackRange * 1.40;
+            double soulBoltMaxRange = definition.getSightRange() * 0.95;
+
+            if (blinkCooldown == 0 && dist > whipRange && dist < soulBoltMaxRange && rand.nextDouble() < 0.015) {
                 if (tryPhaseBlink(levelData, target, true)) {
                     setEnemyAction(Anim.ATTACK_2);
                     return;
@@ -119,15 +113,15 @@ public class Wraith extends Enemy {
             }
 
             if (cooldown[Cooldown.ATTACK.ordinal()] == 0) {
-                if (dist <= VORTEX_CLOSE_RANGE) {
+                if (dist <= attackRange * 0.80) {
                     setEnemyAction(Anim.ATTACK_2);
                     return;
                 }
-                else if (dist <= WHIP_LASH_RANGE) {
+                else if (dist <= whipRange) {
                     setEnemyAction(Anim.ATTACK_1);
                     return;
                 }
-                else if (dist <= SOUL_BOLT_MAX_RANGE && rand.nextDouble() < 0.045) {
+                else if (dist <= soulBoltMaxRange && rand.nextDouble() < 0.045) {
                     secondBoltFired = false;
                     setEnemyAction(Anim.SPELL_1);
                     return;
@@ -175,22 +169,6 @@ public class Wraith extends Enemy {
         }
     }
 
-    private boolean checkPlayerParry(Entity target) {
-        if (target instanceof Player player) {
-            boolean block = player.checkAction(PlayerAction.BLOCK);
-            boolean canBlock = player.checkAction(PlayerAction.CAN_BLOCK);
-            if (block && !canBlock) {
-                boolean facingWraith = (player.getHitBox().x < hitBox.x && player.getFlipSign() == 1) || (player.getHitBox().x > hitBox.x && player.getFlipSign() == -1);
-                if (facingWraith) {
-                    player.addAction(PlayerAction.CAN_BLOCK);
-                    Audio.getInstance().getAudioPlayer().playBlockSound("Player");
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
     private void hitAction(int[][] levelData, Entity target) {
         pushBack(pushDirection, levelData, 1.8, enemySpeed);
         if (animIndex == 3 && blinkCooldown == 0 && rand.nextDouble() < 0.45) {
@@ -228,11 +206,6 @@ public class Wraith extends Enemy {
         return false;
     }
 
-    private void faceEntity(Entity entity) {
-        if (entity.getHitBox().getCenterX() > hitBox.getCenterX()) setDirection(Direction.RIGHT);
-        else setDirection(Direction.LEFT);
-    }
-
     @Override
     public void update(int[][] levelData, Player player, Entity follower) {
         hoverPhase += 0.045;
@@ -241,7 +214,7 @@ public class Wraith extends Enemy {
             phaseAlpha = Math.min(1.0f, phaseAlpha + 0.025f);
         }
 
-        if (handleStunTick(levelData, gravity, collisionFallSpeed)) return;
+        if (handleStunTick(levelData)) return;
         Entity target = getCloseTarget(player, follower);
         updateMove(levelData, target);
         updateAnimation();
@@ -253,20 +226,21 @@ public class Wraith extends Enemy {
 
     public void updateMove(int[][] levelData, Entity target) {
         if (!isEntityOnFloor(hitBox, levelData)) inAir = true;
-        if (inAir) updateInAir(levelData, gravity, collisionFallSpeed);
+        if (inAir) updateInAir(levelData, definition.getScaledGravity(), definition.getScaledCollisionFallSpeed());
         else updateBehavior(levelData, target);
     }
 
     private void updateAttackBox() {
+        int baseWidth = definition.getAttackBoxWidth();
         if (entityState == Anim.ATTACK_1) {
-            attackBox.width = (int) (WRAITH_AB_WID * 0.85);
+            attackBox.width = (int) (baseWidth * 0.85);
             if (direction == Direction.RIGHT) {
                 attackBox.x = hitBox.x;
             }
             else attackBox.x = hitBox.x + hitBox.width - attackBox.width;
         }
         else {
-            attackBox.width = (int) (WRAITH_AB_WID * 1.15);
+            attackBox.width = (int) (baseWidth * 1.15);
             attackBox.x = hitBox.getCenterX() - (attackBox.width / 2.0);
         }
         attackBox.y = hitBox.y - (4 * SCALE);
@@ -292,15 +266,5 @@ public class Wraith extends Enemy {
         phaseAlpha = 1.0f;
         secondBoltFired = false;
         afterimageTrail.clear();
-    }
-
-    @Override
-    public void hitBoxRenderer(Graphics g, int xLevelOffset, int yLevelOffset, Color color) {
-        renderHitBox(g, xLevelOffset, yLevelOffset, color);
-    }
-
-    @Override
-    public void attackBoxRenderer(Graphics g, int xLevelOffset, int yLevelOffset) {
-        renderAttackBox(g, xLevelOffset, yLevelOffset);
     }
 }

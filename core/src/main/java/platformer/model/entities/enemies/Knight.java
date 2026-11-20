@@ -2,17 +2,15 @@ package platformer.model.entities.enemies;
 
 import platformer.animation.Anim;
 import platformer.audio.Audio;
-import platformer.audio.types.Sound;
 import platformer.model.entities.Cooldown;
 import platformer.model.entities.Direction;
 import platformer.model.entities.Entity;
 import platformer.model.entities.player.Player;
 import platformer.model.entities.player.PlayerAction;
 
-import java.awt.*;
 import java.awt.geom.Rectangle2D;
 
-import static platformer.constants.Constants.*;
+import static platformer.constants.Constants.SCALE;
 import static platformer.physics.CollisionDetector.*;
 
 /**
@@ -20,7 +18,6 @@ import static platformer.physics.CollisionDetector.*;
  */
 public class Knight extends Enemy {
 
-    private static final double ARCANE_SLASH_RANGE = KNIGHT_ATT_RANGE * 1.45;
     private static final double CLEAVE_LUNGE_SPEED = 1.05 * SCALE;
     private static final double ARCANE_SURGE_SPEED = 1.45 * SCALE;
 
@@ -28,18 +25,13 @@ public class Knight extends Enemy {
     private boolean hasHyperArmor = true;
     private boolean chainIntoArcaneSlash = false;
 
-    // Physics
-    private final double gravity = 0.020 * SCALE;
-    private final double collisionFallSpeed = 0.6 * SCALE;
-
     public Knight(int xPos, int yPos) {
-        super(xPos, yPos, KNIGHT_WIDTH, KNIGHT_HEIGHT, EnemyType.KNIGHT, 25);
-        initHitBox(KNIGHT_HB_WID, KNIGHT_HB_HEI);
+        super(xPos, yPos, EnemyType.KNIGHT);
         initAttackBox();
     }
 
     private void initAttackBox() {
-        this.attackBox = new Rectangle2D.Double(xPos, yPos - 1, KNIGHT_AB_WID, KNIGHT_AB_HEI);
+        this.attackBox = new Rectangle2D.Double(xPos, yPos - 1, definition.getAttackBoxWidth(), definition.getAttackBoxHeight());
         this.attackOffset = (int) (20 * SCALE);
     }
 
@@ -61,7 +53,7 @@ public class Knight extends Enemy {
         chainIntoArcaneSlash = false;
         setEnemyAction(Anim.HIT);
         if (pushOffset == 0) pushOffsetDirection = Direction.UP;
-        enemySpeed = ENEMY_SPEED_SLOW;
+        enemySpeed = definition.getScaledWalkSpeed();
         return true;
     }
 
@@ -81,7 +73,7 @@ public class Knight extends Enemy {
 
     private void checkDeath() {
         chainIntoArcaneSlash = false;
-        Audio.getInstance().getAudioPlayer().playSound(Sound.SKELETON_DEATH_1);
+        playDeathSound();
         setEnemyAction(Anim.DEATH);
     }
 
@@ -109,14 +101,15 @@ public class Knight extends Enemy {
         if (canSeeEntity(levelData, entity)) {
             directToEntity(entity);
             double dist = Math.abs(entity.getHitBox().getCenterX() - hitBox.getCenterX());
+            double attackRange = definition.getAttackRange();
             if (cooldown[Cooldown.ATTACK.ordinal()] == 0) {
-                if (dist <= KNIGHT_ATT_RANGE) {
+                if (dist <= attackRange) {
                     hasHyperArmor = true;
                     chainIntoArcaneSlash = rand.nextDouble() < 0.25;
                     setEnemyAction(Anim.ATTACK_1);
                     return;
                 }
-                else if (dist <= ARCANE_SLASH_RANGE && rand.nextDouble() < 0.012) {
+                else if (dist <= attackRange * 1.45 && rand.nextDouble() < 0.012) {
                     hasHyperArmor = true;
                     chainIntoArcaneSlash = false;
                     setEnemyAction(Anim.ATTACK_2);
@@ -139,6 +132,7 @@ public class Knight extends Enemy {
             attackCheck = false;
         }
         else if ((animIndex == 1 || animIndex == 3) && checkPlayerParry(target)) {
+            hasHyperArmor = false;
             chainIntoArcaneSlash = false;
             attackCheck = true;
         }
@@ -160,6 +154,7 @@ public class Knight extends Enemy {
             attackCheck = false;
         }
         else if ((animIndex == 2 || animIndex == 3) && checkPlayerParry(target)) {
+            hasHyperArmor = false;
             attackCheck = true;
         }
         else if (animIndex == 4 || animIndex == 5) {
@@ -176,23 +171,6 @@ public class Knight extends Enemy {
         }
     }
 
-    private boolean checkPlayerParry(Entity target) {
-        if (target instanceof Player player) {
-            boolean block = player.checkAction(PlayerAction.BLOCK);
-            boolean canBlock = player.checkAction(PlayerAction.CAN_BLOCK);
-            if (block && !canBlock) {
-                boolean facingKnight = (player.getHitBox().x < hitBox.x && player.getFlipSign() == 1) || (player.getHitBox().x > hitBox.x && player.getFlipSign() == -1);
-                if (facingKnight) {
-                    hasHyperArmor = false;
-                    player.addAction(PlayerAction.CAN_BLOCK);
-                    Audio.getInstance().getAudioPlayer().playBlockSound("Player");
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
     private void performForwardStep(int[][] levelData, double stepSpeed) {
         if (animTick % 2 != 0) return;
         double dx = (direction == Direction.LEFT) ? -stepSpeed : stepSpeed;
@@ -201,14 +179,9 @@ public class Knight extends Enemy {
         }
     }
 
-    private void faceEntity(Entity entity) {
-        if (entity.getHitBox().getCenterX() > hitBox.getCenterX()) setDirection(Direction.RIGHT);
-        else setDirection(Direction.LEFT);
-    }
-
     @Override
     public void update(int[][] levelData, Player player, Entity follower) {
-        if (handleStunTick(levelData, gravity, collisionFallSpeed)) return;
+        if (handleStunTick(levelData)) return;
         Entity target = getCloseTarget(player, follower);
         updateMove(levelData, target);
         updateAnimation();
@@ -218,20 +191,21 @@ public class Knight extends Enemy {
 
     public void updateMove(int[][] levelData, Entity entity) {
         if (!isEntityOnFloor(hitBox, levelData)) inAir = true;
-        if (inAir) updateInAir(levelData, gravity, collisionFallSpeed);
+        if (inAir) updateInAir(levelData, definition.getScaledGravity(), definition.getScaledCollisionFallSpeed());
         else updateBehavior(levelData, entity);
     }
 
     private void updateAttackBox() {
+        int baseWidth = definition.getAttackBoxWidth();
         if (entityState == Anim.ATTACK_2) {
-            attackBox.width = (int) (KNIGHT_AB_WID * 1.25);
+            attackBox.width = (int) (baseWidth * 1.25);
             if (direction == Direction.RIGHT) {
                 attackBox.x = hitBox.x - (10 * SCALE);
             }
             else attackBox.x = hitBox.x + hitBox.width - attackBox.width + (10 * SCALE);
         }
         else {
-            attackBox.width = KNIGHT_AB_WID;
+            attackBox.width = baseWidth;
             attackBox.x = hitBox.x - attackOffset;
         }
         attackBox.y = hitBox.y;
@@ -242,15 +216,5 @@ public class Knight extends Enemy {
         super.reset();
         hasHyperArmor = true;
         chainIntoArcaneSlash = false;
-    }
-
-    @Override
-    public void hitBoxRenderer(Graphics g, int xLevelOffset, int yLevelOffset, Color color) {
-        renderHitBox(g, xLevelOffset, yLevelOffset, color);
-    }
-
-    @Override
-    public void attackBoxRenderer(Graphics g, int xLevelOffset, int yLevelOffset) {
-        renderAttackBox(g, xLevelOffset, yLevelOffset);
     }
 }

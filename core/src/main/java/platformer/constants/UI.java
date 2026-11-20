@@ -56,16 +56,6 @@ public final class UI {
     public static final int GAME_SLOT_SPACING = scale(60);
     public static final int GAME_SLOT_CAP = 4;
 
-    public static final Color DATABASE_SLOT_BG_START = new Color(18, 42, 56, 235);
-    public static final Color DATABASE_SLOT_BG_END = new Color(26, 60, 78, 235);
-    public static final Color SAVE_SLOT_BG_START = new Color(22, 36, 40, 235);
-    public static final Color SAVE_SLOT_BG_END = new Color(32, 52, 58, 235);
-    public static final Color EMPTY_SLOT_BG_START = new Color(18, 24, 27, 220);
-    public static final Color EMPTY_SLOT_BG_END = new Color(26, 34, 38, 220);
-
-    public static final int SAVE_BTN_X = scale(345);
-    public static final int SAVE_CLOSE_BTN_X = scale(430);
-    public static final int SAVE_BTN_Y = scale(345);
     public static final int LOAD_BTN_Y = scale(350);
 
     // Quest UI
@@ -303,15 +293,6 @@ public final class UI {
     public static final int SHOP_SELL_SLOT_X = scale(560);
     public static final int SHOP_SELL_SLOT_Y = scale(120);
 
-    public static final int COST_TEXT_X = scale(310);
-    public static final int POCKET_TEXT_X = scale(310);
-    public static final int COST_TEXT_Y = scale(170);
-    public static final int POCKET_TEXT_Y = scale(150);
-    public static final int SHOP_ITEM_NAME_X = scale(310);
-    public static final int SHOP_ITEM_NAME_Y = scale(190);
-    public static final int SHOP_ITEM_DESC_X = scale(310);
-    public static final int SHOP_ITEM_DESC_Y = scale(210);
-
     public static final int ITEM_SIZE = scale(30);
     public static final int ITEM_OFFSET_X = scale(5);
     public static final int ITEM_OFFSET_Y = scale(5);
@@ -333,21 +314,6 @@ public final class UI {
     public static final int BUY_PERK_BTN_Y = scale(380);
     public static final int LEAVE_PERK_BTN_X = scale(425);
     public static final int LEAVE_PERK_BTN_Y = scale(380);
-    public static final int PERK_SLOT_X = scale(110);
-    public static final int PERK_SLOT_Y = scale(140);
-    public static final int TOKENS_TEXT_X = scale(550);
-    public static final int TOKENS_TEXT_Y = scale(150);
-    public static final int PERK_NAME_X = scale(550);
-    public static final int PERK_NAME_Y = scale(240);
-    public static final int PERK_COST_X = scale(550);
-    public static final int PERK_COST_Y = scale(255);
-    public static final int PERK_DESC_X = scale(550);
-    public static final int PERK_DESC_Y = scale(275);
-
-    public static final int PERK_SLOT_SPACING = scale(60);
-
-    public static final Color PERK_SLOT_LOCK_COL = new Color(0, 0, 0, 200);
-    public static final Color PERK_SLOT_UPGRADE_COL = new Color(255, 100, 0, 100);
 
     // Inventory UI
     public static final int INV_OVERLAY_WID = scale(705);
@@ -356,9 +322,6 @@ public final class UI {
     public static final int INV_OVERLAY_Y = scale(30);
     public static final int INV_TEXT_Y = scale(45);
 
-    public static final Color INV_TEXT_DEFAULT = new Color(220, 220, 220);
-    public static final Color INV_TEXT_HEADER = new Color(255, 255, 255);
-    public static final Color INV_TEXT_COINS = new Color(255, 255, 255);
     public static final Color INV_TEXT_LABEL = new Color(180, 180, 180);
     public static final Color INV_TEXT_VALUE = new Color(255, 215, 0);
     public static final Color INV_TEXT_BONUS = new Color(120, 255, 120);
@@ -384,17 +347,6 @@ public final class UI {
     public static final int INV_PLAYER_X = scale(402);
     public static final int INV_PLAYER_Y = scale(120);
 
-    public static final int INV_ITEM_NAME_X = scale(380);
-    public static final int INV_ITEM_NAME_Y = scale(300);
-    public static final int INV_ITEM_VALUE_X = scale(500);
-    public static final int INV_ITEM_VALUE_Y = scale(300);
-    public static final int INV_ITEM_DESC_X = scale(380);
-    public static final int INV_ITEM_DESC_Y = scale(320);
-
-    public static final int INV_BONUS_X = scale(600);
-    public static final int INV_BONUS_Y = scale(110);
-    public static final int INV_BONUS_SPACING = scale(16);
-
     public static final int PREV_BTN_X = scale(118);
     public static final int NEXT_BTN_X = scale(337);
     public static final int USE_BTN_X = scale(150);
@@ -414,14 +366,6 @@ public final class UI {
     public static final int TAKE_BTN_X = scale(318);
     public static final int TAKE_ALL_BTN_X = scale(388);
     public static final int CLOSE_BTN_X = scale(458);
-
-    // Crafting UI
-    public static final int CRAFT_VAL_TEXT_X = scale(400);
-    public static final int CRAFT_VAL_TEXT_Y = scale(150);
-    public static final int CRAFT_VAL_ITEM_NAME_X = scale(400);
-    public static final int CRAFT_VAL_ITEM_NAME_Y = scale(130);
-    public static final int CRAFT_VAL_ITEM_DESC_X = scale(400);
-    public static final int CRAFT_VAL_ITEM_DESC_Y = scale(170);
 
     // Minimap UI
     public static final int MAP_OVERLAY_WID = scale(700);

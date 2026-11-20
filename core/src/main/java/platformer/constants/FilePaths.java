@@ -42,12 +42,7 @@ public final class FilePaths {
     public static final String GOBLIN_CAVE_BG = "/images/levels/backgrounds/GOBLIN_CAVE.png";
 
     // Enemy
-    public static final String SKELETON_SHEET = "/images/enemies/SkeletonSprite.png";
-    public static final String GHOUL_SHEET = "/images/enemies/GhoulSprite.png";
-    public static final String KNIGHT_SHEET = "/images/enemies/KnightSprite.png";
-    public static final String CORRUPTED_KNIGHT_SHEET = "/images/enemies/CorruptedKnightSprite.png";
-    public static final String WRAITH_SHEET = "/images/enemies/WraithSprite.png";
-    public static final String LANCER_SHEET = "/images/enemies/boss/Lancer.png";
+    public static final String ENEMIES_PATH = "/enemies/enemies.json";
     public static final String RORIC_SHEET = "/images/enemies/boss/Roric.png";
 
     // Follower

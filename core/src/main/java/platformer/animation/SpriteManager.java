@@ -2,15 +2,15 @@ package platformer.animation;
 
 import platformer.core.loading.LoadingProgressTracker;
 import platformer.model.entities.enemies.EnemyType;
+import platformer.model.entities.enemies.loader.EnemyDefinition;
+import platformer.model.entities.enemies.loader.EnemyRegistry;
 import platformer.model.gameObjects.ObjType;
 import platformer.model.gameObjects.npc.NpcType;
 import platformer.utils.CollectionUtils;
 import platformer.utils.ImageUtils;
 
 import java.awt.image.BufferedImage;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -66,33 +66,29 @@ public class SpriteManager {
      * Loads all necessary game assets into memory. This should be called once during the game's initialization phase.
      */
     public void loadAllAssets() {
-        Runnable[] loadTasks = {
-                () -> playerAnimations = loadPlayerSpriteSheet(PLAYER_SHEET),
-                () -> playerTransformAnimations = loadPlayerSpriteSheet(PLAYER_TRANSFORM_SHEET),
-                this::loadSkeletonAnimations,
-                this::loadGhoulAnimations,
-                this::loadKnightAnimations,
-                this::loadWraithAnimations,
-                this::loadCorruptedKnightAnimations,
-                this::loadLancerAnimations,
-                this::loadRoricAnimations,
-                this::loadObjectAnimations,
-                this::loadNpcAnimations,
-                this::loadFollowerAnimations,
-                this::loadProjectileAndSpellAnimations,
-                this::loadEffectAnimations
-        };
+        EnemyRegistry enemyRegistry = EnemyRegistry.getInstance();
+
+        List<Runnable> loadTasks = new ArrayList<>();
+        loadTasks.add(() -> playerAnimations = loadPlayerSpriteSheet(PLAYER_SHEET));
+        loadTasks.add(() -> playerTransformAnimations = loadPlayerSpriteSheet(PLAYER_TRANSFORM_SHEET));
+        for (EnemyType type : enemyRegistry.getRegisteredTypes()) {
+            loadTasks.add(() -> loadEnemyAnimations(type, enemyRegistry.get(type)));
+        }
+        loadTasks.add(this::loadObjectAnimations);
+        loadTasks.add(this::loadNpcAnimations);
+        loadTasks.add(this::loadFollowerAnimations);
+        loadTasks.add(this::loadProjectileAndSpellAnimations);
+        loadTasks.add(this::loadEffectAnimations);
 
         AtomicInteger completedTasks = new AtomicInteger(0);
         double startProgress = 0.05;
         double totalProgressAllocated = 0.90;
 
-        CompletableFuture<?>[] futures = Arrays.stream(loadTasks).map(task ->
+        CompletableFuture<?>[] futures = loadTasks.stream().map(task ->
                 CompletableFuture.runAsync(() -> {
-                    long tStart = System.currentTimeMillis();
                     task.run();
                     int done = completedTasks.incrementAndGet();
-                    double progress = startProgress + ((double) done / loadTasks.length) * totalProgressAllocated;
+                    double progress = startProgress + ((double) done / loadTasks.size()) * totalProgressAllocated;
                     LoadingProgressTracker.getInstance().updateProgress(progress);
                 })
         ).toArray(CompletableFuture[]::new);
@@ -171,117 +167,30 @@ public class SpriteManager {
     }
 
     // Enemy
-    private void loadSkeletonAnimations() {
-        BufferedImage[][] anim = new BufferedImage[13][13];
+    private void loadEnemyAnimations(EnemyType type, EnemyDefinition def) {
+        if (def == null || def.getSpriteSheet() == null || def.getAnimations() == null) return;
 
-        anim[Anim.IDLE.ordinal()] = loadFromSprite(SKELETON_SHEET,      4, 0, SKELETON_WIDTH, SKELETON_HEIGHT, 0, SKELETON_W, SKELETON_H);
-        anim[Anim.RUN.ordinal()] = loadFromSprite(SKELETON_SHEET,       8, 2, SKELETON_WIDTH, SKELETON_HEIGHT, 0, SKELETON_W, SKELETON_H);
-        anim[Anim.FALL.ordinal()] = loadFromSprite(SKELETON_SHEET,      2, 3, SKELETON_WIDTH, SKELETON_HEIGHT, 0, SKELETON_W, SKELETON_H);
-        anim[Anim.ATTACK_1.ordinal()] = loadFromSprite(SKELETON_SHEET,  6, 4, SKELETON_WIDTH, SKELETON_HEIGHT, 0, SKELETON_W, SKELETON_H);
-        anim[Anim.BLOCK.ordinal()] = loadFromSprite(SKELETON_SHEET,     6, 5, SKELETON_WIDTH, SKELETON_HEIGHT, 0, SKELETON_W, SKELETON_H);
-        anim[Anim.HIT.ordinal()] = loadFromSprite(SKELETON_SHEET,       4, 7, SKELETON_WIDTH, SKELETON_HEIGHT, 0, SKELETON_W, SKELETON_H);
-        anim[Anim.DEATH.ordinal()] = loadFromSprite(SKELETON_SHEET,     10, 6, SKELETON_WIDTH, SKELETON_HEIGHT, 0, SKELETON_W, SKELETON_H);
-        anim[Anim.WALK.ordinal()] = loadFromSprite(SKELETON_SHEET,      8, 1, SKELETON_WIDTH, SKELETON_HEIGHT, 0, SKELETON_W, SKELETON_H);
+        BufferedImage[][] anim = new BufferedImage[Anim.values().length][];
+        int drawW = def.getDrawWidth(), drawH = def.getDrawHeight();
+        int frameW = def.getSpriteFrameW(), frameH = def.getSpriteFrameH();
+        for (Map.Entry<String, EnemyDefinition.AnimSpec> entry : def.getAnimations().entrySet()) {
+            EnemyDefinition.AnimSpec spec = entry.getValue();
+            if (spec.getAliasOf() != null) continue;
 
-        enemyAnimations.put(EnemyType.SKELETON, anim);
-    }
+            Anim animEnum = Anim.valueOf(entry.getKey().toUpperCase());
+            BufferedImage[] frames = loadFromSprite(def.getSpriteSheet(), spec.getFrames(), spec.getRow(), drawW, drawH, spec.getOffset(), frameW, frameH);
+            if (spec.isReverse()) CollectionUtils.reverseArray(frames);
+            anim[animEnum.ordinal()] = frames;
+        }
 
-    private void loadGhoulAnimations() {
-        BufferedImage[][] anim = new BufferedImage[17][20];
-
-        anim[Anim.IDLE.ordinal()] = loadFromSprite(GHOUL_SHEET, 8, 0, GHOUL_WIDTH, GHOUL_HEIGHT, 0, GHOUL_W, GHOUL_H);
-        anim[Anim.RUN.ordinal()] = loadFromSprite(GHOUL_SHEET, 6, 2, GHOUL_WIDTH, GHOUL_HEIGHT, 0, GHOUL_W, GHOUL_H);
-        anim[Anim.ATTACK_1.ordinal()] = loadFromSprite(GHOUL_SHEET, 8, 5, GHOUL_WIDTH, GHOUL_HEIGHT, 0, GHOUL_W, GHOUL_H);
-        anim[Anim.HIT.ordinal()] = loadFromSprite(GHOUL_SHEET, 4, 4, GHOUL_WIDTH, GHOUL_HEIGHT, 0, GHOUL_W, GHOUL_H);
-        anim[Anim.DEATH.ordinal()] = loadFromSprite(GHOUL_SHEET, 8, 7, GHOUL_WIDTH, GHOUL_HEIGHT, 0, GHOUL_W, GHOUL_H);
-        anim[Anim.WALK.ordinal()] = loadFromSprite(GHOUL_SHEET, 6, 1, GHOUL_WIDTH, GHOUL_HEIGHT, 0, GHOUL_W, GHOUL_H);
-        anim[Anim.HIDE.ordinal()] = loadFromSprite(GHOUL_SHEET, 19, 6, GHOUL_WIDTH, GHOUL_HEIGHT, 0, GHOUL_W, GHOUL_H);
-        anim[Anim.REVEAL.ordinal()] = loadFromSprite(GHOUL_SHEET, 19, 6, GHOUL_WIDTH, GHOUL_HEIGHT, 0, GHOUL_W, GHOUL_H);
-        anim[Anim.REVEAL.ordinal()] = CollectionUtils.reverseArray(anim[Anim.REVEAL.ordinal()]);
-
-        enemyAnimations.put(EnemyType.GHOUL, anim);
-    }
-
-    private void loadKnightAnimations() {
-        BufferedImage[][] anim = new BufferedImage[13][13];
-
-        anim[Anim.IDLE.ordinal()] = loadFromSprite(KNIGHT_SHEET,     8, 0, KNIGHT_WIDTH, KNIGHT_HEIGHT, 0, KNIGHT_W, KNIGHT_H);
-        anim[Anim.RUN.ordinal()] = loadFromSprite(KNIGHT_SHEET,      8, 2, KNIGHT_WIDTH, KNIGHT_HEIGHT, 0, KNIGHT_W, KNIGHT_H);
-        anim[Anim.ATTACK_1.ordinal()] = loadFromSprite(KNIGHT_SHEET, 8, 3, KNIGHT_WIDTH, KNIGHT_HEIGHT, 0, KNIGHT_W, KNIGHT_H);
-        anim[Anim.ATTACK_2.ordinal()] = loadFromSprite(KNIGHT_SHEET, 8, 4, KNIGHT_WIDTH, KNIGHT_HEIGHT, 0, KNIGHT_W, KNIGHT_H);
-        anim[Anim.HIT.ordinal()] = loadFromSprite(KNIGHT_SHEET,      5, 5, KNIGHT_WIDTH, KNIGHT_HEIGHT, 0, KNIGHT_W, KNIGHT_H);
-        anim[Anim.DEATH.ordinal()] = loadFromSprite(KNIGHT_SHEET,    12, 6, KNIGHT_WIDTH, KNIGHT_HEIGHT, 0, KNIGHT_W, KNIGHT_H);
-        anim[Anim.WALK.ordinal()] = loadFromSprite(KNIGHT_SHEET,     8, 1, KNIGHT_WIDTH, KNIGHT_HEIGHT, 0, KNIGHT_W, KNIGHT_H);
-
-        enemyAnimations.put(EnemyType.KNIGHT, anim);
-    }
-
-    private void loadWraithAnimations() {
-        BufferedImage[][] anim = new BufferedImage[20][17];
-
-        anim[Anim.IDLE.ordinal()] = loadFromSprite(WRAITH_SHEET,     10, 0, WRAITH_WIDTH, WRAITH_HEIGHT, 0, WRAITH_W, WRAITH_H);
-        anim[Anim.RUN.ordinal()] = loadFromSprite(WRAITH_SHEET,      8,  1, WRAITH_WIDTH, WRAITH_HEIGHT, 0, WRAITH_W, WRAITH_H);
-        anim[Anim.ATTACK_1.ordinal()] = loadFromSprite(WRAITH_SHEET, 10, 2, WRAITH_WIDTH, WRAITH_HEIGHT, 0, WRAITH_W, WRAITH_H);
-        anim[Anim.ATTACK_2.ordinal()] = loadFromSprite(WRAITH_SHEET, 10, 3, WRAITH_WIDTH, WRAITH_HEIGHT, 0, WRAITH_W, WRAITH_H);
-        anim[Anim.SPELL_1.ordinal()] = anim[Anim.ATTACK_2.ordinal()];
-        anim[Anim.HIT.ordinal()] = loadFromSprite(WRAITH_SHEET,      5,  4, WRAITH_WIDTH, WRAITH_HEIGHT, 0, WRAITH_W, WRAITH_H);
-        anim[Anim.DEATH.ordinal()] = loadFromSprite(WRAITH_SHEET,    16, 5, WRAITH_WIDTH, WRAITH_HEIGHT, 0, WRAITH_W, WRAITH_H);
-        anim[Anim.WALK.ordinal()] = anim[Anim.IDLE.ordinal()];
-
-        enemyAnimations.put(EnemyType.WRAITH, anim);
-    }
-
-    private void loadCorruptedKnightAnimations() {
-        BufferedImage[][] anim = new BufferedImage[13][13];
-
-        anim[Anim.IDLE.ordinal()] = loadFromSprite(CORRUPTED_KNIGHT_SHEET,     8, 0, KNIGHT_WIDTH, KNIGHT_HEIGHT, 0, KNIGHT_W, KNIGHT_H);
-        anim[Anim.WALK.ordinal()] = loadFromSprite(CORRUPTED_KNIGHT_SHEET,     8, 1, KNIGHT_WIDTH, KNIGHT_HEIGHT, 0, KNIGHT_W, KNIGHT_H);
-        anim[Anim.RUN.ordinal()] = loadFromSprite(CORRUPTED_KNIGHT_SHEET,      8, 2, KNIGHT_WIDTH, KNIGHT_HEIGHT, 0, KNIGHT_W, KNIGHT_H);
-        anim[Anim.ATTACK_1.ordinal()] = loadFromSprite(CORRUPTED_KNIGHT_SHEET, 8, 3, KNIGHT_WIDTH, KNIGHT_HEIGHT, 0, KNIGHT_W, KNIGHT_H);
-        anim[Anim.ATTACK_2.ordinal()] = loadFromSprite(CORRUPTED_KNIGHT_SHEET, 8, 4, KNIGHT_WIDTH, KNIGHT_HEIGHT, 0, KNIGHT_W, KNIGHT_H);
-        anim[Anim.HIT.ordinal()] = loadFromSprite(CORRUPTED_KNIGHT_SHEET,      5, 5, KNIGHT_WIDTH, KNIGHT_HEIGHT, 0, KNIGHT_W, KNIGHT_H);
-        anim[Anim.DEATH.ordinal()] = loadFromSprite(CORRUPTED_KNIGHT_SHEET,    12, 6, KNIGHT_WIDTH, KNIGHT_HEIGHT, 0, KNIGHT_W, KNIGHT_H);
-
-        enemyAnimations.put(EnemyType.CORRUPTED_KNIGHT, anim);
-    }
-
-    private void loadLancerAnimations() {
-        BufferedImage[][] anim = new BufferedImage[20][25];
-
-        anim[Anim.IDLE.ordinal()] = loadFromSprite(LANCER_SHEET,        8, 0, LANCER_WIDTH, LANCER_HEIGHT, 0, SW_W, SW_H);
-        anim[Anim.RUN.ordinal()] = loadFromSprite(LANCER_SHEET,         8, 2, LANCER_WIDTH, LANCER_HEIGHT, 0, SW_W, SW_H);
-        anim[Anim.ATTACK_1.ordinal()] = loadFromSprite(LANCER_SHEET,    5, 10, LANCER_WIDTH, LANCER_HEIGHT, 0, SW_W, SW_H);
-        anim[Anim.ATTACK_2.ordinal()] = loadFromSprite(LANCER_SHEET,    5, 11, LANCER_WIDTH, LANCER_HEIGHT, 0, SW_W, SW_H);
-        anim[Anim.ATTACK_3.ordinal()] = loadFromSprite(LANCER_SHEET,    6, 12, LANCER_WIDTH, LANCER_HEIGHT, 0, SW_W, SW_H);
-        anim[Anim.BLOCK.ordinal()] = loadFromSprite(LANCER_SHEET,       16, 16, LANCER_WIDTH, LANCER_HEIGHT, 0, SW_W, SW_H);
-        anim[Anim.HIT.ordinal()] = loadFromSprite(LANCER_SHEET,         4, 23, LANCER_WIDTH, LANCER_HEIGHT, 0, SW_W, SW_H);
-        anim[Anim.DEATH.ordinal()] = loadFromSprite(LANCER_SHEET,       9, 24, LANCER_WIDTH, LANCER_HEIGHT, 0, SW_W, SW_H);
-        anim[Anim.SPELL_1.ordinal()] = loadFromSprite(LANCER_SHEET,     14, 13, LANCER_WIDTH, LANCER_HEIGHT, 0, SW_W, SW_H);
-        anim[Anim.SPELL_2.ordinal()] = loadFromSprite(LANCER_SHEET,     11, 14, LANCER_WIDTH, LANCER_HEIGHT, 0, SW_W, SW_H);
-        anim[Anim.SPELL_3.ordinal()] = loadFromSprite(LANCER_SHEET,     22, 15, LANCER_WIDTH, LANCER_HEIGHT, 0, SW_W, SW_H);
-        anim[Anim.SPELL_4.ordinal()] = loadFromSprite(LANCER_SHEET,     2, 15, LANCER_WIDTH, LANCER_HEIGHT, 1, SW_W, SW_H);
-
-        enemyAnimations.put(EnemyType.LANCER, anim);
-    }
-
-    /**
-     * This boss is a timed fight, so it does not have death and hit animations.
-     */
-    private void loadRoricAnimations() {
-        BufferedImage[][] anim = new BufferedImage[21][22];
-
-        anim[Anim.IDLE.ordinal()] = loadFromSprite(RORIC_SHEET, 12, 0, RORIC_WIDTH, RORIC_HEIGHT, 0, RORIC_W, RORIC_H);
-        anim[Anim.RUN.ordinal()] = loadFromSprite(RORIC_SHEET, 10, 1, RORIC_WIDTH, RORIC_HEIGHT, 0, RORIC_W, RORIC_H);
-        anim[Anim.JUMP_FALL.ordinal()] = loadFromSprite(RORIC_SHEET, 22, 6, RORIC_WIDTH, RORIC_HEIGHT, 0, RORIC_W, RORIC_H);
-        anim[Anim.ATTACK_1.ordinal()] = loadFromSprite(RORIC_SHEET, 10, 10, RORIC_WIDTH, RORIC_HEIGHT, 0, RORIC_W, RORIC_H);
-        anim[Anim.ATTACK_2.ordinal()] = loadFromSprite(RORIC_SHEET, 15, 11, RORIC_WIDTH, RORIC_HEIGHT, 0, RORIC_W, RORIC_H);
-        anim[Anim.ATTACK_3.ordinal()] = anim[Anim.IDLE.ordinal()];
-        anim[Anim.BLOCK.ordinal()] = loadFromSprite(RORIC_SHEET, 19, 14, RORIC_WIDTH, RORIC_HEIGHT, 0, RORIC_W, RORIC_H);
-        anim[Anim.SPELL_1.ordinal()] = loadFromSprite(RORIC_SHEET, 17, 13, RORIC_WIDTH, RORIC_HEIGHT, 0, RORIC_W, RORIC_H);
-        anim[Anim.SPELL_2.ordinal()] = loadFromSprite(RORIC_SHEET, 10, 7, RORIC_WIDTH, RORIC_HEIGHT, 0, RORIC_W, RORIC_H);
-        anim[Anim.SPELL_3.ordinal()] = loadFromSprite(RORIC_SHEET, 12, 12, RORIC_WIDTH, RORIC_HEIGHT, 0, RORIC_W, RORIC_H);
-
-        enemyAnimations.put(EnemyType.RORIC, anim);
+        for (Map.Entry<String, EnemyDefinition.AnimSpec> entry : def.getAnimations().entrySet()) {
+            EnemyDefinition.AnimSpec spec = entry.getValue();
+            if (spec.getAliasOf() == null) continue;
+            Anim animEnum = Anim.valueOf(entry.getKey().toUpperCase());
+            Anim targetEnum = Anim.valueOf(spec.getAliasOf().toUpperCase());
+            anim[animEnum.ordinal()] = anim[targetEnum.ordinal()];
+        }
+        enemyAnimations.put(type, anim);
     }
 
     // Objects

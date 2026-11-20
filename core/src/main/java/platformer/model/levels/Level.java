@@ -1,8 +1,6 @@
 package platformer.model.levels;
 
 import platformer.model.entities.enemies.*;
-import platformer.model.entities.enemies.boss.Roric;
-import platformer.model.entities.enemies.boss.Lancer;
 import platformer.model.gameObjects.GameObject;
 import platformer.model.gameObjects.ObjType;
 import platformer.model.gameObjects.npc.Npc;
@@ -84,30 +82,8 @@ public class Level {
 
     private void getEnemyData(int i, int j, int valueG) {
         if (valueG >= EnemyType.MAX.ordinal()) return;
-        switch (EnemyType.values()[valueG]) {
-            case SKELETON:
-                addEnemy(new Skeleton(i*TILES_SIZE, (j-1)*TILES_SIZE));
-                break;
-            case GHOUL:
-                addEnemy(new Ghoul(i*TILES_SIZE, (j-1)*TILES_SIZE));
-                break;
-            case LANCER:
-                addEnemy(new Lancer(i*TILES_SIZE, (j-1)*TILES_SIZE));
-                break;
-            case KNIGHT:
-                addEnemy(new Knight(i*TILES_SIZE, (j-1)*TILES_SIZE));
-                break;
-            case WRAITH:
-                addEnemy(new Wraith(i*TILES_SIZE, (j-1)*TILES_SIZE));
-                break;
-            case CORRUPTED_KNIGHT:
-                addEnemy(new CorruptedKnight(i * TILES_SIZE, (j - 1) * TILES_SIZE));
-                break;
-            case RORIC:
-                addEnemy(new Roric(i*TILES_SIZE, (j-1)*TILES_SIZE));
-                break;
-            default: break;
-        }
+        Enemy enemy = EnemyFactory.create(EnemyType.values()[valueG], i * TILES_SIZE, (j - 1) * TILES_SIZE);
+        if (enemy != null) addEnemy(enemy);
     }
 
     private void getObjectData(int i, int j, int valueB, Color colorP3, boolean[][] waterGrid, boolean[][] lavaGrid) {
