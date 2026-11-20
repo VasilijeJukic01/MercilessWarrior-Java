@@ -84,9 +84,11 @@ public class MinimapOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
         renderOverlay(g);
         Graphics2D g2d = (Graphics2D) g;
         g2d.setClip(overlay);
+        g2d.setColor(MAP_FOG_COLOR);
+        g2d.fill(overlay);
 
-        int width = (int) (MAP_OVERLAY_WID * controller.getZoomFactor());
-        int height = (int) (MAP_OVERLAY_HEI * controller.getZoomFactor());
+        int width = controller.getRenderedMapWidth();
+        int height = controller.getRenderedMapHeight();
         int x = MAP_OVERLAY_X + controller.getOffsetX();
         int y = MAP_OVERLAY_Y + controller.getOffsetY();
 

@@ -3,6 +3,7 @@ package platformer.model.entities.player;
 import platformer.animation.Anim;
 import platformer.audio.Audio;
 import platformer.audio.types.Sound;
+import platformer.core.GameClock;
 import platformer.core.GameContext;
 import platformer.core.config.BalanceManager;
 import platformer.debug.logger.Logger;
@@ -24,6 +25,7 @@ import platformer.physics.DamageSource;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
 
@@ -128,7 +130,6 @@ public class Player extends Entity {
             if (animIndex >= playerRenderer.getFrameCount(entityState)) {
                 finishAnimation();
             }
-            coolDownTickUpdate();
         }
         blockWallFlip();
     }
@@ -260,7 +261,8 @@ public class Player extends Entity {
             return;
         }
         if (updateUltimate()) return;
-        combatHandler.updateParryWindow();
+        coolDownTickUpdate();
+        combatHandler.update();
         combatHandler.updateAttackBox();
         setAnimation();
         updateHitBlockMove();
@@ -328,6 +330,17 @@ public class Player extends Entity {
     private void updateMove() {
         playerRenderer.updateAfterimages(checkAction(PlayerAction.DASH), pushOffset);
         movementHandler.updateDashTimer();
+    }
+
+    @Override
+    protected void coolDownTickUpdate() {
+        double step = 1.0 / GameClock.TICKS_PER_SECOND;
+        for (int i = 0; i < cooldown.length; i++) {
+            if (cooldown[i] > 0) {
+                cooldown[i] -= step;
+                if (cooldown[i] < 0) cooldown[i] = 0;
+            }
+        }
     }
 
     public void render(Graphics g, int xLevelOffset, int yLevelOffset) {
@@ -473,6 +486,7 @@ public class Player extends Entity {
         hitBox.x = xPos;
         hitBox.y = yPos;
         initAttackBox();
+        Arrays.fill(cooldown, 0);
         if (!isEntityOnFloor(hitBox, levelData)) inAir = true;
         if (minimapHandler != null) minimapHandler.update();
     }

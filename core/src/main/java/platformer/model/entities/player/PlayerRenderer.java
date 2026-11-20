@@ -90,6 +90,7 @@ public class PlayerRenderer {
             else if (burnTick > 0 && frame != null) {
                 renderBurnOverlay(g, frame, playerXPos, playerYPos, width, height, burnTick);
             }
+            renderAttackRecoveryIndicator(g, xLevelOffset, yLevelOffset, pushOffset);
         } catch (Exception e) {
             long now = System.currentTimeMillis();
             if (now - lastRenderErrorLogMs >= 1000) {
@@ -178,6 +179,108 @@ public class PlayerRenderer {
         bG2d.dispose();
 
         g.drawImage(burnSilhouetteBuffer, drawX, drawY, player.getFlipSign() * width, height, null);
+    }
+
+    /**
+     * Renders the diegetic overhead combo-warning pips and finisher recovery bar above the player's head.
+     */
+    private void renderAttackRecoveryIndicator(Graphics g, int xLevelOffset, int yLevelOffset, double pushOffset) {
+        if (player.getCurrentHealth() <= 0 || player.checkAction(PlayerAction.DYING)) return;
+        if (player.getUltimateHandler() != null && player.getUltimateHandler().isActive()) return;
+
+        PlayerCombatHandler combat = player.getCombatHandler();
+        if (combat == null) return;
+
+        boolean showBar = combat.isShowingCooldownBar();
+        int comboPips = combat.getActiveComboPips();
+        float readyRatio = combat.getReadyFlashRatio();
+        if (!showBar && comboPips <= 0 && readyRatio <= 0.0f) return;
+
+        int barW = scale(26);
+        int barH = Math.max(4, scale(3.5));
+        int centerX = (int) (player.getHitBox().getCenterX() - xLevelOffset);
+        int barY = (int) (player.getHitBox().y - yLevelOffset - scale(10) + pushOffset);
+
+        float deniedRatio = combat.getDeniedFlashRatio();
+        int shakeX = (deniedRatio > 0.0f) ? (int) Math.round(Math.sin(deniedRatio * Math.PI * 5.0) * (1.8 * SCALE * deniedRatio)) : 0;
+        int barX = centerX - barW / 2 + shakeX;
+
+        Graphics2D g2d = (Graphics2D) g.create();
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        if (showBar) renderCooldownBar(g2d, barX, barY, barW, barH, combat.getAttackCooldownRatio(), deniedRatio);
+        else if (readyRatio > 0.0f) renderReadyFlash(g2d, barX, barY, barW, barH, readyRatio);
+        else renderComboPips(g2d, barX, barY, barW, barH, comboPips);
+
+        g2d.dispose();
+    }
+
+    private void renderComboPips(Graphics2D g2d, int barX, int barY, int barW, int barH, int litPips) {
+        int gap = Math.max(2, scale(1.5));
+        int pipW = (barW - gap * 2) / 3;
+        int arc = Math.max(2, scale(1.5));
+        boolean warningFinisher = (litPips >= 2);
+        double pulse = 0.5 + 0.5 * Math.sin(System.currentTimeMillis() * 0.018);
+
+        for (int i = 0; i < 3; i++) {
+            int px = barX + i * (pipW + gap);
+            g2d.setColor(new Color(10, 18, 22, 185));
+            g2d.fillRoundRect(px, barY, pipW, barH, arc, arc);
+
+            if (i < litPips) {
+                Color fill = warningFinisher ? new Color(255, 175, 45, 240) : new Color(55, 235, 225, 230);
+                g2d.setColor(fill);
+                g2d.fillRoundRect(px + 1, barY + 1, Math.max(1, pipW - 2), Math.max(1, barH - 2), arc, arc);
+            }
+            else if (warningFinisher && i == 2) {
+                int warnAlpha = (int) (70 + 130 * pulse);
+                g2d.setColor(new Color(255, 85, 55, warnAlpha));
+                g2d.drawRoundRect(px, barY, pipW, barH, arc, arc);
+                continue;
+            }
+
+            g2d.setColor(new Color(85, 115, 122, 190));
+            g2d.drawRoundRect(px, barY, pipW, barH, arc, arc);
+        }
+    }
+
+    private void renderCooldownBar(Graphics2D g2d, int barX, int barY, int barW, int barH, float ratio, float deniedRatio) {
+        int arc = Math.max(2, scale(1.8));
+        g2d.setColor(new Color(10, 16, 20, 210));
+        g2d.fillRoundRect(barX, barY, barW, barH, arc, arc);
+
+        int innerW = Math.max(1, barW - 2);
+        int innerH = Math.max(1, barH - 2);
+        int fillW = Math.max(1, Math.round(innerW * ratio));
+
+        Color fillColor;
+        if (deniedRatio > 0.0f) {
+            fillColor = new Color(255, 55, 65, 245);
+        }
+        else {
+            int gComp = (int) (75 + (1.0f - ratio) * 135);
+            int bComp = (int) (45 + (1.0f - ratio) * 35);
+            fillColor = new Color(255, gComp, bComp, 235);
+        }
+
+        g2d.setColor(fillColor);
+        g2d.fillRoundRect(barX + 1, barY + 1, fillW, innerH, arc, arc);
+
+        g2d.setColor(new Color(255, 245, 220, 120));
+        g2d.fillRect(barX + 1, barY + 1, fillW, 1);
+
+        Color borderColor = (deniedRatio > 0.0f) ? new Color(255, 120, 120, 240) : new Color(110, 130, 135, 210);
+        g2d.setColor(borderColor);
+        g2d.drawRoundRect(barX, barY, barW, barH, arc, arc);
+    }
+
+    private void renderReadyFlash(Graphics2D g2d, int barX, int barY, int barW, int barH, float readyRatio) {
+        int arc = Math.max(2, scale(1.8));
+        int alpha = Math.max(0, Math.min(255, Math.round(readyRatio * 235)));
+        g2d.setColor(new Color(90, 250, 245, alpha));
+        g2d.fillRoundRect(barX, barY, barW, barH, arc, arc);
+        g2d.setColor(new Color(255, 255, 255, alpha));
+        g2d.drawRoundRect(barX, barY, barW, barH, arc, arc);
     }
 
     /**

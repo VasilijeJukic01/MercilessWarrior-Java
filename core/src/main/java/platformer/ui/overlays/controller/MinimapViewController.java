@@ -20,7 +20,7 @@ public class MinimapViewController {
 
     private final MinimapManager minimapManager;
 
-    private double zoomFactor = 1.8;
+    private double zoomFactor = 2.2;
     private boolean showLegend = true;
 
     private boolean drag = false;
@@ -40,12 +40,32 @@ public class MinimapViewController {
         }
     }
 
+    /**
+     * Computes the uniform pixels-per-tile scale so the map fits cleanly at MIN_ZOOM with zero distortion.
+     */
+    public double getPixelsPerTile() {
+        BufferedImage map = minimapManager.getMinimap();
+        if (map == null || map.getWidth() == 0 || map.getHeight() == 0) return 1.0;
+        double fitScale = Math.min((double) MAP_OVERLAY_WID / map.getWidth(), (double) MAP_OVERLAY_HEI / map.getHeight());
+        return fitScale * zoomFactor;
+    }
+
+    public int getRenderedMapWidth() {
+        BufferedImage map = minimapManager.getMinimap();
+        return map != null ? (int) Math.round(map.getWidth() * getPixelsPerTile()) : MAP_OVERLAY_WID;
+    }
+
+    public int getRenderedMapHeight() {
+        BufferedImage map = minimapManager.getMinimap();
+        return map != null ? (int) Math.round(map.getHeight() * getPixelsPerTile()) : MAP_OVERLAY_HEI;
+    }
+
     public void mouseClicked(MouseEvent e) {
 
     }
 
     public void mouseDragged(MouseEvent e) {
-        if (drag && zoomFactor > MIN_ZOOM) {
+        if (drag && canPan()) {
             int dx = e.getX() - lastMouseX;
             int dy = e.getY() - lastMouseY;
             offsetX += dx;
@@ -73,7 +93,7 @@ public class MinimapViewController {
             return;
         }
 
-        if (e.getButton() == MouseEvent.BUTTON1 && zoomFactor > MIN_ZOOM) {
+        if (e.getButton() == MouseEvent.BUTTON1 && canPan()) {
             drag = true;
             lastMouseX = e.getX();
             lastMouseY = e.getY();
@@ -98,29 +118,40 @@ public class MinimapViewController {
 
     public void keyReleased(KeyEvent e) {
         if (e.getKeyCode() == KeyEvent.VK_PLUS || e.getKeyCode() == KeyEvent.VK_EQUALS) {
-            zoomFactor = Math.min(zoomFactor + 0.1, MAX_ZOOM);
+            adjustZoom(0.25);
         }
         else if (e.getKeyCode() == KeyEvent.VK_MINUS) {
-            zoomFactor = Math.max(zoomFactor - 0.1, MIN_ZOOM);
+            adjustZoom(-0.25);
         }
         else if (e.getKeyCode() == KeyEvent.VK_L) {
             showLegend = !showLegend;
         }
+    }
+
+    private void adjustZoom(double delta) {
+        double oldScale = getPixelsPerTile();
+        double centerMapX = (MAP_OVERLAY_WID / 2.0 - offsetX) / oldScale;
+        double centerMapY = (MAP_OVERLAY_HEI / 2.0 - offsetY) / oldScale;
+
+        zoomFactor = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, zoomFactor + delta));
+
+        double newScale = getPixelsPerTile();
+        offsetX = (int) Math.round(MAP_OVERLAY_WID / 2.0 - centerMapX * newScale);
+        offsetY = (int) Math.round(MAP_OVERLAY_HEI / 2.0 - centerMapY * newScale);
         clampOffsets();
+    }
+
+    private boolean canPan() {
+        return getRenderedMapWidth() > MAP_OVERLAY_WID || getRenderedMapHeight() > MAP_OVERLAY_HEI;
     }
 
     private void centerOverlay() {
         BufferedImage map = minimapManager.getMinimap();
         Point2D.Double playerLoc = minimapManager.getPlayerLocation();
         if (map != null && playerLoc != null) {
-            int width = (int) (MAP_OVERLAY_WID * zoomFactor);
-            int height = (int) (MAP_OVERLAY_HEI * zoomFactor);
-
-            double scaledPixelWidth = (double) width / map.getWidth();
-            double scaledPixelHeight = (double) height / map.getHeight();
-
-            int playerScreenX = MAP_OVERLAY_X + (int) (playerLoc.x * scaledPixelWidth);
-            int playerScreenY = MAP_OVERLAY_Y + (int) (playerLoc.y * scaledPixelHeight);
+            double scale = getPixelsPerTile();
+            int playerScreenX = MAP_OVERLAY_X + (int) Math.round(playerLoc.x * scale);
+            int playerScreenY = MAP_OVERLAY_Y + (int) Math.round(playerLoc.y * scale);
 
             offsetX = (MAP_OVERLAY_X + MAP_OVERLAY_WID / 2) - playerScreenX;
             offsetY = (MAP_OVERLAY_Y + MAP_OVERLAY_HEI / 2) - playerScreenY;
@@ -129,28 +160,20 @@ public class MinimapViewController {
     }
 
     private void clampOffsets() {
-        int width = (int) (MAP_OVERLAY_WID * zoomFactor);
-        int height = (int) (MAP_OVERLAY_HEI * zoomFactor);
-
-        int minOffsetX = Math.min(0, MAP_OVERLAY_WID - width);
-        int minOffsetY = Math.min(0, MAP_OVERLAY_HEI - height);
-
-        offsetX = Math.max(minOffsetX, Math.min(offsetX, 0));
-        offsetY = Math.max(minOffsetY, Math.min(offsetY, 0));
+        int width = getRenderedMapWidth(), height = getRenderedMapHeight();
+        if (width <= MAP_OVERLAY_WID) offsetX = (MAP_OVERLAY_WID - width) / 2;
+        else offsetX = Math.max(MAP_OVERLAY_WID - width, Math.min(offsetX, 0));
+        if (height <= MAP_OVERLAY_HEI) offsetY = (MAP_OVERLAY_HEI - height) / 2;
+        else offsetY = Math.max(MAP_OVERLAY_HEI - height, Math.min(offsetY, 0));
     }
 
     private Point screenToMinimap(int screenX, int screenY) {
         int mapX = MAP_OVERLAY_X + offsetX;
         int mapY = MAP_OVERLAY_Y + offsetY;
-        int width = (int) (MAP_OVERLAY_WID * zoomFactor);
-        int height = (int) (MAP_OVERLAY_HEI * zoomFactor);
+        double scale = getPixelsPerTile();
 
-        double scaledPixelWidth = (double) width / minimapManager.getMinimap().getWidth();
-        double scaledPixelHeight = (double) height / minimapManager.getMinimap().getHeight();
-
-        int minimapX = (int) ((screenX - mapX) / scaledPixelWidth);
-        int minimapY = (int) ((screenY - mapY) / scaledPixelHeight);
-
+        int minimapX = (int) ((screenX - mapX) / scale);
+        int minimapY = (int) ((screenY - mapY) / scale);
         return new Point(minimapX, minimapY);
     }
 
@@ -177,23 +200,17 @@ public class MinimapViewController {
     }
 
     private MinimapIcon findIconAtScreenPos(int screenX, int screenY) {
-        BufferedImage map = minimapManager.getMinimap();
         int mapX = MAP_OVERLAY_X + offsetX;
         int mapY = MAP_OVERLAY_Y + offsetY;
-        int width = (int) (MAP_OVERLAY_WID * zoomFactor);
-        int height = (int) (MAP_OVERLAY_HEI * zoomFactor);
-
-        double scaledPixelWidth = (double) width / map.getWidth();
-        double scaledPixelHeight = (double) height / map.getHeight();
+        double scale = getPixelsPerTile();
 
         for (MinimapIcon icon : minimapManager.getIcons()) {
             if (!minimapManager.isIconVisible(icon)) continue;
-            int iconWidth = (int) (2.5 * scaledPixelWidth);
-            int iconHeight = (int) (2.5 * scaledPixelHeight);
-            int iconX = mapX + (int) (icon.position().x * scaledPixelWidth) - iconWidth / 2;
-            int iconY = mapY + (int) (icon.position().y * scaledPixelHeight) - (int) (iconHeight / 1.8);
+            int iconSize = Math.max((int) (10 * SCALE), (int) Math.round(3.0 * scale));
+            int iconX = mapX + (int) Math.round((icon.position().x + 0.5) * scale) - iconSize / 2;
+            int iconY = mapY + (int) Math.round((icon.position().y + 0.5) * scale) - iconSize / 2;
 
-            Rectangle iconBounds = new Rectangle(iconX, iconY, iconWidth, iconHeight);
+            Rectangle iconBounds = new Rectangle(iconX, iconY, iconSize, iconSize);
             if (iconBounds.contains(screenX, screenY)) return icon;
         }
         return null;
@@ -217,7 +234,6 @@ public class MinimapViewController {
         this.centered = false;
     }
 
-    // Getters
     public double getZoomFactor() {
         return zoomFactor;
     }

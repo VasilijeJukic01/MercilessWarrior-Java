@@ -70,7 +70,7 @@ public final class Constants {
 
     // Minimap Constants
     public static final double MIN_ZOOM = 1.0;
-    public static final double MAX_ZOOM = 2.0;
+    public static final double MAX_ZOOM = 4.0;
     public static final double MINIMAP_ZOOM = 4.5;
 
     public static final int MINIMAP_ICONS_COUNT = 10;
