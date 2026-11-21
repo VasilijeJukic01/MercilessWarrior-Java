@@ -467,7 +467,7 @@ public class LightManager {
     private void bakeSingleDecorationLight(Graphics2D wG2d, Graphics2D cG2d, DecorationLightData lightData, DecorationMetadata decoMeta, int tileX, int tileY) {
         try {
             ObjectMetadata objMeta = context.getLevelManager().getObjectMetadataAt(tileX, tileY);
-            double scaleMult = (objMeta != null) ? Math.max(objMeta.getScaleX(), objMeta.getScaleY()) : 1.0;
+            double scaleMult = (objMeta != null) ? Math.max(Math.abs(objMeta.getScaleX()), Math.abs(objMeta.getScaleY())) : 1.0;
             if (scaleMult <= 0) scaleMult = 1.0;
 
             int lmRadius = Math.max(2, (int) (lightData.getLightRadius() * SCALE * scaleMult) / LIGHTMAP_SCALE);

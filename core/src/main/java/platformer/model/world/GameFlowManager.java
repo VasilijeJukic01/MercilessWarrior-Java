@@ -69,7 +69,6 @@ public class GameFlowManager {
     private void checkLevelExit() {
         Player player = gameState.getPlayer();
         if (player.checkAction(PlayerAction.LEVEL_TRANSITION) || gameState.getTransitionManager().isActive()) return;
-        if (player.checkAction(PlayerAction.DASH)) return;
 
         LevelManager levelManager = context.getLevelManager();
         List<Trigger> triggers = new ArrayList<>(levelManager.getCurrentLevel().getTriggers());
@@ -124,7 +123,7 @@ public class GameFlowManager {
         TransitionDirection direction = getTransitionDirection(exitType);
         Runnable levelLoadCallback = () ->
                 context.getWorldTransitionCoordinator().enterRoom(targetLevelId, spawn, spawnX, spawnY);
-        gameState.getPlayer().addAction(PlayerAction.LEVEL_TRANSITION);
+        gameState.getPlayer().beginLevelTransition(exitType);
         gameState.getTransitionManager().startTransition(direction, levelLoadCallback);
     }
 

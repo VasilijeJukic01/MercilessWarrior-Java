@@ -8,6 +8,7 @@ import platformer.model.entities.Direction;
 import platformer.model.entities.enemies.Enemy;
 import platformer.model.entities.enemies.EnemyManager;
 import platformer.model.gameObjects.ObjectManager;
+import platformer.model.levels.LvlTriggerType;
 import platformer.model.levels.interior.InteriorManager;
 import platformer.model.spells.SpellManager;
 import platformer.physics.CollisionDetector;
@@ -62,6 +63,9 @@ public class PlayerMovementHandler {
     private int wallJumpDir = 0;
     private int dashTick = 0;
     private double dashMomentumX = 0.0;
+
+    // Effect
+    private LvlTriggerType transitionExitType = null;
 
     public PlayerMovementHandler(Player player, GameContext context) {
         this.player = player;
@@ -178,27 +182,46 @@ public class PlayerMovementHandler {
     }
 
     private boolean checkTransitionUpdate(int[][] levelData) {
-        if (player.checkAction(PlayerAction.LEVEL_TRANSITION)) {
-            Rectangle2D.Double hitBox = player.getHitBox();
-            if (player.isInAir()) {
-                double nextAirSpeed = Math.min(maxFallSpeed, player.getAirSpeed() + downwardGravity);
-                if (canMoveHere(hitBox.x, hitBox.y + nextAirSpeed, hitBox.width, hitBox.height, levelData)) {
-                    player.setAirSpeed(nextAirSpeed);
-                    hitBox.y += nextAirSpeed;
-                }
-                else {
-                    player.setAirSpeed(0);
-                    player.setInAir(false);
-                }
-            }
-            double vx = Math.max(-PLAYER_SPEED, Math.min(PLAYER_SPEED, getHorizontalSpeed()));
-            if (canMoveHere(hitBox.x + vx, hitBox.y, hitBox.width, hitBox.height, levelData)) {
-                hitBox.x += vx;
-            }
-            player.addAction(PlayerAction.MOVE);
+        if (!player.checkAction(PlayerAction.LEVEL_TRANSITION)) return false;
+
+        Rectangle2D.Double hitBox = player.getHitBox();
+        if (transitionExitType == LvlTriggerType.LOAD_DOWN_LEVEL) {
+            player.setInAir(true);
+            double fallSpeed = Math.max(1.6 * SCALE, Math.min(maxFallSpeed, player.getAirSpeed() + downwardGravity));
+            player.setAirSpeed(fallSpeed);
+            hitBox.y += fallSpeed;
+            double vx = getHorizontalSpeed() * 0.5;
+            hitBox.x += vx;
             return true;
         }
-        return false;
+
+        if (transitionExitType == LvlTriggerType.LOAD_UP_LEVEL) {
+            player.setInAir(true);
+            double riseSpeed = Math.min(-1.8 * SCALE, player.getAirSpeed());
+            player.setAirSpeed(riseSpeed);
+            hitBox.y += riseSpeed;
+            return true;
+        }
+
+        int exitDir = (transitionExitType == LvlTriggerType.LOAD_LEFT_LEVEL) ? -1 : (transitionExitType == LvlTriggerType.LOAD_RIGHT_LEVEL) ? 1 : player.getFlipSign();
+        player.setFacingDirection(exitDir);
+
+        double speed = player.checkAction(PlayerAction.DASH) ? (PLAYER_SPEED * 1.65) : PLAYER_SPEED;
+        double vx = exitDir * speed;
+        hitBox.x += vx;
+        if (player.isInAir() && !player.checkAction(PlayerAction.DASH)) {
+            double nextAirSpeed = Math.min(maxFallSpeed, player.getAirSpeed() + downwardGravity);
+            if (canMoveHere(hitBox.x, hitBox.y + nextAirSpeed, hitBox.width, hitBox.height, levelData)) {
+                player.setAirSpeed(nextAirSpeed);
+                hitBox.y += nextAirSpeed;
+            }
+            else {
+                player.setAirSpeed(0);
+                player.setInAir(false);
+            }
+        }
+        player.addAction(PlayerAction.MOVE);
+        return true;
     }
 
     public void inAirUpdate(int[][] levelData) {
@@ -529,6 +552,10 @@ public class PlayerMovementHandler {
 
     private boolean isInInterior() {
         return interiorManager != null && interiorManager.isInterior();
+    }
+
+    public void setTransitionExitType(LvlTriggerType transitionExitType) {
+        this.transitionExitType = transitionExitType;
     }
 
     public void reset() {

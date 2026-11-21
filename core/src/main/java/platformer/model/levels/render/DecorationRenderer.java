@@ -15,7 +15,7 @@ import java.util.Map;
 import static platformer.constants.Constants.*;
 
 /**
- * Handles rendering of level decorations, including viewport culling, pre-baked high-res spatial transforms, and GPU-accelerated procedural wind sway animations.
+ * Handles rendering of level decorations, including viewport culling, pre-baked high-res spatial transforms (including horizontal/vertical mirroring via negative scaleX/scaleY), and GPU-accelerated procedural wind sway animations.
  */
 public class DecorationRenderer {
 
@@ -71,7 +71,7 @@ public class DecorationRenderer {
                 int xPos = (TILES_SIZE * i - xLevelOffset) + offsetX, yPos = (TILES_SIZE * j - yLevelOffset) + offsetY;
 
                 boolean hasCustomTransform = objMeta != null && (objMeta.getRotation() != 0.0 || objMeta.getScaleX() != 1.0 || objMeta.getScaleY() != 1.0);
-                double maxScale = hasCustomTransform ? Math.max(1.0, Math.max(objMeta.getScaleX(), objMeta.getScaleY())) : 1.0;
+                double maxScale = hasCustomTransform ? Math.max(1.0, Math.max(Math.abs(objMeta.getScaleX()), Math.abs(objMeta.getScaleY()))) : 1.0;
 
                 if (!isVisible(xPos, yPos, (int) (wid * maxScale), (int) (hei * maxScale))) continue;
 
@@ -79,7 +79,7 @@ public class DecorationRenderer {
                 if (model == null) continue;
 
                 if (level.isDecorationCut(i, j)) {
-                    drawCutStubble(g, model, xPos, yPos, wid, hei);
+                    drawCutStubble(g, model, xPos, yPos, wid, hei, objMeta);
                     continue;
                 }
 
@@ -95,7 +95,7 @@ public class DecorationRenderer {
     }
 
     /**
-     * Pre-bakes a rotated/scaled static decoration with Bicubic interpolation once and caches the resulting BufferedImage,
+     * Pre-bakes a rotated/scaled/flipped static decoration with Bicubic interpolation once and caches the resulting BufferedImage,
      * so every frame only performs a fast hardware-accelerated drawImage call.
      */
     private void drawCachedTransformed(Graphics g, BufferedImage model, DecorationMetadata decoMeta, ObjectMetadata objMeta, int xPos, int yPos, int wid, int hei, boolean useLively) {
@@ -112,7 +112,9 @@ public class DecorationRenderer {
     }
 
     private BufferedImage bakeTransformedImage(BufferedImage model, int wid, int hei, double rotationDeg, double sx, double sy) {
-        double scaledW = wid * sx, scaledH = hei * sy;
+        double absSx = Math.abs(sx);
+        double absSy = Math.abs(sy);
+        double scaledW = wid * absSx, scaledH = hei * absSy;
         double rads = Math.toRadians(rotationDeg);
         double sin = Math.abs(Math.sin(rads));
         double cos = Math.abs(Math.cos(rads));
@@ -140,50 +142,58 @@ public class DecorationRenderer {
         Graphics2D g2d = (Graphics2D) g.create();
         g2d.translate(xPos + wid / 2.0, yPos + hei / 2.0);
 
+        double flipSignX = 1.0;
         if (objMeta != null) {
             if (objMeta.getRotation() != 0.0) g2d.rotate(Math.toRadians(objMeta.getRotation()));
             double sx = objMeta.getScaleX() != 0.0 ? objMeta.getScaleX() : 1.0;
             double sy = objMeta.getScaleY() != 0.0 ? objMeta.getScaleY() : 1.0;
+            if (sx < 0) flipSignX = -1.0;
             if (sx != 1.0 || sy != 1.0) g2d.scale(sx, sy);
         }
 
-        double extraBend = level.getDecorationBend(i, j);
-        applySwayAndDraw(g2d, model, decoMeta, wid, hei, i, j, baseTime, extraBend);
+        double extraBend = level.getDecorationBend(i, j) * flipSignX;
+        applySwayAndDraw(g2d, model, decoMeta, wid, hei, i, j, baseTime, extraBend, flipSignX);
         g2d.dispose();
     }
 
-    private void drawCutStubble(Graphics g, BufferedImage model, int xPos, int yPos, int wid, int hei) {
+    private void drawCutStubble(Graphics g, BufferedImage model, int xPos, int yPos, int wid, int hei, ObjectMetadata objMeta) {
         int srcH = model.getHeight();
         int stubSrcY = (int) (srcH * 0.72);
         int stubDrawY = yPos + (int) (hei * 0.72);
-        g.drawImage(model, xPos, stubDrawY, xPos + wid, yPos + hei, 0, stubSrcY, model.getWidth(), srcH, null);
+        boolean flippedX = objMeta != null && objMeta.getScaleX() < 0;
+        if (flippedX) {
+            g.drawImage(model, xPos + wid, stubDrawY, xPos, yPos + hei, 0, stubSrcY, model.getWidth(), srcH, null);
+        }
+        else {
+            g.drawImage(model, xPos, stubDrawY, xPos + wid, yPos + hei, 0, stubSrcY, model.getWidth(), srcH, null);
+        }
     }
 
-    private void applySwayAndDraw(Graphics2D g2d, BufferedImage model, DecorationMetadata decoMeta, int wid, int hei, int tileX, int tileY, double baseTime, double extraBend) {
+    private void applySwayAndDraw(Graphics2D g2d, BufferedImage model, DecorationMetadata decoMeta, int wid, int hei, int tileX, int tileY, double baseTime, double extraBend, double flipSignX) {
         String swayType = decoMeta.getSway();
         if (swayType == null) {
             g2d.drawImage(model, -wid / 2, -hei / 2, wid, hei, null);
         }
         else if (swayType.equalsIgnoreCase("BOTTOM")) {
-            double sway = calculateOrganicSway(tileX, tileY, baseTime, 0.085) + extraBend;
+            double sway = calculateOrganicSway(tileX, tileY, baseTime, 0.085) * flipSignX + extraBend;
             g2d.translate(0, hei / 2.0);
             g2d.shear(sway, 0);
             g2d.drawImage(model, -wid / 2, -hei, wid, hei, null);
         }
         else if (swayType.equalsIgnoreCase("BOTTOM_SLOW")) {
-            double sway = calculateOrganicSway(tileX, tileY, baseTime * 0.55, 0.032);
+            double sway = calculateOrganicSway(tileX, tileY, baseTime * 0.55, 0.032) * flipSignX;
             g2d.translate(0, hei / 2.0);
             g2d.shear(sway, 0);
             g2d.drawImage(model, -wid / 2, -hei, wid, hei, null);
         }
         else if (swayType.equalsIgnoreCase("TOP")) {
-            double sway = calculateOrganicSway(tileX, tileY, baseTime * 0.7, 0.045) + extraBend;
+            double sway = calculateOrganicSway(tileX, tileY, baseTime * 0.7, 0.045) * flipSignX + extraBend;
             g2d.translate(0, -hei / 2.0);
             g2d.shear(sway, 0);
             g2d.drawImage(model, -wid / 2, 0, wid, hei, null);
         }
         else if (swayType.equalsIgnoreCase("UNDER_FRINGE")) {
-            drawUnderGrassFringe(g2d, model, decoMeta.getId(), wid, hei, tileX, tileY, baseTime, extraBend);
+            drawUnderGrassFringe(g2d, model, decoMeta.getId(), wid, hei, tileX, tileY, baseTime, flipSignX);
         }
     }
 
@@ -191,7 +201,7 @@ public class DecorationRenderer {
      * Renders UNDER_GRASS decorations by keeping the upper 45% (soil and embedded rocks) anchored still,
      * while gently swaying the lower 55% (hanging roots, ferns, and moss) and pulsing bioluminescent nodes.
      */
-    private void drawUnderGrassFringe(Graphics2D g2d, BufferedImage model, String id, int wid, int hei, int tileX, int tileY, double baseTime, double extraBend) {
+    private void drawUnderGrassFringe(Graphics2D g2d, BufferedImage model, String id, int wid, int hei, int tileX, int tileY, double baseTime, double flipSignX) {
         int srcW = model.getWidth();
         int srcH = model.getHeight();
         double anchorRatio = 0.45;
@@ -200,7 +210,7 @@ public class DecorationRenderer {
 
         g2d.drawImage(model, -wid / 2, -hei / 2, wid / 2, splitDstY, 0, 0, srcW, splitSrcY, null);
 
-        double sway = calculateOrganicSway(tileX, tileY, baseTime * 0.65, 0.065);
+        double sway = calculateOrganicSway(tileX, tileY, baseTime * 0.65, 0.065) * flipSignX;
         AffineTransform oldTransform = g2d.getTransform();
         g2d.translate(0, splitDstY);
         g2d.shear(sway, 0);

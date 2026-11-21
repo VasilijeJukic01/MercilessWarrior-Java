@@ -7,13 +7,15 @@ import platformer.model.quests.QuestManager;
 import platformer.model.world.WorldMemoryManager;
 
 /**
- * Defines declarative visibility rules for a minimap icon in a level's metadata JSON.
+ * Defines declarative position and visibility rules for a minimap icon in a level's metadata JSON.
  */
 @Getter
 @Setter
 public class MinimapIconMetadata {
 
     private MinimapIconType type;
+    private Integer x;
+    private Integer y;
     private String requiredFlag;
     private String excludeFlag;
     private String excludeQuestActive;

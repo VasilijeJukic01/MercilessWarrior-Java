@@ -10,13 +10,13 @@ import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
 import platformer.model.effects.EffectManager;
 import platformer.model.effects.TimeCycleManager;
-import platformer.model.entities.AttackState;
 import platformer.model.entities.Direction;
 import platformer.model.entities.Entity;
 import platformer.model.gameObjects.ObjectManager;
 import platformer.model.inventory.Inventory;
 import platformer.model.inventory.craft.BlacksmithRecipeManager;
 import platformer.model.levels.LevelManager;
+import platformer.model.levels.LvlTriggerType;
 import platformer.model.minimap.MinimapManager;
 import platformer.model.projectiles.Projectile;
 import platformer.model.projectiles.ProjectileFactory;
@@ -350,6 +350,11 @@ public class Player extends Entity {
     }
 
     // Actions
+    public void beginLevelTransition(LvlTriggerType exitType) {
+        movementHandler.setTransitionExitType(exitType);
+        addAction(PlayerAction.LEVEL_TRANSITION);
+    }
+
     public void queueJumpBuffer() {
         movementHandler.queueJumpBuffer();
     }
@@ -362,20 +367,8 @@ public class Player extends Entity {
         combatHandler.performAttack();
     }
 
-    public void doJump() {
-        movementHandler.doJump(levelData, combatHandler);
-    }
-
     public void launch(double launchSpeed) {
         movementHandler.launch(launchSpeed);
-    }
-
-    public void applyRecoil(double initialSpeed) {
-        combatHandler.applyRecoil(initialSpeed);
-    }
-
-    public void setPlayerAttackState(AttackState playerAttackState) {
-        combatHandler.setPlayerAttackState(playerAttackState);
     }
 
     public void setBlock(boolean block) {
@@ -449,7 +442,7 @@ public class Player extends Entity {
      * Clears active jump/dash momentum and wall/object flags when entering a new room.
      */
     public void clearTransitionMomentum() {
-        removeActions(PlayerAction.DASH, PlayerAction.DASH_HIT, PlayerAction.ON_WALL, PlayerAction.WALL_PUSH, PlayerAction.DOUBLE_JUMP, PlayerAction.ON_OBJECT);
+        removeActions(PlayerAction.DASH, PlayerAction.DASH_HIT, PlayerAction.ON_WALL, PlayerAction.WALL_PUSH, PlayerAction.DOUBLE_JUMP, PlayerAction.ON_OBJECT, PlayerAction.LEVEL_TRANSITION);
         inAir = false;
         airSpeed = 0;
         movementHandler.reset();

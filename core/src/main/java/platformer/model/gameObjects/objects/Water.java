@@ -7,7 +7,6 @@ import platformer.model.entities.player.PlayerAction;
 import platformer.model.gameObjects.GameObject;
 import platformer.model.gameObjects.Interactable;
 import platformer.model.gameObjects.ObjType;
-import platformer.physics.CollisionDetector;
 
 import java.awt.*;
 import java.awt.geom.Path2D;
@@ -32,10 +31,11 @@ public class Water extends GameObject implements Interactable {
     private static final int SAMPLE_SPACING = Math.max(2, (int) (2.0 * SCALE));
 
     // Palette
-    private static final Color BACK_WAVE_COLOR = new Color(20, 105, 130, 95);
-    private static final Color WATER_TOP_COLOR = new Color(42, 180, 205, 130);
-    private static final Color WATER_BOTTOM_COLOR = new Color(8, 36, 54, 195);
-    private static final Color BUBBLE_COLOR = new Color(190, 248, 255, 85);
+    private static final Color BACK_WAVE_COLOR = new Color(20, 105, 130, 115);
+    private static final Color WATER_TOP_COLOR = new Color(42, 180, 205, 155);
+    private static final Color WATER_MID_COLOR = new Color(18, 95, 125, 195);
+    private static final Color WATER_BOTTOM_COLOR = new Color(6, 24, 38, 235);
+    private static final Color BUBBLE_COLOR = new Color(190, 248, 255, 95);
 
     private static class WavePulse {
         final double startX;
@@ -70,8 +70,9 @@ public class Water extends GameObject implements Interactable {
     private final double[] bubbleSpeed;
     private final int[] bubbleSize;
 
+    private BufferedImage poolBuffer;
+
     private double waveTime = 0.0;
-    private boolean solidLeft = false, solidRight = false;
     private boolean edgeChecked = false;
 
     private boolean playerSubmerged = false;
@@ -87,10 +88,10 @@ public class Water extends GameObject implements Interactable {
     public Water(int xPos, int yPos, int tilesWide, int tilesHigh) {
         super(ObjType.WATER, xPos, yPos);
         this.poolWidth = tilesWide * TILES_SIZE;
-        this.poolHeight = tilesHigh * TILES_SIZE + (int) (4 * SCALE);
+        this.poolHeight = tilesHigh * TILES_SIZE + (int) (8 * SCALE);
         this.surfaceYOffset = (int) (7 * SCALE);
 
-        initHitBox(poolWidth, poolHeight - surfaceYOffset);
+        initHitBox(poolWidth, tilesHigh * TILES_SIZE - surfaceYOffset);
         this.hitBox.x = xPos;
         this.hitBox.y = yPos + surfaceYOffset;
 
@@ -116,7 +117,7 @@ public class Water extends GameObject implements Interactable {
     private void resetBubble(int i, boolean randomY) {
         bubbleX[i] = xPos + 6 * SCALE + rand.nextDouble() * Math.max(8, poolWidth - 12 * SCALE);
         double minY = hitBox.y + 6 * SCALE;
-        double maxY = yPos + poolHeight - 4 * SCALE;
+        double maxY = yPos + poolHeight - 8 * SCALE;
         bubbleY[i] = randomY ? (minY + rand.nextDouble() * Math.max(4, maxY - minY)) : maxY;
         bubbleSpeed[i] = (0.10 + rand.nextDouble() * 0.14) * SCALE;
         bubbleSize[i] = Math.max(2, (int) ((1.5 + rand.nextDouble() * 1.8) * SCALE));
@@ -159,13 +160,6 @@ public class Water extends GameObject implements Interactable {
         update();
         if (!edgeChecked && levelData != null) {
             edgeChecked = true;
-            int leftTileX = (xPos / TILES_SIZE) - 1;
-            int rightTileX = ((xPos + poolWidth) / TILES_SIZE);
-            int topTileY = yPos / TILES_SIZE;
-            if (topTileY >= 0 && topTileY < levelData[0].length) {
-                solidLeft = (leftTileX >= 0) && CollisionDetector.isTileSolid(leftTileX, topTileY, levelData);
-                solidRight = (rightTileX < levelData.length) && CollisionDetector.isTileSolid(rightTileX, topTileY, levelData);
-            }
         }
     }
 
@@ -343,85 +337,142 @@ public class Water extends GameObject implements Interactable {
 
     @Override
     public void render(Graphics g, int xLevelOffset, int yLevelOffset, BufferedImage[] animations) {
-        int padLeft = solidLeft ? (int) (3 * SCALE) : 0;
-        int padRight = solidRight ? (int) (3 * SCALE) : 0;
-        double drawX = xPos - padLeft - xLevelOffset;
-        double drawW = poolWidth + padLeft + padRight;
-        double baseSurfaceY = hitBox.y - yLevelOffset;
-        double bottomY = yPos + poolHeight + (2 * SCALE) - yLevelOffset;
+        int padLeft = (int) (7 * SCALE);
+        int padRight = (int) (7 * SCALE);
+        int topHeadroom = (int) (18 * SCALE);
 
-        if (drawX + drawW < -64 || drawX > GAME_WIDTH + 64 || bottomY < -64 || baseSurfaceY > GAME_HEIGHT + 64) {
+        int bufW = poolWidth + padLeft + padRight;
+        int bufH = poolHeight + topHeadroom;
+        int screenX = xPos - padLeft - xLevelOffset;
+        int screenY = yPos - topHeadroom - yLevelOffset;
+
+        if (screenX + bufW < -64 || screenX > GAME_WIDTH + 64 || screenY + bufH < -64 || screenY > GAME_HEIGHT + 64) {
             return;
         }
 
-        double stepX = drawW / (numSamples - 1);
+        if (poolBuffer == null || poolBuffer.getWidth() != bufW || poolBuffer.getHeight() != bufH) {
+            poolBuffer = new BufferedImage(bufW, bufH, BufferedImage.TYPE_INT_ARGB);
+        }
+
+        double baseSurfaceY = surfaceYOffset + topHeadroom;
+        double stepX = (double) bufW / (numSamples - 1);
         double minSurfaceY = baseSurfaceY;
 
         for (int i = 0; i < numSamples; i++) {
-            renderX[i] = drawX + i * stepX;
+            renderX[i] = i * stepX;
             double localX = (i * stepX) - padLeft;
             double wallEdgeTaper = Math.min(1.0, Math.min(i, (numSamples - 1) - i) / 3.0);
             double waveDisp = evaluateSurfaceDisplacement(localX) * (0.25 + 0.75 * wallEdgeTaper);
 
             double targetY = baseSurfaceY + getIdleWaveOffset(i) + waveDisp;
-            renderY[i] = Math.min(bottomY - 3 * SCALE, targetY);
+            renderY[i] = Math.min(bufH - 4 * SCALE, targetY);
             if (renderY[i] < minSurfaceY) minSurfaceY = renderY[i];
         }
 
-        Graphics2D g2d = (Graphics2D) g.create();
-        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        g2d.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
+        Graphics2D bG2d = poolBuffer.createGraphics();
+        bG2d.setComposite(AlphaComposite.Clear);
+        bG2d.fillRect(0, 0, bufW, bufH);
+        bG2d.setComposite(AlphaComposite.SrcOver);
+        bG2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        bG2d.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
 
         // Secondary parallax background wave layer
-        Path2D.Double backWavePath = buildBackWavePath(drawX, drawW, baseSurfaceY, bottomY, stepX);
-        g2d.setColor(BACK_WAVE_COLOR);
-        g2d.fill(backWavePath);
+        Path2D.Double backWavePath = buildBackWavePath(0, bufW, baseSurfaceY, bufH, stepX);
+        bG2d.setColor(BACK_WAVE_COLOR);
+        bG2d.fill(backWavePath);
 
         // Smooth front water body path
         Path2D.Double surfaceCurve = buildSmoothCurve(renderX, renderY, 0.0);
         Path2D.Double waterBody = new Path2D.Double(surfaceCurve);
-        waterBody.lineTo(renderX[numSamples - 1], bottomY);
-        waterBody.lineTo(renderX[0], bottomY);
+        waterBody.lineTo(renderX[numSamples - 1], bufH);
+        waterBody.lineTo(renderX[0], bufH);
         waterBody.closePath();
 
-        GradientPaint bodyPaint = new GradientPaint(0, (float) (minSurfaceY - 2 * SCALE), WATER_TOP_COLOR, 0, (float) bottomY, WATER_BOTTOM_COLOR);
-        g2d.setPaint(bodyPaint);
-        g2d.fill(waterBody);
-        Shape oldClip = g2d.getClip();
-        g2d.clip(waterBody);
+        LinearGradientPaint bodyPaint = new LinearGradientPaint(
+                0f, (float) Math.max(0, minSurfaceY - 2 * SCALE), 0f, (float) bufH,
+                new float[]{0.0f, 0.55f, 1.0f},
+                new Color[]{WATER_TOP_COLOR, WATER_MID_COLOR, WATER_BOTTOM_COLOR}
+        );
+        bG2d.setPaint(bodyPaint);
+        bG2d.fill(waterBody);
+        Shape oldClip = bG2d.getClip();
+        bG2d.clip(waterBody);
 
-        renderCausticRays(g2d, drawX, drawW, minSurfaceY, bottomY);
-        renderFeatheredSurfaceShimmer(g2d, surfaceCurve);
+        renderCausticRays(bG2d, 0, bufW, minSurfaceY, bufH);
+        renderFeatheredSurfaceShimmer(bG2d, surfaceCurve);
 
         // Rising underwater micro-bubbles
-        g2d.setColor(BUBBLE_COLOR);
+        bG2d.setColor(BUBBLE_COLOR);
         for (int i = 0; i < bubbleX.length; i++) {
-            int bx = (int) (bubbleX[i] - xLevelOffset);
-            int by = (int) (bubbleY[i] - yLevelOffset);
-            g2d.fillOval(bx, by, bubbleSize[i], bubbleSize[i]);
+            int bx = (int) (bubbleX[i] - xPos + padLeft);
+            int by = (int) (bubbleY[i] - yPos + topHeadroom);
+            bG2d.fillOval(bx, by, bubbleSize[i], bubbleSize[i]);
         }
 
-        renderEdgeShading(g2d, (int) drawX, (int) drawW, (int) (minSurfaceY - 6 * SCALE), (int) bottomY);
-        g2d.setClip(oldClip);
+        bG2d.setClip(oldClip);
 
         LinearGradientPaint crestPaint = new LinearGradientPaint(
-                (float) drawX, 0f, (float) (drawX + drawW), 0f,
+                0f, 0f, (float) bufW, 0f,
                 new float[]{0.0f, 0.08f, 0.92f, 1.0f},
-                new Color[]{new Color(195, 248, 255, 20), new Color(210, 252, 255, 170), new Color(210, 252, 255, 170), new Color(195, 248, 255, 20)}
+                new Color[]{new Color(195, 248, 255, 10), new Color(215, 252, 255, 185), new Color(215, 252, 255, 185), new Color(195, 248, 255, 10)}
         );
-        g2d.setPaint(crestPaint);
-        g2d.setStroke(new BasicStroke(1.1f * SCALE, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-        g2d.draw(surfaceCurve);
+        bG2d.setPaint(crestPaint);
+        bG2d.setStroke(new BasicStroke(1.2f * SCALE, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+        bG2d.draw(surfaceCurve);
 
-        g2d.dispose();
+        applyAlphaFeatherMask(bG2d, bufW, bufH);
+        bG2d.dispose();
+
+        g.drawImage(poolBuffer, screenX, screenY, null);
         hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.CYAN);
     }
 
+    /**
+     * Feathers the left, right, and bottom edges of the water buffer using DstIn alpha masking so the pool blends into the dark interior of the surrounding grass/rock tiles with zero hard seams.
+     */
+    private void applyAlphaFeatherMask(Graphics2D bG2d, int bufW, int bufH) {
+        bG2d.setComposite(AlphaComposite.DstIn);
+
+        Color opaque = new Color(0, 0, 0, 255);
+        Color semi = new Color(0, 0, 0, 140);
+        Color transparent = new Color(0, 0, 0, 0);
+
+        int bottomFadeH = (int) (7 * SCALE);
+        int bottomFadeY = bufH - bottomFadeH;
+        LinearGradientPaint bottomMask = new LinearGradientPaint(
+                0f, bottomFadeY, 0f, bufH,
+                new float[]{0.0f, 0.55f, 1.0f},
+                new Color[]{opaque, semi, transparent}
+        );
+        bG2d.setPaint(bottomMask);
+        bG2d.fillRect(0, bottomFadeY, bufW, bottomFadeH);
+
+        int sideW = (int) (5 * SCALE);
+        LinearGradientPaint leftMask = new LinearGradientPaint(
+                0f, 0f, sideW, 0f,
+                new float[]{0.0f, 0.5f, 1.0f},
+                new Color[]{transparent, semi, opaque}
+        );
+        bG2d.setPaint(leftMask);
+        bG2d.fillRect(0, 0, sideW, bufH);
+
+        int rightStart = bufW - sideW;
+        LinearGradientPaint rightMask = new LinearGradientPaint(
+                rightStart, 0f, bufW, 0f,
+                new float[]{0.0f, 0.5f, 1.0f},
+                new Color[]{opaque, semi, transparent}
+        );
+        bG2d.setPaint(rightMask);
+        bG2d.fillRect(rightStart, 0, sideW, bufH);
+
+        bG2d.setComposite(AlphaComposite.SrcOver);
+    }
+
     private void renderFeatheredSurfaceShimmer(Graphics2D g2d, Path2D.Double surfaceCurve) {
-        g2d.setColor(new Color(120, 235, 250, 22));
+        g2d.setColor(new Color(120, 235, 250, 24));
         g2d.setStroke(new BasicStroke(9.0f * SCALE, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND));
         g2d.draw(surfaceCurve);
-        g2d.setColor(new Color(150, 245, 255, 28));
+        g2d.setColor(new Color(150, 245, 255, 32));
         g2d.setStroke(new BasicStroke(4.5f * SCALE, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND));
         g2d.draw(surfaceCurve);
     }
@@ -484,27 +535,6 @@ public class Water extends GameObject implements Interactable {
             );
             g2d.setPaint(rayPaint);
             g2d.fill(ray);
-        }
-    }
-
-    private void renderEdgeShading(Graphics2D g2d, int drawX, int drawW, int topY, int bottomY) {
-        int fadeH = (int) ((bottomY - topY) * 0.35);
-        int fadeY = bottomY - fadeH;
-        GradientPaint bottomShadow = new GradientPaint(0, fadeY, new Color(0, 0, 0, 0), 0, bottomY, new Color(0, 8, 14, 150));
-        g2d.setPaint(bottomShadow);
-        g2d.fillRect(drawX, fadeY, drawW, fadeH);
-
-        int sideW = (int) (8 * SCALE);
-        if (solidLeft) {
-            GradientPaint leftShadow = new GradientPaint(drawX, 0, new Color(0, 8, 14, 130), drawX + sideW, 0, new Color(0, 0, 0, 0));
-            g2d.setPaint(leftShadow);
-            g2d.fillRect(drawX, topY, sideW, bottomY - topY);
-        }
-        if (solidRight) {
-            int rightEdge = drawX + drawW;
-            GradientPaint rightShadow = new GradientPaint(rightEdge - sideW, 0, new Color(0, 0, 0, 0), rightEdge, 0, new Color(0, 8, 14, 130));
-            g2d.setPaint(rightShadow);
-            g2d.fillRect(rightEdge - sideW, topY, sideW, bottomY - topY);
         }
     }
 
