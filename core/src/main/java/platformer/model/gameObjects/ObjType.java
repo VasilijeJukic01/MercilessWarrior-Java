@@ -29,7 +29,11 @@ public enum ObjType {
     HERB(1),                        // 25
     RORIC_TRAP(8),                  // 26
     DOOR(1),                        // 27
-    MAX(0);                         // 28
+    CRUMBLING_PLATFORM(1),          // 28
+    PENDULUM_TRAP(1),               // 29
+    SPORE_TRAP(1),                  // 30
+    SAW_TRAP(1),                    // 31
+    MAX(0);                         // 32
 
     private final int sprites;
 

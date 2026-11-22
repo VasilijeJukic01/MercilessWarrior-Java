@@ -7,6 +7,7 @@ import platformer.event.EventBus;
 import platformer.event.events.BrickDestroyedEvent;
 import platformer.event.events.CrateDestroyedEvent;
 import platformer.model.gameObjects.objects.*;
+import platformer.model.gameObjects.objects.traps.RoricTrap;
 import platformer.model.projectiles.Projectile;
 import platformer.model.spells.types.Flame;
 

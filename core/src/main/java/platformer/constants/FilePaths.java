@@ -70,6 +70,10 @@ public final class FilePaths {
     public static final String JUMP_PAD_SHEET = "/images/objs/JumpPad.png";
     public static final String HERB_IMG = "/images/objs/Herb.png";
     public static final String CELESTIAL_PROJECTILE_SHEET = "/images/objs/CelestialProjectile.png";
+    public static final String CRUMBLING_PLATFORM_IMG = "/images/objs/CrumblingPlatform.png";
+    public static final String PENDULUM_TRAP_IMG = "/images/objs/PendulumTrap.png";
+    public static final String SPORE_TRAP_IMG = "/images/objs/SporeTrap.png";
+    public static final String SAW_TRAP_IMG = "/images/objs/SawTrap.png";
 
     // NPC
     public static final String ANITA_SHEET = "/images/objs/npc/AnitaSprite.png";

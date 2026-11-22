@@ -5,6 +5,7 @@ import platformer.model.entities.Entity;
 import platformer.model.gameObjects.objects.Brick;
 import platformer.model.gameObjects.objects.Container;
 import platformer.model.gameObjects.objects.Loot;
+import platformer.model.gameObjects.objects.traps.CrumblingPlatform;
 import platformer.model.levels.LevelManager;
 
 import java.awt.geom.Rectangle2D;
@@ -69,6 +70,7 @@ public class CollisionHandler {
     public <T extends GameObject> boolean isTouchingObject(Class<T> objectClass, Entity entity) {
         if (entity == null) return false;
         return getObjects(objectClass).stream()
+                .filter(o -> !(o instanceof CrumblingPlatform cp) || cp.isSolidActive())
                 .anyMatch(o -> o.isAlive() && o.getAnimIndex() < 1 && o.getHitBox().intersects(entity.getHitBox()));
     }
 
@@ -82,6 +84,7 @@ public class CollisionHandler {
     public <T extends GameObject> boolean isGlitchedInObject(Class<T> objectClass, Entity entity) {
         if (entity == null) return false;
         return getObjects(objectClass).stream()
+                .filter(o -> !(o instanceof CrumblingPlatform cp) || cp.isSolidActive())
                 .anyMatch(o -> o.isAlive() && o.getAnimIndex() < 1 && checkTouch(o, entity.getHitBox(), "Y", 2));
     }
 
@@ -93,10 +96,12 @@ public class CollisionHandler {
      * @return The X coordinate of the object's boundary.
      */
     public double getXObjectBound(Rectangle2D.Double hitBox, double dx) {
-        return Stream.concat(
+        return Stream.of(
                         getObjects(Container.class).stream(),
-                        getObjects(Brick.class).stream()
+                        getObjects(Brick.class).stream(),
+                        getObjects(CrumblingPlatform.class).stream().filter(CrumblingPlatform::isSolidActive)
                 )
+                .flatMap(s -> s)
                 .filter(o -> o.isAlive() && (checkTouch(o, hitBox, "X", 0) || checkTouch(o, hitBox, "Y", 0)))
                 .mapToDouble(o -> checkTouch(o, hitBox, "X", 0) ? hittingObjectBySide(o, hitBox, dx) : standingOnObject(hitBox, dx))
                 .findFirst().orElse(hitBox.x);
@@ -112,19 +117,21 @@ public class CollisionHandler {
      * @return true if the entity is touching the game object, false otherwise.
      */
     private boolean checkTouch(GameObject o, Rectangle2D.Double hitBox, String axis, double offset) {
-        int x = (int)hitBox.x, y = (int)hitBox.y;
-        int width = (int)hitBox.width, height = (int)hitBox.height;
+        if (o instanceof CrumblingPlatform cp && !cp.isSolidActive()) return false;
+
+        int x = (int) hitBox.x, y = (int) hitBox.y;
+        int width = (int) hitBox.width, height = (int) hitBox.height;
 
         if (o.isAlive() && o.getAnimIndex() < 1) {
             if (axis.equals("X")) {
                 if (o.getHitBox().contains(x, y)) return true;
-                if (o.getHitBox().contains(x+width, y)) return true;
-                if (o.getHitBox().contains(x, y+height-5)) return true;
-                return o.getHitBox().contains(x+width, y+height-5);
+                if (o.getHitBox().contains(x + width, y)) return true;
+                if (o.getHitBox().contains(x, y + height - 5)) return true;
+                return o.getHitBox().contains(x + width, y + height - 5);
             }
             else if (axis.equals("Y")) {
-                if (o.getHitBox().contains(x+offset, y+height + 3)) return true;
-                return o.getHitBox().contains(x+width-offset, y+height + 3);
+                if (o.getHitBox().contains(x + offset, y + height + 3)) return true;
+                return o.getHitBox().contains(x + width - offset, y + height + 3);
             }
         }
 
@@ -141,9 +148,10 @@ public class CollisionHandler {
      */
     private <T extends GameObject> GameObject getCollidingObject(Direction direction, Rectangle2D.Double hitBox, Class<T> objectClass) {
         for (T o : getObjects(objectClass)) {
+            if (o instanceof CrumblingPlatform cp && !cp.isSolidActive()) continue;
             if (o.isAlive() && checkTouch(o, hitBox, "X", 0)) {
                 if (o.getHitBox().x < hitBox.x && direction == Direction.LEFT) return o;
-                else if(o.getHitBox().x > hitBox.x && direction == Direction.RIGHT) return o;
+                else if (o.getHitBox().x > hitBox.x && direction == Direction.RIGHT) return o;
             }
         }
         return null;
@@ -159,10 +167,10 @@ public class CollisionHandler {
      */
     private double hittingObjectBySide(GameObject o, Rectangle2D.Double hitBox, double dx) {
         if (o.getHitBox().x < hitBox.x && dx > 0) {
-            if (canMove(hitBox.x+1, hitBox.y, hitBox.width, hitBox.height)) return hitBox.x+1;
+            if (canMove(hitBox.x + 1, hitBox.y, hitBox.width, hitBox.height)) return hitBox.x + 1;
         }
-        else if(o.getHitBox().x > hitBox.x && dx < 0) {
-            if (canMove(hitBox.x-1, hitBox.y, hitBox.width, hitBox.height)) return hitBox.x-1;
+        else if (o.getHitBox().x > hitBox.x && dx < 0) {
+            if (canMove(hitBox.x - 1, hitBox.y, hitBox.width, hitBox.height)) return hitBox.x - 1;
         }
         return hitBox.x;
     }
@@ -181,21 +189,24 @@ public class CollisionHandler {
         GameObject leftBrick = getCollidingObject(Direction.LEFT, hitBox, Brick.class);
         GameObject rightBrick = getCollidingObject(Direction.RIGHT, hitBox, Brick.class);
 
-        GameObject left = leftContainer != null ? leftContainer : leftBrick;
-        GameObject right = rightContainer != null ? rightContainer : rightBrick;
+        GameObject leftPlat = getCollidingObject(Direction.LEFT, hitBox, CrumblingPlatform.class);
+        GameObject rightPlat = getCollidingObject(Direction.RIGHT, hitBox, CrumblingPlatform.class);
+
+        GameObject left = leftContainer != null ? leftContainer : (leftBrick != null ? leftBrick : leftPlat);
+        GameObject right = rightContainer != null ? rightContainer : (rightBrick != null ? rightBrick : rightPlat);
 
         if (dx < 0 && left == null) {
-            if (canMove(hitBox.x-1, hitBox.y, hitBox.width, hitBox.height)) return hitBox.x-1;
+            if (canMove(hitBox.x - 1, hitBox.y, hitBox.width, hitBox.height)) return hitBox.x - 1;
         }
-        else if(dx > 0 && right == null) {
-            if (canMove(hitBox.x+1, hitBox.y, hitBox.width, hitBox.height)) return hitBox.x+1;
+        else if (dx > 0 && right == null) {
+            if (canMove(hitBox.x + 1, hitBox.y, hitBox.width, hitBox.height)) return hitBox.x + 1;
         }
         else if (dx < 0 && left.isAlive()) {
-            double x = left.getHitBox().x+left.getHitBox().width;
+            double x = left.getHitBox().x + left.getHitBox().width;
             if (canMove(x, hitBox.y, hitBox.width, hitBox.height)) return x;
         }
         else if (dx > 0 && right.isAlive()) {
-            double x = right.getHitBox().x-hitBox.width;
+            double x = right.getHitBox().x - hitBox.width;
             if (canMove(x, hitBox.y, hitBox.width, hitBox.height)) return x;
         }
         return hitBox.x;
@@ -228,7 +239,7 @@ public class CollisionHandler {
      */
     private <T extends GameObject> void landObject(T gameObject, Class<T> objectClass) {
         boolean isSafe = true;
-        while(isSafe) {
+        while (isSafe) {
             isSafe = isObjectInAir(gameObject, objectClass);
             if (isSafe) {
                 double xPos = gameObject.getHitBox().x;

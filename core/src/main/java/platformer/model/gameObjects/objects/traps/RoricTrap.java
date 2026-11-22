@@ -1,4 +1,4 @@
-package platformer.model.gameObjects.objects;
+package platformer.model.gameObjects.objects.traps;
 
 import platformer.core.config.BalanceManager;
 import platformer.model.entities.Direction;

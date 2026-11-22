@@ -13,6 +13,7 @@ import platformer.model.levels.interior.InteriorManager;
 import platformer.model.spells.SpellManager;
 import platformer.physics.CollisionDetector;
 
+import java.awt.*;
 import java.awt.geom.Rectangle2D;
 
 import static platformer.constants.Constants.*;
@@ -63,6 +64,7 @@ public class PlayerMovementHandler {
     private int wallJumpDir = 0;
     private int dashTick = 0;
     private double dashMomentumX = 0.0;
+    private Point lastSafeGroundPoint = null;
 
     // Effect
     private LvlTriggerType transitionExitType = null;
@@ -100,6 +102,7 @@ public class PlayerMovementHandler {
             currentJumps = 0;
             wallJumpLockTimer = 0;
             player.removeAction(PlayerAction.DOUBLE_JUMP);
+            recordSafeGroundIfStable(hitBox, levelData, onObject);
         }
         else if (player.isInAir() && coyoteTimer > 0) {
             coyoteTimer--;
@@ -349,6 +352,21 @@ public class PlayerMovementHandler {
         }
     }
 
+    private void recordSafeGroundIfStable(Rectangle2D.Double hitBox, int[][] levelData, boolean onObject) {
+        if (onObject || player.checkAction(PlayerAction.LAVA) || player.checkAction(PlayerAction.HIT)) return;
+        double inset = 3.0 * SCALE;
+        boolean leftFootSolid = isSolid(hitBox.x + inset, hitBox.y + hitBox.height + 2, levelData);
+        boolean rightFootSolid = isSolid(hitBox.x + hitBox.width - inset, hitBox.y + hitBox.height + 2, levelData);
+        if (leftFootSolid && rightFootSolid && !objectManager.isDangerous(hitBox)) {
+            if (lastSafeGroundPoint == null) {
+                lastSafeGroundPoint = new Point((int) hitBox.x, (int) hitBox.y);
+            }
+            else {
+                lastSafeGroundPoint.setLocation((int) hitBox.x, (int) hitBox.y);
+            }
+        }
+    }
+
     private void checkOnObject() {
         boolean onObject = player.checkAction(PlayerAction.ON_OBJECT);
 
@@ -556,6 +574,14 @@ public class PlayerMovementHandler {
 
     public void setTransitionExitType(LvlTriggerType transitionExitType) {
         this.transitionExitType = transitionExitType;
+    }
+
+    public Point getLastSafeGroundPoint() {
+        return lastSafeGroundPoint;
+    }
+
+    public void setLastSafeGroundPoint(Point pt) {
+        this.lastSafeGroundPoint = (pt != null) ? new Point(pt) : null;
     }
 
     public void reset() {

@@ -7,6 +7,7 @@ import platformer.model.gameObjects.npc.Npc;
 import platformer.model.gameObjects.npc.NpcType;
 import platformer.model.gameObjects.objects.Container;
 import platformer.model.gameObjects.objects.*;
+import platformer.model.gameObjects.objects.traps.*;
 import platformer.physics.CollisionDetector;
 
 import java.awt.*;
@@ -146,6 +147,18 @@ public class Level {
                 break;
             case WATER:
                 waterGrid[i][j] = true;
+                break;
+            case CRUMBLING_PLATFORM:
+                addGameObject(new CrumblingPlatform(i * TILES_SIZE, j * TILES_SIZE));
+                break;
+            case PENDULUM_TRAP:
+                addGameObject(new PendulumTrap(i * TILES_SIZE, j * TILES_SIZE));
+                break;
+            case SPORE_TRAP:
+                addGameObject(new SporeTrap(i * TILES_SIZE, j * TILES_SIZE));
+                break;
+            case SAW_TRAP:
+                addGameObject(new SawTrap(i * TILES_SIZE, j * TILES_SIZE));
                 break;
             default: break;
         }

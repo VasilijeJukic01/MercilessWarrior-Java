@@ -109,8 +109,39 @@ public class Player extends Entity {
         this.yPos = p.y;
         hitBox.x = xPos;
         hitBox.y = yPos;
+        if (movementHandler != null) {
+            movementHandler.setLastSafeGroundPoint(p);
+        }
         if (minimapHandler != null) {
             minimapHandler.update();
+        }
+    }
+
+    /**
+     * Deals hazard damage and, if the player survives, teleports them back to their last safe ground ledge with refreshed aerial mobility and brief invulnerability
+     */
+    public void triggerHazardRespawn(double damage) {
+        if (checkAction(PlayerAction.DYING) || checkAction(PlayerAction.GAME_OVER) || feedbackHandler.isInvulnerable()) {
+            return;
+        }
+        double defenseBonus = stats.getDefenseReduction();
+        double actualDamage = Math.max(1.0, Math.abs(damage) * (1.0 - defenseBonus));
+        if (currentHealth - actualDamage <= 0) {
+            kill();
+            return;
+        }
+
+        feedbackHandler.onPlayerDamaged(actualDamage);
+        changeHealth(-actualDamage);
+
+        Point safePt = movementHandler.getLastSafeGroundPoint();
+        if (safePt != null) {
+            clearTransitionMomentum();
+            resetDirections();
+            removeAction(PlayerAction.HIT);
+            hitBox.x = safePt.x;
+            hitBox.y = safePt.y;
+            actionHandler.setDashCount(0);
         }
     }
 

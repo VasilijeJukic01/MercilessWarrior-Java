@@ -3,12 +3,23 @@ package platformer.model.gameObjects;
 import platformer.animation.SpriteManager;
 import platformer.audio.Audio;
 import platformer.audio.types.Sound;
+import platformer.core.Framework;
 import platformer.core.GameContext;
 import platformer.core.config.BalanceManager;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
+import platformer.model.entities.Direction;
+import platformer.model.entities.enemies.Enemy;
 import platformer.model.entities.follower.Follower;
+import platformer.model.entities.player.Player;
+import platformer.model.gameObjects.npc.Npc;
 import platformer.model.gameObjects.npc.NpcType;
+import platformer.model.gameObjects.objects.*;
+import platformer.model.gameObjects.objects.Container;
+import platformer.model.gameObjects.objects.traps.*;
+import platformer.model.inventory.item.ShopItem;
+import platformer.model.levels.Level;
+import platformer.model.levels.Trigger;
 import platformer.model.levels.metadata.GameObjectMetadata;
 import platformer.model.levels.metadata.LevelMetadata;
 import platformer.model.levels.metadata.NpcMetadata;
@@ -18,22 +29,13 @@ import platformer.model.spells.SpellManager;
 import platformer.model.world.WorldMemoryManager;
 import platformer.physics.CollisionDetector;
 import platformer.storage.StorageStrategy;
-import platformer.core.Framework;
-import platformer.model.entities.Direction;
-import platformer.model.entities.enemies.Enemy;
-import platformer.model.entities.player.Player;
-import platformer.model.gameObjects.npc.Npc;
-import platformer.model.gameObjects.objects.Container;
-import platformer.model.gameObjects.objects.*;
-import platformer.model.inventory.item.ShopItem;
-import platformer.model.levels.Level;
 import platformer.utils.CollectionUtils;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -61,16 +63,18 @@ public class ObjectManager {
             Shop.class, Blocker.class, SaveTotem.class, SmashTrap.class,
             Candle.class, Loot.class, Table.class, Board.class, Npc.class,
             Lava.class, Water.class, Brick.class, JumpPad.class,
-            Herb.class, RoricTrap.class, Door.class
+            Herb.class, RoricTrap.class, Door.class, SawTrap.class,
+            CrumblingPlatform.class, PendulumTrap.class, SporeTrap.class
     };
-    Class<? extends GameObject>[] renderBelow = new Class[] {
+    Class<? extends GameObject>[] renderBelow = new Class[]{
             Container.class, Potion.class, Spike.class,
             Blocker.class, SmashTrap.class, Loot.class, Brick.class,
             SaveTotem.class, Shop.class, Table.class,
             Board.class, JumpPad.class, Herb.class, RoricTrap.class,
-            Door.class, Candle.class
+            Door.class, Candle.class, SawTrap.class,
+            CrumblingPlatform.class, PendulumTrap.class, SporeTrap.class
     };
-    Class<? extends GameObject>[] renderBehind = new Class[] {
+    Class<? extends GameObject>[] renderBehind = new Class[]{
             Lava.class, Water.class
     };
 
@@ -121,6 +125,13 @@ public class ObjectManager {
         }
         getObjects(Water.class).forEach(w -> w.setEffectManager(context.getEffectManager()));
         getObjects(Lava.class).forEach(l -> l.setEffectManager(context.getEffectManager()));
+        getObjects(CrumblingPlatform.class).forEach(cp -> cp.setEffectManager(context.getEffectManager()));
+        getObjects(SporeTrap.class).forEach(st -> st.setEffectManager(context.getEffectManager()));
+        List<Trigger> triggers = context.getLevelManager().getCurrentLevel().getTriggers();
+        getObjects(SawTrap.class).forEach(saw -> {
+            saw.setEffectManager(context.getEffectManager());
+            saw.setLevelTriggers(triggers);
+        });
     }
 
     private void applyNpcMetadata() {
@@ -193,8 +204,8 @@ public class ObjectManager {
      * Handles the interactions between the player and interactable objects in the game.
      * It checks if the player is intersecting with any interactable object and updates the intersection accordingly.
      * <p>
-     *  It resolves overlapping hitboxes by prioritizing the object nearest to the player's center.
-     *  It manages the interaction lifecycle by triggering onEnter, onExit, and onIntersect events for the chosen target.
+     * It resolves overlapping hitboxes by prioritizing the object nearest to the player's center.
+     * It manages the interaction lifecycle by triggering onEnter, onExit, and onIntersect events for the chosen target.
      *
      * @param player The player object that is interacting with the game world.
      */
@@ -228,7 +239,6 @@ public class ObjectManager {
 
     /**
      * Checks if the player is colliding with any traps in the game.
-     * If a trap is hit, it reduces the player's health and marks the trap as not alive.
      *
      * @param player The player object that is checking for collisions with traps.
      */
@@ -268,7 +278,6 @@ public class ObjectManager {
 
     /**
      * Handles the collection of collectibles (coins and potions) by the player.
-     * It checks if the player is intersecting with any collectible object and collects it.
      *
      * @param player The player object that is collecting items.
      */
@@ -288,42 +297,40 @@ public class ObjectManager {
     }
 
     // Collision Handler
-    /**
-     * Checks if the player is colliding with a solid object.
-     * This method is used to prevent the player from moving through solid objects.
-     *
-     * @param hitbox The hitbox of the player.
-     * @param dx The desired change in the player's X coordinate.
-     * @return The new X coordinate after collision resolution.
-     */
     public double checkSolidObjectCollision(Rectangle2D.Double hitbox, double dx) {
         return collisionHandler.checkSolidObjectCollision(hitbox, dx);
     }
 
     /**
-     * Checks if the player is touching an object.
+     * Checks if the player is touching a standable object (Container, Brick, or active CrumblingPlatform).
      *
      * @param player The player whose position is to be checked.
      * @return true if the player is touching an object, false otherwise.
      */
     public boolean isPlayerTouchingObject(Player player) {
-        return (collisionHandler.isTouchingObject(Container.class, player) || collisionHandler.isTouchingObject(Brick.class, player));
+        for (CrumblingPlatform cp : getObjects(CrumblingPlatform.class)) {
+            if (cp.isSolidActive() && cp.getHitBox().intersects(player.getHitBox())) {
+                cp.triggerSteppedOn();
+                return true;
+            }
+        }
+        return (collisionHandler.isTouchingObject(Container.class, player)
+                || collisionHandler.isTouchingObject(Brick.class, player));
     }
 
     /**
      * Checks if the player is glitched inside an object.
-     * This method is used to prevent the player from getting stuck inside game objects.
      *
      * @param player The player whose position is to be checked.
      * @return true if the player is glitched inside an object, false otherwise.
      */
     public boolean isPlayerGlitchedInObject(Player player) {
-        return collisionHandler.isGlitchedInObject(Container.class, player);
+        return collisionHandler.isGlitchedInObject(Container.class, player)
+                || collisionHandler.isGlitchedInObject(CrumblingPlatform.class, player);
     }
 
     /**
      * Gets the X coordinate of the boundary of an object that the player is colliding with.
-     * This method is used to prevent the player from moving through game objects.
      *
      * @param hitBox The hitbox of the player.
      * @param dx The desired change in the player's X coordinate.
@@ -334,31 +341,15 @@ public class ObjectManager {
     }
 
     // Object Break Handler
-    /**
-     * Checks if an object is broken.
-     *
-     * @param attackBox The attack box of the player.
-     */
     public void checkObjectBreak(Rectangle2D.Double attackBox) {
         SpellManager spellManager = context.getSpellManager();
         objectBreakHandler.checkObjectBreak(attackBox, spellManager.getFlames(), context.getPlayer().getFlipSign());
     }
 
-    /**
-     * Checks if an object is broken by an enemy attack.
-     *
-     * @param attackBox The attack box of the enemy.
-     */
     public void checkObjectBreakByEnemy(Rectangle2D.Double attackBox) {
         objectBreakHandler.checkObjectBreakByEnemy(attackBox);
     }
 
-
-    /**
-     * Checks if an object is broken by a push action.
-     *
-     * @param hitBox The hitbox of the player or object that is pushing.
-     */
     public void checkObjectBreakByPush(Rectangle2D.Double hitBox) {
         List<Container> containers = getObjects(Container.class);
         for (Container container : containers) {
@@ -367,11 +358,6 @@ public class ObjectManager {
         }
     }
 
-    /**
-     * Generates loot for a defeated enemy.
-     *
-     * @param e The enemy for which the loot is to be generated.
-     */
     public void generateLoot(Enemy e) {
         Rectangle2D.Double location = e.getHitBox();
         lootHandler.generateEnemyLoot(location, e.getEnemyType());
@@ -379,32 +365,35 @@ public class ObjectManager {
 
     /**
      * Checks if the provided area intersects with any environmental hazards.
+     *
      * @param area The hitbox to check.
      * @return true if danger is detected.
      */
     public boolean isDangerous(Rectangle2D.Double area) {
-        // Check Spikes
         for (Spike s : getObjects(Spike.class)) {
             if (s.getHitBox().intersects(area)) return true;
         }
-
-        // Check Lava
         for (Lava l : getObjects(Lava.class)) {
             if (l.getHitBox().intersects(area)) return true;
         }
-
-        // Check Traps
         for (SmashTrap st : getObjects(SmashTrap.class)) {
             if (st.getHitBox().intersects(area)) return true;
         }
-
+        for (PendulumTrap pt : getObjects(PendulumTrap.class)) {
+            if (pt.getHitBox().intersects(area)) return true;
+        }
+        for (SporeTrap st : getObjects(SporeTrap.class)) {
+            if (st.getHitBox().intersects(area)) return true;
+        }
+        for (SawTrap saw : getObjects(SawTrap.class)) {
+            if (saw.getHitBox().intersects(area)) return true;
+        }
         return false;
     }
 
-
     // Launchers
     private boolean isPlayerInRangeForTrap(ArrowLauncher arrowLauncher, Player player) {
-        int distance = (int)Math.abs(player.getHitBox().x - arrowLauncher.getHitBox().x);
+        int distance = (int) Math.abs(player.getHitBox().x - arrowLauncher.getHitBox().x);
         return distance <= TILES_SIZE * 5;
     }
 
@@ -426,7 +415,7 @@ public class ObjectManager {
     }
 
     public void spawnRoricTrap(int x, int y, Direction direction) {
-        addGameObject(new RoricTrap(x, y - (int)(65 * SCALE), direction));
+        addGameObject(new RoricTrap(x, y - (int) (65 * SCALE), direction));
     }
 
     // Core
@@ -445,8 +434,7 @@ public class ObjectManager {
                             obj.render(g, xLevelOffset, yLevelOffset, animations);
                         }
                     });
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             long now = System.currentTimeMillis();
             if (now - lastRenderErrorLogMs >= 1000) {
                 lastRenderErrorLogMs = now;
@@ -459,6 +447,7 @@ public class ObjectManager {
         Arrays.stream(updateClasses).forEach(clazz -> updateObjects(clazz, lvlData));
         getObjects(Water.class).forEach(w -> w.updatePlayerPhysics(player));
         getObjects(Lava.class).forEach(l -> l.updatePlayerPhysics(player));
+        getObjects(SporeTrap.class).forEach(st -> st.checkPlayerDropHit(player));
         updateArrowLaunchers(lvlData, player);
         handleInteractions(player);
         handleCollectibles(player);
@@ -478,6 +467,9 @@ public class ObjectManager {
 
     public void secondRender(Graphics g, int xLevelOffset, int yLevelOffset) {
         Arrays.stream(renderBehind).forEach(renderClass -> renderObjects(g, xLevelOffset, yLevelOffset, renderClass));
+        for (Spike spike : getObjects(Spike.class)) {
+            if (spike.isAlive()) spike.renderTipGlint(g, xLevelOffset, yLevelOffset);
+        }
         renderCoins(g, xLevelOffset, yLevelOffset);
         renderNpcs(g, xLevelOffset, yLevelOffset);
         if (intersection != null) intersection.renderInteractionUI(g, xLevelOffset, yLevelOffset);
@@ -522,7 +514,7 @@ public class ObjectManager {
             if (arrowLauncher.getAnimIndex() == 9 && arrowLauncher.getAnimTick() == 0) {
                 Audio.getInstance().getAudioPlayer().playSound(Sound.ARROW);
                 Direction direction = (arrowLauncher.getObjType() == ObjType.ARROW_TRAP_RIGHT) ? Direction.LEFT : Direction.RIGHT;
-                ProjectileFactory.createArrow(new Point((int)arrowLauncher.getHitBox().x, (int)arrowLauncher.getHitBox().y), direction);
+                ProjectileFactory.createArrow(new Point((int) arrowLauncher.getHitBox().x, (int) arrowLauncher.getHitBox().y), direction);
             }
         }
     }

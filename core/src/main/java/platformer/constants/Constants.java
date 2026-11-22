@@ -196,12 +196,15 @@ public final class Constants {
     public static final int POTION_OFFSET_X = scale(3);
     public static final int POTION_OFFSET_Y = scale(2);
 
-    public static final int SPIKE_WID = scale(40);
-    public static final int SPIKE_HEI = scale(30);
-    public static final int SPIKE_HB_WID = scale(32);
-    public static final int SPIKE_HB_HEI = scale(18);
-    public static final int SPIKE_OFFSET_X = scale(12);
-    public static final int SPIKE_OFFSET_Y = scale(10);
+    public static final int SPIKE_WID = scale(36);
+    public static final int SPIKE_HEI = scale(28);
+    public static final int SPIKE_HB_WID = scale(24);
+    public static final int SPIKE_HB_HEI = scale(9);
+    public static final int SPIKE_OFFSET_X = scale(3);
+    public static final int SPIKE_OFFSET_Y = scale(6);
+
+    public static final int SAW_TRAP_SIZE = scale(54);
+    public static final int SAW_TRAP_HB_SIZE = scale(38);
 
     public static final int ARROW_TRAP_WID = scale(96);
     public static final int ARROW_TRAP_HEI = scale(32);
@@ -293,6 +296,24 @@ public final class Constants {
     public static final int HERB_HB_HEI = scale(28);
     public static final int HERB_OFFSET_X = scale(6);
     public static final int HERB_OFFSET_Y = scale(3);
+
+    public static final int CRUMBLING_PLAT_WID = scale(72);
+    public static final int CRUMBLING_PLAT_HEI = scale(40);
+    public static final int CRUMBLING_PLAT_HB_WID = scale(56);
+    public static final int CRUMBLING_PLAT_HB_HEI = scale(12);
+    public static final int CRUMBLING_PLAT_OFFSET_X = (TILES_SIZE - CRUMBLING_PLAT_HB_WID) / 2;
+    public static final int CRUMBLING_PLAT_OFFSET_Y = scale(4);
+
+    public static final int PENDULUM_WID = scale(74);
+    public static final int PENDULUM_HEI = scale(148);
+    public static final int PENDULUM_BLADE_HB_SIZE = scale(32);
+
+    public static final int SPORE_TRAP_WID = scale(74);
+    public static final int SPORE_TRAP_HEI = scale(80);
+    public static final int SPORE_TRAP_HB_WID = scale(28);
+    public static final int SPORE_TRAP_HB_HEI = scale(46);
+    public static final int SPORE_TRAP_OFFSET_X = (TILES_SIZE - SPORE_TRAP_HB_WID) / 2;
+    public static final int SPORE_TRAP_OFFSET_Y = scale(6);
 
     // Projectile Constants
     public static final int ARROW_WID = scale(32);

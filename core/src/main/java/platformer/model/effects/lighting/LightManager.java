@@ -7,6 +7,7 @@ import platformer.model.gameObjects.GameObject;
 import platformer.model.gameObjects.npc.Npc;
 import platformer.model.gameObjects.objects.*;
 import platformer.model.gameObjects.objects.Container;
+import platformer.model.gameObjects.objects.traps.*;
 import platformer.model.levels.Level;
 import platformer.model.levels.metadata.DecorationMetadata;
 import platformer.model.levels.metadata.LevelMetadata;
@@ -454,6 +455,10 @@ public class LightManager {
                 bakeCandleLight(wG2d, cG2d, candle);
                 hasStaticColoredLights = true;
             }
+            for (Spike spike : context.getObjectManager().getObjects(Spike.class)) {
+                bakeSpikeLight(wG2d, cG2d, spike);
+                hasStaticColoredLights = true;
+            }
         } finally {
             wG2d.dispose();
             cG2d.dispose();
@@ -547,6 +552,22 @@ public class LightManager {
             cG2d.drawImage(coloredTex, centerX - lmRadius, centerY - lmRadius, null);
             wG2d.drawImage(whiteTex, centerX - lmRadius, centerY - lmRadius, null);
         }
+    }
+
+    private void bakeSpikeLight(Graphics2D wG2d, Graphics2D cG2d, Spike spike) {
+        int lmRadius = Math.max(2, (int) (34 * SCALE) / LIGHTMAP_SCALE);
+        int lmDiameter = lmRadius * 2;
+        Color glintTint = new Color(90, 225, 240);
+
+        String colorKey = glintTint.getRGB() + "_" + lmRadius;
+        String whiteKey = "white_" + lmRadius;
+        BufferedImage coloredTex = lightTextureCache.computeIfAbsent(colorKey, k -> createColoredLightTexture(lmDiameter, glintTint));
+        BufferedImage whiteTex = lightTextureCache.computeIfAbsent(whiteKey, k -> createLightTexture(lmDiameter, new float[]{0f, 1f}, new Color[]{new Color(1.0f, 1.0f, 1.0f, 0.55f), new Color(1.0f, 1.0f, 1.0f, 0f)}));
+
+        int centerX = (int) spike.getHitBox().getCenterX() / LIGHTMAP_SCALE;
+        int centerY = (int) spike.getHitBox().getCenterY() / LIGHTMAP_SCALE;
+        cG2d.drawImage(coloredTex, centerX - lmRadius, centerY - lmRadius, null);
+        wG2d.drawImage(whiteTex, centerX - lmRadius, centerY - lmRadius, null);
     }
 
     /**
@@ -824,7 +845,9 @@ public class LightManager {
         return List.of(
                 Container.class, Blocker.class, SmashTrap.class,
                 SaveTotem.class, Shop.class, Table.class, Npc.class,
-                Board.class, JumpPad.class, Herb.class, RoricTrap.class
+                Board.class, JumpPad.class, Herb.class, RoricTrap.class,
+                CrumblingPlatform.class, PendulumTrap.class, SporeTrap.class,
+                SawTrap.class
         );
     }
 
