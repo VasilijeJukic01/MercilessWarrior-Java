@@ -8,7 +8,10 @@ import platformer.model.entities.Direction;
 import platformer.model.entities.enemies.Enemy;
 import platformer.model.entities.enemies.EnemyManager;
 import platformer.model.gameObjects.ObjectManager;
+import platformer.model.levels.Level;
+import platformer.model.levels.LevelManager;
 import platformer.model.levels.LvlTriggerType;
+import platformer.model.levels.Trigger;
 import platformer.model.levels.interior.InteriorManager;
 import platformer.model.spells.SpellManager;
 import platformer.physics.CollisionDetector;
@@ -32,6 +35,7 @@ public class PlayerMovementHandler {
     private static final double POST_DASH_MOMENTUM_DECAY = 0.88;
 
     private final Player player;
+    private final LevelManager levelManager;
     private final EnemyManager enemyManager;
     private final SpellManager spellManager;
     private final ObjectManager objectManager;
@@ -64,13 +68,18 @@ public class PlayerMovementHandler {
     private int wallJumpDir = 0;
     private int dashTick = 0;
     private double dashMomentumX = 0.0;
-    private Point lastSafeGroundPoint = null;
+
+    // Hazard
+    private Point lastSafeGroundPoint;
+    private Point activeHazardCheckpoint = null;
+    private boolean levelHasTeleportCheckpoints = false;
 
     // Effect
     private LvlTriggerType transitionExitType = null;
 
     public PlayerMovementHandler(Player player, GameContext context) {
         this.player = player;
+        this.levelManager = context.getLevelManager();
         this.enemyManager = context.getEnemyManager();
         this.spellManager = context.getSpellManager();
         this.objectManager = context.getObjectManager();
@@ -84,6 +93,7 @@ public class PlayerMovementHandler {
 
     public void updatePosition(int[][] levelData, PlayerCombatHandler combatHandler, PlayerMinimapHandler minimapHandler) {
         if (checkTransitionUpdate(levelData)) return;
+        updateHazardCheckpoints(levelData);
 
         Rectangle2D.Double hitBox = player.getHitBox();
         player.removeAction(PlayerAction.MOVE);
@@ -551,6 +561,26 @@ public class PlayerMovementHandler {
         player.setAirSpeed(launchSpeed);
     }
 
+    private void updateHazardCheckpoints(int[][] levelData) {
+        if (!levelHasTeleportCheckpoints || levelManager == null || levelManager.getCurrentLevel() == null) return;
+        Rectangle2D.Double pBox = player.getHitBox();
+        Level level = levelManager.getCurrentLevel();
+        for (Trigger t : level.getTriggers()) {
+            if (t.type() != LvlTriggerType.TELEPORT) continue;
+            Rectangle2D.Double b = t.bounds();
+            Rectangle2D.Double zone = new Rectangle2D.Double(b.x - (TILES_SIZE * 0.5), b.y - (TILES_SIZE * 2.0), b.width + TILES_SIZE, b.height + (TILES_SIZE * 2.5));
+            if (pBox.intersects(zone)) {
+                double groundY = CollisionDetector.getGroundY(b.getCenterX(), b.y, levelData);
+                int spawnX = (int) Math.round(b.getCenterX() - (pBox.width / 2.0));
+                int spawnY = (int) Math.round(groundY - pBox.height - 1);
+                if (activeHazardCheckpoint == null) {
+                    activeHazardCheckpoint = new Point(spawnX, spawnY);
+                }
+                else activeHazardCheckpoint.setLocation(spawnX, spawnY);
+            }
+        }
+    }
+
     public double getHorizontalSpeed() {
         boolean slowedByLava = player.checkAction(PlayerAction.LAVA) && !player.getStats().getPerks().isLavaWalk();
         double currentSpeed = slowedByLava ? LAVA_PLAYER_SPEED : PLAYER_SPEED;
@@ -576,12 +606,26 @@ public class PlayerMovementHandler {
         this.transitionExitType = transitionExitType;
     }
 
-    public Point getLastSafeGroundPoint() {
-        return lastSafeGroundPoint;
-    }
-
     public void setLastSafeGroundPoint(Point pt) {
         this.lastSafeGroundPoint = (pt != null) ? new Point(pt) : null;
+        this.activeHazardCheckpoint = (pt != null) ? new Point(pt) : null;
+        this.levelHasTeleportCheckpoints = false;
+        if (levelManager != null && levelManager.getCurrentLevel() != null) {
+            for (Trigger t : levelManager.getCurrentLevel().getTriggers()) {
+                if (t.type() == LvlTriggerType.TELEPORT) {
+                    this.levelHasTeleportCheckpoints = true;
+                    break;
+                }
+            }
+        }
+    }
+
+    /**
+     * Returns the active TELEPORT checkpoint if the current level defines checkpoints, otherwise falls back to the last stable floor tile the player stood on.
+     */
+    public Point getHazardRespawnPoint() {
+        if (levelHasTeleportCheckpoints && activeHazardCheckpoint != null) return activeHazardCheckpoint;
+        return lastSafeGroundPoint;
     }
 
     public void reset() {

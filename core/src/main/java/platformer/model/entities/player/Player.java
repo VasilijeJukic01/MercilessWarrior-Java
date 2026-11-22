@@ -134,7 +134,7 @@ public class Player extends Entity {
         feedbackHandler.onPlayerDamaged(actualDamage);
         changeHealth(-actualDamage);
 
-        Point safePt = movementHandler.getLastSafeGroundPoint();
+        Point safePt = movementHandler.getHazardRespawnPoint();
         if (safePt != null) {
             clearTransitionMomentum();
             resetDirections();

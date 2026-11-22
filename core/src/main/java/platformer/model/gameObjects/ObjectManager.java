@@ -253,7 +253,7 @@ public class ObjectManager {
         for (SmashTrap st : getObjects(SmashTrap.class)) {
             if (st.isAlive() && st.getAnimIndex() >= 1 && st.getAnimIndex() <= 6) {
                 if (st.getHitBox().intersects(player.getHitBox())) {
-                    player.kill();
+                    player.triggerHazardRespawn(30);
                 }
             }
         }
