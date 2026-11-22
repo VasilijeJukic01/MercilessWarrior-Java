@@ -13,27 +13,62 @@ import java.io.IOException;
 
 /**
  * A utility class providing static methods for common image processing operations.
- * This class handles tasks such as loading, resizing, flipping, and rotating images.
+ * Automatically converts loaded images into screen-compatible VRAM-managed BufferedImages for maximum Java2D hardware acceleration.
  */
 public final class ImageUtils {
 
+    private static final GraphicsConfiguration GRAPHICS_CONFIG = initGraphicsConfig();
+
     private ImageUtils() {}
 
+    private static GraphicsConfiguration initGraphicsConfig() {
+        try {
+            if (!GraphicsEnvironment.isHeadless()) {
+                return GraphicsEnvironment.getLocalGraphicsEnvironment()
+                        .getDefaultScreenDevice()
+                        .getDefaultConfiguration();
+            }
+        } catch (Exception ignored) {}
+        return null;
+    }
+
     /**
-     * This method is used to import an image from a given path and resize it to the specified width and height.
-     * If the width and height are both -1, the original size of the image is preserved.
-     *
-     * @param name The path of the image to be imported.
-     * @param w The desired width of the image.
-     * @param h The desired height of the image.
-     * @return The imported image, resized to the specified dimensions. If an error occurs during import, null is returned.
+     * Creates a hardware-accelerated BufferedImage compatible with the active display configuration.
      */
+    public static BufferedImage createCompatibleImage(int width, int height) {
+        int w = Math.max(1, width);
+        int h = Math.max(1, height);
+        if (GRAPHICS_CONFIG != null) {
+            return GRAPHICS_CONFIG.createCompatibleImage(w, h, Transparency.TRANSLUCENT);
+        }
+        return new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+    }
+
+    /**
+     * Converts an arbitrary BufferedImage (e.g. from ImageIO.read) into a VRAM-managed screen-compatible image.
+     */
+    public static BufferedImage toCompatibleImage(BufferedImage src) {
+        if (src == null || GRAPHICS_CONFIG == null) return src;
+        if (src.getColorModel().equals(GRAPHICS_CONFIG.getColorModel())) {
+            return src;
+        }
+        BufferedImage compatible = GRAPHICS_CONFIG.createCompatibleImage(src.getWidth(), src.getHeight(), Transparency.TRANSLUCENT);
+        Graphics2D g2d = compatible.createGraphics();
+        g2d.setComposite(AlphaComposite.Src);
+        g2d.drawImage(src, 0, 0, null);
+        g2d.dispose();
+        return compatible;
+    }
+
     public static BufferedImage importImage(String name, int w, int h) {
         try {
             byte[] imageBytes = AssetManager.getInstance().getAsset(name);
             if (imageBytes == null) throw new IOException("Asset not found in bundle: " + name);
             BufferedImage image = ImageIO.read(new ByteArrayInputStream(imageBytes));
-            if (w == -1 && h == -1) return image;
+            if (image == null) return null;
+            if (w == -1 && h == -1) {
+                return name.contains("/levels/rooms/") || name.contains("/minimap/") ? image : toCompatibleImage(image);
+            }
             return resizeImage(image, w, h);
         } catch (Exception e) {
             if (name.contains("/levels/level")) return null;
@@ -51,11 +86,11 @@ public final class ImageUtils {
      * @return The resized image.
      */
     public static BufferedImage resizeImage(BufferedImage img, int newW, int newH) {
-        if (newW == 0 || newH == 0) {
+        if (newW <= 0 || newH <= 0) {
             Logger.getInstance().notify("Attempted to resize image to zero dimensions.", Message.WARNING);
-            return new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
+            return createCompatibleImage(1, 1);
         }
-        BufferedImage newImg = new BufferedImage(newW, newH, BufferedImage.TYPE_INT_ARGB);
+        BufferedImage newImg = createCompatibleImage(newW, newH);
         Graphics2D g2d = newImg.createGraphics();
         g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
         g2d.drawImage(img, 0, 0, newW, newH, null);
@@ -72,7 +107,7 @@ public final class ImageUtils {
     public static BufferedImage flipImage(BufferedImage src) {
         int w = src.getWidth();
         int h = src.getHeight();
-        BufferedImage dest = new BufferedImage(w, h, src.getType());
+        BufferedImage dest = createCompatibleImage(w, h);
         Graphics2D graphics2D = dest.createGraphics();
         graphics2D.drawImage(src, w, 0, -w, h, null);
         graphics2D.dispose();
@@ -116,10 +151,10 @@ public final class ImageUtils {
         double sin = Math.abs(Math.sin(rads)), cos = Math.abs(Math.cos(rads));
         int w = image.getWidth();
         int h = image.getHeight();
-        int newWidth = (int) Math.floor(w * cos + h * sin);
-        int newHeight = (int) Math.floor(h * cos + w * sin);
+        int newWidth = Math.max(1, (int) Math.floor(w * cos + h * sin));
+        int newHeight = Math.max(1, (int) Math.floor(h * cos + w * sin));
 
-        BufferedImage rotated = new BufferedImage(newWidth, newHeight, image.getType());
+        BufferedImage rotated = createCompatibleImage(newWidth, newHeight);
         Graphics2D g2d = rotated.createGraphics();
         AffineTransform at = new AffineTransform();
         at.translate((newWidth - w) / 2.0, (newHeight - h) / 2.0);

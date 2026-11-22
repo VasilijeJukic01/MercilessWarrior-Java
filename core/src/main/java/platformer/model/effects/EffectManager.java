@@ -67,6 +67,12 @@ public class EffectManager {
      */
     public void preloadAmbientParticleAssets() {
         this.smokeParticleFrames = SpriteManager.getInstance().loadFromSprite(SMOKE_SHEET, 1, 0, SMOKE_W, SMOKE_H, 0, SMOKE_W, SMOKE_H);
+        for (int baseSize = 5; baseSize < 15; baseSize++) {
+            int s = (int) (baseSize * SCALE);
+            dustParticleCache.computeIfAbsent(s, sz ->
+                    SpriteManager.getInstance().loadFromSprite(PARTICLE_SHEET, DEFAULT_PARTICLE_FRAMES, 0, sz, sz, 0, PARTICLE_W, PARTICLE_H)
+            );
+        }
     }
 
     /**

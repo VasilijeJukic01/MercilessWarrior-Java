@@ -6,6 +6,7 @@ import platformer.audio.Audio;
 import platformer.core.Framework;
 import platformer.core.config.GameLaunchConfig;
 import platformer.core.loading.LoadingProgressTracker;
+import platformer.model.effects.particles.SunbeamParticle;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -28,6 +29,7 @@ public class AppCore {
             });
             CompletableFuture<Void> spritesFuture = CompletableFuture.runAsync(() -> {
                 SpriteManager.getInstance().loadAllAssets();
+                SunbeamParticle.preload();
             });
             CompletableFuture.allOf(audioFuture, spritesFuture).join();
             AssetManager.getInstance().evictByPrefix("/audio/");

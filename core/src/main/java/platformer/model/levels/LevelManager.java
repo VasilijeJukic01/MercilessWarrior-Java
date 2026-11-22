@@ -576,6 +576,17 @@ public class LevelManager {
         }
     }
 
+    // Loader
+    /**
+     * Pre-warms all decoration images and spatial transforms for the currently active level.
+     */
+    public void prewarmCurrentLevelDecorations() {
+        if (currentLevel == null) return;
+        Map<Integer, DecorationMetadata> currentDecoSet = decorationSets.get(currentLevel.getTilesetName());
+        boolean useLively = context != null && context.getWorldMemoryManager() != null && context.getWorldMemoryManager().hasFlag("RESTORED_" + currentLevelId);
+        decorationRenderer.prewarmLevel(currentLevel, currentDecoSet, decorationMetadata, useLively);
+    }
+
     // Getters
     public DecorationMetadata getDecorationMetadata(String tilesetName, int colorValue) {
         Map<Integer, DecorationMetadata> set = decorationSets.get(tilesetName);

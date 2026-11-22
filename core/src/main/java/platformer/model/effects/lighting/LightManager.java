@@ -14,6 +14,7 @@ import platformer.model.levels.metadata.LevelMetadata;
 import platformer.model.levels.metadata.LightMetadata;
 import platformer.model.levels.metadata.ObjectMetadata;
 import platformer.state.types.GameState;
+import platformer.utils.ImageUtils;
 
 import java.awt.*;
 import java.awt.geom.Point2D;
@@ -88,7 +89,7 @@ public class LightManager {
     private static final float MAX_CANDLE_GLOW_ALPHA = 1.0f;
 
     public LightManager() {
-        this.lightmap = new BufferedImage(GAME_WIDTH / LIGHTMAP_SCALE, GAME_HEIGHT / LIGHTMAP_SCALE, BufferedImage.TYPE_INT_ARGB);
+        this.lightmap = ImageUtils.createCompatibleImage(GAME_WIDTH / LIGHTMAP_SCALE, GAME_HEIGHT / LIGHTMAP_SCALE);
         this.ambientDarkness = new Color(0, 0, 0, currentAmbientAlpha);
         initLightTextures();
     }
@@ -398,7 +399,7 @@ public class LightManager {
      * never move during gameplay. By baking all of them once into a pair of room-sized {@link BufferedImage}s at {@code 1 / LIGHTMAP_SCALE}
      * resolution when the player enters the room, the engine avoids iterating the tilemap and drawing dozens of radial gradients every frame.
      */
-    private void ensureStaticRoomLightsBuilt() {
+    public void ensureStaticRoomLightsBuilt() {
         Level currentLevel = context.getLevelManager().getCurrentLevel();
         if (currentLevel == null) return;
         boolean isRestored = context.getWorldMemoryManager() != null && context.getWorldMemoryManager().hasFlag("RESTORED_" + context.getLevelManager().getCurrentLevelId());

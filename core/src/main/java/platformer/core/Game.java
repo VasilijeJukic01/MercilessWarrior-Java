@@ -9,14 +9,14 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
+import java.awt.geom.AffineTransform;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static platformer.constants.Constants.*;
 
 /**
  * Entry point for the game.
- * It initializes and manages the game's core components such as the GameFrame, StateManager, and AudioOptions.
- * <p>
- * The class interacts with the StateManager and Audio.
+ * Manages the fixed-timestep 200 UPS simulation loop and 144 FPS rendering cadence.
  */
 @SuppressWarnings({"InfiniteLoopStatement", "FieldCanBeLocal"})
 public class Game implements Runnable {
@@ -30,7 +30,7 @@ public class Game implements Runnable {
     private final int FPS_LOCK = 144;
     private final int UPS_LOCK = 200;
     private volatile int currentFps = 0;
-    private int frameCountForDisplay = 0;
+    private final AtomicInteger frameCountForDisplay = new AtomicInteger(0);
     private volatile int currentUpdates = 0;
 
     private int originalGameWidth;
@@ -61,53 +61,29 @@ public class Game implements Runnable {
         stateManager.getCurrentState().update();
     }
 
-    /**
-     * Renders the current state of the game.
-     * If the game is in full screen mode, it scales the graphics context to fit the current size of the game panel.
-     * Otherwise, it renders the state directly.
-     *
-     * @param g the Graphics object used for rendering
-     */
     public synchronized void render(Graphics g) {
         if (isFullScreen()) {
             Graphics2D g2d = (Graphics2D) g;
+            AffineTransform oldTransform = g2d.getTransform();
             Dimension currentSize = gameFrame.getGamePanel().getCurrentSize();
             double scaleX = (double) currentSize.width / originalGameWidth;
             double scaleY = (double) currentSize.height / originalGameHeight;
 
             g2d.scale(scaleX, scaleY);
             stateManager.getCurrentState().render(g2d);
-            g2d.scale(1 / scaleX, 1 / scaleY);
+            g2d.setTransform(oldTransform);
         }
         else stateManager.getCurrentState().render(g);
     }
 
-    /**
-     * Toggles between windowed mode and full screen mode.
-     */
     public void toggleFullScreen() {
         if (gameFrame != null) gameFrame.toggleFullScreen();
     }
 
-    /**
-     * Checks if the game is currently in full screen mode.
-     * @return true if the game is in full screen mode, false otherwise
-     */
     public boolean isFullScreen() {
         return gameFrame != null && gameFrame.isFullScreen();
     }
 
-    // Core
-    /**
-     * Controlling the game's frame rate (FPS) and update speed (UPS).
-     * It ensures that the game updates and renders at a consistent speed on different hardware.
-     * <p>
-     * The method calculates the time it should take for each frame and update based on the FPS_LOCK and UPS_LOCK values.
-     * It then enters an infinite loop where it continuously checks the elapsed time, and if enough time has passed, it calls the update or render methods.
-     * This loop continues until the game is closed.
-     * <p>
-     * This method is run in a separate thread when the game is started.
-     */
     @Override
     public void run() {
         final double timePerFrame = 1_000_000_000.0 / FPS_LOCK;
@@ -122,7 +98,6 @@ public class Game implements Runnable {
             long elapsedNs = currentTime - previousTime;
             previousTime = currentTime;
 
-            // Clamp large OS pauses (dragging window or alt-tab) to prevent spiral-of-death catch-up
             if (elapsedNs > 250_000_000L) {
                 elapsedNs = 250_000_000L;
             }
@@ -143,24 +118,24 @@ public class Game implements Runnable {
 
             if (System.currentTimeMillis() - lastCheck >= 1000) {
                 lastCheck = System.currentTimeMillis();
-                synchronized (this) {
-                    currentFps = frameCountForDisplay;
-                    frameCountForDisplay = 0;
-                }
+                currentFps = frameCountForDisplay.getAndSet(0);
                 currentUpdates = updates;
                 updates = 0;
             }
-            try {
-                Thread.sleep(1);
-            } catch (InterruptedException ignored) { }
+
+            if (dU < 0.7 && dF < 0.7) {
+                try {
+                    Thread.sleep(1);
+                } catch (InterruptedException ignored) {}
+            }
+            else {
+                Thread.onSpinWait();
+            }
         }
     }
 
-    /**
-     * This method is called every time a frame is rendered to keep track of the number of frames displayed.
-     */
-    public synchronized void frameRendered() {
-        frameCountForDisplay++;
+    public void frameRendered() {
+        frameCountForDisplay.incrementAndGet();
     }
 
     // Mediator
@@ -236,7 +211,6 @@ public class Game implements Runnable {
         stateManager.setState(StateType.QUIT);
     }
 
-    // Getters
     public int getCurrentFps() {
         return currentFps;
     }

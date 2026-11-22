@@ -4,6 +4,7 @@ import platformer.model.levels.Level;
 import platformer.model.levels.LevelObjectManager;
 import platformer.model.levels.metadata.DecorationMetadata;
 import platformer.model.levels.metadata.ObjectMetadata;
+import platformer.utils.ImageUtils;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
@@ -122,7 +123,7 @@ public class DecorationRenderer {
         int boundW = Math.max(1, (int) Math.ceil(scaledW * cos + scaledH * sin) + 4);
         int boundH = Math.max(1, (int) Math.ceil(scaledH * cos + scaledW * sin) + 4);
 
-        BufferedImage out = new BufferedImage(boundW, boundH, BufferedImage.TYPE_INT_ARGB);
+        BufferedImage out = ImageUtils.createCompatibleImage(boundW, boundH);
         Graphics2D g2d = out.createGraphics();
         g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
         g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
@@ -246,5 +247,39 @@ public class DecorationRenderer {
         double primaryWave = Math.sin(baseTime * speed + phase);
         double gustWave = Math.sin(baseTime * (speed * 1.7) + phase * 0.5);
         return (primaryWave * 0.7 + gustWave * 0.3) * (baseAmplitude * ampScale);
+    }
+
+    /**
+     * Pre-decodes and pre-bakes all decorations and rotated/scaled variants in the room during the transition wipe so the first gameplay frame has zero I/O.
+     */
+    public void prewarmLevel(Level level, Map<Integer, DecorationMetadata> decoSet, Map<Point, ObjectMetadata> objMetaMap, boolean useLively) {
+        if (level == null || decoSet == null) return;
+        int w = level.getLvlData().length;
+        int h = level.getLvlData()[0].length;
+        boolean hasMeta = objMetaMap != null && !objMetaMap.isEmpty();
+
+        for (int i = 0; i < w; i++) {
+            for (int j = 0; j < h; j++) {
+                int decoIdx = level.getDecoSpriteIndex(i, j);
+                if (decoIdx == -1) continue;
+                DecorationMetadata decoMeta = decoSet.get(decoIdx);
+                if (decoMeta == null) continue;
+
+                BufferedImage model = levelObjectManager.getModel(decoMeta.getId(), level.getTilesetName(), decoMeta.getFilename(), decoMeta.isFlipped(), useLively);
+                if (model == null) continue;
+
+                ObjectMetadata objMeta = hasMeta ? objMetaMap.get(new Point(i, j)) : null;
+                boolean hasCustomTransform = objMeta != null && (objMeta.getRotation() != 0.0 || objMeta.getScaleX() != 1.0 || objMeta.getScaleY() != 1.0);
+                if (hasCustomTransform && decoMeta.getSway() == null) {
+                    int wid = (int) (decoMeta.getWid() / 2.0 * SCALE);
+                    int hei = (int) (decoMeta.getHei() / 2.0 * SCALE);
+                    double rot = objMeta.getRotation();
+                    double sx = objMeta.getScaleX() != 0.0 ? objMeta.getScaleX() : 1.0;
+                    double sy = objMeta.getScaleY() != 0.0 ? objMeta.getScaleY() : 1.0;
+                    String key = decoMeta.getId() + "_" + decoMeta.isFlipped() + "_" + useLively + "_" + rot + "_" + sx + "_" + sy;
+                    transformedCache.computeIfAbsent(key, k -> bakeTransformedImage(model, wid, hei, rot, sx, sy));
+                }
+            }
+        }
     }
 }

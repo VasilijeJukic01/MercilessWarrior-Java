@@ -149,6 +149,8 @@ public class WorldTransitionCoordinator {
         player.loadLvlData(level.getLvlData());
         context.getEnemyManager().loadEnemies(level);
         context.getObjectManager().loadObjects(level);
+        context.getLevelManager().prewarmCurrentLevelDecorations();
+        context.getLightManager().ensureStaticRoomLightsBuilt();
 
         player.setSpawn(spawnPoint);
         ensureSpawnClearOfFloor(player, level.getLvlData());

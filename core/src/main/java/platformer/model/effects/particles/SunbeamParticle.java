@@ -133,4 +133,8 @@ public class SunbeamParticle {
         g2d.setTransform(oldTransform);
         g2d.setComposite(oldComp);
     }
+
+    public static void preload() {
+        ensureTexturesBaked();
+    }
 }
