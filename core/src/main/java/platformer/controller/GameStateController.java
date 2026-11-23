@@ -4,6 +4,7 @@ import platformer.core.Framework;
 import platformer.core.Game;
 import platformer.core.GameContext;
 import platformer.debug.DebugSettings;
+import platformer.debug.DebugTeleporterDialog;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
 import platformer.event.EventBus;
@@ -192,6 +193,9 @@ public class GameStateController {
             case KeyEvent.VK_F4:
                 activateCoinsCheat();
                 break;
+            case KeyEvent.VK_F5:
+                openDebugTeleporter();
+                break;
             default: break;
         }
         pressedKeys.remove(key);
@@ -277,6 +281,11 @@ public class GameStateController {
         player.changeCoins(99999);
         player.changeUpgradeTokens(50);
         Logger.getInstance().notify("Coins cheat activated.", Message.WARNING);
+    }
+
+    private void openDebugTeleporter() {
+        if (!Framework.getInstance().getAccount().isEnableCheats()) return;
+        DebugTeleporterDialog.toggle(context);
     }
 
     // Helper

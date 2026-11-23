@@ -114,9 +114,14 @@ public class SpriteManager {
      */
     public BufferedImage[] loadFromSprite(String basePath, int frames, int row, int width, int height, int offset, int x, int y) {
         BufferedImage sprite = rawSheets.computeIfAbsent(basePath, path -> ImageUtils.importImage(path, -1, -1));
-        BufferedImage[] animation = new BufferedImage[frames];
-        int yOffset = y * row;
-        for (int i = offset; i < frames + offset; i++) {
+        int maxCols = Math.max(1, sprite.getWidth() / Math.max(1, x));
+        int maxRows = Math.max(1, sprite.getHeight() / Math.max(1, y));
+        int safeRow = Math.max(0, Math.min(row, maxRows - 1));
+        int safeFrames = Math.max(1, Math.min(frames, maxCols - offset));
+
+        BufferedImage[] animation = new BufferedImage[safeFrames];
+        int yOffset = y * safeRow;
+        for (int i = offset; i < safeFrames + offset; i++) {
             animation[i - offset] = ImageUtils.resizeImage(sprite.getSubimage(i * x, yOffset, x, y), width, height);
         }
         return animation;
@@ -170,9 +175,28 @@ public class SpriteManager {
     private void loadEnemyAnimations(EnemyType type, EnemyDefinition def) {
         if (def == null || def.getSpriteSheet() == null || def.getAnimations() == null) return;
 
+        BufferedImage sheet = rawSheets.computeIfAbsent(def.getSpriteSheet(), path -> ImageUtils.importImage(path, -1, -1));
+        if (sheet == null) return;
+
+        int maxCols = 1;
+        int maxRow = 0;
+        for (EnemyDefinition.AnimSpec spec : def.getAnimations().values()) {
+            if (spec.getAliasOf() != null) continue;
+            maxCols = Math.max(maxCols, spec.getOffset() + spec.getFrames());
+            maxRow = Math.max(maxRow, spec.getRow());
+        }
+
+        int frameW = def.getSpriteFrameW();
+        int frameH = def.getSpriteFrameH();
+        if (frameW <= 0 || maxCols * frameW > sheet.getWidth()) {
+            frameW = sheet.getWidth() / maxCols;
+        }
+        if (frameH <= 0 || (maxRow + 1) * frameH > sheet.getHeight()) {
+            frameH = sheet.getHeight() / (maxRow + 1);
+        }
+
         BufferedImage[][] anim = new BufferedImage[Anim.values().length][];
         int drawW = def.getDrawWidth(), drawH = def.getDrawHeight();
-        int frameW = def.getSpriteFrameW(), frameH = def.getSpriteFrameH();
         for (Map.Entry<String, EnemyDefinition.AnimSpec> entry : def.getAnimations().entrySet()) {
             EnemyDefinition.AnimSpec spec = entry.getValue();
             if (spec.getAliasOf() != null) continue;

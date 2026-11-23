@@ -32,6 +32,8 @@ public class QuestSystemListener {
             case KNIGHT -> target = ObjectiveTarget.KNIGHT;
             case CORRUPTED_KNIGHT -> target = ObjectiveTarget.CORRUPTED_KNIGHT;
             case LANCER -> target = ObjectiveTarget.LANCER;
+            case GOBLIN, GOBLIN_SOLDIER, GOBLIN_ASSASSIN, GOBLIN_SPEARMAN, GOBLIN_MAGE -> target = ObjectiveTarget.GOBLIN;
+            default -> {}
         }
         if (target != null) questManager.updateQuestProgress(QuestObjectiveType.KILL, target);
     }
