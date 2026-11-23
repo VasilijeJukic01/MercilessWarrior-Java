@@ -28,6 +28,7 @@ import platformer.model.effects.EffectManager;
 import platformer.model.effects.RainManager;
 import platformer.model.effects.ScreenEffectsManager;
 import platformer.model.effects.TimeCycleManager;
+import platformer.model.effects.decorations.DecorationEffectManager;
 import platformer.model.effects.lighting.LightManager;
 import platformer.model.entities.enemies.EnemyManager;
 import platformer.model.gameObjects.ObjectManager;
@@ -93,6 +94,7 @@ public class GameInitializer {
         context.setCamera(gameState.getCamera());
         context.setScreenEffectsManager(screenEffectsManager);
         context.setWorldTransitionCoordinator(new WorldTransitionCoordinator());
+        context.setDecorationEffectManager(new DecorationEffectManager());
 
         // Dependency Injection
         context.getPerksManager().wire(context);
@@ -109,6 +111,7 @@ public class GameInitializer {
         context.getWorldMemoryManager().wire(context);
         context.getCutsceneManager().wire(context);
         context.getWorldTransitionCoordinator().wire(context);
+        context.getDecorationEffectManager().wire(context);
 
         ProjectileFactory.init(context.getProjectileManager());
         context.getEnemyManager().injectScreenEffectsManager(screenEffectsManager);

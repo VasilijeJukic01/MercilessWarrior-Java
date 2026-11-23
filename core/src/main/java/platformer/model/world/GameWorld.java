@@ -4,6 +4,7 @@ import lombok.Getter;
 import platformer.core.GameClock;
 import platformer.core.GameContext;
 import platformer.model.effects.EffectManager;
+import platformer.model.effects.decorations.DecorationEffectManager;
 import platformer.model.effects.lighting.LightManager;
 import platformer.model.effects.RainManager;
 import platformer.model.effects.TimeCycleManager;
@@ -42,6 +43,7 @@ public class GameWorld {
     private final LightManager lightManager;
     private final QuestManager questManager;
     private final WorldMemoryManager worldMemoryManager;
+    private final DecorationEffectManager decorationEffectManager;
 
     public GameWorld(GameContext context) {
         this.gameClock = context.getGameClock();
@@ -56,6 +58,7 @@ public class GameWorld {
         this.timeCycleManager = context.getTimeCycleManager();
         this.questManager = context.getQuestManager();
         this.worldMemoryManager = context.getWorldMemoryManager();
+        this.decorationEffectManager = context.getDecorationEffectManager();
 
         this.player = new Player(PLAYER_X, PLAYER_Y, PLAYER_WIDTH, PLAYER_HEIGHT, context);
         this.player.loadLvlData(levelManager.getCurrentLevel().getLvlData());
@@ -68,6 +71,7 @@ public class GameWorld {
         this.enemyManager.loadEnemies(levelManager.getCurrentLevel());
         this.objectManager.loadObjects(levelManager.getCurrentLevel());
         reinitializeParticles();
+        this.decorationEffectManager.rebuildForCurrentLevel();
     }
 
     public void reinitializeParticles() {
@@ -103,6 +107,7 @@ public class GameWorld {
         lightManager.update(timeCycleManager);
         spellManager.update();
         effectManager.updateTimeOfDay(timeCycleManager);
+        decorationEffectManager.update();
         effectManager.update();
         rainManager.update();
     }
@@ -128,6 +133,7 @@ public class GameWorld {
         objectManager.secondRender(g, xLevelOffset, yLevelOffset);
         lightManager.renderPostProcessing(g);
         effectManager.renderAmbientEffectsAbove(g, xLevelOffset, yLevelOffset);
+        decorationEffectManager.render(g, xLevelOffset, yLevelOffset);
         if (!isDarkPhase) projectileManager.render(g, xLevelOffset, yLevelOffset);
         spellManager.render(g, xLevelOffset, yLevelOffset);
         effectManager.renderForegroundEffects(g, xLevelOffset, yLevelOffset);
@@ -168,6 +174,7 @@ public class GameWorld {
         lightManager.reset();
         rainManager.reset();
         timeCycleManager.reset();
+        decorationEffectManager.reset();
     }
 
     public void reset() {

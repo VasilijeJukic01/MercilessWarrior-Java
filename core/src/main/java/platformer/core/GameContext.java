@@ -6,6 +6,7 @@ import platformer.model.cutscene.CutsceneManager;
 import platformer.model.dialogue.DialogueManager;
 import platformer.model.effects.EffectManager;
 import platformer.model.effects.ScreenEffectsManager;
+import platformer.model.effects.decorations.DecorationEffectManager;
 import platformer.model.effects.lighting.LightManager;
 import platformer.model.effects.RainManager;
 import platformer.model.effects.TimeCycleManager;
@@ -58,5 +59,6 @@ public final class GameContext {
     private Camera camera;
     private WorldTransitionCoordinator worldTransitionCoordinator;
     private CutsceneManager cutsceneManager;
+    private DecorationEffectManager decorationEffectManager;
     private Player player;
 }

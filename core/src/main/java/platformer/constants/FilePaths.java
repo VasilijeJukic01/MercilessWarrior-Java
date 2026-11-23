@@ -34,7 +34,12 @@ public final class FilePaths {
     public static final String FOREST_VILLAGE_BG = "/images/levels/backgrounds/FOREST_VILLAGE.png";
     public static final String FOREST_VILLAGE_ENTRANCE_BG = "/images/levels/backgrounds/FOREST_VILLAGE_ENTRANCE.png";
     public static final String RORIC_ARENA_BG = "/images/levels/backgrounds/RORIC_ARENA.png";
-    public static final String FOREST_THORNS_BG = "/images/levels/backgrounds/FOREST_THORNS.png";
+    public static final String FOREST_HUB_BG = "/images/levels/backgrounds/FOREST_HUB.png";
+    public static final String FOREST_CONNECTOR_BG = "/images/levels/backgrounds/FOREST_CONNECTOR.png";
+    public static final String FOREST_RUINS_BG = "/images/levels/backgrounds/FOREST_RUINS.png";
+    public static final String FOREST_CAVES_BG = "/images/levels/backgrounds/FOREST_CAVES.png";
+    public static final String THORNS_TRIALS_BG = "/images/levels/backgrounds/THORNS_TRIALS.png";
+    public static final String THORNS_PIT_BG = "/images/levels/backgrounds/THORNS_PIT.png";
 
     public static final String TAVERN_BG = "/images/levels/backgrounds/tavern.png";
     public static final String CRYPT1_BG = "/images/levels/backgrounds/CRYPT1.png";
@@ -97,6 +102,7 @@ public final class FilePaths {
     public static final String SMOKE_SHEET = "/images/particles/Smoke.png";
     public static final String RORIC_AURA_SHEET = "/images/particles/RoricAuraEffect.png";
     public static final String LIGHT_METADATA = "/light/decoration_lights.json";
+    public static final String DECORATION_EFFECTS_PATH = "/effects/decoration_effects.json";
 
     // Buttons
     public static final String RUNIC_RECT_BTN_SHEET = "/images/buttons/RunicRectButton.png";

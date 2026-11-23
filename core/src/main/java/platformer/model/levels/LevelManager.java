@@ -302,6 +302,7 @@ public class LevelManager {
         context.getObjectManager().loadObjects(variantLevel);
         context.getSpellManager().initBossSpells();
         context.getCamera().updateLevelBounds(variantLevel);
+        context.getDecorationEffectManager().rebuildForCurrentLevel();
 
         boolean particles = currentLevelMetadata == null || currentLevelMetadata.getAmbientParticlesEnabled() == null || currentLevelMetadata.getAmbientParticlesEnabled();
         context.getEffectManager().setAmbientEffectsActive(particles);
@@ -360,7 +361,9 @@ public class LevelManager {
             for (int j = startY; j <= endY; j++) {
                 if (level.isDecorationCut(i, j)) continue;
                 DecorationMetadata decoMeta = currentDecoSet.get(level.getDecoSpriteIndex(i, j));
-                if (decoMeta == null || !"BOTTOM".equalsIgnoreCase(decoMeta.getSway())) continue;
+                if (decoMeta == null || decoMeta.getSway() == null) continue;
+                String sway = decoMeta.getSway().toUpperCase();
+                if (!sway.equals("BOTTOM") && !sway.equals("BOTTOM_SLOW") && !sway.equals("TOP_FRINGE")) continue;
 
                 int offsetX = (int) (decoMeta.getXOffset() / 2.0 * SCALE), offsetY = (int) (decoMeta.getYOffset() / 2.0 * SCALE);
                 int decoWid = (int) (decoMeta.getWid() / 2.0 * SCALE);

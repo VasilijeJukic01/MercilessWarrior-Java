@@ -151,6 +151,7 @@ public class WorldTransitionCoordinator {
         context.getObjectManager().loadObjects(level);
         context.getLevelManager().prewarmCurrentLevelDecorations();
         context.getLightManager().ensureStaticRoomLightsBuilt();
+        context.getDecorationEffectManager().rebuildForCurrentLevel();
 
         player.setSpawn(spawnPoint);
         ensureSpawnClearOfFloor(player, level.getLvlData());
@@ -171,9 +172,11 @@ public class WorldTransitionCoordinator {
         if (isInterior) {
             context.getEffectManager().setAmbientEffectsActive(false);
             context.getLightManager().overrideAmbientDarkness(150);
+            context.getDecorationEffectManager().setActive(false);
         }
         else {
             context.getLightManager().releaseAmbientDarkness();
+            context.getDecorationEffectManager().setActive(true);
             world.reinitializeParticles();
         }
 
