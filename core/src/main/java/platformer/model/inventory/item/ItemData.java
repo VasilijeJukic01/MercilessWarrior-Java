@@ -13,6 +13,7 @@ public class ItemData {
     public String imagePath;
     public int sellValue;
     public boolean stackable;
+    public boolean questItem;
     public EquipmentData equip;
 
     public static class EquipmentData {

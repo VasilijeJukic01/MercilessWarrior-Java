@@ -167,8 +167,8 @@ public class DecorationEffectManager {
                 if (specs == null || specs.isEmpty()) continue;
 
                 ObjectMetadata objMeta = context.getLevelManager().getObjectMetadataAt(i, j);
-                double scaleX = (objMeta != null && objMeta.getScaleX() != 0.0) ? objMeta.getScaleX() : 1.0;
-                double scaleY = (objMeta != null && objMeta.getScaleY() != 0.0) ? objMeta.getScaleY() : 1.0;
+                double scaleX = (objMeta != null && objMeta.getScaleX() != 0.0) ? Math.abs(objMeta.getScaleX()) : 1.0;
+                double scaleY = (objMeta != null && objMeta.getScaleY() != 0.0) ? Math.abs(objMeta.getScaleY()) : 1.0;
                 int customOffX = (objMeta != null) ? (int) (objMeta.getOffsetX() / 2.0 * SCALE) : 0;
                 int customOffY = (objMeta != null) ? (int) (objMeta.getOffsetY() / 2.0 * SCALE) : 0;
 

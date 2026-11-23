@@ -123,6 +123,8 @@ public class OnlineStorageStrategy implements StorageStrategy {
 
     @Override
     public boolean sellItem(Player player, InventoryItem selectedItem, int quantity) {
+        ItemData data = selectedItem.getData();
+        if (data == null || data.questItem) return false;
         ShopTransactionRequest request = new ShopTransactionRequest(
                 Framework.getInstance().getAccount().getAccountID(),
                 Framework.getInstance().getAccount().getName(),

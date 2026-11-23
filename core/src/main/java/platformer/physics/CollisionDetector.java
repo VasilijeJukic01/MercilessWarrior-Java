@@ -1,6 +1,7 @@
 package platformer.physics;
 
 import platformer.model.entities.Direction;
+import platformer.model.projectiles.types.GoblinBomb;
 import platformer.model.projectiles.types.LightningBall;
 import platformer.model.projectiles.Projectile;
 
@@ -312,6 +313,7 @@ public final class CollisionDetector {
      * @return {@code true} if the projectile is hitting a solid tile, {@code false} otherwise.
      */
     public static boolean isProjectileHitLevel(int[][] lvlData, Projectile projectile) {
+        if (projectile instanceof GoblinBomb) return false;
         Rectangle bounds = projectile.getShapeBounds().getBounds();
         if (projectile instanceof LightningBall) {
             double centerX = bounds.getCenterX(), centerY = bounds.getCenterY();

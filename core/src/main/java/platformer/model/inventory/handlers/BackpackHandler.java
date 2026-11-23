@@ -4,6 +4,8 @@ import platformer.audio.Audio;
 import platformer.audio.types.Sound;
 import platformer.core.Framework;
 import platformer.core.config.BalanceManager;
+import platformer.debug.logger.Logger;
+import platformer.debug.logger.Message;
 import platformer.model.entities.player.Player;
 import platformer.model.inventory.item.InventoryItem;
 import platformer.model.inventory.item.ItemData;
@@ -53,6 +55,11 @@ public class BackpackHandler {
     public void dropItem(int index) {
         if (index < 0 || index >= BACKPACK_CAPACITY || backpack.get(index) == null) return;
         InventoryItem item = backpack.get(index);
+        ItemData data = item.getData();
+        if (data != null && data.questItem) {
+            Logger.getInstance().notify("Quest items cannot be dropped: " + data.name, Message.WARNING);
+            return;
+        }
         item.setAmount(item.getAmount() - 1);
         if (item.getAmount() <= 0) {
             backpack.set(index, null);

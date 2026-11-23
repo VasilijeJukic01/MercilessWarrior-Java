@@ -7,6 +7,7 @@ import platformer.model.inventory.database.ItemDatabase;
 import platformer.model.quests.Quest;
 import platformer.model.quests.QuestManager;
 import platformer.model.quests.QuestObjective;
+import platformer.model.quests.QuestObjectiveType;
 import platformer.ui.buttons.UIButtonRenderer;
 import platformer.ui.components.slots.QuestSlot;
 import platformer.ui.buttons.ButtonType;
@@ -182,7 +183,8 @@ public class QuestOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
             if (isComplete) g.setColor(INV_TEXT_BONUS);
             else if (isActive) g.setColor(Color.WHITE);
             else g.setColor(Color.GRAY);
-            String objectiveText = String.format("- %s (%d/%d)", objective.getDescription(), objective.getCurrentAmount(), objective.getRequiredAmount());
+            boolean showCounter = !objective.isHideCounter() && !(objective.getType() == QuestObjectiveType.INTERACT && objective.getRequiredAmount() <= 1);
+            String objectiveText = "- " + objective.getDescription() + (showCounter ? " (" + objective.getCurrentAmount() + "/" + objective.getRequiredAmount() + ")" : "");
             g.drawString(objectiveText, QUEST_DESC_X, yPos);
             yPos += g.getFontMetrics().getHeight();
         }

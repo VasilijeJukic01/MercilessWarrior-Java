@@ -211,4 +211,14 @@ public class WorldMemoryManager {
             syncToAccount();
         }
     }
+
+    public void removeFlag(String flag) {
+        if (flag != null && permanentFlags.remove(flag)) {
+            syncToAccount();
+        }
+    }
+
+    public Set<String> getAllFlags() {
+        return Collections.unmodifiableSet(permanentFlags);
+    }
 }

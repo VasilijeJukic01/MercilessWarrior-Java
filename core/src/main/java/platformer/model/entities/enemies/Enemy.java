@@ -13,6 +13,7 @@ import platformer.model.entities.enemies.loader.EnemyRegistry;
 import platformer.model.entities.follower.Follower;
 import platformer.model.entities.player.Player;
 import platformer.model.entities.player.PlayerAction;
+import platformer.model.world.WorldMemoryManager;
 import platformer.physics.DamageSource;
 
 import java.awt.*;
@@ -32,12 +33,18 @@ public abstract class Enemy extends Entity implements DamageSource, Debug<Graphi
     protected final EnemyDefinition definition;
     protected CombatDirector combatDirector;
     protected double enemySpeed;
-    protected int originalAnimSpeed, animSpeed, animIndex, animTick = 0;
+    protected int originalAnimSpeed, animSpeed, animIndex, animTick;
     protected Direction direction = Direction.RIGHT;
     protected boolean alive = true;
     private boolean criticalHit;
     protected int freezeTick = 0;
     protected int stunImmunityTick = 0;
+
+    private static final double PATROL_TETHER_RADIUS = 3.2 * TILES_SIZE;
+    protected int patrolPauseTicks = 0;
+    protected boolean terrified = false;
+    protected boolean cowering = false;
+
     protected Random rand = new Random();
 
     public Enemy(int xPos, int yPos, EnemyType enemyType) {
@@ -55,6 +62,10 @@ public abstract class Enemy extends Entity implements DamageSource, Debug<Graphi
         this.currentHealth = maxHealth;
         this.cooldown = new double[Cooldown.values().length];
         initHitBox(definition.getHitboxWidth(), definition.getHitboxHeight());
+        if (!definition.isBoss()) {
+            setDirection(rand.nextBoolean() ? Direction.LEFT : Direction.RIGHT);
+            this.patrolPauseTicks = rand.nextInt(120);
+        }
     }
 
     /**
@@ -222,16 +233,42 @@ public abstract class Enemy extends Entity implements DamageSource, Debug<Graphi
     }
 
     /**
-     * Moves the enemy along its current patrol direction, turning around at walls or ledge edges.
+     * Moves the enemy back and forth within its home patrol territory, pausing naturally at turnaround points
+     * so enemies guard their posts instead of clumping together at one end of the room.
      */
     protected void patrolStep(int[][] levelData) {
+        cowering = false;
+        if (patrolPauseTicks > 0) {
+            patrolPauseTicks--;
+            setLocomotionState(Anim.IDLE);
+            return;
+        }
+
+        double distFromHome = hitBox.x - xPos;
+        if (direction == Direction.LEFT && distFromHome <= -PATROL_TETHER_RADIUS) {
+            setDirection(Direction.RIGHT);
+            patrolPauseTicks = 120 + rand.nextInt(160);
+            setLocomotionState(Anim.IDLE);
+            return;
+        }
+        else if (direction == Direction.RIGHT && distFromHome >= PATROL_TETHER_RADIUS) {
+            setDirection(Direction.LEFT);
+            patrolPauseTicks = 120 + rand.nextInt(160);
+            setLocomotionState(Anim.IDLE);
+            return;
+        }
+
         enemySpeed = definition.getScaledWalkSpeed();
         setLocomotionState(Anim.WALK);
         double enemyXSpeed = (direction == Direction.LEFT) ? -enemySpeed : enemySpeed;
         if (canMoveHere(hitBox.x + enemyXSpeed, hitBox.y, hitBox.width, hitBox.height, levelData) && isFloor(hitBox, enemyXSpeed, levelData, direction)) {
             hitBox.x += enemyXSpeed;
         }
-        else changeDirection();
+        else {
+            changeDirection();
+            patrolPauseTicks = 100 + rand.nextInt(140);
+            setLocomotionState(Anim.IDLE);
+        }
     }
 
     /**
@@ -386,6 +423,42 @@ public abstract class Enemy extends Entity implements DamageSource, Debug<Graphi
         return animIndex >= definition.getParryWindupStart() && animIndex <= definition.getParryWindupEnd();
     }
 
+    /**
+     * Evaluates whether this enemy should be terrified of the player based on its JSON fearFlag and fearChance.
+     */
+    public void evaluateFearState(WorldMemoryManager memory) {
+        terrified = false;
+        cowering = false;
+        if (memory == null || definition.getFearFlag() == null || definition.getFearChance() <= 0.0) return;
+        if (memory.hasFlag(definition.getFearFlag())) {
+            int seed = Math.abs((xPos * 73856093) ^ (yPos * 19349663) ^ enemyType.ordinal());
+            double roll = (seed % 1000) / 1000.0;
+            terrified = (roll < definition.getFearChance());
+        }
+    }
+
+    /**
+     * Makes a terrified enemy turn away and sprint from the player, cowering in place if cornered against a wall or ledge.
+     */
+    protected void fleeFromEntity(int[][] levelData, Entity target) {
+        double awayDirSign = (target.getHitBox().getCenterX() <= hitBox.getCenterX()) ? 1.0 : -1.0;
+        Direction awayDir = (awayDirSign > 0) ? Direction.RIGHT : Direction.LEFT;
+        double fleeSpeed = definition.getScaledRunSpeed() * 1.10;
+        double step = awayDirSign * fleeSpeed;
+
+        if (canMoveHere(hitBox.x + step, hitBox.y, hitBox.width, hitBox.height, levelData) && isFloor(hitBox, step, levelData, awayDir)) {
+            cowering = false;
+            setDirection(awayDir);
+            hitBox.x += step;
+            setLocomotionState(Anim.RUN);
+        }
+        else {
+            cowering = true;
+            faceEntity(target);
+            setLocomotionState(Anim.IDLE);
+        }
+    }
+
     public abstract boolean hit(double damage, boolean special, boolean hitSound);
 
     public abstract void spellHit(double damage);
@@ -448,6 +521,14 @@ public abstract class Enemy extends Entity implements DamageSource, Debug<Graphi
 
     public boolean isVisible() {
         return true;
+    }
+
+    public boolean isTerrified() {
+        return terrified;
+    }
+
+    public boolean isCowering() {
+        return cowering;
     }
 
     /**

@@ -11,7 +11,12 @@ public enum EnemyType {
     WRAITH(50, 40),             // 4
     RORIC(999, 30),             // 5
     CORRUPTED_KNIGHT(80, 32),   // 6
-    MAX(1, 1);                  // 7
+    GOBLIN(35, 16),             // 7
+    GOBLIN_SOLDIER(52, 18),     // 8
+    GOBLIN_ASSASSIN(40, 20),    // 9
+    GOBLIN_SPEARMAN(38, 18),    // 10
+    GOBLIN_MAGE(38, 22),        // 11
+    MAX(1, 1);                  // 12
 
     private final int defaultHealth;
     private final int defaultDamage;

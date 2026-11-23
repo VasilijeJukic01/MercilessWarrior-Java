@@ -77,6 +77,11 @@ public class EnemyManager {
         this.enemyRenderers.put(EnemyType.CORRUPTED_KNIGHT, new CorruptedKnightRenderer());
         this.enemyRenderers.put(EnemyType.LANCER, new LancerRenderer());
         this.enemyRenderers.put(EnemyType.RORIC, new RoricRenderer());
+        this.enemyRenderers.put(EnemyType.GOBLIN, new GoblinRenderer(EnemyType.GOBLIN));
+        this.enemyRenderers.put(EnemyType.GOBLIN_SOLDIER, new GoblinRenderer(EnemyType.GOBLIN_SOLDIER));
+        this.enemyRenderers.put(EnemyType.GOBLIN_ASSASSIN, new GoblinRenderer(EnemyType.GOBLIN_ASSASSIN));
+        this.enemyRenderers.put(EnemyType.GOBLIN_SPEARMAN, new GoblinRenderer(EnemyType.GOBLIN_SPEARMAN));
+        this.enemyRenderers.put(EnemyType.GOBLIN_MAGE, new GoblinRenderer(EnemyType.GOBLIN_MAGE));
     }
 
     public void loadEnemies(Level level) {
@@ -84,6 +89,7 @@ public class EnemyManager {
         this.combatDirector.reset();
         for (Enemy enemy : getAllEnemies()) {
             enemy.setCombatDirector(combatDirector);
+            enemy.evaluateFearState(context != null ? context.getWorldMemoryManager() : null);
         }
     }
 

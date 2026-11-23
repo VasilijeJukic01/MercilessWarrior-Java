@@ -329,9 +329,25 @@ public class DialogueManager {
                 .filter(d -> !d.isActivated())
                 .filter(d -> !d.isCutsceneOnly())
                 .filter(d -> d.getLocation() == null || d.getLocation().equals(currentLocation))
-                .filter(d -> d.getRequiredFlag() == null || context.getWorldMemoryManager().hasFlag(d.getRequiredFlag()))
-                .filter(d -> d.getExcludeFlag() == null || !context.getWorldMemoryManager().hasFlag(d.getExcludeFlag()))
+                .filter(d -> hasAllRequiredFlags(d.getRequiredFlag()))
+                .filter(d -> hasNoExcludedFlags(d.getExcludeFlag()))
                 .collect(Collectors.toList());
+    }
+
+    private boolean hasAllRequiredFlags(String requiredFlags) {
+        if (requiredFlags == null || requiredFlags.isBlank()) return true;
+        for (String flag : requiredFlags.split(",")) {
+            if (!context.getWorldMemoryManager().hasFlag(flag.trim())) return false;
+        }
+        return true;
+    }
+
+    private boolean hasNoExcludedFlags(String excludedFlags) {
+        if (excludedFlags == null || excludedFlags.isBlank()) return true;
+        for (String flag : excludedFlags.split(",")) {
+            if (context.getWorldMemoryManager().hasFlag(flag.trim())) return false;
+        }
+        return true;
     }
 
     // Reset

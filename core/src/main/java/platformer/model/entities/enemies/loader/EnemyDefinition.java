@@ -56,6 +56,9 @@ public class EnemyDefinition {
     private int parryWindupStart = -1;
     private int parryWindupEnd = -1;
 
+    private String fearFlag;
+    private double fearChance = 0.0;
+
     private boolean undead = false;
     private boolean boss = false;
     private boolean multiFrameHitCheck = false;

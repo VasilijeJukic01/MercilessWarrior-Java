@@ -9,6 +9,8 @@ import platformer.model.entities.player.Player;
 import platformer.model.gameObjects.ObjType;
 import platformer.model.gameObjects.npc.Npc;
 import platformer.model.gameObjects.npc.NpcType;
+import platformer.model.inventory.item.InventoryItem;
+import platformer.model.inventory.item.ItemData;
 import platformer.model.quests.ObjectiveTarget;
 import platformer.model.quests.QuestObjectiveType;
 import platformer.physics.CollisionDetector;
@@ -16,6 +18,7 @@ import platformer.state.types.PlayingState;
 
 import java.awt.*;
 
+import static platformer.constants.Constants.ITEM_TEXT_COLOR;
 import static platformer.constants.Constants.TILES_SIZE;
 
 /**
@@ -67,6 +70,10 @@ public final class CutsceneStepFactory {
             case "UPDATE_OBJECTIVE_TEXT" -> new UpdateObjectiveTextStep(data.getQuestName(), data.getText());
             case "RELOAD_LEVEL_VARIANT" -> new ReloadLevelVariantStep();
             case "START_BOSS_FIGHT" -> new StartBossFightStep();
+            case "GIVE_ITEM" -> new GiveItemStep(
+                    data.getItemId(),
+                    data.getAmount() != null ? data.getAmount() : 1
+            );
             default -> new WaitStep(1);
         };
     }
@@ -399,6 +406,31 @@ public final class CutsceneStepFactory {
                     .map(e -> (Lancer) e)
                     .findFirst()
                     .ifPresent(lancer -> lancer.engageFight(context.getObjectManager()));
+        }
+
+        @Override
+        public boolean update(GameContext context) {
+            return true;
+        }
+    }
+
+    private static class GiveItemStep implements CutsceneStep {
+        private final String itemId;
+        private final int amount;
+
+        GiveItemStep(String itemId, int amount) {
+            this.itemId = itemId;
+            this.amount = Math.max(1, amount);
+        }
+
+        @Override
+        public void start(GameContext context) {
+            if (itemId == null || itemId.isEmpty() || context.getPlayer() == null) return;
+            InventoryItem item = new InventoryItem(itemId, amount);
+            context.getPlayer().getInventory().addItemToBackpack(item);
+            ItemData data = item.getData();
+            String label = (data != null) ? data.name : itemId;
+            context.getEffectManager().spawnItemPickupText("+" + amount + " " + label, context.getPlayer(), ITEM_TEXT_COLOR);
         }
 
         @Override

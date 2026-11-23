@@ -23,6 +23,11 @@ public final class EnemyFactory {
         CREATORS.put(EnemyType.CORRUPTED_KNIGHT, CorruptedKnight::new);
         CREATORS.put(EnemyType.LANCER, Lancer::new);
         CREATORS.put(EnemyType.RORIC, Roric::new);
+        CREATORS.put(EnemyType.GOBLIN, (x, y) -> new Goblin(x, y, EnemyType.GOBLIN));
+        CREATORS.put(EnemyType.GOBLIN_SOLDIER, (x, y) -> new Goblin(x, y, EnemyType.GOBLIN_SOLDIER));
+        CREATORS.put(EnemyType.GOBLIN_ASSASSIN, (x, y) -> new Goblin(x, y, EnemyType.GOBLIN_ASSASSIN));
+        CREATORS.put(EnemyType.GOBLIN_SPEARMAN, (x, y) -> new Goblin(x, y, EnemyType.GOBLIN_SPEARMAN));
+        CREATORS.put(EnemyType.GOBLIN_MAGE, (x, y) -> new Goblin(x, y, EnemyType.GOBLIN_MAGE));
     }
 
     private EnemyFactory() {}

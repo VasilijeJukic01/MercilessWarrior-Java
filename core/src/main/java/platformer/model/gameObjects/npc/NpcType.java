@@ -39,6 +39,9 @@ public enum NpcType {
     ),                      // 9
     DOG(8, new Color(0xD4B07B), "Loyal Hound", DialogueBehavior.RANDOM,
             scale(72), scale(72), scale(50), scale(32), scale(11), scale(18), 220, 128
+    ),
+    GOBLIN(1, new Color(0x6BD952), "Goblin Chief", DialogueBehavior.SEQUENTIAL,
+            scale(40), scale(52), scale(80), scale(45), scale(-20), scale(4), 32, 32
     );
 
     private final int sprites;

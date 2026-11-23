@@ -25,4 +25,6 @@ public class CutsceneStepData {
     private Integer stepIndex;
     private String flag;
     private String text;
+    private String itemId;
+    private Integer amount;
 }

@@ -119,6 +119,6 @@ public class OfflineStorageStrategy implements StorageStrategy {
     @Override
     public boolean sellItem(Player player, InventoryItem selectedItem, int quantity) {
         ItemData data = selectedItem.getData();
-        return data != null && selectedItem.getAmount() >= quantity;
+        return data != null && !data.questItem && selectedItem.getAmount() >= quantity;
     }
 }

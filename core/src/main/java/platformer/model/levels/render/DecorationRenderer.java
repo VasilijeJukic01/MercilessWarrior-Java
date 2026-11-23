@@ -107,7 +107,7 @@ public class DecorationRenderer {
                 int xPos = (TILES_SIZE * i - xLevelOffset) + offsetX, yPos = (TILES_SIZE * j - yLevelOffset) + offsetY;
 
                 boolean hasCustomTransform = objMeta != null && (objMeta.getRotation() != 0.0 || objMeta.getScaleX() != 1.0 || objMeta.getScaleY() != 1.0);
-                double maxScale = hasCustomTransform ? Math.max(1.0, Math.max(objMeta.getScaleX(), objMeta.getScaleY())) : 1.0;
+                double maxScale = hasCustomTransform ? Math.max(1.0, Math.max(Math.abs(objMeta.getScaleX()), Math.abs(objMeta.getScaleY()))) : 1.0;
 
                 if (!isVisible(xPos, yPos, (int) (wid * maxScale), (int) (hei * maxScale))) continue;
 
@@ -144,7 +144,7 @@ public class DecorationRenderer {
     }
 
     private BufferedImage bakeTransformedImage(BufferedImage model, int wid, int hei, double rotationDeg, double sx, double sy) {
-        double scaledW = wid * sx, scaledH = hei * sy;
+        double scaledW = wid * Math.abs(sx), scaledH = hei * Math.abs(sy);
         double rads = Math.toRadians(rotationDeg);
         double sin = Math.abs(Math.sin(rads));
         double cos = Math.abs(Math.cos(rads));

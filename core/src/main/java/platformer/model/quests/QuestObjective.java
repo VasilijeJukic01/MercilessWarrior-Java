@@ -14,6 +14,7 @@ public class QuestObjective {
     private String description;
     private int requiredAmount;
     private int currentAmount;
+    private boolean hideCounter = false;
 
     public QuestObjectiveType getType() {
         return type;
@@ -69,5 +70,13 @@ public class QuestObjective {
 
     public void setLevelId(String levelId) {
         this.levelId = levelId;
+    }
+
+    public boolean isHideCounter() {
+        return hideCounter;
+    }
+
+    public void setHideCounter(boolean hideCounter) {
+        this.hideCounter = hideCounter;
     }
 }

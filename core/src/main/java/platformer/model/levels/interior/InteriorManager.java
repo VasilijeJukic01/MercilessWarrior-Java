@@ -18,8 +18,10 @@ import java.awt.image.BufferedImage;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Manages the loading, storage, and state transitions for interior levels.
@@ -158,5 +160,14 @@ public class InteriorManager {
 
     public String getCurrentInteriorId() {
         return currentInteriorId;
+    }
+
+    public Set<String> getInteriorIds() {
+        return Collections.unmodifiableSet(interiors.keySet());
+    }
+
+    public void clearInteriorState() {
+        this.isInterior = false;
+        this.currentInteriorId = "";
     }
 }

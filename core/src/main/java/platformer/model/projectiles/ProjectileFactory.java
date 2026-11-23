@@ -152,4 +152,25 @@ public final class ProjectileFactory {
         addProjectile(new VoidSlashProjectile(spawnX, spawnY, caster.getDirection()));
     }
 
+    public static void createGoblinBomb(Enemy goblin, double targetDistance) {
+        int dirSign = (goblin.getDirection() == Direction.LEFT) ? -1 : 1;
+        int spawnX = (int) (goblin.getHitBox().getCenterX() + dirSign * (10 * SCALE));
+        int spawnY = (int) (goblin.getHitBox().y + 4 * SCALE);
+        addProjectile(new GoblinBomb(spawnX, spawnY, goblin.getDirection(), targetDistance));
+    }
+
+    public static void createGoblinSpear(Enemy goblin) {
+        int dirSign = (goblin.getDirection() == Direction.LEFT) ? -1 : 1;
+        int spawnX = (int) (goblin.getHitBox().getCenterX() + dirSign * (14 * SCALE));
+        int spawnY = (int) (goblin.getHitBox().y + 10 * SCALE);
+        addProjectile(new GoblinSpear(spawnX, spawnY, goblin.getDirection()));
+    }
+
+    public static void createGoblinMageBall(Enemy goblin) {
+        int dirSign = (goblin.getDirection() == Direction.LEFT) ? -1 : 1;
+        int spawnX = (int) (goblin.getHitBox().getCenterX() + dirSign * (14 * SCALE));
+        int spawnY = (int) (goblin.getHitBox().y + 8 * SCALE);
+        addProjectile(new GoblinMageBall(spawnX, spawnY, goblin.getDirection()));
+    }
+
 }
