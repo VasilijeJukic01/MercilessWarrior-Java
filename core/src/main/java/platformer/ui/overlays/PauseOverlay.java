@@ -26,15 +26,19 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static platformer.constants.Constants.*;
 import static platformer.constants.UI.*;
 
 /**
  * PauseOverlay class is an overlay that is displayed when the game is paused.
- * It allows the player to interact with pause game options.
+ * It allows the player to interact with pause game options and browse gameplay tutorials.
  */
 public class PauseOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
+
+    private static final Pattern PLACEHOLDER_PATTERN = Pattern.compile("\\{([^}]+)\\}");
 
     private final GameState gameState;
     private final GameSettingsPanel settingsPanel;
@@ -44,10 +48,12 @@ public class PauseOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
     private final Rectangle2D.Double[] tabs = new Rectangle2D.Double[4];
 
     private int tipIndex = 0;
+    private int pendingTipIndex = -1;
     private List<TutorialTip> tips;
     private final Map<String, BufferedImage> tipImages = new HashMap<>();
 
     private SmallButton continueBtn, retryBtn, exitBtn;
+    private SmallButton prevTipBtn, nextTipBtn;
 
     private int tipTimer = 0;
     private static final int TIP_SWITCH_INTERVAL = 8 * 200;
@@ -67,7 +73,10 @@ public class PauseOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
         this.tips = gameState.getContext().getTutorialManager().getTips();
         for (TutorialTip tip : tips) {
             if (tip.image != null && !tip.image.isEmpty()) {
-                tipImages.put(tip.image, ImageUtils.importImage(tip.image, TUTORIAL_IMAGE_WID, TUTORIAL_IMAGE_HEI));
+                BufferedImage img = ImageUtils.importImage(tip.image, TUTORIAL_IMAGE_WID, TUTORIAL_IMAGE_HEI);
+                if (img != null) {
+                    tipImages.put(tip.image, img);
+                }
             }
         }
     }
@@ -76,6 +85,12 @@ public class PauseOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
         continueBtn = new SmallButton(CONTINUE_BTN_X, CONTINUE_BTN_Y, CRE_BTN_SIZE, CRE_BTN_SIZE, ButtonType.CONTINUE);
         retryBtn = new SmallButton(RETRY_BTN_X, RETRY_BTN_Y, CRE_BTN_SIZE, CRE_BTN_SIZE, ButtonType.RETRY);
         exitBtn = new SmallButton(EXIT_BTN_X, EXIT_BTN_Y, CRE_BTN_SIZE, CRE_BTN_SIZE, ButtonType.EXIT);
+
+        int tipNavSize = scale(20);
+        int tipNavY = PAUSE_TEXT_Y + scale(172);
+        prevTipBtn = new SmallButton(OVERLAY_X + scale(24), tipNavY, tipNavSize, tipNavSize, ButtonType.PREV);
+        nextTipBtn = new SmallButton(OVERLAY_X + OVERLAY_WID - scale(24) - tipNavSize, tipNavY, tipNavSize, tipNavSize, ButtonType.NEXT);
+
         tabs[0] = new Rectangle2D.Double(scale(305), scale(135), TINY_BTN_WID, TINY_BTN_HEI);
         tabs[1] = new Rectangle2D.Double(scale(365), scale(135), TINY_BTN_WID, TINY_BTN_HEI);
         tabs[2] = new Rectangle2D.Double(scale(425), scale(135), TINY_BTN_WID, TINY_BTN_HEI);
@@ -89,6 +104,8 @@ public class PauseOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
                 continueBtn.update();
                 retryBtn.update();
                 exitBtn.update();
+                prevTipBtn.update();
+                nextTipBtn.update();
                 updateTipCycle();
             }
             case 1 -> settingsPanel.updateAudio();
@@ -98,13 +115,20 @@ public class PauseOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
     }
 
     private void updateTipCycle() {
+        if (tips == null || tips.isEmpty()) return;
         if (fadingOut) {
             tipAlpha -= FADE_SPEED;
             if (tipAlpha <= 0) {
                 tipAlpha = 0;
                 fadingOut = false;
                 fadingIn = true;
-                tipIndex = (tipIndex + 1) % tips.size();
+                if (pendingTipIndex >= 0) {
+                    tipIndex = pendingTipIndex;
+                    pendingTipIndex = -1;
+                }
+                else {
+                    tipIndex = (tipIndex + 1) % tips.size();
+                }
             }
         }
         else if (fadingIn) {
@@ -121,6 +145,14 @@ public class PauseOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
                 fadingOut = true;
             }
         }
+    }
+
+    private void switchTip(int delta) {
+        if (tips == null || tips.size() <= 1) return;
+        tipTimer = 0;
+        pendingTipIndex = (tipIndex + delta + tips.size()) % tips.size();
+        fadingIn = false;
+        fadingOut = true;
     }
 
     @Override
@@ -151,7 +183,7 @@ public class PauseOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
         g2d.setColor(TAB_COLOR);
         g2d.setStroke(new BasicStroke(2));
         Rectangle2D.Double activeTab = tabs[currentPage];
-        g2d.drawLine((int)activeTab.x, (int)(activeTab.y + activeTab.height), (int)(activeTab.x + activeTab.width), (int)(activeTab.y + activeTab.height));
+        g2d.drawLine((int) activeTab.x, (int) (activeTab.y + activeTab.height), (int) (activeTab.x + activeTab.width), (int) (activeTab.y + activeTab.height));
         g2d.setStroke(new BasicStroke(1));
     }
 
@@ -159,69 +191,87 @@ public class PauseOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
         continueBtn.render(g);
         retryBtn.render(g);
         exitBtn.render(g);
+        if (tips != null && tips.size() > 1) {
+            prevTipBtn.render(g);
+            nextTipBtn.render(g);
+        }
         renderTipSection(g);
     }
 
     private void renderTipSection(Graphics g) {
         if (tips == null || tips.isEmpty()) return;
         Graphics2D g2d = (Graphics2D) g.create();
-        g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, tipAlpha));
+        g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, Math.max(0.0f, Math.min(1.0f, tipAlpha))));
 
-        int contentX = OVERLAY_X + (int)(20 * SCALE);
-        int contentWidth = OVERLAY_WID - (int)(40 * SCALE);
+        int contentX = OVERLAY_X + scale(22);
+        int contentWidth = OVERLAY_WID - scale(44);
         int centerX = contentX + contentWidth / 2;
-        int y = PAUSE_TEXT_Y + (int)(100 * SCALE);
+        int y = PAUSE_TEXT_Y + scale(92);
 
         TutorialTip currentTip = tips.get(tipIndex);
         FontMetrics fm;
 
-        // Title
+        // Title + Page Counter
         g2d.setColor(Color.WHITE);
         g2d.setFont(new Font("Arial", Font.BOLD, FONT_MEDIUM));
         fm = g2d.getFontMetrics();
-        int titleWidth = fm.stringWidth(currentTip.title);
-        g2d.drawString(currentTip.title, centerX - titleWidth / 2, y);
+        String title = currentTip.title;
+        int titleWidth = fm.stringWidth(title);
+        g2d.drawString(title, centerX - titleWidth / 2, y);
 
-        y += (int)(25 * SCALE);
+        y += scale(18);
 
         // Description
         g2d.setFont(new Font("Arial", Font.PLAIN, FONT_LIGHT));
         fm = g2d.getFontMetrics();
-        g2d.setColor(new Color(200, 200, 200));
+        g2d.setColor(new Color(205, 215, 218));
         String formattedContent = formatContent(currentTip.content);
-        for (String line : wrapText(formattedContent, contentWidth, fm)) {
+        List<String> wrapped = wrapText(formattedContent, contentWidth, fm);
+        int maxTextBottom = CONTINUE_BTN_Y - TUTORIAL_IMAGE_HEI - scale(14);
+        for (String line : wrapped) {
+            if (y > maxTextBottom) break;
             int lineWidth = fm.stringWidth(line);
             g2d.drawString(line, centerX - lineWidth / 2, y);
-            y += g2d.getFontMetrics().getHeight();
+            y += fm.getHeight();
         }
 
         // Image
-        y += (int)(10 * SCALE);
         if (currentTip.image != null) {
             BufferedImage tipImage = tipImages.get(currentTip.image);
             if (tipImage != null) {
                 int imgX = centerX - tipImage.getWidth() / 2;
-                int imgY = y;
-                int cornerRadius = (int)(15 * SCALE);
+                int imgY = Math.min(y + scale(6), CONTINUE_BTN_Y - tipImage.getHeight() - scale(12));
+                int cornerRadius = scale(12);
 
                 Shape clipShape = new RoundRectangle2D.Float(imgX, imgY, tipImage.getWidth(), tipImage.getHeight(), cornerRadius, cornerRadius);
                 Shape oldClip = g2d.getClip();
                 g2d.setClip(clipShape);
                 g2d.drawImage(tipImage, imgX, imgY, null);
                 g2d.setClip(oldClip);
-                g2d.setColor(new Color(150, 150, 150, 200));
+                g2d.setColor(new Color(95, 195, 190, 190));
                 g2d.setStroke(new BasicStroke(2));
                 g2d.draw(clipShape);
-                y += tipImage.getHeight() + (int)(15 * SCALE);
             }
         }
         g2d.dispose();
     }
 
+    /**
+     * Dynamically resolves all {Command} placeholders in tutorial text using the player's current keybindings.
+     */
     private String formatContent(String content) {
+        if (content == null || content.isEmpty()) return "";
         KeyboardController kc = Framework.getInstance().getKeyboardController();
-        return content.replace("{Shield}", kc.getKeyName("Shield"))
-                .replace("{Minimap}", kc.getKeyName("Minimap"));
+        Matcher matcher = PLACEHOLDER_PATTERN.matcher(content);
+        StringBuilder sb = new StringBuilder();
+        while (matcher.find()) {
+            String command = matcher.group(1);
+            String keyName = "[" + kc.getKeyName(command).toUpperCase() + "]";
+            matcher.appendReplacement(sb, Matcher.quoteReplacement(keyName));
+        }
+        matcher.appendTail(sb);
+        return sb.toString();
     }
 
     private List<String> wrapText(String text, int maxWidth, FontMetrics fm) {
@@ -261,6 +311,8 @@ public class PauseOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
                 if (isMouseInButton(e, continueBtn)) continueBtn.setMousePressed(true);
                 else if (isMouseInButton(e, retryBtn)) retryBtn.setMousePressed(true);
                 else if (isMouseInButton(e, exitBtn)) exitBtn.setMousePressed(true);
+                else if (isMouseInButton(e, prevTipBtn)) prevTipBtn.setMousePressed(true);
+                else if (isMouseInButton(e, nextTipBtn)) nextTipBtn.setMousePressed(true);
             }
             case 1 -> settingsPanel.mousePressedAudio(e);
             case 2 -> settingsPanel.mousePressedGameplay(e);
@@ -291,6 +343,12 @@ public class PauseOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
             EventBus.getInstance().publish(new OverlayChangeEvent(null));
             gameState.getGame().startMenuState();
         }
+        else if (isMouseInButton(e, prevTipBtn) && prevTipBtn.isMousePressed()) {
+            switchTip(-1);
+        }
+        else if (isMouseInButton(e, nextTipBtn) && nextTipBtn.isMousePressed()) {
+            switchTip(1);
+        }
     }
 
     @Override
@@ -299,6 +357,8 @@ public class PauseOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
         allButtons.add(continueBtn);
         allButtons.add(retryBtn);
         allButtons.add(exitBtn);
+        allButtons.add(prevTipBtn);
+        allButtons.add(nextTipBtn);
 
         allButtons.forEach(b -> b.setMouseOver(false));
         allButtons.stream().filter(b -> isMouseInButton(e, b)).findFirst().ifPresent(b -> b.setMouseOver(true));
@@ -328,6 +388,8 @@ public class PauseOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
         continueBtn.resetMouseSet();
         retryBtn.resetMouseSet();
         exitBtn.resetMouseSet();
+        prevTipBtn.resetMouseSet();
+        nextTipBtn.resetMouseSet();
         settingsPanel.resetAudio();
         settingsPanel.resetGameplay();
         controlsPanel.reset();
