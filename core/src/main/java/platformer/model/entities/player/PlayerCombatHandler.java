@@ -279,10 +279,11 @@ public class PlayerCombatHandler {
     }
 
     /**
-     * Triggers the exact frame a parry connects: stuns nearby enemies immediately, restores stamina, and charges ultimate.
+     * Triggers the exact frame a parry connects: fires clash VFX/camera punch, stuns nearby enemies immediately, restores stamina, and charges ultimate.
      */
     private void onParrySuccess() {
         Logger.getInstance().notify("Damage blocked successfully!", Message.INFORMATION);
+        player.getFeedbackHandler().onParrySuccess();
         player.getUltimateHandler().addChargeFromParry();
         BalanceManager.PlayerBalance pb = BalanceManager.getInstance().getPlayerBalance();
         double blockCooldown = (pb.getBlockCooldown() * 0.35) * player.getStats().getCooldownMultiplier();

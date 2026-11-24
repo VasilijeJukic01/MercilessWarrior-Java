@@ -118,15 +118,13 @@ public class Knight extends Enemy {
     }
 
     private void cleaveAttackAction(int[][] levelData, Entity target) {
-        if (animIndex == 0) {
-            attackCheck = false;
-        }
-        else if ((animIndex == 1 || animIndex == 3) && checkPlayerParry(target)) {
+        if (animIndex <= 3 && !attackCheck && checkPlayerParry(target)) {
             hasHyperArmor = false;
             chainIntoArcaneSlash = false;
             attackCheck = true;
+            return;
         }
-        else if (animIndex == 3 || animIndex == 4) {
+        if (animIndex == 3 || animIndex == 4) {
             if (animTick % 2 == 0) stepForwardClamped(levelData, target, CLEAVE_LUNGE_SPEED);
             if (animIndex == 4 && !attackCheck) {
                 checkEntityHit(attackBox, target);
@@ -141,20 +139,25 @@ public class Knight extends Enemy {
     }
 
     private void arcaneSlashAction(int[][] levelData, Entity target) {
-        if (animIndex == 0) {
-            attackCheck = false;
-        }
-        else if ((animIndex == 2 || animIndex == 3) && checkPlayerParry(target)) {
+        if (animIndex <= 3 && !attackCheck && checkPlayerParry(target)) {
             hasHyperArmor = false;
             attackCheck = true;
+            return;
         }
-        else if (animIndex >= 3 && animIndex <= 5) {
+        if (animIndex >= 3 && animIndex <= 5) {
             if (animTick % 2 == 0) stepForwardClamped(levelData, target, ARCANE_SURGE_SPEED);
             if ((animIndex == 4 || animIndex == 5) && !attackCheck) {
                 double damage = getEnemyType().getDamage() * 1.15;
                 if (attackBox.intersects(target.getHitBox())) {
-                    if (target instanceof Player player && !player.checkAction(PlayerAction.CAN_BLOCK)) {
-                        player.changeHealth(-damage, this);
+                    if (target instanceof Player player) {
+                        if (checkPlayerParry(player)) {
+                            hasHyperArmor = false;
+                            attackCheck = true;
+                            return;
+                        }
+                        if (!player.checkAction(PlayerAction.CAN_BLOCK)) {
+                            player.changeHealth(-damage, this);
+                        }
                     }
                 }
                 attackCheck = true;

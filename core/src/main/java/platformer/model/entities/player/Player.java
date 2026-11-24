@@ -363,6 +363,12 @@ public class Player extends Entity {
         movementHandler.updateDashTimer();
     }
 
+    public void updateDuringCinematic(boolean recordAfterimages) {
+        playerDataManager.update(!levelManager.isInArena());
+        playerRenderer.updateAfterimages(recordAfterimages, pushOffset);
+        feedbackHandler.update();
+    }
+
     @Override
     protected void coolDownTickUpdate() {
         double step = 1.0 / GameClock.TICKS_PER_SECOND;
@@ -375,7 +381,7 @@ public class Player extends Entity {
     }
 
     public void render(Graphics g, int xLevelOffset, int yLevelOffset) {
-        playerRenderer.render(g, xLevelOffset, yLevelOffset, pushOffset, feedbackHandler.getBurnTick(), feedbackHandler.getHitFlashTick(), feedbackHandler.getInvulnerabilityTick());
+        playerRenderer.render(g, xLevelOffset, yLevelOffset, pushOffset, feedbackHandler.getBurnTick(), feedbackHandler.getHitFlashTick(), feedbackHandler.getInvulnerabilityTick(), feedbackHandler.getParryFlashTick());
         hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.GREEN);
         attackBoxRenderer(g, xLevelOffset, yLevelOffset);
     }
@@ -638,6 +644,10 @@ public class Player extends Entity {
 
     public PlayerCombatHandler getCombatHandler() {
         return combatHandler;
+    }
+
+    public PlayerFeedbackHandler getFeedbackHandler() {
+        return feedbackHandler;
     }
 
     public Inventory getInventory() {

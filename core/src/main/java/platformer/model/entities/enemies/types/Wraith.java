@@ -175,10 +175,7 @@ public class Wraith extends Enemy {
     }
 
     private void meleeAttackAction(Entity target) {
-        if (animIndex == 0) {
-            attackCheck = false;
-        }
-        else if ((animIndex == 2 || animIndex == 3) && checkPlayerParry(target)) {
+        if (animIndex <= 3 && !attackCheck && checkPlayerParry(target)) {
             attackCheck = true;
         }
         else if ((animIndex == 4 || animIndex == 5) && !attackCheck) {

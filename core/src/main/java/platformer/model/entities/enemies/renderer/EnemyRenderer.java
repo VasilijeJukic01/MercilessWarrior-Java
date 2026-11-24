@@ -19,7 +19,7 @@ import static platformer.constants.Constants.SCALE;
  */
 public interface EnemyRenderer<T extends Enemy> {
 
-    Color PARRY_RIM_COLOR = new Color(255, 70, 55, 235);
+    Color PARRY_RIM_COLOR = new Color(255, 65, 50, 245);
     Color PARRY_FLASH_COLOR = new Color(255, 230, 140, 255);
     Map<BufferedImage, BufferedImage> PARRY_RIM_CACHE = new ConcurrentHashMap<>();
     Map<BufferedImage, BufferedImage> PARRY_FLASH_CACHE = new ConcurrentHashMap<>();
@@ -48,7 +48,7 @@ public interface EnemyRenderer<T extends Enemy> {
     }
 
     /**
-     * Draws the enemy sprite frame and, if the enemy is in its parryable windup frames, renders cached red rim and pulsing golden flash silhouettes without per-frame allocations.
+     * Draws the enemy sprite frame and, if the enemy is in its parryable windup frames, renders cached red rim and instant-peak golden flash silhouettes without per-frame allocations.
      */
     default void drawEnemySprite(Graphics g, T enemy, BufferedImage frame, int x, int y, int width, int height) {
         if (frame == null) return;
@@ -60,7 +60,7 @@ public interface EnemyRenderer<T extends Enemy> {
         BufferedImage rimSilhouette = PARRY_RIM_CACHE.computeIfAbsent(frame, f -> bakeSilhouette(f, PARRY_RIM_COLOR));
         BufferedImage flashSilhouette = PARRY_FLASH_CACHE.computeIfAbsent(frame, f -> bakeSilhouette(f, PARRY_FLASH_COLOR));
 
-        int rimStep = Math.max(1, (int) Math.round(SCALE));
+        int rimStep = Math.max(1, (int) Math.round(SCALE * 1.25));
         g.drawImage(rimSilhouette, x - rimStep, y, width, height, null);
         g.drawImage(rimSilhouette, x + rimStep, y, width, height, null);
         g.drawImage(rimSilhouette, x, y - rimStep, width, height, null);
@@ -69,8 +69,8 @@ public interface EnemyRenderer<T extends Enemy> {
         g.drawImage(frame, x, y, width, height, null);
 
         double progress = (double) enemy.getAnimTick() / Math.max(1, enemy.getAnimSpeed());
-        float pulse = (float) Math.sin(progress * Math.PI);
-        float flashAlpha = Math.max(0.0f, Math.min(1.0f, (75.0f + 95.0f * pulse) / 255.0f));
+        float pulse = (float) Math.cos(Math.min(1.0, progress) * Math.PI * 0.5);
+        float flashAlpha = Math.max(0.0f, Math.min(1.0f, (105.0f + 95.0f * pulse) / 255.0f));
 
         Graphics2D g2d = (Graphics2D) g.create();
         g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, flashAlpha));

@@ -92,10 +92,7 @@ public class Skeleton extends Enemy {
     }
 
     private void attackAction(Entity target) {
-        if (animIndex == 0) {
-            attackCheck = false;
-        }
-        else if ((animIndex == 1 || animIndex == 2) && checkPlayerParry(target)) {
+        if (animIndex <= 2 && !attackCheck && checkPlayerParry(target)) {
             attackCheck = true;
         }
         else if (animIndex == 3 && !attackCheck) {

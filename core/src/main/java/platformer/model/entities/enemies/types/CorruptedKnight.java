@@ -148,15 +148,12 @@ public class CorruptedKnight extends Enemy {
     }
 
     private void voidCleaveAction(int[][] levelData, Entity target) {
-        if (animIndex == 0) {
-            attackCheck = false;
-        }
-        else if ((animIndex == 1 || animIndex == 3) && checkPlayerParry(target)) {
+        if (animIndex <= 3 && !attackCheck && checkPlayerParry(target)) {
             isShadowStepping = false;
             attackCheck = true;
             return;
         }
-        else if (animIndex == 3 || animIndex == 4) {
+        if (animIndex == 3 || animIndex == 4) {
             if (animTick % 2 == 0) stepForwardClamped(levelData, target, SHADOW_STEP_SPEED);
             if (animIndex == 4 && !attackCheck) {
                 checkEntityHit(attackBox, target);
@@ -167,19 +164,15 @@ public class CorruptedKnight extends Enemy {
         }
     }
 
-    /**
-     * Conjures purple void fire in hand (frames 1..3) and hurls a Void Crescent projectile on frame 4.
-     */
     private void voidCrescentWaveAction(Entity target) {
         if (animIndex == 0) {
-            attackCheck = false;
             faceEntity(target);
         }
-        else if ((animIndex == 1 || animIndex == 3) && checkPlayerParry(target)) {
+        if (animIndex <= 3 && !attackCheck && checkPlayerParry(target)) {
             attackCheck = true;
             return;
         }
-        else if (animIndex == 4 && !attackCheck) {
+        if (animIndex == 4 && !attackCheck) {
             faceEntity(target);
             ProjectileFactory.createVoidSlash(this);
             Audio.getInstance().getAudioPlayer().playSound(Sound.FIREBALL);

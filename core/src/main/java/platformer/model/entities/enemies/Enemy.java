@@ -75,7 +75,11 @@ public abstract class Enemy extends Entity implements DamageSource, Debug<Graphi
 
     protected void updateAnimation() {
         animTick++;
-        if (animTick >= animSpeed) {
+        int effectiveAnimSpeed = animSpeed;
+        if (isParryWindup() && animIndex == definition.getParryWindupStart() && !definition.isBoss()) {
+            effectiveAnimSpeed += 10;
+        }
+        if (animTick >= effectiveAnimSpeed) {
             animTick = 0;
             animIndex++;
             if (animIndex >= SpriteManager.getInstance().getAnimFrames(enemyType, entityState)) {
@@ -324,8 +328,7 @@ public abstract class Enemy extends Entity implements DamageSource, Debug<Graphi
             boolean block = player.checkAction(PlayerAction.BLOCK);
             if (block) {
                 double dx = hitBox.getCenterX() - player.getHitBox().getCenterX();
-                boolean facingEnemy = (dx >= -14.0 * SCALE && player.getFlipSign() == 1)
-                        || (dx <= 14.0 * SCALE && player.getFlipSign() == -1);
+                boolean facingEnemy = (dx >= -14.0 * SCALE && player.getFlipSign() == 1) || (dx <= 14.0 * SCALE && player.getFlipSign() == -1);
                 if (facingEnemy) {
                     player.addAction(PlayerAction.CAN_BLOCK);
                     Audio.getInstance().getAudioPlayer().playBlockSound("Player");
@@ -347,6 +350,11 @@ public abstract class Enemy extends Entity implements DamageSource, Debug<Graphi
     public void checkEntityHit(Rectangle2D.Double attackBox, Entity target) {
         if (attackBox.intersects(target.getHitBox())) {
             if (target instanceof Player player) {
+                boolean isParryableMelee = definition.getParryWindupStart() >= 0 && (entityState == Anim.ATTACK_1 || entityState == Anim.ATTACK_2 || entityState == Anim.ATTACK_3);
+                if (isParryableMelee && checkPlayerParry(player)) {
+                    attackCheck = true;
+                    return;
+                }
                 boolean canBlock = player.checkAction(PlayerAction.CAN_BLOCK);
                 if (!canBlock) player.changeHealth(-enemyType.getDamage(), this);
             }
@@ -370,10 +378,16 @@ public abstract class Enemy extends Entity implements DamageSource, Debug<Graphi
 
     public void freeze(int ticks) {
         if (entityState == Anim.DEATH || !alive || stunImmunityTick > 0) return;
-        this.freezeTick = Math.max(this.freezeTick, ticks);
+        int appliedTicks = definition.isBoss() ? Math.min(ticks, 95) : ticks;
+        this.freezeTick = Math.max(this.freezeTick, appliedTicks);
         this.attackCheck = true;
         releaseCombatToken();
         if (entityState != Anim.HIT && !definition.isBoss()) {
+            this.entityState = Anim.HIT;
+            this.animIndex = 0;
+            this.animTick = 0;
+        }
+        else if (definition.isBoss()) {
             this.entityState = Anim.HIT;
             this.animIndex = 0;
             this.animTick = 0;
@@ -419,8 +433,19 @@ public abstract class Enemy extends Entity implements DamageSource, Debug<Graphi
     public boolean isParryWindup() {
         if (!alive || freezeTick > 0 || attackCheck) return false;
         if (definition.getParryWindupStart() < 0) return false;
-        if (entityState != Anim.ATTACK_1 && entityState != Anim.ATTACK_2) return false;
+        if (entityState != Anim.ATTACK_1 && entityState != Anim.ATTACK_2 && entityState != Anim.ATTACK_3) return false;
         return animIndex >= definition.getParryWindupStart() && animIndex <= definition.getParryWindupEnd();
+    }
+
+    /**
+     * Positions the enemy's visual animation state and facing direction during a scripted clash or cutscene.
+     */
+    public void setCinematicPose(Anim pose, int frameIndex, Direction faceDir, boolean airborne) {
+        setDirection(faceDir);
+        this.entityState = pose;
+        this.animIndex = Math.max(0, Math.min(frameIndex, Math.max(0, SpriteManager.getInstance().getAnimFrames(enemyType, pose) - 1)));
+        this.animTick = 0;
+        this.inAir = airborne;
     }
 
     /**
@@ -564,6 +589,7 @@ public abstract class Enemy extends Entity implements DamageSource, Debug<Graphi
         this.entityState = enemyAction;
         this.animIndex = 0;
         this.animTick = 0;
+        this.attackCheck = false;
         criticalHit = false;
         setAnimSpeedByState();
     }

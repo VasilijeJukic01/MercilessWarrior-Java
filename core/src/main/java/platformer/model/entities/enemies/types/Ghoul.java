@@ -139,10 +139,9 @@ public class Ghoul extends Enemy {
 
     private void attackAction(int[][] levelData, Entity target) {
         if (animIndex == 0) {
-            attackCheck = false;
             blocker = false;
         }
-        else if ((animIndex == 1 || animIndex == 2) && checkPlayerParry(target)) {
+        if (animIndex <= 2 && !attackCheck && checkPlayerParry(target)) {
             attackCheck = true;
         }
 

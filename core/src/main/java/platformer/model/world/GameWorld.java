@@ -3,6 +3,7 @@ package platformer.model.world;
 import lombok.Getter;
 import platformer.core.GameClock;
 import platformer.core.GameContext;
+import platformer.model.combat.ClashManager;
 import platformer.model.effects.EffectManager;
 import platformer.model.effects.decorations.DecorationEffectManager;
 import platformer.model.effects.lighting.LightManager;
@@ -44,6 +45,7 @@ public class GameWorld {
     private final QuestManager questManager;
     private final WorldMemoryManager worldMemoryManager;
     private final DecorationEffectManager decorationEffectManager;
+    private final ClashManager clashManager;
 
     public GameWorld(GameContext context) {
         this.gameClock = context.getGameClock();
@@ -59,6 +61,7 @@ public class GameWorld {
         this.questManager = context.getQuestManager();
         this.worldMemoryManager = context.getWorldMemoryManager();
         this.decorationEffectManager = context.getDecorationEffectManager();
+        this.clashManager = context.getClashManager();
 
         this.player = new Player(PLAYER_X, PLAYER_Y, PLAYER_WIDTH, PLAYER_HEIGHT, context);
         this.player.loadLvlData(levelManager.getCurrentLevel().getLvlData());
@@ -92,6 +95,13 @@ public class GameWorld {
     // Core
     public void update() {
         if (gameClock != null) gameClock.tick();
+        clashManager.update();
+        if (clashManager.isActive()) {
+            lightManager.update(timeCycleManager);
+            effectManager.update();
+            rainManager.update();
+            return;
+        }
         player.update();
         if (player.getUltimateHandler().isActive()) {
             lightManager.update(timeCycleManager);
@@ -138,6 +148,7 @@ public class GameWorld {
         spellManager.render(g, xLevelOffset, yLevelOffset);
         effectManager.renderForegroundEffects(g, xLevelOffset, yLevelOffset);
         player.getUltimateHandler().render(g, xLevelOffset, yLevelOffset);
+        clashManager.render(g, xLevelOffset, yLevelOffset);
     }
 
     private void renderBackground(int xLevelOffset, int yLevelOffset, Graphics g) {
@@ -175,6 +186,7 @@ public class GameWorld {
         rainManager.reset();
         timeCycleManager.reset();
         decorationEffectManager.reset();
+        clashManager.reset();
     }
 
     public void reset() {

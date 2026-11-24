@@ -109,7 +109,7 @@ public class LancerRenderer implements EnemyRenderer<Lancer> {
 
         int screenX = worldDrawX - xLevelOffset;
         int screenY = worldDrawY - yLevelOffset;
-        g.drawImage(animations[state.ordinal()][lancer.getAnimIndex()], screenX, screenY, LANCER_WIDTH * fS, LANCER_HEIGHT, null);
+        drawEnemySprite(g, lancer, animations[state.ordinal()][lancer.getAnimIndex()], screenX, screenY, LANCER_WIDTH * fS, LANCER_HEIGHT);
 
         if (isAerialChanneling) renderOrbitingSatellites(g, centerX, centerY, true);
         lancer.hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.BLUE);

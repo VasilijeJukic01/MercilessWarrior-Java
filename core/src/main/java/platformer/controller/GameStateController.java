@@ -66,7 +66,10 @@ public class GameStateController {
             if (canDash) player.getActionHandler().doDash();
         });
         initAction(pressActions, "Attack", () -> {
-            if (player.getUltimateHandler().isActive()) {
+            if (context.getClashManager() != null && context.getClashManager().isActive()) {
+                context.getClashManager().handleAttackInput();
+            }
+            else if (player.getUltimateHandler().isActive()) {
                 player.getUltimateHandler().handleRhythmInput();
             }
             else if (context.getGameState().getActiveState() != PlayingState.DIALOGUE) {

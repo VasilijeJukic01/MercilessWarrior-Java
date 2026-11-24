@@ -6,16 +6,21 @@ import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
 
 import java.awt.*;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Arc2D;
+import java.awt.geom.Path2D;
 import java.awt.image.BufferedImage;
 
 import static platformer.constants.Constants.*;
 
 /**
- * Handles all visual rendering for the Player, including sprite animations, tinted dash afterimage ghosts, and the fiery lava-burn silhouette overlay.
+ * Handles all visual rendering for the Player, including sprite animations, tinted dash afterimage ghosts,
+ * parry clash visuals, and the fiery lava-burn silhouette overlay.
  */
 public class PlayerRenderer {
 
     private static final int DASH_GHOST_COUNT = 5;
+    private static final int PARRY_FLASH_MAX_TICKS = 22;
 
     private final Player player;
     private final BufferedImage[][] animations;
@@ -69,9 +74,9 @@ public class PlayerRenderer {
     }
 
     /**
-     * Renders the player sprite, active dash afterimages, and burn overlay.
+     * Renders the player sprite, active dash afterimages, parry clash effects, and burn overlay.
      */
-    public void render(Graphics g, int xLevelOffset, int yLevelOffset, double pushOffset, int burnTick, int hitFlashTick, int invulnerabilityTick) {
+    public void render(Graphics g, int xLevelOffset, int yLevelOffset, double pushOffset, int burnTick, int hitFlashTick, int invulnerabilityTick, int parryFlashTick) {
         int width = PLAYER_WIDTH;
         int height = PLAYER_HEIGHT;
 
@@ -96,8 +101,15 @@ public class PlayerRenderer {
             if (hitFlashTick > 0 && frame != null) {
                 renderHitFlashOverlay(g, frame, playerXPos, playerYPos, width, height, hitFlashTick);
             }
+            else if (parryFlashTick > 10 && frame != null) {
+                renderParrySilhouetteGlint(g, frame, playerXPos, playerYPos, width, height, parryFlashTick);
+            }
             else if (burnTick > 0 && frame != null) {
                 renderBurnOverlay(g, frame, playerXPos, playerYPos, width, height, burnTick);
+            }
+
+            if (parryFlashTick > 0) {
+                renderParryClashEffect(g, xLevelOffset, yLevelOffset, parryFlashTick);
             }
             renderAttackRecoveryIndicator(g, xLevelOffset, yLevelOffset, pushOffset);
         } catch (Exception e) {
@@ -107,6 +119,100 @@ public class PlayerRenderer {
                 Logger.getInstance().notify("Render error in " + getClass().getSimpleName() + ": " + e.getMessage(), Message.ERROR);
             }
         }
+    }
+
+    private void renderParrySilhouetteGlint(Graphics g, BufferedImage frame, int drawX, int drawY, int width, int height, int parryFlashTick) {
+        if (burnSilhouetteBuffer == null || burnSilhouetteBuffer.getWidth() != width || burnSilhouetteBuffer.getHeight() != height) {
+            burnSilhouetteBuffer = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        }
+
+        float ratio = (parryFlashTick - 10) / (float) (PARRY_FLASH_MAX_TICKS - 10);
+        int alpha = Math.max(0, Math.min(220, Math.round(ratio * 210)));
+        Graphics2D bG2d = burnSilhouetteBuffer.createGraphics();
+        bG2d.setComposite(AlphaComposite.Clear);
+        bG2d.fillRect(0, 0, width, height);
+        bG2d.setComposite(AlphaComposite.SrcOver);
+        bG2d.drawImage(frame, 0, 0, width, height, null);
+
+        bG2d.setComposite(AlphaComposite.SrcAtop);
+        bG2d.setColor(new Color(255, 235, 165, alpha));
+        bG2d.fillRect(0, 0, width, height);
+        bG2d.dispose();
+        g.drawImage(burnSilhouetteBuffer, drawX, drawY, player.getFlipSign() * width, height, null);
+    }
+
+    /**
+     * Renders a crisp golden-white steel-clash star flare and expanding guard arc at the player's parry impact point.
+     */
+    private void renderParryClashEffect(Graphics g, int xLevelOffset, int yLevelOffset, int parryFlashTick) {
+        float life = (float) parryFlashTick / PARRY_FLASH_MAX_TICKS;
+        float progress = 1.0f - life;
+        int flip = player.getFlipSign();
+
+        double cx = player.getHitBox().getCenterX() + flip * (14.0 * SCALE) - xLevelOffset;
+        double cy = player.getHitBox().getCenterY() - (4.0 * SCALE) - yLevelOffset;
+
+        Graphics2D g2d = (Graphics2D) g.create();
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        // Expanding curved guard wave in front of the blade
+        double arcRadius = (16.0 + progress * 24.0) * SCALE;
+        int arcAlpha = Math.max(0, Math.min(255, (int) (life * 225)));
+        double startAngle = (flip == 1) ? -58.0 : 122.0;
+        double extent = 116.0;
+
+        Arc2D.Double guardArc = new Arc2D.Double(cx - arcRadius, cy - arcRadius, arcRadius * 2.0, arcRadius * 2.0, startAngle, extent, Arc2D.OPEN);
+        g2d.setColor(new Color(255, 200, 75, arcAlpha / 2));
+        g2d.setStroke(new BasicStroke((4.2f * life + 1.0f) * SCALE, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+        g2d.draw(guardArc);
+
+        g2d.setColor(new Color(255, 250, 225, arcAlpha));
+        g2d.setStroke(new BasicStroke((1.8f * life + 0.6f) * SCALE, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+        g2d.draw(guardArc);
+
+        double outerArm = (30.0 * Math.sin(life * Math.PI * 0.72) + 8.0 * life) * SCALE;
+        double innerCore = Math.max(1.5, 4.2 * life * SCALE);
+        double rot = Math.toRadians(15.0 + progress * 28.0) * flip;
+
+        AffineTransform oldTx = g2d.getTransform();
+        g2d.translate(cx, cy);
+        g2d.rotate(rot);
+
+        Path2D.Double outerStar = buildFourPointFlare(outerArm * 1.15, innerCore * 1.45);
+        g2d.setColor(new Color(255, 195, 55, Math.max(0, Math.min(255, (int) (life * 195)))));
+        g2d.fill(outerStar);
+
+        Path2D.Double innerStar = buildFourPointFlare(outerArm * 0.85, innerCore * 0.85);
+        g2d.setColor(new Color(255, 255, 245, Math.max(0, Math.min(255, (int) (life * 255)))));
+        g2d.fill(innerStar);
+
+        // Horizontal glinting slash streak across the impact point
+        double streakLen = (26.0 + progress * 18.0) * SCALE;
+        double streakHalfH = Math.max(1.0, 2.2 * life * SCALE);
+        Path2D.Double streak = new Path2D.Double();
+        streak.moveTo(-streakLen, 0);
+        streak.quadTo(0, -streakHalfH, streakLen, 0);
+        streak.quadTo(0, streakHalfH, -streakLen, 0);
+        streak.closePath();
+        g2d.setColor(new Color(200, 252, 255, Math.max(0, Math.min(255, (int) (life * 210)))));
+        g2d.fill(streak);
+
+        g2d.setTransform(oldTx);
+        g2d.dispose();
+    }
+
+    private Path2D.Double buildFourPointFlare(double outerR, double innerR) {
+        Path2D.Double star = new Path2D.Double();
+        for (int i = 0; i < 8; i++) {
+            double angle = i * (Math.PI / 4.0);
+            double r = (i % 2 == 0) ? outerR : innerR;
+            double px = Math.cos(angle) * r;
+            double py = Math.sin(angle) * r;
+            if (i == 0) star.moveTo(px, py);
+            else star.lineTo(px, py);
+        }
+        star.closePath();
+        return star;
     }
 
     private void renderHitFlashOverlay(Graphics g, BufferedImage frame, int drawX, int drawY, int width, int height, int hitFlashTick) {

@@ -2,10 +2,13 @@ package platformer.model.entities.enemies.boss;
 
 import platformer.animation.Anim;
 import platformer.animation.SpriteManager;
+import platformer.audio.types.Sound;
 import platformer.event.EventBus;
+import platformer.event.events.ClashRequestedEvent;
 import platformer.event.events.effects.ScreenShakeEvent;
 import platformer.event.events.lancer.LancerAuraEvent;
 import platformer.event.events.lancer.LancerDashSlashEvent;
+import platformer.model.combat.ClashConfig;
 import platformer.model.entities.Cooldown;
 import platformer.model.entities.Direction;
 import platformer.model.entities.Entity;
@@ -51,6 +54,24 @@ public class Lancer extends Enemy {
 
     // Effect
     private final AfterimageTrail afterimageTrail = new AfterimageTrail(4, 3);
+    private static final ClashConfig LANCER_CLASH_CONFIG = new ClashConfig(
+            new double[][]{{0.72, 0.82}, {0.28, 0.60}, {0.74, 0.36}, {0.32, 0.14}},
+            new int[]{78, 70, 62, 54},
+            5.0,
+            8.0,
+            14.0,
+            4.0,
+            18.0,
+            120,
+            3600,
+            new Color(255, 220, 90),
+            new Color(55, 240, 255),
+            Anim.SPELL_1, 4,
+            Anim.ATTACK_3, 2,
+            Anim.SPELL_3, 7,
+            Sound.LANCER_METAL_SLASH_1,
+            Sound.LIGHTNING_1
+    );
 
     public Lancer(int xPos, int yPos) {
         super(xPos, yPos, EnemyType.LANCER);
@@ -79,6 +100,18 @@ public class Lancer extends Enemy {
         objectManager.activateBlockers(true);
         EventBus.getInstance().publish(new ScreenShakeEvent(25, 10.0));
         handler.startThunderSlam();
+    }
+
+    @Override
+    public void freeze(int ticks) {
+        super.freeze(ticks);
+        if (freezeTick > 0) {
+            slashCount = 0;
+            shooting = false;
+            multiShootCount = 0;
+            multiShootFlag = 0;
+            EventBus.getInstance().publish(new LancerAuraEvent(this, false));
+        }
     }
 
     // Hit
@@ -128,10 +161,21 @@ public class Lancer extends Enemy {
         if (cooldown[Cooldown.ATTACK.ordinal()] == 0) handler.attack(levelData, player);
     }
 
+    private boolean isWithinParryClashRange(Player player, double maxRangeTiles) {
+        double dist = Math.abs(player.getHitBox().getCenterX() - hitBox.getCenterX());
+        return dist <= maxRangeTiles * TILES_SIZE && Math.abs(player.getHitBox().getCenterY() - hitBox.getCenterY()) <= TILES_SIZE * 2.0;
+    }
+
     private void classicAttackAction(int[][] levelData, Player player) {
         if (animIndex == 0 && animTick == 0) {
             audioHandler.playBattleCry();
             attackCheck = false;
+        }
+        if (animIndex <= 2 && !attackCheck && isWithinParryClashRange(player, 3.0) && checkPlayerParry(player)) {
+            slashCount = 0;
+            attackCheck = true;
+            EventBus.getInstance().publish(new ClashRequestedEvent(this, LANCER_CLASH_CONFIG));
+            return;
         }
         if (animIndex == 2) {
             if (animTick == 0) {
@@ -145,8 +189,14 @@ public class Lancer extends Enemy {
     }
 
     private void dashSlashAction(int[][] levelData, Player player) {
-        if (animIndex == 0) attackCheck = false;
-        if (slashCount == 0) dashSlash(levelData);
+        if (animIndex == 0 && animTick == 0) attackCheck = false;
+        if (animIndex <= 2 && !attackCheck && isWithinParryClashRange(player, 4.5) && checkPlayerParry(player)) {
+            slashCount = 0;
+            attackCheck = true;
+            EventBus.getInstance().publish(new ClashRequestedEvent(this, LANCER_CLASH_CONFIG));
+            return;
+        }
+        if (slashCount == 0) dashSlash(levelData, player);
         else if (animIndex == 2) {
             if (animTick == 0) {
                 audioHandler.playFollowUpSwing();
@@ -158,8 +208,7 @@ public class Lancer extends Enemy {
         if (!attackCheck) checkEntityHit(attackBox, player);
     }
 
-    private void dashSlash(int[][] levelData) {
-        if (animIndex == 0) attackCheck = false;
+    private void dashSlash(int[][] levelData, Player player) {
         if (animIndex == 2 && !attackCheck) {
             if (animTick == 0) audioHandler.playDashSlash();
             Point2D.Double startPos = new Point2D.Double(hitBox.getCenterX(), hitBox.y);
@@ -171,6 +220,11 @@ public class Lancer extends Enemy {
             }
             Point2D.Double endPos = new Point2D.Double(hitBox.getCenterX(), hitBox.y);
             EventBus.getInstance().publish(new LancerDashSlashEvent(startPos, endPos, hitBox.height));
+
+            Rectangle2D.Double sweptPath = new Rectangle2D.Double(Math.min(startPos.x, endPos.x), hitBox.y, Math.abs(endPos.x - startPos.x) + hitBox.width, hitBox.height);
+            if (sweptPath.intersects(player.getHitBox())) {
+                checkEntityHit(sweptPath, player);
+            }
         }
     }
 
@@ -250,6 +304,20 @@ public class Lancer extends Enemy {
     }
 
     @Override
+    public void checkEntityHit(Rectangle2D.Double attackBox, Entity target) {
+        if (target instanceof Player player && attackBox.intersects(player.getHitBox())) {
+            boolean isParryableMelee = (entityState == Anim.ATTACK_1 || entityState == Anim.ATTACK_2 || entityState == Anim.ATTACK_3);
+            if (isParryableMelee && checkPlayerParry(player)) {
+                slashCount = 0;
+                attackCheck = true;
+                EventBus.getInstance().publish(new ClashRequestedEvent(this, LANCER_CLASH_CONFIG));
+                return;
+            }
+        }
+        super.checkEntityHit(attackBox, target);
+    }
+
+    @Override
     protected void updateAnimation() {
         if (cooldown != null) {
             coolDownTickUpdate();
@@ -261,8 +329,12 @@ public class Lancer extends Enemy {
         if (animTick >= animSpeed) {
             animTick = 0;
             animIndex++;
-            if (animIndex >= SpriteManager.getInstance().getAnimFrames(getEnemyType(), entityState)) {
-                finishAnimation();
+            int maxFrames = SpriteManager.getInstance().getAnimFrames(getEnemyType(), entityState);
+            if (animIndex >= maxFrames) {
+                if (freezeTick > 0 && entityState == Anim.HIT) {
+                    animIndex = maxFrames - 1;
+                }
+                else finishAnimation();
             }
         }
     }
@@ -315,7 +387,6 @@ public class Lancer extends Enemy {
         }
     }
 
-
     // Projectiles
     private void oscillationProjectiles() {
         if (animIndex == 1 && !shooting) {
@@ -356,6 +427,15 @@ public class Lancer extends Enemy {
 
     public void update(int[][] levelData, Player player, SpellManager spellManager, ObjectManager objectManager, BossInterface bossInterface) {
         audioHandler.update();
+        if (handleStunTick(levelData, gravity, collisionFallSpeed)) {
+            if (freezeTick == 0) {
+                cooldown[Cooldown.ATTACK.ordinal()] = 6;
+                setEnemyAction(Anim.IDLE);
+            }
+            if (!bossInterface.isActive() && start) bossInterface.injectBoss(this);
+            else if (bossInterface.isActive() && !start) bossInterface.reset();
+            return;
+        }
         updateMove(levelData, player, spellManager, objectManager);
         updateAnimation();
         updateAttackBox();

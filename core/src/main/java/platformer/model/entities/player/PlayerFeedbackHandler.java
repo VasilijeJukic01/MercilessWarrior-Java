@@ -10,17 +10,25 @@ import platformer.model.effects.EffectManager;
 import platformer.model.effects.ScreenEffectsManager;
 import platformer.model.effects.particles.DustType;
 import platformer.model.inventory.item.ItemRarity;
+import platformer.view.Camera;
 
 import java.awt.*;
 import java.util.Arrays;
 import java.util.Random;
+
+import static platformer.constants.Constants.SCALE;
+import static platformer.constants.Constants.scale;
 
 /**
  * Manages all visual, audio, particle, and status-effect feedback related to the Player.
  */
 public class PlayerFeedbackHandler {
 
+    private static final Color PARRY_GOLD = new Color(255, 220, 115);
+    private static final Color PARRY_CORE_CYAN = new Color(170, 250, 255);
+
     private final Player player;
+    private final GameContext context;
     private final EffectManager effectManager;
     private final ScreenEffectsManager screenEffectsManager;
     private final Random rand = new Random();
@@ -31,9 +39,11 @@ public class PlayerFeedbackHandler {
     private int burnTick = 0;
     private int hitFlashTick = 0;
     private int invulnerabilityTick = 0;
+    private int parryFlashTick = 0;
 
     public PlayerFeedbackHandler(Player player, GameContext context) {
         this.player = player;
+        this.context = context;
         this.effectManager = context.getEffectManager();
         this.screenEffectsManager = context.getScreenEffectsManager();
     }
@@ -44,6 +54,7 @@ public class PlayerFeedbackHandler {
     public void update() {
         if (hitFlashTick > 0) hitFlashTick--;
         if (invulnerabilityTick > 0) invulnerabilityTick--;
+        if (parryFlashTick > 0) parryFlashTick--;
         updateMythicAura();
         updateBurnStatus();
         updateRunningEffects();
@@ -131,6 +142,34 @@ public class PlayerFeedbackHandler {
     }
 
     /**
+     * Triggers hit-stop, camera punch, vignette flash, dual shockwaves, steel-clash sparks, and the blade lens-flare effect when the player successfully parries an attack.
+     */
+    public void onParrySuccess() {
+        this.parryFlashTick = 22;
+        EventBus.getInstance().publish(new HitStopEvent(12));
+
+        double clashWorldX = player.getHitBox().getCenterX() + player.getFlipSign() * (14.0 * SCALE);
+        double clashWorldY = player.getHitBox().getCenterY() - (4.0 * SCALE);
+
+        if (screenEffectsManager != null) {
+            screenEffectsManager.triggerShake(14, 8.5);
+            screenEffectsManager.triggerLightningStrobe(PARRY_GOLD, 135, false);
+
+            Camera cam = context.getCamera();
+            if (cam != null) {
+                double screenX = clashWorldX - cam.getXOffset();
+                double screenY = clashWorldY - cam.getYOffset();
+                screenEffectsManager.triggerShockwave(screenX, screenY, scale(88), 22, PARRY_GOLD);
+                screenEffectsManager.triggerShockwave(screenX, screenY, scale(46), 15, PARRY_CORE_CYAN);
+            }
+        }
+
+        effectManager.spawnDustParticles(clashWorldX, clashWorldY, 18, DustType.IMPACT_SPARK, player.getFlipSign(), null);
+        effectManager.spawnDustParticles(clashWorldX, clashWorldY, 12, DustType.CRITICAL_HIT, -player.getFlipSign(), null);
+        effectManager.spawnDamageNumber("PARRY!", clashWorldX, player.getHitBox().y - (6.0 * SCALE), PARRY_GOLD);
+    }
+
+    /**
      * Handles all visual, camera, and audio feedback when the player takes damage.
      */
     public void onPlayerDamaged(double damageValue) {
@@ -162,6 +201,10 @@ public class PlayerFeedbackHandler {
         return invulnerabilityTick;
     }
 
+    public int getParryFlashTick() {
+        return parryFlashTick;
+    }
+
     public boolean isInvulnerable() {
         return invulnerabilityTick > 0;
     }
@@ -173,5 +216,6 @@ public class PlayerFeedbackHandler {
         burnTick = 0;
         hitFlashTick = 0;
         invulnerabilityTick = 0;
+        parryFlashTick = 0;
     }
 }

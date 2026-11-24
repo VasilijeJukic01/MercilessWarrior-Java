@@ -152,7 +152,6 @@ public class Goblin extends Enemy {
 
     private void primaryAttackAction(int[][] levelData, Entity target) {
         if (animIndex == 0) {
-            attackCheck = false;
             faceEntity(target);
         }
 
@@ -167,7 +166,7 @@ public class Goblin extends Enemy {
         }
 
         if (variant == EnemyType.GOBLIN_MAGE) {
-            if ((animIndex == 3 || animIndex == 4 || animIndex == 5) && checkPlayerParry(target)) {
+            if (animIndex >= 1 && animIndex <= 5 && !attackCheck && checkPlayerParry(target)) {
                 attackCheck = true;
             }
             else if ((animIndex == 6 || animIndex == 7) && !attackCheck) {
@@ -176,7 +175,7 @@ public class Goblin extends Enemy {
             return;
         }
 
-        if ((animIndex == 1 || animIndex == 2) && checkPlayerParry(target)) {
+        if (animIndex <= 2 && !attackCheck && checkPlayerParry(target)) {
             attackCheck = true;
         }
         else if (animIndex == 3) {

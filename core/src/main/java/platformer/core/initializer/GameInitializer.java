@@ -22,6 +22,7 @@ import platformer.event.handlers.GameFlowEventHandler;
 import platformer.event.handlers.LancerEventHandler;
 import platformer.event.handlers.RoricEventHandler;
 import platformer.event.listeners.QuestSystemListener;
+import platformer.model.combat.ClashManager;
 import platformer.model.cutscene.CutsceneManager;
 import platformer.model.dialogue.DialogueManager;
 import platformer.model.effects.EffectManager;
@@ -95,6 +96,7 @@ public class GameInitializer {
         context.setScreenEffectsManager(screenEffectsManager);
         context.setWorldTransitionCoordinator(new WorldTransitionCoordinator());
         context.setDecorationEffectManager(new DecorationEffectManager());
+        context.setClashManager(new ClashManager());
 
         // Dependency Injection
         context.getPerksManager().wire(context);
@@ -112,6 +114,7 @@ public class GameInitializer {
         context.getCutsceneManager().wire(context);
         context.getWorldTransitionCoordinator().wire(context);
         context.getDecorationEffectManager().wire(context);
+        context.getClashManager().wire(context);
 
         ProjectileFactory.init(context.getProjectileManager());
         context.getEnemyManager().injectScreenEffectsManager(screenEffectsManager);
@@ -154,6 +157,7 @@ public class GameInitializer {
         eventBus.register(LancerAuraEvent.class, lancerHandler::onLancerAura);
         eventBus.register(LancerDashSlashEvent.class, lancerHandler::onLancerDashSlash);
         eventBus.register(ScreenShakeEvent.class, lancerHandler::onScreenShake);
+        eventBus.register(ClashRequestedEvent.class, context.getClashManager()::onClashRequested);
 
         // Roric Event Handler
         RoricEventHandler roricHandler = new RoricEventHandler(context);
