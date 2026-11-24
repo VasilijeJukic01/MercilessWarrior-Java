@@ -27,7 +27,7 @@ public class JumpHistoryTracker {
         if (playerInAir && tempJump == null && player.getAirSpeed() < 0) {
             double pSpeed = player.getHorizontalSpeed();
             if (Math.abs(pSpeed) > 0.1) {
-                tempJump = new JumpSnapshot((int)player.getHitBox().x, (int)player.getHitBox().y, Math.abs(pSpeed), player.getFlipSign(), false, false);
+                tempJump = new JumpSnapshot((int) player.getHitBox().x, (int) player.getHitBox().y, Math.abs(pSpeed), player.getFlipSign(), false, false);
             }
         }
 
@@ -46,7 +46,7 @@ public class JumpHistoryTracker {
         // C. Land (commit to history)
         if (!playerInAir && tempJump != null) {
             jumpHistory.add(tempJump);
-            if (jumpHistory.size() > 5) jumpHistory.remove(0);
+            if (jumpHistory.size() > 6) jumpHistory.remove(0);
             tempJump = null;
         }
     }

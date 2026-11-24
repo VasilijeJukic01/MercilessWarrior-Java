@@ -342,7 +342,7 @@ public class SpriteManager {
         anim[Anim.ATTACK_2.ordinal()] = loadFromSprite(SIR_DEJANOVIC_SHEET, 8, 4, KNIGHT_WIDTH, KNIGHT_HEIGHT, 0, KNIGHT_W, KNIGHT_H);
         anim[Anim.SPELL_1.ordinal()] = anim[Anim.ATTACK_2.ordinal()];
         anim[Anim.HIT.ordinal()] = loadFromSprite(SIR_DEJANOVIC_SHEET,      5, 5, KNIGHT_WIDTH, KNIGHT_HEIGHT, 0, KNIGHT_W, KNIGHT_H);
-        anim[Anim.BLOCK.ordinal()] = anim[Anim.IDLE.ordinal()];
+        anim[Anim.BLOCK.ordinal()] = loadFromSprite(SIR_DEJANOVIC_SHEET,    4, 3, KNIGHT_WIDTH, KNIGHT_HEIGHT, 1, KNIGHT_W, KNIGHT_H);
         anim[Anim.DEATH.ordinal()] = loadFromSprite(SIR_DEJANOVIC_SHEET,    12, 6, KNIGHT_WIDTH, KNIGHT_HEIGHT, 0, KNIGHT_W, KNIGHT_H);
 
         followerAnimations.put(NpcType.SIR_DEJANOVIC, anim);

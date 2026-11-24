@@ -21,8 +21,8 @@ public class DejanovicBehavior implements FollowerBehavior {
 
     private static final int AGGRO_RANGE = TILES_SIZE * 6;
     private static final int ATTACK_RANGE = (int) (TILES_SIZE * 1.65);
-    private static final int COOLDOWN_TIME = 180;
-    private static final int LEASH_RANGE = TILES_SIZE * 11;
+    private static final int COOLDOWN_TIME = 165;
+    private static final int LEASH_RANGE = TILES_SIZE * 9;
 
     private Enemy currentTarget;
     private int cooldownTick = 0;
@@ -32,25 +32,46 @@ public class DejanovicBehavior implements FollowerBehavior {
     public void update(Follower host, Player player, int[][] levelData, List<Enemy> enemies) {
         double distToPlayerX = Math.abs(player.getHitBox().x - host.getHitBox().x);
         double distToPlayerY = Math.abs(player.getHitBox().y - host.getHitBox().y);
-        if (distToPlayerX > LEASH_RANGE || distToPlayerY > TILES_SIZE * 5) {
+        if (distToPlayerX > LEASH_RANGE || distToPlayerY > TILES_SIZE * 3) {
             currentTarget = null;
             cooldownTick = 0;
             host.setMoveTarget(player.getHitBox().x);
             return;
         }
+
+        if (currentTarget != null) {
+            if (!currentTarget.isAlive()
+                    || Math.abs(currentTarget.getHitBox().x - player.getHitBox().x) > AGGRO_RANGE * 1.3
+                    || Math.abs(currentTarget.getHitBox().y - host.getHitBox().y) > TILES_SIZE * 1.5
+                    || !isPathSafe(host, currentTarget, levelData)) {
+                currentTarget = null;
+            }
+        }
+
         if (cooldownTick > 0) {
             cooldownTick--;
-            host.setMoveTarget(host.getHitBox().x);
             if (currentTarget != null && currentTarget.isAlive()) {
-                if (currentTarget.getHitBox().x > host.getHitBox().x) host.setDirection(Direction.RIGHT);
-                else host.setDirection(Direction.LEFT);
+                double dx = currentTarget.getHitBox().getCenterX() - host.getHitBox().getCenterX();
+                host.setDirection(dx >= 0 ? Direction.RIGHT : Direction.LEFT);
+                if (Math.abs(dx) <= ATTACK_RANGE * 1.25 && (currentTarget.isParryWindup() || currentTarget.isAttacking())) {
+                    host.activateGuard(28);
+                }
+                host.setMoveTarget(host.getHitBox().x);
+            }
+            else {
+                host.setMoveTarget(player.getHitBox().x);
             }
             return;
         }
 
-        if (host.isBusy()) return;
-        if (currentTarget == null || !currentTarget.isAlive()
-                || Math.abs(currentTarget.getHitBox().x - host.getHitBox().x) > AGGRO_RANGE * 1.5) {
+        if (host.isBusy()) {
+            if (currentTarget == null) {
+                host.setMoveTarget(player.getHitBox().x);
+            }
+            return;
+        }
+
+        if (currentTarget == null) {
             currentTarget = findBestTarget(host, player, enemies, levelData);
         }
 
@@ -65,9 +86,13 @@ public class DejanovicBehavior implements FollowerBehavior {
                 host.setEnemyActionNoReset(rand.nextBoolean() ? Anim.ATTACK_1 : Anim.ATTACK_2);
                 cooldownTick = COOLDOWN_TIME + rand.nextInt(45);
             }
-            else host.setMoveTarget(currentTarget.getHitBox().x);
+            else {
+                host.setMoveTarget(currentTarget.getHitBox().x);
+            }
         }
-        else host.setMoveTarget(player.getHitBox().x);
+        else {
+            host.setMoveTarget(player.getHitBox().x);
+        }
     }
 
     @Override

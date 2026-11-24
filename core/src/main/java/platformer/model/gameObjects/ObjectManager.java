@@ -101,6 +101,9 @@ public class ObjectManager {
         configureObjects();
         applyNpcMetadata();
         applyObjectMetadata();
+        if (activeFollower != null) {
+            activeFollower.setLevelTriggers(level.getTriggers());
+        }
     }
 
     private void configureObjects() {
@@ -320,6 +323,13 @@ public class ObjectManager {
     }
 
     /**
+     * Checks if the follower is touching a standable object without triggering crumbling platform decay.
+     */
+    public boolean isFollowerTouchingObject(Follower follower) {
+        return collisionHandler.isTouchingObject(Container.class, follower) || collisionHandler.isTouchingObject(Brick.class, follower) || collisionHandler.isTouchingObject(CrumblingPlatform.class, follower);
+    }
+
+    /**
      * Checks if the player is glitched inside an object.
      *
      * @param player The player whose position is to be checked.
@@ -458,6 +468,11 @@ public class ObjectManager {
         if (activeFollower != null) {
             List<Enemy> enemies = context.getEnemyManager().getAllEnemies();
             activeFollower.update(lvlData, player, enemies);
+            for (JumpPad pad : getObjects(JumpPad.class)) {
+                if (pad.isAlive() && pad.getHitBox().intersects(activeFollower.getHitBox()) && activeFollower.getAirSpeed() >= 0) {
+                    activeFollower.launch(-6.0 * SCALE);
+                }
+            }
         }
     }
 
@@ -534,6 +549,9 @@ public class ObjectManager {
 
     public void spawnFollower(NpcType type, int x, int y) {
         this.activeFollower = new Follower(x, y, type, context.getEffectManager(), this);
+        if (context.getLevelManager() != null && context.getLevelManager().getCurrentLevel() != null) {
+            this.activeFollower.setLevelTriggers(context.getLevelManager().getCurrentLevel().getTriggers());
+        }
     }
 
     public void despawnFollower() {

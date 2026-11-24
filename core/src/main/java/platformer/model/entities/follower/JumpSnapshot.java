@@ -14,7 +14,7 @@ public record JumpSnapshot(
 ) {
 
     public boolean isRelevant(Rectangle2D.Double npcBox) {
-        return Math.abs(npcBox.x - x) < (TILES_SIZE * 1.5) && Math.abs(npcBox.y - y) < (TILES_SIZE * 1.5);
+        return Math.abs(npcBox.x - x) < (TILES_SIZE * 2.0) && Math.abs(npcBox.y - y) < (TILES_SIZE * 1.5);
     }
 
 }

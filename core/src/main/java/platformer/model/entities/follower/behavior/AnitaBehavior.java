@@ -17,8 +17,8 @@ public class AnitaBehavior implements FollowerBehavior {
 
     private final int AGGRO_RANGE = TILES_SIZE * 5;
     private final int ATTACK_RANGE = (int) (TILES_SIZE * 1.6);
-    private final int COOLDOWN_TIME = 240;
-    private final int LEASH_RANGE = TILES_SIZE * 10;
+    private final int COOLDOWN_TIME = 220;
+    private final int LEASH_RANGE = TILES_SIZE * 8;
 
     // State
     private Enemy currentTarget;
@@ -29,26 +29,43 @@ public class AnitaBehavior implements FollowerBehavior {
     public void update(Follower host, Player player, int[][] levelData, List<Enemy> enemies) {
         double distToPlayerX = Math.abs(player.getHitBox().x - host.getHitBox().x);
         double distToPlayerY = Math.abs(player.getHitBox().y - host.getHitBox().y);
-        if (distToPlayerX > LEASH_RANGE || distToPlayerY > TILES_SIZE * 5) {
+        if (distToPlayerX > LEASH_RANGE || distToPlayerY > TILES_SIZE * 3) {
             currentTarget = null;
             cooldownTick = 0;
             host.setMoveTarget(player.getHitBox().x);
             return;
         }
+
+        if (currentTarget != null) {
+            if (!currentTarget.isAlive()
+                    || Math.abs(currentTarget.getHitBox().x - player.getHitBox().x) > AGGRO_RANGE * 1.3
+                    || Math.abs(currentTarget.getHitBox().y - host.getHitBox().y) > TILES_SIZE * 1.5
+                    || !isPathSafe(host, currentTarget, levelData)) {
+                currentTarget = null;
+            }
+        }
+
         if (cooldownTick > 0) {
             cooldownTick--;
-            // Retreat to player
-            host.setMoveTarget(host.getHitBox().x);
-
             if (currentTarget != null && currentTarget.isAlive()) {
-                if (currentTarget.getHitBox().x > host.getHitBox().x) host.setDirection(Direction.RIGHT);
-                else host.setDirection(Direction.LEFT);
+                double dx = currentTarget.getHitBox().getCenterX() - host.getHitBox().getCenterX();
+                host.setDirection(dx >= 0 ? Direction.RIGHT : Direction.LEFT);
+                if (Math.abs(dx) <= ATTACK_RANGE * 1.2 && (currentTarget.isParryWindup() || currentTarget.isAttacking())) {
+                    host.activateGuard(25);
+                }
+                host.setMoveTarget(host.getHitBox().x);
             }
+            else host.setMoveTarget(player.getHitBox().x);
             return;
         }
 
-        if (host.isBusy()) return;
-        if (currentTarget == null || !currentTarget.isAlive() || Math.abs(currentTarget.getHitBox().x - host.getHitBox().x) > AGGRO_RANGE * 1.5) {
+        if (host.isBusy()) {
+            if (currentTarget == null) {
+                host.setMoveTarget(player.getHitBox().x);
+            }
+            return;
+        }
+        if (currentTarget == null) {
             currentTarget = findBestTarget(host, player, enemies, levelData);
         }
 
@@ -58,16 +75,17 @@ public class AnitaBehavior implements FollowerBehavior {
             // Face target
             if (currentTarget.getHitBox().x > host.getHitBox().x) host.setDirection(Direction.RIGHT);
             else host.setDirection(Direction.LEFT);
+
             if (dist <= ATTACK_RANGE) {
                 host.setMoveTarget(host.getHitBox().x);
                 host.requestAttack();
                 setRandomAttackAnim(host);
                 cooldownTick = COOLDOWN_TIME + rand.nextInt(55);
             }
-            // Chase Enemy
-            else host.setMoveTarget(currentTarget.getHitBox().x);
+            else {
+                host.setMoveTarget(currentTarget.getHitBox().x);
+            }
         }
-        // Follow
         else {
             host.setMoveTarget(player.getHitBox().x);
         }

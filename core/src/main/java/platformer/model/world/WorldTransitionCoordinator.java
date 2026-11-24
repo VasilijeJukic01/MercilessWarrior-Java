@@ -166,7 +166,8 @@ public class WorldTransitionCoordinator {
             }
         }
 
-        syncFollower(spawnPoint, isArena);
+        Point safeFollowerSpawn = new Point((int) player.getHitBox().x, (int) player.getHitBox().y);
+        syncFollower(safeFollowerSpawn, isArena);
         player.getPlayerDataManager().getUserInterface().setInterior(hideCombatHud);
 
         if (isInterior) {

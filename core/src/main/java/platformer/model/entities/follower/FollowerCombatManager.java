@@ -10,7 +10,7 @@ import platformer.physics.CollisionDetector;
 import static platformer.constants.Constants.*;
 
 /**
- * Manages the follower's combat state, including poise, i-frames, stun-locking prevention, and knockdown logic.
+ * Manages the follower's combat state, including poise, active guard mitigation, i-frames, stun-locking prevention, and knockdown logic.
  */
 public class FollowerCombatManager {
 
@@ -49,6 +49,20 @@ public class FollowerCombatManager {
 
     public void handleHit(double damage, Entity attacker, int[][] currentLevelData) {
         if (isKnockedDown || iFrameTick > 0) return;
+
+        if (follower.isBlocking()) {
+            double mitigatedDamage = damage * 0.20;
+            follower.changeHealth(-mitigatedDamage);
+            iFrameTick = IFRAME_THRESHOLD / 2;
+            Audio.getInstance().getAudioPlayer().playBlockSound("Player");
+            applyPushbackDirection(attacker);
+            follower.executePushBack(follower.getPushDirection(), currentLevelData, 0.35, 0.6);
+            if (follower.getCurrentHealth() <= 0) {
+                follower.getAudioHandler().playKnockdown();
+                knockDown();
+            }
+            return;
+        }
 
         follower.changeHealth(-damage);
         iFrameTick = IFRAME_THRESHOLD;
@@ -99,7 +113,7 @@ public class FollowerCombatManager {
     }
 
     private void knockDown() {
-        follower.changeHealth(-follower.getCurrentHealth()); // Ensure 0
+        follower.changeHealth(-follower.getCurrentHealth());
         isKnockedDown = true;
         follower.setEntityState(Anim.DEATH);
         follower.resetAnimState();
@@ -111,7 +125,8 @@ public class FollowerCombatManager {
         if (follower.getFlipSign() == 1) {
             follower.getHitBox().x -= DEATH_HITBOX_EXPANSION;
             follower.getHitBox().width = FOLLOWER_HB_WID + DEATH_HITBOX_EXPANSION;
-        } else {
+        }
+        else {
             follower.getHitBox().width = FOLLOWER_HB_WID + DEATH_HITBOX_EXPANSION;
         }
     }
