@@ -19,6 +19,7 @@ public class CutsceneDefinition {
     private String requiredFlag;
     private String excludeFlag;
     private String requiredItemId;
+    private Integer requiredItemAmount;
     private String onceFlag;
     private List<CutsceneStepData> steps = new ArrayList<>();
 }

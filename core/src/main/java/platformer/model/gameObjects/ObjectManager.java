@@ -28,6 +28,7 @@ import platformer.model.quests.QuestManager;
 import platformer.model.spells.SpellManager;
 import platformer.model.world.WorldMemoryManager;
 import platformer.physics.CollisionDetector;
+import platformer.state.types.PlayingState;
 import platformer.storage.StorageStrategy;
 import platformer.utils.CollectionUtils;
 
@@ -472,7 +473,10 @@ public class ObjectManager {
         }
         renderCoins(g, xLevelOffset, yLevelOffset);
         renderNpcs(g, xLevelOffset, yLevelOffset);
-        if (intersection != null) intersection.renderInteractionUI(g, xLevelOffset, yLevelOffset);
+        boolean hidePrompt = (context.getGameState() != null && context.getGameState().getActiveState() == PlayingState.DIALOGUE) || (context.getCutsceneManager() != null && context.getCutsceneManager().isActive());
+        if (intersection != null && !hidePrompt) {
+            intersection.renderInteractionUI(g, xLevelOffset, yLevelOffset);
+        }
     }
 
     private void renderCoins(Graphics g, int xLevelOffset, int yLevelOffset) {

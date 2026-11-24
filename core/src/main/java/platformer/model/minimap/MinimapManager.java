@@ -33,6 +33,8 @@ import static platformer.constants.FilePaths.*;
  */
 public class MinimapManager {
 
+    public record QuestMinimapMarker(Point position, String questName, String objectiveDescription) { }
+
     private GameContext context;
     private int[][] minimapGray;
 
@@ -441,11 +443,11 @@ public class MinimapManager {
     }
 
     /**
-     * Computes the global minimap coordinates for all active quest objectives that specify a target levelId.
+     * Returns quest markers (with quest name and objective text) for all active quests whose current objective has a valid overworld room coordinate.
      */
-    public List<Point> getActiveQuestMinimapTargets() {
-        List<Point> targets = new ArrayList<>();
-        if (context == null || context.getQuestManager() == null) return targets;
+    public List<QuestMinimapMarker> getActiveQuestMarkers() {
+        List<QuestMinimapMarker> markers = new ArrayList<>();
+        if (context == null || context.getQuestManager() == null) return markers;
 
         for (QuestSlot slot : context.getQuestManager().getSlots()) {
             Quest quest = slot.getQuest();
@@ -453,17 +455,28 @@ public class MinimapManager {
             int idx = quest.getActiveObjectiveIndex();
             if (idx >= 0 && idx < quest.getObjectives().size()) {
                 QuestObjective obj = quest.getObjectives().get(idx);
-                if (obj.getLevelId() != null) {
-                    Point roomPos = getOrFindLevelPosition(obj.getLevelId());
-                    if (roomPos != null) {
-                        int tx = obj.getTargetX() != null ? obj.getTargetX() : 20;
-                        int ty = obj.getTargetY() != null ? obj.getTargetY() : 15;
-                        targets.add(new Point(roomPos.x + tx, roomPos.y + ty));
-                    }
+                String targetRoomId = (obj.getMapLevelId() != null && !obj.getMapLevelId().isBlank()) ? obj.getMapLevelId() : obj.getLevelId();
+                if (targetRoomId == null || targetRoomId.isBlank()) continue;
+                Point roomPos = context.getLevelManager().getConfiguredMinimapPosition(targetRoomId);
+                if (roomPos != null) {
+                    Level lvl = context.getLevelManager().getLevel(targetRoomId);
+                    int defaultX = (lvl != null) ? lvl.getLevelTilesWidth() / 2 : 20;
+                    int defaultY = (lvl != null) ? lvl.getLevelTilesHeight() / 2 : 12;
+                    int tx = obj.getTargetX() != null ? obj.getTargetX() : defaultX;
+                    int ty = obj.getTargetY() != null ? obj.getTargetY() : defaultY;
+                    markers.add(new QuestMinimapMarker(new Point(roomPos.x + tx, roomPos.y + ty), quest.getName(), obj.getDescription()));
                 }
             }
         }
-        return targets;
+        return markers;
+    }
+
+    public List<Point> getActiveQuestMinimapTargets() {
+        List<Point> points = new ArrayList<>();
+        for (QuestMinimapMarker m : getActiveQuestMarkers()) {
+            points.add(m.position());
+        }
+        return points;
     }
 
     public void changeLevel() {

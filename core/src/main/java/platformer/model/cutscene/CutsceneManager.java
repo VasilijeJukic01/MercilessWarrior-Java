@@ -8,6 +8,7 @@ import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
 import platformer.model.entities.enemies.Enemy;
 import platformer.model.entities.player.Player;
+import platformer.model.inventory.item.InventoryItem;
 import platformer.model.levels.LvlTriggerType;
 import platformer.model.levels.Trigger;
 import platformer.state.types.PlayingState;
@@ -102,17 +103,20 @@ public class CutsceneManager {
                 startCutscene(def);
                 return;
             }
-            else if ("ITEM_OWNED".equalsIgnoreCase(def.getTriggerType()) && playerHasItem(def.getRequiredItemId())) {
+            else if ("ITEM_OWNED".equalsIgnoreCase(def.getTriggerType()) && playerHasItem(def.getRequiredItemId(), def.getRequiredItemAmount() != null ? def.getRequiredItemAmount() : 1)) {
                 startCutscene(def);
                 return;
             }
         }
     }
 
-    private boolean playerHasItem(String itemId) {
+    private boolean playerHasItem(String itemId, int minAmount) {
         if (itemId == null || context.getPlayer() == null) return false;
-        return context.getPlayer().getInventory().getBackpack().stream()
-                .anyMatch(item -> item != null && itemId.equals(item.getItemId()));
+        int totalCount = context.getPlayer().getInventory().getBackpack().stream()
+                .filter(item -> item != null && itemId.equals(item.getItemId()))
+                .mapToInt(InventoryItem::getAmount)
+                .sum();
+        return totalCount >= Math.max(1, minAmount);
     }
 
     private boolean isPlayerTouchingCutsceneTrigger() {

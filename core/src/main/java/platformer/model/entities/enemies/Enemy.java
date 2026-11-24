@@ -459,6 +459,20 @@ public abstract class Enemy extends Entity implements DamageSource, Debug<Graphi
         }
     }
 
+    /**
+     * Keeps the enemy stationary in its IDLE animation during cutscenes and dialogues so enemies never chase or attack the player while controls are locked.
+     */
+    public void updateCinematicIdle(int[][] levelData) {
+        if (!isEntityOnFloor(hitBox, levelData)) inAir = true;
+        if (inAir) {
+            updateInAir(levelData, definition.getScaledGravity(), definition.getScaledCollisionFallSpeed());
+        }
+        if (entityState != Anim.IDLE && !definition.isBoss()) {
+            setEnemyAction(Anim.IDLE);
+        }
+        updateAnimation();
+    }
+
     public abstract boolean hit(double damage, boolean special, boolean hitSound);
 
     public abstract void spellHit(double damage);

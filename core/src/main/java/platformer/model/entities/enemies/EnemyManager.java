@@ -30,6 +30,7 @@ import platformer.model.projectiles.Projectile;
 import platformer.model.projectiles.types.Arrow;
 import platformer.model.projectiles.types.Fireball;
 import platformer.model.spells.types.Flame;
+import platformer.state.types.PlayingState;
 import platformer.utils.CollectionUtils;
 
 import java.awt.*;
@@ -56,6 +57,7 @@ public class EnemyManager {
     private final Random rand = new Random();
 
     private final CombatDirector combatDirector = new CombatDirector();
+    private final Set<Enemy> processedDeaths = new HashSet<>();
 
     // Debug
     private long lastRenderErrorLogMs = 0;
@@ -87,6 +89,7 @@ public class EnemyManager {
     public void loadEnemies(Level level) {
         this.enemies = level.getEnemiesMap();
         this.combatDirector.reset();
+        processedDeaths.clear();
         for (Enemy enemy : getAllEnemies()) {
             enemy.setCombatDirector(combatDirector);
             enemy.evaluateFearState(context != null ? context.getWorldMemoryManager() : null);
@@ -106,7 +109,7 @@ public class EnemyManager {
      * @param e The enemy to check.
      */
     private void checkEnemyDying(Enemy e) {
-        if (e.getEnemyAction() == Anim.DEATH) {
+        if (e.getEnemyAction() == Anim.DEATH && processedDeaths.add(e)) {
             Player player = context.getPlayer();
             context.getObjectManager().generateLoot(e);
             player.changeStamina(rand.nextInt(5) + 2);
@@ -376,9 +379,18 @@ public class EnemyManager {
     public void update(int[][] levelData, Player player, Entity follower) {
         updateSpellHitTimers();
         List<Enemy> allEnemies = getAllEnemies();
-        combatDirector.update(allEnemies, player, follower);
+        boolean cinematicFreeze = (context.getCutsceneManager() != null && context.getCutsceneManager().isActive()) || (context.getGameState() != null && context.getGameState().getActiveState() == PlayingState.DIALOGUE);
+
+        if (!cinematicFreeze) combatDirector.update(allEnemies, player, follower);
         for (Enemy enemy : allEnemies) {
             if (!enemy.isAlive()) continue;
+            if (enemy.getEnemyAction() == Anim.DEATH) {
+                checkEnemyDying(enemy);
+            }
+            if (cinematicFreeze && enemy.getEnemyAction() != Anim.DEATH) {
+                enemy.updateCinematicIdle(levelData);
+                continue;
+            }
             if (enemy instanceof Lancer lancer) {
                 lancer.update(levelData, player, context.getSpellManager(), context.getObjectManager(), context.getGameState().getBossInterface());
             }
@@ -388,6 +400,9 @@ public class EnemyManager {
             else {
                 enemy.update(levelData, player, follower);
                 checkEnemyAttackObject(enemy);
+                if (enemy.getEnemyAction() == Anim.DEATH) {
+                    checkEnemyDying(enemy);
+                }
             }
         }
         updateClones(levelData, player);
@@ -464,6 +479,7 @@ public class EnemyManager {
                 .forEach(Enemy::reset);
         spellHitTimers.clear();
         roricClones.clear();
+        processedDeaths.clear();
     }
 
     public List<Enemy> getAllEnemies() {

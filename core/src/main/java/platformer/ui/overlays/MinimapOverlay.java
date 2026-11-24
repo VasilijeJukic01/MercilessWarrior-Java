@@ -3,14 +3,20 @@ package platformer.ui.overlays;
 import platformer.core.GameContext;
 import platformer.model.minimap.MinimapIconType;
 import platformer.model.minimap.MinimapManager;
+import platformer.model.minimap.MinimapManager.QuestMinimapMarker;
 import platformer.ui.buttons.UIButtonRenderer;
 import platformer.ui.overlays.controller.MinimapViewController;
 import platformer.ui.overlays.render.MinimapRenderer;
+import platformer.ui.overlays.render.MinimapRenderer.RenderedQuestMarker;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+import java.util.List;
 
 import static platformer.constants.Constants.*;
 import static platformer.constants.UI.*;
@@ -21,10 +27,16 @@ import static platformer.constants.UI.*;
  */
 public class MinimapOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
 
+    private record QuestTrackerRow(Rectangle2D.Double bounds, QuestMinimapMarker marker) {}
+
     private final MinimapManager minimapManager;
     private final MinimapRenderer minimapRenderer;
     private final MinimapViewController controller;
     private final Rectangle overlay;
+    private final List<QuestTrackerRow> questTrackerRows = new ArrayList<>();
+
+    private int mouseX = -1;
+    private int mouseY = -1;
 
     public MinimapOverlay(GameContext context) {
         this.minimapManager = context.getMinimapManager();
@@ -35,11 +47,27 @@ public class MinimapOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
 
     @Override
     public void mouseClicked(MouseEvent e) {
+        if (SwingUtilities.isLeftMouseButton(e)) {
+            for (QuestTrackerRow row : questTrackerRows) {
+                if (row.bounds().contains(e.getPoint())) {
+                    minimapManager.handlePinRequest(row.marker().position(), null);
+                    return;
+                }
+            }
+            for (RenderedQuestMarker rm : minimapRenderer.getLastRenderedQuestMarkers()) {
+                if ( e.getPoint().distance(rm.screenX(), rm.screenY()) <= rm.radius() + scale(3)) {
+                    minimapManager.handlePinRequest(rm.marker().position(), null);
+                    return;
+                }
+            }
+        }
         controller.mouseClicked(e);
     }
 
     @Override
     public void mouseDragged(MouseEvent e) {
+        this.mouseX = e.getX();
+        this.mouseY = e.getY();
         controller.mouseDragged(e);
     }
 
@@ -55,6 +83,8 @@ public class MinimapOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
 
     @Override
     public void mouseMoved(MouseEvent e) {
+        this.mouseX = e.getX();
+        this.mouseY = e.getY();
         controller.mouseMoved(e);
     }
 
@@ -96,7 +126,8 @@ public class MinimapOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
         if (fogImage != null) {
             g2d.drawImage(fogImage, x, y, width, height, null);
         }
-        minimapRenderer.renderIcons(g2d, x, y, width, height, map, minimapManager);
+        minimapRenderer.renderIcons(g2d, x, y, width, height, map, minimapManager, mouseX, mouseY);
+        renderActiveQuestsCard(g2d);
         g2d.setClip(null);
 
         if (controller.isShowLegend()) renderLegend(g);
@@ -104,6 +135,83 @@ public class MinimapOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
 
     private void renderOverlay(Graphics g) {
         UIButtonRenderer.drawRunicPanel(g, overlay);
+    }
+
+    /**
+     * Renders a compact card in the minimap listing all active map quests. Clicking any entry pins the A* path to that quest.
+     */
+    private void renderActiveQuestsCard(Graphics2D g2d) {
+        questTrackerRows.clear();
+        List<QuestMinimapMarker> markers = minimapManager.getActiveQuestMarkers();
+        if (markers.isEmpty()) return;
+
+        Graphics2D gCard = (Graphics2D) g2d.create();
+        gCard.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        Font headerFont = UIButtonRenderer.getFont(8.5f * SCALE);
+        Font itemFont = new Font("Arial", Font.BOLD, FONT_SMALL);
+        gCard.setFont(itemFont);
+        FontMetrics fmItem = gCard.getFontMetrics();
+
+        int cardX = MAP_OVERLAY_X + scale(12);
+        int cardY = MAP_OVERLAY_Y + scale(12);
+        int rowH = scale(15);
+        int headerH = scale(16);
+        int maxTextW = scale(105);
+
+        for (QuestMinimapMarker m : markers) {
+            maxTextW = Math.max(maxTextW, fmItem.stringWidth(m.questName()) + scale(26));
+        }
+
+        int cardW = maxTextW + scale(14);
+        int cardH = headerH + (markers.size() * rowH) + scale(6);
+        int arc = scale(6);
+
+        gCard.setColor(new Color(12, 18, 22, 215));
+        gCard.fillRoundRect(cardX, cardY, cardW, cardH, arc, arc);
+        gCard.setColor(new Color(85, 125, 130, 165));
+        gCard.setStroke(new BasicStroke(1.2f));
+        gCard.drawRoundRect(cardX, cardY, cardW, cardH, arc, arc);
+
+        gCard.setFont(headerFont);
+        gCard.setColor(new Color(56, 229, 223));
+        gCard.drawString("ACTIVE QUESTS", cardX + scale(7), cardY + scale(11));
+
+        gCard.setFont(itemFont);
+        Point pinnedLoc = minimapManager.getPinnedLocation();
+
+        for (int i = 0; i < markers.size(); i++) {
+            QuestMinimapMarker qm = markers.get(i);
+            Color col = MinimapRenderer.QUEST_MARKER_COLORS[i % MinimapRenderer.QUEST_MARKER_COLORS.length];
+            int rowY = cardY + headerH + (i * rowH);
+            Rectangle2D.Double rowBounds = new Rectangle2D.Double(cardX + scale(3), rowY, cardW - scale(6), rowH - scale(1));
+            questTrackerRows.add(new QuestTrackerRow(rowBounds, qm));
+
+            boolean isHovered = rowBounds.contains(mouseX, mouseY);
+            boolean isPinned = pinnedLoc != null && pinnedLoc.equals(qm.position());
+
+            if (isHovered || isPinned) {
+                gCard.setColor(isPinned ? new Color(40, 95, 105, 180) : new Color(28, 48, 56, 175));
+                gCard.fillRoundRect((int) rowBounds.x, (int) rowBounds.y, (int) rowBounds.width, (int) rowBounds.height, scale(3), scale(3));
+            }
+
+            int badgeSize = scale(10);
+            int bx = cardX + scale(7);
+            int by = rowY + (rowH - badgeSize) / 2;
+            gCard.setColor(col);
+            gCard.fillOval(bx, by, badgeSize, badgeSize);
+
+            gCard.setColor(new Color(15, 20, 22));
+            String num = "!";
+            int ntx = bx + (badgeSize - fmItem.stringWidth(num)) / 2;
+            int nty = by + (badgeSize + fmItem.getAscent() - fmItem.getDescent()) / 2;
+            gCard.drawString(num, ntx, nty);
+
+            gCard.setColor(isPinned ? new Color(110, 245, 255) : (isHovered ? Color.WHITE : new Color(220, 232, 235)));
+            gCard.drawString(qm.questName(), bx + badgeSize + scale(6), by + badgeSize - scale(2));
+        }
+
+        gCard.dispose();
     }
 
     private void renderLegend(Graphics g) {

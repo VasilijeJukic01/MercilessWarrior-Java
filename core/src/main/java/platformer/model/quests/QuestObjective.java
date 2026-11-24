@@ -1,14 +1,20 @@
 package platformer.model.quests;
 
+import lombok.Getter;
+import lombok.Setter;
+
 /**
  * Represents a single objective within a quest.
  * Objectives are used by the quest system to track player progress and determine when a quest can be completed.
  */
+@Getter
+@Setter
 public class QuestObjective {
 
     private QuestObjectiveType type;
     private ObjectiveTarget target;
     private String levelId;
+    private String mapLevelId;
     private Integer targetX;
     private Integer targetY;
     private String description;
@@ -16,67 +22,4 @@ public class QuestObjective {
     private int currentAmount;
     private boolean hideCounter = false;
 
-    public QuestObjectiveType getType() {
-        return type;
-    }
-
-    public void setType(QuestObjectiveType type) {
-        this.type = type;
-    }
-
-    public ObjectiveTarget getTarget() {
-        return target;
-    }
-
-    public void setTarget(ObjectiveTarget target) {
-        this.target = target;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public int getRequiredAmount() {
-        return requiredAmount;
-    }
-
-    public void setRequiredAmount(int requiredAmount) {
-        this.requiredAmount = requiredAmount;
-    }
-
-    public int getCurrentAmount() {
-        return currentAmount;
-    }
-
-    public void setCurrentAmount(int currentAmount) {
-        this.currentAmount = currentAmount;
-    }
-
-    public Integer getTargetX() {
-        return targetX;
-    }
-
-    public Integer getTargetY() {
-        return targetY;
-    }
-
-    public String getLevelId() {
-        return levelId;
-    }
-
-    public void setLevelId(String levelId) {
-        this.levelId = levelId;
-    }
-
-    public boolean isHideCounter() {
-        return hideCounter;
-    }
-
-    public void setHideCounter(boolean hideCounter) {
-        this.hideCounter = hideCounter;
-    }
 }
