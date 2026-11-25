@@ -71,6 +71,7 @@ public class Wraith extends Enemy {
     public void spellHit(double damage) {
         if (entityState == Anim.DEATH || !alive) return;
         currentHealth -= damage;
+        releaseCombatToken();
         if (currentHealth <= 0) {
             checkDeath();
         }
@@ -198,7 +199,7 @@ public class Wraith extends Enemy {
 
     private void hitAction(int[][] levelData, Entity target) {
         pushBack(pushDirection, levelData, 1.6, enemySpeed);
-        if (animIndex == 3 && blinkCooldown == 0 && rand.nextDouble() < 0.20) {
+        if (enemySpeed > 0 && animIndex == 3 && blinkCooldown == 0 && rand.nextDouble() < 0.20) {
             startPhaseBlink(levelData, target, false);
         }
     }

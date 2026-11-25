@@ -476,7 +476,7 @@ public class PlayerMovementHandler {
 
     /**
      * Gives living enemies physical body presence so the player cannot walk or stand inside their torso,
-     * while still allowing Dashing to phase cleanly through enemies.
+     * while allowing a weighted shove against regular enemies and clean phase-through when Dashing.
      */
     private void applyEnemyBodyRepulsion(int[][] levelData, PlayerCombatHandler combatHandler) {
         if (enemyManager == null) return;
@@ -501,21 +501,26 @@ public class PlayerMovementHandler {
             if (overlapX <= 0) continue;
 
             double pushDir = (Math.abs(diffX) < 0.5) ? -player.getFlipSign() : Math.signum(diffX);
-            double maxPushPerTick = player.isInAir() ? (1.85 * SCALE) : (1.45 * SCALE);
-            double pushX = pushDir * Math.min(overlapX * 0.55, maxPushPerTick);
+            boolean playerPushingIntoEnemy = (pushDir < 0 && player.checkAction(PlayerAction.RIGHT)) || (pushDir > 0 && player.checkAction(PlayerAction.LEFT));
 
-            double allowedDx = objectManager.checkSolidObjectCollision(pBox, pushX);
-            if (Math.abs(allowedDx) > 0.01 && canMoveHere(pBox.x + allowedDx, pBox.y, pBox.width, pBox.height, levelData)) {
-                pBox.x += allowedDx;
-            }
-            else if (Math.abs( overlapX ) > 2.0 * SCALE && !enemy.isBoss()) {
-                // If the player is pinned against a wall, nudge the enemy slightly back so they dont crush into the same pixel
-                double enemyPush = -pushDir * Math.min(overlapX * 0.35, 1.1 * SCALE);
-                if (canMoveHere(eBox.x + enemyPush, eBox.y, eBox.width, eBox.height, levelData)) {
-                    eBox.x += enemyPush;
+            if (playerPushingIntoEnemy && !enemy.isBoss() && !enemy.isAttacking()) {
+                double enemyShoveDir = -pushDir;
+                Direction shoveDirEnum = (enemyShoveDir > 0) ? Direction.RIGHT : Direction.LEFT;
+                double enemyShove = enemyShoveDir * Math.min(overlapX * 0.35, 0.32 * SCALE);
+                if (canMoveHere(eBox.x + enemyShove, eBox.y, eBox.width, eBox.height, levelData) && isFloor(eBox, enemyShove, levelData, shoveDirEnum)) {
+                    eBox.x += enemyShove;
+                    overlapX = Math.max(0, overlapX - Math.abs(enemyShove));
                 }
             }
 
+            if (overlapX > 0) {
+                double maxPushPerTick = player.isInAir() ? (1.85 * SCALE) : (1.45 * SCALE);
+                double pushX = pushDir * Math.min(overlapX * 0.65, maxPushPerTick);
+                double allowedDx = objectManager.checkSolidObjectCollision(pBox, pushX);
+                if (Math.abs(allowedDx) > 0.01 && canMoveHere(pBox.x + allowedDx, pBox.y, pBox.width, pBox.height, levelData)) {
+                    pBox.x += allowedDx;
+                }
+            }
             if ((pushDir < 0 && player.getFlipSign() == 1) || (pushDir > 0 && player.getFlipSign() == -1)) {
                 combatHandler.clearAttackLunge();
             }

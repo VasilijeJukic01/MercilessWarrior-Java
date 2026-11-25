@@ -160,6 +160,11 @@ public class DialogueManager {
     private void executeAnswer(Answer answer, boolean isAccept) {
         Player player = context.getPlayer();
 
+        if (answer.getQuest() != null) startQuestIfNeeded(answer.getQuest());
+        else if (answer.getNext() != null && answer.getNext().startsWith("Quest: ")) {
+            startQuestIfNeeded(answer.getNext().replace("Quest: ", ""));
+        }
+
         if (answer.getRequiredItems() != null || answer.getRequiredCoins() > 0) {
             Map<String, Integer> items = answer.getRequiredItems() != null ? answer.getRequiredItems() : Collections.emptyMap();
             if (!player.getInventory().hasAndConsumeResources(items, answer.getRequiredCoins(), player)) {
@@ -186,11 +191,6 @@ public class DialogueManager {
         if (answer.getRewardItems() != null) {
             answer.getRewardItems().forEach((itemId, amount) ->
                     player.getInventory().addItemToBackpack(new InventoryItem(itemId, amount)));
-        }
-
-        if (answer.getQuest() != null) startQuestIfNeeded(answer.getQuest());
-        else if (answer.getNext() != null && answer.getNext().startsWith("Quest: ")) {
-            startQuestIfNeeded(answer.getNext().replace("Quest: ", ""));
         }
 
         if (answer.getObjectiveText() != null) {

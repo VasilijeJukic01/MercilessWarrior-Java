@@ -122,8 +122,7 @@ public class Ghoul extends Enemy {
         }
 
         if (canSeeEntity(levelData, target)) {
-            double dist = Math.abs(target.getHitBox().getCenterX() - hitBox.getCenterX());
-            if (dist >= MIN_POUNCE_DIST && isEntityCloseForAttack(target) && cooldown[Cooldown.ATTACK.ordinal()] == 0 && requestMeleeToken()) {
+            if (isEntityCloseForAttack(target) && cooldown[Cooldown.ATTACK.ordinal()] == 0 && requestMeleeToken()) {
                 faceEntity(target);
                 cooldown[Cooldown.DASH.ordinal()] = STALK_DASH_CD;
                 setEnemyAction(Anim.IDLE);

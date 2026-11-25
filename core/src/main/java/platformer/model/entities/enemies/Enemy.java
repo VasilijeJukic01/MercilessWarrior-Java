@@ -193,6 +193,7 @@ public abstract class Enemy extends Entity implements DamageSource, Debug<Graphi
         boolean waiting = (combatDirector != null) && combatDirector.isWaitingGuard(this);
         double effectiveMin = (combatDirector != null) ? combatDirector.getAssignedMinSpacing(this, minSpacing) : minSpacing;
         double effectiveRetreat = waiting ? Math.max(retreatSpacing, effectiveMin - (4.0 * SCALE)) : retreatSpacing;
+        boolean allowBackstep = waiting || (retreatSpacing >= TILES_SIZE * 1.8);
 
         double dx = target.getHitBox().getCenterX() - hitBox.getCenterX();
         double absDist = Math.abs(dx);
@@ -202,7 +203,7 @@ public abstract class Enemy extends Entity implements DamageSource, Debug<Graphi
             faceEntity(target);
         }
 
-        if (absDist < effectiveRetreat) {
+        if (allowBackstep && absDist < effectiveRetreat) {
             double awayDirSign = (dx >= 0) ? -1.0 : 1.0;
             Direction awayDir = (awayDirSign < 0) ? Direction.LEFT : Direction.RIGHT;
             double backSpeed = waiting ? definition.getScaledWalkSpeed() * 0.70 : definition.getScaledWalkSpeed() * 0.90;
