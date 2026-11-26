@@ -16,7 +16,11 @@ import static platformer.physics.CollisionDetector.isEntityOnFloor;
 public class Skeleton extends Enemy {
 
     public Skeleton(int xPos, int yPos) {
-        super(xPos, yPos, EnemyType.SKELETON);
+        this(xPos, yPos, EnemyType.SKELETON);
+    }
+
+    public Skeleton(int xPos, int yPos, EnemyType variantType) {
+        super(xPos, yPos, variantType);
         initAttackBox();
     }
 

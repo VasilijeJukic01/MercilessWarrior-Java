@@ -27,12 +27,17 @@ public class QuestSystemListener {
     public void onEnemyDefeated(EnemyDefeatedEvent event) {
         ObjectiveTarget target = null;
         switch (event.defeatedEnemy().getEnemyType()) {
-            case SKELETON -> target = ObjectiveTarget.SKELETON;
-            case GHOUL -> target = ObjectiveTarget.GHOUL;
+            case SKELETON, CRIMSON_SKELETON -> target = ObjectiveTarget.SKELETON;
+            case GHOUL, ASHEN_GHOUL -> target = ObjectiveTarget.GHOUL;
             case KNIGHT -> target = ObjectiveTarget.KNIGHT;
             case CORRUPTED_KNIGHT -> target = ObjectiveTarget.CORRUPTED_KNIGHT;
             case LANCER -> target = ObjectiveTarget.LANCER;
             case GOBLIN, GOBLIN_SOLDIER, GOBLIN_ASSASSIN, GOBLIN_SPEARMAN, GOBLIN_MAGE -> target = ObjectiveTarget.GOBLIN;
+            case BRIAR_HUSK -> target = ObjectiveTarget.BRIAR_HUSK;
+            case BLIGHT_BEAR -> target = ObjectiveTarget.BLIGHT_BEAR;
+            case WIDOW_SPIDER -> target = ObjectiveTarget.WIDOW_SPIDER;
+            case DEATH_RIDER -> target = ObjectiveTarget.DEATH_RIDER;
+            case ROOT_WEAVER -> target = ObjectiveTarget.ROOT_WEAVER;
             default -> {}
         }
         if (target != null) questManager.updateQuestProgress(QuestObjectiveType.KILL, target);

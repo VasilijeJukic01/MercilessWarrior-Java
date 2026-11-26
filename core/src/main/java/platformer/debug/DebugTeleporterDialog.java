@@ -6,6 +6,7 @@ import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
 import platformer.model.effects.TimeCycleManager;
 import platformer.model.entities.enemies.Enemy;
+import platformer.model.entities.enemies.EnemyType;
 import platformer.model.entities.player.Player;
 import platformer.model.inventory.database.ItemDatabase;
 import platformer.model.inventory.item.InventoryItem;
@@ -20,12 +21,17 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import static platformer.constants.Constants.SCALE;
+import static platformer.constants.Constants.TILES_SIZE;
+
 /**
  * Developer debug console and level teleporter opened via F5 when cheats are enabled.
- * Auto-discovers all rooms from world_map.json and interiors from InteriorManager, and provides one-click time-of-day jumps, flag toggling, item spawning, and combat testing utilities.
+ * Auto-discovers all rooms from world_map.json and interiors from InteriorManager, and provides one-click
+ * time-of-day jumps, enemy spawning, flag toggling, item spawning, and combat testing utilities.
  */
 public class DebugTeleporterDialog extends JDialog {
 
@@ -56,6 +62,13 @@ public class DebugTeleporterDialog extends JDialog {
             LvlTriggerType.SPAWN_A, LvlTriggerType.SPAWN_B, LvlTriggerType.SPAWN_C, LvlTriggerType.SPAWN_D
     });
 
+    private final JComboBox<EnemyType> cbEnemyType = new JComboBox<>(
+            Arrays.stream(EnemyType.values())
+                    .filter(t -> t != EnemyType.MAX)
+                    .toArray(EnemyType[]::new)
+    );
+    private final JSpinner spEnemyCount = new JSpinner(new SpinnerNumberModel(1, 1, 10, 1));
+
     private final DefaultListModel<String> flagsModel = new DefaultListModel<>();
     private final JList<String> flagsList = new JList<>(flagsModel);
     private final JTextField tfFlag = new JTextField();
@@ -80,7 +93,7 @@ public class DebugTeleporterDialog extends JDialog {
         this.context = context;
 
         setAlwaysOnTop(true);
-        setSize(780, 560);
+        setSize(800, 610);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         getContentPane().setBackground(BG_DARK);
@@ -150,10 +163,12 @@ public class DebugTeleporterDialog extends JDialog {
             public void insertUpdate(DocumentEvent e) {
                 applyFilter(tfSearch.getText());
             }
+
             @Override
             public void removeUpdate(DocumentEvent e) {
                 applyFilter(tfSearch.getText());
             }
+
             @Override
             public void changedUpdate(DocumentEvent e) {
                 applyFilter(tfSearch.getText());
@@ -255,6 +270,41 @@ public class DebugTeleporterDialog extends JDialog {
         actionGrid.add(btnHitbox);
         actionGrid.add(btnKillRoom);
         panel.add(actionGrid);
+        panel.add(Box.createVerticalStrut(10));
+
+        // Spawn Enemy
+        panel.add(createSectionHeader("SPAWN ENEMY AHEAD OF PLAYER"));
+        JPanel enemyRow = new JPanel(new BorderLayout(4, 0));
+        enemyRow.setOpaque(false);
+        enemyRow.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
+        cbEnemyType.setBackground(BG_DARK);
+        cbEnemyType.setForeground(TEXT_LIGHT);
+        JButton btnSpawnEnemy = createStyledButton("Spawn");
+        btnSpawnEnemy.setBackground(new Color(24, 105, 115));
+        btnSpawnEnemy.addActionListener(e -> {
+            EnemyType type = (EnemyType) cbEnemyType.getSelectedItem();
+            int count = (Integer) spEnemyCount.getValue();
+            if (type == null) return;
+            runOnGameSync(() -> {
+                Player p = context.getPlayer();
+                int dir = p.getFlipSign();
+                int baseX = (int) (p.getHitBox().getCenterX() + dir * (2.5 * TILES_SIZE));
+                int baseY = (int) p.getHitBox().y;
+                for (int i = 0; i < count; i++) {
+                    int offsetX = i * (int) (24 * SCALE) * dir;
+                    context.getEnemyManager().spawnEnemy(type, baseX + offsetX, baseY);
+                }
+            });
+            Logger.getInstance().notify("[DEBUG] Spawned " + count + "x " + type.name(), Message.INFORMATION);
+        });
+        enemyRow.add(cbEnemyType, BorderLayout.CENTER);
+        JPanel enemyRight = new JPanel(new FlowLayout(FlowLayout.RIGHT, 4, 0));
+        enemyRight.setOpaque(false);
+        spEnemyCount.setPreferredSize(new Dimension(52, 26));
+        enemyRight.add(spEnemyCount);
+        enemyRight.add(btnSpawnEnemy);
+        enemyRow.add(enemyRight, BorderLayout.EAST);
+        panel.add(enemyRow);
         panel.add(Box.createVerticalStrut(10));
 
         // Give Item

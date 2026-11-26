@@ -39,8 +39,8 @@ public interface EnemyRenderer<T extends Enemy> {
      */
     default void renderStandard(Graphics g, T enemy, BufferedImage[][] animations, int xLevelOffset, int yLevelOffset, Color hitboxColor) {
         EnemyDefinition def = enemy.getDefinition();
-        int fC = enemy.getFlipCoefficient(), fS = enemy.getFlipSign();
-        int x = (int) enemy.getHitBox().x - def.getXOffset() - xLevelOffset + fC;
+        int fS = enemy.getFlipSign();
+        int x = (fS == 1) ? ((int) enemy.getHitBox().x - def.getXOffset() - xLevelOffset) : ((int) (enemy.getHitBox().x + enemy.getHitBox().width) + def.getXOffset() - xLevelOffset);
         int y = (int) enemy.getHitBox().y - def.getYOffset() - yLevelOffset + (int) enemy.getPushOffset() + 1;
         drawEnemySprite(g, enemy, animations[enemy.getEnemyAction().ordinal()][enemy.getAnimIndex()], x, y, def.getDrawWidth() * fS, def.getDrawHeight());
         enemy.hitBoxRenderer(g, xLevelOffset, yLevelOffset, hitboxColor);

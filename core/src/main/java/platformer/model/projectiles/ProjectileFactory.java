@@ -173,4 +173,40 @@ public final class ProjectileFactory {
         addProjectile(new GoblinMageBall(spawnX, spawnY, goblin.getDirection()));
     }
 
+    public static void createVenomSpit(Enemy caster) {
+        int dirSign = (caster.getDirection() == Direction.LEFT) ? -1 : 1;
+        int spawnX = (int) (caster.getHitBox().getCenterX() + dirSign * (14 * SCALE));
+        int spawnY = (int) (caster.getHitBox().getCenterY() - 2 * SCALE);
+        addProjectile(new VenomGlobProjectile(
+                spawnX, spawnY, caster.getDirection(),
+                1.65, -0.18, 0.006,
+                new Color(220, 255, 175, 245),
+                new Color(65, 225, 75)
+        ));
+    }
+
+    public static void createThornDart(Enemy caster) {
+        int dirSign = (caster.getDirection() == Direction.LEFT) ? -1 : 1;
+        int spawnX = (int) (caster.getHitBox().getCenterX() + dirSign * (16 * SCALE));
+        int spawnY = (int) (caster.getHitBox().getCenterY() - 4 * SCALE);
+        addProjectile(new VenomGlobProjectile(
+                spawnX, spawnY, caster.getDirection(),
+                1.95, 0.0, 0.0,
+                new Color(210, 255, 150, 245),
+                new Color(95, 190, 50)
+        ));
+    }
+
+    public static void createCyanRunicBolt(Enemy caster) {
+        int dirSign = (caster.getDirection() == Direction.LEFT) ? -1 : 1;
+        int spawnX = (int) (caster.getHitBox().getCenterX() + dirSign * (20 * SCALE));
+        int spawnY = (int) (caster.getHitBox().getCenterY() - 4 * SCALE);
+        addProjectile(new VenomGlobProjectile(
+                spawnX, spawnY, caster.getDirection(),
+                1.85, 0.0, 0.0,
+                new Color(230, 255, 255, 245),
+                new Color(0, 225, 240)
+        ));
+    }
+
 }

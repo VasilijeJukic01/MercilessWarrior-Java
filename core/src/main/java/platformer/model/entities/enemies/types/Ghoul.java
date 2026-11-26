@@ -30,7 +30,11 @@ public class Ghoul extends Enemy {
     private boolean hasHidden = false;
 
     public Ghoul(int xPos, int yPos) {
-        super(xPos, yPos, EnemyType.GHOUL);
+        this(xPos, yPos, EnemyType.GHOUL);
+    }
+
+    public Ghoul(int xPos, int yPos, EnemyType variantType) {
+        super(xPos, yPos, variantType);
         initAttackBox();
     }
 

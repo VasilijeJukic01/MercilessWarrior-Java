@@ -16,7 +16,14 @@ public enum EnemyType {
     GOBLIN_ASSASSIN(40, 20),    // 9
     GOBLIN_SPEARMAN(38, 18),    // 10
     GOBLIN_MAGE(38, 22),        // 11
-    MAX(1, 1);                  // 12
+    BRIAR_HUSK(58, 22),         // 12
+    BLIGHT_BEAR(95, 32),        // 13
+    WIDOW_SPIDER(42, 18),       // 14
+    DEATH_RIDER(110, 34),       // 15
+    ROOT_WEAVER(78, 26),        // 16
+    CRIMSON_SKELETON(55, 24),   // 17
+    ASHEN_GHOUL(68, 28),        // 18
+    MAX(1, 1);                  // 19
 
     private final int defaultHealth;
     private final int defaultDamage;

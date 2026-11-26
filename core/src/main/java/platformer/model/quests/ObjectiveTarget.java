@@ -12,6 +12,11 @@ public enum ObjectiveTarget {
     CORRUPTED_KNIGHT,
     VOID_STALKER,
     GOBLIN,
+    BRIAR_HUSK,
+    BLIGHT_BEAR,
+    WIDOW_SPIDER,
+    DEATH_RIDER,
+    ROOT_WEAVER,
     // Objects
     CRATE,
     // Actions & Items

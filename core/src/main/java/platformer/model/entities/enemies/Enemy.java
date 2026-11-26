@@ -91,7 +91,7 @@ public abstract class Enemy extends Entity implements DamageSource, Debug<Graphi
 
     private void finishAnimation() {
         animIndex = 0;
-        if (entityState == Anim.ATTACK_1 || entityState == Anim.ATTACK_2 || entityState == Anim.SPELL_1 || entityState == Anim.HIT || entityState == Anim.BLOCK || entityState == Anim.REVEAL) {
+        if (entityState == Anim.ATTACK_1 || entityState == Anim.ATTACK_2 || entityState == Anim.ATTACK_3 || entityState == Anim.SPELL_1 || entityState == Anim.SPELL_2 || entityState == Anim.HIT || entityState == Anim.BLOCK || entityState == Anim.REVEAL) {
             if (isAttacking()) {
                 double minCd = definition.getAttackCooldownMin();
                 double range = Math.max(0.0, definition.getAttackCooldownMax() - minCd);
@@ -142,9 +142,9 @@ public abstract class Enemy extends Entity implements DamageSource, Debug<Graphi
     }
 
     protected boolean canSeeEntity(int[][] levelData, Entity entity) {
-        int yTilePlayer = (int) (entity.getHitBox().y / TILES_SIZE) + 1;
-        int yTileEnemy = (int) (hitBox.y / TILES_SIZE) + 1;
-        if (yTilePlayer != yTileEnemy) return false;
+        int yTilePlayer = (int) ((entity.getHitBox().getMaxY() - 2) / TILES_SIZE);
+        int yTileEnemy = (int) ((hitBox.getMaxY() - 2) / TILES_SIZE);
+        if (Math.abs(yTilePlayer - yTileEnemy) > 1) return false;
         if (!isEntityInSight(entity)) return false;
         return isSightClear(levelData, hitBox, entity.getHitBox(), yTileEnemy);
     }
@@ -369,7 +369,7 @@ public abstract class Enemy extends Entity implements DamageSource, Debug<Graphi
     }
 
     public boolean isAttacking() {
-        return entityState == Anim.ATTACK_1 || entityState == Anim.ATTACK_2 || entityState == Anim.ATTACK_3 || entityState == Anim.SPELL_1 || entityState == Anim.SPELL_3;
+        return entityState == Anim.ATTACK_1 || entityState == Anim.ATTACK_2 || entityState == Anim.ATTACK_3 || entityState == Anim.SPELL_1 || entityState == Anim.SPELL_2 || entityState == Anim.SPELL_3;
     }
 
     public boolean isObjectBreakFrame() {
@@ -580,7 +580,7 @@ public abstract class Enemy extends Entity implements DamageSource, Debug<Graphi
         switch (entityState) {
             case RUN -> animSpeed = definition.getRunAnimSpeed();
             case WALK -> animSpeed = definition.getWalkAnimSpeed();
-            case ATTACK_1, ATTACK_2 -> animSpeed = definition.getAttackAnimSpeed();
+            case ATTACK_1, ATTACK_2, ATTACK_3, SPELL_1, SPELL_2 -> animSpeed = definition.getAttackAnimSpeed();
             case HIT -> animSpeed = definition.getHitAnimSpeed();
             default -> animSpeed = originalAnimSpeed;
         }

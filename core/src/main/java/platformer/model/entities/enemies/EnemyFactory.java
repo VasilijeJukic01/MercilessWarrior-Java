@@ -28,6 +28,13 @@ public final class EnemyFactory {
         CREATORS.put(EnemyType.GOBLIN_ASSASSIN, (x, y) -> new Goblin(x, y, EnemyType.GOBLIN_ASSASSIN));
         CREATORS.put(EnemyType.GOBLIN_SPEARMAN, (x, y) -> new Goblin(x, y, EnemyType.GOBLIN_SPEARMAN));
         CREATORS.put(EnemyType.GOBLIN_MAGE, (x, y) -> new Goblin(x, y, EnemyType.GOBLIN_MAGE));
+        CREATORS.put(EnemyType.BRIAR_HUSK, BriarHusk::new);
+        CREATORS.put(EnemyType.BLIGHT_BEAR, BlightBear::new);
+        CREATORS.put(EnemyType.WIDOW_SPIDER, WidowSpider::new);
+        CREATORS.put(EnemyType.DEATH_RIDER, DeathRider::new);
+        CREATORS.put(EnemyType.ROOT_WEAVER, RootWeaver::new);
+        CREATORS.put(EnemyType.CRIMSON_SKELETON, CrimsonSkeleton::new);
+        CREATORS.put(EnemyType.ASHEN_GHOUL, AshenGhoul::new);
     }
 
     private EnemyFactory() {}

@@ -84,6 +84,13 @@ public class EnemyManager {
         this.enemyRenderers.put(EnemyType.GOBLIN_ASSASSIN, new GoblinRenderer(EnemyType.GOBLIN_ASSASSIN));
         this.enemyRenderers.put(EnemyType.GOBLIN_SPEARMAN, new GoblinRenderer(EnemyType.GOBLIN_SPEARMAN));
         this.enemyRenderers.put(EnemyType.GOBLIN_MAGE, new GoblinRenderer(EnemyType.GOBLIN_MAGE));
+        this.enemyRenderers.put(EnemyType.BRIAR_HUSK, new StandardEnemyRenderer<>(EnemyType.BRIAR_HUSK));
+        this.enemyRenderers.put(EnemyType.BLIGHT_BEAR, new StandardEnemyRenderer<>(EnemyType.BLIGHT_BEAR));
+        this.enemyRenderers.put(EnemyType.WIDOW_SPIDER, new StandardEnemyRenderer<>(EnemyType.WIDOW_SPIDER));
+        this.enemyRenderers.put(EnemyType.DEATH_RIDER, new StandardEnemyRenderer<>(EnemyType.DEATH_RIDER));
+        this.enemyRenderers.put(EnemyType.ROOT_WEAVER, new StandardEnemyRenderer<>(EnemyType.ROOT_WEAVER));
+        this.enemyRenderers.put(EnemyType.CRIMSON_SKELETON, new StandardEnemyRenderer<>(EnemyType.CRIMSON_SKELETON));
+        this.enemyRenderers.put(EnemyType.ASHEN_GHOUL, new StandardEnemyRenderer<>(EnemyType.ASHEN_GHOUL));
     }
 
     public void loadEnemies(Level level) {
@@ -499,5 +506,24 @@ public class EnemyManager {
 
     public void injectScreenEffectsManager(ScreenEffectsManager screenEffectsManager) {
         this.screenEffectsManager = screenEffectsManager;
+    }
+
+    // Debug
+    public Enemy spawnEnemy(EnemyType type, int worldX, int worldY) {
+        if (type == null || type == EnemyType.MAX) return null;
+        Enemy enemy = EnemyFactory.create(type, worldX, worldY);
+        if (enemy == null) return null;
+
+        if (context != null && context.getLevelManager() != null && context.getLevelManager().getCurrentLevel() != null) {
+            int[][] lvlData = context.getLevelManager().getCurrentLevel().getLvlData();
+            double groundY = platformer.physics.CollisionDetector.getGroundY(worldX, worldY, lvlData);
+            enemy.getHitBox().x = worldX;
+            enemy.getHitBox().y = groundY - enemy.getHitBox().height - 1;
+        }
+
+        enemy.setCombatDirector(combatDirector);
+        enemy.evaluateFearState(context != null ? context.getWorldMemoryManager() : null);
+        enemies.computeIfAbsent(type, k -> new ArrayList<>()).add(enemy);
+        return enemy;
     }
 }
