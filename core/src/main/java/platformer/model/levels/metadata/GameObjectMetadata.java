@@ -20,6 +20,9 @@ public class GameObjectMetadata {
     private String requiredFlag;
     private String excludeFlag;
     private String excludeQuestActive;
+    private String dialogueId;
+    private String promptLabel;
+    private Boolean invisible;
 
     public boolean isConditionMet(WorldMemoryManager memory, QuestManager quests) {
         if (requiredFlag != null && !memory.hasFlag(requiredFlag)) return false;

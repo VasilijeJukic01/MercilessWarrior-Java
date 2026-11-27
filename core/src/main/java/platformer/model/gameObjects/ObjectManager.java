@@ -187,6 +187,11 @@ public class ObjectManager {
                     if (obj instanceof Door door && objMeta.getDestination() != null) {
                         door.setDestination(objMeta.getDestination());
                     }
+                    if (obj instanceof Board board) {
+                        if (objMeta.getDialogueId() != null) board.setDialogueKey(objMeta.getDialogueId());
+                        if (objMeta.getPromptLabel() != null) board.setPromptLabel(objMeta.getPromptLabel());
+                        if (objMeta.getInvisible() != null) board.setInvisible(objMeta.getInvisible());
+                    }
                 }
             }
         }

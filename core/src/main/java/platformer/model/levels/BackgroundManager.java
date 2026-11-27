@@ -39,7 +39,8 @@ public class BackgroundManager {
             Map.entry("TAVERN", new BackgroundSpec(TAVERN_BG, false)),
             Map.entry("CRYPT1", new BackgroundSpec(CRYPT1_BG, false)),
             Map.entry("CRYPT2", new BackgroundSpec(CRYPT2_BG, false)),
-            Map.entry("GOBLIN_CAVE", new BackgroundSpec(GOBLIN_CAVE_BG, false))
+            Map.entry("GOBLIN_CAVE", new BackgroundSpec(GOBLIN_CAVE_BG, false)),
+            Map.entry("CAVE1", new BackgroundSpec(CAVE1_BG, false))
     );
 
     private static final Map<String, BufferedImage> CACHE = new ConcurrentHashMap<>();

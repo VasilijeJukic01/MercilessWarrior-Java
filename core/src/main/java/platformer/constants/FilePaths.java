@@ -45,6 +45,7 @@ public final class FilePaths {
     public static final String CRYPT1_BG = "/images/levels/backgrounds/CRYPT1.png";
     public static final String CRYPT2_BG = "/images/levels/backgrounds/CRYPT2.png";
     public static final String GOBLIN_CAVE_BG = "/images/levels/backgrounds/GOBLIN_CAVE.png";
+    public static final String CAVE1_BG = "/images/levels/backgrounds/CAVE1.png";
 
     // Enemy
     public static final String ENEMIES_PATH = "/enemies/enemies.json";

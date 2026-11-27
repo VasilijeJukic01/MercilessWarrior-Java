@@ -3,6 +3,7 @@ package platformer.model.dialogue;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import platformer.animation.AssetManager;
+import platformer.constants.Constants;
 import platformer.controller.KeyboardController;
 import platformer.core.Framework;
 import platformer.core.GameContext;
@@ -189,8 +190,13 @@ public class DialogueManager {
             player.changeExp(answer.getRewardExp());
         }
         if (answer.getRewardItems() != null) {
-            answer.getRewardItems().forEach((itemId, amount) ->
-                    player.getInventory().addItemToBackpack(new InventoryItem(itemId, amount)));
+            answer.getRewardItems().forEach((itemId, amount) -> {
+                InventoryItem item = new InventoryItem(itemId, amount);
+                player.getInventory().addItemToBackpack(item);
+                if (item.getData() != null) {
+                    context.getEffectManager().spawnItemPickupText("+" + amount + " " + item.getData().name, player, Constants.ITEM_TEXT_COLOR);
+                }
+            });
         }
 
         if (answer.getObjectiveText() != null) {

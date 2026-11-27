@@ -11,10 +11,12 @@ import java.awt.image.BufferedImage;
 
 import static platformer.constants.Constants.*;
 
-
 public class Board extends GameObject implements Interactable {
 
     private boolean active;
+    private String dialogueKey = "Board";
+    private String promptLabel = "READ";
+    private boolean invisible = false;
 
     public Board(ObjType objType, int xPos, int yPos) {
         super(objType, xPos, yPos);
@@ -36,9 +38,11 @@ public class Board extends GameObject implements Interactable {
 
     @Override
     public void render(Graphics g, int xLevelOffset, int yLevelOffset, BufferedImage[] animations) {
-        int x = (int) hitBox.x - xOffset - xLevelOffset;
-        int y = (int) hitBox.y - yOffset - yLevelOffset;
-        g.drawImage(animations[animIndex], x, y, BOARD_WID, BOARD_HEI, null);
+        if (!invisible) {
+            int x = (int) hitBox.x - xOffset - xLevelOffset;
+            int y = (int) hitBox.y - yOffset - yLevelOffset;
+            g.drawImage(animations[animIndex], x, y, BOARD_WID, BOARD_HEI, null);
+        }
         hitBoxRenderer(g, xLevelOffset, yLevelOffset, Color.MAGENTA);
     }
 
@@ -69,7 +73,7 @@ public class Board extends GameObject implements Interactable {
 
     @Override
     public String getInteractionPrompt() {
-        return "Board";
+        return dialogueKey;
     }
 
     @Override
@@ -77,11 +81,22 @@ public class Board extends GameObject implements Interactable {
         if (!active) return;
         int centerX = (int) (hitBox.getCenterX() - xLevelOffset);
         int promptY = (int) (hitBox.y - yLevelOffset - 6 * SCALE);
-        UIButtonRenderer.drawInteractionPrompt(g, "READ", centerX, promptY);
+        UIButtonRenderer.drawInteractionPrompt(g, promptLabel, centerX, promptY);
     }
 
     public void setActive(boolean active) {
         this.active = active;
     }
 
+    public void setDialogueKey(String dialogueKey) {
+        this.dialogueKey = dialogueKey;
+    }
+
+    public void setPromptLabel(String promptLabel) {
+        this.promptLabel = promptLabel;
+    }
+
+    public void setInvisible(boolean invisible) {
+        this.invisible = invisible;
+    }
 }

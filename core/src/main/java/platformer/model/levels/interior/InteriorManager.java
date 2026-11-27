@@ -50,7 +50,7 @@ public class InteriorManager {
     }
 
     private void buildInteriors() {
-        String[] interiorNames = {"tavern", "crypt1", "crypt2", "goblin_cave"};
+        String[] interiorNames = {"tavern", "crypt1", "crypt2", "goblin_cave", "cave1"};
 
         for (String name : interiorNames) {
             String path = "/images/levels/rooms/" + name + ".png";
@@ -112,7 +112,7 @@ public class InteriorManager {
                     interiorLevel.getObjectsMap().remove(ObjType.LOOT);
                 }
 
-                boolean hideCombatHud = "tavern".equalsIgnoreCase(targetId);
+                boolean hideCombatHud = (meta != null && meta.getHideCombatHud() != null) ? meta.getHideCombatHud() : "tavern".equalsIgnoreCase(targetId);
                 context.getWorldTransitionCoordinator().enterInterior(interiorLevel, meta, spawnType, hideCombatHud);
             };
 
