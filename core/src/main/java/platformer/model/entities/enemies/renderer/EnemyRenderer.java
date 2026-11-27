@@ -7,8 +7,9 @@ import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Path2D;
 import java.awt.image.BufferedImage;
+import java.util.Collections;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.WeakHashMap;
 
 import static platformer.constants.Constants.SCALE;
 
@@ -21,8 +22,8 @@ public interface EnemyRenderer<T extends Enemy> {
 
     Color PARRY_RIM_COLOR = new Color(255, 65, 50, 245);
     Color PARRY_FLASH_COLOR = new Color(255, 230, 140, 255);
-    Map<BufferedImage, BufferedImage> PARRY_RIM_CACHE = new ConcurrentHashMap<>();
-    Map<BufferedImage, BufferedImage> PARRY_FLASH_CACHE = new ConcurrentHashMap<>();
+    Map<BufferedImage, BufferedImage> PARRY_RIM_CACHE = Collections.synchronizedMap(new WeakHashMap<>());
+    Map<BufferedImage, BufferedImage> PARRY_FLASH_CACHE = Collections.synchronizedMap(new WeakHashMap<>());
 
     /**
      * Renders an enemy of type T on the screen.

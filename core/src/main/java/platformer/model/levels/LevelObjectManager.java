@@ -37,7 +37,7 @@ public class LevelObjectManager {
 
         if (useLivelyVariant) {
             String livelyPath = DECORATION_SPRITES + tilesetName.toLowerCase() + "/" + baseFile + "_LIVELY.png";
-            if (AssetManager.getInstance().getAsset(livelyPath) != null) targetFile = baseFile + "_LIVELY";
+            if (AssetManager.getInstance().hasAsset(livelyPath)) targetFile = baseFile + "_LIVELY";
         }
 
         String cacheKey = tilesetName + ":" + targetFile + (isFlipped ? ":flipped" : "");

@@ -2,6 +2,7 @@ package platformer.state;
 
 import platformer.core.Game;
 import platformer.state.types.*;
+import platformer.ui.overlays.OverlayLayer;
 
 import java.util.EnumMap;
 import java.util.Map;
@@ -41,7 +42,8 @@ public class StateManager {
         currentState = states.get(type);
         if (currentState != null) {
             if (type == StateType.PLAYING) {
-                ((GameState)currentState).reloadSave();
+                OverlayLayer.getInstance().releaseMenuScene();
+                ((GameState) currentState).reloadSave();
             }
             currentState.enter();
         }

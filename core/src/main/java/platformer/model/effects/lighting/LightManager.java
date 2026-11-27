@@ -20,7 +20,7 @@ import java.awt.*;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -61,8 +61,14 @@ public class LightManager {
      * Downscaling factor for the lightmap buffer. A factor of 4 reduces pixel fill-rate cost by 16x while preserving smooth radial gradients when drawn with bilinear interpolation.
      */
     private static final int LIGHTMAP_SCALE = 4;
+    private static final int MAX_LIGHT_TEXTURES = 64;
     private BufferedImage playerLightTexture, enemyLightTexture, objectLightTexture, shopLightTexture, lanternHaloTexture;
-    private final Map<String, BufferedImage> lightTextureCache = new HashMap<>();
+    private final Map<String, BufferedImage> lightTextureCache = new LinkedHashMap<>(32, 0.75f, true) {
+        @Override
+        protected boolean removeEldestEntry(Map.Entry<String, BufferedImage> eldest) {
+            return size() > MAX_LIGHT_TEXTURES;
+        }
+    };
 
     /**
      * Cached room-sized buffers holding pre-baked white cutout masks and colored glow tints for all stationary decorations and metadata lights in the current level.
@@ -414,8 +420,8 @@ public class LightManager {
 
         int roomLmW = Math.max(1, (currentLevel.getLevelTilesWidth() * TILES_SIZE) / LIGHTMAP_SCALE);
         int roomLmH = Math.max(1, (currentLevel.getLevelTilesHeight() * TILES_SIZE) / LIGHTMAP_SCALE);
-        staticRoomWhiteMap = new BufferedImage(roomLmW, roomLmH, BufferedImage.TYPE_INT_ARGB);
-        staticRoomColorMap = new BufferedImage(roomLmW, roomLmH, BufferedImage.TYPE_INT_ARGB);
+        staticRoomWhiteMap = ImageUtils.createCompatibleImage(roomLmW, roomLmH);
+        staticRoomColorMap = ImageUtils.createCompatibleImage(roomLmW, roomLmH);
 
         Graphics2D wG2d = staticRoomWhiteMap.createGraphics();
         Graphics2D cG2d = staticRoomColorMap.createGraphics();

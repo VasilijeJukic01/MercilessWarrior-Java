@@ -8,7 +8,8 @@ import java.awt.geom.Rectangle2D;
 import static platformer.constants.UI.*;
 
 /**
- * This class is responsible for rendering the surface for overlay of the game.
+ * Responsible for rendering menu background scenes and runic modal overlay plaques.
+ * Lazily creates and disposes {@link MenuSceneRenderer} so gameplay doesn't keep a duplicate engine in RAM.
  */
 public class OverlayLayer {
 
@@ -32,13 +33,25 @@ public class OverlayLayer {
     }
 
     private void init() {
-        this.menuSceneRenderer = new MenuSceneRenderer();
         this.overlay = new Rectangle2D.Double(OVERLAY_X, OVERLAY_Y, OVERLAY_WID, OVERLAY_HEI);
     }
 
-    // Core
+    private MenuSceneRenderer ensureMenuScene() {
+        if (menuSceneRenderer == null) {
+            menuSceneRenderer = new MenuSceneRenderer();
+        }
+        return menuSceneRenderer;
+    }
+
+    /**
+     * Releases the menu scene's duplicate managers when entering active gameplay.
+     */
+    public void releaseMenuScene() {
+        this.menuSceneRenderer = null;
+    }
+
     public void update() {
-        menuSceneRenderer.update();
+        ensureMenuScene().update();
     }
 
     public void render(Graphics g) {
@@ -47,11 +60,10 @@ public class OverlayLayer {
     }
 
     public void renderMenu(Graphics g) {
-        menuSceneRenderer.render(g);
+        ensureMenuScene().render(g);
     }
 
     public void renderOverlay(Graphics g) {
         UIButtonRenderer.drawRunicPanel(g, overlay);
     }
-
 }

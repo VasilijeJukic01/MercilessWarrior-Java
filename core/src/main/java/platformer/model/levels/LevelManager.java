@@ -33,6 +33,14 @@ import static platformer.constants.FilePaths.*;
  */
 public class LevelManager {
 
+    private static final int MAX_CACHED_LEVELS = 6;
+    private final Map<String, Level> levels = new LinkedHashMap<>(16, 0.75f, true) {
+        @Override
+        protected boolean removeEldestEntry(Map.Entry<String, Level> eldest) {
+            return size() > MAX_CACHED_LEVELS && eldest.getValue() != currentLevel;
+        }
+    };
+
     private GameContext context;
     private final LevelObjectManager levelObjectManager;
     private final DecorationRenderer decorationRenderer;
@@ -41,7 +49,6 @@ public class LevelManager {
 
     private final Map<String, BufferedImage[]> tilesetSprites = new HashMap<>();
     private final Map<String, Map<Integer, DecorationMetadata>> decorationSets = new HashMap<>();
-    private final Map<String, Level> levels = new HashMap<>();
     private WorldMapMetadata worldMap;
 
     private Level arenaLevel;
@@ -228,10 +235,8 @@ public class LevelManager {
     }
 
     private void loadBackground() {
-        if (currentLevelMetadata != null && currentLevelMetadata.getBackgroundId() != null) {
-            this.currentBackground = backgroundManager.getBackground(currentLevelMetadata.getBackgroundId());
-        }
-        else this.currentBackground = backgroundManager.getDefaultBackground();
+        boolean scaleToViewport = !"Invisible".equalsIgnoreCase(currentLevelMetadata.getTileset());
+        this.currentBackground = backgroundManager.getBackground(currentLevelMetadata.getBackgroundId(), scaleToViewport);
     }
 
     private LevelMetadata loadMetadataForLevel(String levelName) {

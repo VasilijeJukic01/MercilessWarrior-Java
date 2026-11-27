@@ -10,7 +10,7 @@ import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import static platformer.constants.Constants.*;
@@ -21,8 +21,15 @@ import static platformer.constants.Constants.*;
  */
 public class DecorationRenderer {
 
+    private static final int MAX_TRANSFORMED_CACHE = 256;
+
+    private final Map<String, BufferedImage> transformedCache = new LinkedHashMap<>(64, 0.75f, true) {
+        @Override
+        protected boolean removeEldestEntry(Map.Entry<String, BufferedImage> eldest) {
+            return size() > MAX_TRANSFORMED_CACHE;
+        }
+    };
     private final LevelObjectManager levelObjectManager;
-    private final Map<String, BufferedImage> transformedCache = new HashMap<>();
     private final BufferedImage underGlowTexture;
 
     public DecorationRenderer(LevelObjectManager levelObjectManager) {
@@ -313,5 +320,12 @@ public class DecorationRenderer {
         double primaryWave = Math.sin(baseTime * speed + phase);
         double gustWave = Math.sin(baseTime * (speed * 1.65) + phase * 0.5);
         return (primaryWave * 0.7 + gustWave * 0.3) * (baseAmplitude * ampScale);
+    }
+
+    private String buildTransformKey(DecorationMetadata decoMeta, boolean useLively, double rot, double sx, double sy) {
+        long qRot = Math.round(rot * 10.0);
+        long qSx = Math.round(sx * 100.0);
+        long qSy = Math.round(sy * 100.0);
+        return decoMeta.getId() + "_" + decoMeta.isFlipped() + "_" + useLively + "_" + qRot + "_" + qSx + "_" + qSy;
     }
 }

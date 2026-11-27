@@ -1,21 +1,26 @@
 package platformer.model.levels;
 
+import platformer.animation.AssetManager;
 import platformer.utils.ImageUtils;
 
 import java.awt.image.BufferedImage;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import static platformer.constants.Constants.GAME_HEIGHT;
 import static platformer.constants.Constants.GAME_WIDTH;
 import static platformer.constants.FilePaths.*;
 
 /**
- * Lazily loads and caches level background images on demand to minimize startup time and memory usage.
+ * Lazily loads backgrounds into a bounded LRU cache to keep VRAM/heap usage constant across many biomes.
  */
 public class BackgroundManager {
 
-    private record BackgroundSpec(String path, boolean scaleToViewport) { }
+    private static final int MAX_CACHED_BACKGROUNDS = 6;
+    private static final String BACKGROUNDS_DIR = "/images/levels/backgrounds/";
+
+    private record BackgroundSpec(String path, boolean scaleToViewport) {}
 
     private static final Map<String, BackgroundSpec> REGISTRY = Map.ofEntries(
             Map.entry("FOREST1", new BackgroundSpec(FOREST_BG_1, true)),
@@ -43,26 +48,50 @@ public class BackgroundManager {
             Map.entry("CAVE1", new BackgroundSpec(CAVE1_BG, false))
     );
 
-    private static final Map<String, BufferedImage> CACHE = new ConcurrentHashMap<>();
+    private static final Map<String, BufferedImage> CACHE = Collections.synchronizedMap(new LinkedHashMap<>(16, 0.75f, true) {
+                @Override
+                protected boolean removeEldestEntry(Map.Entry<String, BufferedImage> eldest) {
+                    return size() > MAX_CACHED_BACKGROUNDS;
+                }
+            }
+    );
+
+    public BufferedImage getBackground(String id) {
+        return getBackground(id, true);
+    }
 
     /**
-     * Retrieves a background image by its ID, loading and caching it on first access.
+     * Retrieves a background image by ID. Supports both explicit REGISTRY entries and automatic convention lookup at /images/levels/backgrounds/<id>.png for future biomes & interiors.
      */
-    public BufferedImage getBackground(String id) {
-        if (id == null || !REGISTRY.containsKey(id)) return getDefaultBackground();
-        return CACHE.computeIfAbsent(id, this::loadFromSpec);
+    public BufferedImage getBackground(String id, boolean defaultScaleToViewport) {
+        if (id == null || id.isBlank()) return getDefaultBackground();
+
+        String cacheKey = id + ":" + defaultScaleToViewport;
+        BufferedImage cached = CACHE.get(cacheKey);
+        if (cached != null) return cached;
+
+        BackgroundSpec spec = REGISTRY.get(id);
+        if (spec == null) {
+            String autoPath = BACKGROUNDS_DIR + id + ".png";
+            if (!AssetManager.getInstance().hasAsset(autoPath)) {
+                autoPath = BACKGROUNDS_DIR + id.toLowerCase() + ".png";
+            }
+            if (!AssetManager.getInstance().hasAsset(autoPath)) {
+                return getDefaultBackground();
+            }
+            spec = new BackgroundSpec(autoPath, defaultScaleToViewport);
+        }
+
+        BufferedImage img = spec.scaleToViewport() ? ImageUtils.importImage(spec.path(), GAME_WIDTH, GAME_HEIGHT) : ImageUtils.importImage(spec.path(), -1, -1);
+
+        if (img != null) {
+            CACHE.put(cacheKey, img);
+            return img;
+        }
+        return getDefaultBackground();
     }
 
     public BufferedImage getDefaultBackground() {
-        return CACHE.computeIfAbsent("FOREST1", this::loadFromSpec);
-    }
-
-    private BufferedImage loadFromSpec(String id) {
-        BackgroundSpec spec = REGISTRY.get(id);
-        if (spec == null) return null;
-        if (spec.scaleToViewport()) {
-            return ImageUtils.importImage(spec.path(), GAME_WIDTH, GAME_HEIGHT);
-        }
-        else return ImageUtils.importImage(spec.path(), -1, -1);
+        return getBackground("FOREST1", true);
     }
 }
