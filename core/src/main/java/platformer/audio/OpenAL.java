@@ -9,37 +9,38 @@ import platformer.audio.types.Ambience;
 import platformer.audio.types.Song;
 import platformer.audio.types.Sound;
 import platformer.core.Settings;
+import platformer.core.loading.LoadingProgressTracker;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
-import platformer.core.loading.LoadingProgressTracker;
 import platformer.utils.ValueEnum;
 
 import javax.sound.sampled.AudioFormat;
 import java.nio.ByteBuffer;
-
 import java.nio.IntBuffer;
 import java.util.*;
 
 import static org.lwjgl.system.MemoryUtil.NULL;
 
 /**
- * An implementation of the {@link AudioPlayer} interface using the OpenAL library (via LWJGL).
- * This class is responsible for initializing the audio device, loading all sound files into buffers,
- * managing sound sources, and handling playback logic.
+ * OpenAL implementation of {@link AudioPlayer} backed by EnumMap buffer tables and a fixed-size SFX source pool.
  */
-public class OpenAL implements AudioPlayer<Song, Sound, Ambience>  {
+public class OpenAL implements AudioPlayer<Song, Sound, Ambience> {
+
+    private static final int SFX_POOL_SIZE = 28;
 
     private final Map<Integer, AudioFileProperties> songProperties = new HashMap<>();
+    private final Map<Song, Integer> songBuffers = new EnumMap<>(Song.class);
+    private final Map<Sound, Integer> soundBuffers = new EnumMap<>(Sound.class);
+    private final Map<Ambience, Integer> ambienceBuffers = new EnumMap<>(Ambience.class);
 
-    private final List<Integer> songs = new ArrayList<>();
-    private final List<OpenALSource> songSources = new ArrayList<>();
-    private final List<Integer> sounds = new ArrayList<>();
-    private final List<OpenALSource> soundSources = new ArrayList<>();
-    private final List<Integer> pausedSounds = new ArrayList<>();
-    private final List<OpenALSource> ambienceSources = new ArrayList<>();
-    private final List<Integer> ambiences = new ArrayList<>();
+    private OpenALSource songSource;
+    private OpenALSource ambienceSource;
+    private final OpenALSource[] sfxPool = new OpenALSource[SFX_POOL_SIZE];
+    private final Sound[] sfxPoolTag = new Sound[SFX_POOL_SIZE];
+    private final boolean[] pausedPoolSlots = new boolean[SFX_POOL_SIZE];
+    private int nextPoolIndex = 0;
 
-    private int currentSong = -1;
+    private Song currentSong = null;
     private float musicVolume = Settings.getInstance().getMusicVolume();
     private float sfxVolume = Settings.getInstance().getSfxVolume();
     private boolean songMute = Settings.getInstance().isMusicMute();
@@ -47,28 +48,17 @@ public class OpenAL implements AudioPlayer<Song, Sound, Ambience>  {
     private final Random rand = new Random();
     private final LoadingProgressTracker progressTracker = LoadingProgressTracker.getInstance();
 
-    // Loading
+    // Loading progress splits
     private static final double INIT_PROGRESS = 0.1;
     private static final double SONGS_PROGRESS = 0.4;
     private static final double SOUNDS_PROGRESS = 0.3;
     private static final double AMBIENCE_PROGRESS = 0.2;
 
-    // Sounds
-    private static final Sound[] SLASH_SOUNDS = {
-            Sound.SLASH_1, Sound.SLASH_2, Sound.SLASH_3
-    };
-    private static final Sound[] HIT_SOUNDS = {
-            Sound.ENEMY_HIT_1, Sound.ENEMY_HIT_2
-    };
-    private static final Sound[] ENEMY_BLOCK_SOUNDS = {
-            Sound.ENEMY_BLOCK_1, Sound.ENEMY_BLOCK_2
-    };
-    private static final Sound[] PLAYER_BLOCK_SOUNDS = {
-            Sound.SWORD_BLOCK_1, Sound.SWORD_BLOCK_2, Sound.SWORD_BLOCK_3
-    };
-    private static final Sound[] CRATE_BREAK_SOUNDS = {
-            Sound.CRATE_BREAK_1, Sound.CRATE_BREAK_2
-    };
+    private static final Sound[] SLASH_SOUNDS = { Sound.SLASH_1, Sound.SLASH_2, Sound.SLASH_3 };
+    private static final Sound[] HIT_SOUNDS = { Sound.ENEMY_HIT_1, Sound.ENEMY_HIT_2 };
+    private static final Sound[] ENEMY_BLOCK_SOUNDS = { Sound.ENEMY_BLOCK_1, Sound.ENEMY_BLOCK_2 };
+    private static final Sound[] PLAYER_BLOCK_SOUNDS = { Sound.SWORD_BLOCK_1, Sound.SWORD_BLOCK_2, Sound.SWORD_BLOCK_3 };
+    private static final Sound[] CRATE_BREAK_SOUNDS = { Sound.CRATE_BREAK_1, Sound.CRATE_BREAK_2 };
 
     /**
      * Initializes the OpenAL audio system. This involves setting up the audio device and context,
@@ -79,18 +69,21 @@ public class OpenAL implements AudioPlayer<Song, Sound, Ambience>  {
         progressTracker.updateProgress(0.01);
 
         initAL();
+        initSources();
         progressTracker.updateProgress(INIT_PROGRESS);
+
         progressTracker.updateStatus("Loading music");
-
-        loadSongs();
+        loadAudio(Song.values(), songBuffers, songProperties, INIT_PROGRESS, SONGS_PROGRESS);
+        updateSongVolume();
         progressTracker.updateProgress(INIT_PROGRESS + SONGS_PROGRESS);
+
         progressTracker.updateStatus("Loading sound effects");
-
-        loadSounds();
+        loadAudio(Sound.values(), soundBuffers, null, INIT_PROGRESS + SONGS_PROGRESS, SOUNDS_PROGRESS);
+        updateSoundVolume();
         progressTracker.updateProgress(INIT_PROGRESS + SONGS_PROGRESS + SOUNDS_PROGRESS);
-        progressTracker.updateStatus("Loading ambient sounds");
 
-        loadAmbiences();
+        progressTracker.updateStatus("Loading ambient sounds");
+        loadAudio(Ambience.values(), ambienceBuffers, null, INIT_PROGRESS + SONGS_PROGRESS + SOUNDS_PROGRESS, AMBIENCE_PROGRESS);
         setListenerData();
 
         progressTracker.updateProgress(INIT_PROGRESS + SONGS_PROGRESS + SOUNDS_PROGRESS + AMBIENCE_PROGRESS);
@@ -118,44 +111,29 @@ public class OpenAL implements AudioPlayer<Song, Sound, Ambience>  {
         }
     }
 
-    // Data
-    private void loadAudio(ValueEnum<String>[] audioArray, List<Integer> buffers, List<OpenALSource> sources, Map<Integer, AudioFileProperties> propertiesMap, double progressStart, double progressTotal) {
-        int totalFiles = audioArray.length;
-        double progressPerFile = progressTotal / totalFiles;
+    private void initSources() {
+        this.songSource = new OpenALSource();
+        this.ambienceSource = new OpenALSource();
+        for (int i = 0; i < SFX_POOL_SIZE; i++) {
+            sfxPool[i] = new OpenALSource();
+        }
+    }
+
+    private <E extends Enum<E> & ValueEnum<String>> void loadAudio(E[] audioArray, Map<E, Integer> targetMap, Map<Integer, AudioFileProperties> propertiesMap, double progressStart, double progressTotal) {
+        if (audioArray.length == 0) return;
+        double progressPerFile = progressTotal / audioArray.length;
         double currentProgress = progressStart;
 
-        for (ValueEnum<String> audio : audioArray) {
-            String id = audio.getValue();
-
-            int bufferId = loadBuffer("audio/" + id + ".wav", propertiesMap);
+        for (E audio : audioArray) {
+            int bufferId = loadBuffer("audio/" + audio.getValue() + ".wav", propertiesMap);
             if (bufferId != -1) {
-                buffers.add(bufferId);
-                sources.add(new OpenALSource());
+                targetMap.put(audio, bufferId);
             }
-
             currentProgress += progressPerFile;
             progressTracker.updateProgress(currentProgress);
         }
     }
 
-    private void loadSongs() {
-        Song[] songArray = Song.values();
-        loadAudio(songArray, songs, songSources, songProperties, INIT_PROGRESS, SONGS_PROGRESS);
-        updateSongVolume();
-    }
-
-    private void loadSounds() {
-        Sound[] soundArray = Sound.values();
-        loadAudio(soundArray, sounds, soundSources,  null, INIT_PROGRESS + SONGS_PROGRESS, SOUNDS_PROGRESS);
-        updateSoundVolume();
-    }
-
-    private void loadAmbiences() {
-        Ambience[] ambienceArray = Ambience.values();
-        loadAudio(ambienceArray, ambiences, ambienceSources, null, INIT_PROGRESS + SONGS_PROGRESS + SOUNDS_PROGRESS, AMBIENCE_PROGRESS);
-    }
-
-    // Core
     /**
      * Loads a single audio file (must be .wav) into an OpenAL buffer.
      *
@@ -174,6 +152,7 @@ public class OpenAL implements AudioPlayer<Song, Sound, Ambience>  {
                 }
             }
             catch (Exception e) {
+                AL10.alDeleteBuffers(buffer);
                 Logger.getInstance().notify("Could not load audio file: " + file, Message.ERROR);
                 return -1;
             }
@@ -191,17 +170,20 @@ public class OpenAL implements AudioPlayer<Song, Sound, Ambience>  {
 
     // Mediator
     @Override
-    public void playSong(Song song) {
+    public synchronized void playSong(Song song) {
         playSong(song, 0);
     }
 
     @Override
-    public void playSong(Song song, int offsetMs) {
+    public synchronized void playSong(Song song, int offsetMs) {
         stopSong();
-        currentSong = song.ordinal();
+        if (song == null) return;
+        Integer bufferId = songBuffers.get(song);
+        if (bufferId == null) return;
+
+        currentSong = song;
         updateSongVolume();
 
-        int bufferId = songs.get(currentSong);
         AudioFileProperties props = songProperties.get(bufferId);
         int byteOffset = 0;
         if (props != null && offsetMs > 0) {
@@ -209,86 +191,115 @@ public class OpenAL implements AudioPlayer<Song, Sound, Ambience>  {
             byteOffset = (int) (bytesPerSecond * (offsetMs / 1000.0));
         }
 
-        songSources.get(currentSong).play(bufferId, false, byteOffset);
-        songSources.get(currentSong).loop(true);
+        songSource.play(bufferId, false, byteOffset);
+        songSource.loop(true);
 
         if (song == Song.FOREST_1) playAmbience(Ambience.FOREST);
         else stopAmbience();
     }
 
     @Override
-    public Song getCurrentSong() {
-        if (currentSong != -1 && songSources.get(currentSong).isPlaying()) {
-            return Song.values()[currentSong];
+    public synchronized Song getCurrentSong() {
+        if (currentSong != null && songSource.isPlaying()) {
+            return currentSong;
         }
         return null;
     }
 
     @Override
-    public void pauseSong() {
-        if (currentSong != -1 && currentSong < songSources.size()) {
-            songSources.get(currentSong).pause();
-        }
+    public synchronized void pauseSong() {
+        if (currentSong != null) songSource.pause();
     }
 
     @Override
-    public void unpauseSong() {
-        if (currentSong != -1 && currentSong < songSources.size()) {
-            songSources.get(currentSong).unpause();
-        }
+    public synchronized void unpauseSong() {
+        if (currentSong != null) songSource.unpause();
     }
 
     @Override
-    public void stopSong() {
-        if (currentSong != -1 && currentSong < songSources.size()) {
-            songSources.get(currentSong).stop();
-        }
-        currentSong = -1;
+    public synchronized void stopSong() {
+        songSource.stop();
+        currentSong = null;
     }
 
     @Override
-    public void playSound(Sound sound) {
+    public synchronized void playSound(Sound sound) {
+        if (sound == null) return;
+        Integer bufferId = soundBuffers.get(sound);
+        if (bufferId == null) return;
+
+        int slot = acquireSfxSlot();
         float vol = soundMute ? 0f : sfxVolume;
-        soundSources.get(sound.ordinal()).changeVolume(vol);
-        soundSources.get(sound.ordinal()).play(sounds.get(sound.ordinal()), true);
+        sfxPoolTag[slot] = sound;
+        pausedPoolSlots[slot] = false;
+        sfxPool[slot].changeVolume(vol);
+        sfxPool[slot].play(bufferId, true);
+    }
+
+    private int acquireSfxSlot() {
+        for (int i = 0; i < SFX_POOL_SIZE; i++) {
+            int idx = (nextPoolIndex + i) % SFX_POOL_SIZE;
+            if (!sfxPool[idx].isPlaying() && !pausedPoolSlots[idx]) {
+                nextPoolIndex = (idx + 1) % SFX_POOL_SIZE;
+                return idx;
+            }
+        }
+        // All voices busy: steal oldest slot in round-robin order
+        int stolen = nextPoolIndex;
+        nextPoolIndex = (nextPoolIndex + 1) % SFX_POOL_SIZE;
+        return stolen;
     }
 
     @Override
-    public void stopSound(Sound sound) {
-        soundSources.get(sound.ordinal()).stop();
-    }
-
-    @Override
-    public void pauseSounds() {
-        for (Integer sound : sounds) {
-            if (soundSources.get(sounds.indexOf(sound)).isPlaying()) {
-                pausedSounds.add(sound);
-                soundSources.get(sounds.indexOf(sound)).pause();
+    public synchronized void stopSound(Sound sound) {
+        if (sound == null) return;
+        for (int i = 0; i < SFX_POOL_SIZE; i++) {
+            if (sfxPoolTag[i] == sound) {
+                sfxPool[i].stop();
+                sfxPoolTag[i] = null;
+                pausedPoolSlots[i] = false;
             }
         }
     }
 
     @Override
-    public void unpauseSounds() {
-        for (Integer sound : sounds) {
-            if (pausedSounds.contains(sound))
-                soundSources.get(sounds.indexOf(sound)).unpause();
+    public synchronized void pauseSounds() {
+        for (int i = 0; i < SFX_POOL_SIZE; i++) {
+            if (sfxPool[i].isPlaying()) {
+                sfxPool[i].pause();
+                pausedPoolSlots[i] = true;
+            }
         }
-        pausedSounds.clear();
     }
 
     @Override
-    public void playAmbience(Ambience ambience) {
-        int index = ambience.ordinal();
+    public synchronized void unpauseSounds() {
+        for (int i = 0; i < SFX_POOL_SIZE; i++) {
+            if (pausedPoolSlots[i]) {
+                sfxPool[i].unpause();
+                pausedPoolSlots[i] = false;
+            }
+        }
+    }
+
+    @Override
+    public synchronized void playAmbience(Ambience ambience) {
+        if (ambience == null) {
+            stopAmbience();
+            return;
+        }
+        Integer bufferId = ambienceBuffers.get(ambience);
+        if (bufferId == null) return;
+
         float vol = soundMute ? 0f : sfxVolume;
-        ambienceSources.get(index).changeVolume(vol);
-        ambienceSources.get(index).play(ambiences.get(index), false);
-        ambienceSources.get(index).loop(true);
+        ambienceSource.changeVolume(vol);
+        ambienceSource.play(bufferId, false);
+        ambienceSource.loop(true);
     }
 
     @Override
-    public void stopAmbience() {
-        ambienceSources.forEach(OpenALSource::stop);
+    public synchronized void stopAmbience() {
+        ambienceSource.stop();
     }
 
     @Override
@@ -323,19 +334,18 @@ public class OpenAL implements AudioPlayer<Song, Sound, Ambience>  {
 
     // Volume
     private void updateSongVolume() {
-        if (currentSong == -1) return;
         float actualVolume = songMute ? 0f : musicVolume;
-        songSources.get(currentSong).changeVolume(actualVolume);
+        songSource.changeVolume(actualVolume);
     }
 
     private void updateSoundVolume() {
         float actualVolume = soundMute ? 0f : sfxVolume;
-        for (OpenALSource source : soundSources) source.changeVolume(actualVolume);
-        for (OpenALSource source : ambienceSources) source.changeVolume(actualVolume);
+        for (OpenALSource source : sfxPool) source.changeVolume(actualVolume);
+        ambienceSource.changeVolume(actualVolume);
     }
 
     @Override
-    public void songMute() {
+    public synchronized void songMute() {
         songMute = !songMute;
         updateSongVolume();
         Settings.getInstance().setMusicMute(songMute);
@@ -343,7 +353,7 @@ public class OpenAL implements AudioPlayer<Song, Sound, Ambience>  {
     }
 
     @Override
-    public void soundMute() {
+    public synchronized void soundMute() {
         soundMute = !soundMute;
         updateSoundVolume();
         Settings.getInstance().setSfxMute(soundMute);
@@ -351,39 +361,38 @@ public class OpenAL implements AudioPlayer<Song, Sound, Ambience>  {
     }
 
     @Override
-    public void setMusicVolume(float musicVolume) {
+    public synchronized void setMusicVolume(float musicVolume) {
         this.musicVolume = musicVolume;
         updateSongVolume();
         Settings.getInstance().setMusicVolume(musicVolume);
     }
 
     @Override
-    public void setSfxVolume(float sfxVolume) {
+    public synchronized void setSfxVolume(float sfxVolume) {
         this.sfxVolume = sfxVolume;
         updateSoundVolume();
         Settings.getInstance().setSfxVolume(sfxVolume);
     }
 
     @Override
-    public float getMusicVolume() {
+    public synchronized float getMusicVolume() {
         return musicVolume;
     }
 
     /**
      * {@inheritDoc}
      * <p>
-     * This implementation deletes all OpenAL buffers and sources, then properly closes the
-     * OpenAL device and context to prevent resource leaks.
+     * This implementation deletes all OpenAL buffers and sources, then properly closes the OpenAL device and context to prevent resource leaks.
      */
     @Override
-    public void destroy() {
-        songSources.forEach(OpenALSource::delete);
-        soundSources.forEach(OpenALSource::delete);
-        ambienceSources.forEach(OpenALSource::delete);
+    public synchronized void destroy() {
+        songSource.delete();
+        ambienceSource.delete();
+        for (OpenALSource source : sfxPool) source.delete();
 
-        songs.forEach(AL10::alDeleteBuffers);
-        sounds.forEach(AL10::alDeleteBuffers);
-        ambiences.forEach(AL10::alDeleteBuffers);
+        songBuffers.values().forEach(AL10::alDeleteBuffers);
+        soundBuffers.values().forEach(AL10::alDeleteBuffers);
+        ambienceBuffers.values().forEach(AL10::alDeleteBuffers);
 
         long context = ALC10.alcGetCurrentContext();
         long device = ALC10.alcGetContextsDevice(context);
@@ -392,5 +401,4 @@ public class OpenAL implements AudioPlayer<Song, Sound, Ambience>  {
         ALC10.alcDestroyContext(context);
         ALC10.alcCloseDevice(device);
     }
-
 }

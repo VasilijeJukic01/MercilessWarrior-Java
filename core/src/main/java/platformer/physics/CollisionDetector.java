@@ -20,22 +20,17 @@ public final class CollisionDetector {
 
     /**
      * Checks if a hitbox can occupy a given position without colliding with solid tiles.
-     * It checks the four corners of the hitbox. If any corner is inside a solid tile, movement is blocked.
-     *
-     * @param x         The target x-coordinate of the hitbox's top-left corner.
-     * @param y         The target y-coordinate of the hitbox's top-left corner.
-     * @param width     The width of the hitbox.
-     * @param height    The height of the hitbox.
-     * @param levelData The 2D integer array representing the level's tilemap.
-     * @return {@code true} if the position is clear, {@code false} if it collides with a solid tile.
+     * Checks all 4 corners as well as intermediate vertical and horizontal tile spans so entities taller or wider than 1 tile cannot clip through thin walls or pillars.
      */
     public static boolean canMoveHere(double x, double y, double width, double height, int[][] levelData) {
         if (isSolid(x, y, levelData)) return false;
-        if (isSolid(x+width, y+height, levelData)) return false;
-        if (isSolid(x+width, y, levelData)) return false;
-        if (isSolid(x, y+height, levelData)) return false;
-        if (isSolidBetween(x+width, y, y+height, levelData)) return false;
-        if (isSolidBetween(x, y, y+height, levelData)) return false;
+        if (isSolid(x + width, y + height, levelData)) return false;
+        if (isSolid(x + width, y, levelData)) return false;
+        if (isSolid(x, y + height, levelData)) return false;
+        if (isSolidBetweenVertical(x + width, y, y + height, levelData)) return false;
+        if (isSolidBetweenVertical(x, y, y + height, levelData)) return false;
+        if (isSolidBetweenHorizontal(x, x + width, y, levelData)) return false;
+        if (isSolidBetweenHorizontal(x, x + width, y + height, levelData)) return false;
         return true;
     }
 
@@ -61,26 +56,29 @@ public final class CollisionDetector {
         return isTileSolid(xIndex, yIndex, levelData);
     }
 
-    /**
-     * Checks for any solid tiles along a vertical line at a given x-coordinate.
-     * This is essential for preventing entities from clipping through vertical walls when moving horizontally.
-     *
-     * @param x         The world x-coordinate to check along.
-     * @param yA    The starting world y-coordinate of the line.
-     * @param yB      The ending world y-coordinate of the line.
-     * @param levelData The level's tilemap.
-     * @return {@code true} if a solid tile is found along the line, {@code false} otherwise.
-     */
-    private static boolean isSolidBetween(double x, double yA, double yB, int[][] levelData) {
-        int xIndex = (int)(x / TILES_SIZE);
-        int yAIndex = (int)(yA / TILES_SIZE);
-        int yBIndex = (int)(yB / TILES_SIZE);
+    private static boolean isSolidBetweenVertical(double x, double yA, double yB, int[][] levelData) {
+        int xIndex = (int) (x / TILES_SIZE);
+        if (xIndex < 0 || xIndex >= levelData.length) return true;
 
+        int yAIndex = Math.max(0, (int) (yA / TILES_SIZE));
+        int yBIndex = Math.min(levelData[0].length - 1, (int) (yB / TILES_SIZE));
         for (int i = yAIndex; i <= yBIndex; i++) {
             int value = levelData[xIndex][i];
             if (value > EMPTY_TILE && value < MAX_TILE_VALUE) return true;
         }
+        return false;
+    }
 
+    private static boolean isSolidBetweenHorizontal(double xA, double xB, double y, int[][] levelData) {
+        int yIndex = (int) (y / TILES_SIZE);
+        if (yIndex < 0 || yIndex >= levelData[0].length) return true;
+
+        int xAIndex = Math.max(0, (int) (xA / TILES_SIZE));
+        int xBIndex = Math.min(levelData.length - 1, (int) (xB / TILES_SIZE));
+        for (int i = xAIndex; i <= xBIndex; i++) {
+            int value = levelData[i][yIndex];
+            if (value > EMPTY_TILE && value < MAX_TILE_VALUE) return true;
+        }
         return false;
     }
 
@@ -93,52 +91,42 @@ public final class CollisionDetector {
      * @return {@code true} if the tile's value represents a solid block, {@code false} otherwise.
      */
     public static boolean isTileSolid(int xTile, int yTile, int[][] levelData) {
+        if (xTile < 0 || xTile >= levelData.length || yTile < 0 || yTile >= levelData[0].length) {
+            return true;
+        }
         int value = levelData[xTile][yTile];
         if (value == EMPTY_TILE) return false;
         return (value >= 0 && value < MAX_TILE_VALUE);
     }
 
     /**
-     * Calculates the corrected X position for an entity that has collided with a wall.
-     * Prevents the entity from moving inside the wall tile.
-     *
-     * @param hitBox The hitbox of the entity.
-     * @param dx     The horizontal velocity or movement delta.
-     * @return The new x-coordinate, flush with the wall.
+     * Calculates the corrected X position flush with the collided wall tile for any hitbox width.
      */
     public static double getXPosOnTheWall(Rectangle2D.Double hitBox, double dx) {
-        int currentTile = (int) (hitBox.x / TILES_SIZE);
         if (dx > 0) {
-            int tileXPos = currentTile * TILES_SIZE;
-            int xOffset = (int) (TILES_SIZE - hitBox.width);
-            return tileXPos + xOffset - 1;
+            int rightWallTile = (int) Math.floor((hitBox.x + hitBox.width + dx) / TILES_SIZE);
+            return rightWallTile * TILES_SIZE - hitBox.width - 1;
         }
-        else {
-            return hitBox.x;
+        else if (dx < 0) {
+            int leftWallTile = (int) Math.floor((hitBox.x + dx) / TILES_SIZE);
+            return (leftWallTile + 1) * TILES_SIZE;
         }
+        return hitBox.x;
     }
 
     /**
-     * This method calculates the y-coordinate of the entity's position on the ceiling.
-     * If the entity is falling, it calculates the y-coordinate of the bottommost tile that the entity's hitbox is touching.
-     * If the entity is jumping, it returns the current y-coordinate of the entity.
-     *
-     * @param hitBox The hitbox of the entity.
-     * @param airSpeed The vertical speed of the entity.
-     * @return The y-coordinate of the entity's position on the ceiling.
+     * Calculates the corrected Y position flush with the floor (when falling) or ceiling (when rising).
      */
     public static double getYPosOnTheCeil(Rectangle2D.Double hitBox, double airSpeed) {
-        int currentTile = (int)(hitBox.y / TILES_SIZE+1);
-        // Fall
         if (airSpeed > 0) {
-            int tileY = (currentTile * TILES_SIZE);
-            int offsetY = (int)(TILES_SIZE - hitBox.height);
-            return tileY + offsetY - 1;
+            int floorTile = (int) Math.floor((hitBox.y + hitBox.height + airSpeed + 1) / TILES_SIZE);
+            return floorTile * TILES_SIZE - hitBox.height - 1;
         }
-        // Jump
-        else {
-            return hitBox.y;
+        else if (airSpeed < 0) {
+            int ceilTile = (int) Math.floor((hitBox.y + airSpeed) / TILES_SIZE);
+            return (ceilTile + 1) * TILES_SIZE;
         }
+        return hitBox.y;
     }
 
     /**
@@ -151,7 +139,7 @@ public final class CollisionDetector {
      * @return The Y-coordinate of the top of the ground tile. Returns the initial y if no ground is found below.
      */
     public static double getGroundY(double x, double y, int[][] levelData) {
-        int currentTileY = (int) (y / TILES_SIZE);
+        int currentTileY = Math.max(0, (int) (y / TILES_SIZE));
         int tileX = (int) (x / TILES_SIZE);
         if (tileX < 0 || tileX >= levelData.length) return y;
         for (int i = currentTileY; i < levelData[0].length; i++) {
@@ -170,8 +158,9 @@ public final class CollisionDetector {
      * @return {@code true} if the entity is on the floor, {@code false} otherwise.
      */
     public static boolean isEntityOnFloor(Rectangle2D.Double hitBox, int[][] levelData) {
-        if (isSolid(hitBox.x, hitBox.y+hitBox.height+2, levelData)) return true;
-        return (isSolid(hitBox.x+hitBox.width, hitBox.y+hitBox.height+2, levelData));
+        if (isSolid(hitBox.x, hitBox.y + hitBox.height + 2, levelData)) return true;
+        if (isSolid(hitBox.x + hitBox.width, hitBox.y + hitBox.height + 2, levelData)) return true;
+        return hitBox.width > TILES_SIZE && isSolidBetweenHorizontal(hitBox.x, hitBox.x + hitBox.width, hitBox.y + hitBox.height + 2, levelData);
     }
 
     /**
@@ -200,8 +189,8 @@ public final class CollisionDetector {
      * @return {@code true} if there is a floor tile ahead, {@code false} if there is a gap.
      */
     public static boolean isFloor(Rectangle2D.Double hitBox, double xSpeed, int[][] levelData, Direction direction) {
-        if (direction == Direction.LEFT) return isSolid(hitBox.x + xSpeed, hitBox.y + hitBox.height+2, levelData);
-        else return isSolid(hitBox.x + xSpeed + hitBox.width, hitBox.y + hitBox.height+2, levelData);
+        if (direction == Direction.LEFT) return isSolid(hitBox.x + xSpeed, hitBox.y + hitBox.height + 2, levelData);
+        else return isSolid(hitBox.x + xSpeed + hitBox.width, hitBox.y + hitBox.height + 2, levelData);
     }
 
     /**
@@ -215,9 +204,9 @@ public final class CollisionDetector {
      * @return {@code true} if the sight is clear, {@code false} if blocked by a solid tile.
      */
     public static boolean isSightClear(int[][] levelData, Rectangle2D.Double firstHitbox, Rectangle2D.Double secondHitbox, int yTile) {
-        int xTileEnemy = (int)(firstHitbox.x / TILES_SIZE);
-        int xTilePlayer = (int)(secondHitbox.x / TILES_SIZE);
-        int xTilePlayerRight = xTilePlayer+1;
+        int xTileEnemy = (int) (firstHitbox.x / TILES_SIZE);
+        int xTilePlayer = (int) (secondHitbox.x / TILES_SIZE);
+        int xTilePlayerRight = xTilePlayer + 1;
         if (xTileEnemy > xTilePlayer) return areAllTilesWalkable(xTilePlayerRight, xTileEnemy, yTile, levelData);
         else return areAllTilesWalkable(xTileEnemy, xTilePlayer, yTile, levelData);
     }
@@ -234,8 +223,8 @@ public final class CollisionDetector {
      */
     public static boolean areAllTilesWalkable(int xStart, int xEnd, int y, int[][] levelData) {
         if (!areAllTilesClear(xStart, xEnd, y, levelData)) return false;
-        for (int i = 0; i < xEnd-xStart; i++) {
-            if (!isTileSolid(xStart+i, y+1, levelData)) return false;
+        for (int i = 0; i < xEnd - xStart; i++) {
+            if (!isTileSolid(xStart + i, y + 1, levelData)) return false;
         }
         return true;
     }
@@ -250,7 +239,7 @@ public final class CollisionDetector {
      * @return {@code true} if there are no solid tiles in the path, {@code false} otherwise.
      */
     private static boolean areAllTilesClear(int xStart, int xEnd, int y, int[][] levelData) {
-        for (int i = 0; i < xEnd-xStart; i++) {
+        for (int i = 0; i < xEnd - xStart; i++) {
             if (isTileSolid(xStart + i, y, levelData)) return false;
         }
         return true;
@@ -267,15 +256,15 @@ public final class CollisionDetector {
      * @return {@code true} if touching a wall in the specified direction, {@code false} otherwise.
      */
     public static boolean isTouchingWall(Rectangle2D.Double hitBox, Direction direction) {
-        int x = (int)hitBox.x;
-        int xTile = (int)(hitBox.x / TILES_SIZE);
+        int x = (int) hitBox.x;
+        int xTile = (int) (hitBox.x / TILES_SIZE);
         if (direction == Direction.LEFT) {
             int xTileLeft = xTile - 1;
-            return (x >= (xTileLeft*TILES_SIZE+TILES_SIZE) && x <= (xTileLeft*TILES_SIZE+TILES_SIZE+2));
+            return (x >= (xTileLeft * TILES_SIZE + TILES_SIZE) && x <= (xTileLeft * TILES_SIZE + TILES_SIZE + 2));
         }
         else if (direction == Direction.RIGHT) {
             int xTileRight = xTile + 1;
-            double dp = hitBox.x+hitBox.width - xTileRight*TILES_SIZE;
+            double dp = hitBox.x + hitBox.width - xTileRight * TILES_SIZE;
             return (dp >= -2 && dp <= 2);
         }
         return false;
@@ -291,15 +280,15 @@ public final class CollisionDetector {
      * @return {@code true} if on a wall, {@code false} otherwise.
      */
     public static boolean isOnWall(Rectangle2D.Double hitBox, int[][] levelData, Direction direction) {
-        int xTile = (int)(hitBox.x / TILES_SIZE);
-        int yTile = (int)(hitBox.y / TILES_SIZE);
+        int xTile = (int) (hitBox.x / TILES_SIZE);
+        int yTile = (int) (hitBox.y / TILES_SIZE);
         if (direction == Direction.LEFT) {
             if (xTile - 1 < 0) return false;
-            return isTileSolid(xTile-1, yTile, levelData) && isTileSolid(xTile-1, yTile+1, levelData) && isTouchingWall(hitBox, Direction.LEFT);
+            return isTileSolid(xTile - 1, yTile, levelData) && isTileSolid(xTile - 1, yTile + 1, levelData) && isTouchingWall(hitBox, Direction.LEFT);
         }
         else if (direction == Direction.RIGHT) {
             if (xTile + 1 >= levelData.length) return false;
-            return isTileSolid(xTile+1, yTile, levelData) && isTileSolid(xTile+1, yTile+1, levelData) && isTouchingWall(hitBox, Direction.RIGHT);
+            return isTileSolid(xTile + 1, yTile, levelData) && isTileSolid(xTile + 1, yTile + 1, levelData) && isTouchingWall(hitBox, Direction.RIGHT);
         }
         return false;
     }
@@ -337,8 +326,8 @@ public final class CollisionDetector {
      * @return true if the launcher can see the entity, false otherwise.
      */
     public static boolean canLauncherSeeEntity(int[][] levelData, Rectangle2D.Double hitbox, Rectangle2D.Double launcherHitBox, int yTile) {
-        int xTileLauncher = (int)(launcherHitBox.x / TILES_SIZE);
-        int xTileEntity = (int)(hitbox.x / TILES_SIZE);
+        int xTileLauncher = (int) (launcherHitBox.x / TILES_SIZE);
+        int xTileEntity = (int) (hitbox.x / TILES_SIZE);
         if (xTileLauncher > xTileEntity) return areAllTilesClear(xTileEntity, xTileLauncher, yTile, levelData);
         else return areAllTilesClear(xTileLauncher, xTileEntity, yTile, levelData);
     }

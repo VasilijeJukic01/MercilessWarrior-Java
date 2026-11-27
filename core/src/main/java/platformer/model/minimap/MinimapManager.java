@@ -57,10 +57,13 @@ public class MinimapManager {
     private MinimapIcon hoveredIcon = null;
     private MinimapIcon pinnedIcon = null;
 
+    private final AStarPathfinding pathfinding = new AStarPathfinding();
+
     private boolean fogDirty = true;
+    private int dirtyMinX = Integer.MAX_VALUE, dirtyMinY = Integer.MAX_VALUE;
+    private int dirtyMaxX = -1, dirtyMaxY = -1;
     private float[][] explorationMap;
     private BufferedImage fogImage;
-    private ConvolveOp convolution;
 
     public MinimapManager() {
         init();
@@ -74,7 +77,6 @@ public class MinimapManager {
         this.minimapImage = ImageUtils.importImage(MINIMAP, -1, -1);
         this.explorationMap = new float[minimapImage.getWidth()][minimapImage.getHeight()];
         this.fogImage = new BufferedImage(minimapImage.getWidth(), minimapImage.getHeight(), BufferedImage.TYPE_INT_ARGB);
-        initializeBlurFilter();
         this.minimap = new BufferedImage(minimapImage.getWidth(), minimapImage.getHeight(), BufferedImage.TYPE_INT_ARGB);
         this.levelPositions = new LinkedHashMap<>();
         loadMinimapIcons();
@@ -82,13 +84,16 @@ public class MinimapManager {
         colorizeMinimap();
         updateMinimap();
         this.visualMinimap = buildSmoothVisualMinimap(minimapImage);
+        markFullFogDirty();
+        updateFogImage();
     }
 
-    private void initializeBlurFilter() {
-        float[] kernel = new float[BLUR_KERNEL_SIZE * BLUR_KERNEL_SIZE];
-        Arrays.fill(kernel, 1.0f / (BLUR_KERNEL_SIZE * BLUR_KERNEL_SIZE));
-        Kernel blurKernel = new Kernel(BLUR_KERNEL_SIZE, BLUR_KERNEL_SIZE, kernel);
-        this.convolution = new ConvolveOp(blurKernel, ConvolveOp.EDGE_NO_OP, null);
+    private void markFullFogDirty() {
+        this.dirtyMinX = 0;
+        this.dirtyMinY = 0;
+        this.dirtyMaxX = minimapImage.getWidth() - 1;
+        this.dirtyMaxY = minimapImage.getHeight() - 1;
+        this.fogDirty = true;
     }
 
     private void loadMinimapIcons() {
@@ -311,6 +316,10 @@ public class MinimapManager {
             for (int y = startY; y <= endY; y++) {
                 if (explorationMap[x][y] < 1.0f && Point2D.distance(centerX, centerY, x, y) <= MAP_FOG_RADIUS) {
                     explorationMap[x][y] = 1.0f;
+                    if (x < dirtyMinX) dirtyMinX = x;
+                    if (x > dirtyMaxX) dirtyMaxX = x;
+                    if (y < dirtyMinY) dirtyMinY = y;
+                    if (y > dirtyMaxY) dirtyMaxY = y;
                     fogDirty = true;
                 }
             }
@@ -338,61 +347,61 @@ public class MinimapManager {
     }
 
     /**
-     * Updates the fog overlay on the minimap by applying a blur effect to simulate a smooth transition between explored and unexplored areas.
-     * <ul>
-     *   <li>Generates a hard fog image based on the exploration map, where unexplored areas are opaque.</li>
-     *   <li>Applies edge replication to handle boundary conditions for the blur operation.</li>
-     *   <li>Uses a convolution filter to blur the fog image.</li>
-     *   <li>Combines the blurred fog with a predefined fog color and updates the fog image.</li>
-     * </ul>
+     * Performs a fast separable 2-pass box blur strictly over the newly revealed dirty region, avoiding full-map ConvolveOp stalls.
      */
     public void updateFogImage() {
-        if (!fogDirty) return;
+        if (!fogDirty || dirtyMaxX < dirtyMinX || dirtyMaxY < dirtyMinY) return;
         fogDirty = false;
+
         int width = minimapImage.getWidth();
         int height = minimapImage.getHeight();
-        int padding = BLUR_KERNEL_SIZE;
+        int r = Math.max(1, BLUR_KERNEL_SIZE / 2);
 
-        BufferedImage hardFog = new BufferedImage(width + 2 * padding, height + 2 * padding, BufferedImage.TYPE_BYTE_GRAY);
-        WritableRaster raster = hardFog.getRaster();
+        int rx0 = Math.max(0, dirtyMinX - r);
+        int ry0 = Math.max(0, dirtyMinY - r);
+        int rx1 = Math.min(width - 1, dirtyMaxX + r);
+        int ry1 = Math.min(height - 1, dirtyMaxY + r);
 
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                int value = explorationMap[x][y] < 1.0f ? 255 : 0;
-                raster.setSample(x + padding, y + padding, 0, value);
+        int roiW = rx1 - rx0 + 1;
+        int hy0 = Math.max(0, ry0 - r);
+        int hy1 = Math.min(height - 1, ry1 + r);
+        int hRows = hy1 - hy0 + 1;
+
+        float[] horiz = new float[roiW * hRows];
+        float invWindow = 1.0f / (2 * r + 1);
+
+        // Pass 1: Horizontal box blur with edge clamping
+        for (int y = hy0; y <= hy1; y++) {
+            int rowBase = (y - hy0) * roiW;
+            for (int x = rx0; x <= rx1; x++) {
+                float sum = 0f;
+                for (int dx = -r; dx <= r; dx++) {
+                    int sx = Math.max(0, Math.min(width - 1, x + dx));
+                    sum += (explorationMap[sx][y] < 1.0f) ? 255f : 0f;
+                }
+                horiz[rowBase + (x - rx0)] = sum * invWindow;
             }
         }
 
-        // Edge Replication
-        for (int x = 0; x < width; x++) {
-            int topPixel = raster.getSample(x + padding, padding, 0);
-            int bottomPixel = raster.getSample(x + padding, height + padding - 1, 0);
-            for (int p = 0; p < padding; p++) {
-                raster.setSample(x + padding, p, 0, topPixel);
-                raster.setSample(x + padding, height + padding + p, 0, bottomPixel);
-            }
-        }
-        for (int y = 0; y < height + 2 * padding; y++) {
-            int leftPixel = raster.getSample(padding, y, 0);
-            int rightPixel = raster.getSample(width + padding - 1, y, 0);
-            for (int p = 0; p < padding; p++) {
-                raster.setSample(p, y, 0, leftPixel);
-                raster.setSample(width + padding + p, y, 0, rightPixel);
-            }
-        }
-
-        BufferedImage blurredPaddedFog = convolution.filter(hardFog, null);
-        BufferedImage blurredFog = blurredPaddedFog.getSubimage(padding, padding, width, height);
-
+        // Pass 2: Vertical box blur writing directly into fogImage
         int fogRgb = MAP_FOG_COLOR.getRGB() & 0x00FFFFFF;
-        Raster blurredRaster = blurredFog.getRaster();
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                int alpha = blurredRaster.getSample(x, y, 0);
-                int finalColor = (alpha << 24) | fogRgb;
-                fogImage.setRGB(x, y, finalColor);
+        for (int y = ry0; y <= ry1; y++) {
+            for (int x = rx0; x <= rx1; x++) {
+                float sum = 0f;
+                int col = x - rx0;
+                for (int dy = -r; dy <= r; dy++) {
+                    int sy = Math.max(hy0, Math.min(hy1, y + dy));
+                    sum += horiz[(sy - hy0) * roiW + col];
+                }
+                int alpha = Math.max(0, Math.min(255, Math.round(sum * invWindow)));
+                fogImage.setRGB(x, y, (alpha << 24) | fogRgb);
             }
         }
+
+        dirtyMinX = Integer.MAX_VALUE;
+        dirtyMinY = Integer.MAX_VALUE;
+        dirtyMaxX = -1;
+        dirtyMaxY = -1;
     }
 
     public void loadExplorationData(String base64) {
@@ -400,7 +409,11 @@ public class MinimapManager {
         int width = minimapImage.getWidth();
         int height = minimapImage.getHeight();
         this.explorationMap = new float[width][height];
-        if (base64 == null || base64.isEmpty()) return;
+        if (base64 == null || base64.isEmpty()) {
+            markFullFogDirty();
+            updateFogImage();
+            return;
+        }
         try {
             int savedW = width;
             String payload = base64;
@@ -422,12 +435,12 @@ public class MinimapManager {
                     this.explorationMap[x][y] = (data[i] & 0xFF) / 255.0f;
                 }
             }
-            fogDirty = true;
-            updateFogImage();
         } catch (Exception e) {
             this.explorationMap = new float[width][height];
             Logger.getInstance().notify("Could not load minimap exploration data. Resetting fog.", Message.WARNING);
         }
+        markFullFogDirty();
+        updateFogImage();
     }
 
     public String getExplorationDataForSave() {
@@ -519,7 +532,6 @@ public class MinimapManager {
             pathPoints.clear();
             return;
         }
-        AStarPathfinding pathfinding = new AStarPathfinding();
         pathPoints = pathfinding.findPath(minimapImage, playerIntLocation, pinnedLocation);
     }
 
