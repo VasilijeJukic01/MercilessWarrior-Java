@@ -299,32 +299,43 @@ public class Level {
 
     private void buildMergedLavaPools(boolean[][] lavaGrid, int width, int height) {
         boolean[][] visited = new boolean[width][height];
+        int[][] dirs = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 if (!lavaGrid[x][y] || visited[x][y]) continue;
 
-                int spanW = 1;
-                while (x + spanW < width && lavaGrid[x + spanW][y] && !visited[x + spanW][y]) {
-                    spanW++;
-                }
+                List<Point> component = new ArrayList<>();
+                ArrayDeque<Point> queue = new ArrayDeque<>();
+                visited[x][y] = true;
+                queue.add(new Point(x, y));
 
-                int spanH = 1;
-                outer:
-                while (y + spanH < height) {
-                    for (int k = 0; k < spanW; k++) {
-                        if (!lavaGrid[x + k][y + spanH] || visited[x + k][y + spanH]) {
-                            break outer;
+                int minX = x, maxX = x, minY = y, maxY = y;
+                while (!queue.isEmpty()) {
+                    Point p = queue.poll();
+                    component.add(p);
+                    if (p.x < minX) minX = p.x;
+                    if (p.x > maxX) maxX = p.x;
+                    if (p.y < minY) minY = p.y;
+                    if (p.y > maxY) maxY = p.y;
+
+                    for (int[] d : dirs) {
+                        int nx = p.x + d[0];
+                        int ny = p.y + d[1];
+                        if (nx >= 0 && nx < width && ny >= 0 && ny < height && lavaGrid[nx][ny] && !visited[nx][ny]) {
+                            visited[nx][ny] = true;
+                            queue.add(new Point(nx, ny));
                         }
                     }
-                    spanH++;
                 }
 
-                for (int dy = 0; dy < spanH; dy++) {
-                    for (int dx = 0; dx < spanW; dx++) {
-                        visited[x + dx][y + dy] = true;
-                    }
+                int spanW = maxX - minX + 1;
+                int spanH = maxY - minY + 1;
+                boolean[][] mask = new boolean[spanW][spanH];
+                for (Point p : component) {
+                    mask[p.x - minX][p.y - minY] = true;
                 }
-                addGameObject(new Lava(x * TILES_SIZE, y * TILES_SIZE, spanW, spanH));
+                addGameObject(new Lava(minX * TILES_SIZE, minY * TILES_SIZE, mask, lvlData));
             }
         }
     }

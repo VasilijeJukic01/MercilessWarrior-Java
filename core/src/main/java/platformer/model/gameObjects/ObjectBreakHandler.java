@@ -48,7 +48,7 @@ public class ObjectBreakHandler {
             }
         }
         for (Lava lava : getObjects(Lava.class)) {
-            if (attackBox.intersects(lava.getHitBox())) {
+            if (lava.intersects(attackBox)) {
                 lava.onAttackSlash(attackBox, flipSign);
             }
         }

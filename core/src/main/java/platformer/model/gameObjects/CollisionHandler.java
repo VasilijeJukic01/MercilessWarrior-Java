@@ -98,8 +98,7 @@ public class CollisionHandler {
     public double getXObjectBound(Rectangle2D.Double hitBox, double dx) {
         return Stream.of(
                         getObjects(Container.class).stream(),
-                        getObjects(Brick.class).stream(),
-                        getObjects(CrumblingPlatform.class).stream().filter(CrumblingPlatform::isSolidActive)
+                        getObjects(Brick.class).stream()
                 )
                 .flatMap(s -> s)
                 .filter(o -> o.isAlive() && (checkTouch(o, hitBox, "X", 0) || checkTouch(o, hitBox, "Y", 0)))
@@ -189,11 +188,8 @@ public class CollisionHandler {
         GameObject leftBrick = getCollidingObject(Direction.LEFT, hitBox, Brick.class);
         GameObject rightBrick = getCollidingObject(Direction.RIGHT, hitBox, Brick.class);
 
-        GameObject leftPlat = getCollidingObject(Direction.LEFT, hitBox, CrumblingPlatform.class);
-        GameObject rightPlat = getCollidingObject(Direction.RIGHT, hitBox, CrumblingPlatform.class);
-
-        GameObject left = leftContainer != null ? leftContainer : (leftBrick != null ? leftBrick : leftPlat);
-        GameObject right = rightContainer != null ? rightContainer : (rightBrick != null ? rightBrick : rightPlat);
+        GameObject left = leftContainer != null ? leftContainer : leftBrick;
+        GameObject right = rightContainer != null ? rightContainer : rightBrick;
 
         if (dx < 0 && left == null) {
             if (canMove(hitBox.x - 1, hitBox.y, hitBox.width, hitBox.height)) return hitBox.x - 1;

@@ -544,12 +544,9 @@ public class LightManager {
         BufferedImage coloredTex = lightTextureCache.computeIfAbsent(colorKey, k -> createColoredLightTexture(lmDiameter, lavaGlow));
         BufferedImage whiteTex = lightTextureCache.computeIfAbsent(whiteKey, k -> createLightTexture(lmDiameter, new float[]{0f, 1f}, new Color[]{Color.WHITE, new Color(1.0f, 1.0f, 1.0f, 0f)}));
 
-        Rectangle2D.Double hb = lava.getHitBox();
-        int step = Math.max(TILES_SIZE, TILES_SIZE * 2);
-        int centerY = (int) (hb.y + TILES_SIZE * 0.4) / LIGHTMAP_SCALE;
-
-        for (double x = hb.x + TILES_SIZE * 0.5; x <= hb.getMaxX() - TILES_SIZE * 0.2; x += step) {
-            int centerX = (int) x / LIGHTMAP_SCALE;
+        for (Point anchor : lava.getLightAnchorPoints()) {
+            int centerX = anchor.x / LIGHTMAP_SCALE;
+            int centerY = anchor.y / LIGHTMAP_SCALE;
             cG2d.drawImage(coloredTex, centerX - lmRadius, centerY - lmRadius, null);
             wG2d.drawImage(whiteTex, centerX - lmRadius, centerY - lmRadius, null);
         }

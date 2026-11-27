@@ -20,13 +20,14 @@ import static platformer.constants.Constants.*;
 
 /**
  * High-speed spinning runic sawblade trap.
- * Place a KILL_ZONE or EFFECT trigger at the destination tile in the same row or column (and optionally one on the saw's start tile) to define its exact patrol track.
+ * Raycasts horizontally and vertically through open tiles to find the nearest unobstructed KILL_ZONE or EFFECT
+ * trigger endpoints, preventing tracks from crossing solid walls/floors or colliding with neighboring saws.
  */
 public class SawTrap extends GameObject implements Interactable {
 
     private static final double SPIN_SPEED = 0.085;
     private static final double BASE_PATROL_SPEED = 0.024;
-    private static final int MAX_SEARCH_TILES = 16;
+    private static final int MAX_SEARCH_TILES = 20;
 
     private boolean trackInitialized = false;
     private boolean stationary = true;
@@ -67,13 +68,14 @@ public class SawTrap extends GameObject implements Interactable {
         int startTileX = xPos / TILES_SIZE;
         int startTileY = yPos / TILES_SIZE;
 
+        boolean wallLeft = false, wallRight = false, floorBelow = false, ceilAbove = false;
         double embedOffsetX = 0;
         double embedOffsetY = 0;
         if (levelData != null) {
-            boolean wallLeft = startTileX > 0 && CollisionDetector.isTileSolid(startTileX - 1, startTileY, levelData);
-            boolean wallRight = startTileX + 1 < levelData.length && CollisionDetector.isTileSolid(startTileX + 1, startTileY, levelData);
-            boolean floorBelow = startTileY + 1 < levelData[0].length && CollisionDetector.isTileSolid(startTileX, startTileY + 1, levelData);
-            boolean ceilAbove = startTileY > 0 && CollisionDetector.isTileSolid(startTileX, startTileY - 1, levelData);
+            wallLeft = startTileX > 0 && CollisionDetector.isTileSolid(startTileX - 1, startTileY, levelData);
+            wallRight = startTileX + 1 < levelData.length && CollisionDetector.isTileSolid(startTileX + 1, startTileY, levelData);
+            floorBelow = startTileY + 1 < levelData[0].length && CollisionDetector.isTileSolid(startTileX, startTileY + 1, levelData);
+            ceilAbove = startTileY > 0 && CollisionDetector.isTileSolid(startTileX, startTileY - 1, levelData);
 
             if (wallLeft && !wallRight) embedOffsetX = -scale(8);
             else if (wallRight && !wallLeft) embedOffsetX = scale(8);
@@ -81,26 +83,15 @@ public class SawTrap extends GameObject implements Interactable {
             else if (floorBelow && !ceilAbove) embedOffsetY = scale(8);
         }
 
-        int minTileX = startTileX, maxTileX = startTileX;
-        int minTileY = startTileY, maxTileY = startTileY;
+        int leftDist = findNearestTriggerDist(startTileX, startTileY, -1, 0, levelData);
+        int rightDist = findNearestTriggerDist(startTileX, startTileY, 1, 0, levelData);
+        int upDist = findNearestTriggerDist(startTileX, startTileY, 0, -1, levelData);
+        int downDist = findNearestTriggerDist(startTileX, startTileY, 0, 1, levelData);
 
-        for (Trigger t : levelTriggers) {
-            if (t.type() != LvlTriggerType.KILL_ZONE && t.type() != LvlTriggerType.EFFECT) continue;
-            int tx = (int) Math.round(t.bounds().x / TILES_SIZE);
-            int ty = (int) Math.round(t.bounds().y / TILES_SIZE);
-            if (tx == startTileX && ty == startTileY) continue;
-
-            // Vertical endpoint in the same column
-            if (Math.abs(tx - startTileX) <= 1 && Math.abs(ty - startTileY) <= MAX_SEARCH_TILES) {
-                minTileY = Math.min(minTileY, ty);
-                maxTileY = Math.max(maxTileY, ty);
-            }
-            // Horizontal endpoint in the same row
-            else if (Math.abs(ty - startTileY) <= 1 && Math.abs(tx - startTileX) <= MAX_SEARCH_TILES) {
-                minTileX = Math.min(minTileX, tx);
-                maxTileX = Math.max(maxTileX, tx);
-            }
-        }
+        int minTileX = (leftDist > 0) ? (startTileX - leftDist) : startTileX;
+        int maxTileX = (rightDist > 0) ? (startTileX + rightDist) : startTileX;
+        int minTileY = (upDist > 0) ? (startTileY - upDist) : startTileY;
+        int maxTileY = (downDist > 0) ? (startTileY + downDist) : startTileY;
 
         int spanX = maxTileX - minTileX;
         int spanY = maxTileY - minTileY;
@@ -114,8 +105,31 @@ public class SawTrap extends GameObject implements Interactable {
             return;
         }
 
+        boolean chooseVertical;
+        if (spanX > 0 && spanY == 0) {
+            chooseVertical = false;
+        }
+        else if (spanY > 0 && spanX == 0) {
+            chooseVertical = true;
+        }
+        else {
+            boolean horizontalMount = floorBelow || ceilAbove;
+            boolean verticalMount = wallLeft || wallRight;
+            if (horizontalMount && !verticalMount) {
+                chooseVertical = false;
+            }
+            else if (verticalMount && !horizontalMount) {
+                chooseVertical = true;
+            }
+            else {
+                int nearestH = Math.min(leftDist > 0 ? leftDist : Integer.MAX_VALUE, rightDist > 0 ? rightDist : Integer.MAX_VALUE);
+                int nearestV = Math.min(upDist > 0 ? upDist : Integer.MAX_VALUE, downDist > 0 ? downDist : Integer.MAX_VALUE);
+                chooseVertical = nearestV < nearestH;
+            }
+        }
+
         this.stationary = false;
-        if (spanY >= spanX) {
+        if (chooseVertical) {
             double fixedX = xPos + (TILES_SIZE / 2.0) + embedOffsetX;
             this.trackMinX = this.trackMaxX = fixedX;
             this.trackMinY = minTileY * TILES_SIZE + (TILES_SIZE / 2.0);
@@ -131,6 +145,38 @@ public class SawTrap extends GameObject implements Interactable {
             this.patrolStepSpeed = BASE_PATROL_SPEED * (3.5 / Math.max(2.0, spanX));
             this.patrolPhase = (startTileX <= minTileX) ? (-Math.PI / 2.0) : (Math.PI / 2.0);
         }
+    }
+
+    /**
+     * Scans step-by-step from (startX, startY) along (stepX, stepY), stopping immediately upon hitting a solid tile
+     * or the nearest valid KILL_ZONE / EFFECT trigger.
+     */
+    private int findNearestTriggerDist(int startX, int startY, int stepX, int stepY, int[][] levelData) {
+        if (levelData == null || levelTriggers.isEmpty()) return 0;
+        int cols = levelData.length;
+        int rows = levelData[0].length;
+
+        for (int dist = 1; dist <= MAX_SEARCH_TILES; dist++) {
+            int cx = startX + stepX * dist;
+            int cy = startY + stepY * dist;
+            if (cx < 0 || cx >= cols || cy < 0 || cy >= rows) break;
+            if (CollisionDetector.isTileSolid(cx, cy, levelData)) break;
+
+            if (hasTrackTriggerAt(cx, cy)) {
+                return dist;
+            }
+        }
+        return 0;
+    }
+
+    private boolean hasTrackTriggerAt(int tileX, int tileY) {
+        for (Trigger t : levelTriggers) {
+            if (t.type() != LvlTriggerType.KILL_ZONE && t.type() != LvlTriggerType.EFFECT) continue;
+            int tx = (int) Math.round(t.bounds().x / TILES_SIZE);
+            int ty = (int) Math.round(t.bounds().y / TILES_SIZE);
+            if (tx == tileX && ty == tileY) return true;
+        }
+        return false;
     }
 
     @Override

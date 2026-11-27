@@ -101,6 +101,10 @@ public abstract class GameObject implements DamageSource, AdvancedRenderable<Gra
         return true;
     }
 
+    public boolean intersects(Rectangle2D.Double area) {
+        return hitBox != null && area != null && hitBox.intersects(area);
+    }
+
     // Getters & Setters
     public ObjType getObjType() {
         return objType;

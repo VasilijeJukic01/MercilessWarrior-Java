@@ -8,6 +8,7 @@ import platformer.model.entities.Direction;
 import platformer.model.entities.enemies.Enemy;
 import platformer.model.entities.enemies.EnemyManager;
 import platformer.model.gameObjects.ObjectManager;
+import platformer.model.gameObjects.objects.traps.CrumblingPlatform;
 import platformer.model.levels.Level;
 import platformer.model.levels.LevelManager;
 import platformer.model.levels.LvlTriggerType;
@@ -99,7 +100,22 @@ public class PlayerMovementHandler {
         player.removeAction(PlayerAction.MOVE);
         checkOnObject();
         boolean onObject = player.checkAction(PlayerAction.ON_OBJECT);
-        boolean onFloor = isEntityOnFloor(hitBox, levelData) || onObject;
+        boolean dashingNow = player.checkAction(PlayerAction.DASH);
+
+        CrumblingPlatform crumblingPlatform = objectManager.getSupportingCrumblingPlatform(player);
+        boolean onCrumblingPlatform = false;
+        if (crumblingPlatform != null) {
+            crumblingPlatform.triggerSteppedOn();
+            if (!dashingNow) {
+                onCrumblingPlatform = true;
+                hitBox.y = crumblingPlatform.getHitBox().y - hitBox.height;
+                player.setInAir(false);
+                player.setAirSpeed(0);
+                player.removeActions(PlayerAction.WALL_PUSH, PlayerAction.DOUBLE_JUMP, PlayerAction.ON_WALL);
+            }
+        }
+
+        boolean onFloor = isEntityOnFloor(hitBox, levelData) || onObject || onCrumblingPlatform;
 
         if (!player.isInAir() && !onFloor) {
             player.setInAir(true);
@@ -112,7 +128,9 @@ public class PlayerMovementHandler {
             currentJumps = 0;
             wallJumpLockTimer = 0;
             player.removeAction(PlayerAction.DOUBLE_JUMP);
-            recordSafeGroundIfStable(hitBox, levelData, onObject);
+            if (!onCrumblingPlatform) {
+                recordSafeGroundIfStable(hitBox, levelData, onObject);
+            }
         }
         else if (player.isInAir() && coyoteTimer > 0) {
             coyoteTimer--;
@@ -137,6 +155,7 @@ public class PlayerMovementHandler {
 
         boolean hasImpulse = combatHandler.hasActiveImpulse() || Math.abs(dashMomentumX) >= 0.05;
         if (((!left && !right) || (left && right)) && !player.isInAir() && !dash && !hasImpulse && !player.checkAction(PlayerAction.ATTACK) && wallJumpLockTimer == 0) {
+            if (onCrumblingPlatform) return;
             double slip = CollisionDetector.getLedgeSlip(hitBox, levelData);
             if (slip == 0) return;
         }
@@ -154,7 +173,7 @@ public class PlayerMovementHandler {
 
             if (left) dx -= baseSpeed;
             if (right) dx += baseSpeed;
-            if (!left && !right && !player.isInAir()) {
+            if (!left && !right && !player.isInAir() && !onCrumblingPlatform) {
                 dx += CollisionDetector.getLedgeSlip(hitBox, levelData);
             }
             boolean wallPush = player.checkAction(PlayerAction.WALL_PUSH);

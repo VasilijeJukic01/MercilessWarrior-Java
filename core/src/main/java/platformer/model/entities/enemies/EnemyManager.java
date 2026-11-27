@@ -288,7 +288,7 @@ public class EnemyManager {
         }
         for (List<Enemy> enemyList : enemies.values()) {
             for (Enemy enemy : enemyList) {
-                if (enemy.isAlive() && enemy.getEnemyAction() != Anim.DEATH && object.getHitBox().intersects(enemy.getHitBox())) {
+                if (enemy.isAlive() && enemy.getEnemyAction() != Anim.DEATH && object.intersects(enemy.getHitBox())) {
                     enemy.hit(BalanceManager.getInstance().getCombat().getTrapInstantKillDamage(), false, false);
                 }
             }

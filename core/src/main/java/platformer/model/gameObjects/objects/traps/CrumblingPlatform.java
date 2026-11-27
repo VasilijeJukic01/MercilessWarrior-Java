@@ -8,13 +8,14 @@ import platformer.model.gameObjects.ObjType;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.Random;
 
 import static platformer.constants.Constants.*;
 
 /**
- * A floating moss platform that shakes when stepped on, shatters into 4 falling stone chunks, and reforms after a short cooldown.
+ * A floating one-way moss platform that shakes when stepped on, shatters into 4 falling stone chunks, and reforms after a short cooldown.
  */
 public class CrumblingPlatform extends GameObject {
 
@@ -71,13 +72,27 @@ public class CrumblingPlatform extends GameObject {
         return alive && (state == State.IDLE || state == State.SHAKING);
     }
 
+    /**
+     * Checks whether this one-way platform can support an entity's feet from above without blocking horizontal dashes or upward jumps.
+     */
+    public boolean canSupportFeet(Rectangle2D.Double entityBox, double entityAirSpeed) {
+        if (!isSolidActive() || entityAirSpeed < 0) return false;
+        boolean horizontalOverlap = entityBox.getMaxX() > hitBox.x + (2 * SCALE) && entityBox.x < hitBox.getMaxX() - (2 * SCALE);
+        if (!horizontalOverlap) return false;
+
+        double feetY = entityBox.getMaxY();
+        double topY = hitBox.y;
+        double landingBand = Math.max(hitBox.height, entityAirSpeed + (5 * SCALE));
+        return feetY >= topY - (3 * SCALE) && feetY <= topY + landingBand;
+    }
+
     @Override
     public void update() {
         floatPhase += 0.035;
 
         switch (state) {
             case IDLE -> {
-                hitBox.y = yPos + yOffset + Math.sin(floatPhase) * (1.5 * SCALE);
+                hitBox.y = yPos + yOffset;
             }
             case SHAKING -> {
                 stateTimer++;
@@ -169,8 +184,9 @@ public class CrumblingPlatform extends GameObject {
         if (animations == null || animations.length == 0 || animations[0] == null) return;
         ensurePrepared(animations[0]);
 
+        int floatOffsetY = (state == State.IDLE) ? (int) Math.round(Math.sin(floatPhase) * (1.5 * SCALE)) : 0;
         int baseDrawX = (int) Math.round(hitBox.getCenterX() - (CRUMBLING_PLAT_WID / 2.0) - xLevelOffset);
-        int baseDrawY = (int) Math.round(hitBox.y - scale(4) - yLevelOffset);
+        int baseDrawY = (int) Math.round(hitBox.y - scale(4) - yLevelOffset + floatOffsetY);
 
         if (state == State.IDLE) {
             g.drawImage(trimmedSprite, baseDrawX, baseDrawY, CRUMBLING_PLAT_WID, CRUMBLING_PLAT_HEI, null);

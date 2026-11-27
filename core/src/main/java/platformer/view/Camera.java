@@ -58,10 +58,7 @@ public class Camera {
         cameraX += (targetX - cameraX) * SMOOTH_SPEED_X;
         cameraY += (targetY - cameraY) * SMOOTH_SPEED_Y;
 
-        xLevelOffset = (int) Math.round(cameraX);
-        yLevelOffset = (int) Math.round(cameraY);
-        xLevelOffset = Math.max(0, Math.min(xLevelOffset, xMaxLevelOffset));
-        yLevelOffset = Math.max(0, Math.min(yLevelOffset, yMaxLevelOffset));
+        clampOffsets();
     }
 
     /**
@@ -74,16 +71,25 @@ public class Camera {
         this.focusY = target.y;
         this.cameraX = target.x - (GAME_WIDTH / 2.0);
         this.cameraY = target.y - (GAME_HEIGHT / 2.0);
-        xLevelOffset = Math.max(0, Math.min((int) cameraX, xMaxLevelOffset));
-        yLevelOffset = Math.max(0, Math.min((int) cameraY, yMaxLevelOffset));
+        clampOffsets();
     }
 
-    /**
-     * Updates the maximum scrollable boundaries based on the current level's dimensions.
-     * This should be called every time a new level is loaded.
-     *
-     * @param level The current level being played.
-     */
+    private void clampOffsets() {
+        if (xMaxLevelOffset <= 0) {
+            xLevelOffset = xMaxLevelOffset / 2;
+        }
+        else {
+            xLevelOffset = Math.max(0, Math.min((int) Math.round(cameraX), xMaxLevelOffset));
+        }
+
+        if (yMaxLevelOffset <= 0) {
+            yLevelOffset = yMaxLevelOffset / 2;
+        }
+        else {
+            yLevelOffset = Math.max(0, Math.min((int) Math.round(cameraY), yMaxLevelOffset));
+        }
+    }
+
     public void updateLevelBounds(Level level) {
         this.xMaxLevelOffset = level.getXMaxLevelOffset();
         this.yMaxLevelOffset = level.getYMaxLevelOffset();

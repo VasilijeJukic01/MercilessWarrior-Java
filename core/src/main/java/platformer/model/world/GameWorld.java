@@ -149,11 +149,35 @@ public class GameWorld {
         effectManager.renderForegroundEffects(g, xLevelOffset, yLevelOffset);
         player.getUltimateHandler().render(g, xLevelOffset, yLevelOffset);
         clashManager.render(g, xLevelOffset, yLevelOffset);
+        renderLevelBoundsFraming(g, xLevelOffset, yLevelOffset);
+    }
+
+    /**
+     * Masks empty viewport margins outside narrow vertical or compact rooms with black borders.
+     * Sky backgrounds and ambient particles never bleed past the room's actual tile boundaries.
+     */
+    private void renderLevelBoundsFraming(Graphics g, int xLevelOffset, int yLevelOffset) {
+        int levelPixelW = levelManager.getCurrentLevel().getLevelTilesWidth() * TILES_SIZE;
+        int levelPixelH = levelManager.getCurrentLevel().getLevelTilesHeight() * TILES_SIZE;
+
+        g.setColor(Color.BLACK);
+        if (levelPixelW < GAME_WIDTH) {
+            int leftMargin = Math.max(0, -xLevelOffset);
+            int rightStart = Math.max(0, levelPixelW - xLevelOffset);
+            if (leftMargin > 0) g.fillRect(0, 0, leftMargin, GAME_HEIGHT);
+            if (rightStart < GAME_WIDTH) g.fillRect(rightStart, 0, GAME_WIDTH - rightStart, GAME_HEIGHT);
+        }
+        if (levelPixelH < GAME_HEIGHT) {
+            int topMargin = Math.max(0, -yLevelOffset);
+            int bottomStart = Math.max(0, levelPixelH - yLevelOffset);
+            if (topMargin > 0) g.fillRect(0, 0, GAME_WIDTH, topMargin);
+            if (bottomStart < GAME_HEIGHT) g.fillRect(0, bottomStart, GAME_WIDTH, GAME_HEIGHT - bottomStart);
+        }
     }
 
     private void renderBackground(int xLevelOffset, int yLevelOffset, Graphics g) {
         BufferedImage bg = levelManager.getCurrentBackground();
-        if (levelManager.getCurrentLevelMetadata().getTileset().equals("Invisible")) {
+        if (levelManager.getCurrentLevelMetadata() != null && "Invisible".equals(levelManager.getCurrentLevelMetadata().getTileset())) {
             int levelW = levelManager.getCurrentLevel().getLevelTilesWidth() * TILES_SIZE;
             int levelH = levelManager.getCurrentLevel().getLevelTilesHeight() * TILES_SIZE;
             g.drawImage(bg, -xLevelOffset, -yLevelOffset, levelW, levelH, null);
@@ -162,11 +186,11 @@ public class GameWorld {
             double parallaxScale = 1.15;
             int drawW = (int) (GAME_WIDTH * parallaxScale);
             int drawH = (int) (GAME_HEIGHT * parallaxScale);
-            int maxX = Math.max(1, levelManager.getCurrentLevel().getXMaxLevelOffset());
-            int maxY = Math.max(1, levelManager.getCurrentLevel().getYMaxLevelOffset());
+            int rawMaxX = levelManager.getCurrentLevel().getXMaxLevelOffset();
+            int rawMaxY = levelManager.getCurrentLevel().getYMaxLevelOffset();
 
-            double progressX = Math.min(1.0, Math.max(0.0, (double) xLevelOffset / maxX));
-            double progressY = Math.min(1.0, Math.max(0.0, (double) yLevelOffset / maxY));
+            double progressX = (rawMaxX <= 0) ? 0.5 : Math.min(1.0, Math.max(0.0, (double) xLevelOffset / rawMaxX));
+            double progressY = (rawMaxY <= 0) ? 0.5 : Math.min(1.0, Math.max(0.0, (double) yLevelOffset / rawMaxY));
             int bgX = (int) -((drawW - GAME_WIDTH) * progressX);
             int bgY = (int) -((drawH - GAME_HEIGHT) * progressY);
 

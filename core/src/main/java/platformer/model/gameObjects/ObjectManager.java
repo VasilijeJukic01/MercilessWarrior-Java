@@ -218,7 +218,7 @@ public class ObjectManager {
         double minDistance = Double.MAX_VALUE;
 
         for (GameObject obj : getAllObjects()) {
-            if (obj instanceof Interactable && obj.isAlive() && obj.getHitBox().intersects(player.getHitBox())) {
+            if (obj instanceof Interactable && obj.isAlive() && obj.intersects(player.getHitBox())) {
                 double dist = player.getHitBox().getCenterX() - obj.getHitBox().getCenterX();
                 double currentDistance = Math.abs(dist);
                 if (currentDistance < minDistance) {
@@ -306,20 +306,23 @@ public class ObjectManager {
     }
 
     /**
-     * Checks if the player is touching a standable object (Container, Brick, or active CrumblingPlatform).
-     *
-     * @param player The player whose position is to be checked.
-     * @return true if the player is touching an object, false otherwise.
+     * Returns an active one-way CrumblingPlatform currently supporting the player's feet from above, or null.
      */
-    public boolean isPlayerTouchingObject(Player player) {
+    public CrumblingPlatform getSupportingCrumblingPlatform(Player player) {
+        if (player == null) return null;
         for (CrumblingPlatform cp : getObjects(CrumblingPlatform.class)) {
-            if (cp.isSolidActive() && cp.getHitBox().intersects(player.getHitBox())) {
-                cp.triggerSteppedOn();
-                return true;
+            if (cp.canSupportFeet(player.getHitBox(), player.getAirSpeed())) {
+                return cp;
             }
         }
-        return (collisionHandler.isTouchingObject(Container.class, player)
-                || collisionHandler.isTouchingObject(Brick.class, player));
+        return null;
+    }
+
+    /**
+     * Checks if the player is touching a solid box/brick object (CrumblingPlatforms are handled as one-way floors).
+     */
+    public boolean isPlayerTouchingObject(Player player) {
+        return (collisionHandler.isTouchingObject(Container.class, player) || collisionHandler.isTouchingObject(Brick.class, player));
     }
 
     /**
@@ -336,8 +339,7 @@ public class ObjectManager {
      * @return true if the player is glitched inside an object, false otherwise.
      */
     public boolean isPlayerGlitchedInObject(Player player) {
-        return collisionHandler.isGlitchedInObject(Container.class, player)
-                || collisionHandler.isGlitchedInObject(CrumblingPlatform.class, player);
+        return collisionHandler.isGlitchedInObject(Container.class, player);
     }
 
     /**
@@ -385,7 +387,7 @@ public class ObjectManager {
             if (s.getHitBox().intersects(area)) return true;
         }
         for (Lava l : getObjects(Lava.class)) {
-            if (l.getHitBox().intersects(area)) return true;
+            if (l.intersects(area)) return true;
         }
         for (SmashTrap st : getObjects(SmashTrap.class)) {
             if (st.getHitBox().intersects(area)) return true;
