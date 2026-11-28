@@ -4,12 +4,12 @@ import platformer.event.events.CrateDestroyedEvent;
 import platformer.event.events.EnemyDefeatedEvent;
 import platformer.event.events.ItemPurchasedEvent;
 import platformer.event.events.PerkUnlockedEvent;
-import platformer.model.quests.ObjectiveTarget;
+import platformer.model.entities.enemies.Enemy;
 import platformer.model.quests.QuestManager;
 import platformer.model.quests.QuestObjectiveType;
 
 /**
- * Listens for game events and updates the QuestManager accordingly.
+ * Pure data-driven listener that forwards game events to {@link QuestManager}.
  */
 public class QuestSystemListener {
 
@@ -25,22 +25,14 @@ public class QuestSystemListener {
      * @param event The event object containing the defeated enemy.
      */
     public void onEnemyDefeated(EnemyDefeatedEvent event) {
-        ObjectiveTarget target = null;
-        switch (event.defeatedEnemy().getEnemyType()) {
-            case SKELETON, CRIMSON_SKELETON -> target = ObjectiveTarget.SKELETON;
-            case GHOUL, ASHEN_GHOUL -> target = ObjectiveTarget.GHOUL;
-            case KNIGHT -> target = ObjectiveTarget.KNIGHT;
-            case CORRUPTED_KNIGHT -> target = ObjectiveTarget.CORRUPTED_KNIGHT;
-            case LANCER -> target = ObjectiveTarget.LANCER;
-            case GOBLIN, GOBLIN_SOLDIER, GOBLIN_ASSASSIN, GOBLIN_SPEARMAN, GOBLIN_MAGE -> target = ObjectiveTarget.GOBLIN;
-            case BRIAR_HUSK -> target = ObjectiveTarget.BRIAR_HUSK;
-            case BLIGHT_BEAR -> target = ObjectiveTarget.BLIGHT_BEAR;
-            case WIDOW_SPIDER -> target = ObjectiveTarget.WIDOW_SPIDER;
-            case DEATH_RIDER -> target = ObjectiveTarget.DEATH_RIDER;
-            case ROOT_WEAVER -> target = ObjectiveTarget.ROOT_WEAVER;
-            default -> {}
+        Enemy enemy = event.defeatedEnemy();
+        String exactType = enemy.getEnemyType().name();
+        String familyTarget = enemy.getDefinition().getQuestTargetOrDefault(exactType);
+
+        questManager.updateQuestProgress(QuestObjectiveType.KILL, familyTarget);
+        if (!familyTarget.equalsIgnoreCase(exactType)) {
+            questManager.updateQuestProgress(QuestObjectiveType.KILL, exactType);
         }
-        if (target != null) questManager.updateQuestProgress(QuestObjectiveType.KILL, target);
     }
 
     /**
@@ -49,7 +41,7 @@ public class QuestSystemListener {
      * @param event The event object.
      */
     public void onCrateDestroyed(CrateDestroyedEvent event) {
-        questManager.updateQuestProgress(QuestObjectiveType.COLLECT, ObjectiveTarget.CRATE);
+        questManager.updateQuestProgress(QuestObjectiveType.COLLECT, "CRATE");
     }
 
     /**
@@ -58,9 +50,7 @@ public class QuestSystemListener {
      * @param event The event object containing the unlocked perk.
      */
     public void onPerkUnlocked(PerkUnlockedEvent event) {
-        if (event.unlockedPerk().getName().equals("Strong Arms")) {
-            questManager.updateQuestProgress(QuestObjectiveType.UPGRADE, ObjectiveTarget.SWORD_UPGRADE);
-        }
+        questManager.updateQuestProgress(QuestObjectiveType.UPGRADE, event.unlockedPerk().getId());
     }
 
     /**
@@ -69,9 +59,6 @@ public class QuestSystemListener {
      * @param event The event object containing the purchased item.
      */
     public void onItemPurchased(ItemPurchasedEvent event) {
-        if ("ARMOR_WARRIOR".equals(event.purchasedItem().getItemId())) {
-            questManager.updateQuestProgress(QuestObjectiveType.COLLECT, ObjectiveTarget.BUY_ARMOR);
-        }
+        questManager.updateQuestProgress(QuestObjectiveType.COLLECT, event.purchasedItem().getItemId(), Math.max(1, event.quantity()));
     }
-
 }

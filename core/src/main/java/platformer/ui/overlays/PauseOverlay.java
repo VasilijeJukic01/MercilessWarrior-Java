@@ -1,7 +1,6 @@
 package platformer.ui.overlays;
 
 import platformer.audio.Audio;
-import platformer.audio.types.Song;
 import platformer.controller.KeyboardController;
 import platformer.core.Framework;
 import platformer.event.EventBus;
@@ -337,7 +336,7 @@ public class PauseOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> {
         }
         else if (isMouseInButton(e, retryBtn) && retryBtn.isMousePressed()) {
             gameState.getGame().reset();
-            Audio.getInstance().getAudioPlayer().playSong(Song.FOREST_1);
+            Audio.getInstance().getAudioPlayer().setLevelSong();
         }
         else if (isMouseInButton(e, exitBtn) && exitBtn.isMousePressed()) {
             EventBus.getInstance().publish(new OverlayChangeEvent(null));

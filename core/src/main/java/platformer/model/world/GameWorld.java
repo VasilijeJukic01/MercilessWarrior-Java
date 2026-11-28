@@ -12,6 +12,7 @@ import platformer.model.effects.TimeCycleManager;
 import platformer.model.entities.enemies.EnemyManager;
 import platformer.model.entities.player.Player;
 import platformer.model.gameObjects.ObjectManager;
+import platformer.model.levels.BiomeManager;
 import platformer.model.levels.LevelManager;
 import platformer.model.levels.LvlTriggerType;
 import platformer.model.levels.metadata.LevelMetadata;
@@ -86,8 +87,7 @@ public class GameWorld {
             int levelWidth = levelManager.getCurrentLevel().getLevelTilesWidth() * TILES_SIZE;
             int levelHeight = levelManager.getCurrentLevel().getLevelTilesHeight() * TILES_SIZE;
             effectManager.reinitializeAmbientParticles(levelWidth, levelHeight);
-            // TODO: Temporary
-            boolean isStormPeak = metadata != null && "FOREST_STORM_PEAK".equals(metadata.getBackgroundId());
+            boolean isStormPeak = BiomeManager.getInstance().isStormMode(metadata);
             effectManager.setStormPeakMode(isStormPeak);
         }
     }

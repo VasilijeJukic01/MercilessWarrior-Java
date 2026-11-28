@@ -10,6 +10,7 @@ import java.util.List;
 @Setter
 public class Account {
 
+    private int saveVersion = 1;
     private final transient String name;
     private final transient long accountID, settingsID;
     private int spawn;
@@ -59,6 +60,7 @@ public class Account {
      * @param account Account to copy
      */
     public Account(Account account) {
+        this.saveVersion = account.saveVersion;
         this.name = account.name;
         this.accountID = account.accountID;
         this.settingsID = account.settingsID;
@@ -79,6 +81,7 @@ public class Account {
 
     public void copyFromSlot(Account slotData) {
         if (slotData == null) return;
+        setSaveVersion(slotData.getSaveVersion());
         setPerks(slotData.getPerks() != null ? new ArrayList<>(slotData.getPerks()) : new ArrayList<>());
         setItems(slotData.getItems() != null ? new ArrayList<>(slotData.getItems()) : new ArrayList<>());
         setLevel(slotData.getLevel());
@@ -99,6 +102,7 @@ public class Account {
 
     // Unload save file
     public void unload() {
+        this.saveVersion = 1;
         this.spawn = -1;
         this.level = 1;
         this.coins = this.tokens = this.exp = 0;

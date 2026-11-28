@@ -11,7 +11,6 @@ import platformer.model.gameObjects.npc.Npc;
 import platformer.model.gameObjects.npc.NpcType;
 import platformer.model.inventory.item.InventoryItem;
 import platformer.model.inventory.item.ItemData;
-import platformer.model.quests.ObjectiveTarget;
 import platformer.model.quests.QuestObjectiveType;
 import platformer.physics.CollisionDetector;
 import platformer.state.types.PlayingState;
@@ -64,7 +63,7 @@ public final class CutsceneStepFactory {
                     data.getQuestName(),
                     data.getStepIndex(),
                     data.getObjectiveType() != null ? QuestObjectiveType.valueOf(data.getObjectiveType()) : null,
-                    data.getTarget() != null ? ObjectiveTarget.valueOf(data.getTarget()) : null
+                    data.getTarget()
             );
             case "SET_FLAG" -> new SetFlagStep(data.getFlag());
             case "UPDATE_OBJECTIVE_TEXT" -> new UpdateObjectiveTextStep(data.getQuestName(), data.getText());
@@ -320,9 +319,9 @@ public final class CutsceneStepFactory {
         private final String questName;
         private final Integer stepIndex;
         private final QuestObjectiveType objectiveType;
-        private final ObjectiveTarget target;
+        private final String target;
 
-        CompleteObjectiveStep(String questName, Integer stepIndex, QuestObjectiveType objectiveType, ObjectiveTarget target) {
+        CompleteObjectiveStep(String questName, Integer stepIndex, QuestObjectiveType objectiveType, String target) {
             this.questName = questName;
             this.stepIndex = stepIndex;
             this.objectiveType = objectiveType;

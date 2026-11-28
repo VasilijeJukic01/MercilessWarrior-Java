@@ -3,14 +3,13 @@ package platformer.serialization;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import platformer.core.Account;
+import platformer.core.loading.PathManager;
 import platformer.debug.logger.Logger;
 import platformer.debug.logger.Message;
-import platformer.core.loading.PathManager;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.*;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -18,18 +17,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * The GameSerializer class implements the Serializer interface for serializing and deserializing game data.
- * <p>
- * It provides methods to save game data to files and load game data from files.
+ * Serializes and deserializes encrypted local save slots using atomic writes and automatic .bak recovery.
  */
 public class GameSerializer implements Serializer<Account, List<Account>> {
 
-    private final Encryptor encryptor;
-
-    public GameSerializer() {
-        this.encryptor = new GameEncryptor();
-    }
-
+    private static final int CURRENT_SAVE_VERSION = 1;
+    private final Encryptor encryptor = new GameEncryptor();
+    private final Gson gson = new GsonBuilder().create();
     private final List<String> saves = List.of("save1", "save2", "save3");
 
     /**
@@ -42,23 +36,30 @@ public class GameSerializer implements Serializer<Account, List<Account>> {
     public void serialize(Account account, int index) {
         String date = LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
         String time = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"));
-        account.setLastTimeSaved(date+" "+time);
+        account.setLastTimeSaved(date + " " + time);
+        account.setSaveVersion(CURRENT_SAVE_VERSION);
+
         try {
-            Gson gson = new Gson();
-            String savePath = PathManager.getSavesPath();
-
-            String jsonCache = gson.toJson(account);
-
-            String encryptedJson = encryptor.encrypt(jsonCache);
+            String encryptedJson = encryptor.encrypt(gson.toJson(account));
             if (encryptedJson == null) return;
 
-            try (FileWriter writer = new FileWriter(savePath + File.separator + "save" + index)) {
-                writer.write(encryptedJson);
-                Logger.getInstance().notify("Game saved to slot " + index + ".", Message.NOTIFICATION);
+            Path savesDir = Paths.get(PathManager.getSavesPath());
+            Path targetFile = savesDir.resolve("save" + index);
+            Path tempFile = savesDir.resolve("save" + index + ".tmp");
+            Path backupFile = savesDir.resolve("save" + index + ".bak");
+
+            Files.writeString(tempFile, encryptedJson, StandardCharsets.UTF_8);
+            if (Files.exists(targetFile)) {
+                Files.copy(targetFile, backupFile, StandardCopyOption.REPLACE_EXISTING);
             }
-        }
-        catch (IOException e) {
-            Logger.getInstance().notify("Game saving to slot " + index + "failed.", Message.ERROR);
+            try {
+                Files.move(tempFile, targetFile, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+            } catch (AtomicMoveNotSupportedException e) {
+                Files.move(tempFile, targetFile, StandardCopyOption.REPLACE_EXISTING);
+            }
+            Logger.getInstance().notify("Game saved to slot " + index + ".", Message.NOTIFICATION);
+        } catch (IOException e) {
+            Logger.getInstance().notify("Game saving to slot " + index + " failed: " + e.getMessage(), Message.ERROR);
         }
     }
 
@@ -70,49 +71,45 @@ public class GameSerializer implements Serializer<Account, List<Account>> {
     @Override
     public List<Account> deserialize() {
         List<Account> savedFilesData = new ArrayList<>();
-        String savePath = PathManager.getSavesPath();
+        Path savesDir = Paths.get(PathManager.getSavesPath());
         for (String save : saves) {
-            String filePath = savePath + File.separator + save;
-            File file = new File(filePath);
+            Path file = savesDir.resolve(save);
+            Path backup = savesDir.resolve(save + ".bak");
 
-            if (file.exists()) {
-                try {
-                    FileReader fileReader = new FileReader(filePath);
-                    StringBuilder sb = new StringBuilder();
-                    int ch;
-
-                    while ((ch = fileReader.read()) != -1) {
-                        sb.append((char) ch);
-                    }
-                    fileReader.close();
-
-                    String encryptedJson = sb.toString();
-                    String decryptedJson = encryptor.decrypt(encryptedJson);
-
-                    Gson gson = new GsonBuilder().create();
-                    Account account = gson.fromJson(decryptedJson, Account.class);
-                    savedFilesData.add(account);
-
-                }
-                catch (IOException e) {
-                    Logger.getInstance().notify("Game at "+ save +" corrupted.", Message.ERROR);
-                }
+            Account account = tryReadAccount(file);
+            if (account == null && Files.exists(backup)) {
+                Logger.getInstance().notify("Primary save " + save + " corrupted; recovering from backup.", Message.WARNING);
+                account = tryReadAccount(backup);
             }
-            else savedFilesData.add(null);
+            savedFilesData.add(account);
         }
         return savedFilesData;
     }
 
-    @Override
-    public void delete(int index) {
-        String savePath = PathManager.getSavesPath();
-        File file = new File(savePath + File.separator + "save" + index);
-        if (file.delete()) {
-            Logger.getInstance().notify("Game at slot " + index + " deleted.", Message.NOTIFICATION);
-        }
-        else {
-            Logger.getInstance().notify("Game at slot " + index + " deletion failed.", Message.ERROR);
+    private Account tryReadAccount(Path file) {
+        if (!Files.exists(file)) return null;
+        try {
+            String encryptedJson = Files.readString(file, StandardCharsets.UTF_8);
+            String decryptedJson = encryptor.decrypt(encryptedJson);
+            if (decryptedJson == null || decryptedJson.isBlank()) return null;
+            return gson.fromJson(decryptedJson, Account.class);
+        } catch (Exception e) {
+            Logger.getInstance().notify("Failed to read save file " + file.getFileName() + ": " + e.getMessage(), Message.ERROR);
+            return null;
         }
     }
 
+    @Override
+    public void delete(int index) {
+        Path savesDir = Paths.get(PathManager.getSavesPath());
+        try {
+            boolean deleted = Files.deleteIfExists(savesDir.resolve("save" + index));
+            Files.deleteIfExists(savesDir.resolve("save" + index + ".bak"));
+            Files.deleteIfExists(savesDir.resolve("save" + index + ".tmp"));
+            if (deleted) Logger.getInstance().notify("Game at slot " + index + " deleted.", Message.NOTIFICATION);
+            else Logger.getInstance().notify("Game at slot " + index + " deletion failed.", Message.ERROR);
+        } catch (IOException e) {
+            Logger.getInstance().notify("Game at slot " + index + " deletion failed: " + e.getMessage(), Message.ERROR);
+        }
+    }
 }

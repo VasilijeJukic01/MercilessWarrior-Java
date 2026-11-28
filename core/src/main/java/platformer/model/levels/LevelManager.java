@@ -473,8 +473,11 @@ public class LevelManager {
         renderDeco(g, xLevelOffset, yLevelOffset, 0);
         renderDeco(g, xLevelOffset, yLevelOffset, 1);
         if (context.getInteriorManager() == null || !context.getInteriorManager().isInterior()) {
-            g.setColor(new Color(1, 130, 120, 60));
-            g.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+            Color tint = BiomeManager.getInstance().resolveAmbientTint(currentLevelMetadata);
+            if (tint != null) {
+                g.setColor(tint);
+                g.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+            }
         }
         renderDeco(g, xLevelOffset, yLevelOffset, 2);
     }

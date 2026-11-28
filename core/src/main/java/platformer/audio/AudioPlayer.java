@@ -86,6 +86,11 @@ public interface AudioPlayer<U, V, W> {
     void unpauseSong();
 
     /**
+     * Sets the active biome/room soundtrack and ambience, smoothly switching only if changed.
+     */
+    void setLevelAudio(U song, W ambience);
+
+    /**
      * Sets and plays the appropriate song for the current level.
      */
     void setLevelSong();

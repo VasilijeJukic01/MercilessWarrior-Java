@@ -54,7 +54,6 @@ public class QuestManager {
         GsonBuilder gsonBuilder = new GsonBuilder();
         gsonBuilder.registerTypeAdapter(QuestType.class, new QuestTypeDeserializer());
         gsonBuilder.registerTypeAdapter(QuestObjectiveType.class, new QuestObjectiveTypeDeserializer());
-        gsonBuilder.registerTypeAdapter(ObjectiveTarget.class, new ObjectiveTargetDeserializer());
         Gson gson = gsonBuilder.create();
 
         try (InputStream is = AssetManager.getInstance().getResourceAsStream(filePath);
@@ -103,9 +102,14 @@ public class QuestManager {
      * This method is called by dedicated listeners in response to events from the EventBus.
      *
      * @param eventType   The type of objective to update (e.g., KILL, COLLECT).
-     * @param eventTarget The specific target of the objective (e.g., SKELETON, CRATE).
+     * @param target The specific target of the objective.
      */
-    public void updateQuestProgress(QuestObjectiveType eventType, ObjectiveTarget eventTarget) {
+    public void updateQuestProgress(QuestObjectiveType eventType, String target) {
+        updateQuestProgress(eventType, target, 1);
+    }
+
+    public void updateQuestProgress(QuestObjectiveType eventType, String target, int amount) {
+        if (target == null || target.isBlank() || amount <= 0) return;
         String currentLevelId = context.getInteriorManager().isInterior() ? context.getInteriorManager().getCurrentInteriorId() : context.getLevelManager().getCurrentLevelId();
         for (QuestSlot slot : new ArrayList<>(slots)) {
             Quest quest = slot.getQuest();
@@ -116,8 +120,8 @@ public class QuestManager {
                 if (activeObjective.getLevelId() != null && !activeObjective.getLevelId().equalsIgnoreCase(currentLevelId)) {
                     continue;
                 }
-                if (activeObjective.getType() == eventType && activeObjective.getTarget() == eventTarget) {
-                    activeObjective.setCurrentAmount(activeObjective.getCurrentAmount() + 1);
+                if (activeObjective.getType() == eventType && target.equalsIgnoreCase(activeObjective.getTarget())) {
+                    activeObjective.setCurrentAmount(Math.min(activeObjective.getRequiredAmount(), activeObjective.getCurrentAmount() + amount));
                     checkObjectiveCompletion(quest);
                 }
             }
@@ -173,7 +177,7 @@ public class QuestManager {
     }
 
     private List<Quest> findNextQuests(Quest completedQuest) {
-        if (completedQuest.getId() == -1) return new ArrayList<>();
+        if (completedQuest.getType() == QuestType.REPEATABLE) return new ArrayList<>();
         return progressiveQuests.stream()
                 .filter(q -> q.getNpcRequest() == 0)
                 .filter(q -> q.getPrerequisites() != null && q.getPrerequisites().contains(completedQuest.getId()))
@@ -314,7 +318,7 @@ public class QuestManager {
                     q.getObjectives().stream()
                             .map(o -> String.valueOf(o.getCurrentAmount()))
                             .collect(Collectors.joining(","));
-            serialized.add(q.getName() + "|" + (q.isCompleted() ? 1 : 0) + "|" + (inSlots ? 1 : 0) + "|" + q.getActiveObjectiveIndex() + "|" + counts);
+            serialized.add(q.getId() + "|" + (q.isCompleted() ? 1 : 0) + "|" + (inSlots ? 1 : 0) + "|" + q.getActiveObjectiveIndex() + "|" + counts);
         }
         Framework.getInstance().getAccount().setQuests(serialized);
     }
@@ -328,12 +332,13 @@ public class QuestManager {
             String[] parts = entry.split("\\|", -1);
             if (parts.length < 5) continue;
 
-            String name = parts[0];
+            int questId = Integer.parseInt(parts[0]);
             boolean completed = "1".equals(parts[1]);
             boolean inSlots = "1".equals(parts[2]);
             int activeIdx = Integer.parseInt(parts[3]);
             String[] counts = parts[4].isEmpty() ? new String[0] : parts[4].split(",");
-            findQuestByName(name).ifPresent(quest -> {
+
+            findQuestById(questId).ifPresent(quest -> {
                 quest.setCompleted(completed);
                 quest.setActiveObjectiveIndex(activeIdx);
                 if (quest.getObjectives() != null) {
@@ -345,6 +350,10 @@ public class QuestManager {
             });
         }
         sortAndRepositionSlots();
+    }
+
+    private Optional<Quest> findQuestById(int questId) {
+        return allQuests.stream().filter(q -> q.getId() == questId).findFirst();
     }
 
     public void reset() {
@@ -364,13 +373,6 @@ public class QuestManager {
         @Override
         public QuestObjectiveType deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) {
             return QuestObjectiveType.valueOf(json.getAsString().toUpperCase());
-        }
-    }
-
-    private static class ObjectiveTargetDeserializer implements JsonDeserializer<ObjectiveTarget> {
-        @Override
-        public ObjectiveTarget deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) {
-            return ObjectiveTarget.valueOf(json.getAsString().toUpperCase());
         }
     }
 }

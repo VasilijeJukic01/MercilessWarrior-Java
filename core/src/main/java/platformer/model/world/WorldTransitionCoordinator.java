@@ -1,5 +1,8 @@
 package platformer.model.world;
 
+import platformer.audio.Audio;
+import platformer.audio.types.Ambience;
+import platformer.audio.types.Song;
 import platformer.core.Framework;
 import platformer.core.GameContext;
 import platformer.debug.logger.Logger;
@@ -7,6 +10,7 @@ import platformer.debug.logger.Message;
 import platformer.model.entities.player.Player;
 import platformer.model.entities.player.PlayerAction;
 import platformer.model.gameObjects.npc.NpcType;
+import platformer.model.levels.BiomeManager;
 import platformer.model.levels.Level;
 import platformer.model.levels.LvlTriggerType;
 import platformer.model.levels.metadata.LevelMetadata;
@@ -179,6 +183,13 @@ public class WorldTransitionCoordinator {
             context.getLightManager().releaseAmbientDarkness();
             context.getDecorationEffectManager().setActive(true);
             world.reinitializeParticles();
+        }
+
+        if (!isArena) {
+            LevelMetadata roomMeta = context.getLevelManager().getCurrentLevelMetadata();
+            Song biomeSong = BiomeManager.getInstance().resolveSong(roomMeta);
+            Ambience biomeAmb = BiomeManager.getInstance().resolveAmbience(roomMeta, isInterior);
+            Audio.getInstance().getAudioPlayer().setLevelAudio(biomeSong, biomeAmb);
         }
 
         context.getMinimapManager().changeLevel();

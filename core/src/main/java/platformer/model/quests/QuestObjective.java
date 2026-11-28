@@ -12,7 +12,7 @@ import lombok.Setter;
 public class QuestObjective {
 
     private QuestObjectiveType type;
-    private ObjectiveTarget target;
+    private String target;
     private String levelId;
     private String mapLevelId;
     private Integer targetX;

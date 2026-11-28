@@ -46,11 +46,11 @@ public class Quest {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Quest quest = (Quest) o;
-        return id == quest.id && id != -1;
+        return id == quest.id;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, id);
+        return Objects.hash(id);
     }
 }

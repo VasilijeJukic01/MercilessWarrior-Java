@@ -1,7 +1,6 @@
 package platformer.ui.overlays;
 
 import platformer.audio.Audio;
-import platformer.audio.types.Song;
 import platformer.core.Game;
 import platformer.state.types.GameState;
 import platformer.ui.buttons.AbstractButton;
@@ -94,7 +93,7 @@ public class GameOverOverlay implements Overlay<MouseEvent, KeyEvent, Graphics> 
             // Valid cast (to enter this state, the current state must be a GameState)
             ((GameState) game.getCurrentState()).setRespawning(true);
             game.reset();
-            Audio.getInstance().getAudioPlayer().playSong(Song.FOREST_1);
+            Audio.getInstance().getAudioPlayer().setLevelSong();
         }
         if(isMouseInButton(e, menuBtn) && menuBtn.isMousePressed()) {
             game.reset();

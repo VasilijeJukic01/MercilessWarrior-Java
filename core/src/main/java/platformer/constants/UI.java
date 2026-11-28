@@ -170,16 +170,6 @@ public final class UI {
     public static final int BOSS_BAR_X = scale(280);
     public static final int BOSS_BAR_Y = scale(20);
 
-    // Dialogue UI
-    public static final int DIALOGUE_BOX_X = scale(270);
-    public static final int DIALOGUE_BOX_Y = scale(350);
-    public static final int DIALOGUE_BOX_WID = scale(300);
-    public static final int DIALOGUE_BOX_HEI = scale(80);
-
-    public static final int DIALOGUE_X = DIALOGUE_BOX_X + scale(20);
-    public static final int DIALOGUE_Y = DIALOGUE_BOX_Y + scale(20);
-    public static final int DIALOGUE_LINE = DIALOGUE_BOX_WID - scale(30);
-
     // Audio UI
     public static final int SFX_X = scale(525);
     public static final int SFX_Y = scale(203);
@@ -296,8 +286,6 @@ public final class UI {
     public static final int ITEM_SIZE = scale(30);
     public static final int ITEM_OFFSET_X = scale(5);
     public static final int ITEM_OFFSET_Y = scale(5);
-    public static final int ITEM_COUNT_OFFSET_X = scale(2);
-    public static final int ITEM_COUNT_OFFSET_Y = scale(29);
 
     public static final int SHOP_SLIDER_BTN_X = scale(320);
     public static final int SHOP_SLIDER_BTN_Y = scale(280);
@@ -357,15 +345,6 @@ public final class UI {
 
     public static final int UNEQUIP_BTN_X = scale(439);
     public static final int UNEQUIP_BTN_Y = scale(258);
-
-    // Looting UI
-    public static final int LOOT_SLOT_X = scale(320);
-    public static final int LOOT_SLOT_Y = scale(120);
-
-    public static final int LOOT_BTN_BTN_Y = scale(348);
-    public static final int TAKE_BTN_X = scale(318);
-    public static final int TAKE_ALL_BTN_X = scale(388);
-    public static final int CLOSE_BTN_X = scale(458);
 
     // Minimap UI
     public static final int MAP_OVERLAY_WID = scale(700);

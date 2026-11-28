@@ -1,7 +1,6 @@
 package platformer.event.handlers;
 
 import platformer.audio.Audio;
-import platformer.audio.types.Song;
 import platformer.core.Framework;
 import platformer.core.GameContext;
 import platformer.debug.logger.Logger;
@@ -48,7 +47,7 @@ public class GameFlowEventHandler {
 
     private void returnFromArena() {
         Logger.getInstance().notify("Roric defeated! Returning to the main world.", Message.INFORMATION);
-        Audio.getInstance().getAudioPlayer().playSong(Song.FOREST_1);
+        Audio.getInstance().getAudioPlayer().setLevelSong();
 
         int spawnId = Framework.getInstance().getAccount().getSpawn();
         context.getWorldTransitionCoordinator().exitArena(spawnId);

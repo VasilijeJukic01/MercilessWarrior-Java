@@ -94,48 +94,20 @@ public final class Constants {
     public static final int PARTICLES_CAP = 50;
 
     // Enemy Constants
-    public static final int SKELETON_WIDTH = scale(100);
-    public static final int SKELETON_HEIGHT = scale(90);
-    public static final int SKELETON_X_OFFSET = scale(40);
-    public static final int SKELETON_Y_OFFSET = scale(24);
-    public static final int SKELETON_HB_WID = scale(21);
-    public static final int SKELETON_HB_HEI = scale(42);
-    public static final int SKELETON_AB_WID = scale(60);
-    public static final int SKELETON_AB_HEI = scale(45);
-
-    public static final int GHOUL_WIDTH = scale(120);
-    public static final int GHOUL_HEIGHT = scale(80);
-    public static final int GHOUL_X_OFFSET = scale(50);
-    public static final int GHOUL_Y_OFFSET = scale(18);
-    public static final int GHOUL_HB_WID = scale(21);
-    public static final int GHOUL_HB_HEI = scale(42);
-    public static final int GHOUL_AB_WID = scale(60);
-    public static final int GHOUL_AB_HEI = scale(45);
-
     public static final int KNIGHT_WIDTH = scale(120);
     public static final int KNIGHT_HEIGHT = scale(80);
     public static final int KNIGHT_X_OFFSET = scale(50);
     public static final int KNIGHT_Y_OFFSET = scale(18);
-    public static final int KNIGHT_HB_WID = scale(21);
-    public static final int KNIGHT_HB_HEI = scale(42);
-    public static final int KNIGHT_AB_WID = scale(60);
-    public static final int KNIGHT_AB_HEI = scale(45);
 
     public static final int WRAITH_WIDTH = scale(200);
     public static final int WRAITH_HEIGHT = scale(130);
     public static final int WRAITH_X_OFFSET = scale(90);
     public static final int WRAITH_Y_OFFSET = scale(45);
-    public static final int WRAITH_HB_WID = scale(21);
-    public static final int WRAITH_HB_HEI = scale(42);
-    public static final int WRAITH_AB_WID = scale(100);
-    public static final int WRAITH_AB_HEI = scale(45);
 
     public static final int LANCER_WIDTH = scale(153);
     public static final int LANCER_HEIGHT = scale(138);
     public static final int LANCER_X_OFFSET = scale(54);
     public static final int LANCER_Y_OFFSET = scale(63);
-    public static final int LANCER_HB_WID = scale(25);
-    public static final int LANCER_HB_HEI = scale(50);
     public static final int LANCER_AB_WID = scale(96);
     public static final int LANCER_AB_WID_REDUCE = scale(48);
     public static final int LANCER_AB_HEI = scale(54);
@@ -151,21 +123,6 @@ public final class Constants {
     public static final int RORIC_AB_WID = scale(96);
     public static final int RORIC_AB_WID_REDUCE = scale(48);
     public static final int RORIC_AB_HEI = scale(50);
-
-    public static final double SKELETON_SPEED_FAST = dScale(0.35);
-    public static final double GHOUL_SPEED_FAST = dScale(0.45);
-    public static final double KNIGHT_SPEED_FAST = dScale(0.4);
-    public static final double WRAITH_SPEED_FAST = dScale(0.5);
-
-    private static final double RANGE = 1.25 * TILES_SIZE;
-    public static final double SIGHT_RANGE = RANGE * 5;
-    public static final double SKELETON_ATT_RANGE = RANGE / 1.25;
-    public static final double GHOUL_ATT_RANGE = RANGE * 2;
-    public static final double KNIGHT_ATT_RANGE = RANGE / 1.3;
-    public static final double WRAITH_ATT_RANGE = RANGE;
-    public static final double LANCER_ATT_RANGE = RANGE * 1.8;
-    public static final double RORIC_ATT_RANGE = RANGE * 1.8;
-    public static final double ENEMY_SPEED_SLOW = dScale(0.2);
 
     // Follower Constants
     public static final int FLW_WIDTH = scale(270);
@@ -200,8 +157,6 @@ public final class Constants {
     public static final int SPIKE_HEI = scale(28);
     public static final int SPIKE_HB_WID = scale(24);
     public static final int SPIKE_HB_HEI = scale(9);
-    public static final int SPIKE_OFFSET_X = scale(3);
-    public static final int SPIKE_OFFSET_Y = scale(6);
 
     public static final int SAW_TRAP_SIZE = scale(54);
     public static final int SAW_TRAP_HB_SIZE = scale(38);
@@ -370,8 +325,6 @@ public final class Constants {
     public static final int BIG_BTN_HEI = scale(42);
     public static final int MEDIUM_BTN_WID = scale(96);
     public static final int MEDIUM_BTN_HEI = scale(34);
-    public static final int SMALL_BTN_WID = scale(68);
-    public static final int SMALL_BTN_HEI = scale(26);
     public static final int TINY_BTN_WID = scale(52);
     public static final int TINY_BTN_HEI = scale(23);
     public static final int SOUND_BTN_SIZE = scale(30);

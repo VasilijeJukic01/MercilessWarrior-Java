@@ -60,6 +60,10 @@ public class OpenAL implements AudioPlayer<Song, Sound, Ambience> {
     private static final Sound[] PLAYER_BLOCK_SOUNDS = { Sound.SWORD_BLOCK_1, Sound.SWORD_BLOCK_2, Sound.SWORD_BLOCK_3 };
     private static final Sound[] CRATE_BREAK_SOUNDS = { Sound.CRATE_BREAK_1, Sound.CRATE_BREAK_2 };
 
+    private Song levelSong = Song.FOREST_1;
+    private Ambience levelAmbience = Ambience.FOREST;
+    private Ambience currentAmbience = null;
+
     /**
      * Initializes the OpenAL audio system. This involves setting up the audio device and context,
      * and loading all songs, sound effects, and ambient sounds from files into OpenAL buffers.
@@ -194,8 +198,7 @@ public class OpenAL implements AudioPlayer<Song, Sound, Ambience> {
         songSource.play(bufferId, false, byteOffset);
         songSource.loop(true);
 
-        if (song == Song.FOREST_1) playAmbience(Ambience.FOREST);
-        else stopAmbience();
+        if (song != levelSong) stopAmbience();
     }
 
     @Override
@@ -288,9 +291,11 @@ public class OpenAL implements AudioPlayer<Song, Sound, Ambience> {
             stopAmbience();
             return;
         }
+        if (ambience == currentAmbience && ambienceSource.isPlaying()) return;
         Integer bufferId = ambienceBuffers.get(ambience);
         if (bufferId == null) return;
 
+        currentAmbience = ambience;
         float vol = soundMute ? 0f : sfxVolume;
         ambienceSource.changeVolume(vol);
         ambienceSource.play(bufferId, false);
@@ -300,11 +305,25 @@ public class OpenAL implements AudioPlayer<Song, Sound, Ambience> {
     @Override
     public synchronized void stopAmbience() {
         ambienceSource.stop();
+        currentAmbience = null;
     }
 
     @Override
-    public void setLevelSong() {
-        playSong(Song.FOREST_1);
+    public synchronized void setLevelAudio(Song song, Ambience ambience) {
+        this.levelSong = song;
+        this.levelAmbience = ambience;
+        if (song != currentSong) {
+            playSong(song);
+        }
+        if (ambience != null) playAmbience(ambience);
+        else stopAmbience();
+    }
+
+    @Override
+    public synchronized void setLevelSong() {
+        if (levelSong != null) playSong(levelSong);
+        if (levelAmbience != null) playAmbience(levelAmbience);
+        else stopAmbience();
     }
 
     @Override

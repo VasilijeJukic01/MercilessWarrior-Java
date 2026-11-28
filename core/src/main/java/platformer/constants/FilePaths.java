@@ -22,6 +22,7 @@ public final class FilePaths {
     public static final String DECORATION_SPRITES = "/images/levels/levelObjects/";
     public static final String MINIMAP = "/images/levels/minimap/minimap.png";
     public static final String MINIMAP_ICONS = "/images/levels/minimap/MapIcons.png";
+    public static final String BIOMES_PATH = "/meta/biomes.json";
 
     public static final String FOREST_BG_1 = "/images/levels/backgrounds/forest1.png";
     public static final String FOREST_BG_2 = "/images/levels/backgrounds/forest2.png";
@@ -118,7 +119,6 @@ public final class FilePaths {
     public static final String PLAYER_HUD = "/images/PlayerHUD.png";
     public static final String PLAYER_PORTRAIT = "/images/PortraitHUD.png";
     public static final String TIME_CYCLE_ICONS = "/images/player/hud/TimeCycleSheet.png";
-    public static final String SLOT_INVENTORY = "/images/inventory/Slot.png";
 
     // Inventory / Shop
     public static final String BALANCE_PATH = "/items/balance.json";

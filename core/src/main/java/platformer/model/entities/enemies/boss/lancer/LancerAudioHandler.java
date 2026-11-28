@@ -36,7 +36,7 @@ public class LancerAudioHandler {
 
     public void playBossTheme(boolean active) {
         if (active) Audio.getInstance().getAudioPlayer().playSong(Song.BOSS_1);
-        else Audio.getInstance().getAudioPlayer().playSong(Song.FOREST_1);
+        else Audio.getInstance().getAudioPlayer().setLevelSong();
     }
 
     public void playHitGrunt() {

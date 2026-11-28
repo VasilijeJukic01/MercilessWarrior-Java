@@ -63,6 +63,7 @@ public class EnemyDefinition {
     private boolean boss = false;
     private boolean multiFrameHitCheck = false;
     private int attackTokenCost = 1;
+    private String questTarget;
     private String deathSound;
     private Map<String, AnimSpec> animations = Collections.emptyMap();
 
@@ -128,6 +129,10 @@ public class EnemyDefinition {
 
     public double getRetreatSpacing() {
         return retreatSpacingTiles * TILES_SIZE;
+    }
+
+    public String getQuestTargetOrDefault(String fallback) {
+        return (questTarget != null && !questTarget.isBlank()) ? questTarget : fallback;
     }
 
     public Sound getDeathSoundEnum() {

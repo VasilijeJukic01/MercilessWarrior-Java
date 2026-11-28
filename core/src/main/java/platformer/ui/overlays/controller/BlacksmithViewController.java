@@ -12,7 +12,6 @@ import platformer.model.inventory.craft.BlacksmithRecipeManager.SwordUpgradeTier
 import platformer.model.inventory.database.ItemDatabase;
 import platformer.model.inventory.item.InventoryItem;
 import platformer.model.inventory.item.ItemData;
-import platformer.model.quests.ObjectiveTarget;
 import platformer.model.quests.QuestObjectiveType;
 import platformer.ui.buttons.AbstractButton;
 import platformer.ui.buttons.ButtonType;
@@ -297,7 +296,7 @@ public class BlacksmithViewController {
         if (player.getInventory().hasAndConsumeResources(nextTier.getIngredients(), nextTier.getCoinCost(), player)) {
             Audio.getInstance().getAudioPlayer().playSound(Sound.CRAFTING);
             context.getWorldMemoryManager().addFlag("SWORD_TIER_" + nextTier.getTier());
-            context.getQuestManager().updateQuestProgress(QuestObjectiveType.UPGRADE, ObjectiveTarget.SWORD_UPGRADE);
+            context.getQuestManager().updateQuestProgress(QuestObjectiveType.UPGRADE, "SWORD_UPGRADE");
         }
     }
 

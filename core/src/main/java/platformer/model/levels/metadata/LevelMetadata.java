@@ -17,6 +17,10 @@ public class LevelMetadata {
     private String clearLootFlag;
     private Boolean hideCombatHud;
     private Boolean interior;
+    private String biome;
+    private String music;
+    private String ambience;
+    private Boolean stormMode;
     private List<ObjectMetadata> decorations = new ArrayList<>();
     private List<LightMetadata> lights = new ArrayList<>();
     private List<NpcMetadata> npcs = new ArrayList<>();
